@@ -1,4 +1,5 @@
 import Formal.AG.Derived.Intersection
+import Mathlib.Algebra.Exact
 
 noncomputable section
 
@@ -113,8 +114,7 @@ structure SelectedFiniteFreeResolution (M : Type v) [AddCommGroup M] [Module A M
   d_comp_d : ∀ (n : Nat) (x : Term n.succ.succ), d n (d n.succ x) = 0
   augmentation_comp_d : ∀ x : Term 1, augmentation (d 0 x) = 0
   supported_le_length : ∀ n, length < n -> Subsingleton (Term n)
-  exact : Prop
-  exact_holds : exact
+  exact : Function.Exact (d 0) augmentation ∧ ∀ n, Function.Exact (d n.succ) (d n)
 
 attribute [instance] SelectedFiniteFreeResolution.termAddCommGroup
 attribute [instance] SelectedFiniteFreeResolution.termModule
@@ -132,8 +132,18 @@ def termLinearEquivFree_certificate (F : SelectedFiniteFreeResolution.{u, v} A M
 
 /-- V.R4(a): the selected resolution carries its exactness certificate. -/
 theorem exact_certificate (F : SelectedFiniteFreeResolution.{u, v} A M) :
-    F.exact :=
-  F.exact_holds
+    Function.Exact (F.d 0) F.augmentation ∧ ∀ n, Function.Exact (F.d n.succ) (F.d n) :=
+  F.exact
+
+/-- V.R4(a): actual Mathlib exactness at every positive chain degree. -/
+theorem exact_at_succ_holds (F : SelectedFiniteFreeResolution.{u, v} A M) (n : Nat) :
+    Function.Exact (F.d n.succ) (F.d n) :=
+  F.exact.2 n
+
+/-- V.R4(a): actual Mathlib exactness at the augmentation. -/
+theorem augmentation_exact_holds (F : SelectedFiniteFreeResolution.{u, v} A M) :
+    Function.Exact (F.d 0) F.augmentation :=
+  F.exact.1
 
 end SelectedFiniteFreeResolution
 

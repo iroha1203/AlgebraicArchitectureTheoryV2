@@ -1,4 +1,5 @@
 import Formal.AG.Measurement.Hodge
+import Formal.AG.Derived.Intersection
 
 noncomputable section
 
@@ -128,6 +129,55 @@ theorem commonAmbientRequired_holds {M : MeasurementProfile.{u, v}}
     {A : CommonAmbientPair M} (L : LawConflictMeasurement A) :
     L.commonAmbientRequired :=
   L.commonAmbientRequired_cert
+
+/--
+VIII.Definition 9.1 / R7: build a measurement LawConflict reading from the
+Part V derived `LawConflictPackage`.
+-/
+def ofDerivedLawConflictPackage {M : MeasurementProfile.{u, v}}
+    (A : CommonAmbientPair M)
+    {R : Type v} [CommRing R] {I_U I_V : Ideal R}
+    (P : Derived.Intersection.LawConflictPackage.{u, v} R I_U I_V)
+    (degree : Nat)
+    (selectedClass : P.LawConflict degree)
+    (selectedSupport : A.SupportCarrier)
+    (conflictSupport : P.LawConflict degree -> A.SupportCarrier -> Prop)
+    (selectedClassSupport : conflictSupport selectedClass selectedSupport) :
+    LawConflictMeasurement A where
+  Degree := ULift.{u} Nat
+  selectedDegree := ULift.up degree
+  LeftQuotient := R ⧸ I_U
+  RightQuotient := R ⧸ I_V
+  TorObject := P.LawConflict degree
+  ConflictClass := P.LawConflict degree
+  selectedConflictClass := selectedClass
+  conflictSupport := conflictSupport
+  selectedSupport := selectedSupport
+  ZeroConflict := fun x => x = 0
+  NontrivialConflict := fun x => x ≠ 0
+  lawConflictTorReading :=
+    Nonempty (P.LawConflict degree ≃ₗ[R] Derived.Intersection.mathlibTor R I_U I_V degree)
+  lawConflictTorReading_cert := ⟨P.lawConflictLinearEquivMathlibTor degree⟩
+  selectedClassSupportReading := conflictSupport selectedClass selectedSupport
+  selectedClassSupportReading_cert := selectedClassSupport
+  commonAmbientRequired := A.commonRingedSite ∧ A.lawIdealsInCommonAmbient
+  commonAmbientRequired_cert :=
+    ⟨A.commonRingedSite_cert, A.lawIdealsInCommonAmbient_cert⟩
+  coefficientCompatibilityUsed := A.coefficientsCompatible
+  coefficientCompatibilityUsed_cert := A.coefficientsCompatible_cert
+  topologyAndCoefficientBoundary := A.noComparisonWithoutCommonAmbient
+  topologyAndCoefficientBoundary_cert := A.noComparisonWithoutCommonAmbient_cert
+
+/--
+VIII.R7: the measurement bridge exposes the same Mathlib Tor equivalence carried
+by the Part V `LawConflictPackage`.
+-/
+def derivedLawConflictLinearEquivMathlibTor
+    {R : Type v} [CommRing R] {I_U I_V : Ideal R}
+    (P : Derived.Intersection.LawConflictPackage.{u, v} R I_U I_V)
+    (degree : Nat) :
+    P.LawConflict degree ≃ₗ[R] Derived.Intersection.mathlibTor R I_U I_V degree :=
+  P.lawConflictLinearEquivMathlibTor degree
 
 end LawConflictMeasurement
 

@@ -1,4 +1,5 @@
 import Formal.AG.Examples.FiniteModel
+import Formal.AG.Examples.RepresentationAnalysisPart7
 import Formal.AG.SingularityMonodromyStack
 
 noncomputable section
@@ -19,6 +20,51 @@ Each package is deliberately selected and finite. It supplies the concrete
 finite witness data needed by the corresponding Part VI theorem, then exposes
 the theorem application as an example theorem.
 -/
+
+/-! ### Concrete nondegenerate finite carriers -/
+
+abbrev ToyParameter :=
+  RepresentationAnalysisPart7.finiteSynthesisStratumParameter
+
+abbrev ToyStratum :=
+  RepresentationAnalysisPart7.finiteSynthesisArchitectureStratum
+
+def toyCotangentData : CotangentData.{0, 0, 0, 0, 0, 0} ToyStratum where
+  Base := Bool
+  CotangentComplex := Fin 2
+  baseMap _ := false
+  PullbackBase := Bool
+  pullbackComplex b := if b then 1 else 0
+
+def toyTangentData : TangentData.{0, 0, 0, 0, 0, 0} ToyStratum toyCotangentData where
+  TangentComplex := Fin 2
+  H0 := Bool
+  H1 := Bool
+  ObstructionTarget := Bool
+  zeroObstruction := false
+  rhomInterface_certificate := True
+  h0ComputesInfinitesimalAutomorphisms_certificate := True
+  h1ComputesObstructionTarget_certificate := True
+
+def toyDeformationTheory :
+    DeformationObstructionTheory.{0, 0, 0, 0, 0, 0} toyTangentData where
+  DeformationTest := Bool
+  LiftFill eta := eta = false
+  ob eta := eta
+  effective := by
+    intro eta hzero
+    simpa using hzero
+  sound := by
+    intro eta hfill
+    simp [toyTangentData, hfill]
+
+def toyBoundaryObstruction :
+    BoundaryObstructionFamily.{0, 0, 0, 0, 0, 0} toyDeformationTheory where
+  boundaryTest := true
+  h1NonzeroClass := True
+  realizes_nonzero_obstruction := by
+    intro _h h
+    cases h
 
 /--
 VI.R12(a): finite singular-boundary toy model.
@@ -269,6 +315,371 @@ theorem verifies_no_canonical_decomposition
   E.noCanonicalData.noCanonicalDecomposition E.nonzeroGerbe
 
 end DecompositionGerbeToyModel
+
+/-! ### Concrete finite toy-model firings -/
+
+def concreteSingularBoundaryToyModel :
+    SingularBoundaryToyModel.{0, 0, 0, 0, 0, 0} toyDeformationTheory where
+  finiteTests := by
+    change Fintype Bool
+    infer_instance
+  boundary := toyBoundaryObstruction
+  nonzeroBoundaryClass := trivial
+
+theorem concreteSingularBoundaryToyModel_fires :
+    USingularBoundary toyDeformationTheory :=
+  SingularBoundaryToyModel.verifies_singular_boundary concreteSingularBoundaryToyModel
+
+def toyOperationCategory :
+    OperationCategoryData.{0, 0, 0, 0, 0, 0} ToyStratum where
+  State := Bool
+  Operation _ _ := PUnit
+  selectedState _ := false
+  operationRespectsLawUniverse _ := True
+
+def toyEndpointReading :
+    RefactorEndpointReading.{0, 0, 0, 0, 0, 0} toyOperationCategory where
+  RefactorEquivalent _ _ := True
+  refl _ := trivial
+  symm _ := trivial
+  trans _ _ := trivial
+  preservesSelectedInvariants _ := True
+  preservesSelectedEssence _ := True
+  invariantCertificate _ := trivial
+  essenceCertificate _ := trivial
+
+def toySelectedOperation : SelectedOperation toyOperationCategory false true where
+  op := PUnit.unit
+  respectsLawUniverse := trivial
+
+def toyHomotopyGenerators :
+    HomotopyGeneratorFamily.{0, 0, 0, 0, 0, 0} toyEndpointReading where
+  PathCell := Bool
+  cellSource _ := false
+  cellTarget _ := true
+  leftPath _ :=
+    OperationPath.cons toySelectedOperation (OperationPath.nil (G := toyOperationCategory) true)
+  rightPath _ :=
+    OperationPath.cons toySelectedOperation (OperationPath.nil (G := toyOperationCategory) true)
+  LoopRelator := PUnit
+  relatorBase _ := false
+  relatorLoop _ := OperationLoop.identity false
+  relator_based _ := rfl
+
+def toyPresentationTwoComplex :
+    PresentationTwoComplex.{0, 0, 0, 0, 0, 0} toyHomotopyGenerators where
+  Vertex := Bool
+  vertexEquivState := Equiv.refl Bool
+  Edge := PUnit
+  edgeBoundary _ := ⟨false, true, toySelectedOperation⟩
+  TwoCell := Bool
+  twoCellEquivGenerator := by
+    change Bool ≃ Bool
+    exact Equiv.refl Bool
+
+abbrev ToyFreeWord :=
+  FreeEdgeWord toyOperationCategory false
+
+def toyEmptyFreeWord : ToyFreeWord where
+  steps := []
+  startsAtBase := True
+
+abbrev ToyLoopGroup :=
+  PUnit
+
+abbrev ToyRefactorHom (a b : Bool) :=
+  ULift.{0} (PLift (a = b))
+
+def toyPresentedPi :
+    PresentedArchitectureFundamentalGroup.{0, 0, 0, 0, 0, 0}
+      toyHomotopyGenerators false where
+  FreeWord := ToyFreeWord
+  freeWordEquivSelected := Equiv.refl ToyFreeWord
+  Relator w := w = toyEmptyFreeWord
+  presentation := toyPresentationTwoComplex
+  pathCellRelatorWord _ := toyEmptyFreeWord
+  pathCellRelator_selected _ := rfl
+  loopRelatorWord _ := toyEmptyFreeWord
+  loopRelator_selected _ := rfl
+  relator_generated_by_selected_generator := by
+    intro w h
+    exact Or.inl ⟨(show toyHomotopyGenerators.PathCell from false), h.symm⟩
+  Pi1 := ToyLoopGroup
+  quotientMap _ := PUnit.unit
+  relator_maps_to_identity _ _ := rfl
+  FreeTransport := Bool
+  QuotientTransport := Bool
+  SendsRelatorsToIdentity T := T = true
+  FactorsThroughQuotient T Q := Q = T ∧ T = true
+  quotientUniversalProperty := by
+    intro T
+    constructor
+    · intro h
+      exact ⟨T, rfl, h⟩
+    · intro h
+      rcases h with ⟨_Q, _hQT, hT⟩
+      exact hT
+
+def toyMonodromyAction :
+    MonodromyAction.{0, 0, 0, 0, 0, 0} toyPresentedPi where
+  coefficient := { Ob := Bool, Sem := Bool, Eff := Bool }
+  rho _ := CoefficientAutomorphism.id _
+  rho_one := rfl
+  rho_mul _ _ := rfl
+
+def toyMeasuredSquareZero :
+    MeasuredSquareMonodromy.{0, 0, 0, 0, 0, 0} toyMonodromyAction
+      toyPresentationTwoComplex where
+  Axis := Bool
+  square := false
+  boundaryElement := PUnit.unit
+  boundaryTransport := CoefficientAutomorphism.id _
+  boundaryTransport_eq_monodromy := rfl
+  equalityDefect _ := 0
+  axisDetectsIdentity _ := True
+  zero_defect_detects _ _ := trivial
+  mu _ := 0
+  mu_eq_defect _ := rfl
+
+def toyMeasuredSquareNonzero :
+    MeasuredSquareMonodromy.{0, 0, 0, 0, 0, 0} toyMonodromyAction
+      toyPresentationTwoComplex where
+  Axis := Bool
+  square := true
+  boundaryElement := PUnit.unit
+  boundaryTransport := CoefficientAutomorphism.id _
+  boundaryTransport_eq_monodromy := rfl
+  equalityDefect axis := if axis then 0 else 1
+  axisDetectsIdentity axis := axis = true
+  zero_defect_detects := by
+    intro axis hzero
+    cases axis <;> simp at hzero ⊢
+  mu axis := if axis then 0 else 1
+  mu_eq_defect _ := rfl
+
+def toySquareFillingProblem :
+    SquareMonodromyFillingProblem.{0, 0, 0, 0, 0, 0} toyMeasuredSquareNonzero where
+  axis := false
+  SelectedAxisFilling := toyMeasuredSquareNonzero.mu false = 0
+  filling_implies_mu_zero h := h
+
+def concreteOperationSquareToyModel :
+    OperationSquareToyModel.{0, 0, 0, 0, 0, 0} toyMeasuredSquareNonzero where
+  finiteAxis := by
+    change Fintype Bool
+    infer_instance
+  filling := toySquareFillingProblem
+  nonzeroMu := by
+    intro h
+    cases h
+
+theorem concreteOperationSquareToyModel_fires :
+    ¬ toySquareFillingProblem.SelectedAxisFilling :=
+  OperationSquareToyModel.verifies_square_nonfillability concreteOperationSquareToyModel
+
+def toyTransportDescentZero :
+    TransportDescentProblem.{0, 0, 0, 0, 0, 0}
+      (Pi := toyPresentedPi) (M := toyMonodromyAction) (K := toyPresentationTwoComplex) true where
+  Square := PUnit
+  measured _ := toyMeasuredSquareZero
+  relationBoundaryZero_iff_sendsRelators := by
+    constructor
+    · intro _h
+      rfl
+    · intro _h square axis
+      cases square
+      cases axis <;> rfl
+
+def toyTransportDescentNonzero :
+    TransportDescentProblem.{0, 0, 0, 0, 0, 0}
+      (Pi := toyPresentedPi) (M := toyMonodromyAction) (K := toyPresentationTwoComplex) false where
+  Square := PUnit
+  measured _ := toyMeasuredSquareNonzero
+  relationBoundaryZero_iff_sendsRelators := by
+    constructor
+    · intro h
+      have hfalse := h PUnit.unit false
+      cases hfalse
+    · intro hfalse
+      cases hfalse
+
+def concreteTransportDescentZeroToyModel :
+    TransportDescentZeroToyModel.{0, 0, 0, 0, 0, 0} toyTransportDescentZero where
+  finiteSquares := inferInstance
+  zeroBoundaryCase := by
+    intro square axis
+    cases square
+    cases axis <;> rfl
+
+def concreteTransportDescentNonzeroToyModel :
+    TransportDescentNonzeroToyModel.{0, 0, 0, 0, 0, 0} toyTransportDescentNonzero where
+  finiteSquares := inferInstance
+  nonzeroBoundaryCase := by
+    intro h
+    have hfalse := h PUnit.unit false
+    cases hfalse
+
+theorem concreteTransportDescentZero_descends :
+    ∃ Q : toyPresentedPi.QuotientTransport,
+      toyPresentedPi.FactorsThroughQuotient true Q :=
+  TransportDescentZeroToyModel.zero_case_descends concreteTransportDescentZeroToyModel
+
+theorem concreteTransportDescentNonzero_not_descend :
+    ¬ ∃ Q : toyPresentedPi.QuotientTransport,
+      toyPresentedPi.FactorsThroughQuotient false Q :=
+  TransportDescentNonzeroToyModel.nonzero_case_not_descend concreteTransportDescentNonzeroToyModel
+
+def toyRefactorGroupoid :
+    RefactorGroupoid.{0, 0, 0, 0, 0, 0} toyEndpointReading where
+  Object := Bool
+  state := id
+  Hom := ToyRefactorHom
+  toRefactorEquivalent _ := trivial
+  id a := ULift.up ⟨rfl⟩
+  inv h := ULift.up ⟨h.down.down.symm⟩
+  comp h g := ULift.up ⟨h.down.down.trans g.down.down⟩
+  id_comp := by
+    intro a b f
+    cases f
+    apply Subsingleton.elim
+  comp_id := by
+    intro a b f
+    cases f
+    rfl
+  assoc := by
+    intro a b c d f g h
+    cases f
+    cases g
+    cases h
+    rfl
+  inv_comp := by
+    intro a b f
+    cases f
+    rfl
+  comp_inv := by
+    intro a b f
+    cases f
+    rfl
+
+def toyGaloisData :
+    OperationInvariantGaloisData.{0, 0, 0, 0, 0, 0} toyRefactorGroupoid where
+  Invariant := Bool
+  Preserves g i := i = true ∨ i = false ∧ g.down.down.symm.trans g.down.down = rfl
+  id_preserves := by
+    intro a i
+    cases i <;> simp
+  inv_preserves := by
+    intro a b g i h
+    cases g
+    simp at h ⊢
+  comp_preserves := by
+    intro a b c g h i hg hh
+    cases g
+    cases h
+    simp at hg hh ⊢
+
+def concreteRefactorGaloisToyModel :
+    RefactorGaloisToyModel.{0, 0, 0, 0, 0, 0} toyGaloisData where
+  finiteInvariant := by
+    change Fintype Bool
+    infer_instance
+  selectedOperations := fun {_a _b} _g => True
+  selectedInvariants := fun i => i = true
+
+theorem concreteRefactorGaloisToyModel_fires :
+    RefactorMorphismFamilySubset concreteRefactorGaloisToyModel.selectedOperations
+        (toyGaloisData.Ops concreteRefactorGaloisToyModel.selectedInvariants) ↔
+      toyGaloisData.InvFamSubset concreteRefactorGaloisToyModel.selectedInvariants
+        (toyGaloisData.Inv concreteRefactorGaloisToyModel.selectedOperations) :=
+  RefactorGaloisToyModel.verifies_galois_connection concreteRefactorGaloisToyModel
+
+def toyArchitectureStackBase : ArchitectureStackBase.{0} where
+  Context := Bool
+  Overlap _ _ := PUnit
+  TripleOverlap _ _ _ := PUnit
+  restrict _ _ := PUnit
+  idRestrict _ := PUnit.unit
+  compRestrict _ _ := PUnit.unit
+  id_comp _ := rfl
+  comp_id _ := rfl
+  assoc _ _ _ := rfl
+  overlapContext := fun {a} {_b} _o => a
+  overlap_left _ := PUnit.unit
+  overlap_right _ := PUnit.unit
+  tripleContext := fun {a} {_b} {_c} _t => a
+  triple_to_leftOverlap _ _ := PUnit.unit
+  triple_to_rightOverlap _ _ := PUnit.unit
+  triple_to_outerOverlap _ _ := PUnit.unit
+
+def toyDecompositionGroupoid : DecompositionGroupoid.{0} where
+  Object := Bool
+  Hom _ _ := PUnit
+  equivalenceKind _ := DecompositionEquivalenceKind.refactor
+  id _ := PUnit.unit
+  inv _ := PUnit.unit
+  comp _ _ := PUnit.unit
+  id_comp _ := rfl
+  comp_id _ := rfl
+  assoc _ _ _ := rfl
+  inv_comp _ := rfl
+  comp_inv _ := rfl
+
+def toyDecompositionPresheaf : DecompositionPresheaf.{0} toyArchitectureStackBase where
+  fiber _ := toyDecompositionGroupoid
+  restrictObject := fun {_T _W} _r a => a
+  restrictHom := fun {_T _W} _r {_a _b} f => f
+  restrict_id _ _ := rfl
+  restrict_comp := by
+    intro _T _W _r _a _b _c _f _g
+    rfl
+
+def toyDecompositionStack : DecompositionStack.{0} toyArchitectureStackBase where
+  presheaf := toyDecompositionPresheaf
+  LocalIndex := Bool
+  localContext := fun i => i
+  localDecomposition i := i
+  overlapCompatible := True
+  overlapCompatible_cert := trivial
+  effectiveDescent := True
+  effectiveDescent_cert := trivial
+
+def toyGerbeObstructionData :
+    GerbeObstructionData.{0} toyDecompositionStack where
+  GerbeClass := Bool
+  zero := false
+  gerbeClass := true
+  nonzero := true ≠ false
+  nonzero_cert := by
+    intro hnonzero hzero
+    exact hnonzero hzero
+  automorphismSheaf := Bool
+  autSheafDefined := True
+  autSheafDefined_cert := trivial
+  nonAbelianReading := True
+  nonAbelianReading_cert := trivial
+
+def toyNoCanonicalDecompositionData :
+    NoCanonicalDecompositionData.{0} toyGerbeObstructionData where
+  localDecompositionsExist := True
+  localDecompositionsExist_cert := trivial
+  globalCanonicalDecomposition :=
+    toyGerbeObstructionData.gerbeClass = toyGerbeObstructionData.zero
+  soundness h := h
+
+def concreteDecompositionGerbeToyModel :
+    DecompositionGerbeToyModel.{0} toyGerbeObstructionData where
+  finiteLocalIndex := by
+    change Fintype Bool
+    infer_instance
+  noCanonicalData := toyNoCanonicalDecompositionData
+  nonzeroGerbe := by
+    intro h
+    cases h
+
+theorem concreteDecompositionGerbeToyModel_fires :
+    ¬ toyNoCanonicalDecompositionData.globalCanonicalDecomposition :=
+  DecompositionGerbeToyModel.verifies_no_canonical_decomposition
+    concreteDecompositionGerbeToyModel
 
 end SingularityMonodromyStackPart6
 end FiniteModel

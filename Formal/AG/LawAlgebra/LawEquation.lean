@@ -179,6 +179,38 @@ def obstructionQuotientCoefficient
     rw [G.obstructionQuotientRestrict_mk, G.obstructionQuotientRestrict_mk,
       G.obstructionQuotientRestrict_mk, G.restrict_comp]
 
+/--
+III.定理11.4 / X.定義5.1: the same generated obstruction quotient, exposed as
+the Type-valued AAT presheaf used by semantic-repair theorem 7.5.
+
+This is definitionally generated from `O(W) / I_Ob(W)` and its quotient
+restriction maps; it is not an arbitrary supplied coefficient presheaf.
+-/
+def obstructionQuotientPresheaf
+    (G : SemanticLawEquationWitnessIdealCore S) :
+    Site.AATPresheaf S where
+  obj W := G.ObstructionQuotient W.unop
+  map {X Y} φ := G.obstructionQuotientRestrict φ.unop
+  map_id X := by
+    funext x
+    refine Quotient.inductionOn' x ?_
+    intro r
+    change G.obstructionQuotientRestrict (𝟙 X.unop)
+        (Ideal.Quotient.mk (G.obstructionIdeal X.unop) r) =
+      Ideal.Quotient.mk (G.obstructionIdeal X.unop) r
+    rw [G.obstructionQuotientRestrict_mk, G.restrict_id]
+  map_comp {X Y Z} φ ψ := by
+    funext x
+    refine Quotient.inductionOn' x ?_
+    intro r
+    change G.obstructionQuotientRestrict (ψ.unop ≫ φ.unop)
+        (Ideal.Quotient.mk (G.obstructionIdeal X.unop) r) =
+      G.obstructionQuotientRestrict ψ.unop
+        (G.obstructionQuotientRestrict φ.unop
+          (Ideal.Quotient.mk (G.obstructionIdeal X.unop) r))
+    rw [G.obstructionQuotientRestrict_mk, G.obstructionQuotientRestrict_mk,
+      G.obstructionQuotientRestrict_mk, G.restrict_comp]
+
 /-- III.定理11.4: quotient zero is exactly local obstruction ideal membership. -/
 theorem quotient_mk_eq_zero_iff_mem_obstructionIdeal
     (G : SemanticLawEquationWitnessIdealCore S)

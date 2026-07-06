@@ -145,6 +145,107 @@ theorem connectingStokes
 
 end ConnectingBoundaryRepresentative
 
+/-! ### Concrete finite basis calculation for theorem 13.2 -/
+
+namespace IntervalBasisStokes
+
+/--
+IV-7 / 定理13.2: the two vertices of the selected one-simplex basis model.
+-/
+inductive Vertex where
+  | left
+  | right
+deriving DecidableEq, Fintype
+
+/--
+IV-7 / 定理13.2: the single oriented edge of the selected one-simplex basis
+model.
+-/
+inductive Edge where
+  | interval
+deriving DecidableEq, Fintype
+
+/-- IV-7 / 定理13.2: concrete cochain groups in degrees 0 and 1. -/
+abbrev Cochain : Nat -> Type
+  | 0 => Vertex -> Int
+  | 1 => Edge -> Int
+  | _ + 2 => Int
+
+/-- IV-7 / 定理13.2: concrete chain groups in degrees 0 and 1. -/
+abbrev Chain : Nat -> Type
+  | 0 => Vertex -> Int
+  | 1 => Edge -> Int
+  | _ + 2 => Int
+
+/--
+IV-7 / 定理13.2: concrete degree-zero Čech coboundary on the one-simplex.
+
+It sends a vertex cochain `ω` to `ω(right) - ω(left)` on the oriented edge.
+-/
+def d0 : Cochain 0 →+ Cochain 1 where
+  toFun ω
+    | Edge.interval => ω Vertex.right - ω Vertex.left
+  map_zero' := by
+    funext e
+    cases e
+    simp
+  map_add' := by
+    intro ω η
+    funext e
+    cases e
+    simp [Pi.add_apply]
+    abel
+
+/--
+IV-7 / 定理13.2: concrete boundary on the oriented one-simplex.
+
+The selected orientation is `left -> right`, so `∂ interval = right - left`.
+-/
+def boundary0 : Chain 1 →+ Chain 0 where
+  toFun γ
+    | Vertex.left => -γ Edge.interval
+    | Vertex.right => γ Edge.interval
+  map_zero' := by
+    funext v
+    cases v <;> simp
+  map_add' := by
+    intro γ δ
+    funext v
+    cases v <;> simp [Pi.add_apply]
+    abel
+
+/-- IV-7 / 定理13.2: dot-product pairing in degree 0. -/
+def pair0 (ω : Cochain 0) (γ : Chain 0) : Int :=
+  ω Vertex.left * γ Vertex.left + ω Vertex.right * γ Vertex.right
+
+/-- IV-7 / 定理13.2: dot-product pairing in degree 1. -/
+def pair1 (ω : Cochain 1) (γ : Chain 1) : Int :=
+  ω Edge.interval * γ Edge.interval
+
+/--
+IV-7 / 定理13.2: basis calculation for finite Čech Stokes on the selected
+one-simplex.
+
+No `StokesCompatiblePairing` field is consumed here: both sides reduce to the
+same signed basis sum.
+-/
+theorem finiteIntervalStokes_basis
+    (ω : Cochain 0) (γ : Chain 1) :
+    pair1 (d0 ω) γ = pair0 ω (boundary0 γ) := by
+  simp [pair0, pair1, d0, boundary0]
+  ring
+
+/--
+IV-7 / 定理13.2: connecting-boundary formula for the same concrete basis
+model, read with `delta = d0`.
+-/
+theorem finiteIntervalConnectingStokes_basis
+    (b : Cochain 0) (γ : Chain 1) :
+    pair1 (d0 b) γ = pair0 b (boundary0 γ) :=
+  finiteIntervalStokes_basis b γ
+
+end IntervalBasisStokes
+
 /--
 IV.定義13.4: extension holonomy accounting convention.
 

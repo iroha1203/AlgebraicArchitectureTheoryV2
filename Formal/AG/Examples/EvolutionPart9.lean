@@ -1,5 +1,6 @@
 import Formal.AG.Evolution
 import Formal.AG.Examples.FiniteModel
+import Formal.AG.Examples.SemanticRepairPart10
 import Formal.AG.Measurement.Examples
 import Mathlib.Analysis.Normed.Group.Constructions
 import Mathlib.Data.ZMod.Basic
@@ -206,18 +207,20 @@ def terminal1 : statePresheaf.State p1 := stateAt p1 TinyState.terminal
 def nonlawfulTerminal1 : statePresheaf.State p1 :=
   stateAt p1 TinyState.nonlawfulTerminal
 
-/-- R10: dummy selected temporal law for replay/force fixtures. -/
-def temporalLaw : TemporalLaw statePresheaf where
-  kind := .descentTemporalLaw
-  Witness := Unit
-  source := fun _ => p0
-  target := fun _ => p1
-  incidence := fun _ => stepLeg
-  stateEquation := fun _ x y => x = high0 ∧ y = mid1
-  transitionPredicate := by
-    intro _w _x _y _tr
-    exact True
-  descentPredicate := fun _ x => x = high0
+/-- R10: canonical selected temporal law for replay/force fixtures. -/
+def temporalLaw : TemporalLaw statePresheaf :=
+  TemporalLaw.descentTemporalLaw Unit (fun _ => p0) (fun _ => p1)
+    (fun _ => stepLeg) (fun _ x y => x = high0 ∧ y = mid1)
+
+/-- IX-4: the example temporal law is built by the kind-specific constructor. -/
+theorem temporalLaw_kind :
+    temporalLaw.kind = .descentTemporalLaw :=
+  rfl
+
+/-- IX-4: the example temporal law exposes its concrete state equation. -/
+theorem temporalLaw_stateEquation (x : statePresheaf.State p0) (y : statePresheaf.State p1) :
+    temporalLaw.stateEquation () x y = (x = high0 ∧ y = mid1) :=
+  rfl
 
 /-- R10(b/g): singleton sheaf carrier for the selected finite obstruction coefficient. -/
 def unitSheaf : Site.AATSheaf FiniteModel.site where
@@ -289,6 +292,28 @@ def temporalCoefficient : TemporalCoefficient temporalSite where
         cases y
         rfl
     }
+
+/-- IX-3: product-site incidence complex for the singleton temporal coefficient. -/
+def unitTemporalProductIncidenceComplex :
+    TemporalCoefficient.ProductIncidenceComplex temporalCoefficient where
+  zeroCochain := temporalCoefficient.FiberZeroCochain
+  oneCochain := temporalCoefficient.FiberIncidenceOneCochain
+  zero_eq := rfl
+  one_eq := rfl
+  d0 := temporalCoefficient.incidenceDifferential
+  d0_eq := rfl
+
+/-- IX-3: the singleton product-incidence differential is the concrete formula. -/
+theorem unitTemporalProductIncidence_d0_eq :
+    unitTemporalProductIncidenceComplex.d0 =
+      temporalCoefficient.incidenceDifferential :=
+  unitTemporalProductIncidenceComplex.d0_eq_incidenceDifferential
+
+/-- IX-3: the singleton product-incidence differential kills identity legs. -/
+theorem unitTemporalProductIncidence_d0_id
+    (c : temporalCoefficient.FiberZeroCochain) (p : temporalSite.Point) :
+    unitTemporalProductIncidenceComplex.d0 c (temporalSite.idLeg p) = 0 :=
+  unitTemporalProductIncidenceComplex.d0_id c p
 
 /-- R10(b): selected two-chart temporal cover for the zero replay descent fixture. -/
 def replayTemporalCover : TemporalCover temporalSite where
@@ -363,6 +388,142 @@ def temporalBridge :
   siteCover := replaySiteCover
   coverComparison := replayCoverComparison
   siteComplex := unitCechComplex
+
+/--
+IX-3 / #3100: concrete finite-poset comparison data for the two-point trace
+singleton coefficient instance.
+-/
+def unitFinitePosetTemporalCechComparisonData :
+    Cohomology.FinitePosetCechComparisonData
+      FiniteModel.finitePosetCechComplex unitObstructionSheaf where
+  cochainAddCommGroup := unitCechComplex.cochainAddCommGroup
+  alternatingFaceCombination := unitCechComplex.alternatingFaceCombination
+  differential := unitCechComplex.d
+  differential_eq_alternatingFaceCombination :=
+    unitCechComplex.differential_eq_alternatingFaceCombination
+  differential_comp := unitCechComplex.differential_comp
+  toFinitePosetCochain := fun _n _c _σ => PUnit.unit
+  fromFinitePosetCochain := fun _n _c _σ => PUnit.unit
+  to_from_finitePosetCochain := by
+    intro n c
+    funext σ
+    cases c σ
+    rfl
+  from_to_finitePosetCochain := by
+    intro n c
+    funext σ
+    cases c σ
+    rfl
+  differential_compat_toFinitePoset := by
+    intro n c
+    funext σ
+    cases n with
+    | zero => exact Empty.elim σ
+    | succ _ => exact Empty.elim σ
+  finitePosetCoboundaryRelation := FiniteModel.finitePosetCechCoboundaryRelation
+  toFinitePosetCohomology := by
+    intro n comparisonComplex _h
+    exact Quotient.mk
+      (Site.FinitePosetCechCoboundarySetoid
+        (FiniteModel.finitePosetCechCoboundaryRelation n))
+      ⟨(fun σ => PUnit.unit), by
+        funext σ
+        cases n with
+        | zero => exact Empty.elim σ
+        | succ _ => exact Empty.elim σ⟩
+  fromFinitePosetCohomology := by
+    intro n comparisonComplex _h
+    cases n with
+    | zero =>
+        exact ⟨(fun σ => PUnit.unit), by
+          funext σ
+          rfl⟩
+    | succ n =>
+        exact Quotient.mk (comparisonComplex.CechCoboundarySetoidSucc n)
+          ⟨(fun σ => PUnit.unit), by
+            funext σ
+            rfl⟩
+  to_from_finitePosetCohomology := by
+    intro n comparisonComplex h
+    refine Quotient.inductionOn h ?_
+    intro h
+    apply Quot.sound
+    apply Subtype.ext
+    funext σ
+    cases n with
+    | zero =>
+        cases h.1 σ
+        rfl
+    | succ _ =>
+        exact Empty.elim σ
+  from_to_finitePosetCohomology := by
+    intro n comparisonComplex h
+    cases n with
+    | zero =>
+        apply Subtype.ext
+        funext σ
+        cases h.1 σ
+        rfl
+    | succ n =>
+        refine Quotient.inductionOn h ?_
+        intro h
+        apply Quot.sound
+        refine ⟨0, ?_⟩
+        funext σ
+        cases h.1 σ
+        rfl
+
+/-- IX-3 / #3100: finite-poset temporal Čech bridge for the two-point trace fixture. -/
+def unitFinitePosetTemporalCechBridge :
+    FinitePosetTemporalCechBridge temporalSite unitObstructionSheaf where
+  temporalCover := replayTemporalCover
+  finitePosetComplex := FiniteModel.finitePosetCechComplex
+  coverComparison := replayCoverComparison
+  comparison := unitFinitePosetTemporalCechComparisonData
+
+/-- IX-3 / #3100: product incidence plus PRD-4 cohomology comparison instance. -/
+def unitProductIncidencePRD4Comparison :
+    TemporalCoefficient.ProductIncidencePRD4Comparison temporalCoefficient where
+  incidenceComplex := unitTemporalProductIncidenceComplex
+  finitePosetBridge := unitFinitePosetTemporalCechBridge
+
+/-- IX-3 / #3100: the product instance exposes PRD-4 differential compatibility. -/
+theorem unitProductIncidence_prd4_differential_compatible
+    (n : Nat)
+    (c : unitProductIncidencePRD4Comparison.finitePosetBridge.comparison.generalComplex.Cn n) :
+    unitProductIncidencePRD4Comparison.prd4_differential_compatible n c =
+      unitFinitePosetTemporalCechBridge.differential_compatible n c :=
+  rfl
+
+/-- IX-3 / #3100: cohomology comparison is a left inverse on finite-poset cohomology. -/
+theorem unitProductIncidence_prd4_cohomology_to_from
+    (n : Nat)
+    (h : Site.FinitePosetCechCohomology
+      FiniteModel.finitePosetCechComplex n
+      (FiniteModel.finitePosetCechCoboundaryRelation n)) :
+    unitProductIncidencePRD4Comparison.prd4_cohomology_to_from n h =
+      unitFinitePosetTemporalCechBridge.cohomology_to_from n h :=
+  rfl
+
+/-- IX-3 / #3100: cohomology comparison is a right inverse on PRD-4 cohomology. -/
+theorem unitProductIncidence_prd4_cohomology_from_to
+    (n : Nat)
+    (h :
+      unitProductIncidencePRD4Comparison.finitePosetBridge.comparison.generalComplex.CoverRelativeHn n) :
+    unitProductIncidencePRD4Comparison.prd4_cohomology_from_to n h =
+      unitFinitePosetTemporalCechBridge.cohomology_from_to n h :=
+  rfl
+
+/--
+IX-3 / #3100: the Part IX finite-poset comparison surface is not only the
+singleton compatibility fixture.  It also imports the two-patch finite-poset
+Čech calculation from Part II, where a separated degree-zero cochain has a
+nonzero degree-one differential on the selected overlap.
+-/
+theorem twoPatchProductCech_differential_nonzero :
+    FiniteModel.twoPatchCechComplex.differential 0
+        FiniteModel.twoPatchSeparatedCochain PUnit.unit = true :=
+  FiniteModel.twoPatchSeparatedCochain_differential_nonzero
 
 /-- R10(b/g): singleton zero cochain in every selected temporal degree. -/
 def unitTemporalCochain (n : Nat) : temporalBridge.siteComplex.Cn n :=
@@ -778,8 +939,6 @@ theorem pseudoCircleMismatch_ab_nonzero :
 structure ReplayDescentNonzeroExample where
   edge : PseudoCircleEdge
   edge_nonzero : pseudoCircleMismatch edge ≠ 0
-  selectedConcreteClassNonzero : Prop
-  selectedConcreteClassNonzero_cert : selectedConcreteClassNonzero
   noGlobalFailureClaimWithoutDetectingAssumption : Prop
   noGlobalFailureClaimWithoutDetectingAssumption_cert :
     noGlobalFailureClaimWithoutDetectingAssumption
@@ -788,8 +947,6 @@ structure ReplayDescentNonzeroExample where
 def replayDescentNonzeroExample : ReplayDescentNonzeroExample where
   edge := .ab
   edge_nonzero := pseudoCircleMismatch_ab_nonzero
-  selectedConcreteClassNonzero := True
-  selectedConcreteClassNonzero_cert := trivial
   noGlobalFailureClaimWithoutDetectingAssumption := True
   noGlobalFailureClaimWithoutDetectingAssumption_cert := trivial
 
@@ -797,6 +954,29 @@ def replayDescentNonzeroExample : ReplayDescentNonzeroExample where
 theorem replay_nonzero_edge_witness :
     pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 :=
   replayDescentNonzeroExample.edge_nonzero
+
+/-- R10(c): the selected nonzero marker is exactly the concrete mismatch nonzero theorem. -/
+theorem replay_selectedConcreteClassNonzero :
+    pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 :=
+  replayDescentNonzeroExample.edge_nonzero
+
+/--
+IX.R10 / IX-5: the replay nonzero fixture is paired with the PRD-10
+circle-nerve Part IV nonzero H1 instance.
+
+This does not identify the temporal mismatch carrier with the semantic-repair
+cover-relative H1 carrier.  It records that the finite replay obstruction and
+the PRD-10 circle instance are both backed by concrete nonzero pseudo-circle
+data rather than by a `True` marker.
+-/
+theorem replay_nonzero_and_prd10_circle_coverRelativeH1_nonzero :
+    pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 ∧
+      SemanticRepairPart10.circleCoverRelativeComplex.cohomologyClassSucc 0
+          SemanticRepairPart10.circleCoverRelativeResidualCocycle ≠
+        SemanticRepairPart10.circleCoverRelativeComplex.cohomologyClassSucc 0
+          SemanticRepairPart10.circleCoverRelativeZeroCocycle :=
+  ⟨replay_selectedConcreteClassNonzero,
+    SemanticRepairPart10.circlePartIV_h0_invisible_coverRelativeH1_nonzero.2⟩
 
 /-- R10(g): toy force from high to mid state. -/
 def toyForce : Force statePresheaf where
@@ -1002,9 +1182,9 @@ theorem finite_temporal_examples_verified :
     @TraceCategory.FiniteRegime.selectedArrow twoStepTrace twoStepTraceFiniteRegime
       TinyTime.t0 TinyTime.t1 tinyStep ∧
       Nonempty replayDescentZeroExample.replayData.GlobalReplayTransition ∧
-        replayDescentZeroExample.adjustedCompatibilityWitness ∧
+          replayDescentZeroExample.adjustedCompatibilityWitness ∧
           replayDescentZeroExample.globalReplayTransition TinyState.high = TinyState.mid ∧
-            replayDescentNonzeroExample.selectedConcreteClassNonzero ∧
+            pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 ∧
               (¬ ∃ path : InfiniteSelectedEvolutionPath dissipativePolicy,
                 path.StaysOutsideTerminal terminalState) ∧
                 finiteDissipationPath.ReachesTerminal terminalState ∧
@@ -1032,7 +1212,7 @@ theorem finite_temporal_examples_verified :
     replay_zero_theorem42_applied,
     replayDescentZeroExample.adjustedCompatibilityWitness_cert,
     replay_zero_has_global_transition,
-    replayDescentNonzeroExample.selectedConcreteClassNonzero_cert,
+    replay_selectedConcreteClassNonzero,
     finite_dissipation_no_infinite_nonterminal_path,
     twoStep_dissipation_reaches_terminal_by_theorem53,
     nonlawful_terminal_is_terminal,

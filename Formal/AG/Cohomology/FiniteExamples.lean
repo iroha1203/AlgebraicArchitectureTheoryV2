@@ -299,6 +299,53 @@ theorem zero_boundaryResidue_glues
   H.globallyUFlat_of_boundaryHolonomy_zero hzero
 
 /--
+IV-7 / IV.R10: theorem-level two-chart soundness for zero boundary agreement.
+
+Unlike `zero_boundaryResidue_glues`, this does not use the Boundary Residue
+hypothesis package.  It reads the concrete two-chart boundary equation
+`b_U = d0 s` and `d0 s = 0`, then proves `Hol_U = 0`.
+-/
+theorem zero_boundaryAgreement_forces_zero_holonomy
+    (s : D.twoChartCech.C0)
+    (hb :
+      letI := Ob.addCommGroup E.core
+      letI := Ob.addCommGroup E.feature
+      letI := Ob.addCommGroup E.boundary
+      b.b_U = D.twoChartCech.d0 s)
+    (hs :
+      letI := Ob.addCommGroup E.core
+      letI := Ob.addCommGroup E.feature
+      letI := Ob.addCommGroup E.boundary
+      D.twoChartCech.d0 s = 0) :
+    BoundaryHolonomyVanishes D b :=
+  D.boundaryHolonomy_zero_of_twoChartBoundaryAgreement s hb hs
+
+/--
+IV-7 / IV.R10: theorem-level two-chart completeness for zero holonomy.
+
+Unlike `zero_boundaryResidue_glues`, this does not use the Boundary Residue
+hypothesis package.  It reads the concrete exactness condition
+`ker(deltaH1) <= im(d0)` and returns a boundary-resolution equation
+`b_U = d0(s)`.
+-/
+theorem zero_boundaryHolonomy_resolves_boundary
+    (hexact : D.HolonomyKernelExactAtBoundary)
+    (hzero : BoundaryHolonomyVanishes D b) :
+    TwoChartBoundaryResolved D b :=
+  D.boundaryResolved_of_boundaryHolonomy_zero_of_kernelExact hexact hzero
+
+/--
+IV-7 / IV.R10: theorem-level nonzero holonomy blocks concrete boundary
+resolution, provided the selected connecting map kills two-chart boundaries.
+-/
+theorem nonzero_boundaryHolonomy_blocks_boundaryResolution
+    (hkill : D.DeltaKillsTwoChartBoundaries)
+    (hnonzero : ¬ BoundaryHolonomyVanishes D b) :
+    ¬ TwoChartBoundaryResolved D b :=
+  D.not_boundaryResolved_of_boundaryHolonomy_nonzero_of_deltaKillsBoundaries
+    hkill hnonzero
+
+/--
 IV.R10 / AC14: nonzero boundary residue prevents gluing.
 
 This is the finite-example theorem shape for the `delta(b) != 0` direction:

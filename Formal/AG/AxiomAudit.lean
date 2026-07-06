@@ -1,5 +1,6 @@
 import Formal.AG
 import Formal.AG.Examples.DerivedPart5
+import Formal.AG.Examples.SingularityMonodromyStackPart6
 import Formal.AG.LawAlgebra.FiniteExamples
 import Formal.Util.AssertStandardAxioms
 
@@ -26,6 +27,46 @@ textually.
 namespace AAT.AG.AxiomAudit
 
 open CategoryTheory
+
+/-
+PRD-10 / PRD-R R1: Part X [CBI] theorem constants audited by direct alias.
+The aliases keep the original dependent theorem types intact while making the
+kernel audit entrypoint elaborate the six advertised Part X CBI declarations.
+-/
+
+def semanticRepairTheorem34FiniteDescentPackage :=
+  @SemanticRepair.finiteSemanticRepairGluingDescent_package
+
+def semanticRepairTheorem48TrueSheafH1Gluing :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.globalRepairCoherent_iff_additiveH1Zero
+
+def semanticRepairTheorem72H1ComparisonPackage :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
+
+def semanticRepairTheorem73GroundedGlobalGluingPackage :=
+  @SemanticRepair.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package
+
+def semanticRepairTheorem75GeneratedEndToEndFromGeneratedInputs :=
+  @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromGeneratedInputs
+
+def semanticRepairTheorem81DegreeZeroLawContribution :=
+  @SemanticRepair.displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
+
+theorem semanticRepairExample91GeneratedF2EndToEndFromGeneratedInputs :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepair.SemanticRepairCoverRelativeH1Comparison
+          AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData.toAdditiveH1Surface
+          AAT.AG.Examples.SemanticRepairPart10.generatedF2CoverRelativeComplex =>
+          SemanticRepair.SemanticRepairGeneratedEndToEndSAGAPacket
+            AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData
+            AAT.AG.Examples.SemanticRepairPart10.defectSource
+            FiniteModel.site
+            AAT.AG.Examples.SemanticRepairPart10.generatedF2QuotientPresheaf
+            (⊤ : Sieve FiniteModel.siteBase)
+            AAT.AG.Examples.SemanticRepairPart10.generatedF2GluingData
+            comparison) :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedF2_endToEndPacket_fromGeneratedInputs
 
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle
@@ -56,10 +97,188 @@ theorem example56LawConflictPackageFiringTor1Nonzero
       x ≠ 0 :=
   FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.tor1_nonzero E
 
+theorem example56ZMod2MathlibTor1Nonzero :
+    ∃ x : Derived.Intersection.mathlibTor
+        Derived.Counterexample.SharedWitnessCoord.R2
+        (Derived.Counterexample.SharedWitnessCoord.idealU (ZMod 2))
+        (Derived.Counterexample.SharedWitnessCoord.idealV (ZMod 2)) 1,
+      x ≠ 0 :=
+  Derived.Counterexample.SharedWitnessCoord.example56_zmod2_mathlibTor1_nonzero
+
+theorem example56LawConflictPackageFiringDerivedNonTransverse
+    {k : Type} [CommRing k]
+    (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
+    Derived.Transversality.DerivedNonTransverse
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+      E.lawConflictPackage :=
+  FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.derivedNonTransverse E
+
+noncomputable def example56LawConflictPackageFiringDerivedTransversalityCriterion
+    {k : Type} [CommRing k]
+    (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
+    Derived.Transversality.DerivedTransversalityCriterion
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+      E.lawConflictPackage :=
+  FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.derivedTransversalityCriterion E
+
+theorem example56LawConflictPackageFiringPositiveTorVanishingIffClassicalAgreement
+    {k : Type} [CommRing k]
+    (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
+    Derived.Transversality.PositiveMathlibTorVanishing
+        (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+        (I_U := Derived.Counterexample.SharedWitnessCoord.idealU k)
+        (I_V := Derived.Counterexample.SharedWitnessCoord.idealV k) ↔
+      (FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.derivedTransversalityCriterion
+        E).classicalAgreement :=
+  FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.positiveTorVanishing_iff_classicalAgreement
+    E
+
+noncomputable def canonicalSelectedTorBridgeLawConflict0AlgEquivClassicalJoint
+    {A : Type} [CommRing A] (I_U I_V : Ideal A) :
+    (Derived.Intersection.canonicalSelectedTorBridge A I_U I_V).Tor 0 ≃ₐ[A]
+      Derived.Intersection.classicalJointQuotient A I_U I_V :=
+  Derived.Intersection.canonicalSelectedTorBridgeLawConflict0AlgEquivClassicalJoint
+    A I_U I_V
+
+noncomputable def canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor
+    {A : Type} [CommRing A] (I_U I_V : Ideal A) :
+    (Derived.Intersection.canonicalSelectedTorBridge A I_U I_V).Tor 0 ≃ₗ[A]
+      Derived.Intersection.mathlibTor A I_U I_V 0 :=
+  Derived.Intersection.canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor
+    A I_U I_V
+
+theorem twoGeneratorPrincipalTaylorExactVisible
+    {A : Type} [CommRing A] (a b : A)
+    (h : Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.PrincipalSyzygyExact a b) :
+    Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₂ a b)
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b) ∧
+      Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b)
+        (LinearMap.range
+          (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b)).mkQ :=
+  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.exact_visible_complex a b h
+
+theorem twoGeneratorPrincipalTaylorExactVisibleOfRegularPair
+    {A : Type} [CommRing A] (a b : A)
+    (h : Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.IsRegularPair a b) :
+    Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₂ a b)
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b) ∧
+      Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b)
+        (LinearMap.range
+          (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b)).mkQ ∧
+        Nonempty
+          ((A ⧸ (LinearMap.range
+              (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b))) ≃ₗ[A]
+            (A ⧸ Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.idealSpanPair a b)) :=
+  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.exact_visible_complex_of_isRegularPair
+    a b h
+
+theorem twoGeneratorPrincipalTaylorZMod2XYExactVisible :
+    Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₂
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y)
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y) ∧
+      Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y)
+        (LinearMap.range
+          (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁
+            Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+            Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y)).mkQ ∧
+        Nonempty
+          ((Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.ZMod2XYRing ⧸
+              (LinearMap.range
+                (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁
+                  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+                  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y))) ≃ₗ[
+              Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.ZMod2XYRing]
+            (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.ZMod2XYRing ⧸
+              Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.idealSpanPair
+                Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+                Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y)) :=
+  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2XY_exact_visible_complex
+
+theorem partVISingularBoundaryConcrete :
+    SingularityMonodromyStack.USingularBoundary
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDeformationTheory :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteSingularBoundaryToyModel_fires
+
+theorem partVIOperationSquareConcrete :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquareFillingProblem.SelectedAxisFilling :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteOperationSquareToyModel_fires
+
+theorem partVITransportZeroConcrete :
+    ∃ Q : AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.QuotientTransport,
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.FactorsThroughQuotient true Q :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteTransportDescentZero_descends
+
+theorem partVITransportNonzeroConcrete :
+    ¬ ∃ Q : AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.QuotientTransport,
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.FactorsThroughQuotient false Q :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteTransportDescentNonzero_not_descend
+
+theorem partVIRefactorGaloisConcrete :
+    SingularityMonodromyStack.RefactorMorphismFamilySubset
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel.selectedOperations
+        (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData.Ops
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel.selectedInvariants) ↔
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData.InvFamSubset
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel.selectedInvariants
+        (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData.Inv
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel.selectedOperations) :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel_fires
+
+theorem partVIDecompositionGerbeConcrete :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNoCanonicalDecompositionData.globalCanonicalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteDecompositionGerbeToyModel_fires
+
+theorem partVICotangentConDefBridge
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily k) :
+    (SingularityMonodromyStack.CotangentData.ofConDef (X := X) F).CotangentComplex =
+      Cohomology.StandardObstruction.ConDef_U k F :=
+  SingularityMonodromyStack.CotangentData.ofConDef_cotangentComplex_eq (X := X) F
+
+theorem partVIDerObObstructionTargetBridge
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily k) :
+    (SingularityMonodromyStack.TangentData.ofDerOb (X := X) F).ObstructionTarget =
+      Cohomology.StandardObstruction.DerOb_U k F k :=
+  SingularityMonodromyStack.TangentData.ofDerOb_obstructionTarget_eq (X := X) F
+
 theorem temporalPseudoCircleNonzero :
     Examples.EvolutionPart9.pseudoCircleMismatch
         Examples.EvolutionPart9.PseudoCircleEdge.ab ≠ 0 :=
   Examples.EvolutionPart9.pseudoCircleMismatch_ab_nonzero
+
+theorem temporalProductIncidencePRD4CohomologyToFrom
+    (n : Nat)
+    (h : Site.FinitePosetCechCohomology
+      FiniteModel.finitePosetCechComplex n
+      (FiniteModel.finitePosetCechCoboundaryRelation n)) :
+    Examples.EvolutionPart9.unitProductIncidencePRD4Comparison.prd4_cohomology_to_from n h =
+      Examples.EvolutionPart9.unitFinitePosetTemporalCechBridge.cohomology_to_from n h :=
+  Examples.EvolutionPart9.unitProductIncidence_prd4_cohomology_to_from n h
+
+theorem temporalProductIncidencePRD4CohomologyFromTo
+    (n : Nat)
+    (h : Examples.EvolutionPart9.unitFinitePosetTemporalCechBridge.comparison.generalComplex.CoverRelativeHn n) :
+    Examples.EvolutionPart9.unitProductIncidencePRD4Comparison.prd4_cohomology_from_to n h =
+      Examples.EvolutionPart9.unitFinitePosetTemporalCechBridge.cohomology_from_to n h :=
+  Examples.EvolutionPart9.unitProductIncidence_prd4_cohomology_from_to n h
 
 theorem forceCandidateConcreteNonzero :
     Examples.EvolutionPart9.forceCandidateFixture.concreteObstructionValue ≠ 0 :=
@@ -313,6 +532,96 @@ theorem coverNerveTopologicalDebtCapacityFromComplex
       Module.finrank D.k D.H1 + Module.finrank D.k D.C0 +
         Module.finrank D.k D.C2 :=
   Cohomology.FiniteNerveCochainComplex.topologicalDebtCapacity_fromComplex D
+
+theorem boundaryResidueTwoChartBoundaryAgreementSoundness
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {E : Cohomology.TwoChartFeatureExtensionCover S}
+    {𝒰 : Cohomology.CoverRelativeCechCover S}
+    {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+    {D : Cohomology.TwoChartConnectingHomomorphism Ob E K}
+    {b : Cohomology.BoundaryMismatchSection Ob E}
+    (s : D.twoChartCech.C0)
+    (hb :
+      letI := Ob.addCommGroup E.core
+      letI := Ob.addCommGroup E.feature
+      letI := Ob.addCommGroup E.boundary
+      b.b_U = D.twoChartCech.d0 s)
+    (hs :
+      letI := Ob.addCommGroup E.core
+      letI := Ob.addCommGroup E.feature
+      letI := Ob.addCommGroup E.boundary
+      D.twoChartCech.d0 s = 0) :
+    Cohomology.BoundaryHolonomyVanishes D b :=
+  D.boundaryHolonomy_zero_of_twoChartBoundaryAgreement s hb hs
+
+theorem boundaryResidueTwoChartBoundaryResolvedCompleteness
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {E : Cohomology.TwoChartFeatureExtensionCover S}
+    {𝒰 : Cohomology.CoverRelativeCechCover S}
+    {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+    {D : Cohomology.TwoChartConnectingHomomorphism Ob E K}
+    {b : Cohomology.BoundaryMismatchSection Ob E}
+    (hexact : D.HolonomyKernelExactAtBoundary)
+    (hzero : Cohomology.BoundaryHolonomyVanishes D b) :
+    Cohomology.TwoChartBoundaryResolved D b :=
+  D.boundaryResolved_of_boundaryHolonomy_zero_of_kernelExact hexact hzero
+
+theorem boundaryResidueTwoChartBoundaryResolvedSoundness
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {E : Cohomology.TwoChartFeatureExtensionCover S}
+    {𝒰 : Cohomology.CoverRelativeCechCover S}
+    {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+    {D : Cohomology.TwoChartConnectingHomomorphism Ob E K}
+    {b : Cohomology.BoundaryMismatchSection Ob E}
+    (hkill : D.DeltaKillsTwoChartBoundaries)
+    (hresolved : Cohomology.TwoChartBoundaryResolved D b) :
+    Cohomology.BoundaryHolonomyVanishes D b :=
+  D.boundaryHolonomy_zero_of_boundaryResolved_of_deltaKillsBoundaries
+    hkill hresolved
+
+theorem finiteIntervalStokesBasis
+    (ω : AAT.AG.Cohomology.IntervalBasisStokes.Cochain 0)
+    (γ : AAT.AG.Cohomology.IntervalBasisStokes.Chain 1) :
+    AAT.AG.Cohomology.IntervalBasisStokes.pair1
+        (AAT.AG.Cohomology.IntervalBasisStokes.d0 ω) γ =
+      AAT.AG.Cohomology.IntervalBasisStokes.pair0 ω
+        (AAT.AG.Cohomology.IntervalBasisStokes.boundary0 γ) :=
+  AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis ω γ
+
+theorem finiteIntervalConnectingStokesBasis
+    (b : AAT.AG.Cohomology.IntervalBasisStokes.Cochain 0)
+    (γ : AAT.AG.Cohomology.IntervalBasisStokes.Chain 1) :
+    AAT.AG.Cohomology.IntervalBasisStokes.pair1
+        (AAT.AG.Cohomology.IntervalBasisStokes.d0 b) γ =
+      AAT.AG.Cohomology.IntervalBasisStokes.pair0 b
+        (AAT.AG.Cohomology.IntervalBasisStokes.boundary0 γ) :=
+  AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalConnectingStokes_basis b γ
+
+theorem gagaLowDegreePeriodStokesAccountingAdditive
+    (x y :
+      Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.ExtensionEvent) :
+    Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U (x + y) =
+      Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U x +
+        Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U y :=
+  Measurement.lowDegreePeriodStokesTheoremPackage.period_stokes_accounting_additive x y
+
+theorem gagaLowDegreeTopologicalDebtCapacityFromComplex :
+    Module.finrank
+        Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
+        Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C1 <=
+      Module.finrank
+          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
+          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.H1 +
+        Module.finrank
+          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
+          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C0 +
+          Module.finrank
+            Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
+            Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C2 :=
+  Measurement.lowDegreeTopologicalDebtTheoremPackage.topological_debt_capacity_from_complex
 
 theorem finiteForestEdgeAbsorptionVanishing
     {N : Cohomology.CoverNerve}

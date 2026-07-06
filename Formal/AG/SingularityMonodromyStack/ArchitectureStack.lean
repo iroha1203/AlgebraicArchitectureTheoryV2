@@ -28,6 +28,13 @@ structure ArchitectureStackBase where
   overlapContext : ∀ {a b : Context}, Overlap a b -> Context
   overlap_left : ∀ {a b : Context} (o : Overlap a b), restrict (overlapContext o) a
   overlap_right : ∀ {a b : Context} (o : Overlap a b), restrict (overlapContext o) b
+  tripleContext : ∀ {a b c : Context}, TripleOverlap a b c -> Context
+  triple_to_leftOverlap : ∀ {a b c : Context}
+    (oab : Overlap a b) (t : TripleOverlap a b c), restrict (tripleContext t) (overlapContext oab)
+  triple_to_rightOverlap : ∀ {a b c : Context}
+    (obc : Overlap b c) (t : TripleOverlap a b c), restrict (tripleContext t) (overlapContext obc)
+  triple_to_outerOverlap : ∀ {a b c : Context}
+    (oac : Overlap a c) (t : TripleOverlap a b c), restrict (tripleContext t) (overlapContext oac)
 
 /--
 VI.定義13.1: groupoid-valued architecture presheaf package.
@@ -87,6 +94,23 @@ def pullbackIso_holds (P : ArchitecturePresheaf.{z} B)
 
 end ArchitecturePresheaf
 
+/--
+VI.定義13.1: selected triple-overlap cocycle equality.
+
+The witness lives over one selected triple-overlap context. It records the three
+pairwise comparison arrows on that context and the actual equality
+`ij ≫ jk = ik`; it is not a free-form proposition.
+-/
+structure TripleOverlapCocycle {B : ArchitectureStackBase.{z}}
+    (P : ArchitecturePresheaf.{z} B) (T : B.Context) where
+  left : P.Obj T
+  middle : P.Obj T
+  right : P.Obj T
+  ij : P.Iso left middle
+  jk : P.Iso middle right
+  ik : P.Iso left right
+  cocycle_eq : P.comp ij jk = ik
+
 /-- VI.定義13.1: local architecture objects selected on a cover. -/
 structure LocalArchitectureObjects {B : ArchitectureStackBase.{z}}
     (P : ArchitecturePresheaf.{z} B) where
@@ -109,6 +133,8 @@ structure ArchitectureDescentDatum {B : ArchitectureStackBase.{z}}
       (P.pullbackObj (B.overlap_left (overlap i j)) (L.object i))
       (P.pullbackObj (B.overlap_right (overlap i j)) (L.object j))
   triple : ∀ i j k : L.CoverIndex, B.TripleOverlap (L.context i) (L.context j) (L.context k)
+  tripleCocycle : ∀ i j k : L.CoverIndex,
+    TripleOverlapCocycle P (B.tripleContext (triple i j k))
   cocycleCondition :
     (∀ i j : L.CoverIndex,
       P.Iso
@@ -176,6 +202,14 @@ theorem cocycleCondition_holds
     {L : LocalArchitectureObjects P} (D : ArchitectureDescentDatum P L) :
     D.cocycleCondition D.overlapIso D.triple :=
   D.cocycleCondition_holds
+
+/-- VI.定義13.1: selected descent datum carries an actual triple cocycle equality. -/
+theorem tripleCocycle_eq
+    {L : LocalArchitectureObjects P} (D : ArchitectureDescentDatum P L)
+    (i j k : L.CoverIndex) :
+    P.comp (D.tripleCocycle i j k).ij (D.tripleCocycle i j k).jk =
+      (D.tripleCocycle i j k).ik :=
+  (D.tripleCocycle i j k).cocycle_eq
 
 end ArchitectureStack
 

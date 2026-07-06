@@ -289,6 +289,22 @@ theorem differential_compatible (B : FinitePosetTemporalCechBridge T Ob)
         (B.comparison.comparisonTarget.toFinitePosetCochain n c) :=
   B.comparison.differential_compatible n c
 
+/-- IX-3 / #3100: finite-poset cohomology maps are left inverses in the temporal bridge. -/
+theorem cohomology_to_from (B : FinitePosetTemporalCechBridge T Ob)
+    (n : Nat)
+    (h : Site.FinitePosetCechCohomology B.finitePosetComplex n
+      (B.comparison.finitePosetCoboundaryRelation n)) :
+    B.comparison.comparisonTarget.toFinitePosetCohomology n
+      (B.comparison.comparisonTarget.fromFinitePosetCohomology n h) = h :=
+  B.comparison.cohomology_to_from n h
+
+/-- IX-3 / #3100: temporal PRD-4 cohomology maps are right inverses. -/
+theorem cohomology_from_to (B : FinitePosetTemporalCechBridge T Ob)
+    (n : Nat) (h : B.comparison.generalComplex.CoverRelativeHn n) :
+    B.comparison.comparisonTarget.fromFinitePosetCohomology n
+      (B.comparison.comparisonTarget.toFinitePosetCohomology n h) = h :=
+  B.comparison.cohomology_from_to n h
+
 end FinitePosetTemporalCechBridge
 
 end Evolution

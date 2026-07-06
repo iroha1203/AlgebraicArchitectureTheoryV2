@@ -56,6 +56,122 @@ variable {E : EvolutionProfile.{u, v, w, x, y, z}}
 variable {T : TemporalSite S E}
 variable {St : StateTransitionPresheaf T}
 
+/--
+IX-4: canonical constructor for a temporal law whose load-bearing content is a
+selected state equation. Transition and descent predicates are set to `True`,
+so theorem users can see that this constructor contributes only the chosen
+state equation and kind.
+-/
+def ofStateEquation
+    (kind : TemporalLawKind)
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop) :
+    TemporalLaw St where
+  kind := kind
+  Witness := Witness
+  source := source
+  target := target
+  incidence := incidence
+  stateEquation := stateEquation
+  transitionPredicate := fun _w {_x _y} _tr => True
+  descentPredicate := fun _w _x => True
+
+/-- IX-4: canonical closed temporal-equation law. -/
+def closedTemporalEquation
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop) :
+    TemporalLaw St :=
+  ofStateEquation .closedTemporalEquation Witness source target incidence stateEquation
+
+/-- IX-4: canonical commutative temporal-square law. -/
+def commutativeTemporalSquare
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop) :
+    TemporalLaw St :=
+  ofStateEquation .commutativeTemporalSquare Witness source target incidence stateEquation
+
+/-- IX-4: canonical replay-idempotence law. -/
+def replayIdempotence
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop) :
+    TemporalLaw St :=
+  ofStateEquation .replayIdempotence Witness source target incidence stateEquation
+
+/-- IX-4: canonical encode/decode compatibility law. -/
+def encodeDecodeCompatibility
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop) :
+    TemporalLaw St :=
+  ofStateEquation .encodeDecodeCompatibility Witness source target incidence stateEquation
+
+/-- IX-4: canonical compensation compatibility law. -/
+def compensationCompatibility
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop) :
+    TemporalLaw St :=
+  ofStateEquation .compensationCompatibility Witness source target incidence stateEquation
+
+/-- IX-4: canonical migration compatibility law. -/
+def migrationCompatibility
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop) :
+    TemporalLaw St :=
+  ofStateEquation .migrationCompatibility Witness source target incidence stateEquation
+
+/-- IX-4: canonical descent temporal law. -/
+def descentTemporalLaw
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop) :
+    TemporalLaw St :=
+  ofStateEquation .descentTemporalLaw Witness source target incidence stateEquation
+
+@[simp] theorem ofStateEquation_kind
+    (kind : TemporalLawKind)
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop) :
+    (ofStateEquation (St := St) kind Witness source target incidence stateEquation).kind = kind :=
+  rfl
+
+@[simp] theorem ofStateEquation_holdsStateEquation
+    (kind : TemporalLawKind)
+    (Witness : Type (max u y))
+    (source target : Witness -> T.Point)
+    (incidence : ∀ w : Witness, T.IncidenceLeg (source w) (target w))
+    (stateEquation :
+      ∀ w : Witness, St.State (source w) -> St.State (target w) -> Prop)
+    (w : Witness) (x : St.State (source w)) (y' : St.State (target w)) :
+    (ofStateEquation (St := St) kind Witness source target incidence stateEquation).stateEquation
+        w x y' =
+      stateEquation w x y' :=
+  rfl
+
 /-- IX.§3 / AC9: read the selected incidence leg scoped by a temporal law witness. -/
 def selectedIncidence (L : TemporalLaw St) (w : L.Witness) :
     T.IncidenceLeg (L.source w) (L.target w) :=
