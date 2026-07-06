@@ -340,8 +340,16 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "verdictDiscipline": "five-valued-structural-verdict@1"
         },
         "structuralVerdict": [{
+            "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/computed",
             "evaluator": "ag.cech-obstruction",
             "law": "ag.cech-obstruction",
+            "target": {
+                "kind": "cover-relative-cech-h1-class",
+                "coverRef": "cover:test",
+                "coefficient": "F2",
+                "scopeSize": {"contexts": 1, "edges": 1, "triangles": 0},
+                "classRef": "computedInvariants/cech-cohomology:profile:test-handoff"
+            },
             "verdict": "measured_nonzero",
             "verdictData": {
                 "inScope": true,
@@ -349,10 +357,23 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
                 "nonZero": true,
                 "methodStatus": "computed",
                 "certRef": "computedInvariants/cech-cohomology:profile:test-handoff"
+            },
+            "dependsOnAssumptions": ["assumption:part8-4-2:finite-site"],
+            "evidence": {
+                "computedInvariantRefs": ["cech-cohomology:profile:test-handoff"],
+                "sourceRefs": []
             }
         }, {
+            "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/certificate-missing",
             "evaluator": "ag.cech-obstruction",
             "law": "ag.cech-obstruction",
+            "target": {
+                "kind": "cover-relative-cech-h1-class",
+                "coverRef": "cover:test",
+                "coefficient": "F2",
+                "scopeSize": {"contexts": 0, "edges": 0, "triangles": 0},
+                "classRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/certificate-missing"
+            },
             "verdict": "unknown",
             "reason": "certificate boundary is outside the selected profile",
             "verdictData": {
@@ -360,36 +381,61 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
                 "zero": false,
                 "nonZero": false,
                 "methodStatus": "certificate_missing"
-            }
+            },
+            "dependsOnAssumptions": ["assumption:part8-10-4:transfer-lower-bound"],
+            "evidence": {"computedInvariantRefs": [], "sourceRefs": []}
         }],
         "computedInvariants": [{
             "invariantId": "cech-cohomology:profile:test-handoff",
+            "kind": "cech-h1-rank",
             "evaluator": "ag.cech-obstruction",
             "status": "computed",
-            "dimensions": {"H0": 1, "H1": 1}
+            "value": {"H0": 1, "H1": 1},
+            "representation": {"dimensions": {"H0": 1, "H1": 1}}
         }],
         "analyticReadings": [{
             "readingId": "theorem-candidate:transfer-lower-bound:test",
             "evaluator": "ag.foundation",
+            "claimStatus": "candidate",
+            "fidelity": "proxy",
             "value": {"transferLowerBound": 3.5},
             "regime": "theorem-candidate",
             "structuralVerdictRef": null
         }],
         "assumptions": [{
+            "assumptionId": "assumption:part8-4-2:finite-site",
             "theoremRef": "part8/4.2",
             "assumption": "finite site",
             "status": "checked",
-            "checkedBy": "finite-linear-algebra@1"
+            "checkedBy": "finite-linear-algebra@1",
+            "scopeRefs": ["part8/4.2"]
         }, {
+            "assumptionId": "assumption:part8-10-4:transfer-lower-bound",
             "theoremRef": "part8/10.4",
             "assumption": "transfer_lower_bound",
             "status": "assumed",
-            "assumedBy": "measurement-profile author"
+            "assumedBy": "measurement-profile author",
+            "scopeRefs": ["part8/10.4"]
         }, {
+            "assumptionId": "assumption:part8-10-4:second-transfer-boundary",
             "theoremRef": "part8/10.4",
             "assumption": "second transfer boundary",
             "status": "assumed",
-            "assumedBy": "measurement-profile author"
+            "assumedBy": "measurement-profile author",
+            "scopeRefs": ["part8/10.4"]
+        }, {
+            "assumptionId": "assumption:part8-11-1:unrelated-runtime-boundary",
+            "theoremRef": "part8/11.1",
+            "assumption": "unrelated runtime boundary",
+            "status": "violated",
+            "scopeRefs": ["part8/11.1"]
+        }],
+        "boundaryStatements": [{
+            "id": "boundary:assumption:part8-11-1",
+            "kind": "violated_assumption_dependency",
+            "scopeRefs": ["assumption:part8-11-1:unrelated-runtime-boundary"],
+            "reason": "unrelated assumption is violated but no measured structural row depends on it",
+            "text": "Unrelated violated assumption is carried as typed boundary data."
         }],
         "nonConclusions": [
             "ArchSig measurement packet is a computation artifact, not a Lean proof object."
@@ -492,7 +538,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
                 entry["reason"]
                     .as_str()
                     .expect("reason is string")
-                    .contains("part8/10.4")
+                    .contains("assumption:part8-10-4:transfer-lower-bound")
                     && entry["treatment"]
                         .as_str()
                         .expect("treatment is string")
@@ -529,6 +575,15 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
         unique_duplicate_theorem_remainders.len(),
         duplicate_theorem_remainders.len(),
         "same theoremRef assumption rows must still produce distinct unknown remainder IDs"
+    );
+    assert!(
+        estimate_json["evidenceBoundary"]["measurementBoundaryRefs"]
+            .as_array()
+            .expect("measurement boundary refs are array")
+            .iter()
+            .any(|source| source
+                == "archsigMeasurementBoundaryKind:violated_assumption_dependency"),
+        "FieldSig must carry typed ArchSig boundaryStatements into SFT evidence boundary refs"
     );
     assert!(
         estimate_json["unknownRemainder"]
@@ -584,6 +639,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "verdictDiscipline": "five-valued-structural-verdict@1"
         },
         "structuralVerdict": [{
+            "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/finite-f2-cech-computed",
             "evaluator": "ag.cech-obstruction",
             "law": "ag.cech-obstruction",
             "verdict": "measured_nonzero",
@@ -596,17 +652,21 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
         }],
         "computedInvariants": [{
             "invariantId": "topological-debt-capacity:profile:capacity-not-cert",
+            "kind": "topological-debt-capacity",
             "evaluator": "ag.cech-obstruction",
             "status": "computed",
             "structuralVerdictRef": null,
-            "capacityLowerBound": 1
+            "value": 1,
+            "representation": {"capacityLowerBound": 1}
         }],
         "analyticReadings": [],
         "assumptions": [{
+            "assumptionId": "assumption:part4-12-3:constant-coefficient-nerve-b1-comparison",
             "theoremRef": "part4/12.3",
             "assumption": "constant coefficient nerve b1 comparison",
             "status": "checked",
-            "checkedBy": "measurement-profile:profile:capacity-not-cert.coefficient=F2"
+            "checkedBy": "measurement-profile:profile:capacity-not-cert.coefficient=F2",
+            "scopeRefs": ["part4/12.3"]
         }],
         "boundaryStatements": [],
         "nonConclusions": []
@@ -737,6 +797,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "profileId": "profile:semantic-validation"
         },
         "structuralVerdict": [{
+            "verdictRef": "structuralVerdict/ag-square-free-repair/ag-square-free-repair/nsdepth-certificate-verified",
             "evaluator": "ag.square-free-repair",
             "law": "ag.square-free-repair",
             "verdict": "measured_nonzero",
@@ -746,20 +807,31 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
                 "nonZero": true,
                 "methodStatus": "nsdepth_certificate_verified",
                 "certRef": "computedInvariants/square-free-repair:profile:semantic-validation"
+            },
+            "dependsOnAssumptions": ["assumption:part3-7-2B:finite-certificate-verified"],
+            "evidence": {
+                "computedInvariantRefs": ["square-free-repair:profile:semantic-validation"],
+                "sourceRefs": []
             }
         }],
         "computedInvariants": [{
             "invariantId": "square-free-repair:profile:semantic-validation",
+            "kind": "minimal-forbidden-supports",
             "evaluator": "ag.square-free-repair",
-            "status": "computed"
+            "status": "computed",
+            "value": [],
+            "representation": {}
         }],
         "analyticReadings": [],
         "assumptions": [{
+            "assumptionId": "assumption:part3-7-2B:finite-certificate-verified",
             "theoremRef": "part3/7.2B",
             "assumption": "finite certificate verified",
             "status": "checked",
-            "checkedBy": "ag.square-free-repair"
+            "checkedBy": "ag.square-free-repair",
+            "scopeRefs": ["part3/7.2B"]
         }],
+        "boundaryStatements": [],
         "nonConclusions": []
     });
 
@@ -819,8 +891,8 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     assert!(!violated_assumption.status.success());
     assert!(
         String::from_utf8_lossy(&violated_assumption.stderr)
-            .contains("is violated while structural verdicts contain measured rows"),
-        "measurement-packet handoff must reject violated assumptions paired with measured structural verdicts"
+            .contains("keeps measured verdict while depending on violated assumption"),
+        "measurement-packet handoff must reject only measured rows that depend on violated assumptions"
     );
 
     let missing_evidence_packet = out_dir.join("missing-evidence-measurement-packet.json");

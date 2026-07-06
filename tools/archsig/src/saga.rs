@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 
 use crate::{
     AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
-    RepairPlanDocumentV1,
+    RepairPlanDocumentV1, assumption_id_for_schema,
 };
 
 #[derive(Debug, Clone)]
@@ -20,6 +20,17 @@ pub(crate) fn evaluate_saga_descent_v1(
 ) -> SagaDescentMeasurementV1 {
     let boundary = solve_boundary_membership(plan);
     let closure = closure_diagnostics(archmap, plan);
+    let enumeration_assumption = AgAssumptionLedgerEntryV1 {
+        theorem_ref: "part10/repair-plan-enumeration".to_string(),
+        assumption: format!(
+            "repair-plan complex enumeration completeness for {}",
+            plan.id
+        ),
+        status: "assumed".to_string(),
+        checked_by: None,
+        assumed_by: Some("repair-plan author".to_string()),
+    };
+    let enumeration_assumption_id = assumption_id_for_schema(&enumeration_assumption);
     let mut structural_verdict = Vec::new();
     let boundary_verdict = if boundary.in_b1 {
         "measured_zero"
@@ -42,7 +53,7 @@ pub(crate) fn evaluate_saga_descent_v1(
             .to_string(),
             cert_ref: Some("computedInvariants/saga-descent:boundary-membership".to_string()),
         },
-        depends_on_assumptions: vec!["part10/repair-plan-enumeration".to_string()],
+        depends_on_assumptions: vec![enumeration_assumption_id.clone()],
         reason: Some(if boundary.in_b1 {
             "supplied residual lies in B1 for the selected RepairPlan complex".to_string()
         } else {
@@ -82,7 +93,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 method_status: "complete_support_global_coherent".to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec!["part10/repair-plan-enumeration".to_string()],
+            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
             reason: Some(
                 "residual is a B1 boundary inside the complete-support RepairPlan regime"
                     .to_string(),
@@ -100,7 +111,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 method_status: "residual_not_covered".to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec!["part10/repair-plan-enumeration".to_string()],
+            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
             reason: Some(
                 "residual is a B1 boundary, but semantic projection does not cover every residual component for the selected RepairPlan complex".to_string(),
             ),
@@ -122,7 +133,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 .to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec!["part10/repair-plan-enumeration".to_string()],
+            depends_on_assumptions: vec![enumeration_assumption_id],
             reason: Some(if boundary.in_b1 {
                 "residual is covered, but semantic projection is not faithful for the selected RepairPlan complex".to_string()
             } else {
@@ -157,16 +168,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 }
             }),
         ],
-        assumptions: vec![AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part10/repair-plan-enumeration".to_string(),
-            assumption: format!(
-                "repair-plan complex enumeration completeness for {}",
-                plan.id
-            ),
-            status: "assumed".to_string(),
-            checked_by: None,
-            assumed_by: Some("repair-plan author".to_string()),
-        }],
+        assumptions: vec![enumeration_assumption],
     }
 }
 

@@ -257,9 +257,27 @@ fn main() -> ExitCode {
         Ok(code) => code,
         Err(error) => {
             eprintln!("{error}");
-            ExitCode::from(2)
+            if is_internal_runtime_error(&error.to_string()) {
+                ExitCode::from(3)
+            } else {
+                ExitCode::from(2)
+            }
         }
     }
+}
+
+fn is_internal_runtime_error(message: &str) -> bool {
+    let lower = message.to_ascii_lowercase();
+    [
+        "is a directory",
+        "permission denied",
+        "read-only file system",
+        "no space left on device",
+        "too many open files",
+        "broken pipe",
+    ]
+    .iter()
+    .any(|needle| lower.contains(needle))
 }
 
 fn validate_archmap_command_input(

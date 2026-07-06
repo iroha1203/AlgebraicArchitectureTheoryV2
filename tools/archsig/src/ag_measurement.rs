@@ -11,7 +11,7 @@ use crate::{
     AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
     ArchSigMeasurementPacketV1, BoundaryStatementV1, LawPolicyDocumentV1, MeasurementProfileV1,
     NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2,
-    RepairPlanDocumentV1, ValidationCheck, ValidationExample,
+    RepairPlanDocumentV1, ValidationCheck, ValidationExample, assumption_id_for_schema,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -70,14 +70,14 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
     match conclusion {
         ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
-            theorem_ref: Some("part4/3.5"),
+            theorem_ref: Some("part10/3.4"),
             principal_text: "The selected complete-support SAGA residual is measured outside B1 with concrete residual support.",
             boundary: "Supply a different complete-support residual or Stage 2 comparison data before claiming repair gluing.",
             generated_discipline: "generated complete-support boundary-membership detection",
         },
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
-            theorem_ref: Some("part4/3.4"),
+            theorem_ref: Some("part10/3.5"),
             principal_text: "The selected complete-support SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
             boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
             generated_discipline: "generated complete-support boundary-membership detection",
@@ -308,9 +308,10 @@ fn boundary_statements_for_measurement_packet(
 
     for (index, assumption) in packet.assumptions.iter().enumerate() {
         if assumption.status == "violated" {
-            let mut scope_refs = vec![assumption.theorem_ref.clone()];
+            let assumption_id = assumption_id_for_schema(assumption);
+            let mut scope_refs = vec![assumption_id.clone()];
             let mut dependent_scope_refs =
-                dependent_blocked_measurement_scope_refs(packet, &assumption.theorem_ref);
+                dependent_blocked_measurement_scope_refs(packet, &assumption_id);
             if dependent_scope_refs.is_empty() {
                 dependent_scope_refs = blocked_measurement_scope_refs(packet)
                     .into_iter()
@@ -362,7 +363,7 @@ fn m8_silence_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> Vec<Bo
 fn assumption_theorem_refs(assumptions: &[AgAssumptionLedgerEntryV1]) -> Vec<String> {
     assumptions
         .iter()
-        .map(|assumption| assumption.theorem_ref.clone())
+        .map(assumption_id_for_schema)
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
@@ -377,7 +378,7 @@ fn apply_assumption_dependency_propagation(packet: &mut ArchSigMeasurementPacket
         .assumptions
         .iter()
         .filter(|assumption| assumption.status == "violated")
-        .map(|assumption| assumption.theorem_ref.as_str())
+        .map(assumption_id_for_schema)
         .collect::<BTreeSet<_>>();
     if violated.is_empty() {
         return;
@@ -390,7 +391,7 @@ fn apply_assumption_dependency_propagation(packet: &mut ArchSigMeasurementPacket
         let violated_dependencies = row
             .depends_on_assumptions
             .iter()
-            .filter(|theorem_ref| violated.contains(theorem_ref.as_str()))
+            .filter(|theorem_ref| violated.contains(*theorem_ref))
             .cloned()
             .collect::<Vec<_>>();
         if violated_dependencies.is_empty() {
@@ -10055,6 +10056,11 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
         .iter()
         .filter(|atom| atom.axis == "cech" && atom.predicate == "sectionValue")
         .collect::<Vec<_>>();
+    let explicit_mismatch_atoms = normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "cech" && atom.predicate == "cocycleValue")
+        .collect::<Vec<_>>();
     let mut seen_edges = BTreeSet::new();
     let mut edges = Vec::new();
     for context in &normalized.contexts {
@@ -10084,25 +10090,49 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
             if !seen_edges.insert((edge_key.0.clone(), edge_key.1.clone())) {
                 continue;
             }
-            let source_values = cech_section_values(&section_value_atoms, &edge_key.2);
-            let target_values = cech_section_values(&section_value_atoms, &edge_key.3);
-            let mismatch = !source_values.is_empty()
-                && !target_values.is_empty()
-                && source_values != target_values;
-            let support_atom_refs = if mismatch {
-                section_value_atoms
-                    .iter()
-                    .filter(|atom| atom.subject == edge_key.2 || atom.subject == edge_key.3)
-                    .map(|atom| atom.normalized_atom_id.clone())
-                    .collect::<Vec<_>>()
+            let edge_id = format!("{}->{}", edge_key.2, edge_key.3);
+            let reverse_edge_id = format!("{}->{}", edge_key.3, edge_key.2);
+            let explicit_support = explicit_mismatch_atoms
+                .iter()
+                .filter(|atom| atom.subject == edge_id || atom.subject == reverse_edge_id)
+                .collect::<Vec<_>>();
+            let (value, support_atom_refs) = if explicit_support.is_empty() {
+                let source_values = cech_section_values(&section_value_atoms, &edge_key.2);
+                let target_values = cech_section_values(&section_value_atoms, &edge_key.3);
+                let mismatch = !source_values.is_empty()
+                    && !target_values.is_empty()
+                    && source_values != target_values;
+                let support_atom_refs = if mismatch {
+                    section_value_atoms
+                        .iter()
+                        .filter(|atom| atom.subject == edge_key.2 || atom.subject == edge_key.3)
+                        .map(|atom| atom.normalized_atom_id.clone())
+                        .collect::<Vec<_>>()
+                } else {
+                    Vec::new()
+                };
+                (u8::from(mismatch), support_atom_refs)
             } else {
-                Vec::new()
+                let value = explicit_support.iter().any(|atom| {
+                    atom.object
+                        .as_deref()
+                        .is_some_and(|object| matches!(object.trim(), "1" | "true" | "nonzero"))
+                });
+                let support_atom_refs = if value {
+                    explicit_support
+                        .iter()
+                        .map(|atom| atom.normalized_atom_id.clone())
+                        .collect::<Vec<_>>()
+                } else {
+                    Vec::new()
+                };
+                (u8::from(value), support_atom_refs)
             };
             edges.push(CechEdgeV1 {
-                edge_id: format!("{}->{}", edge_key.2, edge_key.3),
+                edge_id,
                 source_context: edge_key.2,
                 target_context: edge_key.3,
-                value: mismatch as u8,
+                value,
                 support_atom_refs,
             });
         }
@@ -11267,8 +11297,11 @@ pub fn validate_measurement_packet_v1(packet: &ArchSigMeasurementPacketV1) -> Ve
         check_structural_verdict_values(packet),
         check_structural_verdict_evaluators(packet),
         check_structural_verdict_data(packet),
+        check_structural_verdict_new_shape(packet),
+        check_computed_invariant_shape(packet),
         check_analytic_regime_boundary(packet),
         check_assumption_ledger(packet),
+        check_supplied_data_shape(packet),
         check_boundary_statements(packet),
     ]
 }
@@ -11389,13 +11422,195 @@ fn check_structural_verdict_data(packet: &ArchSigMeasurementPacketV1) -> Validat
     )
 }
 
+fn check_structural_verdict_new_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
+    let packet_value = serde_json::to_value(packet).unwrap_or_else(|_| json!({}));
+    let invariant_ids = packet_value["computedInvariants"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|invariant| invariant["invariantId"].as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    for (index, row) in packet_value["structuralVerdict"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let row_label = format!("structuralVerdict[{index}]");
+        let target = &row["target"];
+        if !target.is_object() {
+            examples.push(generic_validation_example(
+                &row_label,
+                "target",
+                "structural verdict rows must carry target block",
+            ));
+            continue;
+        }
+        for field in ["kind", "coverRef", "coefficient"] {
+            if target[field].as_str().is_none_or(str::is_empty) {
+                examples.push(generic_validation_example(
+                    &row_label,
+                    field,
+                    "target kind / coverRef / coefficient must be non-empty",
+                ));
+            }
+        }
+        if !target["scopeSize"].is_object() {
+            examples.push(generic_validation_example(
+                &row_label,
+                "target.scopeSize",
+                "target.scopeSize must be an object",
+            ));
+        }
+        let computed_refs = row["evidence"]["computedInvariantRefs"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .collect::<Vec<_>>();
+        if matches!(
+            row["verdict"].as_str(),
+            Some("measured_zero" | "measured_nonzero")
+        ) && computed_refs.is_empty()
+        {
+            examples.push(generic_validation_example(
+                &row_label,
+                "evidence.computedInvariantRefs",
+                "measured verdicts must name supporting computed invariants",
+            ));
+        }
+        for invariant_ref in computed_refs {
+            if !invariant_ids.contains(invariant_ref) {
+                examples.push(generic_validation_example(
+                    &row_label,
+                    invariant_ref,
+                    "evidence.computedInvariantRefs must resolve to computedInvariants[].invariantId",
+                ));
+            }
+        }
+        if row["verdict"].as_str() == Some("measured_zero")
+            && !scope_size_has_positive_component(&target["scopeSize"])
+        {
+            examples.push(generic_validation_example(
+                &row_label,
+                "target.scopeSize",
+                "measured_zero requires a non-vacuous positive target scopeSize",
+            ));
+        }
+        if row["verdict"].as_str() == Some("measured_nonzero") {
+            let Some(class_ref) = target["classRef"]
+                .as_str()
+                .filter(|value| !value.is_empty())
+            else {
+                examples.push(generic_validation_example(
+                    &row_label,
+                    "target.classRef",
+                    "measured_nonzero requires target.classRef",
+                ));
+                continue;
+            };
+            if !invariant_ids.contains(class_ref)
+                && !class_ref
+                    .strip_prefix("computedInvariants/")
+                    .is_some_and(|id| invariant_ids.contains(id))
+            {
+                examples.push(generic_validation_example(
+                    &row_label,
+                    class_ref,
+                    "measured_nonzero target.classRef must resolve to computed invariant evidence",
+                ));
+            }
+        }
+    }
+    check_examples(
+        "measurement-packet-schema050-structural-verdict-new-shape",
+        "structural verdict rows carry target and computed invariant evidence",
+        examples,
+    )
+}
+
+fn scope_size_has_positive_component(scope_size: &Value) -> bool {
+    scope_size
+        .as_object()
+        .into_iter()
+        .flat_map(|object| object.values())
+        .any(|value| value.as_u64().is_some_and(|count| count > 0))
+}
+
+fn check_computed_invariant_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
+    let packet_value = serde_json::to_value(packet).unwrap_or_else(|_| json!({}));
+    let mut examples = Vec::new();
+    for (index, invariant) in packet_value["computedInvariants"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let label = format!("computedInvariants[{index}]");
+        for field in ["invariantId", "kind"] {
+            if invariant[field].as_str().is_none_or(str::is_empty) {
+                examples.push(generic_validation_example(
+                    &label,
+                    field,
+                    "computed invariant must carry invariantId and closed kind",
+                ));
+            }
+        }
+        if invariant.get("value").is_none() || invariant.get("representation").is_none() {
+            examples.push(generic_validation_example(
+                &label,
+                "value/representation",
+                "computed invariant must carry typed value and representation",
+            ));
+        }
+    }
+    check_examples(
+        "measurement-packet-schema050-computed-invariants-typed",
+        "computed invariants expose invariantId, kind, value, and representation",
+        examples,
+    )
+}
+
 fn check_analytic_regime_boundary(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
+    let packet_value = serde_json::to_value(packet).unwrap_or_else(|_| json!({}));
     let structural_evaluators = packet
         .structural_verdict
         .iter()
         .map(|row| row.evaluator.as_str())
         .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
+    for (index, reading_value) in packet_value["analyticReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let label = format!("analyticReadings[{index}]");
+        let claim_status = reading_value["claimStatus"].as_str().unwrap_or_default();
+        if !matches!(claim_status, "certified" | "candidate") {
+            examples.push(generic_validation_example(
+                &label,
+                claim_status,
+                "analytic reading claimStatus must be certified or candidate",
+            ));
+        }
+        let fidelity = reading_value["fidelity"].as_str().unwrap_or_default();
+        if !matches!(fidelity, "faithful" | "proxy") {
+            examples.push(generic_validation_example(
+                &label,
+                fidelity,
+                "analytic reading fidelity must be faithful or proxy",
+            ));
+        }
+        if claim_status == "candidate" && !reading_value["structuralVerdictRef"].is_null() {
+            examples.push(generic_validation_example(
+                &label,
+                "structuralVerdictRef",
+                "candidate readings must remain analytic-only",
+            ));
+        }
+    }
     for reading in &packet.analytic_readings {
         if reading.regime.as_deref() == Some("theorem-candidate")
             && reading.structural_verdict_ref.is_some()
@@ -11423,17 +11638,58 @@ fn check_analytic_regime_boundary(packet: &ArchSigMeasurementPacketV1) -> Valida
     )
 }
 
+fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
+    let packet_value = serde_json::to_value(packet).unwrap_or_else(|_| json!({}));
+    let mut examples = Vec::new();
+    if !packet_value["suppliedData"].is_array() {
+        examples.push(generic_validation_example(
+            "suppliedData",
+            "missing",
+            "measurement packet must expose suppliedData ledger",
+        ));
+    }
+    for (index, supplied) in packet_value["suppliedData"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let label = format!("suppliedData[{index}]");
+        for field in ["suppliedId", "kind", "sourceArtifactRef"] {
+            if supplied[field].as_str().is_none_or(str::is_empty) {
+                examples.push(generic_validation_example(
+                    &label,
+                    field,
+                    "suppliedData entries must carry suppliedId / kind / sourceArtifactRef",
+                ));
+            }
+        }
+        if !supplied["conformance"].is_object() {
+            examples.push(generic_validation_example(
+                &label,
+                "conformance",
+                "suppliedData entries must carry conformance object",
+            ));
+        }
+    }
+    check_examples(
+        "measurement-packet-schema050-supplied-data-ledger",
+        "suppliedData ledger is present and typed when entries exist",
+        examples,
+    )
+}
+
 fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
     let assumption_refs = packet
         .assumptions
         .iter()
-        .map(|entry| entry.theorem_ref.as_str())
+        .map(assumption_id_for_schema)
         .collect::<BTreeSet<_>>();
     let violated = packet
         .assumptions
         .iter()
         .filter(|entry| entry.status == "violated")
-        .map(|entry| entry.theorem_ref.as_str())
+        .map(assumption_id_for_schema)
         .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
     for entry in &packet.assumptions {
@@ -11461,11 +11717,11 @@ fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationChe
     }
     for row in &packet.structural_verdict {
         for theorem_ref in &row.depends_on_assumptions {
-            if !assumption_refs.contains(theorem_ref.as_str()) {
+            if !assumption_refs.contains(theorem_ref) {
                 examples.push(generic_validation_example(
                     &row.evaluator,
                     theorem_ref,
-                    "dependsOnAssumptions entries must resolve to assumption theoremRef values",
+                    "dependsOnAssumptions entries must resolve to assumptionId values",
                 ));
             }
         }
@@ -11473,7 +11729,7 @@ fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationChe
             && row
                 .depends_on_assumptions
                 .iter()
-                .any(|theorem_ref| violated.contains(theorem_ref.as_str()))
+                .any(|theorem_ref| violated.contains(theorem_ref))
         {
             examples.push(generic_validation_example(
                 &row.evaluator,
@@ -11598,12 +11854,7 @@ fn measurement_packet_scope_refs(packet: &ArchSigMeasurementPacketV1) -> BTreeSe
             .iter()
             .map(|reading| reading.reading_id.clone()),
     );
-    refs.extend(
-        packet
-            .assumptions
-            .iter()
-            .map(|assumption| assumption.theorem_ref.clone()),
-    );
+    refs.extend(packet.assumptions.iter().map(assumption_id_for_schema));
     for row in &packet.structural_verdict {
         refs.insert(row.evaluator.clone());
         refs.insert(row.law.clone());
@@ -11953,9 +12204,18 @@ mod tests {
     #[test]
     fn assumption_dependency_propagation_only_updates_dependent_measured_rows() {
         let mut packet = packet_fixture();
+        let finite_site_assumption = assumption_id_for_schema(&packet.assumptions[0]);
         packet.structural_verdict[0].verdict = "measured_zero".to_string();
         packet.structural_verdict[0].verdict_data.zero = true;
-        packet.structural_verdict[0].depends_on_assumptions = vec!["part8/4.2".to_string()];
+        packet.structural_verdict[0].depends_on_assumptions = vec![finite_site_assumption.clone()];
+        let square_free_assumption = AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/5.1".to_string(),
+            assumption: "square-free witness variables selected by MeasurementProfile".to_string(),
+            status: "checked".to_string(),
+            checked_by: Some("test".to_string()),
+            assumed_by: None,
+        };
+        let square_free_assumption_id = assumption_id_for_schema(&square_free_assumption);
         packet.structural_verdict.push(AgStructuralVerdictV1 {
             evaluator: "ag.square-free-repair".to_string(),
             law: "ag.square-free-repair".to_string(),
@@ -11967,18 +12227,12 @@ mod tests {
                 method_status: "square_free_ideal_computed".to_string(),
                 cert_ref: None,
             },
-            depends_on_assumptions: vec!["part8/5.1".to_string()],
+            depends_on_assumptions: vec![square_free_assumption_id],
             reason: Some("independent square-free row remains measured zero".to_string()),
         });
         packet.assumptions[0].status = "violated".to_string();
         packet.assumptions[0].checked_by = None;
-        packet.assumptions.push(AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part8/5.1".to_string(),
-            assumption: "square-free witness variables selected by MeasurementProfile".to_string(),
-            status: "checked".to_string(),
-            checked_by: Some("test".to_string()),
-            assumed_by: None,
-        });
+        packet.assumptions.push(square_free_assumption);
 
         apply_assumption_dependency_propagation(&mut packet);
 
@@ -11987,9 +12241,10 @@ mod tests {
             packet.structural_verdict[0].verdict_data.method_status,
             "depends_on_violated_assumption"
         );
+        let expected_reason = format!("depends_on violated {finite_site_assumption}");
         assert_eq!(
             packet.structural_verdict[0].reason.as_deref(),
-            Some("depends_on violated part8/4.2")
+            Some(expected_reason.as_str())
         );
         assert_eq!(packet.structural_verdict[1].verdict, "measured_zero");
         assert!(packet.structural_verdict[1].verdict_data.zero);
@@ -12073,10 +12328,11 @@ mod tests {
     #[test]
     fn violated_assumption_boundary_scopes_to_not_computed_verdict() {
         let mut packet = packet_fixture();
+        let finite_site_assumption = assumption_id_for_schema(&packet.assumptions[0]);
         packet.structural_verdict[0].verdict = "not_computed".to_string();
         packet.structural_verdict[0].verdict_data.method_status =
             "empty_selected_scope".to_string();
-        packet.structural_verdict[0].depends_on_assumptions = vec!["part8/4.2".to_string()];
+        packet.structural_verdict[0].depends_on_assumptions = vec![finite_site_assumption.clone()];
         packet.assumptions[0].status = "violated".to_string();
         packet.assumptions[0].checked_by = None;
         packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);
@@ -12086,7 +12342,7 @@ mod tests {
                 && statement
                     .scope_refs
                     .iter()
-                    .any(|scope_ref| scope_ref == "part8/4.2")
+                    .any(|scope_ref| scope_ref == &finite_site_assumption)
                 && statement
                     .scope_refs
                     .iter()

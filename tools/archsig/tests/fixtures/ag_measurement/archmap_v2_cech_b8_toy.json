@@ -1,0 +1,105 @@
+{
+  "schema": "archmap/v0.5.0",
+  "id": "ag-measurement-cech-b8-toy-fixture",
+  "sources": {
+    "src:b8": {
+      "kind": "policy",
+      "path": "docs/aat/algebraic_geometric_theory/appendix.md",
+      "section": "B.8"
+    },
+    "ctx:W_dep": {
+      "kind": "policy",
+      "path": "docs/aat/algebraic_geometric_theory/appendix.md",
+      "section": "B.8.1"
+    },
+    "ctx:W_state": {
+      "kind": "policy",
+      "path": "docs/aat/algebraic_geometric_theory/appendix.md",
+      "section": "B.8.1"
+    },
+    "ctx:W_effect": {
+      "kind": "policy",
+      "path": "docs/aat/algebraic_geometric_theory/appendix.md",
+      "section": "B.8.1"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:b8-component-C",
+      "kind": "component",
+      "subject": "component:C",
+      "axis": "static",
+      "predicate": "component",
+      "refs": ["ctx:W_dep", "ctx:W_state", "src:b8"]
+    },
+    {
+      "id": "atom:b8-component-D",
+      "kind": "component",
+      "subject": "component:D",
+      "axis": "static",
+      "predicate": "component",
+      "refs": ["ctx:W_dep", "src:b8"]
+    },
+    {
+      "id": "atom:b8-effect-e",
+      "kind": "semantic",
+      "subject": "effect:e",
+      "axis": "effect",
+      "predicate": "effect",
+      "refs": ["ctx:W_effect", "src:b8"]
+    },
+    {
+      "id": "atom:b8-cocycle-P",
+      "kind": "semantic",
+      "subject": "ctx:W_dep->ctx:W_state",
+      "object": "1",
+      "axis": "cech",
+      "predicate": "cocycleValue",
+      "refs": ["ctx:W_dep", "ctx:W_state", "src:b8"]
+    },
+    {
+      "id": "atom:b8-cocycle-Q",
+      "kind": "semantic",
+      "subject": "ctx:W_state->ctx:W_effect",
+      "object": "0",
+      "axis": "cech",
+      "predicate": "cocycleValue",
+      "refs": ["ctx:W_state", "ctx:W_effect", "src:b8"]
+    },
+    {
+      "id": "atom:b8-cocycle-R",
+      "kind": "semantic",
+      "subject": "ctx:W_dep->ctx:W_effect",
+      "object": "0",
+      "axis": "cech",
+      "predicate": "cocycleValue",
+      "refs": ["ctx:W_dep", "ctx:W_effect", "src:b8"]
+    }
+  ],
+  "contexts": [
+    {
+      "id": "ctx:W_dep",
+      "atoms": ["atom:b8-component-C", "atom:b8-component-D", "atom:b8-cocycle-P", "atom:b8-cocycle-R"],
+      "restrictsTo": ["ctx:W_state", "ctx:W_effect"],
+      "refs": ["ctx:W_dep"]
+    },
+    {
+      "id": "ctx:W_state",
+      "atoms": ["atom:b8-component-C", "atom:b8-cocycle-P", "atom:b8-cocycle-Q"],
+      "restrictsTo": ["ctx:W_effect"],
+      "refs": ["ctx:W_state"]
+    },
+    {
+      "id": "ctx:W_effect",
+      "atoms": ["atom:b8-effect-e", "atom:b8-cocycle-Q", "atom:b8-cocycle-R"],
+      "refs": ["ctx:W_effect"]
+    }
+  ],
+  "covers": [
+    {
+      "id": "cover:order-inventory",
+      "contexts": ["ctx:W_dep", "ctx:W_state", "ctx:W_effect"],
+      "refs": ["src:b8"]
+    }
+  ]
+}

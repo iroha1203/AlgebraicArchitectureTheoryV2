@@ -333,6 +333,7 @@ fn validate_archsig_measurement_packet_handoff_shape(
         "computedInvariants",
         "analyticReadings",
         "assumptions",
+        "boundaryStatements",
         "nonConclusions",
     ] {
         if !packet.get(key).is_some_and(|value| value.is_array()) {
@@ -521,16 +522,8 @@ fn archsig_measurement_certificate_invariant_prefixes(
 fn validate_archsig_measurement_packet_assumptions(
     packet: &serde_json::Value,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let measured_structural_verdict = packet
-        .get("structuralVerdict")
-        .and_then(|value| value.as_array())
-        .into_iter()
-        .flatten()
-        .any(|row| {
-            row.get("verdict")
-                .and_then(|value| value.as_str())
-                .is_some_and(|verdict| matches!(verdict, "measured_zero" | "measured_nonzero"))
-        });
+    let mut assumption_ids = BTreeSet::new();
+    let mut violated_assumption_ids = BTreeSet::new();
     for (index, row) in packet
         .get("assumptions")
         .and_then(|value| value.as_array())
@@ -538,9 +531,13 @@ fn validate_archsig_measurement_packet_assumptions(
         .flatten()
         .enumerate()
     {
-        let theorem_ref = required_string(row, "theoremRef").map_err(|message| {
+        let assumption_id = required_string(row, "assumptionId").map_err(|message| {
             format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
         })?;
+        let _theorem_ref = required_string(row, "theoremRef").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
+        })?;
+        assumption_ids.insert(assumption_id.to_string());
         required_string(row, "assumption").map_err(|message| {
             format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
         })?;
@@ -559,16 +556,45 @@ fn validate_archsig_measurement_packet_assumptions(
                 })?;
             }
             "violated" => {
-                if measured_structural_verdict {
-                    return Err(format!(
-                        "FieldSig ArchSig measurement handoff assumption {theorem_ref} is violated while structural verdicts contain measured rows"
-                    )
-                    .into());
-                }
+                violated_assumption_ids.insert(assumption_id.to_string());
             }
             _ => {
                 return Err(format!(
                     "FieldSig ArchSig measurement handoff assumptions[{index}] has unsupported status {status}"
+                )
+                .into());
+            }
+        }
+    }
+    for (index, row) in packet
+        .get("structuralVerdict")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let verdict = row
+            .get("verdict")
+            .and_then(|value| value.as_str())
+            .unwrap_or_default();
+        for dependency in row
+            .get("dependsOnAssumptions")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .filter_map(|value| value.as_str())
+        {
+            if !assumption_ids.contains(dependency) {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] dependsOnAssumptions entry {dependency} does not resolve to an assumptionId"
+                )
+                .into());
+            }
+            if matches!(verdict, "measured_zero" | "measured_nonzero")
+                && violated_assumption_ids.contains(dependency)
+            {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] keeps measured verdict while depending on violated assumption {dependency}"
                 )
                 .into());
             }
@@ -628,6 +654,11 @@ fn archsig_measurement_packet_sft_source_refs(
             .flatten()
             .flat_map(|verdict| {
                 let mut refs = Vec::new();
+                if let Some(verdict_ref) =
+                    verdict.get("verdictRef").and_then(|value| value.as_str())
+                {
+                    refs.push(format!("archsigMeasurementStructuralVerdict:{verdict_ref}"));
+                }
                 if let Some(evaluator) = verdict.get("evaluator").and_then(|value| value.as_str()) {
                     refs.push(format!("archsigMeasurementStructuralEvaluator:{evaluator}"));
                 }
@@ -688,14 +719,31 @@ fn archsig_measurement_packet_sft_source_refs(
             .into_iter()
             .flatten()
             .filter_map(|assumption| {
-                let theorem_ref = assumption.get("theoremRef")?.as_str()?;
+                let assumption_id = assumption.get("assumptionId")?.as_str()?;
                 let status = assumption
                     .get("status")
                     .and_then(|value| value.as_str())
                     .unwrap_or("unknown");
                 Some(format!(
-                    "archsigMeasurementAssumption:{theorem_ref}:{status}"
+                    "archsigMeasurementAssumption:{assumption_id}:{status}"
                 ))
+            }),
+    );
+    refs.extend(
+        packet
+            .get("boundaryStatements")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .flat_map(|boundary| {
+                let mut refs = Vec::new();
+                if let Some(id) = boundary.get("id").and_then(|value| value.as_str()) {
+                    refs.push(format!("archsigMeasurementBoundaryStatement:{id}"));
+                }
+                if let Some(kind) = boundary.get("kind").and_then(|value| value.as_str()) {
+                    refs.push(format!("archsigMeasurementBoundaryKind:{kind}"));
+                }
+                refs
             }),
     );
     unique_strings(refs)
@@ -943,6 +991,10 @@ fn archsig_measurement_packet_unknown_remainders(
                 if status == "checked" {
                     return None;
                 }
+                let assumption_id = assumption
+                    .get("assumptionId")
+                    .and_then(|value| value.as_str())
+                    .unwrap_or("assumption");
                 let theorem_ref = assumption
                     .get("theoremRef")
                     .and_then(|value| value.as_str())
@@ -951,7 +1003,7 @@ fn archsig_measurement_packet_unknown_remainders(
                     .get("assumption")
                     .and_then(|value| value.as_str())
                     .unwrap_or("assumption");
-                let assumption_key = format!("{index}:{theorem_ref}:{assumption_text}:{status}");
+                let assumption_key = format!("{index}:{assumption_id}:{theorem_ref}:{assumption_text}:{status}");
                 Some(OperationSupportUnknownRemainderV0 {
                     remainder_id: format!(
                         "unknown:archsig-measurement:assumption:{}",
@@ -960,7 +1012,7 @@ fn archsig_measurement_packet_unknown_remainders(
                     affected_family_ids: family_ids.to_vec(),
                     source_ref_ids: source_ref_ids.to_vec(),
                     unknown_axes: vec![format!("assumption:{status}")],
-                    reason: format!("ArchSig measurement assumption {theorem_ref} is {status}: {assumption_text}"),
+                    reason: format!("ArchSig measurement assumption {assumption_id} ({theorem_ref}) is {status}: {assumption_text}"),
                     treatment: "retain assumption status as boundary data; do not promote it to proof, forecast truth, or repair safety".to_string(),
                     non_conclusions: archsig_measurement_packet_sft_non_conclusions(packet),
                 })
@@ -1047,14 +1099,40 @@ fn archsig_measurement_packet_measurement_boundary_refs(packet: &serde_json::Val
             .into_iter()
             .flatten()
             .filter_map(|assumption| {
-                let theorem_ref = assumption.get("theoremRef")?.as_str()?;
+                let assumption_id = assumption.get("assumptionId")?.as_str()?;
                 let status = assumption
                     .get("status")
                     .and_then(|value| value.as_str())
                     .unwrap_or("unknown");
                 Some(format!(
-                    "archsigMeasurementAssumptionBoundary:{theorem_ref}:{status}"
+                    "archsigMeasurementAssumptionBoundary:{assumption_id}:{status}"
                 ))
+            }),
+    );
+    refs.extend(
+        packet
+            .get("boundaryStatements")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .flat_map(|boundary| {
+                let mut refs = Vec::new();
+                if let Some(id) = boundary.get("id").and_then(|value| value.as_str()) {
+                    refs.push(format!("archsigMeasurementBoundaryStatement:{id}"));
+                }
+                if let Some(kind) = boundary.get("kind").and_then(|value| value.as_str()) {
+                    refs.push(format!("archsigMeasurementBoundaryKind:{kind}"));
+                }
+                if let Some(scope_refs) =
+                    boundary.get("scopeRefs").and_then(|value| value.as_array())
+                {
+                    refs.extend(scope_refs.iter().filter_map(|scope| {
+                        scope
+                            .as_str()
+                            .map(|scope| format!("archsigMeasurementBoundaryScope:{scope}"))
+                    }));
+                }
+                refs
             }),
     );
     unique_strings(refs)

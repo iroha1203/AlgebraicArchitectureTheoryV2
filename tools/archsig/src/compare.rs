@@ -462,7 +462,11 @@ fn run_digest(run: &Path, manifest: &Value) -> Value {
         "toolVersion": manifest["toolVersion"],
         "archmap": manifest["inputDigests"]["archmap"],
         "profileFingerprint": manifest["inputDigests"]["profileFingerprint"],
-        "siteCoverDigest": manifest["inputDigests"]["siteCoverDigest"]
+        "siteCoverDigest": manifest["inputDigests"]["siteCoverDigest"],
+        "measurementPacket": {
+            "path": artifact_ref(run, "archsig-measurement-packet.json"),
+            "sha256": canonical_json_file_digest(&run.join("archsig-measurement-packet.json")).unwrap_or_default()
+        }
     })
 }
 

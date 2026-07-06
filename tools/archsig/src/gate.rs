@@ -163,6 +163,18 @@ pub fn build_gate_report_v1(
                     )?;
                     return Ok((report, 2));
                 }
+                let packet_digest = canonical_json_file_digest(packet_path)?;
+                if comparison["inputDigests"]["headRun"]["measurementPacket"]["sha256"].as_str()
+                    != Some(packet_digest.as_str())
+                {
+                    let report = not_evaluable_report(
+                        packet_path,
+                        policy_path,
+                        Some(comparison_path),
+                        "comparison report headRun measurement packet digest does not match --packet",
+                    )?;
+                    return Ok((report, 2));
+                }
                 Some(comparison)
             }
             Err(_) => {
@@ -515,6 +527,12 @@ fn comparison_report_shape_is_evaluable(comparison: &Value) -> bool {
         return false;
     };
     if !COMPARISON_LEVELS.contains(&level) {
+        return false;
+    }
+    if comparison["inputDigests"]["headRun"]["measurementPacket"]["sha256"]
+        .as_str()
+        .is_none_or(str::is_empty)
+    {
         return false;
     }
     let Some(transitions) = comparison

@@ -25,6 +25,13 @@ pub const ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA: &str = "archmap-candidate-packet/v
 pub const ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA: &str = "archmap-extraction-consistency/v0.5.0";
 pub const ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA: &str = "archmap-coverage-ledger/v0.5.0";
 pub const ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY: &str = "Rows record the authoring survey of the selected scope at the recorded revision. They do not assert extraction completeness.";
+const EXCLUSION_REASONS: [&str; 5] = [
+    "user-excluded",
+    "private",
+    "generated",
+    "binary",
+    "out-of-scope",
+];
 
 #[derive(Debug, Clone)]
 pub struct ScopeManifestOptions {
@@ -60,15 +67,20 @@ pub fn build_scope_manifest_v1(
     options: &ScopeManifestOptions,
 ) -> Result<ArchmapScopeManifestV1, Box<dyn Error>> {
     let root = options.repo_root.canonicalize()?;
-    for pattern in options
-        .include_globs
+    let exclusions = options
+        .exclude_globs
         .iter()
-        .chain(options.exclude_globs.iter())
-    {
+        .map(|spec| parse_exclusion_spec(spec))
+        .collect::<Result<Vec<_>, _>>()?;
+    let exclude_globs = exclusions
+        .iter()
+        .map(|(_, glob)| glob.clone())
+        .collect::<Vec<_>>();
+    for pattern in options.include_globs.iter().chain(exclude_globs.iter()) {
         reject_repo_relative_glob(pattern)?;
     }
     let include_set = build_glob_set(&options.include_globs)?;
-    let exclude_set = build_glob_set(&options.exclude_globs)?;
+    let exclude_set = build_glob_set(&exclude_globs)?;
     let mut entries = Vec::new();
 
     for entry in WalkDir::new(&root).follow_links(false).into_iter() {
@@ -155,22 +167,33 @@ pub fn build_scope_manifest_v1(
         },
         scope_spec: ArchmapScopeManifestScopeSpecV1 {
             include_globs: options.include_globs.clone(),
-            exclude_globs: options.exclude_globs.clone(),
+            exclude_globs: exclude_globs.clone(),
             added_evidence: added_specs,
             requested_scope: options.requested_scope.clone(),
             approved_by: options.approved_by.clone(),
         },
         baseline_ref,
         worklist: entries,
-        exclusions: options
-            .exclude_globs
-            .iter()
-            .map(|path| ArchmapScopeManifestExclusionV1 {
-                path: path.clone(),
-                reason: "user-excluded".to_string(),
-            })
+        exclusions: exclusions
+            .into_iter()
+            .map(|(reason, path)| ArchmapScopeManifestExclusionV1 { path, reason })
             .collect(),
     })
+}
+
+fn parse_exclusion_spec(spec: &str) -> Result<(String, String), Box<dyn Error>> {
+    let Some((reason, glob)) = spec.split_once(':') else {
+        return Ok(("user-excluded".to_string(), spec.to_string()));
+    };
+    if EXCLUSION_REASONS.contains(&reason) && !glob.trim().is_empty() {
+        Ok((reason.to_string(), glob.to_string()))
+    } else {
+        Err(format!(
+            "--exclude reason must be one of {}; use --exclude <glob> for user-excluded",
+            EXCLUSION_REASONS.join(", ")
+        )
+        .into())
+    }
 }
 
 pub fn build_extraction_consistency_v1(
@@ -573,10 +596,7 @@ pub fn validate_scope_manifest_v1(manifest: &ArchmapScopeManifestV1) -> Result<(
         if let Err(error) = reject_repo_relative_path(&exclusion.path) {
             errors.push(format!("exclusions[{}].path {error}", index));
         }
-        if !matches!(
-            exclusion.reason.as_str(),
-            "user-excluded" | "private" | "generated" | "binary" | "out-of-scope"
-        ) {
+        if !EXCLUSION_REASONS.contains(&exclusion.reason.as_str()) {
             errors.push(format!(
                 "exclusions[{}].reason must be user-excluded, private, generated, binary, or out-of-scope",
                 index
@@ -1023,11 +1043,17 @@ fn source_resolves_to_worklist(
 fn source_is_grounding_exempt(source_id: &str, source: &ArchMapSource) -> bool {
     let kind = source.kind.to_ascii_lowercase();
     source_id.starts_with("ctx:")
-        || kind.contains("grounding")
-        || kind.contains("context")
-        || kind.contains("policy")
-        || kind.contains("profile")
-        || kind.contains("measurement")
+        || matches!(
+            kind.as_str(),
+            "grounding"
+                | "context"
+                | "policy"
+                | "profile"
+                | "measurement"
+                | "law-policy"
+                | "measurement-profile"
+                | "reader-profile"
+        )
 }
 
 fn ledger_adopted_atoms(ledger: &ArchmapCoverageLedgerV1) -> BTreeSet<String> {

@@ -20,6 +20,7 @@ pub fn validate_repair_plan_v1_checks(
         check_archmap_bindings(plan, archmap),
         check_measured_residual(plan, residual_packet),
         check_stage1_mode_and_coefficient(plan),
+        check_overlap_primitive_bijection(plan),
         check_restriction_difference_rule(plan),
         check_delta_cocycle(plan),
         check_complete_support(plan),
@@ -372,6 +373,52 @@ fn check_restriction_difference_rule(plan: &RepairPlanDocumentV1) -> ValidationC
     examples_check(
         "repair-plan-schema050-restriction-difference-rule",
         "Supplied primitives satisfy the restriction-difference rule before use",
+        examples,
+    )
+}
+
+fn check_overlap_primitive_bijection(plan: &RepairPlanDocumentV1) -> ValidationCheck {
+    let overlap_ids = plan
+        .complex
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut primitive_refs = BTreeMap::<&str, Vec<&str>>::new();
+    for primitive in &plan.primitives {
+        primitive_refs
+            .entry(primitive.overlap_ref.as_str())
+            .or_default()
+            .push(primitive.id.as_str());
+    }
+    let mut examples = Vec::new();
+    for overlap_id in &overlap_ids {
+        match primitive_refs.get(overlap_id).map(Vec::as_slice) {
+            Some([_]) => {}
+            Some(ids) => examples.push(generic_validation_example(
+                &format!("complex.overlaps[{overlap_id}]"),
+                &format!("{ids:?}"),
+                "each overlap must have exactly one primitive",
+            )),
+            None => examples.push(generic_validation_example(
+                &format!("complex.overlaps[{overlap_id}]"),
+                "missing",
+                "each overlap must have exactly one primitive",
+            )),
+        }
+    }
+    for primitive in &plan.primitives {
+        if !overlap_ids.contains(primitive.overlap_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &format!("primitives[{}].overlapRef", primitive.id),
+                &primitive.overlap_ref,
+                "primitive overlapRef must resolve to complex.overlaps[].id",
+            ));
+        }
+    }
+    examples_check(
+        "repair-plan-schema050-overlap-primitive-bijection",
+        "Every complex overlap is represented by exactly one primitive before SAGA evaluation",
         examples,
     )
 }
