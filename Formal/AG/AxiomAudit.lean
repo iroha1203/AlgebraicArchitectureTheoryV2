@@ -47,36 +47,14 @@ def semanticRepairTheorem72H1ComparisonPackage :=
 def semanticRepairTheorem73GroundedGlobalGluingPackage :=
   @SemanticRepair.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package
 
-def semanticRepairTheorem75GeneratedEndToEndFromGeneratedInputs :=
-  @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromGeneratedInputs
-
 def semanticRepairTheorem75NativeGeneratedEndToEndFromNativeGeneratedInputs :=
   @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInputs
-
-def semanticRepairTheorem75GeneratedEndToEndFromGeneratedProvenanceInputs :=
-  @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromGeneratedProvenanceInputs
 
 def semanticRepairTheorem75NativeGeneratedEndToEndFromNativeGeneratedProvenanceInputs :=
   @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedProvenanceInputs
 
 def semanticRepairTheorem81DegreeZeroLawContribution :=
   @SemanticRepair.displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
-
-theorem semanticRepairExample91GeneratedF2EndToEndFromGeneratedInputs :
-    Nonempty
-      (Sigma fun comparison :
-        SemanticRepair.SemanticRepairCoverRelativeH1Comparison
-          AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData.toAdditiveH1Surface
-          AAT.AG.Examples.SemanticRepairPart10.generatedF2CoverRelativeComplex =>
-          SemanticRepair.SemanticRepairGeneratedEndToEndSAGAPacket
-            AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData
-            AAT.AG.Examples.SemanticRepairPart10.defectSource
-            FiniteModel.site
-            AAT.AG.Examples.SemanticRepairPart10.generatedF2QuotientPresheaf
-            (⊤ : Sieve FiniteModel.siteBase)
-            AAT.AG.Examples.SemanticRepairPart10.generatedF2GluingData
-            comparison) :=
-  AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedF2_endToEndPacket_fromGeneratedInputs
 
 theorem semanticRepairExample91GeneratedLawQuotientEndToEndFromNativeGeneratedInputs :
     Nonempty
@@ -93,22 +71,6 @@ theorem semanticRepairExample91GeneratedLawQuotientEndToEndFromNativeGeneratedIn
             AAT.AG.Examples.SemanticRepairPart10.generatedLawGluingData
             comparison) :=
   AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedLawQuotient_endToEndPacket_fromNativeGeneratedInputs
-
-theorem semanticRepairExample91GeneratedF2EndToEndFromGeneratedProvenanceInputs :
-    Nonempty
-      (Sigma fun comparison :
-        SemanticRepair.SemanticRepairCoverRelativeH1Comparison
-          AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData.toAdditiveH1Surface
-          AAT.AG.Examples.SemanticRepairPart10.generatedF2CoverRelativeComplex =>
-          SemanticRepair.SemanticRepairGeneratedEndToEndSAGAPacket
-            AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData
-            AAT.AG.Examples.SemanticRepairPart10.defectSource
-            FiniteModel.site
-            AAT.AG.Examples.SemanticRepairPart10.generatedF2QuotientPresheaf
-            (⊤ : Sieve FiniteModel.siteBase)
-            AAT.AG.Examples.SemanticRepairPart10.generatedF2GluingData
-            comparison) :=
-  AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedF2_endToEndPacket_fromGeneratedProvenanceInputs
 
 theorem semanticRepairExample91GeneratedLawQuotientEndToEndFromNativeGeneratedProvenanceInputs :
     Nonempty
@@ -681,15 +643,6 @@ theorem finiteIntervalStokesBasis
         (AAT.AG.Cohomology.IntervalBasisStokes.boundary0 γ) :=
   AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis ω γ
 
-theorem finiteIntervalConnectingStokesBasis
-    (b : AAT.AG.Cohomology.IntervalBasisStokes.Cochain 0)
-    (γ : AAT.AG.Cohomology.IntervalBasisStokes.Chain 1) :
-    AAT.AG.Cohomology.IntervalBasisStokes.pair1
-        (AAT.AG.Cohomology.IntervalBasisStokes.d0 b) γ =
-      AAT.AG.Cohomology.IntervalBasisStokes.pair0 b
-        (AAT.AG.Cohomology.IntervalBasisStokes.boundary0 γ) :=
-  AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalConnectingStokes_basis b γ
-
 theorem gagaLowDegreePeriodStokesAccountingAdditive
     (x y :
       Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.ExtensionEvent) :
@@ -781,6 +734,9 @@ def zmod2TemporalProductCoverRelativeH1ToFrom :=
 
 def zmod2TemporalProductCoverRelativeH1FromTo :=
   AAT.AG.Examples.EvolutionPart9.zmod2TemporalProductCoverRelativeH1_from_to
+
+def zmod2TemporalIdentityLegH1ClassNeZero :=
+  AAT.AG.Examples.EvolutionPart9.zmod2TemporalIdentityLegH1Class_ne_zero
 
 def transportDescentZeroToyModelNonempty :=
   @FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero

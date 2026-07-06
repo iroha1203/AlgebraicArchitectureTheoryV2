@@ -698,6 +698,66 @@ theorem zmod2TemporalProductCoverRelativeH1_from_to
       (zmod2TemporalProductCoverRelativeEquivalence.toH1 h) = h :=
   zmod2TemporalProductCoverRelativeEquivalence.from_to_H1 h
 
+/--
+IX-3 / #3100: degree-one cochain detected by the identity-leg value.
+
+The cochain is constant `1`; evaluating it on an identity incidence leg is
+enough to prove that it is not an incidence coboundary, because every incidence
+coboundary vanishes on identity legs.
+-/
+def zmod2TemporalIdentityLegCochain :
+    zmod2TemporalCoefficient.FiberIncidenceOneCochain :=
+  fun {_p} {_q} _leg => (1 : ZMod 2)
+
+/-- IX-3 / #3100: the identity-leg cochain is a degree-one cocycle. -/
+def zmod2TemporalIdentityLegH1Cocycle :
+    zmod2TemporalProductIncidenceThreeTerm.H1Cocycle :=
+  ⟨zmod2TemporalIdentityLegCochain, by
+    funext σ
+    exact Empty.elim σ⟩
+
+/-- IX-3 / #3100: selected H¹ class of the identity-leg cochain. -/
+def zmod2TemporalIdentityLegH1Class :
+    zmod2TemporalProductIncidenceThreeTerm.H1 :=
+  Quotient.mk
+    zmod2TemporalProductIncidenceThreeTerm.H1CoboundarySetoid
+    zmod2TemporalIdentityLegH1Cocycle
+
+/- IX-3 / #3100: the identity-leg cochain has value `1` on the selected base identity. -/
+theorem zmod2TemporalIdentityLegCochain_id_value :
+    zmod2TemporalIdentityLegCochain (temporalSite.idLeg p0) = (1 : ZMod 2) := by
+  rfl
+
+/--
+IX-3 / #3100: the identity-leg H¹ class is nonzero.
+
+If it were a coboundary, evaluating the coboundary equation at an identity leg
+would contradict `incidenceDifferential_id`, because all incidence coboundaries
+vanish on identity legs.
+-/
+theorem zmod2TemporalIdentityLegH1Class_ne_zero :
+    zmod2TemporalIdentityLegH1Class ≠
+      zmod2TemporalProductIncidenceThreeTerm.H1ZeroClass := by
+  intro hzero
+  have hrel := Quotient.exact hzero
+  rcases hrel with ⟨b, hb⟩
+  have hvalue :=
+    congrArg
+      (fun c : zmod2TemporalCoefficient.FiberIncidenceOneCochain =>
+        c (temporalSite.idLeg p0)) hb
+  have hright :
+      zmod2TemporalProductIncidenceThreeTerm.d0 b
+          (temporalSite.idLeg p0) = (0 : ZMod 2) := by
+    exact zmod2TemporalCoefficient.incidenceDifferential_id b p0
+  change _ = zmod2TemporalProductIncidenceThreeTerm.d0 b
+    (temporalSite.idLeg p0) at hvalue
+  rw [hright] at hvalue
+  change zmod2TemporalIdentityLegCochain (temporalSite.idLeg p0) - 0 =
+    (0 : ZMod 2) at hvalue
+  rw [zmod2TemporalIdentityLegCochain_id_value] at hvalue
+  simp at hvalue
+  exact (by decide : (1 : ZMod 2) ≠ 0) hvalue
+
 /-- R10(b): selected two-chart temporal cover for the zero replay descent fixture. -/
 def replayTemporalCover : TemporalCover temporalSite where
   baseTrace := TinyTime.t1

@@ -261,73 +261,6 @@ structure SemanticRepairGeneratedEndToEndSAGAPacket
       data S F cover gluingData comparison
 
 /--
-X.定理7.5 generated-input surface.
-
-This theorem-7.5 input boundary records a law-equation-generated coefficient
-surface and a cochain-level realization. It is stronger than accepting a
-standalone `SemanticRepairCoverRelativeH1Comparison`, but the realization is
-still selected input data; it is not a certificate-free construction of the
-comparison from law equations alone.
--/
-structure SemanticRepairGeneratedEndToEndInputs
-    {P : SemanticAtomProjection.{u, v}}
-    (data :
-      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
-    {Ulaw : AtomCarrier.{u}}
-    {Alaw : ArchitectureObject Ulaw}
-    {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
-    (D : LawAlgebra.LawEquationDefectSource.{u} G)
-    {U : AtomCarrier.{r}}
-    {A : ArchitectureObject U}
-    (S : Site.AATSite A)
-    (F : Site.AATPresheaf S)
-    {base : S.category}
-    (cover : Sieve base)
-    {coverRel : Cohomology.CoverRelativeCechCover S}
-    {Ob : Cohomology.ObstructionSheaf S}
-    (K : Cohomology.CoverRelativeCechComplex coverRel Ob) : Type (max u v w x y z r) where
-  coefficientGeneratedFromLawEquation :
-    Nonempty
-      (@LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientPresheaf
-        Ulaw Alaw Slaw G =
-      @LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientPresheaf
-        Ulaw Alaw Slaw G)
-  semanticCoefficientBridge : Prop
-  semanticCoefficientBridge_holds :
-    semanticCoefficientBridge
-  coverGeneratedInTopology :
-    cover ∈ S.topology base
-  obstructionSheafUsesGeneratedCoefficient :
-    Nonempty (Ob.carrier.carrier = F)
-  realization :
-    SemanticRepairCoverRelativeCochainRealization data.toAdditiveH1Surface K
-
-namespace SemanticRepairGeneratedEndToEndInputs
-
-variable {P : SemanticAtomProjection.{u, v}}
-variable {data :
-  SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
-variable {Ulaw : AtomCarrier.{u}} {Alaw : ArchitectureObject Ulaw}
-variable {Slaw : Site.AATSite.{u} Alaw}
-variable {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
-variable {D : LawAlgebra.LawEquationDefectSource.{u} G}
-variable {U : AtomCarrier.{r}} {A : ArchitectureObject U}
-variable {S : Site.AATSite A} {F : Site.AATPresheaf S}
-variable {base : S.category} {cover : Sieve base}
-variable {coverRel : Cohomology.CoverRelativeCechCover S}
-variable {Ob : Cohomology.ObstructionSheaf S}
-variable {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
-
-/-- X.定理7.5: generated inputs construct the comparison used downstream. -/
-def toH1Comparison
-    (inputs : SemanticRepairGeneratedEndToEndInputs data D S F cover K) :
-    SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K :=
-  inputs.realization.toH1Comparison
-
-end SemanticRepairGeneratedEndToEndInputs
-
-/--
 X.定理7.5 native generated-input surface.
 
 This stricter boundary fixes the downstream coefficient to the obstruction
@@ -448,72 +381,6 @@ def toH1Comparison
   provenance.toCochainRealization.toH1Comparison
 
 end SemanticRepairGeneratedComparisonProvenance
-
-/--
-X.定理7.5 generated-input surface with explicit lower comparison provenance.
-
-Unlike `SemanticRepairGeneratedEndToEndInputs`, this record does not contain a
-prepackaged cochain realization.  The H1 comparison is reconstructed from the
-degree-wise maps and differential laws in `comparisonProvenance`.
--/
-structure SemanticRepairGeneratedEndToEndProvenanceInputs
-    {P : SemanticAtomProjection.{u, v}}
-    (data :
-      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
-    {Ulaw : AtomCarrier.{u}}
-    {Alaw : ArchitectureObject Ulaw}
-    {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
-    (D : LawAlgebra.LawEquationDefectSource.{u} G)
-    {U : AtomCarrier.{r}}
-    {A : ArchitectureObject U}
-    (S : Site.AATSite A)
-    (F : Site.AATPresheaf S)
-    {base : S.category}
-    (cover : Sieve base)
-    {coverRel : Cohomology.CoverRelativeCechCover S}
-    {Ob : Cohomology.ObstructionSheaf S}
-    (K : Cohomology.CoverRelativeCechComplex coverRel Ob) :
-    Type (max u v w x y z r) where
-  coefficientGeneratedFromLawEquation :
-    Nonempty
-      (@LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientPresheaf
-        Ulaw Alaw Slaw G =
-      @LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientPresheaf
-        Ulaw Alaw Slaw G)
-  semanticCoefficientBridge : Prop
-  semanticCoefficientBridge_holds :
-    semanticCoefficientBridge
-  coverGeneratedInTopology :
-    cover ∈ S.topology base
-  obstructionSheafUsesGeneratedCoefficient :
-    Nonempty (Ob.carrier.carrier = F)
-  comparisonProvenance :
-    SemanticRepairGeneratedComparisonProvenance data.toAdditiveH1Surface K
-
-namespace SemanticRepairGeneratedEndToEndProvenanceInputs
-
-variable {P : SemanticAtomProjection.{u, v}}
-variable {data :
-  SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
-variable {Ulaw : AtomCarrier.{u}} {Alaw : ArchitectureObject Ulaw}
-variable {Slaw : Site.AATSite.{u} Alaw}
-variable {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
-variable {D : LawAlgebra.LawEquationDefectSource.{u} G}
-variable {U : AtomCarrier.{r}} {A : ArchitectureObject U}
-variable {S : Site.AATSite A} {F : Site.AATPresheaf S}
-variable {base : S.category} {cover : Sieve base}
-variable {coverRel : Cohomology.CoverRelativeCechCover S}
-variable {Ob : Cohomology.ObstructionSheaf S}
-variable {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
-
-/-- X.定理7.5: explicit generated provenance constructs the comparison. -/
-def toH1Comparison
-    (inputs : SemanticRepairGeneratedEndToEndProvenanceInputs data D S F cover K) :
-    SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K :=
-  inputs.comparisonProvenance.toH1Comparison
-
-end SemanticRepairGeneratedEndToEndProvenanceInputs
 
 /--
 X.定理7.5 native generated-input surface with explicit lower comparison
@@ -666,53 +533,6 @@ theorem lawEquation_constructs_groundedComparisonPacket_fromRealization
   exact ⟨⟨comparison, packet⟩⟩
 
 /--
-X.定理7.5 generated-input form: law-equation-generated coefficient data and a
-cochain realization generate the H1 comparison and the end-to-end packet.
-
-Unlike `lawEquation_constructs_groundedComparisonPacket`, this theorem does not
-take the H1 comparison as a material premise.  The coefficient, cover, and
-obstruction-sheaf provenance are part of `inputs`, so the statement is anchored
-to the generated input surface required by #3102.
--/
-theorem lawEquation_constructs_groundedComparisonPacket_fromGeneratedInputs
-    {P : SemanticAtomProjection.{u, v}}
-    (data :
-      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
-    {Ulaw : AtomCarrier.{u}}
-    {Alaw : ArchitectureObject Ulaw}
-    {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
-    (D : LawAlgebra.LawEquationDefectSource.{u} G)
-    (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
-    {U : AtomCarrier.{r}}
-    {A : ArchitectureObject U}
-    (S : Site.AATSite A)
-    (F : Site.AATPresheaf S)
-    {base : S.category}
-    (cover : Sieve base)
-    (certificate : data.TrueSheafConditionCertificate S F cover)
-    (gluingData : Site.AATGluingData S F cover)
-    {coverRel : Cohomology.CoverRelativeCechCover S}
-    {Ob : Cohomology.ObstructionSheaf S}
-    {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
-    (inputs : SemanticRepairGeneratedEndToEndInputs data D S F cover K) :
-    Nonempty
-      (Sigma fun comparison :
-        SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K =>
-          SemanticRepairGeneratedEndToEndSAGAPacket
-            data D S F cover gluingData comparison) := by
-  let comparison := inputs.toH1Comparison
-  rcases inputs.coefficientGeneratedFromLawEquation with ⟨_hcoeff⟩
-  have _hbridge := inputs.semanticCoefficientBridge_holds
-  rcases inputs.obstructionSheafUsesGeneratedCoefficient with ⟨_hob⟩
-  have _hcover : cover ∈ S.topology base := inputs.coverGeneratedInTopology
-  rcases
-    lawEquation_constructs_groundedComparisonPacket
-      data D hDisplayedRequiredLaws S F cover certificate gluingData comparison with
-    ⟨packet⟩
-  exact ⟨⟨comparison, packet⟩⟩
-
-/--
 X.定理7.5 native generated-input form: the theorem consumes cochain
 realization data while the coefficient presheaf is definitionally the
 law-equation-generated obstruction quotient `O/I_Ob`.
@@ -750,50 +570,6 @@ theorem lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInput
     lawEquation_constructs_groundedComparisonPacket
       data D hDisplayedRequiredLaws Slaw G.obstructionQuotientPresheaf
       cover certificate gluingData comparison with
-    ⟨packet⟩
-  exact ⟨⟨comparison, packet⟩⟩
-
-/--
-X.定理7.5 explicit-provenance generated-input form: the packet is produced
-from the generated coefficient/cover boundary plus lower degree-wise maps and
-face laws, not from a supplied H1 comparison or prepackaged cochain realization.
--/
-theorem lawEquation_constructs_groundedComparisonPacket_fromGeneratedProvenanceInputs
-    {P : SemanticAtomProjection.{u, v}}
-    (data :
-      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
-    {Ulaw : AtomCarrier.{u}}
-    {Alaw : ArchitectureObject Ulaw}
-    {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
-    (D : LawAlgebra.LawEquationDefectSource.{u} G)
-    (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
-    {U : AtomCarrier.{r}}
-    {A : ArchitectureObject U}
-    (S : Site.AATSite A)
-    (F : Site.AATPresheaf S)
-    {base : S.category}
-    (cover : Sieve base)
-    (certificate : data.TrueSheafConditionCertificate S F cover)
-    (gluingData : Site.AATGluingData S F cover)
-    {coverRel : Cohomology.CoverRelativeCechCover S}
-    {Ob : Cohomology.ObstructionSheaf S}
-    {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
-    (inputs :
-      SemanticRepairGeneratedEndToEndProvenanceInputs data D S F cover K) :
-    Nonempty
-      (Sigma fun comparison :
-        SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K =>
-          SemanticRepairGeneratedEndToEndSAGAPacket
-            data D S F cover gluingData comparison) := by
-  let comparison := inputs.toH1Comparison
-  rcases inputs.coefficientGeneratedFromLawEquation with ⟨_hcoeff⟩
-  have _hbridge := inputs.semanticCoefficientBridge_holds
-  rcases inputs.obstructionSheafUsesGeneratedCoefficient with ⟨_hob⟩
-  have _hcover : cover ∈ S.topology base := inputs.coverGeneratedInTopology
-  rcases
-    lawEquation_constructs_groundedComparisonPacket
-      data D hDisplayedRequiredLaws S F cover certificate gluingData comparison with
     ⟨packet⟩
   exact ⟨⟨comparison, packet⟩⟩
 
