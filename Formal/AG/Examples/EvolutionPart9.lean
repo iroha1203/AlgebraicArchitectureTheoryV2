@@ -398,6 +398,306 @@ theorem zmod2TemporalProductIncidence_d0_step_ne_zero :
   rw [ZMod.val_one] at hv
   simp at hv
 
+/--
+IX-3 / #3100: selected incidence-leg simplex for the nondegenerate temporal
+product complex.
+-/
+abbrev ZMod2TemporalIncidenceSimplex :=
+  Sigma fun p : temporalSite.Point =>
+    Sigma fun q : temporalSite.Point =>
+      temporalSite.IncidenceLeg p q
+
+/--
+IX-3 / #3100: cover-relative PRD-4 cover whose degree-zero simplices are
+temporal points and whose degree-one simplices are selected temporal incidence
+legs.
+-/
+def zmod2TemporalProductCoverRelativeCover :
+    Cohomology.CoverRelativeCechCover FiniteModel.site where
+  base := FiniteModel.siteBase
+  Index := temporalSite.Point
+  chart _ := FiniteModel.siteBase
+  inclusion _ := 𝟙 FiniteModel.siteBase
+  simplex
+    | 0 => temporalSite.Point
+    | 1 => ZMod2TemporalIncidenceSimplex
+    | _ + 2 => Empty
+  overlap
+    | 0, _ => FiniteModel.siteBase
+    | 1, _ => FiniteModel.siteBase
+    | _ + 2, σ => Empty.elim σ
+  face := by
+    intro n i σ
+    cases n with
+    | zero =>
+        rcases σ with ⟨p, q, _leg⟩
+        exact if i.val = 0 then q else p
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim σ
+        | succ _ => exact Empty.elim σ
+  faceRestriction := by
+    intro n i σ
+    cases n with
+    | zero =>
+        exact 𝟙 FiniteModel.siteBase
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim σ
+        | succ _ => exact Empty.elim σ
+
+/--
+IX-3 / #3100: the nondegenerate product-incidence differential as an additive
+map.
+-/
+def zmod2TemporalIncidenceD0Add :
+    zmod2TemporalCoefficient.FiberZeroCochain →+
+      zmod2TemporalCoefficient.FiberIncidenceOneCochain where
+  toFun := zmod2TemporalCoefficient.incidenceDifferential
+  map_zero' := by
+    funext p q leg
+    simp [Evolution.TemporalCoefficient.incidenceDifferential,
+      Evolution.TemporalCoefficient.restriction]
+  map_add' := by
+    intro x y
+    funext p q leg
+    simp [Evolution.TemporalCoefficient.incidenceDifferential,
+      Evolution.TemporalCoefficient.restriction, sub_eq_add_neg, add_comm, add_left_comm,
+      add_assoc]
+
+/-- IX-3 / #3100: zero map out of the incidence one-cochains. -/
+def zmod2TemporalIncidenceD1Add :
+    zmod2TemporalCoefficient.FiberIncidenceOneCochain →+
+      (Empty -> ZMod 2) where
+  toFun := fun _ σ => Empty.elim σ
+  map_zero' := by
+    funext σ
+    exact Empty.elim σ
+  map_add' := by
+    intro _x _y
+    funext σ
+    exact Empty.elim σ
+
+/--
+IX-3 / #3100: product-incidence three-term additive complex whose `d0` is the
+actual temporal incidence formula.
+-/
+def zmod2TemporalProductIncidenceThreeTerm :
+    Cohomology.AdditiveThreeTermComplex
+      zmod2TemporalCoefficient.FiberZeroCochain
+      zmod2TemporalCoefficient.FiberIncidenceOneCochain
+      (Empty -> ZMod 2) where
+  d0 := zmod2TemporalIncidenceD0Add
+  d1 := zmod2TemporalIncidenceD1Add
+  d_comp := by
+    intro c
+    funext σ
+    exact Empty.elim σ
+
+/--
+IX-3 / #3100: product-incidence PRD-4 cover-relative complex over the
+non-`PUnit` generated `ZMod 2` coefficient sheaf.
+-/
+def zmod2TemporalProductCoverRelativeComplex :
+    Cohomology.CoverRelativeCechComplex
+      zmod2TemporalProductCoverRelativeCover
+      SemanticRepairPart10.generatedF2QuotientObstructionSheaf where
+  cochainAddCommGroup := by
+    intro n
+    cases n with
+    | zero =>
+        change AddCommGroup (temporalSite.Point -> ZMod 2)
+        infer_instance
+    | succ n =>
+        cases n with
+        | zero =>
+            change AddCommGroup (ZMod2TemporalIncidenceSimplex -> ZMod 2)
+            infer_instance
+        | succ _ =>
+            change AddCommGroup (Empty -> ZMod 2)
+            infer_instance
+  alternatingFaceCombination := by
+    intro n faces
+    cases n with
+    | zero =>
+        intro σ
+        exact faces σ ⟨0, by decide⟩ - faces σ ⟨1, by decide⟩
+    | succ n =>
+        cases n with
+        | zero =>
+            intro σ
+            exact Empty.elim σ
+        | succ _ =>
+            intro σ
+            exact Empty.elim σ
+  differential := by
+    intro n
+    cases n with
+    | zero =>
+        change
+          ((temporalSite.Point -> ZMod 2) →+
+            (ZMod2TemporalIncidenceSimplex -> ZMod 2))
+        exact {
+          toFun := fun c σ =>
+            zmod2TemporalCoefficient.incidenceDifferential c σ.2.2
+          map_zero' := by
+            funext σ
+            change zmod2TemporalCoefficient.incidenceDifferential 0 σ.2.2 = 0
+            simp [Evolution.TemporalCoefficient.incidenceDifferential,
+              Evolution.TemporalCoefficient.restriction]
+          map_add' := by
+            intro x y
+            funext σ
+            change
+              zmod2TemporalCoefficient.incidenceDifferential (x + y) σ.2.2 =
+                zmod2TemporalCoefficient.incidenceDifferential x σ.2.2 +
+                  zmod2TemporalCoefficient.incidenceDifferential y σ.2.2
+            simp [Evolution.TemporalCoefficient.incidenceDifferential,
+              Evolution.TemporalCoefficient.restriction, sub_eq_add_neg, add_comm,
+              add_left_comm, add_assoc]
+        }
+    | succ n =>
+        cases n with
+        | zero =>
+            change
+              ((ZMod2TemporalIncidenceSimplex -> ZMod 2) →+
+                (Empty -> ZMod 2))
+            exact {
+              toFun := fun _ σ => Empty.elim σ
+              map_zero' := by
+                funext σ
+                exact Empty.elim σ
+              map_add' := by
+                intro _x _y
+                funext σ
+                exact Empty.elim σ
+            }
+        | succ _ =>
+            change ((Empty -> ZMod 2) →+ (Empty -> ZMod 2))
+            exact 0
+  differential_eq_alternatingFaceCombination := by
+    intro n c
+    cases n with
+    | zero =>
+        funext σ
+        rcases σ with ⟨p, q, leg⟩
+        change
+          zmod2TemporalCoefficient.incidenceDifferential
+              (fun p => (show ZMod 2 from c p)) leg =
+            (show ZMod 2 from c q) - (show ZMod 2 from c p)
+        rfl
+    | succ n =>
+        cases n with
+        | zero =>
+            funext σ
+            exact Empty.elim σ
+        | succ _ =>
+            funext σ
+            exact Empty.elim σ
+  differential_comp := by
+    intro n c
+    cases n with
+    | zero =>
+        funext σ
+        exact Empty.elim σ
+    | succ n =>
+        cases n with
+        | zero =>
+            funext σ
+            exact Empty.elim σ
+        | succ _ =>
+            rfl
+
+/-- IX-3 / #3100: curry incidence one-cochains to PRD-4 degree-one cochains. -/
+def zmod2TemporalIncidenceToSigma :
+    zmod2TemporalCoefficient.FiberIncidenceOneCochain →+
+      (ZMod2TemporalIncidenceSimplex -> ZMod 2) where
+  toFun := fun c σ => c σ.2.2
+  map_zero' := rfl
+  map_add' := by
+    intro _x _y
+    rfl
+
+/-- IX-3 / #3100: uncurry PRD-4 degree-one cochains to incidence one-cochains. -/
+def zmod2TemporalIncidenceFromSigma :
+    (ZMod2TemporalIncidenceSimplex -> ZMod 2) →+
+      zmod2TemporalCoefficient.FiberIncidenceOneCochain where
+  toFun := fun c {p} {q} leg => c ⟨p, q, leg⟩
+  map_zero' := rfl
+  map_add' := by
+    intro _x _y
+    rfl
+
+/--
+IX-3 / #3100: cochain-level equivalence between the product-incidence
+three-term complex and the PRD-4 cover-relative complex.
+-/
+def zmod2TemporalProductCoverRelativeEquivalence :
+    Cohomology.AdditiveThreeTermComplex.Equivalence
+      zmod2TemporalProductIncidenceThreeTerm
+      zmod2TemporalProductCoverRelativeComplex.degreeOneThreeTerm where
+  to0 := AddMonoidHom.id _
+  to1 := zmod2TemporalIncidenceToSigma
+  to2 := AddMonoidHom.id _
+  from0 := AddMonoidHom.id _
+  from1 := zmod2TemporalIncidenceFromSigma
+  from2 := AddMonoidHom.id _
+  to0_from0 := by intro _; rfl
+  from0_to0 := by intro _; rfl
+  to1_from1 := by
+    intro c
+    funext σ
+    rfl
+  from1_to1 := by
+    intro c
+    funext p q leg
+    rfl
+  to2_from2 := by
+    intro c
+    funext σ
+    exact Empty.elim σ
+  from2_to2 := by
+    intro c
+    funext σ
+    exact Empty.elim σ
+  to_d0 := by
+    intro c
+    funext σ
+    rfl
+  to_d1 := by
+    intro c
+    funext σ
+    exact Empty.elim σ
+  from_d0 := by
+    intro c
+    funext p q leg
+    rfl
+  from_d1 := by
+    intro c
+    funext σ
+    exact Empty.elim σ
+
+/--
+IX-3 / #3100: generated H¹ comparison is a left inverse on the PRD-4
+cover-relative side.
+-/
+theorem zmod2TemporalProductCoverRelativeH1_to_from
+    (h :
+      zmod2TemporalProductCoverRelativeComplex.degreeOneThreeTerm.H1) :
+    zmod2TemporalProductCoverRelativeEquivalence.toH1
+      (zmod2TemporalProductCoverRelativeEquivalence.fromH1 h) = h :=
+  zmod2TemporalProductCoverRelativeEquivalence.to_from_H1 h
+
+/--
+IX-3 / #3100: generated H¹ comparison is a right inverse on the product
+incidence side.
+-/
+theorem zmod2TemporalProductCoverRelativeH1_from_to
+    (h : zmod2TemporalProductIncidenceThreeTerm.H1) :
+    zmod2TemporalProductCoverRelativeEquivalence.fromH1
+      (zmod2TemporalProductCoverRelativeEquivalence.toH1 h) = h :=
+  zmod2TemporalProductCoverRelativeEquivalence.from_to_H1 h
+
 /-- R10(b): selected two-chart temporal cover for the zero replay descent fixture. -/
 def replayTemporalCover : TemporalCover temporalSite where
   baseTrace := TinyTime.t1

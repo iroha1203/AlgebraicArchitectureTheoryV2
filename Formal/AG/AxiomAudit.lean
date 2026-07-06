@@ -53,6 +53,12 @@ def semanticRepairTheorem75GeneratedEndToEndFromGeneratedInputs :=
 def semanticRepairTheorem75NativeGeneratedEndToEndFromNativeGeneratedInputs :=
   @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInputs
 
+def semanticRepairTheorem75GeneratedEndToEndFromGeneratedProvenanceInputs :=
+  @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromGeneratedProvenanceInputs
+
+def semanticRepairTheorem75NativeGeneratedEndToEndFromNativeGeneratedProvenanceInputs :=
+  @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedProvenanceInputs
+
 def semanticRepairTheorem81DegreeZeroLawContribution :=
   @SemanticRepair.displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
 
@@ -87,6 +93,38 @@ theorem semanticRepairExample91GeneratedLawQuotientEndToEndFromNativeGeneratedIn
             AAT.AG.Examples.SemanticRepairPart10.generatedLawGluingData
             comparison) :=
   AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedLawQuotient_endToEndPacket_fromNativeGeneratedInputs
+
+theorem semanticRepairExample91GeneratedF2EndToEndFromGeneratedProvenanceInputs :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepair.SemanticRepairCoverRelativeH1Comparison
+          AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData.toAdditiveH1Surface
+          AAT.AG.Examples.SemanticRepairPart10.generatedF2CoverRelativeComplex =>
+          SemanticRepair.SemanticRepairGeneratedEndToEndSAGAPacket
+            AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData
+            AAT.AG.Examples.SemanticRepairPart10.defectSource
+            FiniteModel.site
+            AAT.AG.Examples.SemanticRepairPart10.generatedF2QuotientPresheaf
+            (⊤ : Sieve FiniteModel.siteBase)
+            AAT.AG.Examples.SemanticRepairPart10.generatedF2GluingData
+            comparison) :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedF2_endToEndPacket_fromGeneratedProvenanceInputs
+
+theorem semanticRepairExample91GeneratedLawQuotientEndToEndFromNativeGeneratedProvenanceInputs :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepair.SemanticRepairCoverRelativeH1Comparison
+          AAT.AG.Examples.SemanticRepairPart10.generatedLawBoundaryAdditiveData.toAdditiveH1Surface
+          AAT.AG.Examples.SemanticRepairPart10.generatedLawCoverRelativeComplex =>
+          SemanticRepair.SemanticRepairGeneratedEndToEndSAGAPacket
+            AAT.AG.Examples.SemanticRepairPart10.generatedLawBoundaryAdditiveData
+            AAT.AG.Examples.SemanticRepairPart10.defectSource
+            FiniteModel.site
+            AAT.AG.Examples.SemanticRepairPart10.generatedLawQuotientPresheaf
+            (⊤ : Sieve FiniteModel.siteBase)
+            AAT.AG.Examples.SemanticRepairPart10.generatedLawGluingData
+            comparison) :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedLawQuotient_endToEndPacket_fromNativeGeneratedProvenanceInputs
 
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle
@@ -737,6 +775,12 @@ def zmod2TemporalProductIncidenceD0StepNonzero :=
 
 def zmod2TemporalProductIncidenceD0StepNeZero :=
   AAT.AG.Examples.EvolutionPart9.zmod2TemporalProductIncidence_d0_step_ne_zero
+
+def zmod2TemporalProductCoverRelativeH1ToFrom :=
+  AAT.AG.Examples.EvolutionPart9.zmod2TemporalProductCoverRelativeH1_to_from
+
+def zmod2TemporalProductCoverRelativeH1FromTo :=
+  AAT.AG.Examples.EvolutionPart9.zmod2TemporalProductCoverRelativeH1_from_to
 
 def transportDescentZeroToyModelNonempty :=
   @FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero

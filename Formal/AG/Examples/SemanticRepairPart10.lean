@@ -1,6 +1,7 @@
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.Cohomology.FiniteExamples
 import Formal.AG.SemanticRepair.Boundary
+import Formal.AG.SemanticRepair.SagaComparison
 import Mathlib.Data.Int.Basic
 import Mathlib.Data.ZMod.Basic
 import Mathlib.LinearAlgebra.Quotient.Basic
@@ -537,6 +538,48 @@ def generatedF2H1Realization :
     intro _cochain
     rfl
 
+/--
+X.例9.1 / #3102: explicit lower comparison provenance for the generated `F₂`
+coefficient.
+
+This is the audit-facing source for theorem 7.5: degree-wise carrier maps plus
+the four differential laws generate the H1 comparison.
+-/
+def generatedF2ComparisonProvenance :
+    SemanticRepairGeneratedComparisonProvenance
+      generatedF2BoundaryAdditiveData.toAdditiveH1Surface
+      generatedF2CoverRelativeComplex where
+  c0Equiv := by
+    change ZMod 2 ≃+ (PUnit -> ZMod 2)
+    exact zmod2SingletonCochainAddEquiv 0
+  c1Equiv := by
+    change ZMod 2 ≃+ (PUnit -> ZMod 2)
+    exact zmod2SingletonCochainAddEquiv 1
+  c2Equiv := by
+    change ZMod 2 ≃ (PUnit -> ZMod 2)
+    exact zmod2SingletonCochainEquiv 2
+  c2Equiv_zero := by
+    funext σ
+    cases σ
+    rfl
+  c2Equiv_symm_zero := rfl
+  d0_to := by
+    intro _primitive
+    funext σ
+    cases σ
+    rfl
+  d0_from := by
+    intro _primitive
+    rfl
+  d1_to := by
+    intro _cochain
+    funext σ
+    cases σ
+    rfl
+  d1_from := by
+    intro _cochain
+    rfl
+
 /-! ## Concrete law-equation firing data -/
 
 /-- X.例9.1: lawful finite object with the selected NoCycle relation removed. -/
@@ -831,6 +874,49 @@ def generatedLawH1Realization :
     intro _cochain
     rfl
 
+/--
+X.例9.1 / #3102: explicit lower comparison provenance for the native
+law-equation-generated quotient coefficient.
+
+This is not a supplied H1 comparison and not a prepackaged cochain realization:
+the theorem 7.5 route reconstructs both from these degree-wise carrier maps and
+four differential laws.
+-/
+def generatedLawComparisonProvenance :
+    SemanticRepairGeneratedComparisonProvenance
+      generatedLawBoundaryAdditiveData.toAdditiveH1Surface
+      generatedLawCoverRelativeComplex where
+  c0Equiv := by
+    change GeneratedLawQuotient ≃+ (PUnit -> GeneratedLawQuotient)
+    exact singletonCochainAddEquiv GeneratedLawQuotient 0
+  c1Equiv := by
+    change GeneratedLawQuotient ≃+ (PUnit -> GeneratedLawQuotient)
+    exact singletonCochainAddEquiv GeneratedLawQuotient 1
+  c2Equiv := by
+    change GeneratedLawQuotient ≃ (PUnit -> GeneratedLawQuotient)
+    exact singletonCochainEquiv GeneratedLawQuotient 2
+  c2Equiv_zero := by
+    funext σ
+    cases σ
+    rfl
+  c2Equiv_symm_zero := rfl
+  d0_to := by
+    intro _primitive
+    funext σ
+    cases σ
+    rfl
+  d0_from := by
+    intro _primitive
+    rfl
+  d1_to := by
+    intro _cochain
+    funext σ
+    cases σ
+    rfl
+  d1_from := by
+    intro _cochain
+    rfl
+
 /-! ## End-to-end firing -/
 
 /-- X.例9.1: top-cover gluing data for the singleton quotient presheaf. -/
@@ -910,6 +996,23 @@ def generatedF2EndToEndInputs :
   realization := generatedF2H1Realization
 
 /--
+X.例9.1 / #3102: generated theorem-7.5 input surface with explicit lower
+comparison provenance and no cochain-realization field.
+-/
+def generatedF2EndToEndProvenanceInputs :
+    SemanticRepairGeneratedEndToEndProvenanceInputs
+      generatedF2BoundaryAdditiveData defectSource FiniteModel.site
+      generatedF2QuotientPresheaf (⊤ : Sieve FiniteModel.siteBase)
+      generatedF2CoverRelativeComplex where
+  coefficientGeneratedFromLawEquation := ⟨rfl⟩
+  coverGeneratedInTopology := FiniteModel.site.top_mem FiniteModel.siteBase
+  obstructionSheafUsesGeneratedCoefficient := ⟨rfl⟩
+  semanticCoefficientBridge :=
+    Nontrivial (generatedF2QuotientPresheaf.obj (op FiniteModel.siteBase))
+  semanticCoefficientBridge_holds := generatedF2QuotientPresheaf_nontrivial
+  comparisonProvenance := generatedF2ComparisonProvenance
+
+/--
 X.例9.1 / #3102: native generated theorem-7.5 input surface.
 
 Here the obstruction sheaf carrier is definitionally
@@ -922,6 +1025,18 @@ def generatedLawNativeEndToEndInputs :
   coverGeneratedInTopology := FiniteModel.site.top_mem FiniteModel.siteBase
   obstructionSheafUsesGeneratedCoefficient := ⟨rfl⟩
   realization := generatedLawH1Realization
+
+/--
+X.例9.1 / #3102: native generated theorem-7.5 input surface with explicit
+lower comparison provenance and no cochain-realization field.
+-/
+def generatedLawNativeEndToEndProvenanceInputs :
+    SemanticRepairNativeGeneratedEndToEndProvenanceInputs
+      generatedLawBoundaryAdditiveData defectSource
+      (⊤ : Sieve FiniteModel.siteBase) generatedLawCoverRelativeComplex where
+  coverGeneratedInTopology := FiniteModel.site.top_mem FiniteModel.siteBase
+  obstructionSheafUsesGeneratedCoefficient := ⟨rfl⟩
+  comparisonProvenance := generatedLawComparisonProvenance
 
 /--
 X.例9.1: lawful firing of theorem 7.5 on the concrete finite instance.
@@ -985,6 +1100,31 @@ theorem lawfulFiring_generatedF2_endToEndPacket_fromGeneratedInputs :
     generatedF2EndToEndInputs
 
 /--
+X.例9.1 / #3102: theorem 7.5 fires through generated `F₂` provenance inputs.
+
+The H1 comparison is reconstructed from explicit degree-wise maps and
+differential laws, not supplied as a comparison or stored as a cochain
+realization.
+-/
+theorem lawfulFiring_generatedF2_endToEndPacket_fromGeneratedProvenanceInputs :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepairCoverRelativeH1Comparison
+          generatedF2BoundaryAdditiveData.toAdditiveH1Surface
+          generatedF2CoverRelativeComplex =>
+          SemanticRepairGeneratedEndToEndSAGAPacket
+            generatedF2BoundaryAdditiveData defectSource FiniteModel.site
+            generatedF2QuotientPresheaf
+            (⊤ : Sieve FiniteModel.siteBase) generatedF2GluingData
+            comparison) :=
+  lawEquation_constructs_groundedComparisonPacket_fromGeneratedProvenanceInputs
+    generatedF2BoundaryAdditiveData defectSource displayedRequiredLawsHoldOn
+    FiniteModel.site generatedF2QuotientPresheaf
+    (⊤ : Sieve FiniteModel.siteBase)
+    generatedF2TrueSheafCertificate generatedF2GluingData
+    generatedF2EndToEndProvenanceInputs
+
+/--
 X.例9.1 / #3102: theorem 7.5 fires over the native law-equation-generated
 obstruction quotient coefficient.
 
@@ -1009,6 +1149,31 @@ theorem lawfulFiring_generatedLawQuotient_endToEndPacket_fromNativeGeneratedInpu
     (⊤ : Sieve FiniteModel.siteBase)
     generatedLawTrueSheafCertificate generatedLawGluingData
     generatedLawNativeEndToEndInputs
+
+/--
+X.例9.1 / #3102: theorem 7.5 fires over the native law-equation-generated
+quotient through explicit provenance inputs.
+
+The coefficient is definitionally `lawEquationCore.obstructionQuotientPresheaf`;
+the comparison is generated from degree-wise carrier maps and differential
+laws, not supplied as a comparison or prepackaged cochain realization.
+-/
+theorem lawfulFiring_generatedLawQuotient_endToEndPacket_fromNativeGeneratedProvenanceInputs :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepairCoverRelativeH1Comparison
+          generatedLawBoundaryAdditiveData.toAdditiveH1Surface
+          generatedLawCoverRelativeComplex =>
+          SemanticRepairGeneratedEndToEndSAGAPacket
+            generatedLawBoundaryAdditiveData defectSource FiniteModel.site
+            generatedLawQuotientPresheaf
+            (⊤ : Sieve FiniteModel.siteBase) generatedLawGluingData
+            comparison) :=
+  lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedProvenanceInputs
+    generatedLawBoundaryAdditiveData defectSource displayedRequiredLawsHoldOn
+    (⊤ : Sieve FiniteModel.siteBase)
+    generatedLawTrueSheafCertificate generatedLawGluingData
+    generatedLawNativeEndToEndProvenanceInputs
 
 /--
 X.例9.1: theorem 8.1 fires on the same lawful source, producing pointwise zero
