@@ -115,8 +115,8 @@ PRD-R AC21 validation status: the final disposition ledger for all PRD-R
 inventory items I-* through IX-* is recorded in
 [`lean_ag_peer_review_inventory.md`](lean_ag_peer_review_inventory.md). The
 AC21 table traces implemented items to closed sub-issues where available and
-uses Issue #3086 as the tracking record for high-cost or B-level items closed
-as `宣言`, `statement-only`, or explicit future proof-obligation boundaries.
+uses Issue #3086 only for PRD-R B-level items or explicitly scoped non-claims
+closed as `宣言`, `statement-only`, or future proof-obligation boundaries.
 This is a closure of the peer-review hardening inventory, not a claim that
 every statement-shaped surface has been promoted to an unconditional theorem.
 
