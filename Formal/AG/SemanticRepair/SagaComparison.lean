@@ -329,6 +329,57 @@ def toH1Comparison
 end SemanticRepairGeneratedEndToEndInputs
 
 /--
+X.定理7.5 native generated-input surface.
+
+This stricter boundary fixes the downstream coefficient to the obstruction
+quotient presheaf produced by the law-equation witness-ideal core itself.  It is
+the audit-facing form of theorem 7.5: the end-to-end packet can no longer be
+formed with an arbitrary coefficient presheaf and a merely parallel witness.
+-/
+structure SemanticRepairNativeGeneratedEndToEndInputs
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    {Ulaw : AtomCarrier.{u}}
+    {Alaw : ArchitectureObject Ulaw}
+    {Slaw : Site.AATSite.{u} Alaw}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G)
+    {base : Slaw.category}
+    (cover : Sieve base)
+    {coverRel : Cohomology.CoverRelativeCechCover Slaw}
+    {Ob : Cohomology.ObstructionSheaf Slaw}
+    (K : Cohomology.CoverRelativeCechComplex coverRel Ob) : Type (max u v w x y z) where
+  coverGeneratedInTopology :
+    cover ∈ Slaw.topology base
+  obstructionSheafUsesGeneratedCoefficient :
+    Nonempty (Ob.carrier.carrier = G.obstructionQuotientPresheaf)
+  realization :
+    SemanticRepairCoverRelativeCochainRealization data.toAdditiveH1Surface K
+
+namespace SemanticRepairNativeGeneratedEndToEndInputs
+
+variable {P : SemanticAtomProjection.{u, v}}
+variable {data :
+  SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
+variable {Ulaw : AtomCarrier.{u}} {Alaw : ArchitectureObject Ulaw}
+variable {Slaw : Site.AATSite.{u} Alaw}
+variable {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+variable {D : LawAlgebra.LawEquationDefectSource.{u} G}
+variable {base : Slaw.category} {cover : Sieve base}
+variable {coverRel : Cohomology.CoverRelativeCechCover Slaw}
+variable {Ob : Cohomology.ObstructionSheaf Slaw}
+variable {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
+
+/-- X.定理7.5: native generated inputs construct the comparison used downstream. -/
+def toH1Comparison
+    (inputs : SemanticRepairNativeGeneratedEndToEndInputs data D cover K) :
+    SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K :=
+  inputs.realization.toH1Comparison
+
+end SemanticRepairNativeGeneratedEndToEndInputs
+
+/--
 X.定理7.5: generated law-equation grounding plus theorem 7.3 yields the
 10-conclusion SAGA packet, with law dependency confined to conclusions 1--3.
 -/
@@ -473,6 +524,47 @@ theorem lawEquation_constructs_groundedComparisonPacket_fromGeneratedInputs
   rcases
     lawEquation_constructs_groundedComparisonPacket
       data D hDisplayedRequiredLaws S F cover certificate gluingData comparison with
+    ⟨packet⟩
+  exact ⟨⟨comparison, packet⟩⟩
+
+/--
+X.定理7.5 native generated-input form: the theorem consumes cochain
+realization data while the coefficient presheaf is definitionally the
+law-equation-generated obstruction quotient `O/I_Ob`.
+-/
+theorem lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInputs
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    {Ulaw : AtomCarrier.{u}}
+    {Alaw : ArchitectureObject Ulaw}
+    {Slaw : Site.AATSite.{u} Alaw}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G)
+    (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
+    {base : Slaw.category}
+    (cover : Sieve base)
+    (certificate :
+      data.TrueSheafConditionCertificate Slaw G.obstructionQuotientPresheaf cover)
+    (gluingData :
+      Site.AATGluingData Slaw G.obstructionQuotientPresheaf cover)
+    {coverRel : Cohomology.CoverRelativeCechCover Slaw}
+    {Ob : Cohomology.ObstructionSheaf Slaw}
+    {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
+    (inputs :
+      SemanticRepairNativeGeneratedEndToEndInputs data D cover K) :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K =>
+          SemanticRepairGeneratedEndToEndSAGAPacket
+            data D Slaw G.obstructionQuotientPresheaf cover gluingData comparison) := by
+  let comparison := inputs.toH1Comparison
+  rcases inputs.obstructionSheafUsesGeneratedCoefficient with ⟨_hob⟩
+  have _hcover : cover ∈ Slaw.topology base := inputs.coverGeneratedInTopology
+  rcases
+    lawEquation_constructs_groundedComparisonPacket
+      data D hDisplayedRequiredLaws Slaw G.obstructionQuotientPresheaf
+      cover certificate gluingData comparison with
     ⟨packet⟩
   exact ⟨⟨comparison, packet⟩⟩
 
