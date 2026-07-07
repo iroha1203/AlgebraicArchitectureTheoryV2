@@ -90,6 +90,15 @@
 - 既存の未コミット変更はユーザーの変更として扱い、勝手に戻さない。
   `git reset --hard` や `git checkout --` は明示的な依頼なしに実行しない。
 - `.lake` は Lake の build / dependency cache 専用とし、一時出力は `.tmp/` または `/private/tmp` に置く。
+- **レビュー体制(2026-07-07 再設計)**: レビューは分野別の敵対レビュー SKILL
+  (`math-lean-review` / `tool-review` / `website-review` / `docs-review`)で行い、
+  観点の正本は `.codex/skills/_shared/refutation-checklist.md` に置く。
+  Lean 実装(`Formal/`)を触る差分は、大きさを問わず `math-lean-review` の
+  4並列査読(4本全承認)を必須とする。Research 側で受理済みの成果が本体に
+  無い状態は「境界」ではなく `unported (Research-proved)`(未移植)と呼ぶ
+  (`docs/aat/guideline.md` の Lean status discipline、
+  `docs/aat/research_evidence_index.md`)。設計の経緯は
+  `docs/note/codex_skill_audit_redesign_note.md`。
 
 ## 主要な入口
 

@@ -1,30 +1,35 @@
 ---
 name: review-pr
-description: PR 番号を受け取り、GitHub PR をレビューする。Use when the user asks Codex to review a PR, judge whether a PR is mergeable, verify linked Issue completion criteria, check implementation/test/docs gaps, or says "$review-pr <PR number>". This skill compares the PR against its linked Issue(s), inspects diffs and CI, runs appropriate local checks when needed, and reports whether it can be merged.
+description: PR 番号を受け取り、GitHub PR をレビューするマージゲート。責務境界で分野を判定し、分野別の敵対レビュー SKILL(math-lean-review / tool-review / website-review / docs-review)へサブエージェントで必ず委譲し、統合判定と監査コメントの PR 投稿までを行う。Lean 実装(Formal/)を触る PR は差分の大きさを問わず math-lean-review の4並列査読を必須とする。Use when the user asks Codex to review a PR, judge whether a PR is mergeable, or says "$review-pr <PR number>".
 ---
 
 # Review PR
 
-GitHub PR を、紐づく Issue の完了条件・実装内容・テスト・docs 更新・CI 状態に照らしてレビューする。
+GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の照合は本体で
+行い、**内容レビューは分野別の敵対レビュー SKILL へ委譲する**。
 このリポジトリでは、ユーザーへの報告は日本語で行う。
 
-## 入力
+## 敵対レビュー原則
 
-- ユーザーが `$review-pr 123` や `PR #123 をレビューして` と言った場合、`123` を PR 番号として扱う。
-- PR 番号が見つからない場合だけ、短く確認する。
-- PR 番号以外の追加観点があれば、通常レビューに加えて確認する。
+これは**敵対レビュー**のゲートである。目的は PR を通すことではなく、
+マージを止めるべき事実を探すこと。承認は反証の失敗としてのみ与える。
+反証の手がかりの正本は `.codex/skills/_shared/refutation-checklist.md`。
+本体・委譲先とも finding ゼロの報告には資格条件(反証試行3件の明記)が
+課される(同 reference §7)。
 
 ## 基本方針
 
-- コードレビュー姿勢を取る。バグ、仕様未達、Issue 完了条件の不足、回帰、テスト不足、docs drift を優先する。
-- PR の良い点より、マージを止めるべき事実を先に出す。
+- **実装者の自己申告を証拠から除外する。** PR 本文の「証明した定理」
+  リスト、「セルフレビュー実施済み」チェック、台帳・checklist の記載は
+  監査対象であって証拠ではない。claim mapping はレビュー側で**独立に
+  再構築**し、PR 本文の申告(conjunct 対応表を含む)と**突合**する。
 - 既存の未コミット変更はユーザー変更として扱い、勝手に戻さない。
-- 破壊的操作をしない。`git reset --hard`, `git checkout --`, force push は使わない。
-- PR ブランチを現在の作業ツリーへ checkout する必要がある場合は、作業ツリーが clean か確認する。dirty の場合は `/tmp` の一時 worktree を優先する。
-- Lean 変更を含む PR では、原則として `lake build` を確認する。既存 CI が既に同等の `lake build` を成功させていても、ローカルで実行できない場合はその理由を報告する。
-- 公開物に入る可能性がある code、fixture、docs、schema catalog、website、release asset、tool output contract では、個人名、ローカル絶対パス、private/internal 風の fixture 値、作業環境固有名が混入していないかを必ず確認し、見つけた場合は原則 `Needs changes` の finding にする。
-- PR が PRD の完了条件、台帳 status、処置ラベル(昇格 / 実質化 / 宣言 / 削除 等)を更新する場合、記載の変更が実体(コード・Lean 宣言・テスト)と宣言単位で一致しているかを確認する。実装・証明・発火を要求する条件を docs 変更だけで完了側へ動かす PR は、PRD がその処置を許可していない限り `Needs changes` にする。
-- 処置種別の降格を含む PR は、PRD の降格許容リスト(等級リスト等)と照合する。許可外の降格は `Needs changes` とし、ユーザー判断事項として報告する。降格の可否を PR / Issue 本文の文言だけで判断しない(PRD が正)。
+  破壊的操作をしない。`git reset --hard`, `git checkout --`, force push は
+  使わない。
+- PR ブランチの checkout が必要な場合は一時 worktree
+  (`/tmp/aat-review-pr-<PR>`)を使う。
+- 処置種別の降格を含む PR は、PRD の降格許容リストと照合する。許可外の
+  降格は `Needs changes` とし、ユーザー判断事項として報告する(PRD が正)。
 
 ## 手順
 
@@ -35,49 +40,76 @@ GitHub PR を、紐づく Issue の完了条件・実装内容・テスト・doc
    - `gh pr diff <PR> --name-only`
 
 2. 紐づく Issue を読む。
-   - `closingIssuesReferences` があれば、その Issue を `gh issue view <N> --json number,title,state,body,labels,milestone,url` で確認する。
-   - PR 本文の `Closes #N`, `Fixes #N`, `Resolves #N` も確認する。
-   - 明示的な Issue がなければ、PR 本文・タイトル・ブランチ名から推測せず、「紐づく Issue 不明」としてレビュー上のリスクにする。
-   - Issue の `目的`, `背景`, `完了条件`, `Lean status`, sub-issue / checklist を抜き出し、PR が満たしているか照合する。
+   - `closingIssuesReferences` と PR 本文の `Closes #N` を確認する。
+   - 明示的な Issue がなければ「紐づく Issue 不明」としてレビュー上の
+     リスクにする。
+   - Issue の `完了条件`、タスク型宣言、source of truth ポインタ
+     (PRD 節番号・本文ラベル・移植元 theorem 名)を抜き出す。
+     タスク型が「移植」の PR では、移植元 theorem 名を委譲先に渡す。
 
-3. 差分を読む。
-   - `gh pr diff <PR>` を主入口にする。
-   - 大きい PR では `gh pr view <PR> --json files` と `gh pr diff <PR> -- <path>` 相当の分割確認を行う。`gh pr diff` に path filter が使えない場合は、PR head を一時 worktree に取得して `git diff base...head -- <path>` を使う。
-   - Lean 定理名、docs status、Issue 番号、PR template の記載と実装の一致を確認する。
+3. **分野判定と委譲(このゲートの中心)。**
+   changed files から分野を判定し、対応する分野別レビュー SKILL を
+   **サブエージェントで必ず**実行する。分野判定はファイルパスの集合では
+   なく責務境界で行う(各分野は自分の claim に隣接する docs を所有する):
 
-4. 必要なら一時 worktree で検証する。
-   - 現在の作業ツリーを汚さないため、通常は `/tmp/aat-review-pr-<PR>` を使う。
-   - 例:
-     - `git fetch origin pull/<PR>/head:refs/remotes/pr/<PR>`
-     - `git worktree add --detach /tmp/aat-review-pr-<PR> refs/remotes/pr/<PR>`
-   - 検証後、一時 worktree を不要に長く残さない。削除が必要なら非破壊的に `git worktree remove /tmp/aat-review-pr-<PR>` を使う。
-   - sandbox やネットワーク制約で fetch / build が失敗した場合は、承認付きで再実行する。
+   | 分野 | 対象 | 委譲先 |
+   | --- | --- | --- |
+   | AAT / Lean | `Formal/`、`docs/aat/` の台帳類・数学本文整合 | `$math-lean-review` |
+   | Tooling | `tools/`、`docs/tool/`、schema catalog | `$tool-review` |
+   | Website | `website/`、`docs/website/` | `$website-review` |
+   | Docs | docs-only、`docs/sft/`、`docs/note/`、PRD、`.codex/skills/` | `$docs-review`(レビューモード) |
 
-5. チェックを実行する。
-   - Lean 変更がある場合:
-     - `lake build`
-     - `git diff --check`
-     - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" Formal docs`
-     - hidden / bidi scan: `rg -n "[\\u200B-\\u200F\\u202A-\\u202E\\u2066-\\u2069]" <changed-files>`
-   - docs-only PR でも、Lean status や import に影響する記述なら `lake build` を検討する。
-   - tooling 変更なら該当テストも確認する。例: `cargo test --manifest-path tools/archsig/Cargo.toml`
-   - public / release surface に触る PR では privacy / local-path scan を行う。目安:
-     - `rg -n "(\\/Users\\/|\\/home\\/|C:\\\\Users\\\\|Documents\\/|HelloLean|nakahata|private\\/internal|\\/private\\/internal|\\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>`
-     - Tooling / release output では `docs/aat/...` や `docs/tool/...` のような repo-local source-of-truth path が runtime artifact に露出していないかも確認する。必要なら `aat-theory:*`, `archsig-contract:*` などの安定 ID を求める。
+   - **Lean 実装(`Formal/`)を触る PR は、差分の大きさを問わず(1行でも)
+     `$math-lean-review` を必須とする。** 4並列査読はユーザー承認なしで
+     無条件に立てる。**4本すべてが承認しない限り `Mergeable` を出せない**
+     (棄却には該当レーンの再実行承認が必要。math-lean-review の
+     4本全承認ゲート参照)。
+   - Lean 実装+`docs/aat/` 台帳更新の PR は math-lean-review のみで
+     足りる(statement と台帳の一致は一体で監査する)。
+   - 真の分野横断(例: Lean + SFT 本文)は該当する複数分野で実行する。
+   - サブエージェントが起動できない場合、親が代替レビューをせず、
+     判定を `Blocked / cannot determine` に落とす(fail-closed)。
 
-6. マージ可否を判定する。
-   - **Mergeable**: Issue 完了条件を満たし、CI / 必要なローカル検証が通り、重大な未対応がない。
-   - **Needs changes**: 完了条件未達、証明不足、テスト不足、docs drift、実装バグ、CI failure がある。
-   - **Blocked / cannot determine**: PR head を取得できない、CI 未完了、紐づく Issue 不明、必要な検証が環境制約で実行できない。
+4. 本体で照合する(委譲と並行してよい)。
+   - Issue 完了条件と diff の照合(条件文言と実体の対応)。
+   - CI 状態(`gh pr checks`)。
+   - checklist §6 の横断機械 scan(hidden/bidi、privacy / local-path、
+     `git diff --check`)。
+   - 必要なら一時 worktree で `lake build` / cargo test を実行する。
+
+5. 統合判定する。
+   - **委譲先判定の写像(合格の定義)**:
+     - `math-lean-review`: 合格 = `No major findings`、または
+       `Minor issues` かつ全 finding が中心 claim に触れない場合
+       (その finding は監査コメントに残し、対応要否を明記する)。
+       `Major revisions` / `Reject` / `Blocked` は不合格。
+     - `tool-review` / `website-review` / `docs-review`:
+       合格 = `No major findings` のみ。`Needs changes` / `Blocked` は不合格。
+   - **Mergeable**: 委譲した全分野レビューが上記の意味で合格
+     (Lean 系は4本全承認を含む)、Issue 完了条件を満たし、
+     CI / 必要なローカル検証が通り、重大な未対応がない。
+   - **Needs changes**: 委譲先の不合格、完了条件未達、テスト不足、
+     docs drift、CI failure がある。
+   - **Blocked / cannot determine**: PR head を取得できない、CI 未完了、
+     紐づく Issue 不明、サブエージェント起動不能、必要な検証が実行できない。
+
+6. **監査コメントを PR に投稿する(マージ前提条件)。**
+   マージ手順(呼び出し元の prd-loop 等)に進む前に、次を含むレビュー
+   監査コメントを PR へ投稿する。投稿が存在しない PR はマージ手順に
+   進めない。
+   - 統合判定
+   - 分野・レーン別結論(math-lean-review なら4本それぞれの verdict)。
+     **レーン別結論は親の要約に置き換えず、各レーンの報告原文
+     (findings・反証試行・coverage limits の各節)をそのまま含める。**
+     原文なしの要約だけの監査コメントはレビュー未実施として扱われる
+   - 反証試行記録(finding ゼロの分野は反証試行3件以上)
+   - Issue 完了条件の照合結果(満たした / 未達)
+   - 実行した検証(コマンドと結果)、coverage / 残リスク
+   資格条件(reference §7)を満たさない監査コメントは、後続のフル
+   レビューで「レビュー未実施」として扱われる。
 
 ## 報告形式
 
-レビュー結果は簡潔に、次の順で出す。
-
-1. 判定: `Mergeable`, `Needs changes`, `Blocked / cannot determine`
-2. Findings: 重大度順。各 finding はファイル / 行、Issue 完了条件との関係、なぜ問題か、必要な修正を含める。
-3. Issue 完了条件の照合: 満たした項目 / 未達項目。
-4. 実行した検証: コマンドと結果。実行できなかったものは理由。
-5. 重複・残リスク: マージ判断に影響する不確実性。
-
-問題がない場合は、無理に finding を作らず「重大な指摘なし」と明記する。
+ユーザーへの報告は監査コメントと同じ構成で簡潔に出し、監査コメントの
+URL を添える。問題がない場合も、反証試行の記録なしに「重大な指摘なし」
+とは書かない。

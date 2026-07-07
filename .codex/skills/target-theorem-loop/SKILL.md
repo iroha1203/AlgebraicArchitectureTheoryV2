@@ -304,6 +304,8 @@ final review では `unchecked` を fail-closed に扱う。中心 claim、mater
 
 PR には Lean ファイルまたは証拠、report、tracking Issue の cycle result を含める。PR 本文は原則 `Refs #<tracking-issue>` を使い、人間の明示指示なしに tracking Issue を close しない。
 
+受理(proof obligation の discharge 確定、および `target-theorem-proved`)を含む PR では、**`docs/aat/research_evidence_index.md` への1行登録(theorem 名、ファイル、本文ラベル、conjuncts 要旨、受理点、移植状況 `unported`)を出力義務とする**(Research 下限原則の検索基盤)。
+
 PR 前に `git diff --check`、`git diff --cached --check`、未追跡ファイル、不可視 Unicode、ローカル絶対パス、保護対象 docs の編集有無を確認する。completion candidate、proof obligation discharge、material premise delta、または report / tracking Issue の proof ledger 更新を含む PR は `$review-pr <PR番号>` を独立 subagent で実行する。マージは独立レビューが mergeable で、CI または必要なローカル検証が通った場合だけ行う。
 
 ## 停止条件

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Docs Review"
+  short_description: "docs 差分の敵対レビューと、単独起動の repo 全体 drift 保守"
+  default_prompt: "Use $docs-review to adversarially review the current docs changes in Japanese, or run maintenance mode for a repo-wide drift sweep."
