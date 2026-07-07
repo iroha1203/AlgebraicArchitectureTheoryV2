@@ -263,11 +263,12 @@ structure SemanticRepairGeneratedEndToEndSAGAPacket
 /--
 X.定理7.5 native generated-input surface.
 
-This stricter boundary carries an equality certificate that the downstream
-coefficient is the obstruction quotient presheaf produced by the law-equation
-witness-ideal core itself. The native theorem route can no longer be formed
-with an arbitrary coefficient presheaf, while the selected cochain realization
-still supplies the comparison used by theorem 7.3.
+This stricter boundary fixes the downstream coefficient to the obstruction
+quotient presheaf produced by the law-equation witness-ideal core itself. The
+native theorem route can no longer be formed with an arbitrary coefficient
+presheaf or obstruction sheaf: the cover-relative complex is typed over the
+obstruction sheaf generated from `G.obstructionQuotientCoefficient` and the
+selected sheaf certificate.
 -/
 structure SemanticRepairNativeGeneratedEndToEndInputs
     {P : SemanticAtomProjection.{u, v}}
@@ -280,13 +281,13 @@ structure SemanticRepairNativeGeneratedEndToEndInputs
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     {base : Slaw.category}
     (cover : Sieve base)
+    (certificate :
+      data.TrueSheafConditionCertificate Slaw G.obstructionQuotientPresheaf cover)
     {coverRel : Cohomology.CoverRelativeCechCover Slaw}
-    {Ob : Cohomology.ObstructionSheaf Slaw}
-    (K : Cohomology.CoverRelativeCechComplex coverRel Ob) : Type (max u v w x y z) where
-  coverGeneratedInTopology :
-    cover ∈ Slaw.topology base
-  obstructionSheafUsesGeneratedCoefficient :
-    Nonempty (Ob.carrier.carrier = G.obstructionQuotientPresheaf)
+    (K : Cohomology.CoverRelativeCechComplex coverRel
+      (Cohomology.ObstructionSheaf.ofAddCommGrpValued
+        G.obstructionQuotientCoefficient certificate.sheafCondition)) :
+    Type (max u v w x y z) where
   realization :
     SemanticRepairCoverRelativeCochainRealization data.toAdditiveH1Surface K
 
@@ -300,13 +301,16 @@ variable {Slaw : Site.AATSite.{u} Alaw}
 variable {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
 variable {D : LawAlgebra.LawEquationDefectSource.{u} G}
 variable {base : Slaw.category} {cover : Sieve base}
+variable {certificate :
+  data.TrueSheafConditionCertificate Slaw G.obstructionQuotientPresheaf cover}
 variable {coverRel : Cohomology.CoverRelativeCechCover Slaw}
-variable {Ob : Cohomology.ObstructionSheaf Slaw}
-variable {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
+variable {K : Cohomology.CoverRelativeCechComplex coverRel
+  (Cohomology.ObstructionSheaf.ofAddCommGrpValued
+    G.obstructionQuotientCoefficient certificate.sheafCondition)}
 
 /-- X.定理7.5: native generated inputs construct the comparison used downstream. -/
 def toH1Comparison
-    (inputs : SemanticRepairNativeGeneratedEndToEndInputs data D cover K) :
+    (inputs : SemanticRepairNativeGeneratedEndToEndInputs data D cover certificate K) :
     SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K :=
   inputs.realization.toH1Comparison
 
@@ -435,18 +439,17 @@ theorem lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInput
     (gluingData :
       Site.AATGluingData Slaw G.obstructionQuotientPresheaf cover)
     {coverRel : Cohomology.CoverRelativeCechCover Slaw}
-    {Ob : Cohomology.ObstructionSheaf Slaw}
-    {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
+    {K : Cohomology.CoverRelativeCechComplex coverRel
+      (Cohomology.ObstructionSheaf.ofAddCommGrpValued
+        G.obstructionQuotientCoefficient certificate.sheafCondition)}
     (inputs :
-      SemanticRepairNativeGeneratedEndToEndInputs data D cover K) :
+      SemanticRepairNativeGeneratedEndToEndInputs data D cover certificate K) :
     Nonempty
       (Sigma fun comparison :
         SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K =>
           SemanticRepairGeneratedEndToEndSAGAPacket
             data D Slaw G.obstructionQuotientPresheaf cover gluingData comparison) := by
   let comparison := inputs.toH1Comparison
-  rcases inputs.obstructionSheafUsesGeneratedCoefficient with ⟨_hob⟩
-  have _hcover : cover ∈ Slaw.topology base := inputs.coverGeneratedInTopology
   rcases
     lawEquation_constructs_groundedComparisonPacket
       data D hDisplayedRequiredLaws Slaw G.obstructionQuotientPresheaf
