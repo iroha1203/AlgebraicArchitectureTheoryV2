@@ -875,8 +875,6 @@ theorem toyDecompositionGroupoid_hom_kind_refactor
 
 def toyLocalDecomposition : Bool -> Bool := id
 
-def toyZeroClassLocalDecomposition : Bool -> Bool := fun i => !i
-
 def toyBadLocalDecomposition : Bool -> Bool := fun _ => false
 
 def ToyOverlapCompatible (loc : Bool -> Bool) : Prop :=
@@ -1051,9 +1049,30 @@ def concreteDecompositionGerbeToyModel :
     cases h
 
 theorem concreteDecompositionGerbeToyModel_fires :
+    toyDecompositionStack.overlapCompatible ∧
+      toyDecompositionStack.effectiveDescent ∧
+      toyNoCanonicalDecompositionData.localDecompositionsExist ∧
+      toyGerbeObstructionData.autSheafDefined ∧
+      toyGerbeObstructionData.nonAbelianReading ∧
+      toyGerbeObstructionData.gerbeClass =
+        toyGerbeClassFromLocalData toyLocalDecomposition ∧
+      toyGerbeClassFromLocalData toyLocalDecomposition ≠
+        toyGerbeObstructionData.zero ∧
+      ¬ toyNoCanonicalDecompositionData.globalCanonicalDecomposition := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · exact toyDecompositionStack.overlapCompatible_cert
+  · exact toyDecompositionStack.effectiveDescent_cert
+  · exact toyNoCanonicalDecompositionData.localDecompositionsExist_cert
+  · exact toyGerbeObstructionData.autSheafDefined_cert
+  · exact toyGerbeObstructionData.nonAbelianReading_cert
+  · exact toyGerbeClass_eq_computed_local_class
+  · exact toyGerbeClassFromLocalData_nonzero
+  · exact DecompositionGerbeToyModel.verifies_no_canonical_decomposition
+      concreteDecompositionGerbeToyModel
+
+theorem concreteDecompositionGerbeToyModel_no_global :
     ¬ toyNoCanonicalDecompositionData.globalCanonicalDecomposition :=
-  DecompositionGerbeToyModel.verifies_no_canonical_decomposition
-    concreteDecompositionGerbeToyModel
+  concreteDecompositionGerbeToyModel_fires.2.2.2.2.2.2.2
 
 end SingularityMonodromyStackPart6
 end FiniteModel

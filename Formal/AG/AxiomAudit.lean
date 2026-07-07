@@ -345,8 +345,23 @@ theorem partVIRefactorPreservesNegative :
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData_preserves_negative
 
 theorem partVIDecompositionGerbeConcrete :
-    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNoCanonicalDecompositionData.globalCanonicalDecomposition :=
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionStack.overlapCompatible ∧
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionStack.effectiveDescent ∧
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNoCanonicalDecompositionData.localDecompositionsExist ∧
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeObstructionData.autSheafDefined ∧
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeObstructionData.nonAbelianReading ∧
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeObstructionData.gerbeClass =
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeClassFromLocalData
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecomposition ∧
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeClassFromLocalData
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecomposition ≠
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeObstructionData.zero ∧
+      ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNoCanonicalDecompositionData.globalCanonicalDecomposition :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteDecompositionGerbeToyModel_fires
+
+theorem partVIDecompositionGerbeNoGlobal :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNoCanonicalDecompositionData.globalCanonicalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteDecompositionGerbeToyModel_no_global
 
 theorem partVIDecompositionHomKindRefactor
     {a b : AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid.Object}
