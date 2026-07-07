@@ -67,6 +67,12 @@ statement の意味を読んで反証を試みる。
    本体が入力 premise に移していれば、それも弱化である。
 4. Research 側に同等以上の statement が受理済みである限り、本体側の
    欠落は「境界」ではなく `unported (Research-proved)`(未移植)と呼ぶ。
+5. **依存 repackage の禁止(移植 ≠ import)**: 「移植した」という主張の
+   実体が `Formal.AG.Research` の import +再導出ラッパーなら、それは
+   蒸留ではなく依存 repackage であり、status は `unported` のまま。
+   本体(`Formal/AG` 本線・`Formal.lean` 配線)から Research への import は
+   方向規律違反(Research → 本体のみ可)として、レーンの裁量なしに
+   hard fail とする(検査コマンドは §6)。
 
 ## 4. no-go 適用範囲(境界資格条件の正本)
 
@@ -110,6 +116,8 @@ rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>
 rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal docs
 # privacy / local-path(public / release surface と changed files)
 rg -n "(\/Users\/|\/home\/|C:\\\\Users\\\\|Documents\/|HelloLean|nakahata|private\/internal|\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>
+# Research 境界(本体から Formal.AG.Research への import 禁止。ヒット = hard fail)
+rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**'
 ```
 
 - **横断 privacy 報告義務**: sub-agent は担当観点にかかわらず、

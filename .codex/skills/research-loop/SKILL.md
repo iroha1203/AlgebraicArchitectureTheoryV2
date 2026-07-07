@@ -98,7 +98,7 @@ GOAL card の必須項目や欠陥判定は [references/goal-card-contract.md](r
 
 ### G3 Lean 検証または証拠固定
 
-定理候補は `Formal/AG/Research/<slug>.lean` に形式化する。`Formal/AG` 本体は参照または import のみ可とし、このループでは直接編集しない。
+定理候補は `Formal/AG/Research/<slug>.lean` に形式化する。`Formal/AG` 本体は参照または import のみ可とし、このループでは直接編集しない。import 方向は **Research → 本体のみ**であり、本体側(`Formal/AG` 本線・`Formal.lean` 配線)へ `Formal.AG.Research` の import を持ち込むことは、このループでも蒸留移植でも常に禁止する(疎結合不変条件。破ると math-lean-review の境界侵犯検査で hard fail)。
 
 合格条件:
 

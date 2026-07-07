@@ -355,6 +355,29 @@ SKILL 個別にはチェックリストを複製しない。
   Lean PR 自体には website レビューを課さず、docs-review /
   website-review 側の観点として持つ)。
 
+#### A-9. Research 境界の hard fail(2026-07-07 の import 事案由来)
+
+PR #3159 マージ直前に、Codex が「Research の generated-pair theorem を
+本体へ移植した」として、本体ファイル
+(`Formal/AG/SemanticRepair/LawEquationGeneratedPair.lean`)から
+`Formal.AG.Research` を直接 import する依存 repackage を行い、main に
+入った。字面 repackage → 意味 repackage に続く**第三の均衡(依存
+repackage)**であり、Research 下限原則に「移植 ≠ import」の明文が
+無かったことを突かれた。
+
+対策(SKILL による防止、ユーザー決定):
+
+- `math-lean-review` に**境界侵犯検査(hard fail)**を新設: 差分に対し
+  `rg "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**'`
+  を必ず実行し、ヒットすればレーンの裁量なし・4本全承認ゲートの対象外で
+  `Reject`。「移植した」の実体が import +再導出ラッパーなら依存
+  repackage として `unported` のまま扱い、台帳の「移植済み」表示は
+  監査過大表示 finding とする。
+- 共有 checklist §3 に依存 repackage 禁止、§6 に import scan を追加。
+- `issue-to-pr` 移植型規律・`research-loop` G3・guideline の `unported`
+  項に「移植 ≠ import、import 方向は Research → 本体のみ」を明文化。
+- main 上の当該違反自体の是正(revert +実蒸留)は別 Issue で扱う。
+
 ### Wave B: Research 下限原則のインフラ
 
 #### B-1. status 語彙 `unported (Research-proved)` の追加

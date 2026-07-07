@@ -100,6 +100,29 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 
 `#print axioms` の解釈では、Lean/mathlib の通常依存と、この repo が導入した `axiom`、未証明 placeholder、選択公理依存、証明の薄さを分けて報告する。`Classical.choice` だけで即失格にはしないが、存在・一意性・構成性を主張する本文と矛盾する場合は finding にする。
 
+## 境界侵犯検査(hard fail)
+
+レーンの裁量なしに、差分に対して必ず機械検査する。
+
+```bash
+# 本体(Formal/AG 本線)から Research への import は禁止
+rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**'
+```
+
+- 上記が1件でもヒットする差分は、他のすべての観点の結果にかかわらず
+  **`Reject / 証明として不十分`** とする。4本全承認ゲートで覆せない
+  (承認の対象外)。
+- **移植(蒸留)は import ではない。** 「Research の theorem を本体へ
+  移植した」という主張の実体が Research module の import +再導出
+  ラッパーである場合、それは蒸留ではなく**依存 repackage**であり、
+  対象の status は `unported (Research-proved)` のまま。台帳・PR 本文が
+  これを「移植済み」と表示していれば、監査表示の過大化として finding に
+  する(先例: 2026-07-07 の `LawEquationGeneratedPair.lean` 事案)。
+- import の方向規律: `Formal/AG/Research/` 側が本体を import するのは可。
+  逆方向は常に禁止(研究 sandbox と正本の疎結合。PRD-R AC18 不変条件)。
+- `Formal.lean` / `Formal/AG.lean` 等の配線変更が Research module を
+  default build の依存へ引き込んでいないかも同時に検査する。
+
 ## 厳格判定ポイント
 
 次を疑う。基底パターン語彙(結論射影 / `True` 充足 / instance 実在 /

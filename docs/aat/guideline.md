@@ -75,6 +75,14 @@
   (Research 下限原則)。`unported` は完了 status ではなく、close は蒸留完了
   (下限到達)または「下限到達不能の停止報告」のみで行う。移植状況は
   `docs/aat/research_evidence_index.md` で追跡する。
+- **移植 ≠ import(Research 境界の不変条件)**: 本体(`Formal/AG` 本線、
+  `Formal.lean` / `Formal/AG.lean` の配線を含む)から `Formal.AG.Research` を
+  import してはならない。import 方向は Research → 本体のみ可
+  (研究 sandbox と正本の疎結合、PRD-R AC18)。「移植」とは本体内で構成を
+  再構成する蒸留であり、Research module の import +再導出ラッパーは
+  依存 repackage として `unported` のまま扱う。検査:
+  `rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**'`
+  が no match であること。
 - **境界記載の資格条件**: 台帳・docs・PR 本文に境界(selected input、no-go、沈黙、
   「〜とは主張しない」)を書いてよい条件は、`.codex/skills/_shared/refutation-checklist.md`
   §4 を正本とする(不可能性証拠の宣言名名指し+量化対象が境界化対象を覆うことの
