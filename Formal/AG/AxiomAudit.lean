@@ -1,4 +1,5 @@
 import Formal.AG
+import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.Examples.SingularityMonodromyStackPart6
@@ -49,6 +50,9 @@ def semanticRepairTheorem73GroundedGlobalGluingPackage :=
 
 def semanticRepairTheorem75NativeGeneratedEndToEndFromNativeGeneratedInputs :=
   @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInputs
+
+def semanticRepairTheorem75GeneratedPairGroundedComparisonPacket :=
+  @SemanticRepair.lawEquation_constructs_generatedPair_groundedComparisonPacket
 
 def semanticRepairTheorem81DegreeZeroLawContribution :=
   @SemanticRepair.displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
