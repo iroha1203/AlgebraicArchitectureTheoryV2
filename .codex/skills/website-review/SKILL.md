@@ -56,6 +56,9 @@ description: Website / Manual 分野の敵対レビュー SKILL。website/ と d
 4. **static UX と検証**
    - route、asset path、link、responsive layout、text overflow、
      accessibility の崩れを疑う。
+   - first viewport で次 section の hint が見えるか、カードの入れ子や
+     過剰装飾がないかを疑う。manual / command reference は scanning、
+     comparison、repeated use に向いた密度かを疑う。
    - local static preview、link / asset / title / layout checks、
      `sitemap.xml` / `robots.txt` の破綻を確認する。
    - mobile / desktop viewport の text overlap / clipping を疑う。

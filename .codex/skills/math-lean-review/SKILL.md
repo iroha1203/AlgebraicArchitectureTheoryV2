@@ -102,16 +102,21 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 
 ## 境界侵犯検査(hard fail)
 
-レーンの裁量なしに、差分に対して必ず機械検査する。
+レーンの裁量なしに、必ず機械検査する。
 
 ```bash
-# 本体(Formal/AG 本線)から Research への import は禁止
-rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**'
+# 本体(Formal/AG 本線)から Research への import は禁止。
+# Research 集約ルート Formal/AG/Research.lean 自身の内部 import は正当なので除外
+rg -n "import Formal\.AG\.Research" Formal Formal.lean \
+  --glob '!Formal/AG/Research/**' --glob '!Formal/AG/Research.lean'
 ```
 
-- 上記が1件でもヒットする差分は、他のすべての観点の結果にかかわらず
-  **`Reject / 証明として不十分`** とする。4本全承認ゲートで覆せない
-  (承認の対象外)。
+- ヒットのうち**差分が新規に追加した行**が1件でもあれば、他のすべての
+  観点の結果にかかわらず **`Reject / 証明として不十分`** とする。
+  4本全承認ゲートで覆せない(承認の対象外)。
+- 差分と無関係な既存ヒット(main 由来)は、その PR の Reject 理由には
+  しないが、**既存の境界違反 blocker** としてユーザーへ即時報告する
+  (黙認しない)。
 - **移植(蒸留)は import ではない。** 「Research の theorem を本体へ
   移植した」という主張の実体が Research module の import +再導出
   ラッパーである場合、それは蒸留ではなく**依存 repackage**であり、
@@ -142,7 +147,8 @@ rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Resear
 - structure-field escape: quotient relation、exactness、descent、effectivity、compatibility、naturality、comparison、global coherence の主要部分が structure field として供給されていないか。供給 field から accessor theorem を出しているだけなら、構成証明ではなく conditional surface と判定する。
 - 依存補題: 対象 theorem は clean でも、依存補題が未証明、過大仮定、特殊化、または本文 claim と違う universe / coefficient / topology / site / category を使っていないか。
 - 反例可能性: 本文主張に必要な separatedness、base change、descent、cover stability、functoriality、cohomology coefficient、stack quotient、finite/infinite distinctionが抜けていないか。
-- 台帳整合: `lean_theorem_index.md`、`proof_obligations.md`、GOAL card、candidate card、report が Lean 実体と同じ rigor label を持つか。theorem 系 status は三分化語彙(`proved` / `packaged (assumption-relative)` / `statement-only`)と整合するか。仮定パッケージの帰結が `proved` を名乗っていないか。
+- 台帳整合: `lean_theorem_index.md`、`proof_obligations.md`、GOAL card、candidate card、report が Lean 実体と同じ rigor label を持つか。theorem 系 status は三分化語彙(`proved` / `packaged (assumption-relative)` / `statement-only`)および `unported (Research-proved)` と整合するか。仮定パッケージの帰結が `proved` を名乗っていないか。
+- API 品質: import、namespace、命名、局所性が既存 pattern と整合しているか。定義が過度に抽象化されていないか。theorem statement が使いやすい形か(不要に強い仮定・弱すぎる結論になっていないか)。
 - 範囲外の切り分け: AAT の theorem claim が要求していない ArchMap 抽出完全性、source coverage、tooling evidence completeness、外部実証 completeness を、証明未達の finding と混同していないか。
 
 ## Material Premise Discharge Audit

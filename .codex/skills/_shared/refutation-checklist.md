@@ -49,12 +49,23 @@ statement の意味を読んで反証を試みる。
   固定に置き換えること(先例: #3159 の `ofAddCommGrpValued` 化)。
 - **instance ペアの欠如**: 新規の Prop 述語・certificate 構造に、
   満たす instance と満たさない instance の両方が提供されているか。
-  片方しか無い述語は空虚化(常に真/常に偽)を疑う。
+  片方しか無い述語は空虚化(常に真/常に偽)を疑う。実装者が
+  「片方は作れない」と申告している場合、その理由を実読で検証する —
+  理由自体が空虚性(常に真/常に偽であること)を示唆しているなら
+  それが finding である。
 
 ## 3. 移植元 conjunct 対応(Research 下限原則)
 
+**タスク型宣言は信用しない(宣言も監査対象)。** 差分が本体
+(`Formal/AG` 本線)に新しい theorem・定理群を追加する場合、宣言が
+「修正」「新規実装」であっても、Research に同主題の宣言が無いかを
+`docs/aat/research_evidence_index.md` と `Formal/AG/Research/` の `rg`
+検索で**必ず**確認し、検索語と結果を報告に記録する(索引が空の期間は
+特に、直接検索を省略しない)。同主題の受理宣言が見つかれば、宣言に
+かかわらず本節の移植監査を適用する — **疑わしきは移植に倒す**。
+
 対象が蒸留・移植タスク(Issue / PR のタスク型宣言が「移植」)の場合、
-または差分が Research 由来の theorem を本体化している疑いがある場合:
+または上記の検索で Research 由来と判明した場合:
 
 1. 移植元(`Formal/AG/Research/` の受理 theorem、または
    `docs/aat/research_evidence_index.md` の該当行)の statement を実読し、
@@ -73,6 +84,12 @@ statement の意味を読んで反証を試みる。
    本体(`Formal/AG` 本線・`Formal.lean` 配線)から Research への import は
    方向規律違反(Research → 本体のみ可)として、レーンの裁量なしに
    hard fail とする(検査コマンドは §6)。
+6. **移植 ≠ 逐語コピペ**: 蒸留とは、本体の規律(命名、台帳同期、
+   AxiomAudit 収載、instance ペア、足場を持ち込まない)に従った本体内での
+   再構成である。Research ファイルの逐語複製は、cycle 足場・補題群・
+   公理面を無審査で本体へ持ち込む経路になる。コピペ由来が疑われる差分
+   (Research 側と同名・同構造の宣言群)では、`#print axioms` の差分、
+   AxiomAudit 収載、持ち込まれた補助宣言の要否を必ず検査する。
 
 ## 4. no-go 適用範囲(境界資格条件の正本)
 
@@ -110,15 +127,25 @@ statement の意味を読んで反証を試みる。
 
 ```bash
 git diff --check
+# ローカル作業ツリーを対象にする場合(セルフレビュー)は未追跡ファイルも列挙する
+git status --short --branch && git ls-files --others --exclude-standard
 # hidden / bidirectional Unicode
 rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>
 # Lean placeholder(Formal に加え docs 側も。docs の方針説明文中の語は文脈で除外)
 rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal docs
-# privacy / local-path(public / release surface と changed files)
+# privacy / local-path(public / release surface と changed files。
+# スキル・設計 docs 自身が定義・引用する検査パターン文字列は文脈で除外してよい)
 rg -n "(\/Users\/|\/home\/|C:\\\\Users\\\\|Documents\/|HelloLean|nakahata|private\/internal|\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>
-# Research 境界(本体から Formal.AG.Research への import 禁止。ヒット = hard fail)
-rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**'
+# Research 境界(本体から Formal.AG.Research への import 禁止。
+# Research 集約ルート Formal/AG/Research.lean 自身の内部 import は正当なので除外)
+rg -n "import Formal\.AG\.Research" Formal Formal.lean \
+  --glob '!Formal/AG/Research/**' --glob '!Formal/AG/Research.lean'
 ```
+
+Research 境界 scan の判定規則: ヒットが**差分で新規に追加された行**なら
+hard fail(レーン裁量なし)。差分と無関係な既存ヒット(main 由来)は、
+その PR の Reject 理由にはせず、**既存の境界違反 blocker** として
+ユーザーへ即時報告する(黙認しない)。
 
 - **横断 privacy 報告義務**: sub-agent は担当観点にかかわらず、
   センシティブなローカルパス・個人名・private/internal 風 fixture 値・

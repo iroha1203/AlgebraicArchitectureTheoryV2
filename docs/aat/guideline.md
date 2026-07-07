@@ -81,8 +81,9 @@
   (研究 sandbox と正本の疎結合、PRD-R AC18)。「移植」とは本体内で構成を
   再構成する蒸留であり、Research module の import +再導出ラッパーは
   依存 repackage として `unported` のまま扱う。検査:
-  `rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**'`
-  が no match であること。
+  `rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**' --glob '!Formal/AG/Research.lean'`
+  が no match であること(Research 集約ルート `Formal/AG/Research.lean` 自身の
+  内部 import は正当なので除外する)。
 - **境界記載の資格条件**: 台帳・docs・PR 本文に境界(selected input、no-go、沈黙、
   「〜とは主張しない」)を書いてよい条件は、`.codex/skills/_shared/refutation-checklist.md`
   §4 を正本とする(不可能性証拠の宣言名名指し+量化対象が境界化対象を覆うことの

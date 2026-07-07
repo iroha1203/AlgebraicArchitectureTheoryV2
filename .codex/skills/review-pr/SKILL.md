@@ -78,10 +78,17 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
    - 必要なら一時 worktree で `lake build` / cargo test を実行する。
 
 5. 統合判定する。
-   - **Mergeable**: 委譲した全分野レビューが合格(Lean 系は4本全承認)、
-     Issue 完了条件を満たし、CI / 必要なローカル検証が通り、重大な未対応が
-     ない。
-   - **Needs changes**: 委譲先の finding、完了条件未達、テスト不足、
+   - **委譲先判定の写像(合格の定義)**:
+     - `math-lean-review`: 合格 = `No major findings`、または
+       `Minor issues` かつ全 finding が中心 claim に触れない場合
+       (その finding は監査コメントに残し、対応要否を明記する)。
+       `Major revisions` / `Reject` / `Blocked` は不合格。
+     - `tool-review` / `website-review` / `docs-review`:
+       合格 = `No major findings` のみ。`Needs changes` / `Blocked` は不合格。
+   - **Mergeable**: 委譲した全分野レビューが上記の意味で合格
+     (Lean 系は4本全承認を含む)、Issue 完了条件を満たし、
+     CI / 必要なローカル検証が通り、重大な未対応がない。
+   - **Needs changes**: 委譲先の不合格、完了条件未達、テスト不足、
      docs drift、CI failure がある。
    - **Blocked / cannot determine**: PR head を取得できない、CI 未完了、
      紐づく Issue 不明、サブエージェント起動不能、必要な検証が実行できない。
@@ -91,7 +98,10 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
    監査コメントを PR へ投稿する。投稿が存在しない PR はマージ手順に
    進めない。
    - 統合判定
-   - 分野・レーン別結論(math-lean-review なら4本それぞれの verdict)
+   - 分野・レーン別結論(math-lean-review なら4本それぞれの verdict)。
+     **レーン別結論は親の要約に置き換えず、各レーンの報告原文
+     (findings・反証試行・coverage limits の各節)をそのまま含める。**
+     原文なしの要約だけの監査コメントはレビュー未実施として扱われる
    - 反証試行記録(finding ゼロの分野は反証試行3件以上)
    - Issue 完了条件の照合結果(満たした / 未達)
    - 実行した検証(コマンドと結果)、coverage / 残リスク

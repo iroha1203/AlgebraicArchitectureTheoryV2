@@ -9,8 +9,11 @@ docs 分野のレビューと保守。分野の所有範囲は `docs/sft/`, `doc
 PRD, `.codex/skills/`, cross-domain docs, README 類。
 `docs/aat/` の台帳類(theorem index、proof obligations、inventory)は
 Lean の claim surface として **math-lean-review の所有**であり、
-Lean 変更に伴う台帳差分はこの skill では扱わない(docs-only の
-台帳体裁修正はこの skill でよい)。`docs/tool/` は tool-review、
+Lean 変更に伴う台帳差分はこの skill では扱わない。docs-only の台帳変更でも、
+**status 文字列・処置ラベル・完了主張・公理監査主張に触れる変更は
+「体裁修正」に含めず、math-lean-review へ回す**(宣言落としの迂回路に
+しない)。この skill で扱ってよい台帳体裁修正は、リンク切れ・誤字・
+表の整形など claim に触れないものに限る。`docs/tool/` は tool-review、
 `docs/website/` は website-review の所有。
 
 2つのモードを持つ。**ゲート(`$review-pr` / `$issue-to-pr`)から呼ばれた
@@ -145,6 +148,17 @@ docs 保守を単独で依頼した場合に使い、ゲート経路からは起
 - 明示的な依頼がない限り docs-only にする。
 - 実装が支えていない研究主張を強めない。必要以上に弱めもしない。
 - Lean status vocabulary は `docs/aat/guideline.md` の Lean status 節が正。
+  三分化タグ(`packaged (assumption-relative)` / `statement-only`)や
+  `unported (Research-proved)` の併記を、旧語彙への回帰として
+  「修正」しない(退行修正の禁止)。
+- `ArchitectureSignature` は単一スコアではなく多軸診断として扱う。
+- source-observation output は、proof-carrying bridge や validation report が
+  ない限り `ComponentUniverse` と同一視しない。
+- equivalence chain が部分実装なら、次に分けて書く:
+  無条件に `proved` な事実/finite universe 下で `proved` な事実/
+  `future proof obligation`。
+- `proof_obligations` 台帳は task / status ledger として扱い、
+  GitHub Issues の完全な複製にはしない。
 - 大きな rewrite より、小さな wording update、status table、索引追加を
   優先する。
 - 修正後は checklist §6 の横断機械 scan と、影響があれば `lake build` /

@@ -20,9 +20,13 @@ Research 側(`Formal/AG/Research/`)で受理された成果の1行台帳。
   - `conjuncts 要旨`: 結論一覧の要約。移植時の下限照合で結論の
     数え漏れが出ない粒度で書く
   - `受理`: GOAL / cycle / PR などの受理点
-  - `移植状況`: `ported` / `unported` / `not-for-porting`
-    (`not-for-porting` は scaffolding・探索残骸など本体化を意図しない
-    もの。理由を `本体対応` に書く)
+  - `移植状況`: `ported` / `unported` / `not-for-porting`。
+    列値 `unported` は guideline の status `unported (Research-proved)` の
+    略記であり同義。`not-for-porting` は scaffolding・探索残骸など
+    本体化を意図しないもので、理由を `本体対応` に書く。
+    **`unported` → `not-for-porting` への書き換えは下限原則の解除を
+    意味するため、ユーザー承認またはレビュー承認済みの根拠を
+    `本体対応` に必ず残す**(乱用すると Research 下限原則が空洞化する)
   - `本体対応`: `ported` なら本体側の宣言名、`unported` なら追跡 Issue、
     `not-for-porting` なら理由
 - 検索の作法(実装・レビュー側): まずこの索引を `rg` で検索し、
