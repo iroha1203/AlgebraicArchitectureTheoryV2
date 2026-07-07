@@ -253,6 +253,29 @@ theorem partVIOperationSquareConcrete :
     ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquareFillingProblem.SelectedAxisFilling :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteOperationSquareToyModel_fires
 
+theorem partVIOperationSquareFillingPositive :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquareFillingPositiveProblem.SelectedAxisFilling :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquareFilling_positive
+
+theorem partVIOperationSquareFillingNegative :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquareFillingProblem.SelectedAxisFilling :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquareFilling_negative
+
+theorem partVIOperationMonodromyNonidentity :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction.rho
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator ≠
+      SingularityMonodromyStack.CoefficientAutomorphism.id
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction.coefficient :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction_nonidentity
+
+theorem partVIOperationDefectFromMovedCoefficient :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero.equalityDefect false =
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyDefectFromAction ∧
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyDefectFromAction = 1 ∧
+      (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction.rho
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator).obAut false = true :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero_defect_from_moved_coefficient
+
 theorem partVIPresentedPiNontrivial :
     Nontrivial AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.Pi1 :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi_pi1_nontrivial
@@ -272,6 +295,22 @@ theorem partVITransportNonzeroConcrete :
       AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.FactorsThroughQuotient false Q :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteTransportDescentNonzero_not_descend
 
+theorem partVITransportUsesSecondPi1Element :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.quotientMap
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNonemptyFreeWord =
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator ∧
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator ≠
+        (1 : AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.Pi1) :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyTransportNonzero_uses_second_pi1_element
+
+theorem partVITransportRelationBoundaryZeroPositive :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyTransportDescentZero.relationBoundaryZero :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyTransportDescent_relationBoundaryZero_positive
+
+theorem partVITransportRelationBoundaryZeroNegative :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyTransportDescentNonzero.relationBoundaryZero :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyTransportDescent_relationBoundaryZero_negative
+
 theorem partVIRefactorGaloisConcrete :
     SingularityMonodromyStack.RefactorMorphismFamilySubset
         AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel.selectedOperations
@@ -290,15 +329,116 @@ theorem partVIRefactorHomCarriesStateEquality
       AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyRefactorGroupoid.state b :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyRefactorGroupoid_hom_carries_state_equality f
 
+theorem partVIRefactorHomNontrivial :
+    Nontrivial
+      (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyRefactorGroupoid.Hom false false) :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyRefactorGroupoid_hom_nontrivial
+
+theorem partVIRefactorPreservesPositive :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData.Preserves
+      (a := false) (b := false) ⟨rfl, false⟩ false :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData_preserves_positive
+
+theorem partVIRefactorPreservesNegative :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData.Preserves
+      (a := false) (b := false) ⟨rfl, true⟩ false :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData_preserves_negative
+
 theorem partVIDecompositionGerbeConcrete :
     ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNoCanonicalDecompositionData.globalCanonicalDecomposition :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteDecompositionGerbeToyModel_fires
 
-theorem partVIDecompositionHomCarriesObjectEquality
+theorem partVIDecompositionHomKindRefactor
     {a b : AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid.Object}
     (f : AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid.Hom a b) :
-    a = b :=
-  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid_hom_carries_object_equality f
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid.equivalenceKind f =
+      SingularityMonodromyStack.DecompositionEquivalenceKind.refactor :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid_hom_kind_refactor f
+
+theorem partVIDecompositionHomNontrivial :
+    Nontrivial
+      (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid.Hom false false) :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid_hom_nontrivial
+
+theorem partVIDecompositionOverlapPositive :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyOverlapCompatible
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyOverlapCompatible_positive
+
+theorem partVIDecompositionOverlapNegative :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyOverlapCompatible
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyBadLocalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyOverlapCompatible_negative
+
+theorem partVIDecompositionEffectiveDescentPositive :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyEffectiveDescent
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeClassFromLocalData :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyEffectiveDescent_positive
+
+theorem partVIDecompositionEffectiveDescentNegative :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyEffectiveDescent
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyBadGerbeClassFromLocalData :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyEffectiveDescent_negative
+
+theorem partVIDecompositionGlobalCanonicalPositive :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyGlobalCanonicalDecomposition
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyBadLocalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGlobalCanonicalDecomposition_positive
+
+theorem partVIDecompositionGlobalCanonicalNegative :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyGlobalCanonicalDecomposition
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGlobalCanonicalDecomposition_negative
+
+theorem partVIDecompositionGlobalCanonicalVanishesClass
+    {loc : Bool -> Bool} :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyGlobalCanonicalDecomposition loc ->
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeClassFromLocalData loc = false :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGlobalCanonicalDecomposition_vanishes_class
+
+theorem partVIDecompositionGerbeClassEqualsComputedLocalClass :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeObstructionData.gerbeClass =
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeClassFromLocalData
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeClass_eq_computed_local_class
+
+theorem partVIDecompositionGerbeClassComputedNonzero :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeClassFromLocalData
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecomposition ≠ false :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeClassFromLocalData_nonzero
+
+theorem partVIDecompositionAutSheafPositive :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyAutSheafDefined Bool :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyAutSheafDefined_positive
+
+theorem partVIDecompositionAutSheafNegative :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyAutSheafDefined Empty :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyAutSheafDefined_negative
+
+theorem partVIDecompositionNonAbelianPositive :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyNonAbelianReading true false :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNonAbelianReading_positive
+
+theorem partVIDecompositionNonAbelianNegative :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyNonAbelianReading false false :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNonAbelianReading_negative
+
+theorem partVIDecompositionSoundnessFromLocalData :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyGlobalCanonicalDecomposition
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecomposition ->
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeObstructionData.gerbeClass =
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGerbeObstructionData.zero :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNoCanonicalDecomposition_soundness_from_local_data
+
+theorem partVIDecompositionLocalExistPositive :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyLocalDecompositionsExist
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecompositionsExist_positive
+
+theorem partVIDecompositionLocalExistNegative :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyLocalDecompositionsExist
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyBadLocalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecompositionsExist_negative
 
 theorem partVICotangentConDefBridge
     {U : AtomCarrier} {A : ArchitectureObject U}
