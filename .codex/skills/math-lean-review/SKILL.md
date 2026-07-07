@@ -1,6 +1,6 @@
 ---
 name: math-lean-review
-description: 数学本文、research/GOALS.md、docs/note、PRD、Lean theorem/lemma/definition、または定理・命題テキストを入力に、その数学的主張と Lean 実装を、仮定放電・certificate provenance・anti-weakening まで含めて論文査読する数学者レベルで厳格レビューする。Use when the user says "$math-lean-review", "数学とLEANのレビュー", "この定理をLean実装込みで査読して", "GOALS.mdの命題をLean上で厳しく見て", "大定理モードの証明完了を査読して", or asks for parallel subagent review of theorem/proposition claims against Lean proofs.
+description: AAT / Lean 分野の敵対レビュー SKILL。数学本文、research/GOALS.md、docs/note、PRD、Lean theorem/lemma/definition、または定理・命題テキストを入力に、その数学的主張と Lean 実装を、仮定放電・certificate provenance・anti-weakening・移植元 conjunct 対応まで含めて論文査読する数学者レベルで厳格レビューする。数学査読2本+Lean査読2本の4並列を無条件必須とし、4本全承認しない限り合格を出さない。Use when the user says "$math-lean-review", "数学とLEANのレビュー", "この定理をLean実装込みで査読して", "大定理モードの証明完了を査読して", or when $review-pr / $issue-to-pr routes a diff touching Formal/ (any size, even one line) or docs/aat ledgers to this skill.
 ---
 
 # Math Lean Review
@@ -8,6 +8,14 @@ description: 数学本文、research/GOALS.md、docs/note、PRD、Lean theorem/l
 数学本文・GOAL・命題テキストと Lean 実装の対応を、研究論文の査読として扱う。目的は実装や修正ではなく、主張、仮定、証明依存、形式化境界、台帳状態が本当に一致しているかを厳しく判定することである。
 
 特に `research/GOALS.md` の大定理モードでは、この skill は「大定理が証明されたこと」を完了条件にするループの査読 gate である。過去に、仮定が放電されていないまま大定理が弱い形で Lean 上は通ってしまう事例があったため、証明完了判定は fail-closed に行う。
+
+この skill は AAT / Lean 分野の**分野別レビュー SKILL**でもある。`$review-pr`(マージゲート)と `$issue-to-pr`(セルフレビュー)は、**Lean 実装(`Formal/`)を触る差分を、大きさを問わず(1行でも)この skill でレビューする**。分野の所有範囲は `Formal/` に加え、`docs/aat/` の台帳類(lean theorem index、proof obligations、peer-review inventory)と AAT 数学本文との整合を含む。Lean 実装+台帳更新の差分はこの skill のみで足りる(statement と台帳記載の一致は一体で監査し、docs レビューへ分断しない)。
+
+## 敵対レビュー原則
+
+これは**敵対レビュー**である。レビュワーの成果は反証の試行記録であり、チェックリストの消化ではない。各査読レーンは「この主張を落とすとしたらどこか」を先に立て、反証を試み、その試行と失敗を報告する。承認は反証の失敗としてのみ与える。
+
+反証の手がかりの正本は `.codex/skills/_shared/refutation-checklist.md` にある。各レーンはこれを読み、項目を複製せず参照する。finding ゼロの報告には資格条件(反証試行3件の明記)が課される(同 reference §7)。
 
 ## 基本方針
 
@@ -94,8 +102,12 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 
 ## 厳格判定ポイント
 
-次を疑う。パターン語彙(結論射影 / `True` 充足 / instance 実在 / 非退化発火)は
-`prd-completion-review` の Lean 反証チェックリストと共有し、判定基準を skill 間でずらさない。
+次を疑う。基底パターン語彙(結論射影 / `True` 充足 / instance 実在 /
+非退化発火 / 公理 / anti-weakening)、意味レベル空虚パターン、
+移植元 conjunct 対応、no-go 適用範囲、帰属・ロック値検査、横断機械 scan の
+**正本は `.codex/skills/_shared/refutation-checklist.md`** にあり、
+全レビュー SKILL と判定基準を共有する。以下は本 skill 固有の観点であり、
+共有 reference と併せて適用する。
 
 - 主張一致: 本文 theorem / GOAL claim が Lean theorem statement と同じ強さか。Lean が片方向、弱い predicate、選択済み witness、有限例、特殊ケースだけになっていないか。
 - 仮定過多: theorem の仮定に結論相当の情報、ready-made certificate、lawfulness、nonempty witness、decidable equality、finite support、compatibility が埋め込まれていないか。
@@ -137,11 +149,11 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 
 ## Multi-Agent Review
 
-正式な `$math-lean-review` 判定では、数学査読 2 本と Lean 査読 2 本の multi-agent review を必須とする。ユーザーが `$math-lean-review` と同時に「4 体」「parallel」「subagent」「並列レビュー」などを明示した場合は、live tool contract が許す限り 4 体を並列起動する。
+`$math-lean-review` の判定では、数学査読 2 本と Lean 査読 2 本の multi-agent review を**無条件で必須**とする。ユーザー承認は求めない。`$review-pr` / `$prd-loop` / `$target-theorem-loop` / `$issue-to-pr` からの呼び出しでも同じである。
 
-ユーザーが `$math-lean-review` だけを指定し、subagent / parallel work の明示承認がない場合は、レビューを開始する前に 4 体並列査読の承認を短く求める。承認なしに single-thread だけで正式合格判定を出してはいけない。
+**fail-closed**: multi-agent tool が使えない環境、または live tool contract が subagent 起動を許さない環境では、親 Codex が代替レビューを行ってはならない(provisional review は存在しない)。その場合、最終判定を `Blocked / cannot determine` に落とし、合格判定・証明完了判定を出さない。
 
-multi-agent tool が使えない環境、または live tool contract が subagent 起動を許さない環境では、親 Codex が同じ 4 本を順番に実行できる場合だけ provisional review として報告する。この場合も `No major findings` や証明完了判定は出さず、coverage limit に `multi-agent review not run` を明記する。対象本文、候補 Lean 宣言、依存補題、または `#print axioms` のいずれかが確認不能で、4 本の代替レビューも実施できない場合は、最終判定を `Blocked / cannot determine` に落とす。
+**4本全承認ゲート**: 数学査読 A/B・Lean 査読 A/B の 4 本すべてが承認しない限り、統合判定で合格(`No major findings` / `Minor issues` での通過)を出せない。1 本でも finding が中心 claim に触れる場合、親の裁量でその finding を棄却して通すことはできない。棄却するには、根拠を添えて該当レーンを再実行し、承認を得る。
 
 親 Codex が先に対象命題、候補 Lean 宣言、関連ファイル、検証済みコマンドを整理してから、次の 4 本に分ける。役割は「4つの違う薄い観点」ではなく、数学査読 2 本と Lean 査読 2 本の重複独立レビューにする。同じ査読を 2 本走らせ、片方が見落とした弱化・未放電・境界違反をもう片方で拾う。
 
@@ -168,20 +180,26 @@ multi-agent tool が使えない環境、または live tool contract が subage
 
 ```text
 Use the math-lean-review skill context. Review only the assigned reviewer lane.
+You are an adversarial referee: you are called to find grounds for rejecting
+this claim, not to approve it. Read .codex/skills/_shared/refutation-checklist.md
+and use it as refutation leads, not as a checklist to consume.
 Target mathematical claim: <quoted theorem/proposition/GOAL claim or file section>
 Candidate Lean declarations: <names and files, or "not found yet">
 Relevant files: <paths>
+Task type: <新規実装 | 修正 | 移植(Research→本体) | docs — if 移植, run the
+conjunct correspondence audit (checklist §3) against the named source theorem>
 Reviewer lane: <数学査読 A | 数学査読 B | Lean 査読 A | Lean 査読 B>
 
 Report in Japanese:
 1. Findings, ordered by severity, with file/line/theorem references when available.
-2. Evidence checked.
+2. Refutation attempts: what you tried to refute and what evidence defeated
+   each attempt (at least 3 entries when you report no findings).
 3. Material premise discharge audit: which premises are ambient, direction hypotheses, discharged, or still certificate/field assumptions.
 4. Certificate provenance / proof-use concerns, especially unused premises and structure-field escape.
 5. Commands or Lean queries that should be run for this lane.
 6. Coverage limits.
 
-Do not edit files. Do not implement fixes. The parent must not pass expected findings or a provisional verdict to you. If you are assigned A or B, act as an independent reviewer, not as a helper for the other reviewer. Do not issue the final integrated verdict. Do not assume that a passing Lean file or an explicit certificate proves the prose claim. Stay anchored in the assigned lane, but report any obvious proof-breaking issue you directly see.
+Do not edit files. Do not implement fixes. The parent must not pass expected findings or a provisional verdict to you. If you are assigned A or B, act as an independent reviewer, not as a helper for the other reviewer. Do not issue the final integrated verdict. Do not assume that a passing Lean file or an explicit certificate proves the prose claim. Do not treat the implementer's own claim list, self-review notes, or ledger entries as evidence — they are claims under audit. Stay anchored in the assigned lane, but report any obvious proof-breaking issue you directly see, and report any privacy leak (local path, personal name, private-looking fixture value) regardless of your lane.
 ```
 
 ## 親 Codex の統合判定

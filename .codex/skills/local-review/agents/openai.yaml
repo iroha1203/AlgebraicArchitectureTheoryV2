@@ -1,4 +1,0 @@
-interface:
-  display_name: "Local Review"
-  short_description: "分野特化でローカル差分を四観点から並列レビューする"
-  default_prompt: "Use $local-review to review my current local changes in Japanese, focusing on one relevant domain and four review perspectives."

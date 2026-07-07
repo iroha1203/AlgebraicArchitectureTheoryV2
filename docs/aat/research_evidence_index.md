@@ -1,0 +1,42 @@
+# Research 成果索引(research evidence index)
+
+Research 側(`Formal/AG/Research/`)で受理された成果の1行台帳。
+本体実装・レビューが「Research 側にすでに到達点があるか」を、巨大 Lean
+ファイルの実読なしに grep で検索するための索引であり、Research 下限原則
+(`docs/aat/guideline.md` の Lean status discipline)の検索基盤である。
+
+## 記載契約
+
+- 1行 = 1受理成果。受理時に追記し、後から書き換えるのは
+  `移植状況` 列と `本体対応` 列のみ(受理内容の遡及修正はしない。
+  誤記の訂正は可)。
+- `research-loop` / `target-theorem-loop` は、成果の受理
+  (accepted / target-theorem-proved)時にこの索引への登録を**出力義務**
+  として負う(各 SKILL の ledger 手順を参照)。
+- 列の意味:
+  - `theorem`: Research 側の宣言名(コードブロック表記)
+  - `file`: `Formal/AG/Research/` 配下のファイル
+  - `本文ラベル`: 対応する数学本文の部・定理番号(無ければ `-`)
+  - `conjuncts 要旨`: 結論一覧の要約。移植時の下限照合で結論の
+    数え漏れが出ない粒度で書く
+  - `受理`: GOAL / cycle / PR などの受理点
+  - `移植状況`: `ported` / `unported` / `not-for-porting`
+    (`not-for-porting` は scaffolding・探索残骸など本体化を意図しない
+    もの。理由を `本体対応` に書く)
+  - `本体対応`: `ported` なら本体側の宣言名、`unported` なら追跡 Issue、
+    `not-for-porting` なら理由
+- 検索の作法(実装・レビュー側): まずこの索引を `rg` で検索し、
+  該当が無ければ `Formal/AG/Research/` を直接 `rg` する。索引に無いことは
+  「Research に無い」ことを意味しない。
+
+## 索引
+
+| theorem | file | 本文ラベル | conjuncts 要旨 | 受理 | 移植状況 | 本体対応 |
+| --- | --- | --- | --- | --- | --- | --- |
+
+<!--
+既存の受理成果の遡及登録(初期整備)は別 PRD で実施する
+(docs/note/codex_skill_audit_redesign_note.md B-3、2026-07-07 ユーザー決定)。
+初期整備までは空欄の索引が正であり、空欄は「Research に成果が無い」ことを
+意味しない。
+-->
