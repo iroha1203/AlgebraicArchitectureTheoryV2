@@ -1,4 +1,5 @@
 import Formal.AG
+import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.Arch.Core.Category
 import Formal.Util.AssertStandardAxioms
 import Formal.Arch.Core.Graph

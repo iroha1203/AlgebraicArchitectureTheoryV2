@@ -538,48 +538,6 @@ def generatedF2H1Realization :
     intro _cochain
     rfl
 
-/--
-X.例9.1 / #3102: explicit lower comparison provenance for the generated `F₂`
-coefficient.
-
-This is the audit-facing source for theorem 7.5: degree-wise carrier maps plus
-the four differential laws generate the H1 comparison.
--/
-def generatedF2ComparisonProvenance :
-    SemanticRepairGeneratedComparisonProvenance
-      generatedF2BoundaryAdditiveData.toAdditiveH1Surface
-      generatedF2CoverRelativeComplex where
-  c0Equiv := by
-    change ZMod 2 ≃+ (PUnit -> ZMod 2)
-    exact zmod2SingletonCochainAddEquiv 0
-  c1Equiv := by
-    change ZMod 2 ≃+ (PUnit -> ZMod 2)
-    exact zmod2SingletonCochainAddEquiv 1
-  c2Equiv := by
-    change ZMod 2 ≃ (PUnit -> ZMod 2)
-    exact zmod2SingletonCochainEquiv 2
-  c2Equiv_zero := by
-    funext σ
-    cases σ
-    rfl
-  c2Equiv_symm_zero := rfl
-  d0_to := by
-    intro _primitive
-    funext σ
-    cases σ
-    rfl
-  d0_from := by
-    intro _primitive
-    rfl
-  d1_to := by
-    intro _cochain
-    funext σ
-    cases σ
-    rfl
-  d1_from := by
-    intro _cochain
-    rfl
-
 /-! ## Concrete law-equation firing data -/
 
 /-- X.例9.1: lawful finite object with the selected NoCycle relation removed. -/
@@ -671,34 +629,9 @@ X.例9.1 / #3102: obstruction sheaf whose carrier is exactly the
 law-equation-generated quotient presheaf.
 -/
 def generatedLawQuotientObstructionSheaf :
-    Cohomology.ObstructionSheaf FiniteModel.site where
-  carrier := {
-    carrier := generatedLawQuotientPresheaf
-    isSheaf := generatedLawQuotientIsSheaf
-  }
-  addCommGroup W := by
-    change AddCommGroup (lawEquationCore.ObstructionQuotient W)
-    infer_instance
-  map_zero := by
-    intro source target f
-    letI : AddCommGroup (generatedLawQuotientPresheaf.obj (op target)) := by
-      change AddCommGroup (lawEquationCore.ObstructionQuotient target)
-      infer_instance
-    letI : AddCommGroup (generatedLawQuotientPresheaf.obj (op source)) := by
-      change AddCommGroup (lawEquationCore.ObstructionQuotient source)
-      infer_instance
-    change lawEquationCore.obstructionQuotientRestrict f 0 = 0
-    exact map_zero _
-  map_add := by
-    intro source target f
-    letI : AddCommGroup (generatedLawQuotientPresheaf.obj (op target)) := by
-      change AddCommGroup (lawEquationCore.ObstructionQuotient target)
-      infer_instance
-    letI : AddCommGroup (generatedLawQuotientPresheaf.obj (op source)) := by
-      change AddCommGroup (lawEquationCore.ObstructionQuotient source)
-      infer_instance
-    intro x y
-    exact (lawEquationCore.obstructionQuotientRestrict f).map_add x y
+    Cohomology.ObstructionSheaf FiniteModel.site :=
+  Cohomology.ObstructionSheaf.ofAddCommGrpValued
+    lawEquationCore.obstructionQuotientCoefficient generatedLawQuotientIsSheaf
 
 /-- X.例9.1 / #3102: selected native quotient value at the singleton base. -/
 abbrev GeneratedLawQuotient :=
@@ -710,6 +643,84 @@ instance generatedLawQuotientFintype :
     LawAlgebra.SemanticLawEquationWitnessIdealCore.ObstructionQuotient,
     lawEquationCore]
   infer_instance
+
+/-- X.例9.1 / #3102: the native generated obstruction ideal is `span {2}`. -/
+private theorem generatedLaw_obstructionIdeal_eq_span_two :
+    lawEquationCore.obstructionIdeal FiniteModel.siteBase =
+      Ideal.span ({(2 : ZMod 4)} : Set (ZMod 4)) := by
+  have hwitness :
+      lawEquationCore.lawWitnessIdeal FiniteModel.siteBase PUnit.unit =
+        Ideal.span ({(2 : ZMod 4)} : Set (ZMod 4)) := by
+    dsimp [LawAlgebra.SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
+      lawEquationCore]
+    congr
+    ext x
+    constructor
+    · rintro ⟨_atom, rfl⟩
+      simp
+    · intro hx
+      exact ⟨FiniteModel.FiniteAtom.componentA, by simpa using hx.symm⟩
+  apply le_antisymm
+  · change
+      (lawEquationCore.selectedLawWitnessIdealFamily FiniteModel.siteBase).localObstructionIdeal ≤
+        Ideal.span ({(2 : ZMod 4)} : Set (ZMod 4))
+    rw [LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
+    intro lawIndex _hselected
+    cases lawIndex
+    change lawEquationCore.lawWitnessIdeal FiniteModel.siteBase PUnit.unit ≤
+      Ideal.span ({(2 : ZMod 4)} : Set (ZMod 4))
+    rw [hwitness]
+  · rw [← hwitness]
+    exact lawEquationCore.lawWitnessIdeal_le_obstructionIdeal FiniteModel.siteBase rfl
+
+/-- X.例9.1 / #3102: `1` is not killed by the generated ideal `span {2}`. -/
+private theorem generatedLaw_one_notMem_span_two :
+    (1 : ZMod 4) ∉ Ideal.span ({(2 : ZMod 4)} : Set (ZMod 4)) := by
+  intro h
+  rw [Ideal.mem_span_singleton'] at h
+  rcases h with ⟨a, ha⟩
+  exact (by fin_cases a <;> decide : ¬ a * 2 = (1 : ZMod 4)) ha
+
+/-- X.例9.1 / #3102: the native generated quotient has a concrete nonzero class. -/
+theorem generatedLawQuotient_one_ne_zero :
+    (Ideal.Quotient.mk (lawEquationCore.obstructionIdeal FiniteModel.siteBase)
+      (1 : ZMod 4)) ≠ 0 := by
+  intro hzero
+  rw [Ideal.Quotient.eq_zero_iff_mem] at hzero
+  rw [generatedLaw_obstructionIdeal_eq_span_two] at hzero
+  exact generatedLaw_one_notMem_span_two hzero
+
+/-- X.例9.1 / #3102: the native law-equation-generated quotient is nontrivial. -/
+instance generatedLawQuotientNontrivial :
+    Nontrivial GeneratedLawQuotient := by
+  refine
+    ⟨⟨0,
+      Ideal.Quotient.mk (lawEquationCore.obstructionIdeal FiniteModel.siteBase)
+        (1 : ZMod 4), ?_⟩⟩
+  intro h
+  exact generatedLawQuotient_one_ne_zero h.symm
+
+/-- X.例9.1 / #3102: selected nonzero class in the native generated quotient. -/
+def generatedLawQuotientOne : GeneratedLawQuotient :=
+  Ideal.Quotient.mk (lawEquationCore.obstructionIdeal FiniteModel.siteBase)
+    (1 : ZMod 4)
+
+/-- X.例9.1 / #3102: the selected native quotient class is nonzero. -/
+theorem generatedLawQuotientOne_ne_zero :
+    generatedLawQuotientOne ≠ 0 :=
+  generatedLawQuotient_one_ne_zero
+
+/-- X.例9.1 / #3102: the selected quotient class has order two. -/
+theorem generatedLawQuotientOne_add_self :
+    generatedLawQuotientOne + generatedLawQuotientOne = 0 := by
+  dsimp [generatedLawQuotientOne]
+  rw [← map_add]
+  change
+    Ideal.Quotient.mk (lawEquationCore.obstructionIdeal FiniteModel.siteBase)
+      (2 : ZMod 4) = 0
+  rw [Ideal.Quotient.eq_zero_iff_mem]
+  rw [generatedLaw_obstructionIdeal_eq_span_two]
+  exact Ideal.subset_span rfl
 
 /-- X.例9.1 / #3102: zero section of the native generated quotient. -/
 def generatedLawZeroSection (Y : FiniteModel.site.category) :
@@ -874,49 +885,6 @@ def generatedLawH1Realization :
     intro _cochain
     rfl
 
-/--
-X.例9.1 / #3102: explicit lower comparison provenance for the native
-law-equation-generated quotient coefficient.
-
-This is not a supplied H1 comparison and not a prepackaged cochain realization:
-the theorem 7.5 route reconstructs both from these degree-wise carrier maps and
-four differential laws.
--/
-def generatedLawComparisonProvenance :
-    SemanticRepairGeneratedComparisonProvenance
-      generatedLawBoundaryAdditiveData.toAdditiveH1Surface
-      generatedLawCoverRelativeComplex where
-  c0Equiv := by
-    change GeneratedLawQuotient ≃+ (PUnit -> GeneratedLawQuotient)
-    exact singletonCochainAddEquiv GeneratedLawQuotient 0
-  c1Equiv := by
-    change GeneratedLawQuotient ≃+ (PUnit -> GeneratedLawQuotient)
-    exact singletonCochainAddEquiv GeneratedLawQuotient 1
-  c2Equiv := by
-    change GeneratedLawQuotient ≃ (PUnit -> GeneratedLawQuotient)
-    exact singletonCochainEquiv GeneratedLawQuotient 2
-  c2Equiv_zero := by
-    funext σ
-    cases σ
-    rfl
-  c2Equiv_symm_zero := rfl
-  d0_to := by
-    intro _primitive
-    funext σ
-    cases σ
-    rfl
-  d0_from := by
-    intro _primitive
-    rfl
-  d1_to := by
-    intro _cochain
-    funext σ
-    cases σ
-    rfl
-  d1_from := by
-    intro _cochain
-    rfl
-
 /-! ## End-to-end firing -/
 
 /-- X.例9.1: top-cover gluing data for the singleton quotient presheaf. -/
@@ -984,22 +952,9 @@ Here the obstruction sheaf carrier is definitionally
 def generatedLawNativeEndToEndInputs :
     SemanticRepairNativeGeneratedEndToEndInputs
       generatedLawBoundaryAdditiveData defectSource
-      (⊤ : Sieve FiniteModel.siteBase) generatedLawCoverRelativeComplex where
-  coverGeneratedInTopology := FiniteModel.site.top_mem FiniteModel.siteBase
-  obstructionSheafUsesGeneratedCoefficient := ⟨rfl⟩
+      (⊤ : Sieve FiniteModel.siteBase) generatedLawTrueSheafCertificate
+      generatedLawCoverRelativeComplex where
   realization := generatedLawH1Realization
-
-/--
-X.例9.1 / #3102: native generated theorem-7.5 input surface with explicit
-lower comparison provenance and no cochain-realization field.
--/
-def generatedLawNativeEndToEndProvenanceInputs :
-    SemanticRepairNativeGeneratedEndToEndProvenanceInputs
-      generatedLawBoundaryAdditiveData defectSource
-      (⊤ : Sieve FiniteModel.siteBase) generatedLawCoverRelativeComplex where
-  coverGeneratedInTopology := FiniteModel.site.top_mem FiniteModel.siteBase
-  obstructionSheafUsesGeneratedCoefficient := ⟨rfl⟩
-  comparisonProvenance := generatedLawComparisonProvenance
 
 /--
 X.例9.1: lawful firing of theorem 7.5 on the concrete finite instance.
@@ -1061,31 +1016,6 @@ theorem lawfulFiring_generatedLawQuotient_endToEndPacket_fromNativeGeneratedInpu
     (⊤ : Sieve FiniteModel.siteBase)
     generatedLawTrueSheafCertificate generatedLawGluingData
     generatedLawNativeEndToEndInputs
-
-/--
-X.例9.1 / #3102: theorem 7.5 fires over the native law-equation-generated
-quotient through explicit provenance inputs.
-
-The coefficient is definitionally `lawEquationCore.obstructionQuotientPresheaf`;
-the comparison is generated from degree-wise carrier maps and differential
-laws, not supplied as a comparison or prepackaged cochain realization.
--/
-theorem lawfulFiring_generatedLawQuotient_endToEndPacket_fromNativeGeneratedProvenanceInputs :
-    Nonempty
-      (Sigma fun comparison :
-        SemanticRepairCoverRelativeH1Comparison
-          generatedLawBoundaryAdditiveData.toAdditiveH1Surface
-          generatedLawCoverRelativeComplex =>
-          SemanticRepairGeneratedEndToEndSAGAPacket
-            generatedLawBoundaryAdditiveData defectSource FiniteModel.site
-            generatedLawQuotientPresheaf
-            (⊤ : Sieve FiniteModel.siteBase) generatedLawGluingData
-            comparison) :=
-  lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedProvenanceInputs
-    generatedLawBoundaryAdditiveData defectSource displayedRequiredLawsHoldOn
-    (⊤ : Sieve FiniteModel.siteBase)
-    generatedLawTrueSheafCertificate generatedLawGluingData
-    generatedLawNativeEndToEndProvenanceInputs
 
 /--
 X.例9.1: theorem 8.1 fires on the same lawful source, producing pointwise zero
@@ -1538,6 +1468,311 @@ theorem circlePartIV_h0_invisible_additiveH1_nonzero :
           circleCoverRelativeZeroCocycle :=
   Cohomology.FiniteExamples.PseudoCircleGolden.PartIVCircleNonzeroH1Firing.h0_invisible_and_additiveH1_nonzero
     circlePartIVPseudoCircleFiring
+
+/-! ## Native generated quotient circle witness -/
+
+/--
+X.例9.1 / #3102: the theorem-7.5 witness reuses the circle nerve shape over
+the native law-equation-generated quotient coefficient.
+-/
+def generatedLawCircleCoverRelativeCover :
+    Cohomology.CoverRelativeCechCover FiniteModel.site where
+  base := FiniteModel.siteBase
+  Index := Fin 3
+  chart _ := FiniteModel.siteBase
+  inclusion _ := 𝟙 FiniteModel.siteBase
+  simplex := circleSimplex
+  overlap _ _ := FiniteModel.siteBase
+  face := circleFace
+  faceRestriction _ _ _ := 𝟙 FiniteModel.siteBase
+
+/-- X.例9.1 / #3102: native generated quotient circle C0 cochains. -/
+abbrev generatedLawCircleC0 : Type :=
+  Fin 3 -> GeneratedLawQuotient
+
+/-- X.例9.1 / #3102: native generated quotient circle C1 cochains. -/
+abbrev generatedLawCircleC1 : Type :=
+  Fin 3 -> GeneratedLawQuotient
+
+/-- X.例9.1 / #3102: native generated quotient circle C2 cochains. -/
+abbrev generatedLawCircleC2 : Type :=
+  Unit -> GeneratedLawQuotient
+
+/-- X.例9.1 / #3102: selected circle coboundary over the native quotient. -/
+def generatedLawCircleD0 (cochain : generatedLawCircleC0) :
+    generatedLawCircleC1 :=
+  fun edge => cochain (circleNext edge) - cochain edge
+
+/-- X.例9.1 / #3102: selected nonzero residual over the native quotient. -/
+def generatedLawCircleResidual : generatedLawCircleC1 :=
+  fun _ => generatedLawQuotientOne
+
+/-- X.例9.1 / #3102: selected zero one-cochain over the native quotient. -/
+def generatedLawCircleZero1 : generatedLawCircleC1 :=
+  fun _ => 0
+
+/-- X.例9.1 / #3102: selected zero two-cochain over the native quotient. -/
+def generatedLawCircleZero2 : generatedLawCircleC2 :=
+  fun _ => 0
+
+/--
+X.例9.1 / #3102: the native generated quotient residual on the three-edge
+circle is not a coboundary.
+-/
+theorem generatedLawCircleResidual_not_coboundary :
+    ¬ ∃ primitive : generatedLawCircleC0,
+      generatedLawCircleResidual - generatedLawCircleZero1 =
+        generatedLawCircleD0 primitive := by
+  rintro ⟨primitive, hprimitive⟩
+  have h0 := congrFun hprimitive (0 : Fin 3)
+  have h1 := congrFun hprimitive (1 : Fin 3)
+  have h2 := congrFun hprimitive (2 : Fin 3)
+  simp [generatedLawCircleResidual, generatedLawCircleZero1,
+    generatedLawCircleD0, circleNext] at h0 h1 h2
+  have hsum :
+      generatedLawQuotientOne + generatedLawQuotientOne + generatedLawQuotientOne =
+        0 := by
+    nth_rw 1 [h0]
+    nth_rw 1 [h1]
+    nth_rw 1 [h2]
+    abel
+  have hcollapse :
+      generatedLawQuotientOne + generatedLawQuotientOne + generatedLawQuotientOne =
+        generatedLawQuotientOne := by
+    rw [generatedLawQuotientOne_add_self]
+    rfl
+  exact generatedLawQuotientOne_ne_zero (hcollapse ▸ hsum)
+
+/-- X.例9.1 / #3102: selected circle complex over the native generated quotient. -/
+def generatedLawCircleCoverRelativeComplex :
+    Cohomology.CoverRelativeCechComplex
+      generatedLawCircleCoverRelativeCover generatedLawQuotientObstructionSheaf where
+  cochainAddCommGroup n := by
+    change AddCommGroup (circleSimplex n -> GeneratedLawQuotient)
+    infer_instance
+  alternatingFaceCombination
+    | 0, terms => fun edge =>
+        (terms edge 0 : GeneratedLawQuotient) - terms edge 1
+    | _ + 1, _terms => fun _ => (0 : GeneratedLawQuotient)
+  differential
+    | 0 => by
+        change generatedLawCircleC0 →+ generatedLawCircleC1
+        exact {
+          toFun := generatedLawCircleD0
+          map_zero' := by
+            funext edge
+            simp [generatedLawCircleD0]
+          map_add' := by
+            intro left right
+            funext edge
+            simp [generatedLawCircleD0]
+            abel
+        }
+    | _ + 1 => by
+        change (circleSimplex (_ + 1) -> GeneratedLawQuotient) →+
+          (circleSimplex (_ + 2) -> GeneratedLawQuotient)
+        exact {
+          toFun := fun _ => fun _ => (0 : GeneratedLawQuotient)
+          map_zero' := by
+            funext σ
+            rfl
+          map_add' := by
+            intro _x _y
+            funext σ
+            rfl
+        }
+  differential_eq_alternatingFaceCombination := by
+    intro n c
+    cases n with
+    | zero =>
+        funext edge
+        letI : AddCommGroup (generatedLawQuotientPresheaf.obj (op FiniteModel.siteBase)) := by
+          change AddCommGroup GeneratedLawQuotient
+          infer_instance
+        change generatedLawCircleD0 c edge =
+          generatedLawQuotientPresheaf.map (𝟙 (op FiniteModel.siteBase))
+              (c (circleNext edge)) -
+            generatedLawQuotientPresheaf.map (𝟙 (op FiniteModel.siteBase)) (c edge)
+        simp [generatedLawCircleD0]
+    | succ n =>
+        funext σ
+        change (0 : GeneratedLawQuotient) = 0
+        rfl
+  differential_comp := by
+    intro n _c
+    cases n with
+    | zero =>
+        funext σ
+        change (0 : GeneratedLawQuotient) = 0
+        rfl
+    | succ n =>
+        funext σ
+        change (0 : GeneratedLawQuotient) = 0
+        rfl
+
+/-- X.例9.1 / #3102: semantic Cech data over the native generated circle. -/
+def generatedLawCircleSemanticCechData :
+    SemanticRepairCoverCechData semanticCover where
+  C0 := generatedLawCircleC0
+  C1 := generatedLawCircleC1
+  C2 := generatedLawCircleC2
+  c0Finite := inferInstance
+  c1Finite := inferInstance
+  zero1 := generatedLawCircleZero1
+  zero2 := generatedLawCircleZero2
+  delta0 := generatedLawCircleD0
+  delta1 _ := generatedLawCircleZero2
+  residual := generatedLawCircleResidual
+  zero1_cocycle := by
+    funext σ
+    rfl
+  delta1_delta0_eq_zero := by
+    intro _primitive
+    funext σ
+    rfl
+  residual_cocycle := by
+    funext σ
+    rfl
+
+/-- X.例9.1 / #3102: additive Cech data over the native generated circle. -/
+def generatedLawCircleSemanticAdditiveData :
+    SemanticRepairAdditiveCechH1Data generatedLawCircleSemanticCechData where
+  c0AddCommGroup := by
+    change AddCommGroup (Fin 3 -> GeneratedLawQuotient)
+    infer_instance
+  c1AddCommGroup := by
+    change AddCommGroup (Fin 3 -> GeneratedLawQuotient)
+    infer_instance
+  zero1_eq_zero := by
+    funext edge
+    rfl
+  delta0_zero := by
+    funext edge
+    change (0 : GeneratedLawQuotient) - 0 = 0
+    abel
+  delta0_add := by
+    intro left right
+    funext edge
+    change
+      (left (circleNext edge) + right (circleNext edge)) -
+          (left edge + right edge) =
+        (left (circleNext edge) - left edge) +
+          (right (circleNext edge) - right edge)
+    abel
+  delta0_neg := by
+    intro primitive
+    funext edge
+    change
+      (-primitive (circleNext edge) - -primitive edge) =
+        -(primitive (circleNext edge) - primitive edge)
+    abel
+
+/-- X.例9.1 / #3102: boundary-relation data over native circle coefficients. -/
+def generatedLawCircleBoundaryRelationData :
+    SemanticRepairCoverH1BoundaryRelationAbelianData semanticProjection where
+  cover := semanticCover
+  cech := generatedLawCircleSemanticCechData
+  supportOf _ := fun _ => True
+  component_covered_of_boundary := by
+    intro _primitive _hboundary residual hresidual
+    exact ⟨residual, trivial, rfl⟩
+  component_faithful_of_boundary := by
+    intro _primitive _hboundary _residual _candidate _hresidual _hcandidate _hprojection
+    trivial
+
+/-- X.例9.1 / #3102: additive boundary data over native circle coefficients. -/
+def generatedLawCircleBoundaryAdditiveData :
+    SemanticRepairCoverH1BoundaryRelationAdditiveData semanticProjection where
+  boundaryRelation := generatedLawCircleBoundaryRelationData
+  additive := generatedLawCircleSemanticAdditiveData
+
+/-- X.例9.1 / #3102: native quotient circle H1 class is nonzero. -/
+theorem generatedLawCircleSemanticH1_nonzero :
+    ¬ generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface.H1Zero := by
+  intro hzero
+  exact generatedLawCircleResidual_not_coboundary
+    (by
+      simpa [SemanticRepairAdditiveH1Surface.Cohomologous,
+        generatedLawCircleBoundaryAdditiveData,
+        generatedLawCircleBoundaryRelationData,
+        generatedLawCircleSemanticCechData]
+        using Quotient.exact hzero)
+
+/-- X.例9.1 / #3102: identity cochain realization for the constructed native circle. -/
+def generatedLawCircleH1Realization :
+    SemanticRepairCoverRelativeCochainRealization
+      generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface
+      generatedLawCircleCoverRelativeComplex where
+  c0Equiv := by
+    exact {
+      toFun := fun x => x
+      invFun := fun x => x
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl
+      map_add' := fun _ _ => rfl
+    }
+  c1Equiv := by
+    exact {
+      toFun := fun x => x
+      invFun := fun x => x
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl
+      map_add' := fun _ _ => rfl
+    }
+  c2Equiv := by
+    change generatedLawCircleC2 ≃ generatedLawCircleC2
+    exact Equiv.refl generatedLawCircleC2
+  c2Equiv_zero := by
+    funext σ
+    rfl
+  c2Equiv_symm_zero := by
+    funext σ
+    rfl
+  d0_to := by
+    intro primitive
+    rfl
+  d0_from := by
+    intro primitive
+    rfl
+  d1_to := by
+    intro _cochain
+    funext σ
+    change (0 : GeneratedLawQuotient) = 0
+    rfl
+  d1_from := by
+    intro _cochain
+    funext σ
+    change (0 : GeneratedLawQuotient) = 0
+    rfl
+
+/-- X.例9.1 / #3102: true-sheaf certificate for the constructed native circle route. -/
+def generatedLawCircleTrueSheafCertificate :
+    generatedLawCircleBoundaryAdditiveData.TrueSheafConditionCertificate
+      FiniteModel.site generatedLawQuotientPresheaf
+      (⊤ : Sieve FiniteModel.siteBase) where
+  cover_mem := FiniteModel.site.top_mem FiniteModel.siteBase
+  sheafCondition := generatedLawQuotientIsSheaf
+
+/--
+X.例9.1 / #3102: theorem 7.5 fires on the single native witness whose
+coefficient is law-equation-generated and whose H1 class is nonzero.
+-/
+theorem lawfulFiring_generatedLawCircleQuotient_endToEndPacket_fromConstructedInputs :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepairCoverRelativeH1Comparison
+          generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface
+          generatedLawCircleCoverRelativeComplex =>
+          SemanticRepairGeneratedEndToEndSAGAPacket
+            generatedLawCircleBoundaryAdditiveData defectSource FiniteModel.site
+            generatedLawQuotientPresheaf
+            (⊤ : Sieve FiniteModel.siteBase) generatedLawGluingData
+            comparison) :=
+  lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInputs
+    generatedLawCircleBoundaryAdditiveData defectSource displayedRequiredLawsHoldOn
+    (⊤ : Sieve FiniteModel.siteBase)
+    generatedLawCircleTrueSheafCertificate generatedLawGluingData
+    { realization := generatedLawCircleH1Realization }
 
 end SemanticRepairPart10
 end Examples
