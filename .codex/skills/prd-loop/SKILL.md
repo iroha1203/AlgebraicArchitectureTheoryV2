@@ -137,6 +137,10 @@ Codex は明示しない限りサブエージェントを使わない。この S
      `改修` / `Implementation Plan` / `現状診断` / `Failure Contract` /
      `Changed / Removed Fields` を抽出する(台帳の requirement matrix と
      must-not-remain リストの材料)。
+   - PRD が Lean 実装(`Formal/`)を要求する場合、`## Target Statements` 節
+     (`docs/aat/lean_quality_standard.md` §5: target theorem と新規 def の
+     signature の Lean コードブロック固定)の存在を確認する。無ければ
+     ループを開始せず `PRD 欠陥` として停止・報告する。
    - ループ台帳(tracking Issue)を確認または作成する。
 
 1. ギャップ分析(プランニング)。
@@ -150,6 +154,12 @@ Codex は明示しない限りサブエージェントを使わない。この S
      突き合わせ、`満たした / 未達 / blocked / stalled` に分類する。
    - 照合は文言ではなく実体で行う: 完了条件が要求するテスト・fixture・検証が
      実際に存在し、通ることを確認する(必要なら `cargo test` 等を実行する)。
+   - Lean 実装系の完了条件では、PRD の `## Target Statements` 節の固定
+     signature と実装 declaration を突合する(`docs/aat/lean_quality_standard.md`
+     §5.2)。premise の追加・結論の弱化・対象の縮小があれば、AC が check 済み
+     でも `未達` に戻す。固定 statement の変更が必要と判明した場合は
+     `PRD 欠陥` としてユーザーへエスカレートする(§5.3 drift 規則。
+     ループ内で PRD を編集しない既存規律の適用)。
    - tracking Issue の checklist が check 済みであることを `満たした` の根拠にしない。
      check は「過去の周回がそう主張した」ことしか意味しない。疑いがあれば実体を再確認する。
    - requirement matrix を突合し、どの周回にも接続していない R / PR 区分が残っていないかを

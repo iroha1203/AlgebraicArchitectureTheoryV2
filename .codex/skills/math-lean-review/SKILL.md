@@ -23,6 +23,13 @@ description: AAT / Lean 分野の敵対レビュー SKILL。数学本文、resea
 - 判定は可能な限り厳しくする。数学者の論文査読レベルを基準にし、合格判定は例外的にしか出さない。迷う場合は `No major findings` ではなく、証拠不足・仮定不足・弱化可能性として `Major revisions`、`Reject / 証明として不十分`、または `Blocked / cannot determine` に倒す。
 - Findings first で書く。証明として不完全、主張過大、仮定依存、未放電、`axiom` / `sorry` / `admit` / `unsafe` / `by trivial` 風の薄い証明、台帳 drift を優先して出す。
 - 対象 theorem だけを眺めて完了扱いにしない。定義、補題、instance、import 元、依存 theorem、example、index / proof obligation / GOAL claim まで、主張の成立に必要な境界を読む。
+- statement 品質・定義品質・スタイルの判定正本は
+  `docs/aat/lean_quality_standard.md`(mathlib 型 statement review 基準)。
+  material premise 三分類申告(本文由来 / 放電済み / 未放電)は実装者の
+  申告を証拠採用せず、レビュー側が premise を独立に列挙して申告と突合する
+  (申告のない仮定は未放電)。固定 statement(PRD `## Target Statements` /
+  GOAL カード / 候補カード `planned_lean_statement`)がある対象は、実装
+  declaration の signature と突合し、乖離は anti-weakening finding とする。
 - Lean が通ることは十分条件ではない。仮定が主張を丸ごと含んでいる、`Prop` が弱すぎる、 witness が選択済みすぎる、非空性や decidability や finite universe を hidden assumption にしている、`True` wrapper / marker theorem になっている場合は finding とする。
 - explicit certificate はそれだけでは放電ではない。certificate / class membership / structure field / theorem argument が material premise を透明に保持しているだけなら、未放電 premise として扱う。必ずその certificate 自体を生成する theorem / construction / finite witness / instance chain を追う。
 - theorem statement に現れる premise が proof term で実質的に使われているかを確認する。未使用の `sheafCondition`、`faithfulness`、`exactness`、`descent` などは、主張補強ではなく ledger/package への添付にすぎない可能性が高い。

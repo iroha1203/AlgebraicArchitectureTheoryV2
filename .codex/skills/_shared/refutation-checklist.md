@@ -29,6 +29,17 @@
 - **anti-weakening**: statement が本文ラベル・PRD・移植元宣言の主張より
   弱まっていないかを疑う。疑いの有無にかかわらず、蒸留・移植タスクでは
   §3 の移植元 conjunct 対応を必須で実施する。
+- **固定 statement 一致**: 対象に固定 statement(PRD の
+  `## Target Statements` 節、候補カードの `planned_lean_statement`、
+  GOAL カードの target statement)がある場合、実装 declaration の
+  signature と突合し、premise の追加・結論の弱化・対象の縮小を疑う
+  (一致判定の形式は `docs/aat/lean_quality_standard.md` §5)。
+  Lean 実装を要求する PRD・picked 候補に固定 statement が
+  存在しないこと自体も finding とする。
+- **material premise 三分類申告**: 実装者の申告(本文由来 / 放電済み /
+  未放電。`docs/aat/lean_quality_standard.md` §1.1)を証拠採用せず、
+  premise を独立に列挙して申告と突合する。申告のない仮定は
+  未放電として扱う。
 
 ## 2. 意味レベルの空虚化(字面 scan では捕まらない)
 
@@ -91,19 +102,20 @@ statement の意味を読んで反証を試みる。
    (Research 側と同名・同構造の宣言群)では、`#print axioms` の差分、
    AxiomAudit 収載、持ち込まれた補助宣言の要否を必ず検査する。
 
-## 4. no-go 適用範囲(境界資格条件の正本)
+## 4. no-go 適用範囲(scope 記載の資格条件の正本)
 
-台帳・docs・PR 本文が境界(selected input、no-go、沈黙、
-「〜とは主張しない」)を記載する場合、その資格を検証する:
+台帳・docs・PR 本文が scope 制限(selected input、no-go、沈黙、
+「〜とは主張しない」)を記載する場合、その資格を検証する
+(AGENTS.md「「境界」という言葉の使用を禁止する」の禁止語対応表も参照):
 
 1. 不可能性の証拠(no-go 定理、反例)が**宣言名で名指し**されているか。
 2. その定理の statement を実読し、**量化対象(任意ペアか、生成・特定
-   ペアか)が境界化対象を実際に覆うか**。
+   ペアか)が scope 制限の対象を実際に覆うか**。
 3. 覆い方が一文で書かれているか。
 
-いずれかを満たさない境界記載は、境界ではなく `unported` または未達で
-あり、境界記載自体を finding とする(先例: #3159 初回の
-「任意ペア no-go による生成ペア境界の正当化」)。
+いずれかを満たさない scope 制限記載は、scope 制限ではなく `unported`
+または未達であり、その記載自体を finding とする(先例: #3159 初回の
+「任意ペア no-go による生成ペア scope 制限の正当化」)。
 
 ## 5. 帰属・ロック値・fixture の実体(全分野)
 
