@@ -49,6 +49,11 @@
 
 ## Lean 形式化方針
 
+- statement 品質・定義品質・スタイルの正本は
+  [lean_quality_standard.md](lean_quality_standard.md)
+  (mathlib 型 statement review 基準。material premise 三分類申告、
+  API 接続義務、no-unfold API 規律、target statement 固定手続きを含む)。
+  この節の各項目と重なる場合は正本側を参照する。
 - 明示的な相談なしに `axiom`, `admit`, `sorry`, `unsafe` を導入しない。
 - 定義は小さく保ち、同値性や対応関係は定理として育てる。
 - 現在の `Decomposable` は `StrictLayered` を意味する。
@@ -84,14 +89,14 @@
   `rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**' --glob '!Formal/AG/Research.lean'`
   が no match であること(Research 集約ルート `Formal/AG/Research.lean` 自身の
   内部 import は正当なので除外する)。
-- **境界記載の資格条件**: 台帳・docs・PR 本文に境界(selected input、no-go、沈黙、
+- **scope 記載の資格条件**: 台帳・docs・PR 本文に scope 制限(selected input、no-go、沈黙、
   「〜とは主張しない」)を書いてよい条件は、`.codex/skills/_shared/refutation-checklist.md`
-  §4 を正本とする(不可能性証拠の宣言名名指し+量化対象が境界化対象を覆うことの
-  statement 実読確認+覆い方の一文)。資格を満たさない欠落は境界ではなく
-  `unported` または未達である。
+  §4 を正本とする(不可能性証拠の宣言名名指し+量化対象が scope 制限の対象を覆うことの
+  statement 実読確認+覆い方の一文)。資格を満たさない欠落は scope 制限ではなく
+  `unported` または未達である(AGENTS.md の禁止語対応表)。
 - 新規の `Prop + holds` フィールドは導入しない。どうしても selected assumption slot として
   導入する場合は、棚卸し台帳の公理スロットに登録し、`proved` ではなく
-  `packaged (assumption-relative)` または `statement-only` の境界として扱う。
+  `packaged (assumption-relative)` または `statement-only` の未放電仮定つき status として扱う。
 - Lean で証明済みの主張と、実証研究で検証する主張を混同しない。
 - 完了レビューでは、対象文書が列挙した theorem、suite field、acceptance theorem、fixture、Issue closure を
   直接照合する。対象文書が要求していない無制限 claim を「未完了部分」として追加しない。

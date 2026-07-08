@@ -19,6 +19,10 @@ Research 側(`Formal/AG/Research/`)で受理された成果の1行台帳。
   - `本文ラベル`: 対応する数学本文の部・定理番号(無ければ `-`)
   - `conjuncts 要旨`: 結論一覧の要約。移植時の下限照合で結論の
     数え漏れが出ない粒度で書く
+  - `未放電仮定`: 受理時点の material premise 三分類
+    (`docs/aat/lean_quality_standard.md` §1.1)で未放電に分類された
+    仮定の一覧。無ければ `なし`。受理済みであることと未放電仮定が
+    無いことは別であり、蒸留・下限照合時はこの欄を必ず読む
   - `受理`: GOAL / cycle / PR などの受理点
   - `移植状況`: `ported` / `unported` / `not-for-porting`。
     列値 `unported` は guideline の status `unported (Research-proved)` の
@@ -35,8 +39,8 @@ Research 側(`Formal/AG/Research/`)で受理された成果の1行台帳。
 
 ## 索引
 
-| theorem | file | 本文ラベル | conjuncts 要旨 | 受理 | 移植状況 | 本体対応 |
-| --- | --- | --- | --- | --- | --- | --- |
+| theorem | file | 本文ラベル | conjuncts 要旨 | 未放電仮定 | 受理 | 移植状況 | 本体対応 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
 <!--
 既存の受理成果の遡及登録(初期整備)は別 PRD で実施する
