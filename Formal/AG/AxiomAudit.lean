@@ -52,7 +52,43 @@ def semanticRepairTheorem75NativeGeneratedEndToEndFromNativeGeneratedInputs :=
   @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInputs
 
 def semanticRepairTheorem75GeneratedPairGroundedComparisonPacket :=
-  @SemanticRepair.lawEquation_constructs_generatedPair_groundedComparisonPacket
+  @SemanticRepair.lawEquation_constructs_generatedPair_groundedComparisonPacket_fromCoverRelativeComplex
+
+def semanticRepairTheorem75GeneratedBoundaryGroundedComparisonPacket :=
+  @SemanticRepair.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromPrimitive
+
+def semanticRepairTheorem75GeneratedBoundaryLawIndependentConclusions :=
+  @SemanticRepair.lawEquation_generatedBoundary_lawIndependentConclusions_fromPrimitive
+
+def semanticRepairTheorem75GeneratedBoundaryLawIndependentResearchConjuncts :=
+  @SemanticRepair.lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromSource
+
+def semanticRepairTheorem75GeneratedBoundaryGroundedResearchConjuncts :=
+  @SemanticRepair.lawEquation_constructs_groundedResearchConjuncts_fromSource
+
+def semanticRepairTheorem75CompleteSupportClosure :=
+  @SemanticRepair.lawEquationCompleteRepairSupport_semanticRepairClosed
+
+def semanticRepairTheorem75CompleteSupportComponentFaithfulness :=
+  @SemanticRepair.lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
+
+def semanticRepairTheorem75FinitePosetGeneratedBoundaryGroundedComparisonPacket :=
+  @SemanticRepair.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromFinitePosetComparisonPrimitive
+
+def semanticRepairTheorem75StandardFinitePosetGeneratedBoundaryGroundedComparisonPacket :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromStandardFinitePosetPrimitive
+
+def semanticRepairTheorem75StandardFinitePosetSourceC0DifferentialGroundedResearchConjuncts :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedResearchConjunctsWithSourceC0DifferentialZero_fromStandardFinitePosetSource
+
+def semanticRepairTheorem75CanonicalTupleGeneratedBoundaryGroundedComparisonPacket :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromCanonicalTuplePrimitive
+
+def semanticRepairTheorem75LawEquationSpineGeneratedBoundaryGroundedComparisonPacket :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromLawEquationSpinePrimitive
+
+def semanticRepairTheorem75OverlapGeneratedLawEquationSpineGroundedComparisonPacket :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromOverlapGeneratedSpinePrimitive
 
 def semanticRepairTheorem81DegreeZeroLawContribution :=
   @SemanticRepair.displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
@@ -96,6 +132,64 @@ theorem semanticRepairExample91GeneratedLawCircleQuotientEndToEndFromConstructed
             AAT.AG.Examples.SemanticRepairPart10.generatedLawGluingData
             comparison) :=
   AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedLawCircleQuotient_endToEndPacket_fromConstructedInputs
+
+theorem semanticRepairExample91GeneratedLawCircleSingleWitnessNativeEndToEndPacket :
+    Nontrivial AAT.AG.Examples.SemanticRepairPart10.GeneratedLawQuotient /\
+      (¬ AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface.H1Zero) /\
+      Nonempty
+        (Sigma fun comparison :
+          SemanticRepair.SemanticRepairCoverRelativeH1Comparison
+            AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface
+            AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleCoverRelativeComplex =>
+            SemanticRepair.SemanticRepairGeneratedEndToEndSAGAPacket
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleBoundaryAdditiveData
+              AAT.AG.Examples.SemanticRepairPart10.defectSource
+              FiniteModel.site
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawQuotientPresheaf
+              (⊤ : Sieve FiniteModel.siteBase)
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawGluingData
+              comparison) :=
+  AAT.AG.Examples.SemanticRepairPart10.generatedLawCircle_singleWitness_nativeEndToEndPacket
+
+theorem semanticRepairExample91GeneratedLawCircleSingleWitnessWithStandardSourceC0ResearchConjuncts :
+    Nontrivial AAT.AG.Examples.SemanticRepairPart10.GeneratedLawQuotient /\
+      (¬ AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface.H1Zero) /\
+      Nonempty
+        (Sigma fun comparison :
+          SemanticRepair.SemanticRepairCoverRelativeH1Comparison
+            AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface
+            AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleCoverRelativeComplex =>
+            SemanticRepair.SemanticRepairGeneratedEndToEndSAGAPacket
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleBoundaryAdditiveData
+              AAT.AG.Examples.SemanticRepairPart10.defectSource
+              FiniteModel.site
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawQuotientPresheaf
+              (⊤ : Sieve FiniteModel.siteBase)
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawGluingData
+              comparison) /\
+      Nonempty
+        (Sigma fun surface :
+          SemanticRepair.LawEquationGeneratedCurrentG06InputSurface
+            AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleSemanticCover
+            FiniteModel.site
+            AAT.AG.Examples.SemanticRepairPart10.lawEquationCore.obstructionQuotientPresheaf
+            AAT.AG.Examples.SemanticRepairPart10.generatedLawStandardSourceC0Complex =>
+          Sigma fun comparison :
+            SemanticRepair.SemanticRepairCoverRelativeH1Comparison
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawStandardSourceC0BoundaryAdditiveData.toAdditiveH1Surface
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawStandardSourceC0Complex =>
+            SemanticRepair.LawEquationGroundedComparisonConjunctsBodyWithSourceC0DifferentialZero
+              AAT.AG.Examples.SemanticRepairPart10.defectSource surface
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawStandardBodySource
+              AAT.AG.Examples.SemanticRepairPart10.generatedLawStandardSourceC0BoundaryAdditiveData
+              comparison) :=
+  AAT.AG.Examples.SemanticRepairPart10.generatedLawCircle_singleWitness_withStandardSourceC0ResearchConjuncts
+
+def semanticRepairExample91GeneratedLawCircleGeneratedBoundaryPacketFromPrimitive :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedLawCircleQuotient_generatedBoundaryPacket_fromPrimitive
+
+def semanticRepairExample91GeneratedLawStandardSourceC0ResearchConjuncts :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedLawStandardSourceC0ResearchConjuncts
 
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle

@@ -13,6 +13,81 @@ universe u v w x y z r
 
 /-! ## X.§7 theorem 7.3 and 7.5 SAGA comparison packages -/
 
+/-! ## Degree-zero law-equation generated source package -/
+
+/-- X.定理8.1: pointwise zero reading for the generated degree-zero cochain. -/
+def GeneratedSourceC0PointwiseZero
+    {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U}
+    {S : Site.AATSite.{u} A}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G) : Prop :=
+  forall i : D.Chart, D.interpret i = 0
+
+/--
+X.定理8.1: Cech-zero reading for the generated degree-zero cochain.
+
+At this body level the generated Cech-zero predicate is the selected
+restriction evaluator produced by the law-equation grounding surface.  It is a
+degree-zero conclusion only; it does not include residual-zero, H1-zero,
+descent, or global-coherence conclusions.
+-/
+def GeneratedSourceC0CechZero
+    {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U}
+    {S : Site.AATSite.{u} A}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G) : Prop :=
+  D.GeneratedRestrictionEvaluator
+
+/-- X.定理8.1 package: law fulfillment generates only degree-zero zero readings. -/
+structure GeneratedSourceC0ZeroPackage
+    {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U}
+    {S : Site.AATSite.{u} A}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G) : Type (u + 1) where
+  pointwiseZero : GeneratedSourceC0PointwiseZero D
+  cechZero : GeneratedSourceC0CechZero D
+
+/-- X.定理8.1: displayed law satisfaction gives pointwise zero. -/
+theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_pointwiseZero
+    {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U}
+    {S : Site.AATSite.{u} A}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G)
+    (hholds : D.DisplayedRequiredLawsHoldOn) :
+    GeneratedSourceC0PointwiseZero D :=
+  D.displayedRequiredLawsHoldOn_constructs_interpret_eq_zero hholds
+
+/-- X.定理8.1: displayed law satisfaction gives the generated Cech-zero reading. -/
+theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_cechZero
+    {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U}
+    {S : Site.AATSite.{u} A}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G)
+    (hholds : D.DisplayedRequiredLawsHoldOn) :
+    GeneratedSourceC0CechZero D :=
+  D.displayedRequiredLawsHoldOn_constructs_restrictionEvaluator hholds
+
+/-- X.定理8.1: degree-zero law-generated zero package. -/
+theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
+    {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U}
+    {S : Site.AATSite.{u} A}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G)
+    (hholds : D.DisplayedRequiredLawsHoldOn) :
+    Nonempty (GeneratedSourceC0ZeroPackage D) :=
+  ⟨{ pointwiseZero :=
+        displayedRequiredLawsHoldOn_constructs_generatedSourceC0_pointwiseZero
+          D hholds,
+      cechZero :=
+        displayedRequiredLawsHoldOn_constructs_generatedSourceC0_cechZero
+          D hholds }⟩
+
 namespace SemanticRepairCoverH1BoundaryRelationAdditiveData
 
 /--
@@ -175,9 +250,14 @@ structure SemanticRepairGeneratedLawDependentConclusions
     {S : Site.AATSite.{u} A}
     {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
     (D : LawAlgebra.LawEquationDefectSource.{u} G) : Type (u + 1) where
+  generatedSourceC0ZeroPackage : GeneratedSourceC0ZeroPackage D
   generatedInterpretationZero : forall i : D.Chart, D.interpret i = 0
   generatedRestrictionEvaluator :
     D.GeneratedRestrictionEvaluator
+  generatedInterpretationZero_iff_defect_mem_obstructionIdeal :
+    forall i : D.Chart,
+      D.interpret i = 0 <->
+        D.defect i (D.input i) ∈ G.obstructionIdeal (D.chart i)
   nonzeroInterpretationDetectsDisplayedLawFailure :
     forall i : D.Chart,
       D.interpret i ≠ 0 ->
@@ -259,6 +339,49 @@ structure SemanticRepairGeneratedEndToEndSAGAPacket
   lawIndependentConclusions :
     SemanticRepairGeneratedLawIndependentConclusions
       data S F cover gluingData comparison
+
+/--
+X.定理7.5 realized packet: the theorem-7.5 packet together with the concrete
+cochain realization that generated its H1 comparison.
+
+This body-side strengthening keeps the comparison provenance in the theorem
+object: the comparison is no longer only a parameter with a packet attached,
+but is tied to an explicit `SemanticRepairCoverRelativeCochainRealization` and
+the theorem-7.2 comparison package derived from it.
+-/
+structure SemanticRepairGeneratedRealizedEndToEndSAGAPacket
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    {Ulaw : AtomCarrier.{u}}
+    {Alaw : ArchitectureObject Ulaw}
+    {Slaw : Site.AATSite.{u} Alaw}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G)
+    {U : AtomCarrier.{r}}
+    {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (F : Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (gluingData : Site.AATGluingData S F cover)
+    {coverRel : Cohomology.CoverRelativeCechCover S}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
+    (comparison :
+      SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K) :
+    Type (max (u + 1) (max v (max w (max x (max y (max z r)))))) where
+  packet :
+    SemanticRepairGeneratedEndToEndSAGAPacket
+      data D S F cover gluingData comparison
+  cochainRealization :
+    SemanticRepairCoverRelativeCochainRealization data.toAdditiveH1Surface K
+  comparison_eq_realization :
+    comparison = cochainRealization.toH1Comparison
+  h1ComparisonPackage :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        comparison)
 
 /--
 X.定理7.5 native generated-input surface.
@@ -351,14 +474,20 @@ theorem lawEquation_constructs_groundedComparisonPacket
       D hDisplayedRequiredLaws with
     ⟨hInterpretZero, hRestrictionEvaluator, _hDefectIff, hFailureDetection⟩
   rcases
+    displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
+      D hDisplayedRequiredLaws with
+    ⟨hZeroPackage⟩
+  rcases
     trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package
       data S F cover certificate gluingData comparison with
     ⟨package73⟩
   refine ⟨?_⟩
   exact
     { lawDependentConclusions :=
-        { generatedInterpretationZero := hInterpretZero
+        { generatedSourceC0ZeroPackage := hZeroPackage
+          generatedInterpretationZero := hInterpretZero
           generatedRestrictionEvaluator := hRestrictionEvaluator
+          generatedInterpretationZero_iff_defect_mem_obstructionIdeal := _hDefectIff
           nonzeroInterpretationDetectsDisplayedLawFailure := hFailureDetection }
       lawIndependentConclusions :=
         { groundedGlobalGluingPackage := ⟨package73⟩
@@ -416,6 +545,52 @@ theorem lawEquation_constructs_groundedComparisonPacket_fromRealization
       data D hDisplayedRequiredLaws S F cover certificate gluingData comparison with
     ⟨packet⟩
   exact ⟨⟨comparison, packet⟩⟩
+
+/--
+X.定理7.5 realized generated-comparison form: the returned packet retains the
+cochain realization that generated the comparison and the theorem-7.2
+comparison package derived from it.
+-/
+theorem lawEquation_constructs_realizedGroundedComparisonPacket_fromRealization
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    {Ulaw : AtomCarrier.{u}}
+    {Alaw : ArchitectureObject Ulaw}
+    {Slaw : Site.AATSite.{u} Alaw}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G)
+    (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
+    {U : AtomCarrier.{r}}
+    {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (F : Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (certificate : data.TrueSheafConditionCertificate S F cover)
+    (gluingData : Site.AATGluingData S F cover)
+    {coverRel : Cohomology.CoverRelativeCechCover S}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization data.toAdditiveH1Surface K) :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K =>
+          SemanticRepairGeneratedRealizedEndToEndSAGAPacket
+            data D S F cover gluingData comparison) := by
+  let comparison := realization.toH1Comparison
+  rcases
+    lawEquation_constructs_groundedComparisonPacket
+      data D hDisplayedRequiredLaws S F cover certificate gluingData comparison with
+    ⟨packet⟩
+  exact
+    ⟨⟨comparison,
+      { packet := packet
+        cochainRealization := realization
+        comparison_eq_realization := rfl
+        h1ComparisonPackage :=
+          comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package }⟩⟩
 
 /--
 X.定理7.5 native generated-input form: the theorem consumes cochain
