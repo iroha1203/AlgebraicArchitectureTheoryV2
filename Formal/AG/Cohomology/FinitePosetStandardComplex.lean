@@ -181,6 +181,40 @@ def standardDifferential
     (standardAdditiveData geometry Ob).combineFaces n simplex
       (fun i => Site.FinitePosetCechFaceRestriction faces cochain simplex i)
 
+/-- A degree-zero standard differential vanishes exactly when its two face restrictions agree. -/
+theorem standardDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+    {geometry : Site.FinitePosetCoverGeometry S}
+    {Ob : ObstructionSheaf S}
+    (faces :
+      Site.FinitePosetCechFaceData
+        (geometry.toObstructionCoefficientRegime Ob))
+    (cochain :
+      Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) 0)
+    (simplex :
+      Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) 1) :
+    letI := Ob.addCommGroup
+      (Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+    standardDifferential faces 0 cochain simplex = 0 ↔
+      Site.FinitePosetCechFaceRestriction faces cochain simplex (0 : Fin 2) =
+        Site.FinitePosetCechFaceRestriction faces cochain simplex (1 : Fin 2) := by
+  let W :=
+    Site.FinitePosetCechOverlapObject
+      (geometry.toObstructionCoefficientRegime Ob) 1 simplex
+  letI := Ob.addCommGroup W
+  change
+    obstructionSheafStandardAlternatingCombination Ob W 2
+      (fun i => Site.FinitePosetCechFaceRestriction faces cochain simplex i) = 0 ↔ _
+  simp [obstructionSheafStandardAlternatingCombination, Fin.sum_univ_two]
+  simpa only [sub_eq_add_neg] using
+    (sub_eq_zero :
+      Site.FinitePosetCechFaceRestriction faces cochain simplex (0 : Fin 2) -
+          Site.FinitePosetCechFaceRestriction faces cochain simplex (1 : Fin 2) = 0 ↔
+        Site.FinitePosetCechFaceRestriction faces cochain simplex (0 : Fin 2) =
+          Site.FinitePosetCechFaceRestriction faces cochain simplex (1 : Fin 2))
+
 /-- X.R1(a): the standard differential sends zero to zero. -/
 theorem standardDifferential_zero
     {geometry : Site.FinitePosetCoverGeometry S}
