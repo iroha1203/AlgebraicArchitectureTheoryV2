@@ -672,6 +672,40 @@ def ArrowCompatibilityLaw
     G.obstructionQuotientPresheaf source.chartToBase
       (fun sigma => D.interpret (source.chartOf sigma))
 
+/--
+Body translation of the Research restriction-level law evaluator.
+
+For every pair of displayed charts and every common refinement, supported
+required laws that hold on the two local readings evaluate to equality of the
+two restricted obstruction sections.
+-/
+def DisplayedRequiredLawRestrictionEvaluator
+    (source : LawEquationBodyCechSource D K) : Prop :=
+  forall (sigma tau : coverRel.simplex 0) {Z : S.category}
+      (gSigma : Z ⟶ D.chart (source.chartOf sigma))
+      (gTau : Z ⟶ D.chart (source.chartOf tau)),
+    gSigma ≫ source.chartToBase sigma =
+        gTau ≫ source.chartToBase tau ->
+      forall (lawIndexSigma lawIndexTau : S.lawUniverse.Index),
+        lawIndexSigma ∈
+            D.lawSupport (source.chartOf sigma)
+              (D.input (source.chartOf sigma)) ->
+          lawIndexTau ∈
+              D.lawSupport (source.chartOf tau)
+                (D.input (source.chartOf tau)) ->
+            S.lawUniverse.Required lawIndexSigma ->
+              S.lawUniverse.Required lawIndexTau ->
+                (S.lawUniverse.law lawIndexSigma).holds
+                    (D.objectOfLocalInput (source.chartOf sigma)
+                      (D.input (source.chartOf sigma))) ->
+                  (S.lawUniverse.law lawIndexTau).holds
+                      (D.objectOfLocalInput (source.chartOf tau)
+                        (D.input (source.chartOf tau))) ->
+                    G.obstructionQuotientPresheaf.map gSigma.op
+                        (D.interpret (source.chartOf sigma)) =
+                      G.obstructionQuotientPresheaf.map gTau.op
+                        (D.interpret (source.chartOf tau))
+
   /-- Body translation of Research `sourceC0CechZero`. -/
   def SourceC0CechZero
     (source : LawEquationBodyCechSource D K) : Prop :=
@@ -728,6 +762,22 @@ theorem commonRestrictionRealization_constructs_arrowCompatibilityLaw
   rw [← hpreserves sigma, ← hpreserves tau]
   exact hcompatible sigma tau Z gSigma gTau hcomm
 
+/-- A common base-section realization constructs the restriction-level evaluator. -/
+theorem commonRestrictionRealization_constructs_displayedRequiredLawRestrictionEvaluator
+    (source : LawEquationBodyCechSource D K)
+    (hrealized : source.CommonRestrictionRealization) :
+    source.DisplayedRequiredLawRestrictionEvaluator := by
+  rcases hrealized with ⟨baseSource, hpreserves⟩
+  have hcompatible :=
+    (CategoryTheory.Presieve.Arrows.toCompatible
+      G.obstructionQuotientPresheaf
+      source.chartToBase baseSource.sourceSection).property
+  intro sigma tau Z gSigma gTau hcomm
+    _lawIndexSigma _lawIndexTau _hmemSigma _hmemTau
+    _hrequiredSigma _hrequiredTau _hholdsSigma _hholdsTau
+  rw [← hpreserves sigma, ← hpreserves tau]
+  exact hcompatible sigma tau Z gSigma gTau hcomm
+
 theorem displayedRequiredLawsHoldOn_constructs_commonRestrictionRealization
     (source : LawEquationBodyCechSource D K)
     (hholds : D.DisplayedRequiredLawsHoldOn) :
@@ -735,6 +785,47 @@ theorem displayedRequiredLawsHoldOn_constructs_commonRestrictionRealization
   source.baseRestrictionSourcePreservesDisplayedInterpretation_constructs_commonRestrictionRealization
     (source.displayedRequiredLawsHoldOn_constructs_baseRestrictionSourcePreservesDisplayedInterpretation
       hholds)
+
+/-- Displayed law fulfillment constructs the restriction-level evaluator through R1. -/
+theorem displayedRequiredLawsHoldOn_constructs_displayedRequiredLawRestrictionEvaluator
+    (source : LawEquationBodyCechSource D K)
+    (hholds : D.DisplayedRequiredLawsHoldOn) :
+    source.DisplayedRequiredLawRestrictionEvaluator :=
+  source.commonRestrictionRealization_constructs_displayedRequiredLawRestrictionEvaluator
+    (source.displayedRequiredLawsHoldOn_constructs_commonRestrictionRealization
+      hholds)
+
+/-- The evaluator and displayed law fulfillment recover the bare arrow law. -/
+theorem displayedRequiredLawsHoldOn_and_restrictionEvaluator_constructs_arrowCompatibilityLaw
+    (source : LawEquationBodyCechSource D K)
+    (hholds : D.DisplayedRequiredLawsHoldOn)
+    (evaluator : source.DisplayedRequiredLawRestrictionEvaluator) :
+    source.ArrowCompatibilityLaw := by
+  intro sigma tau Z gSigma gTau hcomm
+  obtain ⟨lawIndexSigma, hmemSigma⟩ :=
+    D.lawSupport_nonempty (source.chartOf sigma)
+  obtain ⟨lawIndexTau, hmemTau⟩ :=
+    D.lawSupport_nonempty (source.chartOf tau)
+  have hrequiredSigma :=
+    D.lawSupport_required (source.chartOf sigma) lawIndexSigma hmemSigma
+  have hrequiredTau :=
+    D.lawSupport_required (source.chartOf tau) lawIndexTau hmemTau
+  exact
+    evaluator sigma tau gSigma gTau hcomm lawIndexSigma lawIndexTau
+      hmemSigma hmemTau hrequiredSigma hrequiredTau
+      (hholds (source.chartOf sigma) lawIndexSigma hmemSigma hrequiredSigma)
+      (hholds (source.chartOf tau) lawIndexTau hmemTau hrequiredTau)
+
+/-- Without arrow compatibility, displayed law fulfillment cannot yield the evaluator. -/
+theorem no_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+    (source : LawEquationBodyCechSource D K)
+    (hholds : D.DisplayedRequiredLawsHoldOn)
+    (hmissing : ¬ source.ArrowCompatibilityLaw) :
+    ¬ source.DisplayedRequiredLawRestrictionEvaluator := by
+  intro evaluator
+  exact hmissing
+    (source.displayedRequiredLawsHoldOn_and_restrictionEvaluator_constructs_arrowCompatibilityLaw
+      hholds evaluator)
 
 theorem displayedRequiredLawsHoldOn_constructs_arrowCompatibilityLaw
     (source : LawEquationBodyCechSource D K)
@@ -1045,7 +1136,8 @@ structure LawEquationGroundedComparisonConjunctsBody
     source.BaseRestrictionSourcePreservesDisplayedInterpretation
       source.toBaseRestrictionSource
   arrowCompatibilityLaw : source.ArrowCompatibilityLaw
-  displayedRequiredLawRestrictionEvaluator : D.GeneratedRestrictionEvaluator
+  displayedRequiredLawRestrictionEvaluator :
+    source.DisplayedRequiredLawRestrictionEvaluator
   sourceC0CechZero : source.SourceC0CechZero
   selectedRealizationLayer :
     Nonempty (SelectedSemanticCoefficientDirectRealizationLayerBody surface data)
@@ -1098,15 +1190,15 @@ structure LawEquationGroundedComparisonConjunctsBodyWithSourceC0DifferentialZero
   sourceC0GeneratedCechZero :
     source.SourceC0GeneratedCechZero
 
-/-- Body-side base-restriction source reading: the generated source evaluator. -/
-def toCoverRelativeBaseRestrictionSource
+/-- Repackage the generated interpretation equality under its pointwise-zero name. -/
+def toGeneratedInterpretationPointwiseZero
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite.{u} A}
     {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
-    (hprimitive : forall i : D.Chart, D.interpret i = 0) :
-    D.GeneratedRestrictionEvaluator :=
-  hprimitive
+    (hpointwise : forall i : D.Chart, D.interpret i = 0) :
+    D.GeneratedInterpretationPointwiseZero :=
+  hpointwise
 
 /--
 Displayed required-law fulfillment constructs the body-side primitive
@@ -1175,8 +1267,8 @@ theorem lawEquation_constructs_generatedPair_groundedComparisonPacket
       forall i : D.Chart, D.interpret i = 0 :=
     displayedRequiredLawsHoldOn_constructs_primitive_realizes_displayedInterpretations
       D hDisplayedRequiredLaws
-  have hRestrictionEvaluator : D.GeneratedRestrictionEvaluator :=
-    toCoverRelativeBaseRestrictionSource D hInterpretZero
+  have hPointwiseZero : D.GeneratedInterpretationPointwiseZero :=
+    toGeneratedInterpretationPointwiseZero D hInterpretZero
   rcases
     displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
       D hDisplayedRequiredLaws with
@@ -1191,7 +1283,7 @@ theorem lawEquation_constructs_generatedPair_groundedComparisonPacket
     { lawDependentConclusions :=
         { generatedSourceC0ZeroPackage := hZeroPackage
           generatedInterpretationZero := hInterpretZero
-          generatedRestrictionEvaluator := hRestrictionEvaluator
+          generatedInterpretationPointwiseZero := hPointwiseZero
           generatedInterpretationZero_iff_defect_mem_obstructionIdeal :=
             D.interpret_eq_zero_iff_defect_mem_obstructionIdeal
           nonzeroInterpretationDetectsDisplayedLawFailure :=
@@ -1702,7 +1794,7 @@ theorem lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromPr
   rcases
     LawAlgebra.LawEquationDefectSource.lawEquation_grounding_packet
       D hDisplayedRequiredLaws with
-    ⟨hInterpretZero, hRestrictionEvaluator, hDefectIff, hFailureDetection⟩
+    ⟨hInterpretZero, hPointwiseZero, hDefectIff, hFailureDetection⟩
   rcases
     displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
       D hDisplayedRequiredLaws with
@@ -1714,7 +1806,7 @@ theorem lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromPr
     { lawDependentConclusions :=
         { generatedSourceC0ZeroPackage := hZeroPackage
           generatedInterpretationZero := hInterpretZero
-          generatedRestrictionEvaluator := hRestrictionEvaluator
+          generatedInterpretationPointwiseZero := hPointwiseZero
           generatedInterpretationZero_iff_defect_mem_obstructionIdeal :=
             hDefectIff
           nonzeroInterpretationDetectsDisplayedLawFailure := hFailureDetection }
@@ -1801,7 +1893,7 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromPrimitive
   rcases
     LawAlgebra.LawEquationDefectSource.lawEquation_grounding_packet
       D hDisplayedRequiredLaws with
-    ⟨_hInterpretZero, hRestrictionEvaluator, _hDefectIff, _hFailureDetection⟩
+    ⟨_hInterpretZero, _hPointwiseZero, _hDefectIff, _hFailureDetection⟩
   refine ⟨⟨surface, comparison, ?_⟩⟩
   exact
     { displayedInterpretationRealization :=
@@ -1816,7 +1908,9 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromPrimitive
       arrowCompatibilityLaw :=
         source.displayedRequiredLawsHoldOn_constructs_arrowCompatibilityLaw
           hDisplayedRequiredLaws
-      displayedRequiredLawRestrictionEvaluator := hRestrictionEvaluator
+      displayedRequiredLawRestrictionEvaluator :=
+        source.displayedRequiredLawsHoldOn_constructs_displayedRequiredLawRestrictionEvaluator
+          hDisplayedRequiredLaws
       sourceC0CechZero :=
         source.displayedRequiredLawsHoldOn_constructs_sourceC0CechZero
           hDisplayedRequiredLaws
@@ -1910,7 +2004,7 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromSource
   rcases
     LawAlgebra.LawEquationDefectSource.lawEquation_grounding_packet
       D hDisplayedRequiredLaws with
-    ⟨_hInterpretZero, hRestrictionEvaluator, _hDefectIff, _hFailureDetection⟩
+    ⟨_hInterpretZero, _hPointwiseZero, _hDefectIff, _hFailureDetection⟩
   refine ⟨⟨surface, comparison, ?_⟩⟩
   exact
     { displayedInterpretationRealization :=
@@ -1925,7 +2019,9 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromSource
       arrowCompatibilityLaw :=
         source.displayedRequiredLawsHoldOn_constructs_arrowCompatibilityLaw
           hDisplayedRequiredLaws
-      displayedRequiredLawRestrictionEvaluator := hRestrictionEvaluator
+      displayedRequiredLawRestrictionEvaluator :=
+        source.displayedRequiredLawsHoldOn_constructs_displayedRequiredLawRestrictionEvaluator
+          hDisplayedRequiredLaws
       sourceC0CechZero :=
         source.displayedRequiredLawsHoldOn_constructs_sourceC0CechZero
           hDisplayedRequiredLaws
