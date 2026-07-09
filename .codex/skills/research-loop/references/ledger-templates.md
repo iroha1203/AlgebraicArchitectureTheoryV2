@@ -1,6 +1,6 @@
 # Research Loop Ledger Templates
 
-tracking Issue に cycle / merge / phase / genius target コメントを書くときだけ読む。
+cycle / merge / phase / genius target を tracking Issue に記録するためのテンプレート。
 
 ## 原則
 

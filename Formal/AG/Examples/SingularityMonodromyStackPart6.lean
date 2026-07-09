@@ -373,7 +373,7 @@ def toyHomotopyGenerators :
     OperationPath.cons toySelectedOperation (OperationPath.nil (G := toyOperationCategory) true)
   rightPath _ :=
     OperationPath.cons toySelectedOperation (OperationPath.nil (G := toyOperationCategory) true)
-  LoopRelator := PUnit
+  LoopRelator := Bool
   relatorBase _ := false
   relatorLoop _ := OperationLoop.identity false
   relator_based _ := rfl
@@ -382,7 +382,7 @@ def toyPresentationTwoComplex :
     PresentationTwoComplex.{0, 0, 0, 0, 0, 0} toyHomotopyGenerators where
   Vertex := Bool
   vertexEquivState := Equiv.refl Bool
-  Edge := PUnit
+  Edge := Bool
   edgeBoundary _ := ⟨false, true, toySelectedOperation⟩
   TwoCell := Bool
   twoCellEquivGenerator := by
@@ -394,7 +394,11 @@ abbrev ToyFreeWord :=
 
 def toyEmptyFreeWord : ToyFreeWord where
   steps := []
-  startsAtBase := True
+  startsAtBase := (0 : Nat) = 0
+
+def toyNonemptyFreeWord : ToyFreeWord where
+  steps := [FormalEdgeStep.forward toySelectedOperation]
+  startsAtBase := (1 : Nat) = 1
 
 abbrev ToyLoopGroup :=
   Multiplicative (ZMod 2)
@@ -403,8 +407,22 @@ theorem toyPresentedPi_pi1_nontrivial :
     Nontrivial ToyLoopGroup := by
   infer_instance
 
-abbrev ToyRefactorHom (a b : Bool) :=
-  ULift.{0} (PLift (a = b))
+def toyLoopGenerator : ToyLoopGroup :=
+  Multiplicative.ofAdd (1 : ZMod 2)
+
+theorem toyLoopGenerator_ne_one : toyLoopGenerator ≠ (1 : ToyLoopGroup) := by
+  intro h
+  have hAdd := congrArg Multiplicative.toAdd h
+  norm_num [toyLoopGenerator] at hAdd
+
+def toyQuotientMap (w : ToyFreeWord) : ToyLoopGroup :=
+  if w.steps = [] then 1 else toyLoopGenerator
+
+theorem toyQuotientMap_empty : toyQuotientMap toyEmptyFreeWord = 1 := by
+  simp [toyQuotientMap, toyEmptyFreeWord]
+
+theorem toyQuotientMap_nonempty : toyQuotientMap toyNonemptyFreeWord = toyLoopGenerator := by
+  simp [toyQuotientMap, toyNonemptyFreeWord]
 
 def toyPresentedPi :
     PresentedArchitectureFundamentalGroup.{0, 0, 0, 0, 0, 0}
@@ -421,12 +439,16 @@ def toyPresentedPi :
     intro w h
     exact Or.inl ⟨(show toyHomotopyGenerators.PathCell from false), h.symm⟩
   Pi1 := ToyLoopGroup
-  quotientMap _ := 1
-  relator_maps_to_identity _ _ := rfl
+  quotientMap := toyQuotientMap
+  relator_maps_to_identity := by
+    intro w h
+    simpa [h] using toyQuotientMap_empty
   FreeTransport := Bool
   QuotientTransport := Bool
-  SendsRelatorsToIdentity T := T = true
-  FactorsThroughQuotient T Q := Q = T ∧ T = true
+  SendsRelatorsToIdentity T :=
+    toyQuotientMap (if T then toyEmptyFreeWord else toyNonemptyFreeWord) = 1
+  FactorsThroughQuotient T Q :=
+    Q = T ∧ toyQuotientMap (if T then toyEmptyFreeWord else toyNonemptyFreeWord) = 1
   quotientUniversalProperty := by
     intro T
     constructor
@@ -436,12 +458,71 @@ def toyPresentedPi :
       rcases h with ⟨_Q, _hQT, hT⟩
       exact hT
 
+def toyBoolFlipEquiv : Bool ≃ Bool where
+  toFun b := !b
+  invFun b := !b
+  left_inv := by intro b; cases b <;> rfl
+  right_inv := by intro b; cases b <;> rfl
+
+def toyFlipCoefficientAutomorphism :
+    CoefficientAutomorphism { Ob := Bool, Sem := Bool, Eff := Bool } where
+  obAut := toyBoolFlipEquiv
+  semAut := Equiv.refl Bool
+  effAut := Equiv.refl Bool
+
+theorem toyCoefficientAutomorphism_ext
+    {C : MonodromyCoefficientObject}
+    {f g : CoefficientAutomorphism C}
+    (hob : f.obAut = g.obAut)
+    (hsem : f.semAut = g.semAut)
+    (heff : f.effAut = g.effAut) :
+    f = g := by
+  cases f
+  cases g
+  cases hob
+  cases hsem
+  cases heff
+  rfl
+
+def toyLoopRepresentation (gamma : ToyLoopGroup) :
+    CoefficientAutomorphism { Ob := Bool, Sem := Bool, Eff := Bool } :=
+  if (Multiplicative.toAdd gamma : ZMod 2) = 0 then
+    CoefficientAutomorphism.id _
+  else
+    toyFlipCoefficientAutomorphism
+
+def toyObstructionCoefficientMoved
+    (phi : CoefficientAutomorphism { Ob := Bool, Sem := Bool, Eff := Bool }) : Bool :=
+  phi.obAut false
+
+def toyMonodromyDefectFromAction : Nat :=
+  if toyObstructionCoefficientMoved (toyLoopRepresentation toyLoopGenerator) then 1 else 0
+
 def toyMonodromyAction :
     MonodromyAction.{0, 0, 0, 0, 0, 0} toyPresentedPi where
   coefficient := { Ob := Bool, Sem := Bool, Eff := Bool }
-  rho _ := CoefficientAutomorphism.id _
-  rho_one := rfl
-  rho_mul _ _ := rfl
+  rho := toyLoopRepresentation
+  rho_one := by simp [toyLoopRepresentation]
+  rho_mul := by
+    intro gamma delta
+    rcases gamma with ⟨gamma⟩
+    rcases delta with ⟨delta⟩
+    interval_cases gamma <;> interval_cases delta <;>
+      apply toyCoefficientAutomorphism_ext <;>
+      apply Equiv.ext <;>
+      intro b <;>
+      cases b <;>
+      rfl
+
+theorem toyMonodromyAction_moves_false :
+    (toyMonodromyAction.rho toyLoopGenerator).obAut false = true := by
+  rfl
+
+theorem toyMonodromyAction_nonidentity :
+    toyMonodromyAction.rho toyLoopGenerator ≠ CoefficientAutomorphism.id _ := by
+  intro h
+  have hmoved := congrArg (fun e => e.obAut false) h
+  cases hmoved
 
 def toyMeasuredSquareZero :
     MeasuredSquareMonodromy.{0, 0, 0, 0, 0, 0} toyMonodromyAction
@@ -452,8 +533,8 @@ def toyMeasuredSquareZero :
   boundaryTransport := CoefficientAutomorphism.id _
   boundaryTransport_eq_monodromy := rfl
   equalityDefect _ := 0
-  axisDetectsIdentity _ := True
-  zero_defect_detects _ _ := trivial
+  axisDetectsIdentity _ := (1 : ToyLoopGroup) = 1
+  zero_defect_detects _ _ := rfl
   mu _ := 0
   mu_eq_defect _ := rfl
 
@@ -462,22 +543,46 @@ def toyMeasuredSquareNonzero :
       toyPresentationTwoComplex where
   Axis := Bool
   square := true
-  boundaryElement := 1
-  boundaryTransport := CoefficientAutomorphism.id _
+  boundaryElement := toyLoopGenerator
+  boundaryTransport := toyMonodromyAction.rho toyLoopGenerator
   boundaryTransport_eq_monodromy := rfl
-  equalityDefect axis := if axis then 0 else 1
-  axisDetectsIdentity axis := axis = true
+  equalityDefect axis :=
+    if axis then 0 else toyMonodromyDefectFromAction
+  axisDetectsIdentity axis :=
+    toyLoopRepresentation (if axis then 1 else toyLoopGenerator) =
+      CoefficientAutomorphism.id _
   zero_defect_detects := by
     intro axis hzero
-    cases axis <;> simp at hzero ⊢
+    cases axis
+    · have hmoved := toyMonodromyAction_moves_false
+      have hdefect : toyMonodromyDefectFromAction = 1 := by
+        rfl
+      rw [hdefect] at hzero
+      cases hzero
+    · simp [toyLoopRepresentation]
   mu axis := if axis then 0 else 1
-  mu_eq_defect _ := rfl
+  mu_eq_defect := by
+    intro axis
+    cases axis
+    · have hmoved := toyMonodromyAction_moves_false
+      rfl
+    · rfl
+
+theorem toyMeasuredSquareNonzero_defect_from_moved_coefficient :
+    toyMeasuredSquareNonzero.equalityDefect false =
+      toyMonodromyDefectFromAction ∧
+    toyMonodromyDefectFromAction = 1 ∧
+      (toyMonodromyAction.rho toyLoopGenerator).obAut false = true := by
+  exact ⟨rfl, rfl, toyMonodromyAction_moves_false⟩
 
 def toySquareFillingProblem :
     SquareMonodromyFillingProblem.{0, 0, 0, 0, 0, 0} toyMeasuredSquareNonzero where
   axis := false
-  SelectedAxisFilling := toyMeasuredSquareNonzero.mu false = 0
-  filling_implies_mu_zero h := h
+  SelectedAxisFilling :=
+    toyMeasuredSquareNonzero.axisDetectsIdentity false
+  filling_implies_mu_zero := by
+    intro h
+    exact False.elim (toyMonodromyAction_nonidentity h)
 
 def concreteOperationSquareToyModel :
     OperationSquareToyModel.{0, 0, 0, 0, 0, 0} toyMeasuredSquareNonzero where
@@ -493,6 +598,37 @@ theorem concreteOperationSquareToyModel_fires :
     ¬ toySquareFillingProblem.SelectedAxisFilling :=
   OperationSquareToyModel.verifies_square_nonfillability concreteOperationSquareToyModel
 
+def toySquareFillingPositiveProblem :
+    SquareMonodromyFillingProblem.{0, 0, 0, 0, 0, 0} toyMeasuredSquareNonzero where
+  axis := true
+  SelectedAxisFilling :=
+    toyMeasuredSquareNonzero.axisDetectsIdentity true
+  filling_implies_mu_zero := by
+    intro _h
+    rfl
+
+theorem toySquareFilling_positive :
+    toySquareFillingPositiveProblem.SelectedAxisFilling := by
+  simp [toySquareFillingPositiveProblem, toyMeasuredSquareNonzero, toyLoopRepresentation]
+
+theorem toySquareFilling_negative :
+    ¬ toySquareFillingProblem.SelectedAxisFilling :=
+  concreteOperationSquareToyModel_fires
+
+theorem toyPresentedPi_nontrivial_word_maps_to_generator :
+    toyPresentedPi.quotientMap toyNonemptyFreeWord = toyLoopGenerator :=
+  toyQuotientMap_nonempty
+
+theorem toyPresentedPi_nontrivial_word_not_identity :
+    toyPresentedPi.quotientMap toyNonemptyFreeWord ≠ 1 := by
+  simpa [toyPresentedPi_nontrivial_word_maps_to_generator] using toyLoopGenerator_ne_one
+
+theorem toyTransportNonzero_uses_second_pi1_element :
+    toyPresentedPi.quotientMap toyNonemptyFreeWord =
+      toyLoopGenerator ∧ toyLoopGenerator ≠ (1 : toyPresentedPi.Pi1) :=
+  ⟨toyPresentedPi_nontrivial_word_maps_to_generator,
+    by simpa using toyLoopGenerator_ne_one⟩
+
 def toyTransportDescentZero :
     TransportDescentProblem.{0, 0, 0, 0, 0, 0}
       (Pi := toyPresentedPi) (M := toyMonodromyAction) (K := toyPresentationTwoComplex) true where
@@ -501,7 +637,7 @@ def toyTransportDescentZero :
   relationBoundaryZero_iff_sendsRelators := by
     constructor
     · intro _h
-      rfl
+      simpa [toyPresentedPi] using toyQuotientMap_empty
     · intro _h square axis
       cases axis <;> rfl
 
@@ -516,7 +652,7 @@ def toyTransportDescentNonzero :
       have hfalse := h false false
       cases hfalse
     · intro hfalse
-      cases hfalse
+      exact False.elim (toyPresentedPi_nontrivial_word_not_identity hfalse)
 
 theorem toyTransportDescent_square_nontrivial :
     Nontrivial toyTransportDescentNonzero.Square := by
@@ -546,69 +682,123 @@ theorem concreteTransportDescentZero_descends :
 theorem concreteTransportDescentNonzero_not_descend :
     ¬ ∃ Q : toyPresentedPi.QuotientTransport,
       toyPresentedPi.FactorsThroughQuotient false Q :=
-  TransportDescentNonzeroToyModel.nonzero_case_not_descend concreteTransportDescentNonzeroToyModel
+  by
+    intro hdescends
+    have hsends := (toyPresentedPi.quotientUniversalProperty false).mpr hdescends
+    exact toyPresentedPi_nontrivial_word_not_identity hsends
+
+theorem toyTransportDescent_relationBoundaryZero_positive :
+    toyTransportDescentZero.relationBoundaryZero :=
+  concreteTransportDescentZeroToyModel.zeroBoundaryCase
+
+theorem toyTransportDescent_relationBoundaryZero_negative :
+    ¬ toyTransportDescentNonzero.relationBoundaryZero :=
+  concreteTransportDescentNonzeroToyModel.nonzeroBoundaryCase
+
+def toyBoolComp (f g : Bool) : Bool :=
+  if f then !g else g
+
+structure ToyRefactorHom (a b : Bool) where
+  state_eq : a = b
+  tag : Bool
 
 def toyRefactorGroupoid :
     RefactorGroupoid.{0, 0, 0, 0, 0, 0} toyEndpointReading where
   Object := Bool
   state := id
   Hom := ToyRefactorHom
-  toRefactorEquivalent h := h.down.down
-  id a := ULift.up ⟨rfl⟩
-  inv h := ULift.up ⟨h.down.down.symm⟩
-  comp h g := ULift.up ⟨h.down.down.trans g.down.down⟩
+  toRefactorEquivalent f := f.state_eq
+  id _ := ⟨rfl, false⟩
+  inv h := ⟨h.state_eq.symm, h.tag⟩
+  comp h g := ⟨h.state_eq.trans g.state_eq, toyBoolComp h.tag g.tag⟩
   id_comp := by
     intro a b f
-    cases f
-    apply Subsingleton.elim
+    cases f with
+    | mk h tag =>
+        cases h
+        cases tag <;> rfl
   comp_id := by
     intro a b f
-    cases f
-    rfl
+    cases f with
+    | mk h tag =>
+        cases h
+        cases tag <;> rfl
   assoc := by
     intro a b c d f g h
-    cases f
-    cases g
-    cases h
-    rfl
+    cases f with
+    | mk hf tf =>
+        cases g with
+        | mk hg tg =>
+            cases h with
+            | mk hh th =>
+                cases hf
+                cases hg
+                cases hh
+                cases tf <;> cases tg <;> cases th <;> rfl
   inv_comp := by
     intro a b f
-    cases f
-    rfl
+    cases f with
+    | mk h tag =>
+        cases h
+        cases tag <;> rfl
   comp_inv := by
     intro a b f
-    cases f
-    rfl
+    cases f with
+    | mk h tag =>
+        cases h
+        cases tag <;> rfl
+
+theorem toyRefactorGroupoid_hom_nontrivial :
+    Nontrivial (toyRefactorGroupoid.Hom false false) := by
+  refine ⟨⟨rfl, false⟩, ⟨rfl, true⟩, ?_⟩
+  intro h
+  cases h
 
 theorem toyRefactorGroupoid_hom_carries_state_equality
     {a b : toyRefactorGroupoid.Object} (f : toyRefactorGroupoid.Hom a b) :
     toyRefactorGroupoid.state a = toyRefactorGroupoid.state b :=
-  f.down.down
+  f.state_eq
+
+def toyPreservesRelation {a b : toyRefactorGroupoid.Object}
+    (g : toyRefactorGroupoid.Hom a b) (i : Bool) : Prop :=
+  g.tag = false ∨ i = true
+
+theorem toyPreservesRelation_positive :
+    toyPreservesRelation (⟨rfl, false⟩ : toyRefactorGroupoid.Hom false false) false :=
+  Or.inl rfl
+
+theorem toyPreservesRelation_negative :
+    ¬ toyPreservesRelation (⟨rfl, true⟩ : toyRefactorGroupoid.Hom false false) false := by
+  intro h
+  rcases h with h | h <;> cases h
 
 def toyGaloisData :
     OperationInvariantGaloisData.{0, 0, 0, 0, 0, 0} toyRefactorGroupoid where
   Invariant := Bool
-  Preserves g i := i = true ∨ i = false ∧ g.down.down.symm.trans g.down.down = rfl
+  Preserves g i := toyPreservesRelation g i
   id_preserves := by
     intro a i
-    cases i <;> simp
+    exact Or.inl rfl
   inv_preserves := by
     intro a b g i h
-    cases g
-    simp at h ⊢
+    exact h
   comp_preserves := by
     intro a b c g h i hg hh
-    cases g
-    cases h
-    simp at hg hh ⊢
+    change toyPreservesRelation ⟨g.state_eq.trans h.state_eq, toyBoolComp g.tag h.tag⟩ i
+    rcases hg with hg | hi
+    · rcases hh with hh | hi
+      · left
+        simp [toyBoolComp, hg, hh]
+      · exact Or.inr hi
+    · exact Or.inr hi
 
 def concreteRefactorGaloisToyModel :
     RefactorGaloisToyModel.{0, 0, 0, 0, 0, 0} toyGaloisData where
   finiteInvariant := by
     change Fintype Bool
     infer_instance
-  selectedOperations := fun {_a _b} g => toyGaloisData.Preserves g true
-  selectedInvariants := fun i => i = true
+  selectedOperations := fun {_a _b} g => g.tag = false
+  selectedInvariants := fun i => i = false
 
 theorem concreteRefactorGaloisToyModel_fires :
     RefactorMorphismFamilySubset concreteRefactorGaloisToyModel.selectedOperations
@@ -617,58 +807,182 @@ theorem concreteRefactorGaloisToyModel_fires :
         (toyGaloisData.Inv concreteRefactorGaloisToyModel.selectedOperations) :=
   RefactorGaloisToyModel.verifies_galois_connection concreteRefactorGaloisToyModel
 
+theorem toyGaloisData_preserves_positive :
+    toyGaloisData.Preserves (a := false) (b := false) ⟨rfl, false⟩ false :=
+  toyPreservesRelation_positive
+
+theorem toyGaloisData_preserves_negative :
+    ¬ toyGaloisData.Preserves (a := false) (b := false) ⟨rfl, true⟩ false :=
+  toyPreservesRelation_negative
+
 def toyArchitectureStackBase : ArchitectureStackBase.{0} where
   Context := Bool
-  Overlap _ _ := PUnit
-  TripleOverlap _ _ _ := PUnit
-  restrict _ _ := PUnit
-  idRestrict _ := PUnit.unit
-  compRestrict _ _ := PUnit.unit
-  id_comp _ := rfl
-  comp_id _ := rfl
-  assoc _ _ _ := rfl
+  Overlap _ _ := Bool
+  TripleOverlap _ _ _ := Bool
+  restrict _ _ := Bool
+  idRestrict _ := false
+  compRestrict r s := toyBoolComp r s
+  id_comp := by
+    intro T U r
+    cases r <;> rfl
+  comp_id := by
+    intro T U r
+    cases r <;> rfl
+  assoc := by
+    intro T U V W r s t
+    cases r <;> cases s <;> cases t <;> rfl
   overlapContext := fun {a} {_b} _o => a
-  overlap_left _ := PUnit.unit
-  overlap_right _ := PUnit.unit
+  overlap_left _ := false
+  overlap_right _ := false
   tripleContext := fun {a} {_b} {_c} _t => a
-  triple_to_leftOverlap _ _ := PUnit.unit
-  triple_to_rightOverlap _ _ := PUnit.unit
-  triple_to_outerOverlap _ _ := PUnit.unit
+  triple_to_leftOverlap _ _ := false
+  triple_to_rightOverlap _ _ := false
+  triple_to_outerOverlap _ _ := false
 
 def toyDecompositionGroupoid : DecompositionGroupoid.{0} where
   Object := Bool
-  Hom a b := ULift.{0} (PLift (a = b))
+  Hom _ _ := Bool
   equivalenceKind _ := DecompositionEquivalenceKind.refactor
-  id _ := ULift.up ⟨rfl⟩
-  inv h := ULift.up ⟨h.down.down.symm⟩
-  comp h g := ULift.up ⟨h.down.down.trans g.down.down⟩
+  id _ := false
+  inv h := h
+  comp h g := toyBoolComp h g
   id_comp := by
     intro a b f
-    cases f
-    apply Subsingleton.elim
+    cases f <;> rfl
   comp_id := by
     intro a b f
-    cases f
-    rfl
+    cases f <;> rfl
   assoc := by
     intro a b c d f g h
-    cases f
-    cases g
-    cases h
-    rfl
+    cases f <;> cases g <;> cases h <;> rfl
   inv_comp := by
     intro a b f
-    cases f
-    rfl
+    cases f <;> rfl
   comp_inv := by
     intro a b f
-    cases f
-    rfl
+    cases f <;> rfl
 
-theorem toyDecompositionGroupoid_hom_carries_object_equality
+theorem toyDecompositionGroupoid_hom_nontrivial :
+    Nontrivial (toyDecompositionGroupoid.Hom false false) := by
+  change Nontrivial Bool
+  infer_instance
+
+theorem toyDecompositionGroupoid_hom_kind_refactor
     {a b : toyDecompositionGroupoid.Object} (f : toyDecompositionGroupoid.Hom a b) :
-    a = b :=
-  f.down.down
+    toyDecompositionGroupoid.equivalenceKind f =
+      DecompositionEquivalenceKind.refactor :=
+  rfl
+
+def toyLocalDecomposition : Bool -> Bool := id
+
+def toyBadLocalDecomposition : Bool -> Bool := fun _ => false
+
+def ToyOverlapCompatible (loc : Bool -> Bool) : Prop :=
+  loc false = false ∧ loc true = true
+
+def toyGerbeClassFromLocalData (loc : Bool -> Bool) : Bool :=
+  if loc false = loc true then false else true
+
+def toyBadGerbeClassFromLocalData (loc : Bool -> Bool) : Bool :=
+  loc false
+
+def ToyAutSheafDefined (Aut : Type) : Prop :=
+  ∃ a b : Aut, a ≠ b
+
+def ToyNonAbelianReading (cls zero : Bool) : Prop :=
+  cls ≠ zero
+
+def ToyLocalDecompositionsExist (loc : Bool -> Bool) : Prop :=
+  (∃ i, loc i = false) ∧ ∃ j, loc j = true
+
+def ToyGlobalCanonicalDecomposition (loc : Bool -> Bool) : Prop :=
+  ∃ global : Bool, ∀ i : Bool, loc i = global
+
+def ToyEffectiveDescent (classOf : (Bool -> Bool) -> Bool) : Prop :=
+  ∀ loc : Bool -> Bool,
+    classOf loc = false -> ToyGlobalCanonicalDecomposition loc
+
+theorem toyOverlapCompatible_positive :
+    ToyOverlapCompatible toyLocalDecomposition := ⟨rfl, rfl⟩
+
+theorem toyOverlapCompatible_negative :
+    ¬ ToyOverlapCompatible toyBadLocalDecomposition := by
+  intro h
+  cases h.2
+
+theorem toyLocalDecompositionsExist_positive :
+    ToyLocalDecompositionsExist toyLocalDecomposition :=
+  ⟨⟨false, rfl⟩, ⟨true, rfl⟩⟩
+
+theorem toyLocalDecompositionsExist_negative :
+    ¬ ToyLocalDecompositionsExist toyBadLocalDecomposition := by
+  intro h
+  rcases h.2 with ⟨j, hj⟩
+  cases j <;> cases hj
+
+theorem toyGlobalCanonicalDecomposition_positive :
+    ToyGlobalCanonicalDecomposition toyBadLocalDecomposition :=
+  ⟨false, by intro i; cases i <;> rfl⟩
+
+theorem toyGlobalCanonicalDecomposition_vanishes_class
+    {loc : Bool -> Bool} :
+    ToyGlobalCanonicalDecomposition loc ->
+      toyGerbeClassFromLocalData loc = false := by
+  intro h
+  rcases h with ⟨global, hglobal⟩
+  have hsame : loc false = loc true := (hglobal false).trans (hglobal true).symm
+  simp [toyGerbeClassFromLocalData, hsame]
+
+theorem toyGlobalCanonicalDecomposition_negative :
+    ¬ ToyGlobalCanonicalDecomposition toyLocalDecomposition := by
+  intro h
+  have hclass := toyGlobalCanonicalDecomposition_vanishes_class h
+  simp [toyGerbeClassFromLocalData, toyLocalDecomposition] at hclass
+
+theorem toyEffectiveDescent_positive :
+    ToyEffectiveDescent toyGerbeClassFromLocalData := by
+  intro loc hzero
+  by_cases hsame : loc false = loc true
+  · refine ⟨loc false, ?_⟩
+    intro i
+    cases i
+    · rfl
+    · exact hsame.symm
+  · simp [toyGerbeClassFromLocalData, hsame] at hzero
+
+theorem toyEffectiveDescent_negative :
+    ¬ ToyEffectiveDescent toyBadGerbeClassFromLocalData := by
+  intro h
+  exact toyGlobalCanonicalDecomposition_negative (h toyLocalDecomposition rfl)
+
+theorem toyGlobalCanonicalDecomposition_localData_contradiction :
+    ToyGlobalCanonicalDecomposition toyLocalDecomposition -> False :=
+  toyGlobalCanonicalDecomposition_negative
+
+theorem toyAutSheafDefined_positive :
+    ToyAutSheafDefined Bool :=
+  ⟨false, true, by decide⟩
+
+theorem toyAutSheafDefined_negative :
+    ¬ ToyAutSheafDefined Empty := by
+  intro h
+  rcases h with ⟨a, b, hab⟩
+  cases a
+
+theorem toyNonAbelianReading_positive :
+    ToyNonAbelianReading true false := by
+  intro h
+  cases h
+
+theorem toyNonAbelianReading_negative :
+    ¬ ToyNonAbelianReading false false := by
+  intro h
+  exact h rfl
+
+theorem toyGerbeClassFromLocalData_nonzero :
+    toyGerbeClassFromLocalData toyLocalDecomposition ≠ false := by
+  intro h
+  simp [toyGerbeClassFromLocalData, toyLocalDecomposition] at h
 
 def toyDecompositionPresheaf : DecompositionPresheaf.{0} toyArchitectureStackBase where
   fiber _ := toyDecompositionGroupoid
@@ -683,11 +997,11 @@ def toyDecompositionStack : DecompositionStack.{0} toyArchitectureStackBase wher
   presheaf := toyDecompositionPresheaf
   LocalIndex := Bool
   localContext := fun i => i
-  localDecomposition i := i
-  overlapCompatible := True
-  overlapCompatible_cert := trivial
-  effectiveDescent := True
-  effectiveDescent_cert := trivial
+  localDecomposition := toyLocalDecomposition
+  overlapCompatible := ToyOverlapCompatible toyLocalDecomposition
+  overlapCompatible_cert := toyOverlapCompatible_positive
+  effectiveDescent := ToyEffectiveDescent toyGerbeClassFromLocalData
+  effectiveDescent_cert := toyEffectiveDescent_positive
 
 def toyGerbeObstructionData :
     GerbeObstructionData.{0} toyDecompositionStack where
@@ -699,18 +1013,30 @@ def toyGerbeObstructionData :
     intro hnonzero hzero
     exact hnonzero hzero
   automorphismSheaf := Bool
-  autSheafDefined := True
-  autSheafDefined_cert := trivial
-  nonAbelianReading := True
-  nonAbelianReading_cert := trivial
+  autSheafDefined := ToyAutSheafDefined Bool
+  autSheafDefined_cert := toyAutSheafDefined_positive
+  nonAbelianReading := ToyNonAbelianReading true false
+  nonAbelianReading_cert := toyNonAbelianReading_positive
+
+theorem toyGerbeClass_eq_computed_local_class :
+    toyGerbeObstructionData.gerbeClass =
+      toyGerbeClassFromLocalData toyLocalDecomposition := by
+  rfl
+
+theorem toyNoCanonicalDecomposition_soundness_from_local_data :
+    ToyGlobalCanonicalDecomposition toyLocalDecomposition ->
+      toyGerbeObstructionData.gerbeClass = toyGerbeObstructionData.zero := by
+  intro hglobal
+  have hclass := toyGlobalCanonicalDecomposition_vanishes_class hglobal
+  exact hclass
 
 def toyNoCanonicalDecompositionData :
     NoCanonicalDecompositionData.{0} toyGerbeObstructionData where
-  localDecompositionsExist := True
-  localDecompositionsExist_cert := trivial
+  localDecompositionsExist := ToyLocalDecompositionsExist toyLocalDecomposition
+  localDecompositionsExist_cert := toyLocalDecompositionsExist_positive
   globalCanonicalDecomposition :=
-    toyGerbeObstructionData.gerbeClass = toyGerbeObstructionData.zero
-  soundness h := h
+    ToyGlobalCanonicalDecomposition toyLocalDecomposition
+  soundness := toyNoCanonicalDecomposition_soundness_from_local_data
 
 def concreteDecompositionGerbeToyModel :
     DecompositionGerbeToyModel.{0} toyGerbeObstructionData where
@@ -723,9 +1049,30 @@ def concreteDecompositionGerbeToyModel :
     cases h
 
 theorem concreteDecompositionGerbeToyModel_fires :
+    toyDecompositionStack.overlapCompatible ∧
+      toyDecompositionStack.effectiveDescent ∧
+      toyNoCanonicalDecompositionData.localDecompositionsExist ∧
+      toyGerbeObstructionData.autSheafDefined ∧
+      toyGerbeObstructionData.nonAbelianReading ∧
+      toyGerbeObstructionData.gerbeClass =
+        toyGerbeClassFromLocalData toyLocalDecomposition ∧
+      toyGerbeClassFromLocalData toyLocalDecomposition ≠
+        toyGerbeObstructionData.zero ∧
+      ¬ toyNoCanonicalDecompositionData.globalCanonicalDecomposition := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · exact toyDecompositionStack.overlapCompatible_cert
+  · exact toyDecompositionStack.effectiveDescent_cert
+  · exact toyNoCanonicalDecompositionData.localDecompositionsExist_cert
+  · exact toyGerbeObstructionData.autSheafDefined_cert
+  · exact toyGerbeObstructionData.nonAbelianReading_cert
+  · exact toyGerbeClass_eq_computed_local_class
+  · exact toyGerbeClassFromLocalData_nonzero
+  · exact DecompositionGerbeToyModel.verifies_no_canonical_decomposition
+      concreteDecompositionGerbeToyModel
+
+theorem concreteDecompositionGerbeToyModel_no_global :
     ¬ toyNoCanonicalDecompositionData.globalCanonicalDecomposition :=
-  DecompositionGerbeToyModel.verifies_no_canonical_decomposition
-    concreteDecompositionGerbeToyModel
+  concreteDecompositionGerbeToyModel_fires.2.2.2.2.2.2.2
 
 end SingularityMonodromyStackPart6
 end FiniteModel
