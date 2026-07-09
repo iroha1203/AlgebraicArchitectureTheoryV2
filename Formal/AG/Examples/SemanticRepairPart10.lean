@@ -605,6 +605,47 @@ theorem displayedRequiredLawsHoldOn :
   cases lawIndex
   exact lawfulObject_noCycleLaw
 
+/-!
+The following source is a negative witness for the displayed realization
+predicate.  Its displayed defect is the nonzero quotient class of `1`, while
+the generated base source still starts from the zero section.
+-/
+
+def nonlawfulConfiguration : AtomConfiguration FiniteModel.carrier where
+  family := FiniteModel.allFamily
+  relation _ _ := True
+  identification _ _ := False
+
+def nonlawfulObject : ArchitectureObject FiniteModel.carrier :=
+  FiniteModel.objectOfConfiguration nonlawfulConfiguration
+
+theorem nonlawfulObject_not_noCycleLaw :
+    ¬ FiniteModel.noCycleLaw.holds nonlawfulObject := by
+  intro hholds
+  apply hholds
+  exact ⟨trivial, trivial, trivial⟩
+
+def nonlawfulDefectSource :
+    LawAlgebra.LawEquationDefectSource lawEquationCore where
+  Chart := PUnit
+  chart _ := FiniteModel.siteBase
+  LocalInput _ := PUnit
+  input _ := PUnit.unit
+  lawSupport _ _ := [PUnit.unit]
+  lawSupport_nonempty := by
+    intro _i
+    exact ⟨PUnit.unit, by simp⟩
+  lawSupport_required := by
+    intro _i lawIndex _hmem
+    cases lawIndex
+    rfl
+  objectOfLocalInput _ _ := nonlawfulObject
+  defect _ _ := (1 : ZMod 4)
+  holds_defect_mem := by
+    intro _i lawIndex _hmem _hrequired hholds
+    cases lawIndex
+    exact False.elim (nonlawfulObject_not_noCycleLaw hholds)
+
 /-! ## Native generated quotient coefficient for example 9.1 -/
 
 /--
@@ -689,6 +730,14 @@ theorem generatedLawQuotient_one_ne_zero :
   rw [Ideal.Quotient.eq_zero_iff_mem] at hzero
   rw [generatedLaw_obstructionIdeal_eq_span_two] at hzero
   exact generatedLaw_one_notMem_span_two hzero
+
+theorem nonlawfulDefectSource_interpret_ne_zero :
+    nonlawfulDefectSource.interpret PUnit.unit ≠ 0 := by
+  apply
+    nonlawfulDefectSource.interpret_ne_zero_of_defect_notMem_obstructionIdeal
+  dsimp [nonlawfulDefectSource]
+  rw [generatedLaw_obstructionIdeal_eq_span_two]
+  exact generatedLaw_one_notMem_span_two
 
 /-- X.例9.1 / #3102: the native law-equation-generated quotient is nontrivial. -/
 instance generatedLawQuotientNontrivial :
@@ -1583,10 +1632,142 @@ def generatedLawStandardSourceC1Fintype :
 def generatedLawStandardBodySource :
     LawEquationBodyCechSource defectSource generatedLawStandardSourceC0Complex where
   chartOf _ := PUnit.unit
+  chartToBase _ := 𝟙 _
   restriction sigma :=
     homOfLE
       (generatedLawFinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap_le_base
         0 sigma)
+
+def generatedLawStandardNonlawfulBodySource :
+    LawEquationBodyCechSource nonlawfulDefectSource
+      generatedLawStandardSourceC0Complex where
+  chartOf _ := PUnit.unit
+  chartToBase _ := 𝟙 _
+  restriction sigma :=
+    homOfLE
+      (generatedLawFinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap_le_base
+        0 sigma)
+
+def generatedLawStandardSourceC0SelectedSimplex :
+    Site.FinitePosetCechCanonicalTupleSimplex PUnit 0 :=
+  fun _ => PUnit.unit
+
+theorem generatedLawStandardNonlawfulBodySource_not_displayedInterpretationRealization :
+    ¬ generatedLawStandardNonlawfulBodySource.DisplayedInterpretationRealization := by
+  apply
+    generatedLawStandardNonlawfulBodySource.restrictedDisplayedInterpretation_ne_zero_prevents_displayedInterpretationRealization
+      generatedLawStandardSourceC0SelectedSimplex
+  simpa [LawEquationBodyCechSource.restrictedDisplayedInterpretation,
+    generatedLawStandardNonlawfulBodySource,
+    nonlawfulDefectSource,
+    LawAlgebra.LawEquationDefectSource.interpret,
+    LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientPresheaf,
+    LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientCoefficient,
+    lawEquationCore] using nonlawfulDefectSource_interpret_ne_zero
+
+/-!
+Two-chart negative instance for the chart-level common-source and arrow laws.
+The first chart reads zero and the second reads the nonzero quotient class of
+`1`; both chart arrows are the identity into the same selected base.
+-/
+
+def mixedDefectSource :
+    LawAlgebra.LawEquationDefectSource lawEquationCore where
+  Chart := Bool
+  chart _ := FiniteModel.siteBase
+  LocalInput _ := PUnit
+  input _ := PUnit.unit
+  lawSupport _ _ := [PUnit.unit]
+  lawSupport_nonempty := by
+    intro _i
+    exact ⟨PUnit.unit, by simp⟩
+  lawSupport_required := by
+    intro _i lawIndex _hmem
+    cases lawIndex
+    rfl
+  objectOfLocalInput i _ := if i then nonlawfulObject else lawfulObject
+  defect i _ := if i then (1 : ZMod 4) else 0
+  holds_defect_mem := by
+    intro i lawIndex _hmem _hrequired hholds
+    cases i with
+    | false =>
+        cases lawIndex
+        exact Ideal.zero_mem _
+    | true =>
+        cases lawIndex
+        exact False.elim (nonlawfulObject_not_noCycleLaw hholds)
+
+def mixedCoverRelativeCover :
+    Cohomology.CoverRelativeCechCover FiniteModel.site where
+  base := FiniteModel.siteBase
+  Index := Bool
+  chart _ := FiniteModel.siteBase
+  inclusion _ := 𝟙 _
+  simplex _ := Bool
+  overlap _ _ := FiniteModel.siteBase
+  face _ _ sigma := sigma
+  faceRestriction _ _ _ := 𝟙 _
+
+def mixedZeroCechComplex :
+    Cohomology.CoverRelativeCechComplex mixedCoverRelativeCover
+      generatedLawQuotientObstructionSheaf where
+  cochainAddCommGroup := by
+    intro _n
+    change AddCommGroup (Bool -> GeneratedLawQuotient)
+    infer_instance
+  alternatingFaceCombination := by
+    intro _n _terms _sigma
+    exact (0 : GeneratedLawQuotient)
+  differential := by
+    intro _n
+    change (Bool -> GeneratedLawQuotient) →+
+      (Bool -> GeneratedLawQuotient)
+    exact 0
+  differential_eq_alternatingFaceCombination := by
+    intro _n _cochain
+    rfl
+  differential_comp := by
+    intro _n _cochain
+    rfl
+
+def mixedBodySource :
+    LawEquationBodyCechSource mixedDefectSource mixedZeroCechComplex where
+  chartOf sigma := sigma
+  chartToBase _ := 𝟙 _
+  restriction _ := 𝟙 _
+
+theorem mixedDefectSource_interpret_false_zero :
+    mixedDefectSource.interpret false = 0 := by
+  simp [mixedDefectSource, LawAlgebra.LawEquationDefectSource.interpret]
+
+theorem mixedDefectSource_interpret_true_ne_zero :
+    mixedDefectSource.interpret true ≠ 0 := by
+  simp [mixedDefectSource, LawAlgebra.LawEquationDefectSource.interpret]
+
+theorem mixedBodySource_not_arrowCompatibilityLaw :
+    ¬ mixedBodySource.ArrowCompatibilityLaw := by
+  intro hcompatible
+  have heq :=
+    hcompatible false true FiniteModel.siteBase (𝟙 _) (𝟙 _)
+      (by simp [mixedBodySource])
+  have hinterpret :
+      mixedDefectSource.interpret false =
+        mixedDefectSource.interpret true := by
+    simpa [mixedBodySource] using heq
+  apply mixedDefectSource_interpret_true_ne_zero
+  exact hinterpret.symm.trans mixedDefectSource_interpret_false_zero
+
+theorem mixedBodySource_not_commonRestrictionRealization :
+    ¬ mixedBodySource.CommonRestrictionRealization :=
+  mixedBodySource.no_commonRestrictionRealization_without_arrowCompatibilityLaw
+    mixedBodySource_not_arrowCompatibilityLaw
+
+theorem mixedBodySource_zeroBase_not_preservesDisplayedInterpretation :
+    ¬ mixedBodySource.BaseRestrictionSourcePreservesDisplayedInterpretation
+      mixedBodySource.toBaseRestrictionSource := by
+  intro hpreserves
+  exact mixedBodySource_not_commonRestrictionRealization
+    ⟨mixedBodySource.toBaseRestrictionSource, hpreserves⟩
 
 def generatedLawStandardSourceC0BoundaryAdditiveData :
     SemanticRepairCoverH1BoundaryRelationAdditiveData
