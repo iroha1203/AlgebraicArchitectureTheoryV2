@@ -24,22 +24,6 @@ def GeneratedSourceC0PointwiseZero
     (D : LawAlgebra.LawEquationDefectSource.{u} G) : Prop :=
   forall i : D.Chart, D.interpret i = 0
 
-/--
-X.定理8.1: Cech-zero reading for the generated degree-zero cochain.
-
-At this body level the generated Cech-zero predicate is the selected
-restriction evaluator produced by the law-equation grounding surface.  It is a
-degree-zero conclusion only; it does not include residual-zero, H1-zero,
-descent, or global-coherence conclusions.
--/
-def GeneratedSourceC0CechZero
-    {U : AtomCarrier.{u}}
-    {A : ArchitectureObject U}
-    {S : Site.AATSite.{u} A}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
-    (D : LawAlgebra.LawEquationDefectSource.{u} G) : Prop :=
-  D.GeneratedRestrictionEvaluator
-
 /-- X.定理8.1 package: law fulfillment generates only degree-zero zero readings. -/
 structure GeneratedSourceC0ZeroPackage
     {U : AtomCarrier.{u}}
@@ -48,7 +32,6 @@ structure GeneratedSourceC0ZeroPackage
     {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
     (D : LawAlgebra.LawEquationDefectSource.{u} G) : Type (u + 1) where
   pointwiseZero : GeneratedSourceC0PointwiseZero D
-  cechZero : GeneratedSourceC0CechZero D
 
 /-- X.定理8.1: displayed law satisfaction gives pointwise zero. -/
 theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_pointwiseZero
@@ -61,17 +44,6 @@ theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_pointwiseZero
     GeneratedSourceC0PointwiseZero D :=
   D.displayedRequiredLawsHoldOn_constructs_interpret_eq_zero hholds
 
-/-- X.定理8.1: displayed law satisfaction gives the generated Cech-zero reading. -/
-theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_cechZero
-    {U : AtomCarrier.{u}}
-    {A : ArchitectureObject U}
-    {S : Site.AATSite.{u} A}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
-    (D : LawAlgebra.LawEquationDefectSource.{u} G)
-    (hholds : D.DisplayedRequiredLawsHoldOn) :
-    GeneratedSourceC0CechZero D :=
-  D.displayedRequiredLawsHoldOn_constructs_restrictionEvaluator hholds
-
 /-- X.定理8.1: degree-zero law-generated zero package. -/
 theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
     {U : AtomCarrier.{u}}
@@ -83,9 +55,6 @@ theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
     Nonempty (GeneratedSourceC0ZeroPackage D) :=
   ⟨{ pointwiseZero :=
         displayedRequiredLawsHoldOn_constructs_generatedSourceC0_pointwiseZero
-          D hholds,
-      cechZero :=
-        displayedRequiredLawsHoldOn_constructs_generatedSourceC0_cechZero
           D hholds }⟩
 
 namespace SemanticRepairCoverH1BoundaryRelationAdditiveData
@@ -252,8 +221,8 @@ structure SemanticRepairGeneratedLawDependentConclusions
     (D : LawAlgebra.LawEquationDefectSource.{u} G) : Type (u + 1) where
   generatedSourceC0ZeroPackage : GeneratedSourceC0ZeroPackage D
   generatedInterpretationZero : forall i : D.Chart, D.interpret i = 0
-  generatedRestrictionEvaluator :
-    D.GeneratedRestrictionEvaluator
+  generatedInterpretationPointwiseZero :
+    D.GeneratedInterpretationPointwiseZero
   generatedInterpretationZero_iff_defect_mem_obstructionIdeal :
     forall i : D.Chart,
       D.interpret i = 0 <->
@@ -472,7 +441,7 @@ theorem lawEquation_constructs_groundedComparisonPacket
   rcases
     LawAlgebra.LawEquationDefectSource.lawEquation_grounding_packet
       D hDisplayedRequiredLaws with
-    ⟨hInterpretZero, hRestrictionEvaluator, _hDefectIff, hFailureDetection⟩
+    ⟨hInterpretZero, hPointwiseZero, _hDefectIff, hFailureDetection⟩
   rcases
     displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
       D hDisplayedRequiredLaws with
@@ -486,7 +455,7 @@ theorem lawEquation_constructs_groundedComparisonPacket
     { lawDependentConclusions :=
         { generatedSourceC0ZeroPackage := hZeroPackage
           generatedInterpretationZero := hInterpretZero
-          generatedRestrictionEvaluator := hRestrictionEvaluator
+          generatedInterpretationPointwiseZero := hPointwiseZero
           generatedInterpretationZero_iff_defect_mem_obstructionIdeal := _hDefectIff
           nonzeroInterpretationDetectsDisplayedLawFailure := hFailureDetection }
       lawIndependentConclusions :=

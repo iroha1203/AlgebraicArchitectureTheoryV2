@@ -1744,6 +1744,28 @@ theorem mixedDefectSource_interpret_true_ne_zero :
     mixedDefectSource.interpret true ≠ 0 := by
   simp [mixedDefectSource, LawAlgebra.LawEquationDefectSource.interpret]
 
+theorem mixedBodySource_has_displayedRequiredLawRestrictionEvaluator :
+    mixedBodySource.DisplayedRequiredLawRestrictionEvaluator := by
+  intro sigma tau Z gSigma gTau hcomm lawIndexSigma lawIndexTau
+    hmemSigma hmemTau hrequiredSigma hrequiredTau hholdsSigma hholdsTau
+  cases sigma <;> cases tau
+  · simp [mixedBodySource, mixedDefectSource,
+      LawAlgebra.LawEquationDefectSource.interpret]
+  · exact False.elim
+      (nonlawfulObject_not_noCycleLaw
+        (by simpa [mixedDefectSource] using hholdsTau))
+  · exact False.elim
+      (nonlawfulObject_not_noCycleLaw
+        (by simpa [mixedDefectSource] using hholdsSigma))
+  · have heq : gSigma = gTau := Subsingleton.elim _ _
+    subst gTau
+    rfl
+
+theorem mixedDefectSource_not_generatedInterpretationPointwiseZero :
+    ¬ mixedDefectSource.GeneratedInterpretationPointwiseZero := by
+  intro hzero
+  exact mixedDefectSource_interpret_true_ne_zero (hzero true)
+
 theorem mixedBodySource_not_arrowCompatibilityLaw :
     ¬ mixedBodySource.ArrowCompatibilityLaw := by
   intro hcompatible
