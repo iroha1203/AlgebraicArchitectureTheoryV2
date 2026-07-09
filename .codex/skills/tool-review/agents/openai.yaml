@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tool Review"
+  short_description: "ArchSig / FieldSig の差分を4観点の敵対レビューで並列査読する"
+  default_prompt: "Use $tool-review to adversarially review the current tooling changes in Japanese with four parallel perspectives."
