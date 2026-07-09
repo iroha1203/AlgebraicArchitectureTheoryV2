@@ -215,6 +215,45 @@ theorem semanticRepairExample91GeneratedLawCircleSemanticH1Nonzero :
     ¬ AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface.H1Zero :=
   AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleSemanticH1_nonzero
 
+def semanticRepairExample91CircleRejectsGeneratedResidualBoundarySurface :=
+  AAT.AG.Examples.SemanticRepairPart10.generatedLawCircle_not_generatedResidualBoundarySurfaceBody
+
+def semanticRepairExample91CircleRejectsGeneratedSemanticH1ZeroBody :=
+  AAT.AG.Examples.SemanticRepairPart10.generatedLawCircle_not_generatedSemanticH1ZeroBody
+
+def semanticRepairExample91FiniteSiteAllPresheavesSheaf :=
+  @AAT.AG.Examples.SemanticRepairPart10.finiteSite_allPresheaves_isSheaf
+
+theorem semanticRepairExample91IntegerQuotientIsSheaf :
+    Site.AATSheafCondition
+      AAT.AG.FiniteModel.site
+      AAT.AG.Examples.SemanticRepairPart10.integerGeneratedLawQuotientPresheaf :=
+  AAT.AG.Examples.SemanticRepairPart10.integerGeneratedLawQuotientIsSheaf
+
+def semanticRepairExample91IntegerLawWitnessIdealLe :=
+  @AAT.AG.Examples.SemanticRepairPart10.integerLaw_lawWitnessIdeal_le
+
+def semanticRepairExample91IntegerObstructionIdealLe :=
+  @AAT.AG.Examples.SemanticRepairPart10.integerLaw_obstructionIdeal_le
+
+def semanticRepairExample91IntegerOneNotMemObstructionIdeal :=
+  @AAT.AG.Examples.SemanticRepairPart10.integerLaw_one_notMem_obstructionIdeal
+
+def semanticRepairExample91IntegerQuotientOneNonzero :=
+  @AAT.AG.Examples.SemanticRepairPart10.integerGeneratedLawQuotient_one_ne_zero
+
+def semanticRepairExample91IntegerQuotientNontrivial :=
+  @AAT.AG.Examples.SemanticRepairPart10.integerGeneratedLawQuotient_nontrivial
+
+def semanticRepairExample91IntegerViolationWitnessClassZero :=
+  @AAT.AG.Examples.SemanticRepairPart10.integerLaw_violationWitness_class_eq_zero
+
+def semanticRepairExample91IntegerDisplayedLawsHold :=
+  AAT.AG.Examples.SemanticRepairPart10.integerLawFiniteFreeDisplayedRequiredLawsHoldOn
+
+def semanticRepairExample91IntegerFiniteFreeTenConjunctPacket :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_integerLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket
+
 def semanticRepairExample91NonlawfulDisplayedInterpretationNonzero :=
   @AAT.AG.Examples.SemanticRepairPart10.nonlawfulDefectSource_interpret_ne_zero
 
