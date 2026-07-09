@@ -1814,7 +1814,7 @@ def lawfulFiring_generatedLawStandardSourceC0ResearchConjuncts :
             comparison) :=
   StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedResearchConjunctsWithSourceC0DifferentialZero_fromStandardFinitePosetSource
     generatedLawCircleSemanticCover defectSource displayedRequiredLawsHoldOn
-    (⊤ : Sieve FiniteModel.siteBase) generatedLawQuotientIsSheaf
+    generatedLawQuotientIsSheaf
     (StandardFinitePosetGeneratedBoundary.canonicalTupleGeneratedBoundaryLaw
       (G := lawEquationCore) generatedLawQuotientIsSheaf
       generatedLawTupleGeometry)
@@ -1823,7 +1823,6 @@ def lawfulFiring_generatedLawStandardSourceC0ResearchConjuncts :
     (fun _ => fun _ => PUnit.unit)
     generatedLawStandardBodySource generatedLawStandardSourceC0Fintype
     generatedLawStandardSourceC1Fintype
-    (FiniteModel.site.top_mem FiniteModel.siteBase)
 
 /-- X.例9.1 / #3102: native generated quotient circle C0 cochains. -/
 abbrev generatedLawCircleC0 : Type :=
