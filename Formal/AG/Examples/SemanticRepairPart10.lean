@@ -1,7 +1,7 @@
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.Cohomology.FiniteExamples
 import Formal.AG.SemanticRepair.Boundary
-import Formal.AG.SemanticRepair.SagaComparison
+import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Mathlib.Data.Int.Basic
 import Mathlib.Data.ZMod.Basic
 import Mathlib.LinearAlgebra.Quotient.Basic
@@ -348,12 +348,18 @@ theorem finiteSiteTopology_cover_eq_top {base : FiniteModel.site.category}
       rw [hlocal]
       trivial
 
+/-- X.例9.1 / #3102: every presheaf on the singleton finite site is a sheaf. -/
+theorem finiteSite_allPresheaves_isSheaf
+    (F : Site.AATPresheaf FiniteModel.site) :
+    Site.AATSheafCondition FiniteModel.site F := by
+  intro _base cover hcover
+  rw [Site.AATSheafConditionFor, finiteSiteTopology_cover_eq_top hcover]
+  exact Presieve.isSheafFor_top F
+
 /-- X.例9.1 / #3102: the generated `F₂` quotient coefficient is a true sheaf. -/
 theorem generatedF2QuotientIsSheaf :
     Site.AATSheafCondition FiniteModel.site generatedF2QuotientPresheaf := by
-  intro _base cover hcover
-  rw [Site.AATSheafConditionFor, finiteSiteTopology_cover_eq_top hcover]
-  exact Presieve.isSheafFor_top generatedF2QuotientPresheaf
+  exact finiteSite_allPresheaves_isSheaf generatedF2QuotientPresheaf
 
 /-- X.例9.1 / #3102: generated non-`PUnit` obstruction coefficient sheaf. -/
 def generatedF2QuotientObstructionSheaf :
@@ -576,6 +582,96 @@ def lawEquationCore :
   supportLawIndex := PUnit.unit
   supportLawIndex_required := rfl
 
+/-! ## Integer law-equation core required by PRD R9(b) -/
+
+/--
+X.例9.1 / #3102: production law-equation core with observable ring `ℤ` and
+constant violation witness `2`.
+-/
+def integerLawEquationCore :
+    LawAlgebra.SemanticLawEquationWitnessIdealCore FiniteModel.site where
+  Observable _ := ℤ
+  observableCommRing _ := inferInstance
+  restrict _ := RingHom.id ℤ
+  restrict_id := by
+    intro _W x
+    rfl
+  restrict_comp := by
+    intro _W₀ _W₁ _W₂ _f _g x
+    rfl
+  violationWitness _ _ _ := (2 : ℤ)
+  violationWitness_restrict := by
+    intro _source _target _f _lawIndex _atom
+    rfl
+  supportAtom := FiniteModel.FiniteAtom.componentA
+  supportLawIndex := PUnit.unit
+  supportLawIndex_required := rfl
+
+/-- Generated quotient presheaf `ℤ / I_Ob` for the integer law core. -/
+abbrev integerGeneratedLawQuotientPresheaf : Site.AATPresheaf FiniteModel.site :=
+  integerLawEquationCore.obstructionQuotientPresheaf
+
+/-- The integer generated quotient is a sheaf on the singleton finite site. -/
+theorem integerGeneratedLawQuotientIsSheaf :
+    Site.AATSheafCondition FiniteModel.site integerGeneratedLawQuotientPresheaf :=
+  finiteSite_allPresheaves_isSheaf integerGeneratedLawQuotientPresheaf
+
+/-- Every integer witness ideal is contained in `span {2}`. -/
+theorem integerLaw_lawWitnessIdeal_le
+    (W : FiniteModel.site.category)
+    (lawIndex : FiniteModel.site.lawUniverse.Index) :
+    integerLawEquationCore.lawWitnessIdeal W lawIndex ≤
+      Ideal.span ({(2 : ℤ)} : Set ℤ) := by
+  refine Ideal.span_le.mpr ?_
+  rintro _x ⟨atom, rfl⟩
+  exact Ideal.subset_span rfl
+
+/-- The integer obstruction ideal is contained in `span {2}`. -/
+theorem integerLaw_obstructionIdeal_le (W : FiniteModel.site.category) :
+    integerLawEquationCore.obstructionIdeal W ≤
+      Ideal.span ({(2 : ℤ)} : Set ℤ) := by
+  change
+    (integerLawEquationCore.selectedLawWitnessIdealFamily W).localObstructionIdeal ≤
+      Ideal.span ({(2 : ℤ)} : Set ℤ)
+  rw [LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
+  intro lawIndex _hselected
+  exact integerLaw_lawWitnessIdeal_le W lawIndex
+
+/-- The integer defect `1` is not killed by the generated obstruction ideal. -/
+theorem integerLaw_one_notMem_obstructionIdeal (W : FiniteModel.site.category) :
+    (1 : ℤ) ∉ integerLawEquationCore.obstructionIdeal W := by
+  intro hmem
+  have hspan := integerLaw_obstructionIdeal_le W hmem
+  rw [Ideal.mem_span_singleton] at hspan
+  have hdiv : (2 : ℤ) ∣ (1 : ℤ) := hspan
+  obtain ⟨c, hc⟩ := hdiv
+  omega
+
+/-- The quotient class of `1` is nonzero for the integer generated coefficient. -/
+theorem integerGeneratedLawQuotient_one_ne_zero (W : FiniteModel.site.category) :
+    Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W) (1 : ℤ) ≠ 0 := by
+  intro hzero
+  exact integerLaw_one_notMem_obstructionIdeal W
+    (Ideal.Quotient.eq_zero_iff_mem.mp hzero)
+
+/-- The integer generated quotient coefficient is nontrivial at every context. -/
+theorem integerGeneratedLawQuotient_nontrivial (W : FiniteModel.site.category) :
+    ∃ x : integerLawEquationCore.ObstructionQuotient W, x ≠ 0 :=
+  ⟨Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W) 1,
+    integerGeneratedLawQuotient_one_ne_zero W⟩
+
+/-- Every selected integer violation witness has zero quotient class. -/
+theorem integerLaw_violationWitness_class_eq_zero
+    (W : FiniteModel.site.category)
+    (lawIndex : FiniteModel.site.lawUniverse.Index)
+    (atom : FiniteModel.carrier.Atom) :
+    Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W)
+        (integerLawEquationCore.violationWitness W lawIndex atom) = 0 :=
+  Ideal.Quotient.eq_zero_iff_mem.mpr
+    (integerLawEquationCore.lawWitnessIdeal_le_obstructionIdeal W
+      (FiniteModel.lawUniverse_required lawIndex)
+      (Ideal.subset_span ⟨atom, rfl⟩))
+
 /-- X.例9.1: displayed defect source whose defect lies in the selected witness ideal. -/
 def defectSource :
     LawAlgebra.LawEquationDefectSource lawEquationCore where
@@ -604,6 +700,50 @@ theorem displayedRequiredLawsHoldOn :
   intro i lawIndex hmem hrequired
   cases lawIndex
   exact lawfulObject_noCycleLaw
+
+/-!
+The following source is a negative witness for the displayed realization
+predicate.  Its displayed defect is the nonzero quotient class of `1`, while
+the generated base source still starts from the zero section.
+-/
+
+/-- A concrete configuration that violates the selected no-cycle law. -/
+def nonlawfulConfiguration : AtomConfiguration FiniteModel.carrier where
+  family := FiniteModel.allFamily
+  relation _ _ := True
+  identification _ _ := False
+
+/-- Architecture object induced by `nonlawfulConfiguration`. -/
+def nonlawfulObject : ArchitectureObject FiniteModel.carrier :=
+  FiniteModel.objectOfConfiguration nonlawfulConfiguration
+
+theorem nonlawfulObject_not_noCycleLaw :
+    ¬ FiniteModel.noCycleLaw.holds nonlawfulObject := by
+  intro hholds
+  apply hholds
+  exact ⟨trivial, trivial, trivial⟩
+
+/-- Defect source whose displayed law interpretation is nonzero. -/
+def nonlawfulDefectSource :
+    LawAlgebra.LawEquationDefectSource lawEquationCore where
+  Chart := PUnit
+  chart _ := FiniteModel.siteBase
+  LocalInput _ := PUnit
+  input _ := PUnit.unit
+  lawSupport _ _ := [PUnit.unit]
+  lawSupport_nonempty := by
+    intro _i
+    exact ⟨PUnit.unit, by simp⟩
+  lawSupport_required := by
+    intro _i lawIndex _hmem
+    cases lawIndex
+    rfl
+  objectOfLocalInput _ _ := nonlawfulObject
+  defect _ _ := (1 : ZMod 4)
+  holds_defect_mem := by
+    intro _i lawIndex _hmem _hrequired hholds
+    cases lawIndex
+    exact False.elim (nonlawfulObject_not_noCycleLaw hholds)
 
 /-! ## Native generated quotient coefficient for example 9.1 -/
 
@@ -689,6 +829,14 @@ theorem generatedLawQuotient_one_ne_zero :
   rw [Ideal.Quotient.eq_zero_iff_mem] at hzero
   rw [generatedLaw_obstructionIdeal_eq_span_two] at hzero
   exact generatedLaw_one_notMem_span_two hzero
+
+theorem nonlawfulDefectSource_interpret_ne_zero :
+    nonlawfulDefectSource.interpret PUnit.unit ≠ 0 := by
+  apply
+    nonlawfulDefectSource.interpret_ne_zero_of_defect_notMem_obstructionIdeal
+  dsimp [nonlawfulDefectSource]
+  rw [generatedLaw_obstructionIdeal_eq_span_two]
+  exact generatedLaw_one_notMem_span_two
 
 /-- X.例9.1 / #3102: the native law-equation-generated quotient is nontrivial. -/
 instance generatedLawQuotientNontrivial :
@@ -1486,6 +1634,559 @@ def generatedLawCircleCoverRelativeCover :
   face := circleFace
   faceRestriction _ _ _ := 𝟙 FiniteModel.siteBase
 
+/--
+X.例9.1 / #3102: three-component semantic projection used by the native
+generated quotient circle witness.
+-/
+def generatedLawCircleSemanticProjection : SemanticAtomProjection where
+  SemanticAtom := Fin 3
+  Component := Fin 3
+  project atom := atom
+
+/--
+X.例9.1 / #3102: semantic repair cover with the same three-chart / three-edge
+shape as the native generated quotient circle complex.
+-/
+def generatedLawCircleSemanticCover :
+    SemanticRepairCover generatedLawCircleSemanticProjection where
+  baseCover := {
+    Chart := Fin 3
+    Transition := Fin 3
+    chartFinite := inferInstance
+    transitionFinite := inferInstance
+    holonomySupport := fun _ => True
+  }
+  CoverChart := Fin 3
+  chart chart := chart
+  chartFinite := inferInstance
+  Overlap := fun _ _ => Fin 3
+  overlapFinite := fun _ _ => inferInstance
+  TripleOverlap := fun _ _ _ => Unit
+  tripleFinite := fun _ _ _ => inferInstance
+  tripleEdge01 := fun _ => 0
+  tripleEdge12 := fun _ => 0
+  tripleEdge02 := fun _ => 0
+
+/-! ## Native generated singleton standard source-C0 route witness -/
+
+/--
+X.例9.1 / #3102: PUnit singleton finite-poset cover geometry used by the
+finite-free ten-conclusion source-C0 route.  This is not the Fin-3 circle
+complex used by the nonzero H1 example.
+-/
+def generatedLawFinitePosetCoverGeometry :
+    Site.FinitePosetCoverGeometry FiniteModel.site where
+  ContextIndex := PUnit
+  finiteContextIndex := inferInstance
+  context := fun _ => FiniteModel.siteContext
+  contextLe := fun _ _ => True
+  contextLe_refl := fun _ => trivial
+  contextLe_trans := fun _ _ => trivial
+  contextLe_antisymm := by
+    intro i j _ _
+    cases i
+    cases j
+    rfl
+  contextLe_sound := fun _ => rfl
+  contextMeet := fun _ _ => PUnit.unit
+  contextMeet_le_left := fun _ _ => trivial
+  contextMeet_le_right := fun _ _ => trivial
+  context_le_meet := fun _ _ => trivial
+  base := FiniteModel.siteBase
+  cover := FiniteModel.siteSingletonCover
+  finiteCoverIndex := by
+    change Finite PUnit
+    infer_instance
+  nerveSimplex := fun _ => PUnit
+  finiteNerveSimplex := fun _ => inferInstance
+  simplexIndices := fun _ _ _ => PUnit.unit
+  simplexOverlap := fun _ _ => FiniteModel.siteContext
+  simplexOverlap_le_patch := fun _ _ _ => rfl
+  adequacyRequirements := FiniteModel.siteAdequacyRequirements
+  coverAdequate := FiniteModel.siteSingletonCover_uAdequate
+
+/-- Canonical tuple geometry generated from the singleton finite-poset cover. -/
+abbrev generatedLawTupleGeometry :=
+  generatedLawFinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap
+
+/-! ## PRD R9(b) integer lawful firing -/
+
+/-- Semantic input for the integer law-equation lawful firing. -/
+def integerLawFiniteFreeSemanticInput :
+    StandardFinitePosetGeneratedBoundary.LawEquationSemanticAtomInputBody
+      FiniteModel.carrier where
+  Component := Fin 3
+  project _ := 0
+  sourceTraceToken _ := true
+
+/-- Three-chart semantic incidence data for the integer lawful firing. -/
+def integerLawFiniteFreeSemanticCover :
+    SemanticRepairCover integerLawFiniteFreeSemanticInput.toSemanticAtomProjection where
+  baseCover := {
+    Chart := Fin 3
+    Transition := Fin 3
+    chartFinite := inferInstance
+    transitionFinite := inferInstance
+    holonomySupport := fun _ => True
+  }
+  CoverChart := Fin 3
+  chart chart := chart
+  chartFinite := inferInstance
+  Overlap := fun _ _ => Fin 3
+  overlapFinite := fun _ _ => inferInstance
+  TripleOverlap := fun _ _ _ => Unit
+  tripleFinite := fun _ _ _ => inferInstance
+  tripleEdge01 := fun _ => 0
+  tripleEdge12 := fun _ => 0
+  tripleEdge02 := fun _ => 0
+
+/-- Integer witness geometry with quotient sheaf condition proved on the finite site. -/
+def integerLawFiniteFreeWitnessIdealGeometry :
+    StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody
+      integerLawFiniteFreeSemanticInput FiniteModel.site where
+  toCore := integerLawEquationCore
+  supportAtom_traceVisible := rfl
+  quotientIsSheaf := integerGeneratedLawQuotientIsSheaf
+
+/-- Geometry-indexed integer defect input with selected defect `2`. -/
+def integerLawFiniteFreeDefectSource :
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody
+      integerLawFiniteFreeSemanticInput integerLawFiniteFreeWitnessIdealGeometry
+      generatedLawFinitePosetCoverGeometry where
+  LocalInput _ := PUnit
+  input _ := PUnit.unit
+  atomSupport _ _ := [FiniteModel.FiniteAtom.componentA]
+  atomSupport_traceVisible := by
+    intro _ _
+    exact ⟨FiniteModel.FiniteAtom.componentA, by simp, rfl⟩
+  lawSupport _ _ := [PUnit.unit]
+  lawSupport_nonempty := by
+    intro _
+    exact ⟨PUnit.unit, by simp⟩
+  lawSupport_required := by
+    intro _ lawIndex _
+    cases lawIndex
+    rfl
+  objectOfLocalInput _ _ := lawfulObject
+  defect _ _ := (2 : ℤ)
+  holds_defect_mem := by
+    intro _ lawIndex _ _ _
+    cases lawIndex
+    exact Ideal.subset_span ⟨FiniteModel.FiniteAtom.componentA, rfl⟩
+
+/-- Displayed required laws hold for the integer lawful input. -/
+theorem integerLawFiniteFreeDisplayedRequiredLawsHoldOn :
+    integerLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
+  intro _ lawIndex _ _
+  cases lawIndex
+  exact lawfulObject_noCycleLaw
+
+/--
+X.例9.1 / PRD R9(b): the integer observable core, witness `2`, proved quotient
+sheaf condition, and geometry-indexed lawful source fire the final ten-conclusion
+theorem.
+-/
+theorem lawfulFiring_integerLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket :
+    let K := StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
+      (G := integerLawEquationCore) integerGeneratedLawQuotientIsSheaf
+      generatedLawTupleGeometry
+    let source := integerLawFiniteFreeDefectSource.toLawEquationBodyCechSource
+    let surface := lawEquationGeneratedCurrentG06InputSurfaceOfFinitePosetGeometry
+      integerLawFiniteFreeSemanticCover generatedLawFinitePosetCoverGeometry K
+      (fun _ => fun _ => PUnit.unit)
+      (fun _ => fun _ => PUnit.unit)
+      (fun _ => fun _ => PUnit.unit)
+      integerGeneratedLawQuotientIsSheaf
+    Nonempty
+      (StandardFinitePosetGeneratedBoundary.LawEquationGroundedComparisonFiniteFreeConjunctsBody
+        integerLawFiniteFreeDefectSource surface source) :=
+  StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedComparisonPacket_finiteFree
+    integerLawFiniteFreeSemanticInput integerLawFiniteFreeSemanticCover
+    integerLawFiniteFreeWitnessIdealGeometry generatedLawFinitePosetCoverGeometry
+    integerLawFiniteFreeDefectSource
+    (fun _ => fun _ => PUnit.unit)
+    (fun _ => fun _ => PUnit.unit)
+    (fun _ => fun _ => PUnit.unit)
+    integerLawFiniteFreeDisplayedRequiredLawsHoldOn
+
+/-- Standard generated cover-relative complex used by the singleton source example. -/
+abbrev generatedLawStandardSourceC0Complex :=
+  StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
+    (G := lawEquationCore) generatedLawQuotientIsSheaf
+    generatedLawTupleGeometry
+
+/-- Semantic atom input tied definitionally to the finite law carrier. -/
+def generatedLawFiniteFreeSemanticInput :
+    StandardFinitePosetGeneratedBoundary.LawEquationSemanticAtomInputBody
+      FiniteModel.carrier where
+  Component := Fin 3
+  project _ := 0
+  sourceTraceToken _ := true
+
+/-- Three-chart semantic incidence data feeding the singleton standard route. -/
+def generatedLawFiniteFreeSemanticCover :
+    SemanticRepairCover generatedLawFiniteFreeSemanticInput.toSemanticAtomProjection where
+  baseCover := {
+    Chart := Fin 3
+    Transition := Fin 3
+    chartFinite := inferInstance
+    transitionFinite := inferInstance
+    holonomySupport := fun _ => True
+  }
+  CoverChart := Fin 3
+  chart chart := chart
+  chartFinite := inferInstance
+  Overlap := fun _ _ => Fin 3
+  overlapFinite := fun _ _ => inferInstance
+  TripleOverlap := fun _ _ _ => Unit
+  tripleFinite := fun _ _ _ => inferInstance
+  tripleEdge01 := fun _ => 0
+  tripleEdge12 := fun _ => 0
+  tripleEdge02 := fun _ => 0
+
+/-- Rich production witness geometry carrying trace and quotient-sheaf inputs. -/
+def generatedLawFiniteFreeWitnessIdealGeometry :
+    StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody
+      generatedLawFiniteFreeSemanticInput FiniteModel.site where
+  toCore := lawEquationCore
+  supportAtom_traceVisible := rfl
+  quotientIsSheaf := generatedLawQuotientIsSheaf
+
+/-- Geometry-indexed lawful defect input for the singleton standard route. -/
+def generatedLawFiniteFreeDefectSource :
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody
+      generatedLawFiniteFreeSemanticInput generatedLawFiniteFreeWitnessIdealGeometry
+      generatedLawFinitePosetCoverGeometry where
+  LocalInput _ := PUnit
+  input _ := PUnit.unit
+  atomSupport _ _ := [FiniteModel.FiniteAtom.componentA]
+  atomSupport_traceVisible := by
+    intro _ _
+    exact ⟨FiniteModel.FiniteAtom.componentA, by simp,
+      rfl⟩
+  lawSupport _ _ := [PUnit.unit]
+  lawSupport_nonempty := by
+    intro _
+    exact ⟨PUnit.unit, by simp⟩
+  lawSupport_required := by
+    intro _ lawIndex _
+    cases lawIndex
+    rfl
+  objectOfLocalInput _ _ := lawfulObject
+  defect _ _ := (2 : ZMod 4)
+  holds_defect_mem := by
+    intro _ lawIndex _ _ _
+    cases lawIndex
+    exact Ideal.subset_span ⟨FiniteModel.FiniteAtom.componentA, rfl⟩
+
+/-- Displayed required laws hold on the rich singleton defect input. -/
+theorem generatedLawFiniteFreeDisplayedRequiredLawsHoldOn :
+    generatedLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
+  intro _ lawIndex _ _
+  cases lawIndex
+  exact lawfulObject_noCycleLaw
+
+/--
+Concrete R5 final firing on the PUnit singleton standard complex.  The result
+is the generated-zero ten-conclusion packet and is separate from the Fin-3
+circle nonzero residual route.
+-/
+theorem lawfulFiring_generatedLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket :
+    let K := StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
+      (G := lawEquationCore) generatedLawQuotientIsSheaf generatedLawTupleGeometry
+    let source := generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource
+    let surface := lawEquationGeneratedCurrentG06InputSurfaceOfFinitePosetGeometry
+      generatedLawFiniteFreeSemanticCover generatedLawFinitePosetCoverGeometry K
+      (fun _ => fun _ => PUnit.unit)
+      (fun _ => fun _ => PUnit.unit)
+      (fun _ => fun _ => PUnit.unit)
+      generatedLawQuotientIsSheaf
+    Nonempty
+      (StandardFinitePosetGeneratedBoundary.LawEquationGroundedComparisonFiniteFreeConjunctsBody
+        generatedLawFiniteFreeDefectSource surface source) :=
+  StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedComparisonPacket_finiteFree
+    generatedLawFiniteFreeSemanticInput generatedLawFiniteFreeSemanticCover
+    generatedLawFiniteFreeWitnessIdealGeometry generatedLawFinitePosetCoverGeometry
+    generatedLawFiniteFreeDefectSource
+    (fun _ => fun _ => PUnit.unit)
+    (fun _ => fun _ => PUnit.unit)
+    (fun _ => fun _ => PUnit.unit)
+    generatedLawFiniteFreeDisplayedRequiredLawsHoldOn
+
+/-- The singleton standard body source is the restriction of the zero base section. -/
+theorem generatedLawSingletonStandardBodySource_toPrimitive_eq_zero :
+    forall sigma,
+      generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource.toPrimitive sigma = 0 := by
+  intro sigma
+  exact
+    (lawEquationCore.obstructionQuotientCoefficient.map
+      (generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource.zeroSimplexToBase
+        sigma).op).hom.map_zero
+
+/-- The R5 singleton selected residual is zero and is not the circle residual. -/
+theorem generatedLawSingletonStandardGeneratedResidual_eq_zero :
+    forall sigma,
+      (generatedLawStandardSourceC0Complex.d 0
+        generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource.toPrimitive) sigma = 0 := by
+  intro sigma
+  letI := generatedLawStandardSourceC0Complex.cochainAddCommGroup 0
+  letI := generatedLawStandardSourceC0Complex.cochainAddCommGroup 1
+  have hprimitive :
+      generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource.toPrimitive = 0 := by
+    funext sigma
+    exact generatedLawSingletonStandardBodySource_toPrimitive_eq_zero sigma
+  have hresidual :
+      generatedLawStandardSourceC0Complex.d 0
+          generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource.toPrimitive = 0 := by
+    rw [hprimitive]
+    exact (generatedLawStandardSourceC0Complex.d 0).map_zero
+  exact congrFun hresidual sigma
+
+/-- Finite degree-zero cochain instance for the legacy bounded route. -/
+def generatedLawStandardSourceC0Fintype :
+    Fintype (generatedLawStandardSourceC0Complex.Cn 0) := by
+  change
+    Fintype
+      ((Site.FinitePosetCechCanonicalTupleSimplex PUnit 0) ->
+        GeneratedLawQuotient)
+  infer_instance
+
+/-- Finite degree-one cochain instance for the legacy bounded route. -/
+def generatedLawStandardSourceC1Fintype :
+    Fintype (generatedLawStandardSourceC0Complex.Cn 1) := by
+  change
+    Fintype
+      ((Site.FinitePosetCechCanonicalTupleSimplex PUnit 1) ->
+        GeneratedLawQuotient)
+  infer_instance
+
+/-- Body Cech source generated by the singleton standard geometry. -/
+def generatedLawStandardBodySource :
+    LawEquationBodyCechSource defectSource generatedLawStandardSourceC0Complex where
+  chartOf _ := PUnit.unit
+  chartToBase _ := 𝟙 _
+  restriction sigma :=
+    homOfLE
+      (generatedLawFinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap_le_base
+        0 sigma)
+
+/-- Nonlawful body Cech source used to refute automatic realization. -/
+def generatedLawStandardNonlawfulBodySource :
+    LawEquationBodyCechSource nonlawfulDefectSource
+      generatedLawStandardSourceC0Complex where
+  chartOf _ := PUnit.unit
+  chartToBase _ := 𝟙 _
+  restriction sigma :=
+    homOfLE
+      (generatedLawFinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap_le_base
+        0 sigma)
+
+/-- Selected degree-zero simplex exposing the nonlawful interpretation. -/
+def generatedLawStandardSourceC0SelectedSimplex :
+    Site.FinitePosetCechCanonicalTupleSimplex PUnit 0 :=
+  fun _ => PUnit.unit
+
+theorem generatedLawStandardNonlawfulBodySource_not_displayedInterpretationRealization :
+    ¬ generatedLawStandardNonlawfulBodySource.DisplayedInterpretationRealization := by
+  apply
+    generatedLawStandardNonlawfulBodySource.restrictedDisplayedInterpretation_ne_zero_prevents_displayedInterpretationRealization
+      generatedLawStandardSourceC0SelectedSimplex
+  simpa [LawEquationBodyCechSource.restrictedDisplayedInterpretation,
+    generatedLawStandardNonlawfulBodySource,
+    nonlawfulDefectSource,
+    LawAlgebra.LawEquationDefectSource.interpret,
+    LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientPresheaf,
+    LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientCoefficient,
+    lawEquationCore] using nonlawfulDefectSource_interpret_ne_zero
+
+/-!
+Two-chart negative instance for the chart-level common-source and arrow laws.
+The first chart reads zero and the second reads the nonzero quotient class of
+`1`; both chart arrows are the identity into the same selected base.
+-/
+
+/-- Two-chart defect source with one zero and one nonzero interpretation. -/
+def mixedDefectSource :
+    LawAlgebra.LawEquationDefectSource lawEquationCore where
+  Chart := Bool
+  chart _ := FiniteModel.siteBase
+  LocalInput _ := PUnit
+  input _ := PUnit.unit
+  lawSupport _ _ := [PUnit.unit]
+  lawSupport_nonempty := by
+    intro _i
+    exact ⟨PUnit.unit, by simp⟩
+  lawSupport_required := by
+    intro _i lawIndex _hmem
+    cases lawIndex
+    rfl
+  objectOfLocalInput i _ := if i then nonlawfulObject else lawfulObject
+  defect i _ := if i then (1 : ZMod 4) else 0
+  holds_defect_mem := by
+    intro i lawIndex _hmem _hrequired hholds
+    cases i with
+    | false =>
+        cases lawIndex
+        exact Ideal.zero_mem _
+    | true =>
+        cases lawIndex
+        exact False.elim (nonlawfulObject_not_noCycleLaw hholds)
+
+/-- Cover-relative two-chart presentation used by the mixed-source counterexample. -/
+def mixedCoverRelativeCover :
+    Cohomology.CoverRelativeCechCover FiniteModel.site where
+  base := FiniteModel.siteBase
+  Index := Bool
+  chart _ := FiniteModel.siteBase
+  inclusion _ := 𝟙 _
+  simplex _ := Bool
+  overlap _ _ := FiniteModel.siteBase
+  face _ _ sigma := sigma
+  faceRestriction _ _ _ := 𝟙 _
+
+/-- Zero-differential Cech complex isolating realization compatibility. -/
+def mixedZeroCechComplex :
+    Cohomology.CoverRelativeCechComplex mixedCoverRelativeCover
+      generatedLawQuotientObstructionSheaf where
+  cochainAddCommGroup := by
+    intro _n
+    change AddCommGroup (Bool -> GeneratedLawQuotient)
+    infer_instance
+  alternatingFaceCombination := by
+    intro _n _terms _sigma
+    exact (0 : GeneratedLawQuotient)
+  differential := by
+    intro _n
+    change (Bool -> GeneratedLawQuotient) →+
+      (Bool -> GeneratedLawQuotient)
+    exact 0
+  differential_eq_alternatingFaceCombination := by
+    intro _n _cochain
+    rfl
+  differential_comp := by
+    intro _n _cochain
+    rfl
+
+/-- Body source whose two restrictions expose incompatible interpretations. -/
+def mixedBodySource :
+    LawEquationBodyCechSource mixedDefectSource mixedZeroCechComplex where
+  chartOf sigma := sigma
+  chartToBase _ := 𝟙 _
+  restriction _ := 𝟙 _
+
+theorem mixedDefectSource_interpret_false_zero :
+    mixedDefectSource.interpret false = 0 := by
+  simp [mixedDefectSource, LawAlgebra.LawEquationDefectSource.interpret]
+
+theorem mixedDefectSource_interpret_true_ne_zero :
+    mixedDefectSource.interpret true ≠ 0 := by
+  simp [mixedDefectSource, LawAlgebra.LawEquationDefectSource.interpret]
+
+theorem mixedBodySource_has_displayedRequiredLawRestrictionEvaluator :
+    mixedBodySource.DisplayedRequiredLawRestrictionEvaluator := by
+  intro sigma tau Z gSigma gTau hcomm lawIndexSigma lawIndexTau
+    hmemSigma hmemTau hrequiredSigma hrequiredTau hholdsSigma hholdsTau
+  cases sigma <;> cases tau
+  · simp [mixedBodySource, mixedDefectSource,
+      LawAlgebra.LawEquationDefectSource.interpret]
+  · exact False.elim
+      (nonlawfulObject_not_noCycleLaw
+        (by simpa [mixedDefectSource] using hholdsTau))
+  · exact False.elim
+      (nonlawfulObject_not_noCycleLaw
+        (by simpa [mixedDefectSource] using hholdsSigma))
+  · have heq : gSigma = gTau := Subsingleton.elim _ _
+    subst gTau
+    rfl
+
+theorem mixedDefectSource_not_generatedInterpretationPointwiseZero :
+    ¬ mixedDefectSource.GeneratedInterpretationPointwiseZero := by
+  intro hzero
+  exact mixedDefectSource_interpret_true_ne_zero (hzero true)
+
+theorem mixedBodySource_not_arrowCompatibilityLaw :
+    ¬ mixedBodySource.ArrowCompatibilityLaw := by
+  intro hcompatible
+  have heq :=
+    hcompatible false true FiniteModel.siteBase (𝟙 _) (𝟙 _)
+      (by simp [mixedBodySource])
+  have hinterpret :
+      mixedDefectSource.interpret false =
+        mixedDefectSource.interpret true := by
+    simpa [mixedBodySource] using heq
+  apply mixedDefectSource_interpret_true_ne_zero
+  exact hinterpret.symm.trans mixedDefectSource_interpret_false_zero
+
+theorem mixedBodySource_not_commonRestrictionRealization :
+    ¬ mixedBodySource.CommonRestrictionRealization :=
+  mixedBodySource.no_commonRestrictionRealization_without_arrowCompatibilityLaw
+    mixedBodySource_not_arrowCompatibilityLaw
+
+theorem mixedBodySource_zeroBase_not_preservesDisplayedInterpretation :
+    ¬ mixedBodySource.BaseRestrictionSourcePreservesDisplayedInterpretation
+      mixedBodySource.toBaseRestrictionSource := by
+  intro hpreserves
+  exact mixedBodySource_not_commonRestrictionRealization
+    ⟨mixedBodySource.toBaseRestrictionSource, hpreserves⟩
+
+/-- Additive boundary data generated from the singleton standard source. -/
+def generatedLawStandardSourceC0BoundaryAdditiveData :
+    SemanticRepairCoverH1BoundaryRelationAdditiveData
+      generatedLawCircleSemanticProjection :=
+  coverRelativeBoundaryAdditiveDataOfComplex generatedLawCircleSemanticCover
+    generatedLawStandardSourceC0Complex generatedLawStandardSourceC0Fintype
+    generatedLawStandardSourceC1Fintype
+    (0 : generatedLawStandardSourceC0Complex.Cn 1)
+    (generatedLawStandardSourceC0Complex.d 0
+      generatedLawStandardBodySource.toPrimitive)
+    (by
+      letI := generatedLawStandardSourceC0Complex.cochainAddCommGroup 1
+      letI := generatedLawStandardSourceC0Complex.cochainAddCommGroup 2
+      exact (generatedLawStandardSourceC0Complex.d 1).map_zero)
+    (generatedLawStandardSourceC0Complex.differential_comp 0
+      generatedLawStandardBodySource.toPrimitive)
+    rfl
+    (fun _ => lawEquationCompleteRepairSupport generatedLawCircleSemanticProjection)
+    (fun _ _ =>
+      (lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
+        generatedLawCircleSemanticProjection
+        generatedLawCircleSemanticCover.baseCover).1)
+    (fun _ _ =>
+      (lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
+        generatedLawCircleSemanticProjection
+        generatedLawCircleSemanticCover.baseCover).2)
+
+/--
+Legacy bounded singleton firing retained for comparison only.  It requires
+cochain Fintype inputs and is not completion evidence for the R5 final route.
+-/
+theorem legacyFiring_generatedLawSingletonStandardSourceC0_boundedConjuncts :
+    Nonempty
+      (Sigma fun surface :
+        LawEquationGeneratedCurrentG06InputSurface
+          generatedLawCircleSemanticCover FiniteModel.site
+          lawEquationCore.obstructionQuotientPresheaf
+          generatedLawStandardSourceC0Complex =>
+        Sigma fun comparison :
+          SemanticRepairCoverRelativeH1Comparison
+            generatedLawStandardSourceC0BoundaryAdditiveData.toAdditiveH1Surface
+            generatedLawStandardSourceC0Complex =>
+          LawEquationGroundedComparisonConjunctsBody
+            defectSource surface generatedLawStandardBodySource
+            generatedLawStandardSourceC0BoundaryAdditiveData
+            comparison) :=
+  StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedResearchConjuncts_fromStandardFinitePosetSource
+    generatedLawCircleSemanticCover defectSource displayedRequiredLawsHoldOn
+    generatedLawQuotientIsSheaf
+    (StandardFinitePosetGeneratedBoundary.canonicalTupleGeneratedBoundaryLaw
+      (G := lawEquationCore) generatedLawQuotientIsSheaf
+      generatedLawTupleGeometry)
+    (fun _ => fun _ => PUnit.unit)
+    (fun _ => fun _ => PUnit.unit)
+    (fun _ => fun _ => PUnit.unit)
+    generatedLawStandardBodySource generatedLawStandardSourceC0Fintype
+    generatedLawStandardSourceC1Fintype
+
 /-- X.例9.1 / #3102: native generated quotient circle C0 cochains. -/
 abbrev generatedLawCircleC0 : Type :=
   Fin 3 -> GeneratedLawQuotient
@@ -1610,81 +2311,138 @@ def generatedLawCircleCoverRelativeComplex :
         change (0 : GeneratedLawQuotient) = 0
         rfl
 
+/--
+X.例9.1 / #3102: generated support attached to a circle primitive.  The
+support is the nonzero locus of the primitive, not a free `True` slot.
+-/
+def generatedLawCircleSupportOf (primitive : generatedLawCircleC0) :
+    generatedLawCircleSemanticProjection.Support :=
+  fun atom => primitive atom ≠ 0
+
+private theorem generatedLawCircleD0_eq_residual_impossible
+    (primitive : generatedLawCircleC0)
+    (hboundary : generatedLawCircleD0 primitive = generatedLawCircleResidual) :
+    False := by
+  exact generatedLawCircleResidual_not_coboundary
+    ⟨primitive, by
+      funext edge
+      rw [hboundary]
+      simp [generatedLawCircleZero1]⟩
+
+/--
+X.例9.1 / #3102: the nonzero-locus support covers residual components for a
+boundary primitive.  The premise is impossible by the nonzero circle H1 proof,
+so this does not use a freely supplied Prop field.
+-/
+theorem generatedLawCircle_componentCovered_of_boundary
+    (primitive : generatedLawCircleC0)
+    (hboundary :
+      generatedLawCircleCoverRelativeComplex.differential 0 primitive =
+        generatedLawCircleResidual) :
+    ResidualComponentCoveredSupport generatedLawCircleSemanticProjection
+      generatedLawCircleSemanticCover.baseCover
+      (generatedLawCircleSupportOf primitive) := by
+  exact False.elim
+    (generatedLawCircleD0_eq_residual_impossible primitive hboundary)
+
+/--
+X.例9.1 / #3102: the nonzero-locus support is component-faithful for a boundary
+primitive, again by the impossibility of such a primitive on the native
+generated quotient circle.
+-/
+theorem generatedLawCircle_componentFaithful_of_boundary
+    (primitive : generatedLawCircleC0)
+    (hboundary :
+      generatedLawCircleCoverRelativeComplex.differential 0 primitive =
+        generatedLawCircleResidual) :
+    ResidualComponentFaithfulSupport generatedLawCircleSemanticProjection
+      generatedLawCircleSemanticCover.baseCover
+      (generatedLawCircleSupportOf primitive) := by
+  exact False.elim
+    (generatedLawCircleD0_eq_residual_impossible primitive hboundary)
+
+instance generatedLawCircleCoverRelativeC0Fintype :
+    Fintype (generatedLawCircleCoverRelativeComplex.Cn 0) := by
+  change Fintype generatedLawCircleC0
+  infer_instance
+
+instance generatedLawCircleCoverRelativeC1Fintype :
+    Fintype (generatedLawCircleCoverRelativeComplex.Cn 1) := by
+  change Fintype generatedLawCircleC1
+  infer_instance
+
 /-- X.例9.1 / #3102: semantic Cech data over the native generated circle. -/
 def generatedLawCircleSemanticCechData :
-    SemanticRepairCoverCechData semanticCover where
-  C0 := generatedLawCircleC0
-  C1 := generatedLawCircleC1
-  C2 := generatedLawCircleC2
-  c0Finite := inferInstance
-  c1Finite := inferInstance
-  zero1 := generatedLawCircleZero1
-  zero2 := generatedLawCircleZero2
-  delta0 := generatedLawCircleD0
-  delta1 _ := generatedLawCircleZero2
-  residual := generatedLawCircleResidual
-  zero1_cocycle := by
-    funext σ
-    rfl
-  delta1_delta0_eq_zero := by
-    intro _primitive
-    funext σ
-    rfl
-  residual_cocycle := by
-    funext σ
-    rfl
+    SemanticRepairCoverCechData generatedLawCircleSemanticCover :=
+  AAT.AG.SemanticRepair.coverRelativeCechDataOfComplex generatedLawCircleSemanticCover
+    generatedLawCircleCoverRelativeComplex generatedLawCircleCoverRelativeC0Fintype
+    generatedLawCircleCoverRelativeC1Fintype generatedLawCircleZero1
+    generatedLawCircleResidual
+    (by
+      funext σ
+      rfl)
+    (by
+      funext σ
+      rfl)
 
 /-- X.例9.1 / #3102: additive Cech data over the native generated circle. -/
 def generatedLawCircleSemanticAdditiveData :
-    SemanticRepairAdditiveCechH1Data generatedLawCircleSemanticCechData where
-  c0AddCommGroup := by
-    change AddCommGroup (Fin 3 -> GeneratedLawQuotient)
-    infer_instance
-  c1AddCommGroup := by
-    change AddCommGroup (Fin 3 -> GeneratedLawQuotient)
-    infer_instance
-  zero1_eq_zero := by
-    funext edge
-    rfl
-  delta0_zero := by
-    funext edge
-    change (0 : GeneratedLawQuotient) - 0 = 0
-    abel
-  delta0_add := by
-    intro left right
-    funext edge
-    change
-      (left (circleNext edge) + right (circleNext edge)) -
-          (left edge + right edge) =
-        (left (circleNext edge) - left edge) +
-          (right (circleNext edge) - right edge)
-    abel
-  delta0_neg := by
-    intro primitive
-    funext edge
-    change
-      (-primitive (circleNext edge) - -primitive edge) =
-        -(primitive (circleNext edge) - primitive edge)
-    abel
+    SemanticRepairAdditiveCechH1Data generatedLawCircleSemanticCechData :=
+  AAT.AG.SemanticRepair.coverRelativeAdditiveCechDataOfComplex generatedLawCircleSemanticCover
+    generatedLawCircleCoverRelativeComplex generatedLawCircleCoverRelativeC0Fintype
+    generatedLawCircleCoverRelativeC1Fintype generatedLawCircleZero1
+    generatedLawCircleResidual
+    (by
+      funext σ
+      rfl)
+    (by
+      funext σ
+      rfl)
+    (by
+      funext edge
+      rfl)
 
 /-- X.例9.1 / #3102: boundary-relation data over native circle coefficients. -/
 def generatedLawCircleBoundaryRelationData :
-    SemanticRepairCoverH1BoundaryRelationAbelianData semanticProjection where
-  cover := semanticCover
-  cech := generatedLawCircleSemanticCechData
-  supportOf _ := fun _ => True
-  component_covered_of_boundary := by
-    intro _primitive _hboundary residual hresidual
-    exact ⟨residual, trivial, rfl⟩
-  component_faithful_of_boundary := by
-    intro _primitive _hboundary _residual _candidate _hresidual _hcandidate _hprojection
-    trivial
+    SemanticRepairCoverH1BoundaryRelationAbelianData generatedLawCircleSemanticProjection :=
+  (AAT.AG.SemanticRepair.coverRelativeBoundaryAdditiveDataOfComplex
+    generatedLawCircleSemanticCover
+    generatedLawCircleCoverRelativeComplex generatedLawCircleCoverRelativeC0Fintype
+    generatedLawCircleCoverRelativeC1Fintype generatedLawCircleZero1
+    generatedLawCircleResidual
+    (by
+      funext σ
+      rfl)
+    (by
+      funext σ
+      rfl)
+    (by
+      funext edge
+      rfl)
+    generatedLawCircleSupportOf
+    generatedLawCircle_componentCovered_of_boundary
+    generatedLawCircle_componentFaithful_of_boundary).boundaryRelation
 
 /-- X.例9.1 / #3102: additive boundary data over native circle coefficients. -/
 def generatedLawCircleBoundaryAdditiveData :
-    SemanticRepairCoverH1BoundaryRelationAdditiveData semanticProjection where
-  boundaryRelation := generatedLawCircleBoundaryRelationData
-  additive := generatedLawCircleSemanticAdditiveData
+    SemanticRepairCoverH1BoundaryRelationAdditiveData generatedLawCircleSemanticProjection :=
+  AAT.AG.SemanticRepair.coverRelativeBoundaryAdditiveDataOfComplex
+    generatedLawCircleSemanticCover
+    generatedLawCircleCoverRelativeComplex generatedLawCircleCoverRelativeC0Fintype
+    generatedLawCircleCoverRelativeC1Fintype generatedLawCircleZero1
+    generatedLawCircleResidual
+    (by
+      funext σ
+      rfl)
+    (by
+      funext σ
+      rfl)
+    (by
+      funext edge
+      rfl)
+    generatedLawCircleSupportOf
+    generatedLawCircle_componentCovered_of_boundary
+    generatedLawCircle_componentFaithful_of_boundary
 
 /-- X.例9.1 / #3102: native quotient circle H1 class is nonzero. -/
 theorem generatedLawCircleSemanticH1_nonzero :
@@ -1698,52 +2456,122 @@ theorem generatedLawCircleSemanticH1_nonzero :
         generatedLawCircleSemanticCechData]
         using Quotient.exact hzero)
 
+/--
+The concrete Fin-3 circle residual is not generated by a degree-zero
+primitive, providing the negative instance paired with the generated-boundary
+surface.
+-/
+theorem generatedLawCircle_not_generatedResidualBoundarySurfaceBody :
+    ¬ GeneratedResidualBoundarySurfaceBody
+      generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface := by
+  intro hboundary
+  apply generatedLawCircleSemanticH1_nonzero
+  exact semanticH1ZeroBody_constructs_additiveH1Zero
+    (residualBoundaryBody_constructs_semanticH1ZeroBody hboundary)
+
+/-- The same circle witness refutes the generated semantic-zero predicate. -/
+theorem generatedLawCircle_not_generatedSemanticH1ZeroBody :
+    ¬ GeneratedSemanticH1ZeroBody
+      generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface :=
+  no_generatedSemanticH1ZeroBody_without_residualBoundary
+    generatedLawCircle_not_generatedResidualBoundarySurfaceBody
+
 /-- X.例9.1 / #3102: identity cochain realization for the constructed native circle. -/
 def generatedLawCircleH1Realization :
     SemanticRepairCoverRelativeCochainRealization
       generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface
-      generatedLawCircleCoverRelativeComplex where
-  c0Equiv := by
-    exact {
-      toFun := fun x => x
-      invFun := fun x => x
-      left_inv := fun _ => rfl
-      right_inv := fun _ => rfl
-      map_add' := fun _ _ => rfl
-    }
-  c1Equiv := by
-    exact {
-      toFun := fun x => x
-      invFun := fun x => x
-      left_inv := fun _ => rfl
-      right_inv := fun _ => rfl
-      map_add' := fun _ _ => rfl
-    }
-  c2Equiv := by
-    change generatedLawCircleC2 ≃ generatedLawCircleC2
-    exact Equiv.refl generatedLawCircleC2
-  c2Equiv_zero := by
-    funext σ
-    rfl
-  c2Equiv_symm_zero := by
-    funext σ
-    rfl
-  d0_to := by
-    intro primitive
-    rfl
-  d0_from := by
-    intro primitive
-    rfl
-  d1_to := by
-    intro _cochain
-    funext σ
-    change (0 : GeneratedLawQuotient) = 0
-    rfl
-  d1_from := by
-    intro _cochain
-    funext σ
-    change (0 : GeneratedLawQuotient) = 0
-    rfl
+      generatedLawCircleCoverRelativeComplex :=
+  AAT.AG.SemanticRepair.coverRelativeIdentityCochainRealizationOfComplex
+    generatedLawCircleSemanticCover
+    generatedLawCircleCoverRelativeComplex generatedLawCircleCoverRelativeC0Fintype
+    generatedLawCircleCoverRelativeC1Fintype generatedLawCircleZero1
+    generatedLawCircleResidual
+    (by
+      funext σ
+      rfl)
+    (by
+      funext σ
+      rfl)
+    (by
+      funext edge
+      rfl)
+    generatedLawCircleSupportOf
+    generatedLawCircle_componentCovered_of_boundary
+    generatedLawCircle_componentFaithful_of_boundary
+
+/-
+X.例9.1 / #3102: zero primitive on the Fin-3 circle complex generates the
+zero-boundary packet.  Its residual is not the selected nonzero circle
+residual used by `generatedLawCircleSemanticH1_nonzero`.
+-/
+/-- Additive data generated by the zero primitive on the Fin-3 circle. -/
+def generatedLawCircleZeroBoundaryAdditiveData :
+    SemanticRepairCoverH1BoundaryRelationAdditiveData
+      generatedLawCircleSemanticProjection :=
+  coverRelativeBoundaryAdditiveDataOfComplex generatedLawCircleSemanticCover
+    generatedLawCircleCoverRelativeComplex
+    generatedLawCircleCoverRelativeC0Fintype
+    generatedLawCircleCoverRelativeC1Fintype generatedLawCircleZero1
+    (generatedLawCircleCoverRelativeComplex.d 0 (0 : generatedLawCircleC0))
+    (by
+      funext sigma
+      rfl)
+    (generatedLawCircleCoverRelativeComplex.differential_comp
+      0 (0 : generatedLawCircleC0))
+    (by
+      funext edge
+      rfl)
+    (fun _ => lawEquationCompleteRepairSupport generatedLawCircleSemanticProjection)
+    (fun _ _ =>
+      (lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
+        generatedLawCircleSemanticProjection
+        generatedLawCircleSemanticCover.baseCover).1)
+    (fun _ _ =>
+      (lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
+        generatedLawCircleSemanticProjection
+        generatedLawCircleSemanticCover.baseCover).2)
+
+/--
+The zero primitive generates the zero-boundary packet, separately from the
+nonzero circle residual used by `generatedLawCircleSemanticH1_nonzero`.
+-/
+theorem lawfulFiring_generatedLawCircleComplex_zeroBoundaryPacket_fromZeroPrimitive :
+    Nonempty
+      (LawEquationGeneratedBoundaryGroundedComparisonPacket
+        generatedLawCircleSemanticCover defectSource
+        (⊤ : Sieve FiniteModel.siteBase) generatedLawGluingData
+        generatedLawCircleCoverRelativeComplex
+        generatedLawCircleZeroBoundaryAdditiveData) :=
+  lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromPrimitive
+    generatedLawCircleSemanticCover
+    defectSource displayedRequiredLawsHoldOn
+    (fun chart => chart)
+    (fun overlap => overlap.2)
+    (fun _triple => ())
+    (⊤ : Sieve FiniteModel.siteBase)
+    generatedLawQuotientIsSheaf
+    generatedLawCircleCoverRelativeComplex
+    generatedLawCircleCoverRelativeC0Fintype
+    generatedLawCircleCoverRelativeC1Fintype
+    generatedLawCircleZero1
+    (0 : generatedLawCircleC0)
+    (by
+      funext σ
+      rfl)
+    (by
+      funext edge
+      rfl)
+    (fun _ => lawEquationCompleteRepairSupport generatedLawCircleSemanticProjection)
+    (fun _ _ =>
+      (lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
+        generatedLawCircleSemanticProjection
+        generatedLawCircleSemanticCover.baseCover).1)
+    (fun _ _ =>
+      (lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
+        generatedLawCircleSemanticProjection
+        generatedLawCircleSemanticCover.baseCover).2)
+    (FiniteModel.site.top_mem FiniteModel.siteBase)
+    generatedLawGluingData
 
 /-- X.例9.1 / #3102: true-sheaf certificate for the constructed native circle route. -/
 def generatedLawCircleTrueSheafCertificate :
@@ -1754,10 +2582,11 @@ def generatedLawCircleTrueSheafCertificate :
   sheafCondition := generatedLawQuotientIsSheaf
 
 /--
-X.例9.1 / #3102: theorem 7.5 fires on the single native witness whose
-coefficient is law-equation-generated and whose H1 class is nonzero.
+X.例9.1 / #3102: the older generated-pair SAGA packet fires on the Fin-3
+circle complex.  The H1-class nonzero theorem is bundled separately below;
+this declaration itself returns only the generated-pair packet.
 -/
-theorem lawfulFiring_generatedLawCircleQuotient_endToEndPacket_fromConstructedInputs :
+theorem lawfulFiring_generatedLawCircle_generatedPairSAGAPacket :
     Nonempty
       (Sigma fun comparison :
         SemanticRepairCoverRelativeH1Comparison
@@ -1767,12 +2596,111 @@ theorem lawfulFiring_generatedLawCircleQuotient_endToEndPacket_fromConstructedIn
             generatedLawCircleBoundaryAdditiveData defectSource FiniteModel.site
             generatedLawQuotientPresheaf
             (⊤ : Sieve FiniteModel.siteBase) generatedLawGluingData
-            comparison) :=
-  lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInputs
-    generatedLawCircleBoundaryAdditiveData defectSource displayedRequiredLawsHoldOn
-    (⊤ : Sieve FiniteModel.siteBase)
-    generatedLawCircleTrueSheafCertificate generatedLawGluingData
-    { realization := generatedLawCircleH1Realization }
+          comparison) :=
+  by
+    letI : Fintype (generatedLawCircleCoverRelativeComplex.Cn 0) :=
+      generatedLawCircleCoverRelativeC0Fintype
+    letI : Fintype (generatedLawCircleCoverRelativeComplex.Cn 1) :=
+      generatedLawCircleCoverRelativeC1Fintype
+    rcases
+      lawEquation_constructs_generatedPair_groundedComparisonPacket_fromCoverRelativeComplex
+        generatedLawCircleSemanticCover
+        defectSource displayedRequiredLawsHoldOn
+        (fun chart => chart)
+        (fun overlap => overlap.2)
+        (fun _triple => ())
+        (⊤ : Sieve FiniteModel.siteBase)
+        generatedLawQuotientIsSheaf
+        generatedLawCircleCoverRelativeComplex
+        generatedLawCircleCoverRelativeC0Fintype
+        generatedLawCircleCoverRelativeC1Fintype
+        generatedLawCircleZero1
+        generatedLawCircleResidual
+        (by
+          funext σ
+          rfl)
+        (by
+          funext σ
+          rfl)
+        (by
+          funext edge
+          rfl)
+        generatedLawCircleSupportOf
+        generatedLawCircle_componentCovered_of_boundary
+        generatedLawCircle_componentFaithful_of_boundary
+        (FiniteModel.site.top_mem FiniteModel.siteBase)
+        generatedLawGluingData with
+      ⟨⟨_bridge, comparison, packet⟩⟩
+    exact ⟨⟨comparison, packet⟩⟩
+
+/--
+X.例9.1 / #3102: the Fin-3 circle nonzero residual together with the older
+generated-pair SAGA packet on that same circle complex.  This is not the R5
+finite-free ten-conclusion generated-zero packet.
+-/
+theorem generatedLawCircle_nonzeroResidual_withGeneratedPairSAGAPacket :
+    Nontrivial GeneratedLawQuotient /\
+      (¬ generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface.H1Zero) /\
+      Nonempty
+        (Sigma fun comparison :
+          SemanticRepairCoverRelativeH1Comparison
+            generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface
+            generatedLawCircleCoverRelativeComplex =>
+            SemanticRepairGeneratedEndToEndSAGAPacket
+              generatedLawCircleBoundaryAdditiveData defectSource FiniteModel.site
+              generatedLawQuotientPresheaf
+              (⊤ : Sieve FiniteModel.siteBase) generatedLawGluingData
+              comparison) :=
+  ⟨generatedLawQuotientNontrivial,
+    generatedLawCircleSemanticH1_nonzero,
+    lawfulFiring_generatedLawCircle_generatedPairSAGAPacket⟩
+
+/--
+Two distinct Cech witnesses sharing the generated law-equation coefficient:
+a Fin-3 circle nonzero H1 class and a PUnit singleton standard generated-zero
+packet.  The type does not assert that the coefficient is their only shared
+datum.
+-/
+structure GeneratedLawSharedCoefficientSeparateCechWitnesses where
+  coefficientNontrivial : Nontrivial GeneratedLawQuotient
+  circleH1ClassNonzero :
+    ¬ generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface.H1Zero
+  circleGeneratedPairPacket :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepairCoverRelativeH1Comparison
+          generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface
+          generatedLawCircleCoverRelativeComplex =>
+          SemanticRepairGeneratedEndToEndSAGAPacket
+            generatedLawCircleBoundaryAdditiveData defectSource FiniteModel.site
+            generatedLawQuotientPresheaf
+            (⊤ : Sieve FiniteModel.siteBase) generatedLawGluingData comparison)
+  singletonStandardGeneratedZeroPacket :
+    let K := StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
+      (G := lawEquationCore) generatedLawQuotientIsSheaf generatedLawTupleGeometry
+    let source := generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource
+    let surface := lawEquationGeneratedCurrentG06InputSurfaceOfFinitePosetGeometry
+      generatedLawFiniteFreeSemanticCover generatedLawFinitePosetCoverGeometry K
+      (fun _ => fun _ => PUnit.unit)
+      (fun _ => fun _ => PUnit.unit)
+      (fun _ => fun _ => PUnit.unit)
+      generatedLawQuotientIsSheaf
+    Nonempty
+      (StandardFinitePosetGeneratedBoundary.LawEquationGroundedComparisonFiniteFreeConjunctsBody
+        generatedLawFiniteFreeDefectSource surface source)
+
+/--
+The two example routes share the generated coefficient, but their complexes
+and selected residuals remain separate in the result type.
+-/
+theorem generatedLaw_sharedCoefficient_separateCircleNonzero_andSingletonStandardPackets :
+    GeneratedLawSharedCoefficientSeparateCechWitnesses where
+  coefficientNontrivial := generatedLawQuotientNontrivial
+  circleH1ClassNonzero := generatedLawCircleSemanticH1_nonzero
+  circleGeneratedPairPacket :=
+    lawfulFiring_generatedLawCircle_generatedPairSAGAPacket
+  singletonStandardGeneratedZeroPacket :=
+    lawfulFiring_generatedLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket
 
 end SemanticRepairPart10
 end Examples

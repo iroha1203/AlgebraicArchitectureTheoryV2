@@ -26,4 +26,6 @@ import Formal.AG.Measurement
 import Formal.AG.Evolution
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.SemanticRepair
+import Formal.AG.SemanticRepair.LawEquationGeneratedPair
+import Formal.AG.StatementContractsSemanticRepairPart10
 import Formal.AG.Examples.SemanticRepairPart10

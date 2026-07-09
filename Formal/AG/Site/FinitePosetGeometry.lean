@@ -317,6 +317,125 @@ structure FinitePosetCanonicalTupleCoverGeometry {U : AtomCarrier.{u}}
       S.contextPreorder.le (tupleOverlap m simplex)
         (tupleOverlap n (FinitePosetCechCanonicalTupleSimplex.simplexMap f simplex))
 
+namespace FinitePosetCoverGeometry
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : AATSite A}
+
+/--
+X.R1(a): generate the canonical n-ary tuple overlap from the selected AAT site
+overlap.  Singleton tuples use their patch, and longer tuples iteratively meet
+the generated initial tuple overlap with the last patch over the cover base.
+-/
+def canonicalTupleOverlapFromOverlap
+    (geometry : FinitePosetCoverGeometry S) :
+    ∀ n : Nat,
+      FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n ->
+        ArchCtx A
+  | 0, simplex => geometry.cover.patch (simplex 0)
+  | n + 1, simplex =>
+      S.overlap.overlap geometry.base.ctx
+        (canonicalTupleOverlapFromOverlap geometry n
+          (fun k => simplex k.castSucc))
+        (geometry.cover.patch (simplex (Fin.last (n + 1))))
+
+/-- The generated tuple overlap lies over the selected cover base. -/
+theorem canonicalTupleOverlapFromOverlap_le_base
+    (geometry : FinitePosetCoverGeometry S) :
+    ∀ (n : Nat)
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n),
+      S.contextPreorder.le
+        (geometry.canonicalTupleOverlapFromOverlap n simplex)
+        geometry.base.ctx
+  | 0, simplex => geometry.cover.inclusion (simplex 0)
+  | n + 1, simplex =>
+      S.overlap.overlap_le_base
+        (canonicalTupleOverlapFromOverlap_le_base geometry n
+          (fun k => simplex k.castSucc))
+        (geometry.cover.inclusion (simplex (Fin.last (n + 1))))
+
+/-- The generated tuple overlap maps to every patch in the tuple. -/
+theorem canonicalTupleOverlapFromOverlap_le_patch
+    (geometry : FinitePosetCoverGeometry S) :
+    ∀ (n : Nat)
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n)
+      (k : Fin (n + 1)),
+      S.contextPreorder.le
+        (geometry.canonicalTupleOverlapFromOverlap n simplex)
+        (geometry.cover.patch (simplex k))
+  | 0, simplex, k => by
+      have hk : k = 0 := by
+        apply Fin.ext
+        exact Nat.eq_zero_of_le_zero (Nat.le_of_lt_succ k.isLt)
+      subst k
+      exact S.contextPreorder.refl (geometry.cover.patch (simplex 0))
+  | n + 1, simplex, k => by
+      refine Fin.lastCases ?_ (fun initIndex => ?_) k
+      · exact
+          S.overlap.overlap_le_right
+            (geometry.canonicalTupleOverlapFromOverlap_le_base n
+              (fun q => simplex q.castSucc))
+            (geometry.cover.inclusion (simplex (Fin.last (n + 1))))
+      · exact
+          S.contextPreorder.trans
+            (S.overlap.overlap_le_left
+              (geometry.canonicalTupleOverlapFromOverlap_le_base n
+                (fun q => simplex q.castSucc))
+              (geometry.cover.inclusion (simplex (Fin.last (n + 1)))))
+            (geometry.canonicalTupleOverlapFromOverlap_le_patch n
+              (fun q => simplex q.castSucc) initIndex)
+
+/--
+The generated tuple overlap has the expected universal lifting property with
+respect to the tuple's patches.
+-/
+theorem canonicalTupleOverlapFromOverlap_lift
+    (geometry : FinitePosetCoverGeometry S) :
+    ∀ {n : Nat} {X : ArchCtx A}
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n),
+      (∀ k : Fin (n + 1),
+        S.contextPreorder.le X (geometry.cover.patch (simplex k))) ->
+        S.contextPreorder.le X
+          (geometry.canonicalTupleOverlapFromOverlap n simplex)
+  | 0, _, _, hX => hX 0
+  | n + 1, _, simplex, hX =>
+      S.overlap.overlap_lift
+        (geometry.canonicalTupleOverlapFromOverlap_le_base n
+          (fun q => simplex q.castSucc))
+        (geometry.cover.inclusion (simplex (Fin.last (n + 1))))
+        (geometry.canonicalTupleOverlapFromOverlap_lift
+          (fun q => simplex q.castSucc) (fun q => hX q.castSucc))
+        (hX (Fin.last (n + 1)))
+
+/--
+X.R1(a): the selected site overlap constructs the canonical tuple cover
+geometry consumed by the finite-poset Cech route.
+-/
+def canonicalTupleCoverGeometryFromOverlap
+    (geometry : FinitePosetCoverGeometry S) :
+    FinitePosetCanonicalTupleCoverGeometry geometry where
+  tupleOverlap := geometry.canonicalTupleOverlapFromOverlap
+  tupleOverlap_le_patch := geometry.canonicalTupleOverlapFromOverlap_le_patch
+  tupleOverlap_le_tupleMap := by
+    intro n m f simplex
+    exact
+      geometry.canonicalTupleOverlapFromOverlap_lift
+        (FinitePosetCechCanonicalTupleSimplex.simplexMap f simplex)
+        (fun k =>
+          geometry.canonicalTupleOverlapFromOverlap_le_patch m simplex
+            (f.toOrderHom k))
+
+/--
+X.R1(a): positive construction theorem for the overlap-generated canonical
+tuple cover geometry.
+-/
+theorem constructs_canonicalTupleCoverGeometry_from_overlap
+    (geometry : FinitePosetCoverGeometry S) :
+    Nonempty (FinitePosetCanonicalTupleCoverGeometry geometry) :=
+  ⟨geometry.canonicalTupleCoverGeometryFromOverlap⟩
+
+end FinitePosetCoverGeometry
+
 namespace FinitePosetCanonicalTupleCoverGeometry
 
 /-- X.R1(a): read canonical tuple geometry as coefficient-free cover geometry. -/
