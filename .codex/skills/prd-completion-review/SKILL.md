@@ -212,7 +212,7 @@ Report in Japanese as three numbered lists. Do not read the tracking Issue or pa
 - Website 達成条件: local static preview、link / asset / title / layout check
 - 共通: `git diff --check`
 - 共通 hidden / bidi scan: `rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>`
-- 共通 privacy / local-path scan: public / release surface と changed files に対して `rg -n "(\\/Users\\/|\\/home\\/|C:\\\\Users\\\\|Documents\\/|HelloLean|nakahata|private\\/internal|\\/private\\/internal|\\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>` を目安に確認する。Tooling output contract では repo-local docs path を安定 ID に置き換える必要がないかも見る。
+- 共通 privacy / local-path scan: public / release surface と changed files に対して `rg -n "(\\/Users\\/|\\/home\\/|C:\\\\Users\\\\|Documents\\/|HelloLean|private\\/internal|\\/private\\/internal|\\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>` を目安に確認する。個人名や machine-specific identifier は固定リテラルを skill 本文に置かず、必要なら repo / 環境ごとの denylist で補う。Tooling output contract では repo-local docs path を安定 ID に置き換える必要がないかも見る。
 
 PRD がこれより狭い検証を指定している場合は、PRD 指定を優先する。PRD が要求していない広範な検証を、未達条件として扱わない。
 
