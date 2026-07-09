@@ -1,6 +1,6 @@
 # GOAL Card Contract
 
-G0 で探索型 GOAL card を検査するときだけ読む。`research mode: target-theorem` の GOAL は `$research-loop` の対象外であり、見つけたら `$target-theorem-loop <goal-id>` へ誘導して止まる。
+探索型 GOAL card が満たすべき契約。`research mode: target-theorem` の GOAL は `$target-theorem-loop <goal-id>` の対象である。
 
 ## 必須項目
 

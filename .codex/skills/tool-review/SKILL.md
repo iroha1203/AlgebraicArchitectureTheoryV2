@@ -1,6 +1,6 @@
 ---
 name: tool-review
-description: Tooling(ArchSig / FieldSig)分野の敵対レビュー SKILL。tools/archsig、tools/fieldsig、docs/tool、schema catalog、fixtures、release surface を対象に、evidence contract 境界・witness 駆動性・帰属とロック値の出自・暗黙補完の禁止を4観点の並列サブエージェントで反証的にレビューする。Use when the user says "$tool-review", or when $review-pr / $issue-to-pr routes a diff touching tools/ or docs/tool to this skill.
+description: ArchSig / FieldSig tooling と docs/tool の差分を敵対レビューする。"$tool-review"、tooling 差分レビューの依頼で使う。
 ---
 
 # Tool Review

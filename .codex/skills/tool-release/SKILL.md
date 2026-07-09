@@ -1,6 +1,6 @@
 ---
 name: tool-release
-description: ArchSig / FieldSig など repository tooling の GitHub Release draft、release notes、asset workflow 検証を行う。Use when the user says "$tool-release vX.Y.Z", asks for a tooling release, ArchSig release, FieldSig release, release note draft, or release asset verification.
+description: ArchSig / FieldSig など repository tooling の release draft、release notes、asset 検証を行う。"$tool-release vX.Y.Z"、tooling release の依頼で使う。
 ---
 
 # Tool Release

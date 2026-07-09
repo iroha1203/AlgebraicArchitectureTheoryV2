@@ -1,6 +1,6 @@
 # Target Theorem Loop Subagent Prompts
 
-このファイルは `$target-theorem-loop` の subagent 標準プロンプト集である。必要なゲートの見出しだけ読む。
+このファイルは `$target-theorem-loop` の subagent 標準プロンプト集である。
 
 期待する結論、本体の推測、採用したい obligation、成功させたい verdict は追記しない。SCORE と candidate card は使わない。
 
@@ -78,9 +78,9 @@ unchecked:
 
 ## PR review
 
-```text
-Use $review-pr <PR-number> and apply the review-pr skill.
-In addition to the normal PR review, check target-theorem-loop gates:
+`$review-pr <PR-number>` を実行するときは、通常の PR review に加えて
+次の target-theorem-loop gate を確認対象として渡す。
+
 - cycle result is represented faithfully in report and tracking Issue
 - proof obligation delta, premise_delta, blocking_findings, and next_obligation are represented faithfully
 - no candidate card or SCORE state is introduced
@@ -94,17 +94,17 @@ In addition to the normal PR review, check target-theorem-loop gates:
 - protected math docs and docs/note are not edited
 - PR body uses Refs for the tracking Issue unless the human explicitly requested closure
 Return the review-pr verdict and target-theorem-loop-specific findings.
-```
 
 ## Final math-lean-review completion gate
 
-```text
-Run $math-lean-review research/GOALS.md <goal-id> with 4 parallel subagents.
+`$math-lean-review research/GOALS.md <goal-id>` を実行するときは、次の
+completion gate 入力と判定条件を渡す。
+
 Inputs to prepare: final_review_packet, GOAL target theorem claim, completion Lean declarations, relevant files, proof artifacts, tracking Issue proof state, report summary, T1/T3/T4 evidence.
 Do not pass an expected verdict.
 After the review, integrate only the verdict and evidence summary into the final completion record.
-If $math-lean-review does not run with 4 parallel reviewer lanes, or if the verdict is not exactly `No major findings`, return target-proof-checkpoint rather than target-theorem-proved.
-Every reviewer lane has veto power. If math reviewer A/B or Lean reviewer A/B returns Reject, Major revisions, Minor issues, Blocked / cannot determine, or any unchecked item that touches the central claim, return target-proof-checkpoint or target-blocked.
+If $math-lean-review does not return a formal verdict, or if the verdict is not exactly `No major findings`, return target-proof-checkpoint rather than target-theorem-proved.
+If $math-lean-review returns Reject, Major revisions, Minor issues, Blocked / cannot determine, or any unchecked item that touches the central claim, return target-proof-checkpoint or target-blocked.
 Fail closed on missing final_review_packet fields, unchecked central claim, undischarged material premise, certificate provenance gap, unused material premise, structure-field escape, route-integrity gap, anti-weakening gap, dependency audit gap, axiom audit gap, placeholder scan gap, or ledger/report/Lean declaration mismatch.
 Return:
 verdict: target-theorem-proved | target-proof-checkpoint | target-refuted | target-blocked
@@ -129,4 +129,3 @@ next_obligation:
 reason:
 checked:
 unchecked:
-```

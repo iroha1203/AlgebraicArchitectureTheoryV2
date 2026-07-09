@@ -1,6 +1,6 @@
 ---
 name: prd-completion-review
-description: PRD を入力に、その Acceptance Criteria / 達成条件が現状の実装・docs・tests・GitHub 状態で満たされているかを敵対的にレビューする。4観点+独立抽出レーンの並列サブエージェントを必須(fail-closed)とし、アウトカム判定(PRD の問い)を AC scoreboard から独立に出し、結果を tracking Issue へ監査コメントとして投稿する。Use when the user says "$prd-completion-review path/to/prd.md", "PRD達成条件レビュー", "このPRDが達成済みか確認して", or asks Codex to audit PRD completion without implementing fixes.
+description: PRD の Acceptance Criteria / 達成条件が現状で満たされているかを実装せず敵対レビューする。"$prd-completion-review path/to/prd.md"、"PRD達成条件レビュー"、PRD 完了確認の依頼で使う。
 ---
 
 # PRD Completion Review
@@ -212,7 +212,7 @@ Report in Japanese as three numbered lists. Do not read the tracking Issue or pa
 - Website 達成条件: local static preview、link / asset / title / layout check
 - 共通: `git diff --check`
 - 共通 hidden / bidi scan: `rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>`
-- 共通 privacy / local-path scan: public / release surface と changed files に対して `rg -n "(\\/Users\\/|\\/home\\/|C:\\\\Users\\\\|Documents\\/|HelloLean|nakahata|private\\/internal|\\/private\\/internal|\\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>` を目安に確認する。Tooling output contract では repo-local docs path を安定 ID に置き換える必要がないかも見る。
+- 共通 privacy / local-path scan: public / release surface と changed files に対して `rg -n "(\\/Users\\/|\\/home\\/|C:\\\\Users\\\\|Documents\\/|HelloLean|private\\/internal|\\/private\\/internal|\\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>` を目安に確認する。個人名や machine-specific identifier は固定リテラルを skill 本文に置かず、必要なら repo / 環境ごとの denylist で補う。Tooling output contract では repo-local docs path を安定 ID に置き換える必要がないかも見る。
 
 PRD がこれより狭い検証を指定している場合は、PRD 指定を優先する。PRD が要求していない広範な検証を、未達条件として扱わない。
 
@@ -229,9 +229,9 @@ PRD がこれより狭い検証を指定している場合は、PRD 指定を優
    finding ゼロの観点は反証試行3件以上を明記する
 6. 実行した検証: コマンドと結果
 7. Coverage limits: 読んだ範囲、未確認範囲、実行できなかった検証
-8. 次アクション案: 実装 Issue 化、PRD 修正相談、追加検証など。ただしユーザーが依頼するまで実行しない
+8. 次アクション案: 実装 Issue 化、PRD 修正相談、追加検証などの提案に留める
 
 **監査コメントの投稿義務**: prd-loop の最終達成条件レビューとして実行された
 場合、上記 1〜7 を tracking Issue へコメント投稿する(投稿は本 SKILL の
-義務であり、呼び出し元の記録転記に依存しない)。単独起動の場合も、
+義務であり、外部の記録転記に依存しない)。単独起動の場合も、
 対象 PRD に tracking Issue があれば同様に投稿する。

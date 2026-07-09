@@ -1,6 +1,6 @@
 ---
 name: math-lean-review
-description: AAT / Lean 分野の敵対レビュー SKILL。数学本文、research/GOALS.md、docs/note、PRD、Lean theorem/lemma/definition、または定理・命題テキストを入力に、その数学的主張と Lean 実装を、仮定放電・certificate provenance・anti-weakening・移植元 conjunct 対応まで含めて論文査読する数学者レベルで厳格レビューする。数学査読2本+Lean査読2本の4並列を無条件必須とし、4本全承認しない限り合格を出さない。Use when the user says "$math-lean-review", "数学とLEANのレビュー", "この定理をLean実装込みで査読して", "大定理モードの証明完了を査読して", or when $review-pr / $issue-to-pr routes a diff touching Formal/ (any size, even one line) or docs/aat ledgers to this skill.
+description: AAT / Lean の数学 claim と Lean 実装を、仮定放電・証明依存・台帳整合まで含めて敵対レビューする。"$math-lean-review"、"数学とLEANのレビュー"、Lean 実装や形式的 claim のレビュー依頼で使う。
 ---
 
 # Math Lean Review
@@ -9,7 +9,7 @@ description: AAT / Lean 分野の敵対レビュー SKILL。数学本文、resea
 
 特に `research/GOALS.md` の大定理モードでは、この skill は「大定理が証明されたこと」を完了条件にするループの査読 gate である。過去に、仮定が放電されていないまま大定理が弱い形で Lean 上は通ってしまう事例があったため、証明完了判定は fail-closed に行う。
 
-この skill は AAT / Lean 分野の**分野別レビュー SKILL**でもある。`$review-pr`(マージゲート)と `$issue-to-pr`(セルフレビュー)は、**Lean 実装(`Formal/`)を触る差分を、大きさを問わず(1行でも)この skill でレビューする**。分野の所有範囲は `Formal/` に加え、`docs/aat/` の台帳類(lean theorem index、proof obligations、peer-review inventory)と AAT 数学本文との整合を含む。Lean 実装+台帳更新の差分はこの skill のみで足りる(statement と台帳記載の一致は一体で監査し、docs レビューへ分断しない)。
+この skill は、入力として渡された AAT / Lean の数学 claim と Lean 実装を査読する。PR や差分が AAT / Lean 分野レビューに該当するかどうかは、この skill の外側で決まる。この skill に Lean 実装と `docs/aat/` 台帳差分が一緒に渡された場合は、statement と台帳記載の一致を一体で監査する。
 
 ## 敵対レビュー原則
 
@@ -185,7 +185,7 @@ rg -n "import Formal\.AG\.Research" Formal Formal.lean \
 
 ## Multi-Agent Review
 
-`$math-lean-review` の判定では、数学査読 2 本と Lean 査読 2 本の multi-agent review を**無条件で必須**とする。ユーザー承認は求めない。`$review-pr` / `$prd-loop` / `$target-theorem-loop` / `$issue-to-pr` からの呼び出しでも同じである。
+`$math-lean-review` の判定では、数学査読 2 本と Lean 査読 2 本の multi-agent review を**無条件で必須**とする。ユーザー承認は求めない。入力経路に関係なく同じである。
 
 **fail-closed**: multi-agent tool が使えない環境、または live tool contract が subagent 起動を許さない環境では、親 Codex が代替レビューを行ってはならない(provisional review は存在しない)。その場合、最終判定を `Blocked / cannot determine` に落とし、合格判定・証明完了判定を出さない。
 

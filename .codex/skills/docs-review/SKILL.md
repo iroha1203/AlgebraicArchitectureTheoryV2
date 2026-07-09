@@ -1,23 +1,19 @@
 ---
 name: docs-review
-description: Docs / SFT / Research Notes 分野の敵対レビュー SKILL(レビューモード)+ docs 保守 SKILL(保守モード)。docs/sft、docs/note、PRD、.codex/skills 等の docs-only 差分を4観点で反証的にレビューし、単独起動の保守モードでは repo 全体の docs drift sweep と軽微 drift の直接修正を行う。Use when the user says "$docs-review"、"docs の drift を点検して"、または $review-pr / $issue-to-pr が docs-only 差分をこの skill に回すとき。旧 $docs-consistency-review の後継。
+description: Docs / SFT / Research Notes / .codex/skills の docs-only 差分を敵対レビューし、単独依頼では docs drift も保守する。"$docs-review"、"docs の drift を点検して"、docs-only 差分レビューの依頼で使う。
 ---
 
 # Docs Review
 
-docs 分野のレビューと保守。分野の所有範囲は `docs/sft/`, `docs/note/`,
-PRD, `.codex/skills/`, cross-domain docs, README 類。
-`docs/aat/` の台帳類(theorem index、proof obligations、inventory)は
-Lean の claim surface として **math-lean-review の所有**であり、
-Lean 変更に伴う台帳差分はこの skill では扱わない。docs-only の台帳変更でも、
-**status 文字列・処置ラベル・完了主張・公理監査主張に触れる変更は
-「体裁修正」に含めず、math-lean-review へ回す**(宣言落としの迂回路に
-しない)。この skill で扱ってよい台帳体裁修正は、リンク切れ・誤字・
-表の整形など claim に触れないものに限る。`docs/tool/` は tool-review、
-`docs/website/` は website-review の所有。
+docs 分野のレビューと保守。分野の所有範囲は `docs/aat/` 台帳のみ、
+`docs/sft/`, `docs/note/`, PRD, `.codex/skills/`, cross-domain docs,
+README 類。Lean 実装(`Formal/`)を含む PR の `docs/aat/` 台帳差分は
+math-lean-review が statement と一体で扱う。Lean 実装を含まない
+docs-only の `docs/aat/` 台帳差分はこの skill のレビューモードで扱う。
+`docs/tool/` は tool-review、`docs/website/` は website-review の所有。
 
-2つのモードを持つ。**ゲート(`$review-pr` / `$issue-to-pr`)から呼ばれた
-場合は常にレビューモード**であり、保守モードはユーザーの単独起動時のみ。
+2つのモードを持つ。docs-only diff / docs review packet が渡された場合は
+常にレビューモードであり、保守モードはユーザーの単独起動時のみ。
 
 ## レビューモード(敵対レビュー)
 
@@ -104,8 +100,7 @@ expected findings to you.
 ## 保守モード(単独起動時のみ)
 
 旧 `docs-consistency-review` の機能を継承する。ユーザーが drift 点検・
-docs 保守を単独で依頼した場合に使い、ゲート経路からは起動しない
-(レビューと修正の文脈分離)。
+docs 保守を単独で依頼した場合に使う。
 
 ### 手順
 
@@ -134,8 +129,8 @@ docs 保守を単独で依頼した場合に使い、ゲート経路からは起
   checklist §4 の資格条件を満たすこと。
 - **status 降格を伴う乖離**: docs / 台帳が `proved`・昇格・発火を主張するが
   実装が支えていない場合、そのラベルが PRD / Issue の実装要求に対応する
-  なら docs 側を弱めて閉じず「複雑な gap」として報告する(宣言落としの
-  入口にしない)。実装要求と無関係な純粋な docs 誇張だけ、status を
+  なら docs 側を弱めて閉じず「複雑な gap」として報告する。
+  実装要求と無関係な純粋な docs 誇張だけ、status を
   正直な値へ弱めて直接修正してよい。Research 側に受理済み theorem が
   ある場合の正直な値は `unported (Research-proved)` である。
 - **複雑な gap**: 新しい Lean theorem、tooling 変更、設計判断が必要。

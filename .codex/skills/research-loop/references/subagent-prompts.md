@@ -227,9 +227,9 @@ unchecked:
 
 ## G5 PR レビュー
 
-```text
-Use $review-pr <PR-number> and apply the review-pr skill.
-In addition to the normal PR review, check the research-loop gates:
+`$review-pr <PR-number>` を実行するときは、通常の PR review に加えて
+次の research-loop gate を確認対象として渡す。
+
 - candidate card, evidence, report, and tracking Issue SCORE update agree
 - SCORE audit is represented faithfully
 - G2 judge D rival comparison and G4 rival_delta are represented faithfully
@@ -240,7 +240,6 @@ In addition to the normal PR review, check the research-loop gates:
 - PR body uses Refs for the tracking Issue unless the human explicitly requested closure
 - GitHub merge state is verified after merge attempts
 Return the review-pr verdict and any research-loop-specific findings.
-```
 
 ## G6 フェーズ区切り判定
 

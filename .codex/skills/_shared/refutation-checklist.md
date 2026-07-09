@@ -147,7 +147,7 @@ rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>
 rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal docs
 # privacy / local-path(public / release surface と changed files。
 # スキル・設計 docs 自身が定義・引用する検査パターン文字列は文脈で除外してよい)
-rg -n "(\/Users\/|\/home\/|C:\\\\Users\\\\|Documents\/|HelloLean|nakahata|private\/internal|\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>
+rg -n "(\/Users\/|\/home\/|C:\\\\Users\\\\|Documents\/|HelloLean|private\/internal|\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>
 # Research 境界(本体から Formal.AG.Research への import 禁止。
 # Research 集約ルート Formal/AG/Research.lean 自身の内部 import は正当なので除外)
 rg -n "import Formal\.AG\.Research" Formal Formal.lean \
