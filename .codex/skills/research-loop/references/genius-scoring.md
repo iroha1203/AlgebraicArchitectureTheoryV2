@@ -1,6 +1,6 @@
 # Genius Scoring
 
-`genius` は通常の `80-100` 点候補の延長ではなく、大定理レベルの希少枠である。G1 で genius 候補を出すとき、G2 で `genius_eligibility` を判定するとき、G4 で `genius_verdict` を監査するときだけ読む。
+`genius` は通常の `80-100` 点候補の延長ではなく、大定理レベルの希少枠である。genius 候補の提案、eligibility 判定、verdict 監査に使う。
 
 ## 1000 点の条件
 

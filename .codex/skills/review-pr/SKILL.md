@@ -1,12 +1,12 @@
 ---
 name: review-pr
-description: PR 番号を受け取り、GitHub PR をレビューするマージゲート。責務境界で分野を判定し、分野別の敵対レビュー SKILL(math-lean-review / tool-review / website-review / docs-review)へサブエージェントで必ず委譲し、統合判定と監査コメントの PR 投稿までを行う。Lean 実装(Formal/)を触る PR は差分の大きさを問わず math-lean-review の4並列査読を必須とする。Use when the user asks Codex to review a PR, judge whether a PR is mergeable, or says "$review-pr <PR number>".
+description: GitHub PR をレビューするマージゲート。PR 番号を受け取り、分野判定・分野別レビュー・統合判定・監査コメント投稿を行う。"$review-pr PR-number"、PR レビュー、マージ可否判定の依頼で使う。
 ---
 
 # Review PR
 
 GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の照合は本体で
-行い、**内容レビューは分野別の敵対レビュー SKILL へ委譲する**。
+行い、**内容レビューは分野別の敵対レビュー SKILL へ渡す**。
 このリポジトリでは、ユーザーへの報告は日本語で行う。
 
 ## 敵対レビュー原則
@@ -30,6 +30,9 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
   (`/tmp/aat-review-pr-<PR>`)を使う。
 - 処置種別の降格を含む PR は、PRD の降格許容リストと照合する。許可外の
   降格は `Needs changes` とし、ユーザー判断事項として報告する(PRD が正)。
+- 分野別レビューが未実行、実行不能、または資格条件を満たさない場合、
+  本体が内容レビューを肩代わりして `No major findings` / `Mergeable` を
+  合成してはならない。結果は `Blocked / cannot determine` とする。
 
 ## 手順
 
@@ -48,27 +51,29 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
      タスク型が「移植」の PR では、移植元 theorem 名を委譲先に渡す。
 
 3. **分野判定と委譲(このゲートの中心)。**
-   changed files から分野を判定し、対応する分野別レビュー SKILL を
-   **サブエージェントで必ず**実行する。分野判定はファイルパスの集合では
+   changed files から分野を判定し、対応する分野別レビュー SKILL を実行する。
+   分野判定はファイルパスの集合では
    なく責務境界で行う(各分野は自分の claim に隣接する docs を所有する):
 
    | 分野 | 対象 | 委譲先 |
    | --- | --- | --- |
-   | AAT / Lean | `Formal/`、`docs/aat/` の台帳類・数学本文整合 | `$math-lean-review` |
+   | AAT / Lean | `Formal/`、および Lean 実装変更に伴う `docs/aat/` 台帳整合 | `$math-lean-review` |
    | Tooling | `tools/`、`docs/tool/`、schema catalog | `$tool-review` |
    | Website | `website/`、`docs/website/` | `$website-review` |
-   | Docs | docs-only、`docs/sft/`、`docs/note/`、PRD、`.codex/skills/` | `$docs-review`(レビューモード) |
+   | Docs | docs-only、`docs/aat/` 台帳のみ、`docs/sft/`、`docs/note/`、PRD、`.codex/skills/` | `$docs-review`(レビューモード) |
 
    - **Lean 実装(`Formal/`)を触る PR は、差分の大きさを問わず(1行でも)
-     `$math-lean-review` を必須とする。** 4並列査読はユーザー承認なしで
-     無条件に立てる。**4本すべてが承認しない限り `Mergeable` を出せない**
-     (棄却には該当レーンの再実行承認が必要。math-lean-review の
-     4本全承認ゲート参照)。
+     `$math-lean-review` の正式判定を必須とする。** `$math-lean-review`
+     が合格を返さない限り `Mergeable` を出せない。
    - Lean 実装+`docs/aat/` 台帳更新の PR は math-lean-review のみで
      足りる(statement と台帳の一致は一体で監査する)。
+   - Lean 実装を含まない `docs/aat/` 台帳更新だけの PR は docs-only として
+     `$docs-review` に渡す。
    - 真の分野横断(例: Lean + SFT 本文)は該当する複数分野で実行する。
-   - サブエージェントが起動できない場合、親が代替レビューをせず、
+   - サブエージェントが起動できない場合、本体が代替レビューをせず、
      判定を `Blocked / cannot determine` に落とす(fail-closed)。
+   - 委譲先 SKILL が finding ゼロを返した場合でも、反証試行記録と
+     coverage limits が無いなら、その分野レビューは未実施扱いにする。
 
 4. 本体で照合する(委譲と並行してよい)。
    - Issue 完了条件と diff の照合(条件文言と実体の対応)。
@@ -86,27 +91,29 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
      - `tool-review` / `website-review` / `docs-review`:
        合格 = `No major findings` のみ。`Needs changes` / `Blocked` は不合格。
    - **Mergeable**: 委譲した全分野レビューが上記の意味で合格
-     (Lean 系は4本全承認を含む)、Issue 完了条件を満たし、
+     (Lean 系は math-lean-review の合格を含む)、Issue 完了条件を満たし、
      CI / 必要なローカル検証が通り、重大な未対応がない。
    - **Needs changes**: 委譲先の不合格、完了条件未達、テスト不足、
      docs drift、CI failure がある。
    - **Blocked / cannot determine**: PR head を取得できない、CI 未完了、
-     紐づく Issue 不明、サブエージェント起動不能、必要な検証が実行できない。
+     紐づく Issue 不明、サブエージェント起動不能、分野別レビュー未実施、
+     必要な検証が実行できない。
 
 6. **監査コメントを PR に投稿する(マージ前提条件)。**
-   マージ手順(呼び出し元の prd-loop 等)に進む前に、次を含むレビュー
-   監査コメントを PR へ投稿する。投稿が存在しない PR はマージ手順に
-   進めない。
+   マージ手順に進む前に、次を含むレビュー監査コメントを PR へ投稿する。
+   投稿が存在しない PR はマージ手順に進めない。
    - 統合判定
-   - 分野・レーン別結論(math-lean-review なら4本それぞれの verdict)。
-     **レーン別結論は親の要約に置き換えず、各レーンの報告原文
-     (findings・反証試行・coverage limits の各節)をそのまま含める。**
-     原文なしの要約だけの監査コメントはレビュー未実施として扱われる
+   - 分野別レビューの結論。委譲先 SKILL が監査詳細を返した場合は、
+     その finding・反証試行・coverage limits を監査コメントに含める。
    - 反証試行記録(finding ゼロの分野は反証試行3件以上)
    - Issue 完了条件の照合結果(満たした / 未達)
    - 実行した検証(コマンドと結果)、coverage / 残リスク
    資格条件(reference §7)を満たさない監査コメントは、後続のフル
    レビューで「レビュー未実施」として扱われる。
+   投稿は `gh pr comment <PR> --body-file <監査コメント本文>` などで行い、
+   投稿 URL または投稿成功をユーザー報告に含める。コメント投稿に失敗した
+   場合は、レビュー判定自体が良好でも `Blocked / cannot determine` とし、
+   `Mergeable` として扱わない。
 
 ## 報告形式
 

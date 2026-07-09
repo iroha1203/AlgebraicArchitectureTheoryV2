@@ -1,6 +1,6 @@
 # Target Theorem Loop Ledger Templates
 
-tracking Issue に target cycle result / merge / completion コメントを書くときだけ読む。
+target cycle result / merge / completion を tracking Issue に記録するためのテンプレート。
 
 ## 原則
 

@@ -1,6 +1,6 @@
 ---
 name: website-review
-description: Website / Manual 分野の敵対レビュー SKILL。website/ と docs/website を対象に、claim boundary・public scrub・static UX・cross-surface 同期を4観点の並列サブエージェントで反証的にレビューする。Use when the user says "$website-review", or when $review-pr / $issue-to-pr routes a diff touching website/ or docs/website to this skill.
+description: website/ と docs/website の差分を敵対レビューする。"$website-review"、website 差分レビューの依頼で使う。
 ---
 
 # Website Review
