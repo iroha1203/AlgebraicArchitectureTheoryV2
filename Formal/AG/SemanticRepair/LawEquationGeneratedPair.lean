@@ -882,12 +882,15 @@ structure SelectedSemanticCoefficientDirectRealizationLayerBody
     (surface :
       LawEquationGeneratedCurrentG06InputSurface semanticCover S F K)
     (data : SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
-    Type (max u v w x y z r) where
-  degreewiseCarrierFaceEquations :
+    Type (max (r + 1) (max u (max v (max w (max x (max y z)))))) where
+  family :
+    Site.AATCoverageFamily S.requirements S.overlap surface.coverBase
+  cover_eq : surface.selectedCover = Sieve.generate family.presieve
+  directLower :
     DegreewiseCarrierDataAndExplicitFaceRestrictionEquationsBody
       data.toAdditiveH1Surface K
 
-/-- A cochain realization constructs the selected realization layer body. -/
+/-- A generated coverage family and cochain realization construct the selected layer body. -/
 def cochainRealization_constructs_selectedRealizationLayerBody
     {P : SemanticAtomProjection.{u, v}}
     {semanticCover : SemanticRepairCover.{u, v, w, x} P}
@@ -900,12 +903,58 @@ def cochainRealization_constructs_selectedRealizationLayerBody
     (surface :
       LawEquationGeneratedCurrentG06InputSurface semanticCover S F K)
     (data : SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (family :
+      Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (cover_eq : surface.selectedCover = Sieve.generate family.presieve)
     (realization :
       SemanticRepairCoverRelativeCochainRealization data.toAdditiveH1Surface K) :
     SelectedSemanticCoefficientDirectRealizationLayerBody surface data :=
-  { degreewiseCarrierFaceEquations :=
+  { family := family
+    cover_eq := cover_eq
+    directLower :=
       cochainRealization_constructs_degreewiseCarrierFaceEquationsBody
         realization }
+
+/-- The selected realization layer exposes the generated-cover equation. -/
+theorem SelectedSemanticCoefficientDirectRealizationLayerBody.cover_is_generated
+    {P : SemanticAtomProjection.{u, v}}
+    {semanticCover : SemanticRepairCover.{u, v, w, x} P}
+    {U : AtomCarrier.{r}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {F : Site.AATPresheaf S}
+    {coverRel : Cohomology.CoverRelativeCechCover S}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
+    {surface :
+      LawEquationGeneratedCurrentG06InputSurface semanticCover S F K}
+    {data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
+    (layer : SelectedSemanticCoefficientDirectRealizationLayerBody surface data) :
+    surface.selectedCover = Sieve.generate layer.family.presieve :=
+  layer.cover_eq
+
+/-- A surface with no generated-family presentation cannot carry the selected layer. -/
+theorem no_selectedRealizationLayer_without_generatedCover
+    {P : SemanticAtomProjection.{u, v}}
+    {semanticCover : SemanticRepairCover.{u, v, w, x} P}
+    {U : AtomCarrier.{r}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {F : Site.AATPresheaf S}
+    {coverRel : Cohomology.CoverRelativeCechCover S}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
+    {surface :
+      LawEquationGeneratedCurrentG06InputSurface semanticCover S F K}
+    {data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
+    (hnotGenerated :
+      forall family :
+        Site.AATCoverageFamily S.requirements S.overlap surface.coverBase,
+        surface.selectedCover ≠ Sieve.generate family.presieve) :
+    ¬ Nonempty
+      (SelectedSemanticCoefficientDirectRealizationLayerBody surface data) := by
+  rintro ⟨layer⟩
+  exact hnotGenerated layer.family layer.cover_eq
 
 /-- AG-body translation of the Research residual-boundary conjunct. -/
 def GeneratedResidualBoundaryBody
@@ -1397,7 +1446,8 @@ theorem lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromPrimit
         semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
           coverRel.simplex 2)
     {base : Slaw.category}
-    (cover : Sieve base)
+    (family :
+      Site.AATCoverageFamily Slaw.requirements Slaw.overlap base)
     (sheafCondition :
       Site.AATSheafCondition Slaw G.obstructionQuotientPresheaf)
     (K : Cohomology.CoverRelativeCechComplex coverRel
@@ -1418,8 +1468,7 @@ theorem lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromPrimit
       forall boundaryPrimitive,
         K.d 0 boundaryPrimitive = K.d 0 primitive ->
           ResidualComponentFaithfulSupport P semanticCover.baseCover
-            (supportOf boundaryPrimitive))
-    (cover_mem : cover ∈ Slaw.topology base) :
+            (supportOf boundaryPrimitive)) :
     Nonempty
       (Sigma fun surface :
         LawEquationGeneratedCurrentG06InputSurface
@@ -1446,7 +1495,8 @@ theorem lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromPrimit
   let surface :=
     lawEquationGeneratedCurrentG06InputSurface
       (semanticCover := semanticCover) K chartSimplex overlapSimplex
-      tripleSimplex cover sheafCondition cover_mem
+      tripleSimplex (Sieve.generate family.presieve) sheafCondition
+      (Site.AATGrothendieckTopology.generate_mem family)
   let realization :=
     coverRelativeIdentityCochainRealizationOfComplex semanticCover K c0Finite c1Finite
       zero1 (K.d 0 primitive) hzero1 (K.differential_comp 0 primitive)
@@ -1461,7 +1511,7 @@ theorem lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromPrimit
   have hLayer :
       SelectedSemanticCoefficientDirectRealizationLayerBody surface data :=
     cochainRealization_constructs_selectedRealizationLayerBody
-      surface data realization
+      surface data family rfl realization
   have hBoundary : GeneratedResidualBoundaryBody data :=
     generatedBoundary_constructs_residualBoundaryBody data primitive rfl
   have hAdditive : data.toAdditiveCechH1Data.H1Zero :=
@@ -1508,7 +1558,8 @@ theorem lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromSource
         semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
           coverRel.simplex 2)
     {base : Slaw.category}
-    (cover : Sieve base)
+    (family :
+      Site.AATCoverageFamily Slaw.requirements Slaw.overlap base)
     (sheafCondition :
       Site.AATSheafCondition Slaw G.obstructionQuotientPresheaf)
     (K : Cohomology.CoverRelativeCechComplex coverRel
@@ -1529,8 +1580,7 @@ theorem lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromSource
       forall boundaryPrimitive,
         K.d 0 boundaryPrimitive = K.d 0 source.toPrimitive ->
           ResidualComponentFaithfulSupport P semanticCover.baseCover
-            (supportOf boundaryPrimitive))
-    (cover_mem : cover ∈ Slaw.topology base) :
+            (supportOf boundaryPrimitive)) :
     Nonempty
       (Sigma fun surface :
         LawEquationGeneratedCurrentG06InputSurface
@@ -1552,10 +1602,10 @@ theorem lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromSource
               component_faithful_of_boundary)
             comparison) :=
   lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromPrimitive
-    semanticCover chartSimplex overlapSimplex tripleSimplex cover
+    semanticCover chartSimplex overlapSimplex tripleSimplex family
     sheafCondition K c0Finite c1Finite zero1 source.toPrimitive hzero1
     hzero1_eq_zero supportOf component_covered_of_boundary
-    component_faithful_of_boundary cover_mem
+    component_faithful_of_boundary
 
 /--
 Generated-boundary form of theorem 7.5.
@@ -1695,7 +1745,8 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromPrimitive
         semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
           coverRel.simplex 2)
     {base : Slaw.category}
-    (cover : Sieve base)
+    (family :
+      Site.AATCoverageFamily Slaw.requirements Slaw.overlap base)
     (sheafCondition :
       Site.AATSheafCondition Slaw G.obstructionQuotientPresheaf)
     (K : Cohomology.CoverRelativeCechComplex coverRel
@@ -1717,8 +1768,7 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromPrimitive
         K.d 0 boundaryPrimitive = K.d 0 primitive ->
           ResidualComponentFaithfulSupport P semanticCover.baseCover
             (supportOf boundaryPrimitive))
-    (source : LawEquationBodyCechSource D K)
-    (cover_mem : cover ∈ Slaw.topology base) :
+    (source : LawEquationBodyCechSource D K) :
     Nonempty
       (Sigma fun surface :
         LawEquationGeneratedCurrentG06InputSurface
@@ -1743,10 +1793,10 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromPrimitive
       component_faithful_of_boundary
   rcases
     lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromPrimitive
-      semanticCover chartSimplex overlapSimplex tripleSimplex cover
+      semanticCover chartSimplex overlapSimplex tripleSimplex family
       sheafCondition K c0Finite c1Finite zero1 primitive hzero1
       hzero1_eq_zero supportOf component_covered_of_boundary
-      component_faithful_of_boundary cover_mem with
+      component_faithful_of_boundary with
     ⟨⟨surface, comparison, hindependent⟩⟩
   rcases
     LawAlgebra.LawEquationDefectSource.lawEquation_grounding_packet
@@ -1808,7 +1858,8 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromSource
         semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
           coverRel.simplex 2)
     {base : Slaw.category}
-    (cover : Sieve base)
+    (family :
+      Site.AATCoverageFamily Slaw.requirements Slaw.overlap base)
     (sheafCondition :
       Site.AATSheafCondition Slaw G.obstructionQuotientPresheaf)
     (K : Cohomology.CoverRelativeCechComplex coverRel
@@ -1829,8 +1880,7 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromSource
       forall boundaryPrimitive,
         K.d 0 boundaryPrimitive = K.d 0 source.toPrimitive ->
           ResidualComponentFaithfulSupport P semanticCover.baseCover
-            (supportOf boundaryPrimitive))
-    (cover_mem : cover ∈ Slaw.topology base) :
+            (supportOf boundaryPrimitive)) :
     Nonempty
       (Sigma fun surface :
         LawEquationGeneratedCurrentG06InputSurface
@@ -1852,10 +1902,10 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromSource
             comparison) := by
   rcases
     lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromSource
-      semanticCover D chartSimplex overlapSimplex tripleSimplex cover
+      semanticCover D chartSimplex overlapSimplex tripleSimplex family
       sheafCondition K source c0Finite c1Finite zero1 hzero1
       hzero1_eq_zero supportOf component_covered_of_boundary
-      component_faithful_of_boundary cover_mem with
+      component_faithful_of_boundary with
     ⟨⟨surface, comparison, hindependent⟩⟩
   rcases
     LawAlgebra.LawEquationDefectSource.lawEquation_grounding_packet
@@ -2194,8 +2244,6 @@ theorem lawEquation_constructs_groundedResearchConjunctsWithSourceC0Differential
     {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{x} Slaw}
     (D : LawAlgebra.LawEquationDefectSource.{x} G)
     (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
-    {base : Slaw.category}
-    (cover : Sieve base)
     (sheafCondition :
       Site.AATSheafCondition Slaw G.obstructionQuotientPresheaf)
     {geometry : Site.FinitePosetCoverGeometry Slaw}
@@ -2228,8 +2276,7 @@ theorem lawEquation_constructs_groundedResearchConjunctsWithSourceC0Differential
     (c0Finite :
       Fintype ((coverRelativeComplexOfStandardFinitePosetLaw law).Cn 0))
     (c1Finite :
-      Fintype ((coverRelativeComplexOfStandardFinitePosetLaw law).Cn 1))
-    (cover_mem : cover ∈ Slaw.topology base) :
+      Fintype ((coverRelativeComplexOfStandardFinitePosetLaw law).Cn 1)) :
     Nonempty
       (Sigma fun surface :
         LawEquationGeneratedCurrentG06InputSurface
@@ -2300,13 +2347,12 @@ theorem lawEquation_constructs_groundedResearchConjunctsWithSourceC0Differential
   rcases
     lawEquation_constructs_groundedResearchConjuncts_fromSource
         semanticCover D hDisplayedRequiredLaws chartSimplex overlapSimplex
-        tripleSimplex cover sheafCondition K source c0Finite c1Finite
+        tripleSimplex geometry.cover sheafCondition K source c0Finite c1Finite
         (0 : K.Cn 1) hzero1 rfl supportOf
         (lawEquationCompleteSupport_componentCovered_of_boundary
           semanticCover K (K.d 0 source.toPrimitive))
         (lawEquationCompleteSupport_componentFaithful_of_boundary
-          semanticCover K (K.d 0 source.toPrimitive))
-        cover_mem with
+          semanticCover K (K.d 0 source.toPrimitive)) with
     ⟨⟨surface, comparison, conjuncts⟩⟩
   exact ⟨⟨surface, comparison,
     { conjuncts := conjuncts
