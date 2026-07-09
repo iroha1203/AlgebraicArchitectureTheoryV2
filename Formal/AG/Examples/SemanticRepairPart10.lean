@@ -1830,11 +1830,11 @@ def lawfulFiring_generatedLawStandardSourceC0ResearchConjuncts :
           SemanticRepairCoverRelativeH1Comparison
             generatedLawStandardSourceC0BoundaryAdditiveData.toAdditiveH1Surface
             generatedLawStandardSourceC0Complex =>
-          LawEquationGroundedComparisonConjunctsBodyWithSourceC0DifferentialZero
+          LawEquationGroundedComparisonConjunctsBody
             defectSource surface generatedLawStandardBodySource
             generatedLawStandardSourceC0BoundaryAdditiveData
             comparison) :=
-  StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedResearchConjunctsWithSourceC0DifferentialZero_fromStandardFinitePosetSource
+  StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedResearchConjuncts_fromStandardFinitePosetSource
     generatedLawCircleSemanticCover defectSource displayedRequiredLawsHoldOn
     generatedLawQuotientIsSheaf
     (StandardFinitePosetGeneratedBoundary.canonicalTupleGeneratedBoundaryLaw
@@ -2311,7 +2311,7 @@ theorem generatedLawCircle_singleWitness_withStandardSourceC0ResearchConjuncts :
             SemanticRepairCoverRelativeH1Comparison
               generatedLawStandardSourceC0BoundaryAdditiveData.toAdditiveH1Surface
               generatedLawStandardSourceC0Complex =>
-            LawEquationGroundedComparisonConjunctsBodyWithSourceC0DifferentialZero
+            LawEquationGroundedComparisonConjunctsBody
               defectSource surface generatedLawStandardBodySource
               generatedLawStandardSourceC0BoundaryAdditiveData comparison) :=
   ⟨generatedLawQuotientNontrivial,

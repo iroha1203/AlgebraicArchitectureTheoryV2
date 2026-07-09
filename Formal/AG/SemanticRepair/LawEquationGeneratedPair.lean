@@ -636,12 +636,15 @@ def restrictedDisplayedInterpretation
     (source.restriction sigma).op
     (D.interpret (source.chartOf sigma))
 
+/-- Canonical displayed source-C0 cochain used by the actual Cech-zero claim. -/
+def displayedSourceC0 (source : LawEquationBodyCechSource D K) : K.Cn 0 :=
+  fun sigma => source.restrictedDisplayedInterpretation sigma
+
 /-- Research conjunct 1 at the selected degree-`0` overlaps. -/
 def DisplayedInterpretationRealization
     (source : LawEquationBodyCechSource D K) : Prop :=
   forall sigma : coverRel.simplex 0,
-    source.toPrimitive sigma =
-      source.restrictedDisplayedInterpretation sigma
+    source.toPrimitive sigma = source.displayedSourceC0 sigma
 
 /--
 Body translation of Research
@@ -706,22 +709,22 @@ def DisplayedRequiredLawRestrictionEvaluator
                       G.obstructionQuotientPresheaf.map gTau.op
                         (D.interpret (source.chartOf tau))
 
-  /-- Body translation of Research `sourceC0CechZero`. -/
-  def SourceC0CechZero
+  /-- Pointwise law reading below the actual Cech differential-zero claim. -/
+  def SourceC0PointwiseZero
     (source : LawEquationBodyCechSource D K) : Prop :=
   source.DisplayedInterpretationRealization ∧
     GeneratedSourceC0PointwiseZero D
 
-  /--
-  Body translation of Research generated-Cech `sourceC0CechZero` for a concrete
-  Cech complex: the displayed source is realized, pointwise zero, and Cech-zero
-  for the selected differential.
-  -/
+  /-- Body translation of Research `sourceC0CechZero`: actual differential zero. -/
+  def SourceC0CechZero
+      (source : LawEquationBodyCechSource D K) : Prop :=
+    letI := K.cochainAddCommGroup 1
+    K.d 0 source.displayedSourceC0 = 0
+
+  /-- Combined pointwise and actual differential-zero package for generated Cech routes. -/
   def SourceC0GeneratedCechZero
       (source : LawEquationBodyCechSource D K) : Prop :=
-    source.SourceC0CechZero ∧
-      letI := K.cochainAddCommGroup 1
-      K.d 0 source.toPrimitive = 0
+    source.SourceC0PointwiseZero ∧ source.SourceC0CechZero
 
 theorem displayedRequiredLawsHoldOn_constructs_baseRestrictionSourcePreservesDisplayedInterpretation
     (source : LawEquationBodyCechSource D K)
@@ -842,7 +845,7 @@ theorem displayedRequiredLawsHoldOn_constructs_displayedInterpretationRealizatio
   intro sigma
   dsimp [toPrimitive, toBaseRestrictionSource,
     LawEquationBodyBaseRestrictionSource.toPrimitive,
-    restrictedDisplayedInterpretation]
+    displayedSourceC0, restrictedDisplayedInterpretation]
   rw [D.displayedRequiredLawsHoldOn_constructs_interpret_eq_zero hholds
     (source.chartOf sigma)]
   exact
@@ -879,10 +882,10 @@ theorem restrictedDisplayedInterpretation_ne_zero_prevents_displayedInterpretati
         (G.obstructionQuotientCoefficient.map
           (source.zeroSimplexToBase sigma).op).hom.map_zero
 
-theorem displayedRequiredLawsHoldOn_constructs_sourceC0CechZero
+theorem displayedRequiredLawsHoldOn_constructs_sourceC0PointwiseZero
     (source : LawEquationBodyCechSource D K)
     (hholds : D.DisplayedRequiredLawsHoldOn) :
-    source.SourceC0CechZero :=
+    source.SourceC0PointwiseZero :=
   ⟨source.displayedRequiredLawsHoldOn_constructs_displayedInterpretationRealization
       hholds,
     D.displayedRequiredLawsHoldOn_constructs_interpret_eq_zero hholds⟩
@@ -1104,10 +1107,9 @@ structure LawEquationGroundedRouteLawIndependentConjunctsBody
   additiveH1Zero : data.toAdditiveCechH1Data.H1Zero
 
 /--
-AG-body translated theorem-7.5 conjunct tuple preserving the Research packet's
-visible conjuncts.
+Lower pointwise tuple used before the standard Cech differential is fixed.
 -/
-structure LawEquationGroundedComparisonConjunctsBody
+structure LawEquationGroundedComparisonPointwiseConjunctsBody
     {P : SemanticAtomProjection.{u, v}}
     {semanticCover : SemanticRepairCover.{u, v, w, x} P}
     {Ulaw : AtomCarrier.{u}}
@@ -1138,7 +1140,7 @@ structure LawEquationGroundedComparisonConjunctsBody
   arrowCompatibilityLaw : source.ArrowCompatibilityLaw
   displayedRequiredLawRestrictionEvaluator :
     source.DisplayedRequiredLawRestrictionEvaluator
-  sourceC0CechZero : source.SourceC0CechZero
+  sourceC0PointwiseZero : source.SourceC0PointwiseZero
   selectedRealizationLayer :
     Nonempty (SelectedSemanticCoefficientDirectRealizationLayerBody surface data)
   degreewiseCarrierFaceEquations :
@@ -1154,13 +1156,8 @@ structure LawEquationGroundedComparisonConjunctsBody
   semanticH1Zero : data.toAdditiveH1Surface.H1Zero
   additiveH1Zero : data.toAdditiveCechH1Data.H1Zero
 
-/--
-Stronger theorem-7.5 body tuple for generated/standard complexes: in addition
-to the Research visible tuple translated by
-`LawEquationGroundedComparisonConjunctsBody`, it exposes the actual Cech
-differential-zero content of the source degree-0 cochain.
--/
-structure LawEquationGroundedComparisonConjunctsBodyWithSourceC0DifferentialZero
+/-- Research theorem-7.5 tuple with actual source-C0 Cech differential zero. -/
+structure LawEquationGroundedComparisonConjunctsBody
     {P : SemanticAtomProjection.{u, v}}
     {semanticCover : SemanticRepairCover.{u, v, w, x} P}
     {Ulaw : AtomCarrier.{u}}
@@ -1181,14 +1178,43 @@ structure LawEquationGroundedComparisonConjunctsBodyWithSourceC0DifferentialZero
     (data : SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
     (comparison :
       SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K) :
-    Type (max (u + 1) (max v (max w (max x (max y z))))) where
-  conjuncts :
-    LawEquationGroundedComparisonConjunctsBody D surface source data comparison
-  sourceC0DifferentialZero :
+    Type (max (u + 1) (max v (max w (max x (max y z)))))
+    extends LawEquationGroundedComparisonPointwiseConjunctsBody
+      D surface source data comparison where
+  sourceC0CechZero : source.SourceC0CechZero
+
+/-- The packet transports displayed source-C0 zero back to the independent primitive. -/
+theorem LawEquationGroundedComparisonConjunctsBody.sourcePrimitiveC0CechZero
+    {P : SemanticAtomProjection.{u, v}}
+    {semanticCover : SemanticRepairCover.{u, v, w, x} P}
+    {Ulaw : AtomCarrier.{u}}
+    {Alaw : ArchitectureObject Ulaw}
+    {Slaw : Site.AATSite.{u} Alaw}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    {D : LawAlgebra.LawEquationDefectSource.{u} G}
+    {coverRel : Cohomology.CoverRelativeCechCover Slaw}
+    {sheafCondition :
+      Site.AATSheafCondition Slaw G.obstructionQuotientPresheaf}
+    {K : Cohomology.CoverRelativeCechComplex coverRel
+      (Cohomology.ObstructionSheaf.ofAddCommGrpValued
+        G.obstructionQuotientCoefficient sheafCondition)}
+    {surface :
+      LawEquationGeneratedCurrentG06InputSurface
+        semanticCover Slaw G.obstructionQuotientPresheaf K}
+    {source : LawEquationBodyCechSource D K}
+    {data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
+    {comparison :
+      SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K}
+    (packet :
+      LawEquationGroundedComparisonConjunctsBody
+        D surface source data comparison) :
     letI := K.cochainAddCommGroup 1
-    K.d 0 source.toPrimitive = 0
-  sourceC0GeneratedCechZero :
-    source.SourceC0GeneratedCechZero
+    K.d 0 source.toPrimitive = 0 := by
+  have heq : source.toPrimitive = source.displayedSourceC0 :=
+    funext packet.displayedInterpretationRealization
+  rw [heq]
+  exact packet.sourceC0CechZero
 
 /-- Repackage the generated interpretation equality under its pointwise-zero name. -/
 def toGeneratedInterpretationPointwiseZero
@@ -1813,11 +1839,8 @@ theorem lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromPr
       lawIndependentConclusions := lawIndependent }
   exact ⟨⟨bridge, packetComparison, packet, hBounded, hSurface, hCover⟩⟩
 
-/--
-Generated-boundary theorem-7.5 route with the Research visible 10-conjunct
-packet preserved as AG-body fields.
--/
-theorem lawEquation_constructs_groundedResearchConjuncts_fromPrimitive
+/-- Lower generated-boundary tuple retaining pointwise source-C0 data only. -/
+theorem lawEquation_constructs_groundedPointwiseResearchConjuncts_fromPrimitive
     {P : SemanticAtomProjection.{x, v}}
     (semanticCover : SemanticRepairCover.{x, v, w, x} P)
     {Ulaw : AtomCarrier.{x}}
@@ -1872,7 +1895,7 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromPrimitive
               hzero1_eq_zero supportOf component_covered_of_boundary
               component_faithful_of_boundary).toAdditiveH1Surface
             K =>
-          LawEquationGroundedComparisonConjunctsBody D surface source
+          LawEquationGroundedComparisonPointwiseConjunctsBody D surface source
             (coverRelativeBoundaryAdditiveDataOfComplex semanticCover K c0Finite c1Finite
               zero1 (K.d 0 primitive) hzero1 (K.differential_comp 0 primitive)
               hzero1_eq_zero supportOf component_covered_of_boundary
@@ -1911,8 +1934,8 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromPrimitive
       displayedRequiredLawRestrictionEvaluator :=
         source.displayedRequiredLawsHoldOn_constructs_displayedRequiredLawRestrictionEvaluator
           hDisplayedRequiredLaws
-      sourceC0CechZero :=
-        source.displayedRequiredLawsHoldOn_constructs_sourceC0CechZero
+      sourceC0PointwiseZero :=
+        source.displayedRequiredLawsHoldOn_constructs_sourceC0PointwiseZero
           hDisplayedRequiredLaws
       selectedRealizationLayer := hindependent.selectedRealizationLayer
       degreewiseCarrierFaceEquations :=
@@ -1927,12 +1950,12 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromPrimitive
 Generated-boundary theorem-7.5 route whose generated residual is tied to the
 law-equation body source primitive.
 
-Unlike the primitive-parametrized helper, this theorem returns the Research
-visible conjunct tuple for the single source witness: the displayed
-interpretation realization, the source C0 Cech-zero statement, the residual
-boundary, and the H1-zero conclusions all refer to `source.toPrimitive`.
+Unlike the primitive-parametrized helper, this lower theorem ties the
+pointwise source-C0 reading and generated residual to `source.toPrimitive`.
+It is not the theorem-7.5 completion packet because it contains no actual
+source-C0 differential-zero proof.
 -/
-theorem lawEquation_constructs_groundedResearchConjuncts_fromSource
+theorem lawEquation_constructs_groundedPointwiseResearchConjuncts_fromSource
     {P : SemanticAtomProjection.{x, v}}
     (semanticCover : SemanticRepairCover.{x, v, w, x} P)
     {Ulaw : AtomCarrier.{x}}
@@ -1987,7 +2010,7 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromSource
               hzero1_eq_zero supportOf component_covered_of_boundary
               component_faithful_of_boundary).toAdditiveH1Surface
             K =>
-          LawEquationGroundedComparisonConjunctsBody D surface source
+          LawEquationGroundedComparisonPointwiseConjunctsBody D surface source
             (coverRelativeBoundaryAdditiveDataOfComplex semanticCover K c0Finite c1Finite
               zero1 (K.d 0 source.toPrimitive) hzero1
               (K.differential_comp 0 source.toPrimitive)
@@ -2022,8 +2045,8 @@ theorem lawEquation_constructs_groundedResearchConjuncts_fromSource
       displayedRequiredLawRestrictionEvaluator :=
         source.displayedRequiredLawsHoldOn_constructs_displayedRequiredLawRestrictionEvaluator
           hDisplayedRequiredLaws
-      sourceC0CechZero :=
-        source.displayedRequiredLawsHoldOn_constructs_sourceC0CechZero
+      sourceC0PointwiseZero :=
+        source.displayedRequiredLawsHoldOn_constructs_sourceC0PointwiseZero
           hDisplayedRequiredLaws
       selectedRealizationLayer := hindependent.selectedRealizationLayer
       degreewiseCarrierFaceEquations :=
@@ -2216,7 +2239,7 @@ This proof is intentionally standard-complex specific: arbitrary
 `CoverRelativeCechComplex` values may choose a non-pointwise cochain group zero,
 so the differential-zero conclusion cannot be distilled at that level.
 -/
-theorem displayedRequiredLawsHoldOn_constructs_standardSourceC0DifferentialZero
+theorem displayedRequiredLawsHoldOn_constructs_standardSourceC0CechZero
     {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{x} Slaw}
     (D : LawAlgebra.LawEquationDefectSource.{x} G)
     (sheafCondition :
@@ -2234,30 +2257,93 @@ theorem displayedRequiredLawsHoldOn_constructs_standardSourceC0DifferentialZero
       LawEquationBodyCechSource D
         (coverRelativeComplexOfStandardFinitePosetLaw law))
     (hholds : D.DisplayedRequiredLawsHoldOn) :
-    let K := coverRelativeComplexOfStandardFinitePosetLaw law
-    letI := K.cochainAddCommGroup 1
-    K.d 0 source.toPrimitive = 0 := by
+    source.SourceC0CechZero := by
   let K := coverRelativeComplexOfStandardFinitePosetLaw law
-  have hsource : source.toPrimitive = (0 : K.Cn 0) := by
-    have hrealized :=
-      source.displayedRequiredLawsHoldOn_constructs_displayedInterpretationRealization
-        hholds
-    funext sigma
-    rw [hrealized sigma]
-    dsimp [LawEquationBodyCechSource.restrictedDisplayedInterpretation]
-    rw [D.displayedRequiredLawsHoldOn_constructs_interpret_eq_zero hholds
-      (source.chartOf sigma)]
-    change
-      (ConcreteCategory.hom
-        (G.obstructionQuotientCoefficient.map
-          (source.restriction sigma).op)) 0 = 0
-    exact
-      (G.obstructionQuotientCoefficient.map
-        (source.restriction sigma).op).hom.map_zero
-  letI := K.cochainAddCommGroup 0
+  let Ob :=
+    Cohomology.ObstructionSheaf.ofAddCommGrpValued
+      G.obstructionQuotientCoefficient sheafCondition
+  have hevaluator :=
+    source.displayedRequiredLawsHoldOn_constructs_displayedRequiredLawRestrictionEvaluator
+      hholds
+  have harrow :=
+    source.displayedRequiredLawsHoldOn_and_restrictionEvaluator_constructs_arrowCompatibilityLaw
+      hholds hevaluator
   letI := K.cochainAddCommGroup 1
-  rw [hsource]
-  exact (K.d 0).map_zero
+  change K.d 0 source.displayedSourceC0 = 0
+  funext simplex
+  apply
+    (standardDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+      faces source.displayedSourceC0 simplex).2
+  let sigma0 := faces.face 0 simplex (0 : Fin 2)
+  let sigma1 := faces.face 0 simplex (1 : Fin 2)
+  let f0 :
+      Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) 1 simplex ⟶
+        Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) 0 sigma0 :=
+    homOfLE (faces.faceOverlap_le 0 simplex (0 : Fin 2))
+  let f1 :
+      Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) 1 simplex ⟶
+        Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) 0 sigma1 :=
+    homOfLE (faces.faceOverlap_le 0 simplex (1 : Fin 2))
+  let g0 := f0 ≫ source.restriction sigma0
+  let g1 := f1 ≫ source.restriction sigma1
+  have hrestricted :=
+    harrow sigma0 sigma1
+      (Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+      g0 g1 (Subsingleton.elim _ _)
+  dsimp [Site.FinitePosetCechFaceRestriction]
+  change
+    G.obstructionQuotientPresheaf.map f0.op
+        (G.obstructionQuotientPresheaf.map (source.restriction sigma0).op
+          (D.interpret (source.chartOf sigma0))) =
+      G.obstructionQuotientPresheaf.map f1.op
+        (G.obstructionQuotientPresheaf.map (source.restriction sigma1).op
+          (D.interpret (source.chartOf sigma1)))
+  rw [← CategoryTheory.FunctorToTypes.map_comp_apply,
+    ← CategoryTheory.FunctorToTypes.map_comp_apply]
+  simpa [g0, g1] using hrestricted
+
+/-- Unequal displayed face restrictions reject actual source-C0 Cech zero. -/
+theorem displayedFaceRestriction_ne_prevents_standardSourceC0CechZero
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{x} Slaw}
+    (D : LawAlgebra.LawEquationDefectSource.{x} G)
+    (sheafCondition :
+      Site.AATSheafCondition Slaw G.obstructionQuotientPresheaf)
+    {geometry : Site.FinitePosetCoverGeometry Slaw}
+    {faces :
+      Site.FinitePosetCechFaceData
+        (geometry.toObstructionCoefficientRegime
+          (Cohomology.ObstructionSheaf.ofAddCommGrpValued
+            G.obstructionQuotientCoefficient sheafCondition))}
+    (law : StandardDifferentialCompLaw geometry
+      (Cohomology.ObstructionSheaf.ofAddCommGrpValued
+        G.obstructionQuotientCoefficient sheafCondition) faces)
+    (source :
+      LawEquationBodyCechSource D
+        (coverRelativeComplexOfStandardFinitePosetLaw law))
+    (simplex :
+      Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime
+          (Cohomology.ObstructionSheaf.ofAddCommGrpValued
+            G.obstructionQuotientCoefficient sheafCondition)) 1)
+    (hne :
+      Site.FinitePosetCechFaceRestriction faces source.displayedSourceC0
+          simplex (0 : Fin 2) ≠
+        Site.FinitePosetCechFaceRestriction faces source.displayedSourceC0
+          simplex (1 : Fin 2)) :
+    ¬ source.SourceC0CechZero := by
+  intro hzero
+  let K := coverRelativeComplexOfStandardFinitePosetLaw law
+  letI := K.cochainAddCommGroup 1
+  change K.d 0 source.displayedSourceC0 = 0 at hzero
+  have hat := congrFun hzero simplex
+  exact hne
+    ((standardDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+      faces source.displayedSourceC0 simplex).1 hat)
 
 /--
 Standard finite-poset generated-boundary form of theorem 7.5.
@@ -2334,7 +2420,7 @@ def lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromStanda
 Standard finite-poset theorem-7.5 route tied to the body source primitive and
 exposing the actual source C0 differential-zero conjunct.
 -/
-theorem lawEquation_constructs_groundedResearchConjunctsWithSourceC0DifferentialZero_fromStandardFinitePosetSource
+theorem lawEquation_constructs_groundedResearchConjuncts_fromStandardFinitePosetSource
     {P : SemanticAtomProjection.{x, v}}
     (semanticCover : SemanticRepairCover.{x, v, w, x} P)
     {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{x} Slaw}
@@ -2403,7 +2489,7 @@ theorem lawEquation_constructs_groundedResearchConjunctsWithSourceC0Differential
                   ((coverRelativeComplexOfStandardFinitePosetLaw law).d 0
                     source.toPrimitive))).toAdditiveH1Surface
             (coverRelativeComplexOfStandardFinitePosetLaw law) =>
-          LawEquationGroundedComparisonConjunctsBodyWithSourceC0DifferentialZero
+          LawEquationGroundedComparisonConjunctsBody
             D surface source
             (coverRelativeBoundaryAdditiveDataOfComplex semanticCover
               (coverRelativeComplexOfStandardFinitePosetLaw law) c0Finite c1Finite
@@ -2435,13 +2521,11 @@ theorem lawEquation_constructs_groundedResearchConjunctsWithSourceC0Differential
     letI := K.cochainAddCommGroup 1
     letI := K.cochainAddCommGroup 2
     exact (K.d 1).map_zero
-  have hsourceC0 :
-      letI := K.cochainAddCommGroup 1
-      K.d 0 source.toPrimitive = 0 :=
-    displayedRequiredLawsHoldOn_constructs_standardSourceC0DifferentialZero
+  have hsourceC0 : source.SourceC0CechZero :=
+    displayedRequiredLawsHoldOn_constructs_standardSourceC0CechZero
       D sheafCondition law source hDisplayedRequiredLaws
   rcases
-    lawEquation_constructs_groundedResearchConjuncts_fromSource
+    lawEquation_constructs_groundedPointwiseResearchConjuncts_fromSource
         semanticCover D hDisplayedRequiredLaws chartSimplex overlapSimplex
         tripleSimplex geometry.cover sheafCondition K source c0Finite c1Finite
         (0 : K.Cn 1) hzero1 rfl supportOf
@@ -2451,10 +2535,8 @@ theorem lawEquation_constructs_groundedResearchConjunctsWithSourceC0Differential
           semanticCover K (K.d 0 source.toPrimitive)) with
     ⟨⟨surface, comparison, conjuncts⟩⟩
   exact ⟨⟨surface, comparison,
-    { conjuncts := conjuncts
-      sourceC0DifferentialZero := hsourceC0
-      sourceC0GeneratedCechZero :=
-        ⟨conjuncts.sourceC0CechZero, hsourceC0⟩ }⟩⟩
+    { toLawEquationGroundedComparisonPointwiseConjunctsBody := conjuncts
+      sourceC0CechZero := hsourceC0 }⟩⟩
 
 /-- Native generated obstruction sheaf used by the canonical tuple route. -/
 def canonicalTupleGeneratedBoundaryObstructionSheaf

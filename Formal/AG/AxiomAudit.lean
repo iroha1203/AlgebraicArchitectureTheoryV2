@@ -105,8 +105,8 @@ def semanticRepairTheorem75SelectedRealizationLayerCoverIsGenerated :=
 def semanticRepairTheorem75NoSelectedRealizationLayerWithoutGeneratedCover :=
   @SemanticRepair.no_selectedRealizationLayer_without_generatedCover
 
-def semanticRepairTheorem75GeneratedBoundaryGroundedResearchConjuncts :=
-  @SemanticRepair.lawEquation_constructs_groundedResearchConjuncts_fromSource
+def semanticRepairTheorem75GeneratedBoundaryGroundedPointwiseResearchConjuncts :=
+  @SemanticRepair.lawEquation_constructs_groundedPointwiseResearchConjuncts_fromSource
 
 def semanticRepairTheorem75CompleteSupportClosure :=
   @SemanticRepair.lawEquationCompleteRepairSupport_semanticRepairClosed
@@ -121,7 +121,19 @@ def semanticRepairTheorem75StandardFinitePosetGeneratedBoundaryGroundedCompariso
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromStandardFinitePosetPrimitive
 
 def semanticRepairTheorem75StandardFinitePosetSourceC0DifferentialGroundedResearchConjuncts :=
-  @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedResearchConjunctsWithSourceC0DifferentialZero_fromStandardFinitePosetSource
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedResearchConjuncts_fromStandardFinitePosetSource
+
+def semanticRepairTheorem81StandardDegreeZeroDifferentialEliminator :=
+  @Cohomology.StandardFinitePosetCech.standardDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+
+def semanticRepairTheorem81StandardSourceC0CechZero :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.displayedRequiredLawsHoldOn_constructs_standardSourceC0CechZero
+
+def semanticRepairTheorem81UnequalFacesRejectSourceC0CechZero :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.displayedFaceRestriction_ne_prevents_standardSourceC0CechZero
+
+def semanticRepairTheorem75SourcePrimitiveC0CechZero :=
+  @SemanticRepair.LawEquationGroundedComparisonConjunctsBody.sourcePrimitiveC0CechZero
 
 def semanticRepairTheorem75CanonicalTupleGeneratedBoundaryGroundedComparisonPacket :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromCanonicalTuplePrimitive
@@ -235,7 +247,7 @@ theorem semanticRepairExample91GeneratedLawCircleSingleWitnessWithStandardSource
             SemanticRepair.SemanticRepairCoverRelativeH1Comparison
               AAT.AG.Examples.SemanticRepairPart10.generatedLawStandardSourceC0BoundaryAdditiveData.toAdditiveH1Surface
               AAT.AG.Examples.SemanticRepairPart10.generatedLawStandardSourceC0Complex =>
-            SemanticRepair.LawEquationGroundedComparisonConjunctsBodyWithSourceC0DifferentialZero
+            SemanticRepair.LawEquationGroundedComparisonConjunctsBody
               AAT.AG.Examples.SemanticRepairPart10.defectSource surface
               AAT.AG.Examples.SemanticRepairPart10.generatedLawStandardBodySource
               AAT.AG.Examples.SemanticRepairPart10.generatedLawStandardSourceC0BoundaryAdditiveData
