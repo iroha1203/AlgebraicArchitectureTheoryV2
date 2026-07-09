@@ -348,12 +348,18 @@ theorem finiteSiteTopology_cover_eq_top {base : FiniteModel.site.category}
       rw [hlocal]
       trivial
 
+/-- X.例9.1 / #3102: every presheaf on the singleton finite site is a sheaf. -/
+theorem finiteSite_allPresheaves_isSheaf
+    (F : Site.AATPresheaf FiniteModel.site) :
+    Site.AATSheafCondition FiniteModel.site F := by
+  intro _base cover hcover
+  rw [Site.AATSheafConditionFor, finiteSiteTopology_cover_eq_top hcover]
+  exact Presieve.isSheafFor_top F
+
 /-- X.例9.1 / #3102: the generated `F₂` quotient coefficient is a true sheaf. -/
 theorem generatedF2QuotientIsSheaf :
     Site.AATSheafCondition FiniteModel.site generatedF2QuotientPresheaf := by
-  intro _base cover hcover
-  rw [Site.AATSheafConditionFor, finiteSiteTopology_cover_eq_top hcover]
-  exact Presieve.isSheafFor_top generatedF2QuotientPresheaf
+  exact finiteSite_allPresheaves_isSheaf generatedF2QuotientPresheaf
 
 /-- X.例9.1 / #3102: generated non-`PUnit` obstruction coefficient sheaf. -/
 def generatedF2QuotientObstructionSheaf :
@@ -575,6 +581,96 @@ def lawEquationCore :
   supportAtom := FiniteModel.FiniteAtom.componentA
   supportLawIndex := PUnit.unit
   supportLawIndex_required := rfl
+
+/-! ## Integer law-equation core required by PRD R9(b) -/
+
+/--
+X.例9.1 / #3102: production law-equation core with observable ring `ℤ` and
+constant violation witness `2`.
+-/
+def integerLawEquationCore :
+    LawAlgebra.SemanticLawEquationWitnessIdealCore FiniteModel.site where
+  Observable _ := ℤ
+  observableCommRing _ := inferInstance
+  restrict _ := RingHom.id ℤ
+  restrict_id := by
+    intro _W x
+    rfl
+  restrict_comp := by
+    intro _W₀ _W₁ _W₂ _f _g x
+    rfl
+  violationWitness _ _ _ := (2 : ℤ)
+  violationWitness_restrict := by
+    intro _source _target _f _lawIndex _atom
+    rfl
+  supportAtom := FiniteModel.FiniteAtom.componentA
+  supportLawIndex := PUnit.unit
+  supportLawIndex_required := rfl
+
+/-- Generated quotient presheaf `ℤ / I_Ob` for the integer law core. -/
+abbrev integerGeneratedLawQuotientPresheaf : Site.AATPresheaf FiniteModel.site :=
+  integerLawEquationCore.obstructionQuotientPresheaf
+
+/-- The integer generated quotient is a sheaf on the singleton finite site. -/
+theorem integerGeneratedLawQuotientIsSheaf :
+    Site.AATSheafCondition FiniteModel.site integerGeneratedLawQuotientPresheaf :=
+  finiteSite_allPresheaves_isSheaf integerGeneratedLawQuotientPresheaf
+
+/-- Every integer witness ideal is contained in `span {2}`. -/
+theorem integerLaw_lawWitnessIdeal_le
+    (W : FiniteModel.site.category)
+    (lawIndex : FiniteModel.site.lawUniverse.Index) :
+    integerLawEquationCore.lawWitnessIdeal W lawIndex ≤
+      Ideal.span ({(2 : ℤ)} : Set ℤ) := by
+  refine Ideal.span_le.mpr ?_
+  rintro _x ⟨atom, rfl⟩
+  exact Ideal.subset_span rfl
+
+/-- The integer obstruction ideal is contained in `span {2}`. -/
+theorem integerLaw_obstructionIdeal_le (W : FiniteModel.site.category) :
+    integerLawEquationCore.obstructionIdeal W ≤
+      Ideal.span ({(2 : ℤ)} : Set ℤ) := by
+  change
+    (integerLawEquationCore.selectedLawWitnessIdealFamily W).localObstructionIdeal ≤
+      Ideal.span ({(2 : ℤ)} : Set ℤ)
+  rw [LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
+  intro lawIndex _hselected
+  exact integerLaw_lawWitnessIdeal_le W lawIndex
+
+/-- The integer defect `1` is not killed by the generated obstruction ideal. -/
+theorem integerLaw_one_notMem_obstructionIdeal (W : FiniteModel.site.category) :
+    (1 : ℤ) ∉ integerLawEquationCore.obstructionIdeal W := by
+  intro hmem
+  have hspan := integerLaw_obstructionIdeal_le W hmem
+  rw [Ideal.mem_span_singleton] at hspan
+  have hdiv : (2 : ℤ) ∣ (1 : ℤ) := hspan
+  obtain ⟨c, hc⟩ := hdiv
+  omega
+
+/-- The quotient class of `1` is nonzero for the integer generated coefficient. -/
+theorem integerGeneratedLawQuotient_one_ne_zero (W : FiniteModel.site.category) :
+    Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W) (1 : ℤ) ≠ 0 := by
+  intro hzero
+  exact integerLaw_one_notMem_obstructionIdeal W
+    (Ideal.Quotient.eq_zero_iff_mem.mp hzero)
+
+/-- The integer generated quotient coefficient is nontrivial at every context. -/
+theorem integerGeneratedLawQuotient_nontrivial (W : FiniteModel.site.category) :
+    ∃ x : integerLawEquationCore.ObstructionQuotient W, x ≠ 0 :=
+  ⟨Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W) 1,
+    integerGeneratedLawQuotient_one_ne_zero W⟩
+
+/-- Every selected integer violation witness has zero quotient class. -/
+theorem integerLaw_violationWitness_class_eq_zero
+    (W : FiniteModel.site.category)
+    (lawIndex : FiniteModel.site.lawUniverse.Index)
+    (atom : FiniteModel.carrier.Atom) :
+    Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W)
+        (integerLawEquationCore.violationWitness W lawIndex atom) = 0 :=
+  Ideal.Quotient.eq_zero_iff_mem.mpr
+    (integerLawEquationCore.lawWitnessIdeal_le_obstructionIdeal W
+      (FiniteModel.lawUniverse_required lawIndex)
+      (Ideal.subset_span ⟨atom, rfl⟩))
 
 /-- X.例9.1: displayed defect source whose defect lies in the selected witness ideal. -/
 def defectSource :
@@ -1613,6 +1709,106 @@ def generatedLawFinitePosetCoverGeometry :
 abbrev generatedLawTupleGeometry :=
   generatedLawFinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap
 
+/-! ## PRD R9(b) integer lawful firing -/
+
+/-- Semantic input for the integer law-equation lawful firing. -/
+def integerLawFiniteFreeSemanticInput :
+    StandardFinitePosetGeneratedBoundary.LawEquationSemanticAtomInputBody
+      FiniteModel.carrier where
+  Component := Fin 3
+  project _ := 0
+  sourceTraceToken _ := true
+
+/-- Three-chart semantic incidence data for the integer lawful firing. -/
+def integerLawFiniteFreeSemanticCover :
+    SemanticRepairCover integerLawFiniteFreeSemanticInput.toSemanticAtomProjection where
+  baseCover := {
+    Chart := Fin 3
+    Transition := Fin 3
+    chartFinite := inferInstance
+    transitionFinite := inferInstance
+    holonomySupport := fun _ => True
+  }
+  CoverChart := Fin 3
+  chart chart := chart
+  chartFinite := inferInstance
+  Overlap := fun _ _ => Fin 3
+  overlapFinite := fun _ _ => inferInstance
+  TripleOverlap := fun _ _ _ => Unit
+  tripleFinite := fun _ _ _ => inferInstance
+  tripleEdge01 := fun _ => 0
+  tripleEdge12 := fun _ => 0
+  tripleEdge02 := fun _ => 0
+
+/-- Integer witness geometry with quotient sheaf condition proved on the finite site. -/
+def integerLawFiniteFreeWitnessIdealGeometry :
+    StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody
+      integerLawFiniteFreeSemanticInput FiniteModel.site where
+  toCore := integerLawEquationCore
+  supportAtom_traceVisible := rfl
+  quotientIsSheaf := integerGeneratedLawQuotientIsSheaf
+
+/-- Geometry-indexed integer defect input with selected defect `2`. -/
+def integerLawFiniteFreeDefectSource :
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody
+      integerLawFiniteFreeSemanticInput integerLawFiniteFreeWitnessIdealGeometry
+      generatedLawFinitePosetCoverGeometry where
+  LocalInput _ := PUnit
+  input _ := PUnit.unit
+  atomSupport _ _ := [FiniteModel.FiniteAtom.componentA]
+  atomSupport_traceVisible := by
+    intro _ _
+    exact ⟨FiniteModel.FiniteAtom.componentA, by simp, rfl⟩
+  lawSupport _ _ := [PUnit.unit]
+  lawSupport_nonempty := by
+    intro _
+    exact ⟨PUnit.unit, by simp⟩
+  lawSupport_required := by
+    intro _ lawIndex _
+    cases lawIndex
+    rfl
+  objectOfLocalInput _ _ := lawfulObject
+  defect _ _ := (2 : ℤ)
+  holds_defect_mem := by
+    intro _ lawIndex _ _ _
+    cases lawIndex
+    exact Ideal.subset_span ⟨FiniteModel.FiniteAtom.componentA, rfl⟩
+
+/-- Displayed required laws hold for the integer lawful input. -/
+theorem integerLawFiniteFreeDisplayedRequiredLawsHoldOn :
+    integerLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
+  intro _ lawIndex _ _
+  cases lawIndex
+  exact lawfulObject_noCycleLaw
+
+/--
+X.例9.1 / PRD R9(b): the integer observable core, witness `2`, proved quotient
+sheaf condition, and geometry-indexed lawful source fire the final ten-conclusion
+theorem.
+-/
+theorem lawfulFiring_integerLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket :
+    let K := StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
+      (G := integerLawEquationCore) integerGeneratedLawQuotientIsSheaf
+      generatedLawTupleGeometry
+    let source := integerLawFiniteFreeDefectSource.toLawEquationBodyCechSource
+    let surface := lawEquationGeneratedCurrentG06InputSurfaceOfFinitePosetGeometry
+      integerLawFiniteFreeSemanticCover generatedLawFinitePosetCoverGeometry K
+      (fun _ => fun _ => PUnit.unit)
+      (fun _ => fun _ => PUnit.unit)
+      (fun _ => fun _ => PUnit.unit)
+      integerGeneratedLawQuotientIsSheaf
+    Nonempty
+      (StandardFinitePosetGeneratedBoundary.LawEquationGroundedComparisonFiniteFreeConjunctsBody
+        integerLawFiniteFreeDefectSource surface source) :=
+  StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedComparisonPacket_finiteFree
+    integerLawFiniteFreeSemanticInput integerLawFiniteFreeSemanticCover
+    integerLawFiniteFreeWitnessIdealGeometry generatedLawFinitePosetCoverGeometry
+    integerLawFiniteFreeDefectSource
+    (fun _ => fun _ => PUnit.unit)
+    (fun _ => fun _ => PUnit.unit)
+    (fun _ => fun _ => PUnit.unit)
+    integerLawFiniteFreeDisplayedRequiredLawsHoldOn
+
 /-- Standard generated cover-relative complex used by the singleton source example. -/
 abbrev generatedLawStandardSourceC0Complex :=
   StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
@@ -2259,6 +2455,26 @@ theorem generatedLawCircleSemanticH1_nonzero :
         generatedLawCircleBoundaryRelationData,
         generatedLawCircleSemanticCechData]
         using Quotient.exact hzero)
+
+/--
+The concrete Fin-3 circle residual is not generated by a degree-zero
+primitive, providing the negative instance paired with the generated-boundary
+surface.
+-/
+theorem generatedLawCircle_not_generatedResidualBoundarySurfaceBody :
+    ¬ GeneratedResidualBoundarySurfaceBody
+      generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface := by
+  intro hboundary
+  apply generatedLawCircleSemanticH1_nonzero
+  exact semanticH1ZeroBody_constructs_additiveH1Zero
+    (residualBoundaryBody_constructs_semanticH1ZeroBody hboundary)
+
+/-- The same circle witness refutes the generated semantic-zero predicate. -/
+theorem generatedLawCircle_not_generatedSemanticH1ZeroBody :
+    ¬ GeneratedSemanticH1ZeroBody
+      generatedLawCircleBoundaryAdditiveData.toAdditiveH1Surface :=
+  no_generatedSemanticH1ZeroBody_without_residualBoundary
+    generatedLawCircle_not_generatedResidualBoundarySurfaceBody
 
 /-- X.例9.1 / #3102: identity cochain realization for the constructed native circle. -/
 def generatedLawCircleH1Realization :
