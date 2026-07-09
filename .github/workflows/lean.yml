@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Lean
         uses: leanprover/lean-action@v1
@@ -22,6 +24,18 @@ jobs:
           lake env lean Formal/Util/AssertStandardAxiomsTest.lean
           lake env lean Formal/AG/AxiomAudit.lean
           test "$(grep -v '^[[:space:]]*$' Formal/AG/AxiomAudit.lean | tail -n 1)" = '#assert_standard_axioms_only AAT.AG.AxiomAudit'
+
+      - name: Lean quality lint baseline
+        run: .github/lean_quality/check_lint_formal.sh
+
+      - name: Statement contracts
+        run: lake env lean Formal/AG/StatementContracts.lean
+
+      - name: Research import direction scan
+        run: .github/lean_quality/check_research_import_direction.sh
+
+      - name: Premise diff report
+        run: .github/lean_quality/list_premise_diff.sh
 
   archsig:
     name: archsig cargo test
