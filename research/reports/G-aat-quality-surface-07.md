@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 9
+- latest reviewed cycle: 10
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: connect the large-coefficient sheaf sequence to D0 and construct the true ideal subsheaf
+- next obligation: instantiate large-coefficient D0 and construct the true ideal subsheaf
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -577,3 +577,77 @@ cohomology surface to a coefficient universe independent of the AAT site
 universe, then instantiate it with the Cycle 9 sheafified short exact sequence.
 Separately construct the sheafified ambient ring action and prove stability of
 the additive ideal object before claiming a true ideal subsheaf.
+
+## Cycle 10 — large-coefficient canonical-tuple additive H1
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedLargeCoefficientCech.lean`
+- checkpoint spine:
+  - `Tuple`
+  - `overlapObject`
+  - `face`
+  - `faceHom`
+  - `Cochain`
+  - `faceRestriction`
+  - `differential`
+  - `d0`
+  - `d1`
+  - `d1_d0`
+  - `threeTermComplex`
+  - `H1`
+  - `h1Class_isZero_iff`
+  - `sheafThreeTermComplex`
+  - `SheafH1`
+
+### Checkpoint delta
+
+The AAT site universe and additive coefficient universe are now independent on
+the canonical finite tuple cover.  For any
+`F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{v}`, the coefficient-free overlap geometry
+generates degree-zero, degree-one, and degree-two cochains and their finite
+alternating face-restriction maps.
+
+The proof of `d1_d0` uses the canonical two-coface simplex identities, rewrites
+iterated restrictions as direct composite restrictions, and identifies the
+two routes through the thin context category before signed cancellation.  The
+result is packaged in the repository `Cohomology.AdditiveThreeTermComplex`, so
+its additive `H¹` and the zero-class criterion are available in
+`Type (max u v)` without identifying the coefficient universe with the site
+universe.  Bundled additive sheaves enter through their underlying presheaves;
+no sheaf condition is accepted by this construction.
+
+### Premise delta
+
+- discharged: large-coefficient canonical tuple cochains in degrees zero to
+  two; generated face restrictions and alternating differentials; the
+  differential-composition theorem; repository additive `H¹`; and the theorem
+  that a represented class is zero exactly when it is a degree-zero
+  coboundary.
+- remaining: the large-coefficient D0 lift problem, connecting cocycle,
+  choice-independence, zero-class/global-lift equivalence, and lift-fiber
+  torsor; instantiation with Cycle 9's sheafified sequence; a true ideal
+  subsheaf; semantic representations; finite zero/nonzero witness pair;
+  package theorem; and the `H¹ = 0` corollary.
+
+### Audits
+
+- focused Cycle 10 elaboration: pass
+- module-wide standard-axiom assertion: pass
+- differential provenance: cofaces and overlap morphisms are generated from
+  `FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap`; no face,
+  differential-composition, cocycle, or vanishing field is accepted
+- universe audit: tuple geometry remains in the AAT site universe while
+  section groups and additive `H¹` may live in an independent coefficient
+  universe
+- target classification: the large-coefficient Cech/H1 checkpoint is proved;
+  the D0 theorem and its Cycle 9 instantiation remain unproved
+
+### Next obligation
+
+Port the generic D0 lift problem to bundled
+`Sheaf S.topology AddCommGrpCat.{v}` coefficients, construct its objectwise
+kernel comparison from the generated short exact sequence, and instantiate it
+with Cycle 9.  Keep the sheafified ring action and true ideal-subsheaf proof as
+separate D1 obligations.

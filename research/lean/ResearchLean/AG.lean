@@ -23,6 +23,7 @@ import ResearchLean.AG.QualitySurface.HandoffRepairTransversal
 import ResearchLean.AG.QualitySurface.HeterogeneousRouteInteraction
 import ResearchLean.AG.QualitySurface.InternalExcursionMinSupport
 import ResearchLean.AG.QualitySurface.LawGeneratedConormalDescent
+import ResearchLean.AG.QualitySurface.LawGeneratedLargeCoefficientCech
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerLiftedSheafification
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerSequence
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerShortExact
