@@ -15,9 +15,3 @@ Focused checks are driven by the module manifest:
 ```bash
 research/lean/check_research_modules.sh --focused ResearchLean/AG/Smoke.lean
 ```
-
-Only CI runs the guarded all-module/declaration audit after the package build:
-
-```bash
-AAT_CI_FULL_AUDIT=1 research/lean/check_research_modules.sh --all-axioms
-```

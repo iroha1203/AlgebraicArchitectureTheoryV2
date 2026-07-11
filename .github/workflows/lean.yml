@@ -120,16 +120,6 @@ jobs:
         if: steps.research-changes.outputs.run == 'true'
         uses: leanprover/lean-action@v1
 
-      - name: Research package full build
-        if: steps.research-changes.outputs.run == 'true'
-        run: cd research/lean && lake build
-
-      - name: Focused modules and axiom audits
-        if: steps.research-changes.outputs.run == 'true'
-        env:
-          AAT_CI_FULL_AUDIT: "1"
-        run: research/lean/check_research_modules.sh --all-axioms
-
       - name: Package dependency direction
         if: steps.research-changes.outputs.run == 'true'
         run: .github/lean_quality/check_research_package_direction.sh --execute

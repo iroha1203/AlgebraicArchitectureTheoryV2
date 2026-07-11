@@ -58,7 +58,7 @@
 | Tooling | `tools/archsig`, `tools/archview`, `tools/fieldsig`, `docs/tool` | ArchMap / LawPolicy / ArchSig / ArchView / FieldSig の CLI、schema、visualization、workflow。 | [Tool guideline](docs/tool/guideline.md) |
 | Website | `website`, `docs/website` | Cloudflare Pages 向け public reading surface と内部運用メモ。 | [Website guideline](docs/website/guideline.md) |
 | Outreach | `outreach` | AAT / SFT / ArchSig の外部記事、翻訳、下書き、記事用素材。 | [Outreach README](outreach/README.md) |
-| 研究プログラム | `research/`, `Formal/AG/Research` | 研究 GOAL の下で候補探索 → 三審判 → Lean 検証 / 証拠固定 → SCORE 監査 → フェーズ区切り判定を回すループ engine と検証 sandbox。 | [research README](research/README.md) |
+| 研究プログラム | `research/`, `research/lean/ResearchLean/` | 研究 GOAL の下で候補探索 → 三審判 → Lean 検証 / 証拠固定 → SCORE 監査 → フェーズ区切り判定を回すループ engine と検証 sandbox。 | [research README](research/README.md) |
 | Archive | `docs/archive` | 過去文書の退避先。現行 source of truth として扱わない。 | [docs README](docs/README.md) |
 
 ## 責務範囲
