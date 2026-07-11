@@ -1436,6 +1436,46 @@ def finiteSynthesisAATSynthesisPackageEqToPackage :=
 def finiteSynthesisFires :=
   FiniteModel.RepresentationAnalysisPart7.finiteSynthesis_algebraicGeometricAATSynthesis_fires
 
+/-- Kernel-audit entry for the generic Part I--VII package constructor. -/
+def algebraicGeometricSynthesisConstructedPackage :=
+  @RepresentationAnalysis.algebraicGeometricAATSynthesis_constructedPackage
+
+/-- Kernel-audit entry for the connected concrete Part I--VII package. -/
+def nondegenerateSynthesisPackageChain :=
+  FiniteModel.RepresentationAnalysisPart7.nondegenerateSynthesis_package_chain
+
+/-- Kernel-audit entry for the concrete nondegenerate synthesis evidence. -/
+def nondegenerateSynthesisEvidence :=
+  FiniteModel.RepresentationAnalysisPart7.nondegenerateSynthesis_evidence
+
+/-- Kernel-audit entry for membership in the concrete obstruction ideal. -/
+def nondegenerateObstructionIdealTwoMem :=
+  FiniteModel.RepresentationAnalysisPart7.nondegenerateObstructionIdeal_two_mem
+
+/-- Kernel-audit entry for the nonbottom concrete obstruction ideal. -/
+def nondegenerateObstructionIdealNeBot :=
+  FiniteModel.RepresentationAnalysisPart7.nondegenerateObstructionIdeal_ne_bot
+
+/-- Kernel-audit entry for the actual distance-one safe-state firing. -/
+def nondegenerateDistanceSafeEqOne :=
+  FiniteModel.RepresentationAnalysisPart7.nondegenerateDistance_safe_eq_one
+
+/-- Kernel-audit entry for the actual distance-zero flat-state firing. -/
+def nondegenerateDistanceBoundaryEqZero :=
+  FiniteModel.RepresentationAnalysisPart7.nondegenerateDistance_boundary_eq_zero
+
+/-- Kernel-audit entry for the nonzero actual safe-state distance. -/
+def nondegenerateDistanceSafeNeZero :=
+  FiniteModel.RepresentationAnalysisPart7.nondegenerateDistance_safe_ne_zero
+
+/-- Kernel-audit entry for selected-obstruction identity with the package ideal. -/
+def nondegenerateSelectedObstructionEqIdeal :=
+  FiniteModel.RepresentationAnalysisPart7.nondegenerateSelectedObstruction_eq_ideal
+
+/-- Kernel-audit entry for the ideal-valued representation output. -/
+def nondegenerateRepresentationReadsSelectedIdeal :=
+  FiniteModel.RepresentationAnalysisPart7.nondegenerateRepresentation_reads_selectedIdeal
+
 /-- Kernel-audit entry for all-length matrix-walk cardinality. -/
 theorem matrixWalkReadingAllLengthCardinality
     {Vertex Edge RelationLabel : Type u}

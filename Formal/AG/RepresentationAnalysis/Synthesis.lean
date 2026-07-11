@@ -161,6 +161,104 @@ def analyticReadingContext
 
 end AATSynthesisPackage
 
+/--
+VII.定理16.1: predecessor constructions sufficient to build a synthesis package.
+
+Implementation notes: the scheme supplies its own ringed topos and affine
+atlas, while the law algebra and ideal determine the lawful locus.  Separate
+topos/locus values and coherence equalities are deliberately omitted so the
+constructor cannot receive the corresponding conclusions as input fields.
+-/
+structure AATSynthesisConstructionInput (P : Site.PartIPrerequisites.{u})
+    (k : Type v) [CommRing k] where
+  /-- Part II geometry constructed from the Part I prerequisites. -/
+  architectureGeometry : Site.ArchitectureGeometry P
+  /-- Part III scheme on the site supplied by `architectureGeometry`. -/
+  architectureScheme : LawAlgebra.Scheme.ArchitectureScheme.{u, v, w, x, y}
+    architectureGeometry.site k
+  /-- Coordinate algebra used to form the selected obstruction ideal. -/
+  LawCoordinateAlgebra : Type w
+  /-- Commutative-ring structure on the selected coordinate algebra. -/
+  lawCoordinateCommRing : CommRing LawCoordinateAlgebra
+  /-- Selected Part III obstruction ideal. -/
+  obstructionIdeal : Ideal LawCoordinateAlgebra
+  /-- Lawful-section data relative to the selected obstruction ideal. -/
+  lawfulSection : LawAlgebra.LawfulLocus.LawfulSectionData.{w, x}
+    LawCoordinateAlgebra obstructionIdeal
+  /-- Selected Part IV cover on the architecture site. -/
+  cover : Cohomology.CoverRelativeCechCover architectureGeometry.site
+  /-- Selected obstruction sheaf on the architecture site. -/
+  obstructionSheaf : Cohomology.ObstructionSheaf architectureGeometry.site
+  /-- Cover-relative obstruction complex for the selected cover and sheaf. -/
+  obstructionCohomology :
+    Cohomology.CoverRelativeCechComplex cover obstructionSheaf
+  /-- Part V derived repair-comparison profile. -/
+  derivedLawGeometry : Derived.RepairProfile.RepairComparisonProfile.{u}
+  /-- Part VI parameter tying the selected stratum to the architecture site. -/
+  stratumParameter :
+    SingularityMonodromyStack.StratumReadingParameter architectureGeometry.site
+  /-- Part VI architecture stratum built over `stratumParameter`. -/
+  singularityMonodromyStack :
+    SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y}
+      stratumParameter k
+  /-- Part VII decorated-scheme reading parameter on the architecture site. -/
+  readingParameter : AATSchReadingParameter.{u, v, w, x, y}
+    architectureGeometry.site k
+  /-- Part VII representation, period, metric, and analysis context. -/
+  representationPeriodMetricAnalysis :
+    AnalyticReadingContext.{u, v, w, x, y, z}
+      P.architectureObject readingParameter
+
+namespace AATSynthesisConstructionInput
+
+attribute [instance] lawCoordinateCommRing
+
+/--
+Build the Part I--VII package while deriving all internal coherence fields.
+
+Implementation notes: values already constructed by predecessor Parts remain
+inputs, but the site, ringed topos, atlas, and lawful locus are selected from
+their canonical owners.  This replaces the alternative of accepting those
+values together with conclusion-shaped equality certificates.
+-/
+def toPackage
+    {P : Site.PartIPrerequisites.{u}} {k : Type v} [CommRing k]
+    (I : AATSynthesisConstructionInput.{u, v, w, x, y, z} P k) :
+    AATSynthesisPackage.{u, v, w, x, y, z} P k where
+  Atom := P.carrier.Atom
+  atom_eq := rfl
+  atomFamily := P.core.family
+  atomFamily_eq_core := rfl
+  architectureObject := P.architectureObject
+  architectureObject_eq_core := rfl
+  architectureGeometry := I.architectureGeometry
+  aatSite := I.architectureGeometry.site
+  aatSite_eq_geometry := rfl
+  ringedAATTopos := I.architectureScheme.ringedTopos
+  architectureScheme := I.architectureScheme
+  ringedAATTopos_eq_scheme := rfl
+  affineChartIndex := I.architectureScheme.ChartIndex
+  affineChartIndex_eq_scheme := rfl
+  affineAATCharts := I.architectureScheme.chart
+  affineAATCharts_eq_scheme := rfl
+  LawCoordinateAlgebra := I.LawCoordinateAlgebra
+  lawCoordinateCommRing := I.lawCoordinateCommRing
+  obstructionIdeal := I.obstructionIdeal
+  lawfulLocus :=
+    LawAlgebra.LawfulLocus.lawfulLocus I.LawCoordinateAlgebra I.obstructionIdeal
+  lawfulLocus_eq := rfl
+  lawfulSection := I.lawfulSection
+  cover := I.cover
+  obstructionSheaf := I.obstructionSheaf
+  obstructionCohomology := I.obstructionCohomology
+  derivedLawGeometry := I.derivedLawGeometry
+  stratumParameter := I.stratumParameter
+  singularityMonodromyStack := I.singularityMonodromyStack
+  readingParameter := I.readingParameter
+  representationPeriodMetricAnalysis := I.representationPeriodMetricAnalysis
+
+end AATSynthesisConstructionInput
+
 /-- VII.定理16.1: construct the synthesis package from the selected tower. -/
 def AATSynthesisAssumptions.toPackage
     {P : Site.PartIPrerequisites.{u}} {k : Type v} [CommRing k]
@@ -222,6 +320,34 @@ theorem algebraicGeometricAATSynthesis
         A.representationPeriodMetricAnalysis :=
   ⟨rfl, rfl, rfl, A.ringedAATTopos_eq_scheme, rfl, rfl, A.lawfulLocus_eq,
     rfl, rfl, rfl, rfl⟩
+
+/--
+VII.定理16.1: construct one package carrying the complete selected Part I--VII
+chain.  The package itself is produced by `toPackage`; the site, scheme atlas,
+lawful locus, cohomology, derived geometry, stratum, and analytic context are
+then connected through that same constructed value.
+-/
+theorem algebraicGeometricAATSynthesis_constructedPackage
+    {P : Site.PartIPrerequisites.{u}} {k : Type v} [CommRing k]
+    (I : AATSynthesisConstructionInput.{u, v, w, x, y, z} P k) :
+    ∃ S : AATSynthesisPackage.{u, v, w, x, y, z} P k,
+      S = I.toPackage ∧
+        S.aatSite = S.architectureGeometry.site ∧
+        S.ringedAATTopos = S.architectureScheme.ringedTopos ∧
+        S.affineAATCharts = S.architectureScheme.chart ∧
+        S.lawfulLocus =
+          LawAlgebra.LawfulLocus.lawfulLocus
+            S.LawCoordinateAlgebra S.obstructionIdeal ∧
+        HEq S.obstructionCohomology I.obstructionCohomology ∧
+        S.derivedLawGeometry = I.derivedLawGeometry ∧
+        HEq S.singularityMonodromyStack I.singularityMonodromyStack ∧
+        HEq S.representationPeriodMetricAnalysis
+          I.representationPeriodMetricAnalysis := by
+  let S := I.toPackage
+  exact ⟨S, rfl, S.aatSite_is_geometry_site,
+    S.ringedAATTopos_is_scheme_ringedTopos,
+    S.affineAATCharts_are_scheme_charts,
+    S.lawfulLocus_is_zeroLocus, HEq.rfl, rfl, HEq.rfl, HEq.rfl⟩
 
 end RepresentationAnalysis
 end AAT.AG
