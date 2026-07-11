@@ -15,8 +15,8 @@ It fixes these current contracts:
 - `archsig-run-manifest.json`
 
 The corpus verifies deterministic measurement output, gate policy behavior,
-comparison behavior, schema catalog stability, and FieldSig handoff through the
-measurement packet.
+comparison behavior, and schema catalog stability. The measurement packet is
+the input artifact for the separately owned FieldSig handoff tests.
 
 ## AG measurement fixtures
 

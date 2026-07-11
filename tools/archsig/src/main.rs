@@ -292,7 +292,7 @@ fn validate_archmap_command_input(
     match json_schema(&raw) {
         Some(ARCHMAP_V2_SCHEMA) => {
             let document: ArchMapDocumentV2 = serde_json::from_value(raw)?;
-            let mut report = validate_archmap_v2_report(&document, &input.display().to_string());
+            let mut report = validate_archmap_v2_report(&document, &stable_input_ref(input));
             if authoring_audit_requested(
                 scope_manifest,
                 candidate_packets,
@@ -469,11 +469,8 @@ fn validate_law_policy_command_input(
     let raw: serde_json::Value = read_json(input)?;
     require_schema(&raw, LAW_POLICY_V1_SCHEMA, "--law-policy")?;
     let policy: LawPolicyDocumentV1 = serde_json::from_value(raw)?;
-    let report = validate_law_policy_v1_report(
-        &policy,
-        &input.display().to_string(),
-        Some(measurement_profile),
-    );
+    let report =
+        validate_law_policy_v1_report(&policy, &stable_input_ref(input), Some(measurement_profile));
     let failed = report.summary.result == "fail";
     Ok((serde_json::to_value(report)?, failed))
 }
@@ -493,7 +490,7 @@ fn validate_measurement_profile_command_input(
             "schema": "measurement-profile-validation-report/v0.5.0",
             "input": {
                 "schema": profile.schema,
-                "path": input.display().to_string(),
+                "path": stable_input_ref(input),
                 "id": profile.profile_id
             },
             "checks": checks,
@@ -521,7 +518,7 @@ fn validate_repair_plan_command_input(
     let report = build_repair_plan_validation_report_v1(
         &plan,
         archmap,
-        &input.display().to_string(),
+        &stable_input_ref(input),
         residual_packet_json.as_ref(),
     );
     let failed = report["summary"]["result"] == "fail";
@@ -530,6 +527,14 @@ fn validate_repair_plan_command_input(
 
 fn json_schema(document: &serde_json::Value) -> Option<&str> {
     document.get("schema").and_then(|value| value.as_str())
+}
+
+fn stable_input_ref(input: &Path) -> String {
+    let file_name = input
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("artifact.json");
+    format!("input:{file_name}")
 }
 
 fn summary_result(document: &serde_json::Value) -> &str {
