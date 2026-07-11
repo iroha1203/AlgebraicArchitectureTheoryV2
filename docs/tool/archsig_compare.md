@@ -27,7 +27,7 @@ Outputs:
 
 ## Comparability
 
-`identical` requires matching ArchMap digest, profile fingerprint, and tool version.
+`identical` requires matching ArchMap digest, LawPolicy digest, profile fingerprint, and tool version.
 `verdict-row` requires matching profile fingerprint, site cover digest, and tool version.
 Other pairs are `not-comparable`; the report records both independent run conclusions and emits a typed boundary.
 

@@ -11510,6 +11510,134 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             &mut examples,
         );
     }
+    // This is the union of the normalized schema fields and the evaluator-specific
+    // fields emitted by the current measurement packet producers.
+    const COMPUTED_INVARIANT_FIELDS: &[&str] = &[
+        "invariantId",
+        "id",
+        "readingId",
+        "computedInvariantId",
+        "kind",
+        "evaluator",
+        "value",
+        "representation",
+        "archmapRef",
+        "atomCount",
+        "contextCount",
+        "coverCount",
+        "doctrineFingerprint",
+        "boundaryNote",
+        "claimScope",
+        "classSupport",
+        "coefficient",
+        "coverNerveProjection",
+        "dimensions",
+        "method",
+        "methodStatus",
+        "nerveShape",
+        "observedCocycle",
+        "rankD0",
+        "reason",
+        "restrictionEdgeCount",
+        "selectedCoverRef",
+        "selectedH2",
+        "status",
+        "theorem12_4Discharge",
+        "b1NerveReading",
+        "capacityFormula",
+        "capacityLowerBound",
+        "eulerCharacteristic",
+        "eulerFormula",
+        "measuredCechVerdictEcho",
+        "structuralVerdictRef",
+        "selectedSectionRef",
+        "sectionFactorization",
+        "restrictionCompatibility",
+        "boundaryMembership",
+        "minimalForbiddenSupports",
+        "alexanderDualRepair",
+        "transferTargets",
+        "residue",
+        "pairings",
+        "periods",
+        "laplacian",
+        "cochainCells",
+        "sagaConclusionCode",
+        "residualKind",
+        "commonAmbient",
+        "lawConflicts",
+        "lawIdeals",
+        "nonConclusions",
+        "proxyComparison",
+        "resolution",
+        "resolutionSelectorEffective",
+        "torByDegree",
+        "witnessVariables",
+        "analyticReadingRef",
+        "assumptionBoundary",
+        "boundarySection",
+        "cellRefs",
+        "closureDiagnostics",
+        "cocycleGate",
+        "coherenceWitnesses",
+        "cohomologyQuotient",
+        "components",
+        "cycleBasis",
+        "d2RowCount",
+        "deltaComplex",
+        "dimension",
+        "edgeChecks",
+        "edgeCount",
+        "faceCount",
+        "faces",
+        "facetDimensionReading",
+        "facets",
+        "faithfulnessBasis",
+        "forms",
+        "h2Dimension",
+        "imageMembership",
+        "irreducibleComponentCount",
+        "isPure",
+        "laplacianMatrix",
+        "linkBoundaryReading",
+        "linkReducedBetti",
+        "locusSymbol",
+        "nsdepthCertificate",
+        "obstructionIdeal",
+        "pairingAtomRefs",
+        "patchRoles",
+        "periodPairingMatrix",
+        "rankD1",
+        "rankKerD2",
+        "repairPathAtomRefs",
+        "repairPlanRef",
+        "representative",
+        "resolutionSelector",
+        "restrictionMatrix",
+        "sectionAssignment",
+        "sourceRefs",
+        "stokesAudit",
+        "supportLocalizedPremise",
+        "tetrahedra",
+        "tetrahedronCount",
+        "transferMeasurementPairing",
+        "transferResidue",
+        "violatedForbiddenSupports",
+        "wassersteinTransferCost",
+    ];
+    for (index, invariant) in packet_value["computedInvariants"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        check_object_keys(
+            invariant,
+            &format!("computedInvariants[{index}]"),
+            COMPUTED_INVARIANT_FIELDS,
+            &mut examples,
+        );
+    }
     for (index, row) in packet_value["structuralVerdict"]
         .as_array()
         .into_iter()
@@ -12992,6 +13120,7 @@ mod tests {
                 "representation": {}
             }
         ]);
+        raw["computedInvariants"][0]["forgedField"] = json!(true);
         raw["analyticReadings"][0]["regime"] = json!("candidate-preview");
         raw["analyticReadings"][0]["claimStatus"] = json!("candidate");
         raw["analyticReadings"][0]["structuralVerdictRef"] = json!("structuralVerdict/missing");
@@ -12999,6 +13128,12 @@ mod tests {
         let checks = validate_measurement_packet_value_v1(&raw);
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-schema050-unknown-fields" && check.result == "fail"
+        }));
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-unknown-fields"
+                && check.examples.iter().any(|example| {
+                    example.source.as_deref() == Some("computedInvariants[0].forgedField")
+                })
         }));
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-schema050-computed-invariants-typed"
