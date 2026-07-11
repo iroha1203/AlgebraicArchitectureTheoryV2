@@ -1,11 +1,11 @@
 use std::collections::BTreeSet;
 
-use super::registry::{expand_law_policy_v1, is_known_evaluator, is_known_v1_pack};
+use super::registry::{expand_law_policy_v1, is_known_evaluator};
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
-    LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1, LawPolicyValidationInputV1,
-    LawPolicyValidationReportV1, LawPolicyValidationSummaryV1, MEASUREMENT_PROFILE_V1_SCHEMA,
-    MeasurementProfileV1, ValidationCheck, ValidationExample,
+    LawPolicyDocumentV1, LawPolicyValidationInputV1, LawPolicyValidationReportV1,
+    LawPolicyValidationSummaryV1, MeasurementProfileV1, ValidationCheck, ValidationExample,
+    LAW_POLICY_V1_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
 };
 
 pub fn validate_law_policy_v1_report(
@@ -267,13 +267,11 @@ fn check_v1_pack_and_evaluator_vocabulary(policy: &LawPolicyDocumentV1) -> Valid
     let mut examples = Vec::new();
     for (index, entry) in policy.policies.iter().enumerate() {
         if let Some(pack) = entry.pack.as_deref() {
-            if !is_known_v1_pack(pack) {
-                examples.push(generic_validation_example(
-                    &format!("policies[{index}].pack"),
-                    pack,
-                    "unknown policy pack",
-                ));
-            }
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].pack"),
+                pack,
+                "v1 policy pack selectors are retired; use an explicit law/evaluator selector",
+            ));
         }
         if let Some(evaluator) = entry.evaluator.as_deref() {
             if !is_known_evaluator(evaluator) {
