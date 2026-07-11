@@ -1,6 +1,7 @@
 import Formal.AG.Site.Geometry
 import Formal.AG.Site.MinimalContextProfile
 import Formal.AG.Derived.WellFoundedRepair
+import Formal.AG.RepresentationAnalysis.GraphMatrix
 
 /-!
 Statement contracts for fixed Lean statements.
@@ -173,5 +174,34 @@ example (P : Derived.WellFoundedRepair.RepairComparisonProfile.{u})
         (P.targetCleared run.outputState ∨
           P.noSolutionCertificate run.outputState) :=
   Derived.WellFoundedRepair.soundRepairSynthesis P rule start
+
+/-- Fixed walk-decomposition cardinality statement for Part VII proposition 3.6. -/
+example {Vertex Edge RelationLabel : Type u}
+    (G : RepresentationAnalysis.FiniteDirectedGraphTarget
+      Vertex Edge RelationLabel)
+    [Fintype Vertex]
+    (n : Nat) (start finish : Vertex) :
+    Fintype.card
+        (RepresentationAnalysis.FiniteDirectedGraphTarget.CountedDirectedWalk
+          G start finish (n + 1)) =
+      ∑ middle : Vertex,
+        RepresentationAnalysis.edgeFiberCard G start middle *
+          Fintype.card
+            (RepresentationAnalysis.FiniteDirectedGraphTarget.CountedDirectedWalk
+              G middle finish n) :=
+  RepresentationAnalysis.FiniteDirectedGraphTarget.CountedDirectedWalk.card_succ
+    G n start finish
+
+/-- Fixed all-length matrix-walk cardinality statement for Part VII proposition 3.6. -/
+example {Vertex Edge RelationLabel : Type u}
+    (G : RepresentationAnalysis.FiniteDirectedGraphTarget
+      Vertex Edge RelationLabel)
+    (n : Nat) (start finish : Vertex) :
+    (RepresentationAnalysis.adjacencyMatrixPower G n) start finish =
+      Fintype.card
+        (RepresentationAnalysis.FiniteDirectedGraphTarget.CountedDirectedWalk
+          G start finish n) :=
+  RepresentationAnalysis.adjacencyMatrixPower_apply_eq_countedDirectedWalk_card
+    G n start finish
 
 end AAT.AG

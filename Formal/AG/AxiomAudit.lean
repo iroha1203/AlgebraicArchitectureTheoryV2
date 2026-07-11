@@ -1436,6 +1436,36 @@ def finiteSynthesisAATSynthesisPackageEqToPackage :=
 def finiteSynthesisFires :=
   FiniteModel.RepresentationAnalysisPart7.finiteSynthesis_algebraicGeometricAATSynthesis_fires
 
+/-- Kernel-audit entry for all-length matrix-walk cardinality. -/
+theorem matrixWalkReadingAllLengthCardinality
+    {Vertex Edge RelationLabel : Type u}
+    (G : RepresentationAnalysis.FiniteDirectedGraphTarget
+      Vertex Edge RelationLabel)
+    (n : Nat) (start finish : Vertex) :
+    (RepresentationAnalysis.adjacencyMatrixPower G n) start finish =
+      Fintype.card
+        (RepresentationAnalysis.FiniteDirectedGraphTarget.CountedDirectedWalk
+          G start finish n) :=
+  RepresentationAnalysis.adjacencyMatrixPower_apply_eq_countedDirectedWalk_card
+    G n start finish
+
+/-- Kernel-audit entry for the nontrivial length-two cardinality example. -/
+theorem lengthTwoWalkCardinalityOne :
+    Fintype.card
+      (RepresentationAnalysis.FiniteDirectedGraphTarget.CountedDirectedWalk
+        FiniteModel.RepresentationAnalysisPart7.lengthTwoWalkChain
+        FiniteModel.RepresentationAnalysisPart7.LengthTwoWalkVertex.a
+        FiniteModel.RepresentationAnalysisPart7.LengthTwoWalkVertex.c 2) = 1 :=
+  FiniteModel.RepresentationAnalysisPart7.lengthTwoWalk_card_eq_one
+
+/-- Kernel-audit entry for proposition 3.6 firing at length two. -/
+theorem lengthTwoMatrixWalkReadingFires :
+    (RepresentationAnalysis.adjacencyMatrixPower
+      FiniteModel.RepresentationAnalysisPart7.lengthTwoWalkChain 2)
+        FiniteModel.RepresentationAnalysisPart7.LengthTwoWalkVertex.a
+        FiniteModel.RepresentationAnalysisPart7.LengthTwoWalkVertex.c = 1 :=
+  FiniteModel.RepresentationAnalysisPart7.lengthTwoWalk_matrixPower_eq_one
+
 def lowDegreeRealKernelEquivHarmonic :=
   Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology
 
