@@ -174,7 +174,7 @@ finding にする。
 
 ### 4.2 rename の deprecation 規律 [査読]
 
-`Formal/` または `Formal/AG/Research/` に実在する宣言を rename する
+`Formal/` または Research側sourceに実在する宣言を rename する
 場合、次のどちらかを同一 PR で行う。
 
 - `@[deprecated (since := "<日付>")]` alias を残す
