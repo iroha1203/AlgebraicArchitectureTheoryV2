@@ -41,6 +41,25 @@
 - Report / schema / CLI wording は「これは結論ではない」を主文にしない。結論、根拠、選ばれた evidence contract を
   先に出し、語らない領域は必要な場合だけ短い boundary として添える。
 
+## テスト責務と実行経路
+
+ArchSig の `cli` integration test target は runtime 契約だけを所有する。`cargo test
+--manifest-path tools/archsig/Cargo.toml --test cli` は `analyze` / `gate` / `compare`、
+schema catalog、measurement packet、evaluator の入力・出力、CLI error、決定性を検証する。
+ArchView HTML、release workflow、docs、SKILL、website の文字列をこのtargetから直接検査しない。
+全体の `cargo test --manifest-path tools/archsig/Cargo.toml` は、下表の専用targetも合わせて実行する。
+
+| 対象 | source of truth | 実行経路 |
+| --- | --- | --- |
+| ArchSig runtime | `tools/archsig/src/` と `tools/archsig/tests/cli.rs` | `cargo test --manifest-path tools/archsig/Cargo.toml --test cli` |
+| ArchMap authoring | `tools/archsig/src/authoring.rs`、`archmap` CLI、`archmap-creater` | `cargo test --manifest-path tools/archsig/Cargo.toml --lib authoring::tests` と `cargo test --manifest-path tools/archsig/Cargo.toml --test authoring` |
+| ArchView artifact | `tools/archview/` と emitted viewer artifact | `cargo test --manifest-path tools/archsig/Cargo.toml --test archview_e2e`。HTML文字列検査は行わず、analyze生成物を検証する |
+| ArchView UI / sequence | `tools/archview/archview.html` | `analyze`を`.tmp/archview-preview`へ出力し、`cp tools/archview/archview.html .tmp/archview-preview/`後に`python3 -m http.server 8000 --directory .tmp/archview-preview`を起動して、同一ディレクトリのviewer dataとsequenceを確認 |
+| release | `.github/workflows/archsig-release.yml` | `gh workflow run archsig-release.yml -f tag=<tag>` |
+| docs / skill / website | 各source fileとreview workflow | docs / skill は `git diff --check -- docs/tool tools/archsig/skills`、website は `cd website && npx @11ty/eleventy`。ArchSig runtime testには含めない |
+
+fixtureやdocsの存在だけを確認するテストは、analyzerのgolden regressionとは呼ばない。goldenを追加する場合は、CLIを実行して packet、verdict、invariant、witness、digestなどの生成結果を期待値と比較する。
+
 ## 主要コマンド
 
 ```bash
