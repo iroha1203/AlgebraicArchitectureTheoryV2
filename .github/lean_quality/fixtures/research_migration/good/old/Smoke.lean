@@ -1,5 +1,8 @@
 import FixtureOld.AG.Basic
 
+namespace FixtureOld.AG
+end FixtureOld.AG
+
 namespace FixtureOld.AG.Smoke
 def witness : Nat := 1
 end FixtureOld.AG.Smoke
