@@ -1,0 +1,21 @@
+# G-sft-deformation-01 — アーキテクチャ配置と law 構造の変形理論(骨化・進化容量)
+
+- `id`: `G-sft-deformation-01`
+- `status`: `draft`
+- `research mode`: `score-phase`
+- `predecessor`: SFT v2 第X部の力ベース枯渇(定義 57.1、P3 版)を外在的近似として読む。この GOAL は第VII部(変形と可能性)の内在版を立ち上げ、骨化(有効変形空間の単調減少)と終焉の Ext 版精密化を支える。
+- `source note`: [SFT v2 本文 第VII部予告・§56–57](../../docs/sft/software_field_theory.md)、[骨格ノート §5 第VII部・§10 台帳](../../docs/note/sft_development_spacetime_dynamics_skeleton.md)
+- `research aim`: AAT 第VI部 §3(cotangent / tangent complex)・§6(Square-Zero Lifting Obstruction、Kuranishi)は**固定幾何内の stratum / test object の変形**を扱う。この GOAL は、配置(architecture configuration)そのもの・law 構造そのものの変形空間を SFT 側の新規数学として定式化し、Ext 次数規約(automorphism = Ext^{-1}、一次変形 = Ext^0、拡張障害 = Ext^1)に揃えた「進化容量」の内在量を作る。剛性・骨化の単調性定理候補と、P3 の力ベース枯渇との比較定理(外在 = 内在の shadow)を狙う。
+- `core tension`: 添字となる幾何自体が動く変形を、どの ambient(配置の族、モジュライの芽)で語るか。剛性の単調性はどの力の類(剛性化方針)で成り立ち、どの refactor で破れるか。力ベースの有効変形(予算内で strict 減少を実現し得る力の存在)と Ext ベースの一次変形は、どの regime で一致し、どこでずれるか(ずれ自体が定理)。変形空間上のコスト(operation cost からの誘導)は well-defined か。
+- `rival`: 変更容易性・modularity メトリクス、リファクタ難易度の AI 評価、evolvability 研究。これらは指標と感想を返すが、変形空間の次元・障害という内在量と、その単調性・比較定理を返さない。
+- `novelty hypothesis`: 「このシステムはなぜ動けないのか」を、変形空間の縮小(骨化)として Ext の言葉で語る枠組みは薄い。AAT は導来側の装備(第V・VI部)を持ち、SFT は力と予算の外在記述(P3)を持つため、両者の比較が可能な稀な場所にいる。
+- `research lift`: レガシー・進化容量の議論を「難しそう」から「一次変形の空間がこの操作で単調に縮む / 枯渇の外在判定は内在判定の shadow である」へ移す。
+- `claim boundary`: 有限配置、selected な変形の ambient(宣言された配置の族)、Ext 次数規約、選ばれたコスト読み、SFT 第X部の力ベース定義との比較に相対化する。無限次元モジュライの一般論、任意 refactoring の正しさ、実コードの変更可能性の断定は主張しない。
+- `capability categories`: configuration-deformation、law-deformation、ext-grading、rigidity、ossification-monotonicity、effective-deformation-comparison、deformation-cost、moduli-germ、finite-witness、computability。
+- `threshold policy`: tracking Issue の threshold state で管理(`$research-loop G-sft-deformation-01 threshold <N>`)。threshold は、変形 record・Ext 次数の SFT 読み・剛性単調性候補・力ベース比較が連動する水準に置く。
+- `portfolio constraint`: 4 カテゴリ以上で正の SCORE。少なくとも 1 件は `proved-in-research`(有限配置の変形空間の手計算 witness の Lean 化)、少なくとも 1 件は剛性の単調性(またはその反例境界)、少なくとも 1 件は P3 枯渇との比較(一致 regime と分離例)、少なくとも 1 件は AAT 第VI部の固定幾何内変形との関係(何が流用でき何が新規か)の明示を含むこと。
+- `phase boundary criteria`: `research/reports/G-sft-deformation-01.md` が読めること。配置変形の ambient の宣言、Ext 次数の SFT 側読み、剛性・骨化の定義と単調性候補、力ベース枯渇との比較定理(shadow 方向)、正準有限実例での変形空間の手計算、SFT 第VII部の本文化(§43–46)に足りる statement 集合が揃っていること。
+- `reward rubric`: `0`: 変更容易性メトリクスの言い換え、「レガシーは硬い」の再記述。`10-20`: record・記法。`30-40`: 有限配置の square-zero 型変形の定義、片側の例。`50-70`: 剛性の定義と単調性候補、変形コストの誘導、AAT VI との境界画定。`80-100`: 変形空間の手計算 witness + 単調性定理(または鋭い反例境界)+ 力ベース比較(shadow 定理)を同時に満たす package。penalty は、`-30`: AAT 第VI部の固定幾何内変形の言い換え、`-40`: Ext の名前だけで受け皿・次数を持たない、`-40`: 骨化を感想として記述、`-50`: 実コードの変更可能性への越境。
+- `dullness filter`: メトリクス比較、依存グラフの次数勘定、「変更コストが高い」の定性記述、AAT VI の定理の再掲、変形の定義展開だけの候補を弾く。
+- `frontier`: 配置の族の芽(モジュライの局所)、law 構造の変形と witness ideal の変形、剛性化方針の類、骨化の速度(第VI部の力学との結合)、変形空間上のコスト幾何、終焉の Ext 版(有効変形の内在判定)、U 変形との同時変形(G-sft-law-transport-01 接続)。
+- `spine`: 有限配置の変形 record(square-zero 型)→ Ext 次数の SFT 読みと受け皿宣言 → 正準実例で変形空間の手計算 → 剛性の定義と単調性定理候補(反例探索と往復)→ P3 枯渇との比較定理 → SFT 第VII部 statement 集合。

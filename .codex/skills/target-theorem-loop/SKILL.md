@@ -1,15 +1,15 @@
 ---
 name: target-theorem-loop
-description: "research/GOALS.mdのactiveなtarget-theorem GOALで、固定targetを弱めずproof obligationをLean theorem、premise discharge、finite witness、blockerとして消化し、独立監査とmath-lean-reviewで完了判定する。\"$target-theorem-loop goal-id\"、\"大定理証明ループ\"で使う。探索型SCORE phaseにはresearch-loopを使う。"
+description: "research/goals/<goal-id>.mdのactiveなtarget-theorem GOALで、固定targetを弱めずproof obligationをLean theorem、premise discharge、finite witness、blockerとして消化し、独立監査とmath-lean-reviewで完了判定する。\"$target-theorem-loop goal-id\"、\"大定理証明ループ\"で使う。探索型SCORE phaseにはresearch-loopを使う。"
 ---
 
 # Target Theorem Loop
 
-この skill は、`research/GOALS.md` の `research mode: target-theorem` GOAL だけを扱う大定理証明義務消化ループである。探索型 SCORE phase は `$research-loop` の対象である。
+この skill は、`research/goals/<goal-id>.md` の `research mode: target-theorem` GOAL だけを扱う大定理証明義務消化ループである。探索型 SCORE phase は `$research-loop` の対象である。
 
 目的は、GOAL カードに定義された target theorem を弱めず、必要な proof obligation を一つずつ Lean theorem、finite witness、concrete certificate、または blocker / obstruction として固定し、大定理本体の完了条件へ近づけることである。SCORE と candidate card はこの skill では使わない。進捗は `approve` / `reject` と proof obligation delta だけで判定する。
 
-statement 品質・定義品質・スタイルの判定正本は `docs/aat/lean_quality_standard.md`(mathlib 型 statement review 基準)である。material premise の分類語彙は同 §1.1 の三分類(本文由来 / 放電済み / 未放電)を使い、GOAL カードの material premise ledger・cycle report・tracking Issue で統一する。target statement の固定は従来どおり `research/GOALS.md` の GOAL カードが正本であり、固定手続きは変えない(同 §5.1)。
+statement 品質・定義品質・スタイルの判定正本は `docs/aat/lean_quality_standard.md`(mathlib 型 statement review 基準)である。material premise の分類語彙は同 §1.1 の三分類(本文由来 / 放電済み / 未放電)を使い、GOAL カードの material premise ledger・cycle report・tracking Issue で統一する。target statement の固定は従来どおり `research/goals/<goal-id>.md` の GOAL カードが正本であり、固定手続きは変えない(同 §5.1)。
 
 仮定放電、certificate provenance、proof-use、route integrity、完了禁止条件は
 下のTarget Proof Contractを正本とする。T5の正式`$math-lean-review`が
@@ -17,12 +17,12 @@ statement 品質・定義品質・スタイルの判定正本は `docs/aat/lean_
 
 ## 入口
 
-起動は `$target-theorem-loop <goal-id>` とする。`goal-id` は [research/GOALS.md](../../../research/GOALS.md) の active な `research mode: target-theorem` GOAL を指す。任意で `max-cycles <N>`、特定 proof obligation、特定 blocker、証明寄り / 反例寄りの指示を渡してよい。
+起動は `$target-theorem-loop <goal-id>` とする。`goal-id` は `research/goals/<goal-id>.md` の active な `research mode: target-theorem` GOAL を指す。任意で `max-cycles <N>`、特定 proof obligation、特定 blocker、証明寄り / 反例寄りの指示を渡してよい。
 
 最初に次を読む。
 
 - [research/README.md](../../../research/README.md)
-- [research/GOALS.md](../../../research/GOALS.md)
+- `research/goals/<goal-id>.md`
 - [research/DESIGN.md](../../../research/DESIGN.md)
 
 参照ファイルは該当stageへ到達した時に読む。起動時に全件を読み込まない。
@@ -40,7 +40,7 @@ statement 品質・定義品質・スタイルの判定正本は `docs/aat/lean_
   [../math-lean-review/SKILL.md](../math-lean-review/SKILL.md)と
   [../math-lean-review/references/reviewer-lanes.md](../math-lean-review/references/reviewer-lanes.md)
 
-`research/GOALS.md` は target theorem の正本として扱い、ループ中に編集しない。target statement、boundary、completion criteria、premise discharge policy、material premise ledger、anti-weakening rule、failure policy を弱める必要がある場合は、tracking Issue または別 Issue に GOAL 改訂提案を残して止まる。
+`research/goals/<goal-id>.md` は target theorem の正本として扱い、ループ中に編集しない。target statement、boundary、completion criteria、premise discharge policy、material premise ledger、anti-weakening rule、failure policy を弱める必要がある場合は、tracking Issue または別 Issue に GOAL 改訂提案を残して止まる。
 
 ## Target Proof Contract
 
@@ -214,7 +214,7 @@ cycle 完了時だけ report と tracking Issue を同期する。candidate card
 - `completion_candidate`
 - final review を走らせた場合は `$math-lean-review` verdict
 
-tracking Issue には runtime state を置く。report には証拠索引と proof obligation delta を置く。`research/GOALS.md` は編集しない。
+tracking Issue には runtime state を置く。report には証拠索引と proof obligation delta を置く。`research/goals/<goal-id>.md` は編集しない。
 
 ### T5 completion candidate なら final review
 
@@ -244,7 +244,7 @@ final_review_packet:
   tracking_issue_refs:
 ```
 
-final review では必ず `$math-lean-review research/GOALS.md <goal-id>` を実行する。入力には `final_review_packet`、GOAL claim、completion Lean declarations、proof artifacts、tracking Issue proof state、T3/T4 の evidence を渡す。`$math-lean-review` の正式判定が得られなければ完了判定はできない。
+final review では必ず `$math-lean-review research/goals/<goal-id>.md <goal-id>` を実行する。入力には `final_review_packet`、GOAL claim、completion Lean declarations、proof artifacts、tracking Issue proof state、T3/T4 の evidence を渡す。`$math-lean-review` の正式判定が得られなければ完了判定はできない。
 
 `$math-lean-review` が `Reject / 証明として不十分`、`Major revisions`、`Minor issues`、`Blocked / cannot determine`、または中心 claim に関わる `unchecked` を返した場合、`target-theorem-proved` は出さない。
 
@@ -297,7 +297,7 @@ final completion では `$math-lean-review` の正式判定を必須にする。
 
 ## 安全規則
 
-- `research/GOALS.md` は編集しない。target 改訂は提案に留める。
+- `research/goals/<goal-id>.md` は編集しない。target 改訂は提案に留める。
 - `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md`、docs/note は編集しない。
 - AAT の target theorem に ArchMap extraction completeness、runtime measurement completeness、whole-codebase quality を混ぜない。GOAL が明示する claim scope だけを判定する。
 - Lean の依存は `Formal/AG/Research` から `Formal/AG` への一方向に保つ。

@@ -51,7 +51,7 @@ nonzero boundary-quotient class として読む。
 
 ## 依拠
 
-- `research/GOALS.md` の `G-sft-conway-01`
+- `research/goals/G-sft-conway-01.md` の `G-sft-conway-01`
 - Cycle 2 report: `research/reports/G-sft-conway-01.md`
 - Lean evidence: `Formal/AG/Research/SFT/ConwaySupportReceiver.lean`
 

@@ -37,7 +37,7 @@ exact repair frontier では分岐する。二つの path は 3x3 grid の中間
 - `Formal/AG/Research/QualitySurface/TraceCurvature.lean`
 - `Formal/AG/Research/QualitySurface/TraceLocus.lean`
 - `Formal/AG/Research/QualitySurface/ReadingAdequacy.lean`
-- `research/GOALS.md` の finite product poset `P_law x P_cover` 上の 3x3 profile grid frontier
+- `research/goals/G-aat-quality-surface-01.md` の finite product poset `P_law x P_cover` 上の 3x3 profile grid frontier
 
 ## 非自明性
 

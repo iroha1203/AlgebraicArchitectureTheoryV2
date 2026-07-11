@@ -32,7 +32,7 @@ minimal atom support family `MinSupportFamily([z])` を持つとする。repair 
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-01`
+- `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
 - `docs/note/aat_quality_surface.md` の 10 節 Atom support と 13 節 Atom-support repair theorem
 - `Formal/AG/Measurement/SquareFreeRepair.lean` の minimal repair hitting set surface
 - `Formal/AG/Measurement/SupportTransfer.lean` の support-localized repair path surface

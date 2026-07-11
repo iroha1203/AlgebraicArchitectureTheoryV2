@@ -24,7 +24,7 @@ v0.5.0 の出力 artifact 体系を、次の 3 つの消費者に向けて再設
 - packet は第VIII部 定義11.1 の 6 区画(profile / structuralVerdict / computedInvariants / analyticReadings / assumptions / nonConclusions)を保存・拡張する。
 - 肯定的結論(`PASS_WITHIN_GATE_POLICY` 型)が全 surface の主役。boundary は typed で残すが主文にしない。
 - 「比較可能性はデータである」(第X部 定理8.4/8.5)。計測間比較は comparison data を artifact として明示的に持ち回る。
-- 結論相当フィールドを入力 schema に持たせない(anti-weakening、GOALS.md G-06 material premise ledger)。
+- 結論相当フィールドを入力 schema に持たせない(anti-weakening、`research/goals/G-aat-quality-surface-06.md` material premise ledger)。
 
 **出荷スコープ(v0.5.0 ゲート)**: 本文書は Phase A–E の設計を確定するが、**v0.5.0 の出荷ゲートは Phase A–C(命名統一 + packet v2 + gate)に限定する**。Phase D(delta / compare)は 0.5.x 追補、Phase E(frontier / viewer v3)は ArchView 再設計マイルストーンに切り出す(§5.1)。packet v2 は既存 `MeasurementProfileV1` の埋め込みで凍結し、LawPolicy 再設計次元の完了を待たない(§3.1)。
 

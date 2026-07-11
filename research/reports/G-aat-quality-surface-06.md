@@ -3,7 +3,7 @@
 This report tracks proof-obligation evidence for the target theorem
 `AAT Site-Sheaf-Cech H1 Grounding Theorem`.
 
-Static theorem statement and completion criteria live in `research/GOALS.md`.
+Static theorem statement and completion criteria live in `research/goals/G-aat-quality-surface-06.md`.
 Runtime state lives in GitHub tracking Issue #2636. This report records Lean
 artifacts, proof-obligation deltas, and discharge audits only.
 
@@ -21,7 +21,7 @@ artifacts, proof-obligation deltas, and discharge audits only.
 - decision: the user accepted G-06 as `target-theorem-proved` for the
   law-equation-realized selected-finite grounding boundary, after the
   accepted final review following Cycle 352.
-- `research/GOALS.md`: the G-06 card moved from `active` to `completed`, with
+- `research/goals/G-aat-quality-surface-06.md`: the G-06 card moved from `active` to `completed`, with
   completion result, completion date, and completion report recorded.
 - `docs/aat/proof_obligations.md`: the research target-theorem ledger gained
   the G-06 row.
@@ -213,7 +213,7 @@ Initial axiom audit over representative declarations reported only standard
 ### Completion processing note
 
 Completion processing (moving the G-06 card to `completed` in
-`research/GOALS.md`, closing tracking Issue #2636, and recording the final
+`research/goals/G-aat-quality-surface-06.md`, closing tracking Issue #2636, and recording the final
 `target-theorem-proved` state) is deliberately left to the user's acceptance
 decision, per the project's role split.  The reviewers' recommendation is:
 accept as `target-theorem-proved` for the law-equation-realized,
@@ -410,7 +410,7 @@ No `sorryAx` appears.
 
 - math A (claim substance / vacuity): **MAJOR — veto** (two findings below).
 - math B (anti-weakening / material premise): `No major findings`
-  (5 minor findings; ledger wording clarified in `research/GOALS.md`, the
+  (5 minor findings; ledger wording clarified in `research/goals/G-aat-quality-surface-06.md`, the
   degenerate-site and zero-section caveats are recorded below).
 - Lean A (proof soundness): `No major findings` (defeq bridges, instance
   paths, sieve-generation membership, and axiom audit all verified sound;
@@ -476,7 +476,7 @@ No `sorryAx` appears.
 
 ### Ledger sync
 
-- `research/GOALS.md` G-06 card: ambient ledger wording refined during
+- `research/goals/G-aat-quality-surface-06.md` G-06 card: ambient ledger wording refined during
   review (chart-local tie + arrow-level restriction compatibility; quotient
   sheaf condition assigned to the existing `AATSheafCondition`
   discharge-required item).
@@ -699,7 +699,7 @@ anticipated by Cycle 323: laws are realized as equations.  The extension
 reuses the canonical Part III LawAlgebra semantics
 (`Formal/AG/LawAlgebra/ObstructionIdeal.lean`: III.定義5.2 witness ideals,
 III.定義6.1 `I_Ob = Σ I_L`, III.定義6.2 `RestrictionCompatible`) rather than
-inventing a new semantics.  `research/GOALS.md` G-06 card: the claim boundary
+inventing a new semantics.  `research/goals/G-aat-quality-surface-06.md` G-06 card: the claim boundary
 and the material premise ledger now name the law-equation witness-ideal
 realization as `ambient-boundary` input geometry, restricted to pointwise /
 chart-local fields.
@@ -1438,7 +1438,7 @@ Remaining:
 - `git diff --check`
 - hidden/bidirectional Unicode scan on
   `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
-- T3 read-only audit: no major findings; no protected docs or `GOALS.md`
+- T3 read-only audit: no major findings; no protected docs or `research/goals/G-aat-quality-surface-06.md`
   edits; no completion claim.
 
 ## Cycle 340 -- order-free finite-poset chart-projection generated selected-K route
@@ -47442,7 +47442,7 @@ Remaining:
   and four direct selected `K.d` compatibility laws without hiding a G-06
   conclusion.
 - `target selected semantic coefficient realization gate`: added to
-  `research/GOALS.md` so that future cycles must construct this layer as a
+  `research/goals/G-aat-quality-surface-06.md` so that future cycles must construct this layer as a
   canonical/free obstruction-sheaf realization from semantic atom / law data over
   an atom-generated selected cover, rather than by fitting an ad hoc `K`,
   `ObstructionSheaf`, cover, or certificate field to the desired

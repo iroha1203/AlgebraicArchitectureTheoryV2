@@ -70,7 +70,7 @@ lean_declarations:
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-02`
+- `research/goals/G-aat-quality-surface-02.md` の `G-aat-quality-surface-02`
 - `docs/note/aat_semantic_repair_gluing_complex.md`
 - `Formal/AG/Research/QualitySurface/SemanticRepairCocycleWitness.lean`
 - `Formal/AG/Research/QualitySurface/SemanticSupportProjectionKernel.lean`

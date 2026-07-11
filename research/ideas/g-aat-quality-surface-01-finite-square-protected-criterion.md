@@ -31,7 +31,7 @@ discrepancy は起きない。
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-01`。
+- `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`。
 - cycle 3 の `ProfileCurvature.lean`。
 - cycle 7 の `TraceCurvature.lean`。
 - cycle 8 の `ReadingAdequacy.lean`。

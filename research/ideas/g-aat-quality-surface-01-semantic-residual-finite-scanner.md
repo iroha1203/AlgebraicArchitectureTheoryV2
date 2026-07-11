@@ -126,7 +126,7 @@ G3 初期実績:
 - G1 genius-support review: finite residual scanner は 1000 点 unlock ではなく、finite repair-gluing obstruction theorem への computability-obstruction support node。
 - G2 rigor: accept / base 76 / genius no。finite supplied order、completeness、decidability 前提が明示され、bare negated closure からの witness overclaim はない。
 - G2 research value: accept / base 78 / genius no。Cycle 84/85 を complete finite order 下の proof-carrying diagnostic へ落とすが、新 obstruction 原理ではない。
-- G2 repo integration: accept / base 78 / genius no。protected docs / `research/GOALS.md` / report SCORE ledger 変更なし、leakage なし。
+- G2 repo integration: accept / base 78 / genius no。protected docs / `research/goals/G-aat-quality-surface-01.md` / report SCORE ledger 変更なし、leakage なし。
 - G2 rival comparison: accept / base 78 / genius no。component row / summary を actual residual atom と unsupported transported residual certificate に持ち上げる差分あり。
 - G4 SCORE 監査: confirm / base 78 / multiplier 2.0 / penalty 0 / final +156。total 11668 -> 11824。genius は support node であり unlock ではない。
 

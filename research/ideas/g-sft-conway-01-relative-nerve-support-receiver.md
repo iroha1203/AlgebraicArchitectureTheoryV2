@@ -50,7 +50,7 @@ Cycle 1 の selected Conway obstruction は、同じ communication block 上に 
 
 ## 依拠
 
-- `research/GOALS.md` の `G-sft-conway-01`
+- `research/goals/G-sft-conway-01.md` の `G-sft-conway-01`
 - Cycle 1 report: `research/reports/G-sft-conway-01.md`
 - Lean evidence: `Formal/AG/Research/SFT/ConwayTwoTopology.lean`
 

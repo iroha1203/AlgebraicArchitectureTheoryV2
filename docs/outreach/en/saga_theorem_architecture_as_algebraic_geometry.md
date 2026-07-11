@@ -235,5 +235,5 @@ That old phenomenon — locally correct, globally broken — now has mathematics
 - Repository: [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) (MIT license)
 - Proof record of the SAGA theorem: `docs/note/aat_saga_theorem_proof_record.md`
 - The AAT mathematical canon: `docs/aat/algebraic_geometric_theory/`
-- Research goal ledger: `research/GOALS.md`; proof-state ledger: `research/reports/G-aat-quality-surface-06.md` (inside the repository, the SAGA theorem is tracked under the research-goal ID `G-aat-quality-surface-06`)
+- Research goal ledger: `research/goals/G-aat-quality-surface-06.md`; proof-state ledger: `research/reports/G-aat-quality-surface-06.md` (inside the repository, the SAGA theorem is tracked under the research-goal ID `G-aat-quality-surface-06`)
 - Lean artifacts: `Formal/AG/Research/QualitySurface/` (for SAGA, see `SemanticRepairCechGrounding.lean` and `SemanticRepairLawEquation*.lean`)

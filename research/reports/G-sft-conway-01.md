@@ -1,7 +1,7 @@
 # G-sft-conway-01 report
 
 この report は `G-sft-conway-01` の research-loop 成果を、SFT 第V部 Conway 対応へ向けた
-能力増分として記録する。GOAL 定義と active threshold は `research/GOALS.md` と tracking
+能力増分として記録する。GOAL 定義と active threshold は `research/goals/G-sft-conway-01.md` と tracking
 Issue `#2962` を正本にする。
 
 ## Cycle 1 — 独立二被覆の正準有限 witness package

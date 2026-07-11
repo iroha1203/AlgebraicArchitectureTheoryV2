@@ -50,7 +50,7 @@ lean_declarations:
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-02`
+- `research/goals/G-aat-quality-surface-02.md` の `G-aat-quality-surface-02`
 - `Formal/AG/Research/QualitySurface/SemanticRepairGluingComplex.lean`
 - `Formal/AG/Research/QualitySurface/SemanticResidualComponentFaithfulness.lean`
 - `Formal/AG/Research/QualitySurface/SemanticSupportProjectionKernel.lean`

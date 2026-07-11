@@ -2,7 +2,7 @@
 
 ## 原則
 
-- target theorem の statement と completion criteria は `research/GOALS.md` を正本にする。
+- target theorem の statement と completion criteria は `research/goals/<goal-id>.md` を正本にする。
 - tracking Issue には runtime state、proof obligation delta、blocker、PR、次 obligation を置く。
 - report には証拠索引、Lean declarations、premise_delta、completion 判定材料を置く。
 - SCORE と candidate card は使わない。

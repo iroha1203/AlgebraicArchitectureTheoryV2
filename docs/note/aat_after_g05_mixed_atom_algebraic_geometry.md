@@ -5,7 +5,7 @@ semantic repair-gluing theorem の**証明後に開ける世界**を整理する
 これは確定済みの theorem report ではなく、G-05 後に relation atom、semantic atom、law atom、
 trace atom、effect atom などを同じ代数幾何的基盤で扱うための見取り図である。
 
-source GOAL: [`research/GOALS.md`](../../research/GOALS.md)
+source GOAL: [`research/goals/G-aat-quality-surface-05.md`](../../research/goals/G-aat-quality-surface-05.md)
 
 ---
 

@@ -45,7 +45,7 @@ unchecked:
 
 ```text
 Judge this candidate from the viewpoint of the whole repository and research program.
-Inputs: GOAL <goal-id>, candidate card <path>, reward rubric, dullness filter, tracking Issue genius target/support summary when relevant, research/README.md, research/GOALS.md, docs/README.md, references/genius-scoring.md when genius scoring is proposed, and other repo overview files explicitly named by the GOAL.
+Inputs: GOAL <goal-id>, candidate card <path>, reward rubric, dullness filter, tracking Issue genius target/support summary when relevant, research/README.md, research/goals/<goal-id>.md, docs/README.md, references/genius-scoring.md when genius scoring is proposed, and other repo overview files explicitly named by the GOAL.
 Return:
 verdict: accept | revise | reject
 base_score:

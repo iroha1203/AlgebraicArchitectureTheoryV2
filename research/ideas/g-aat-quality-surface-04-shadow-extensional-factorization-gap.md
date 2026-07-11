@@ -95,7 +95,7 @@ finite/small target surface, finite certificates, canonical finite all-layer sha
 
 ## Math Lean Review Scope
 
-- GOAL claim: `research/GOALS.md` G-04 target theorem and material premise ledger.
+- GOAL claim: `research/goals/G-aat-quality-surface-04.md` G-04 target theorem and material premise ledger.
 - Candidate Lean declarations: `Formal.AG.Research.QualitySurface.SemanticRepairTargetFactorization.ShadowExtensionalObstructionAssignment`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetFactorization.shadowExtensional_of_factorization`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetFactorization.targetSurfaceShadowExtensionalObservation_universalFactorization`.
 - Relevant files: `SemanticRepairUniversalShadow.lean`, `SemanticRepairTargetCompletion.lean`, `SemanticRepairTargetSurface.lean`, `SemanticRepairTargetFactorization.lean`.
 

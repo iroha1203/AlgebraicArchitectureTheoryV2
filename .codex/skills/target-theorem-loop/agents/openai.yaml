@@ -1,4 +1,4 @@
 interface:
   display_name: "Target Theorem Loop"
-  short_description: "GOALS.mdの大定理証明を仮定放電込みで進める"
+  short_description: "GOAL cardの大定理証明を仮定放電込みで進める"
   default_prompt: "$target-theorem-loopで指定GOALの大定理を仮定放電と最終査読まで進めてください。"

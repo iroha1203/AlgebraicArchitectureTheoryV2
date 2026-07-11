@@ -676,7 +676,7 @@ CLI フラグ省略を引き金とする縮退 fallback は設けない(fail-clo
   (iii) `lawSurfaceRef` を持たない政策文書は **v0.4.0 相当 contract の明示選択**
   (§3.4(a) の 4 行表)。(iii) は author が schema 水準で宣言する contract であって、
   入力欠落を ArchSig が registry の方程式で埋める補完ではない。補完はどの挙動にも存在しない。
-- **anti-weakening(GOALS.md G-06 の material premise 規律)**: law-equation-surface/v1 と
+- **anti-weakening(`research/goals/G-aat-quality-surface-06.md` の material premise 規律)**: law-equation-surface/v1 と
   measurement-profile/v2 の schema に、結論相当フィールド
   (verdict / h1Zero / boundaryMembership / nsdepth / minimalForbiddenSupports /
   globalCoherent 等)を**定義しない**。さらに ArchMap R3 と同型の
