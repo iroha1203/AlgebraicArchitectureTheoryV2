@@ -42,24 +42,24 @@ compatibility criteria for the canonical mismatch.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayReorgRefactorKilling.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEditHitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit.postCompatible_iff_hitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit.killsConwayObstruction_of_hitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_hitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_killsConwayObstruction`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEditHitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit.postCompatible_iff_hitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit.killsConwayObstruction_of_hitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_hitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_killsConwayObstruction`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.CanonicalRepairOperation`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRepairOperation_killsConwayObstruction`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedReorgRefactorKillingPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayReorgRefactorKilling.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ReorgCoverEdit`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ReorgCoverEditHitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ReorgCoverEdit.postCompatible_iff_hitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ReorgCoverEdit.killsConwayObstruction_of_hitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.canonicalReorgCoverEdit`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_hitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_killsConwayObstruction`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.RefactorOwnershipEdit`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.RefactorOwnershipEditHitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.RefactorOwnershipEdit.postCompatible_iff_hitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.RefactorOwnershipEdit.killsConwayObstruction_of_hitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_hitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_killsConwayObstruction`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.CanonicalRepairOperation`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.canonicalRepairOperation_killsConwayObstruction`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedReorgRefactorKillingPackage`
 
 ## Claim boundary
 

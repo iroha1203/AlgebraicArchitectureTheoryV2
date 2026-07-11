@@ -14,7 +14,7 @@ score_reason: Cycle 8 の support constraint を `CommonRefinementSpan` vocabula
 mathematical_interest: common-refinement block が fork の communication block 全体を覆うことを selected support condition として固定する。
 goal_advancement: support predicate を common-refinement data に移し、後続の comparison theorem / common-refinement exactness の足場を作る。
 dullness_risk: `ForkHasSingleOwnerSupport` と同値であり、新しい obstruction 条件ではない。
-proof_or_evidence_plan: `Formal/AG/Research/SFT/ConwayCommonRefinementBoundary.lean` に common-refinement support, single-owner support equivalence, constrained receiver equivalence, finite example package を置く。
+proof_or_evidence_plan: `research/lean/ResearchLean/AG/SFT/ConwayCommonRefinementBoundary.lean` に common-refinement support, single-owner support equivalence, constrained receiver equivalence, finite example package を置く。
 planned_theorem_names: CommonRefinementSupportsFork, commonRefinementSupportsFork_iff_singleOwnerSupport, SupportForkDefectVanishesModuloCommonRefinementOwnerPotential, commonRefinementOwnerPotential_vanishes_iff_singleOwnerSupport, CommonRefinementOwnerPotentialReceiver, commonRefinementOwnerPotentialReceiver_iff_supportReceiver, mismatchedSupportFork_notCommonRefinementOwnerPotentialVanishes, selectedCommonRefinementOwnerPotentialPackage
 rival_advantage: owner mismatch dashboard can show mismatch, but this candidate records whether the support condition has common-refinement provenance.
 visible_projection: common-refinement span, fork communication block coverage, support receiver, owner-potential absorption.
@@ -58,19 +58,19 @@ support を global zero-cochain や comparison functor failure と比較する t
 
 - `score_reason`: support receiver の common-refinement 表現として base 55。
 - `dullness_risk`: single-owner support との同値なので、過大評価しない。
-- `proof_or_evidence_plan`: `lake env lean Formal/AG/Research/SFT/ConwayCommonRefinementBoundary.lean`、
+- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayCommonRefinementBoundary.lean`、
   `lake build FormalAGResearch`、`#print axioms` で検証する。
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayCommonRefinementBoundary.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.CommonRefinementSupportsFork.toSingleOwnerSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.CommonRefinementSupportsFork.ofSingleOwnerSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.commonRefinementSupportsFork_iff_singleOwnerSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.commonRefinementOwnerPotential_vanishes_iff_singleOwnerSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.commonRefinementOwnerPotentialReceiver_iff_supportReceiver`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notCommonRefinementOwnerPotentialVanishes`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedCommonRefinementOwnerPotentialPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayCommonRefinementBoundary.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.CommonRefinementSupportsFork.toSingleOwnerSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.CommonRefinementSupportsFork.ofSingleOwnerSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.commonRefinementSupportsFork_iff_singleOwnerSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.commonRefinementOwnerPotential_vanishes_iff_singleOwnerSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.commonRefinementOwnerPotentialReceiver_iff_supportReceiver`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.mismatchedSupportFork_notCommonRefinementOwnerPotentialVanishes`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedCommonRefinementOwnerPotentialPackage`
 
 ## 審判メモ
 
@@ -81,5 +81,5 @@ support を global zero-cochain や comparison functor failure と比較する t
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean Formal/AG/Research/SFT/ConwayCommonRefinementBoundary.lean`、
+- 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayCommonRefinementBoundary.lean`、
   `lake build FormalAGResearch`、full `lake build` が通過。G2 二審判 pass、final score +110。

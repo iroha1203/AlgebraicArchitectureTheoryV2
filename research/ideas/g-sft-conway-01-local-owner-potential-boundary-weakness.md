@@ -14,7 +14,7 @@ score_reason: Cycle 6 後の open frontier だった additive boundary 候補を
 mathematical_interest: owner potential の endpoint difference という additive boundary が、support/global compatibility を無視すると Conway mismatch を消してしまうことを Lean theorem として固定する。
 goal_advancement: local additive exactness と Conway obstruction receiver を分離し、次 cycle で必要な global/common-refinement constraint を明確化する。true `C0 -> C1` complex はまだ主張しない。
 dullness_risk: mismatched finite example 上の local computationであり、一般 theorem や true cohomology ではない。positive obstruction receiver ではなく boundary candidate の失敗整理である。
-proof_or_evidence_plan: `Formal/AG/Research/SFT/ConwayOwnerPotentialBoundary.lean` に owner potential, additive boundary, mismatched local absorption, owner-choice/global receiver との分離 theorem を置く。
+proof_or_evidence_plan: `research/lean/ResearchLean/AG/SFT/ConwayOwnerPotentialBoundary.lean` に owner potential, additive boundary, mismatched local absorption, owner-choice/global receiver との分離 theorem を置く。
 planned_theorem_names: OwnerPotential, SupportForkOwnerPotentialBoundary, SupportForkDefectVanishesModuloOwnerPotentialBoundary, ownerPotentialBoundary_absorbs_of_endpointDifference, mismatchedOwnerPotential, mismatchedOwnerPotential_boundary_eq_defect, mismatchedSupportFork_ownerPotentialBoundaryVanishes, localOwnerPotential_absorbs_but_ownerChoiceReceiver_detects, localOwnerPotential_absorbs_but_globalBoundary_detects, selectedOwnerPotentialBoundaryPackage
 rival_advantage: owner mismatch dashboard can show endpoint mismatch. This candidate proves that a naive local additive potential can erase the selected defect, so a rival must distinguish local algebraic separation from support/global compatibility.
 visible_projection: owner potential, support fork endpoints, endpoint difference, local absorption, global/support receiver nonabsorption.
@@ -59,20 +59,20 @@ support/global compatibility または common-refinement constraint が必要で
 
 - `score_reason`: additive local boundary とその failure-mode を固定するが、canonical finite fork 上の negative bridge なので base 60。
 - `dullness_risk`: finite example 上の negative bridge なので、過大評価しない。
-- `proof_or_evidence_plan`: `lake env lean Formal/AG/Research/SFT/ConwayOwnerPotentialBoundary.lean`、
+- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayOwnerPotentialBoundary.lean`、
   `lake build FormalAGResearch`、`#print axioms` で検証する。
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayOwnerPotentialBoundary.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerPotential`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkOwnerPotentialBoundary`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerPotentialBoundary_absorbs_of_endpointDifference`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedOwnerPotential_boundary_eq_defect`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_ownerPotentialBoundaryVanishes`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_ownerChoiceReceiver_detects`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_globalBoundary_detects`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerPotentialBoundaryPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerPotentialBoundary.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerPotential`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.SupportForkOwnerPotentialBoundary`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerPotentialBoundary_absorbs_of_endpointDifference`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.mismatchedOwnerPotential_boundary_eq_defect`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.mismatchedSupportFork_ownerPotentialBoundaryVanishes`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_ownerChoiceReceiver_detects`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_globalBoundary_detects`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedOwnerPotentialBoundaryPackage`
 
 ## 審判メモ
 
@@ -83,6 +83,6 @@ support/global compatibility または common-refinement constraint が必要で
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean Formal/AG/Research/SFT/ConwayOwnerPotentialBoundary.lean`、
-  `lake build Formal.AG.Research.SFT.ConwayOwnerPotentialBoundary`、`lake build FormalAGResearch`、full `lake build` が通過。
+- 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayOwnerPotentialBoundary.lean`、
+  `lake build ResearchLean.AG.SFT.ConwayOwnerPotentialBoundary`、`lake build FormalAGResearch`、full `lake build` が通過。
   G2/G3 後、score を base 60 / final 120 に修正。

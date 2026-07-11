@@ -14,7 +14,7 @@ score_reason: Cycle 3 の predicate-driven boundary subgroup を、explicit `Sup
 mathematical_interest: 単一 owner support を、ただの predicate ではなく owner と support proof を持つ boundary generator として記録し、selected defect absorption の provenance を固定する。
 goal_advancement: independent boundary map へ向けた boundary-generator provenance の最初の分離。full quotient object、true sheaf `H^1`、common-refinement exactness、comparison functor failure は未固定。
 dullness_risk: generator は single-owner support witness と同値なので、Cycle 3 receiver の再包装に落ちる危険がある。`GeneratorBoundarySubgroup` と `functionalFork_noBoundaryGenerator` / `functionalFork_not_generatorBoundaryVanishes` を根拠にする。
-proof_or_evidence_plan: `Formal/AG/Research/SFT/ConwayBoundaryGenerator.lean` に explicit boundary generator、generator subgroup、defect absorption、functional ownership no-generator theorem、finite example package を置く。
+proof_or_evidence_plan: `research/lean/ResearchLean/AG/SFT/ConwayBoundaryGenerator.lean` に explicit boundary generator、generator subgroup、defect absorption、functional ownership no-generator theorem、finite example package を置く。
 planned_theorem_names: SupportForkBoundaryGenerator, boundaryGenerator_nonempty_iff_singleOwnerSupport, SupportForkGeneratorBoundarySubgroup, SupportForkDefectVanishesModuloGeneratorBoundary, generatorBoundary_absorbs_defect, generatorBoundarySubgroup_le_predicateBoundary, functionalFork_noBoundaryGenerator, functionalFork_not_generatorBoundaryVanishes, GeneratorBoundaryReceiver, generatorBoundaryReceiver_of_functionalFork, mismatchedSupportFork_notGeneratorBoundaryVanishes, mismatchedAtlas_generatorBoundaryReceiver, compatible_no_generatorBoundaryReceiver, selectedGeneratorBoundaryReceiverPackage
 rival_advantage: owner mismatch dashboard can show mismatch. This candidate records explicit owner-support generator provenance inside Lean so later boundary-map candidates can consume the witness.
 visible_projection: selected support fork, explicit owner support generator, generator-derived boundary subgroup.
@@ -57,20 +57,20 @@ Cycle 3 の adversarial finding「boundary subgroup が receiver predicate-drive
 
 - `score_reason`: explicit boundary generator provenance を追加するため base 55。
 - `dullness_risk`: generator existence は support predicate と同値なので、過大評価しない。
-- `proof_or_evidence_plan`: `lake env lean Formal/AG/Research/SFT/ConwayBoundaryGenerator.lean`、`lake build FormalAGResearch`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayBoundaryGenerator.lean`、`lake build FormalAGResearch`、`#print axioms` で検証する。
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayBoundaryGenerator.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.boundaryGenerator_nonempty_iff_singleOwnerSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.generatorBoundary_absorbs_defect`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.generatorBoundarySubgroup_le_predicateBoundary`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.functionalFork_noBoundaryGenerator`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.functionalFork_not_generatorBoundaryVanishes`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notGeneratorBoundaryVanishes`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_generatorBoundaryReceiver`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.compatible_no_generatorBoundaryReceiver`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedGeneratorBoundaryReceiverPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayBoundaryGenerator.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.boundaryGenerator_nonempty_iff_singleOwnerSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.generatorBoundary_absorbs_defect`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.generatorBoundarySubgroup_le_predicateBoundary`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.functionalFork_noBoundaryGenerator`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.functionalFork_not_generatorBoundaryVanishes`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.mismatchedSupportFork_notGeneratorBoundaryVanishes`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.mismatchedAtlas_generatorBoundaryReceiver`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.compatible_no_generatorBoundaryReceiver`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedGeneratorBoundaryReceiverPackage`
 
 ## 審判メモ
 
@@ -81,6 +81,6 @@ Cycle 3 の adversarial finding「boundary subgroup が receiver predicate-drive
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean Formal/AG/Research/SFT/ConwayBoundaryGenerator.lean` と
-  `lake build Formal.AG.Research.SFT.ConwayBoundaryGenerator` が通過。`#print axioms` は
+- 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayBoundaryGenerator.lean` と
+  `lake build ResearchLean.AG.SFT.ConwayBoundaryGenerator` が通過。`#print axioms` は
   `propext`, `Classical.choice`, `Quot.sound` 依存。G2/G3 後、score を base 55 / final 110 に修正。

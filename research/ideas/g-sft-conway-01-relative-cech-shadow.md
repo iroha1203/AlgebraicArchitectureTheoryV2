@@ -43,21 +43,21 @@ singleton subfamily is zero.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayOwnerUniformRelativeCechShadow.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechCochain0`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechBoundary`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechBoundaryImage`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechBoundaryImage_eq_familyBoundarySubgroup`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechShadow`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechClass`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_eq_zero_iff_familyClassVanishes`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_eq_zero_iff_conwayClass_zero`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_ne_zero_iff_conwayClass_nonzero`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_eq_zero_iff_spanSelector`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_relativeCechClass_zero`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_relativeCechClass_nonzero`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_relativeCechClass_nonzero_iff_selectorObstruction`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerUniformRelativeCechShadowPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformRelativeCechShadow.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformRelativeCechCochain0`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformRelativeCechBoundary`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformRelativeCechBoundaryImage`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerUniformRelativeCechBoundaryImage_eq_familyBoundarySubgroup`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformRelativeCechShadow`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformRelativeCechClass`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_eq_zero_iff_familyClassVanishes`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_eq_zero_iff_conwayClass_zero`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_ne_zero_iff_conwayClass_nonzero`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_eq_zero_iff_spanSelector`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_relativeCechClass_zero`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.restrictedTwoForkFamily_relativeCechClass_nonzero`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.restrictedTwoForkFamily_relativeCechClass_nonzero_iff_selectorObstruction`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedOwnerUniformRelativeCechShadowPackage`
 
 ## Claim boundary
 

@@ -29,7 +29,7 @@ assignment.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayCommunicationSupportAssignment.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayCommunicationSupportAssignment.lean`
 - `CommunicationSupportAssignment`
 - `CommunicationSupportAssignment.toCompatibility`
 - `CommunicationSupportAssignment.ofCompatibility`

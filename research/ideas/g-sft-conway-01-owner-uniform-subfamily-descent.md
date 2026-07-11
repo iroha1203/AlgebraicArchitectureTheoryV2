@@ -39,7 +39,7 @@ compatibility、arbitrary cover naturality、quotient object、true sheaf `H^1` 
 
 ## 依拠
 
-- `Formal/AG/Research/SFT/ConwayRestrictedCoherentFamily.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayRestrictedCoherentFamily.lean`
 - Cycle 14: unrestricted coherent support は forkwise local support から Sigma assembly できる
 - Cycle 15: restricted two-fork family は forkwise local support を持つが owner-uniform coherent support を持たない
 
@@ -72,7 +72,7 @@ shared owner witness が存在しないことを Lean theorem として固定す
 
 - `score_reason`: Cycle 15 の反例を、selected finite subfamily cover 上の local-support / full-family failure receiver として固定した。ただし Cycle 15 の negative theorem に近く、arbitrary cover naturality や quotient object には届かないため base45 に下げる。
 - `dullness_risk`: singleton support の存在だけなら Cycle 15 の補足に留まる。`SupportForkFamilySubcover` と `OwnerUniformSubfamilyDescentFailure` によって、selected finite subfamily-cover receiver として限定して読む。
-- `proof_or_evidence_plan`: `Formal/AG/Research/SFT/ConwayOwnerUniformSubfamilyDescent.lean` で `restrictedApiSingletonFamily` と `restrictedDbSingletonFamily` を定義し、それぞれの owner-uniform support を構成した。full family については Cycle 15 の `restrictedTwoForkFamily_notOwnerUniformCoherent` を接続し、local subfamily support だが full family owner-uniform support なしの receiver を証明した。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSubfamilyDescent.lean` で `restrictedApiSingletonFamily` と `restrictedDbSingletonFamily` を定義し、それぞれの owner-uniform support を構成した。full family については Cycle 15 の `restrictedTwoForkFamily_notOwnerUniformCoherent` を接続し、local subfamily support だが full family owner-uniform support なしの receiver を証明した。
 
 ## Target Theorem 寄与
 

@@ -39,9 +39,9 @@ arbitrary-cover naturality、true sheaf `H^1` は主張しない。
 
 ## 依拠
 
-- `Formal/AG/Research/SFT/ConwayOwnerUniformFamilyQuotient.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSpanSelector.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSelectorQuotientBridge.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformFamilyQuotient.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSpanSelector.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSelectorQuotientBridge.lean`
 
 ## 非自明性
 

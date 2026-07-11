@@ -26,7 +26,7 @@ repair-transition existence criterion.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayMissRepairCriterion.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayMissRepairCriterion.lean`
 - `reorgSelectedMiss_exists_iff_noRepairTransition`
 - `reorgFirstSelectedMiss_exists_iff_noRepairTransition`
 - `canonicalReorgCoverEdit_repairTransition_iff_noFirstMiss`

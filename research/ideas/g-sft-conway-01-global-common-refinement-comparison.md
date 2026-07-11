@@ -14,7 +14,7 @@ score_reason: Cycle 5 の global zero-cochain boundary と Cycle 9 の common-re
 mathematical_interest: global zero-cochain が every selected fork に common-refinement support を供給することを固定する。
 goal_advancement: support provenance と global exactness の比較層を追加し、common-refinement exactness failure を探す次段の基準を作る。
 dullness_risk: combined receiver は global-boundary receiver と同値であり、検出力を増やさない。
-proof_or_evidence_plan: `Formal/AG/Research/SFT/ConwayGlobalCommonRefinementComparison.lean` に zero-cochain-to-common-refinement support, combined vanishing iff compatibility, receiver equivalence, finite example package を置く。
+proof_or_evidence_plan: `research/lean/ResearchLean/AG/SFT/ConwayGlobalCommonRefinementComparison.lean` に zero-cochain-to-common-refinement support, combined vanishing iff compatibility, receiver equivalence, finite example package を置く。
 planned_theorem_names: CommunicationZeroCochain.toCommonRefinementSupport, communicationZeroCochain_commonRefinementSupport, SupportForkDefectVanishesModuloGlobalCommonRefinement, globalCommonRefinement_vanishes_iff_compatible, globalCommonRefinement_implies_commonRefinementOwnerPotential, GlobalCommonRefinementReceiver, globalCommonRefinementReceiver_iff_globalBoundaryReceiver, selectedGlobalCommonRefinementComparisonPackage
 rival_advantage: owner mismatch dashboard can show mismatch, but this candidate records that global compatibility already carries common-refinement support provenance.
 visible_projection: global zero-cochain, common-refinement support, compatibility, global-boundary receiver.
@@ -58,19 +58,19 @@ Conway 対応の receiver chain で、global exactness と common-refinement pro
 
 - `score_reason`: global-boundary receiver と同値な comparison bridge として base 55。
 - `dullness_risk`: 検出力は Cycle 5 global-boundary receiver を越えない。
-- `proof_or_evidence_plan`: `lake env lean Formal/AG/Research/SFT/ConwayGlobalCommonRefinementComparison.lean`、
+- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayGlobalCommonRefinementComparison.lean`、
   `lake build FormalAGResearch`、`#print axioms` で検証する。
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayGlobalCommonRefinementComparison.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationZeroCochain.toCommonRefinementSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.communicationZeroCochain_commonRefinementSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.globalCommonRefinement_vanishes_iff_compatible`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.globalCommonRefinement_implies_commonRefinementOwnerPotential`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.globalCommonRefinementReceiver_iff_globalBoundaryReceiver`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notGlobalCommonRefinementVanishes`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedGlobalCommonRefinementComparisonPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayGlobalCommonRefinementComparison.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.CommunicationZeroCochain.toCommonRefinementSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.communicationZeroCochain_commonRefinementSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.globalCommonRefinement_vanishes_iff_compatible`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.globalCommonRefinement_implies_commonRefinementOwnerPotential`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.globalCommonRefinementReceiver_iff_globalBoundaryReceiver`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.mismatchedSupportFork_notGlobalCommonRefinementVanishes`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedGlobalCommonRefinementComparisonPackage`
 
 ## 審判メモ
 
@@ -81,5 +81,5 @@ Conway 対応の receiver chain で、global exactness と common-refinement pro
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean Formal/AG/Research/SFT/ConwayGlobalCommonRefinementComparison.lean`、
+- 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayGlobalCommonRefinementComparison.lean`、
   module build、`lake build FormalAGResearch`、full `lake build` が通過。G2 二審判 pass、final score +110。

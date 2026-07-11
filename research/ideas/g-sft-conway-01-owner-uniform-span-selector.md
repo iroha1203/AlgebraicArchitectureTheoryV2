@@ -38,10 +38,10 @@ arbitrary-cover naturality、true sheaf `H^1` は主張しない。
 
 ## 依拠
 
-- `Formal/AG/Research/SFT/ConwayCoherentFamilyExactness.lean`
-- `Formal/AG/Research/SFT/ConwayRestrictedCoherentFamily.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSubfamilyDescent.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSpanSelector.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayCoherentFamilyExactness.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayRestrictedCoherentFamily.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSubfamilyDescent.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSpanSelector.lean`
 
 ## 非自明性
 

@@ -27,7 +27,7 @@ selected Conway obstruction.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwaySelectedConflictMorphism.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwaySelectedConflictMorphism.lean`
 - `reorgHitsSelectedConflictSet_iff_hitsEveryConflict`
 - `refactorHitsSelectedConflictSet_iff_hitsEveryConflict`
 - `reorgHitsSelectedConflictSet_iff_supportAssignment`

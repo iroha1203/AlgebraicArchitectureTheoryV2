@@ -39,11 +39,11 @@ defect が非零に残る。
 
 ## 依拠
 
-- `Formal/AG/Research/SFT/ConwayBoundaryQuotient.lean`
-- `Formal/AG/Research/SFT/ConwayBoundaryGenerator.lean`
-- `Formal/AG/Research/SFT/ConwayRestrictedCoherentFamily.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSubfamilyDescent.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformFamilyQuotient.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayBoundaryQuotient.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayBoundaryGenerator.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayRestrictedCoherentFamily.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSubfamilyDescent.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformFamilyQuotient.lean`
 
 ## 非自明性
 
@@ -120,4 +120,4 @@ Lean で次を証明した。
 ## 進捗ログ
 
 - 2026-07-04: Cycle 17 候補として作成。
-- 2026-07-04: `Formal/AG/Research/SFT/ConwayOwnerUniformFamilyQuotient.lean` で Lean 証明を追加し、+110 として採点。
+- 2026-07-04: `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformFamilyQuotient.lean` で Lean 証明を追加し、+110 として採点。

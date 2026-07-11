@@ -27,7 +27,7 @@ missed-conflict reorg and API-only refactor edits realize no such record.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayRepairTransitionCriterion.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayRepairTransitionCriterion.lean`
 - `ReorgCoverEditRepairTransition`
 - `ReorgCoverEdit.repairTransition_nonempty_iff_finiteConflictTable`
 - `ReorgCoverEdit.canonicalRepairTransition_nonempty`
