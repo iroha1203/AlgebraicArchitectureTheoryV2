@@ -57,7 +57,7 @@ Cycle 3 の adversarial finding「boundary subgroup が receiver predicate-drive
 
 - `score_reason`: explicit boundary generator provenance を追加するため base 55。
 - `dullness_risk`: generator existence は support predicate と同値なので、過大評価しない。
-- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayBoundaryGenerator.lean`、`lake build FormalAGResearch`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayBoundaryGenerator.lean`、`lake build ResearchLean.AG`、`#print axioms` で検証する。
 
 ## Lean evidence
 

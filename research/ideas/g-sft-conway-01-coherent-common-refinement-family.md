@@ -59,7 +59,7 @@ Conway 対応の receiver chain で、common-refinement support を fork family 
 - `score_reason`: 新しい family-level structure と zero-cochain construction により base 50。
 - `dullness_risk`: family vanishing は compatibility と同値であり、新 obstruction ではない。
 - `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayCoherentCommonRefinementFamily.lean`、
-  `lake build FormalAGResearch`、`#print axioms` で検証する。
+  `lake build ResearchLean.AG`、`#print axioms` で検証する。
 
 ## Lean evidence
 
@@ -82,4 +82,4 @@ Conway 対応の receiver chain で、common-refinement support を fork family 
 ## 進捗ログ
 
 - 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayCoherentCommonRefinementFamily.lean`、
-  module build、`lake build FormalAGResearch`、full `lake build` が通過。G2 二審判 pass、final score +100。
+  module build、`lake build ResearchLean.AG`、full `lake build` が通過。G2 二審判 pass、final score +100。

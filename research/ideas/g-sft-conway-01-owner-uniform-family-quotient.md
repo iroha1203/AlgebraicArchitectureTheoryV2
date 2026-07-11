@@ -107,7 +107,7 @@ Lean で次を証明した。
 
 ## 審判メモ
 
-- 厳密性: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- 厳密性: pass。`lake env lean`、module build、`ResearchLean.AG`、full `lake build` が通過。
 - 研究価値: revise accept。G2 は base 55 / final 110 を保守採点として推奨。
 - repo 全体価値: pass。owner-uniform local/global gap を finite quotient-style receiver に統合した。
 - ライバル比較: pass。local mismatch visualization ではなく、same receiver 上の singleton zero / full nonzero theorem を返す。

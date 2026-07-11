@@ -75,7 +75,7 @@ Team Topologies、CODEOWNERS / org-network dashboard、AI review は owner misma
 
 - `score_reason`: selected `ZMod 2` defect と boundary subgroup membership により、Cycle 2 receiver を finite coefficient vocabulary へ移すため base 55。
 - `dullness_risk`: full `H^1` や full quotient object を過大主張しない。selected boundary membership と finite examples に限定する。
-- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayBoundaryQuotient.lean`、`lake build FormalAGResearch`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayBoundaryQuotient.lean`、`lake build ResearchLean.AG`、`#print axioms` で検証する。
 
 ## 証明・根拠の見込み
 

@@ -61,7 +61,7 @@ naturality blocker が必要であることを示す。
 - `score_reason`: coherent iff local support の Sigma assembly theorem と blocker theorem により base 50。
 - `dullness_risk`: obstruction を増やすのではなく、現 vocabulary では obstruction が潰れることを示す negative bridge。
 - `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayCoherentFamilyExactness.lean`、
-  `lake build FormalAGResearch`、`#print axioms` で検証する。
+  `lake build ResearchLean.AG`、`#print axioms` で検証する。
 
 ## Lean evidence
 
@@ -85,5 +85,5 @@ naturality blocker が必要であることを示す。
 ## 進捗ログ
 
 - 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayCoherentFamilyExactness.lean`、
-  module build、`lake build FormalAGResearch`、full `lake build` が通過。G2 二審判 pass、final score +100。
+  module build、`lake build ResearchLean.AG`、full `lake build` が通過。G2 二審判 pass、final score +100。
   `#print axioms` は `Classical.choice` のみ。

@@ -61,7 +61,7 @@ Conway 対応の obstruction receiver を、少なくとも degree-zero owner ch
 - `score_reason`: Cycle 5 の直接弱点を改善するが、single-owner support との同値に留まるため base 60。
 - `dullness_risk`: single-owner support との同値なので、過大評価しない。
 - `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayOwnerChoiceBoundary.lean`、
-  `lake build FormalAGResearch`、`#print axioms` で検証する。
+  `lake build ResearchLean.AG`、`#print axioms` で検証する。
 
 ## Lean evidence
 
@@ -86,5 +86,5 @@ Conway 対応の obstruction receiver を、少なくとも degree-zero owner ch
 ## 進捗ログ
 
 - 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayOwnerChoiceBoundary.lean`、
-  `lake build ResearchLean.AG.SFT.ConwayOwnerChoiceBoundary`、`lake build FormalAGResearch`、full `lake build` が通過。
+  `lake build ResearchLean.AG.SFT.ConwayOwnerChoiceBoundary`、`lake build ResearchLean.AG`、full `lake build` が通過。
   G2/G3 後、score を base 60 / final 120 に修正。

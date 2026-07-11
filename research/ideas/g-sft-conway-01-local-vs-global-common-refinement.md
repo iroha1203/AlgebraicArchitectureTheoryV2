@@ -60,7 +60,7 @@ global compatibility の階層を明確にする。次 frontier は selected fin
 - `score_reason`: 既存 receiver の分離 bridge として base 40。
 - `dullness_risk`: canonical mismatch の既存定理を接続する package なので、新 obstruction として扱わない。
 - `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayLocalVsGlobalCommonRefinement.lean`、
-  `lake build FormalAGResearch`、`#print axioms` で検証する。
+  `lake build ResearchLean.AG`、`#print axioms` で検証する。
 
 ## Lean evidence
 
@@ -81,4 +81,4 @@ global compatibility の階層を明確にする。次 frontier は selected fin
 ## 進捗ログ
 
 - 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayLocalVsGlobalCommonRefinement.lean`、
-  module build、`lake build FormalAGResearch`、full `lake build` が通過。G2 二審判 pass、final score +80。
+  module build、`lake build ResearchLean.AG`、full `lake build` が通過。G2 二審判 pass、final score +80。
