@@ -190,12 +190,14 @@ rg -n "import ResearchLean\.AG" Formal Formal.lean
 
 ## Multi-Agent Review
 
-数学査読 A/B と Lean 査読 A/B の4本を無条件で実行し、4本すべての承認を
+正式レビューとして起動された場合、数学査読 A/B と Lean 査読 A/B の4本を実行し、4本すべての承認を
 合格条件とする。4本は補助関係ではなく、同じ基準を持つ重複独立査読とする。
 lane定義、追加出力、統合schemaは
 [references/reviewer-lanes.md](references/reviewer-lanes.md)を読む。
 
-修正後の再査読とlane欠落時の扱いは共有契約に従う。
+起動時点は実装完了後の最終ゲートに限る。実装中はfocused checkまたは必要な単一subagentの確認に
+限定する。正式査読でfindingが出た場合は、全laneのfindingをまとめて実装フェーズを再開し、修正後に
+最終スナップショットを固定し直してから、正式レビューとして4本を再実行する。
 
 ## 親 Codex の統合判定
 
