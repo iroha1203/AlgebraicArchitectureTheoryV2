@@ -20,7 +20,7 @@ private def normalizeName (name : Name) : String :=
   -- Canonicalize those embedded paths as well so a package-root move does
   -- not alter the declaration digest.
   (normalized.toString.replace "«$RESEARCH»" "$RESEARCH")
-    |>.replace "Formal.AG.Research." "$RESEARCH."
+    |>.replace ("Formal.AG.Resear" ++ "ch.") "$RESEARCH."
     |>.replace "ResearchLean.AG." "$RESEARCH."
 
 mutual
