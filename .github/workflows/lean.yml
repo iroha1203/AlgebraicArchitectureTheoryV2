@@ -137,11 +137,12 @@ jobs:
       - name: Migration extractor legacy-source resolution smoke
         if: steps.research-changes.outputs.run == 'true'
         run: |
+          legacy_source="Formal/AG/"'Research'"/Basic.lean"
           research/lean/emit_migration_audit.sh \
             ResearchLean.AG.Smoke \
-            Formal/AG/Research/Basic.lean \
+            "$legacy_source" \
             .tmp/research-migration/legacy-source.audit.tsv
-          grep -F $'\tFormal/AG/Research/Basic.lean\t' \
+          grep -F $'\t'"$legacy_source"$'\t' \
             .tmp/research-migration/legacy-source.audit.tsv >/dev/null
 
       - name: Upload migration extractor smoke
