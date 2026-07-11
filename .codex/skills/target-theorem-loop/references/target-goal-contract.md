@@ -17,7 +17,7 @@
 - `target premise discharge policy`: target theorem の実質的前提を target boundary として残すのか、completion までに theorem / finite witness / concrete certificate で discharge するのか。
 - `target material premise ledger`: 各 premise について、名前、支える結論、role (`direction-hypothesis` / `ambient-boundary` / `discharge-required` / `conclusion-equivalent-risk`)、必要 discharge artifact、certificate provenance requirement、proof-use requirement、結論相当 premise ではない理由。
 - `target anti-weakening rule`: 結論相当の仮定を theorem argument、typeclass、structure field、certificate field、opaque membership に移して成功扱いしない規則。
-- `target route integrity gate`: selected / canonical / free / realization / certificate / finite witness / class-boundary を target proof で使う場合、それが target-fitting な ad hoc construction ではなく入力境界、canonical/free construction、universal property、finite witness、または reviewed predecessor theorem から来ることを監査する規則。該当する構成を使わない GOAL では省略可。
+- `target route integrity gate`: selected / canonical / free / realization / certificate / finite witness / class-boundary を target proof で使う場合、それが target-fitting な ad hoc construction ではなく入力data、canonical/free construction、universal property、finite witness、または reviewed predecessor theorem から来ることを監査する規則。該当する構成を使わない GOAL では省略可。
 - `target failure policy`: `target-refuted` / `target-blocked` / GOAL 改訂提案の扱い。
 
 ## 欠陥判定

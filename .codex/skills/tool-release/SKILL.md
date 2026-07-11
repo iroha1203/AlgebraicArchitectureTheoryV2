@@ -1,12 +1,12 @@
 ---
 name: tool-release
-description: ArchSig / FieldSig など repository tooling の release draft、release notes、asset 検証を行う。"$tool-release vX.Y.Z"、tooling release の依頼で使う。
+description: ArchSig / FieldSigなどrepository toolingのtag・差分・workflowを確認し、英語release notes、GitHub draft release、publish後assetとchecksumを検証する。"$tool-release vX.Y.Z"、tooling release準備で使う。publishと未作成tagのpushはユーザー確認後だけ行う。
 ---
 
 # Tool Release
 
 ArchSig / FieldSig など repository tooling の release を準備する。
-このリポジトリでは、ユーザーへの報告は日本語で行い、GitHub Release notes は原則として英語で書く。
+GitHub Release notes は原則として英語で書く。
 
 ## 入力
 
@@ -20,12 +20,11 @@ ArchSig / FieldSig など repository tooling の release を準備する。
 
 - Release は GitHub Issue / PR の完了状態を根拠にする。
 - Release notes は `.github/RELEASE_TEMPLATE.md` を起点に英語で作成する。
-- ArchSig / FieldSig の claim boundary を混同しない。
+- ArchSig / FieldSig の claim scope を混同しない。
 - ArchSig は AAT structural telemetry / analysis packet / review artifact として扱う。
 - FieldSig は forecast, governance, calibration, operational feedback を扱うが、forecast correctness、probability、causal correctness、global safety、CI/Test/human review の置換を主張しない。
 - ArchSig release notes では、Architecture Signature を単一スコアではなく、多軸診断として扱う。
 - Release を勝手に publish しない。公開は必ずユーザー確認後に行う。
-- 既存の未コミット変更はユーザー変更として扱い、勝手に戻さない。
 
 ## 標準手順
 
@@ -65,7 +64,9 @@ ArchSig / FieldSig など repository tooling の release を準備する。
    - website 変更あり: Playwright で静的ページを確認する。
    - release notes / workflow / docs 変更のみでも:
      - `git diff --check`
-     - hidden / bidirectional Unicode scan
+     - `AGENTS.md`「よく使う検証」の hidden / bidirectional Unicode scan
+     - `.codex/skills/_shared/refutation-checklist.md` §6 の privacy、local-path、
+       public artifact scan
      - `.github/release.yml` を触った場合は YAML parse
 
 6. draft release を作成または更新する。
@@ -87,7 +88,7 @@ ArchSig / FieldSig など repository tooling の release を準備する。
 
 ## 報告
 
-最後に日本語で次を報告する。
+最後に次を報告する。
 
 - release tag と draft / published URL
 - 対象 tool: ArchSig / FieldSig / shared tooling
@@ -95,11 +96,3 @@ ArchSig / FieldSig など repository tooling の release を準備する。
 - 実行した検証と結果
 - 未実施の検証と理由
 - asset workflow / checksum の状態
-
-## hidden Unicode scan
-
-対象範囲を絞って実行する。
-
-```bash
-LC_ALL=C rg -n "[\x{200B}\x{200C}\x{200D}\x{200E}\x{200F}\x{202A}\x{202B}\x{202C}\x{202D}\x{202E}\x{2066}\x{2067}\x{2068}\x{2069}\x{FEFF}]" .github tools docs Formal README.md README.jp.md
-```

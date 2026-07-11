@@ -1,4 +1,4 @@
 interface:
   display_name: "Docs Review"
-  short_description: "docs 差分の敵対レビューと、単独起動の repo 全体 drift 保守"
-  default_prompt: "Use $docs-review to adversarially review the current docs changes in Japanese, or run maintenance mode for a repo-wide drift sweep."
+  short_description: "docs差分の敵対レビュー・冗長削減・drift保守"
+  default_prompt: "$docs-reviewで、docs差分があれば敵対レビューし、差分指定がなければrepo全体のdriftと冗長記述を保守してください。"

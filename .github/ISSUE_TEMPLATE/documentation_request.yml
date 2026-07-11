@@ -50,7 +50,7 @@ body:
       label: 修正対象ファイル・候補
       description: 変更してほしいファイル、または調査してほしい候補ファイルを列挙してください。
       placeholder: |
-        - `docs/aat/mathematical_theory/README.md`
+        - `docs/aat/algebraic_geometric_theory/README.md`
         - `docs/aat/proof_obligations.md`
         - `website/...`
     validations:
@@ -103,7 +103,8 @@ body:
       description: レビュー時に確認できる形で、必須条件をチェックリストにしてください。
       value: |
         - [ ] 対象文書が source of truth と矛盾していない
-        - [ ] Lean status を `proved`, `defined only`, `future proof obligation`, `empirical hypothesis` のいずれかで明確にしている
+        - [ ] Lean/AAT statusに影響する場合、`docs/aat/guideline.md`の現行規律に従っている。非該当なら理由を記載した
+        - [ ] Lean/AAT statusに影響する場合、`unported (Research-proved)`を別statusへ置換して完了扱いしていない
         - [ ] docs と website の責務を混同していない
         - [ ] 過剰な claim や未証明の主張を追加していない
     validations:

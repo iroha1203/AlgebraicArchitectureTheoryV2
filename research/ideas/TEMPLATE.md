@@ -1,24 +1,34 @@
 ---
 status: idea
 goal:
+exploration_role:
 candidate_type:
 capability_category:
 expected_base_score:
 expected_evidence_multiplier:
 expected_final_score:
 evidence_stage:
+score_reason:
+mathematical_interest:
+goal_advancement:
+dullness_risk:
+proof_or_evidence_plan:
+planned_theorem_names:
+planned_lean_statement:
+material_premises:
 rival_advantage:
+visible_projection:
+protected_structure:
+exactness_or_minimality_claim:
+nonfaithfulness_or_failure_mode:
+previous_cycle_delta:
+rival_stress_test:
 genius_potential:
 genius_target:
 genius_support_role:
-target_theorem:
-target_support_node:
-target_progress:
-proof_obligation_delta:
-target_completion_role:
 origin: NT-XX
 tags: []
-created: 2026-06-14
+created:
 # 以下はループが picked 以降に付ける(任意)。語彙は README を参照。
 # cycle: 1
 # lean: none
@@ -33,7 +43,7 @@ created: 2026-06-14
 
 ## 候補種別
 
-`closure` / `orientation` / `unification` / `computability` / `bridge` / `genius` / `genius-target` / `genius-support` / `target-support` / `target-obstruction` / `target-refinement` / `target-proof` のいずれかを選ぶ。
+`closure` / `orientation` / `unification` / `computability` / `bridge` / `genius` / `genius-target` / `genius-support` のいずれかを選ぶ。target-theorem GOALでは候補カードを作らず、`$target-theorem-loop`を使う。
 
 ## 依拠
 
@@ -57,19 +67,7 @@ created: 2026-06-14
 
 ## SCORE 見込み
 
-- `score_reason`:
-- `dullness_risk`:
-- `proof_or_evidence_plan`:
-
-## Target Theorem 寄与
-
-(`research mode: target-theorem` の GOAL で使う。通常 GOAL では `not-applicable` と書く。target theorem を弱めず、どの support node / proof obligation を進めるかを書く。)
-
-- `target_theorem`:
-- `target_support_node`:
-- `target_progress`:
-- `proof_obligation_delta`:
-- `target_completion_role`:
+(frontmatterのscore・risk・evidence planを根拠付きで説明する。)
 
 ## CS / SWE への帰結
 
@@ -78,6 +76,15 @@ created: 2026-06-14
 ## 証明・根拠の見込み
 
 (証明の筋道。予想であれば、支持する証拠・特別な場合・有限例・数値による検算を挙げる。Lean で形式化する場合は、狙う statement と必要な claim boundary を書く。)
+
+## Planned Lean statement
+
+(`theorem`名と完全なsignature、新規`def`のsignatureを固定する。Lean証拠を
+使わない候補は`none(証拠 artifact 型)`と書く。)
+
+## Material premises
+
+(各仮定を本文由来 / 放電済み / 未放電に分類する。)
 
 ## 審判メモ
 
@@ -92,4 +99,4 @@ created: 2026-06-14
 
 ## 進捗ログ
 
-- 2026-06-14: 作成
+- <date>: 作成

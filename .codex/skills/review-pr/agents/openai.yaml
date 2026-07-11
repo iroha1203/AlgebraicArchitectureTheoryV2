@@ -1,4 +1,4 @@
 interface:
   display_name: "Review PR"
-  short_description: "PRとIssue完了条件を照合する"
-  default_prompt: "Use $review-pr to review PR #123 against its linked Issue and decide whether it is mergeable."
+  short_description: "PRを分野別に敵対レビューしてマージ可否を判定する"
+  default_prompt: "$review-prで指定PRを分野別に査読し、監査コメントとマージ可否を出してください。"

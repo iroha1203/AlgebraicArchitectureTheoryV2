@@ -28,7 +28,8 @@
 ## チェックリスト
 
 - [ ] 対象 Issue を `Closes #N` 形式で本文に記載した
-- [ ] Lean status を `proved`, `defined only`, `future proof obligation`, `empirical hypothesis` のいずれかで明確にした
+- [ ] Lean/AAT statusに影響する場合、`docs/aat/guideline.md`の現行規律に従っている。非該当なら理由を記載した
+- [ ] Lean/AAT statusに影響する場合、`unported (Research-proved)`を別statusへ置換して完了扱いしていない
 - [ ] `docs` の研究主張と Lean status が矛盾していない
 - [ ] 明示的な相談なしに `axiom`, `admit`, `sorry`, `unsafe` を導入していない
 - [ ] Architecture Signature を単一スコアではなく多軸診断として扱っている

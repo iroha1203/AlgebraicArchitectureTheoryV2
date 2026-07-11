@@ -1,3 +1,4 @@
-display_name: Issue to PR
-short_description: GitHub Issueを選び、実装・検証・PR作成まで進める
-default_prompt: Issue番号を指定して対応するか、指定がなければ優先度と依存関係から次に取り組むIssueを選んでPRまで進めてください。
+interface:
+  display_name: "Issue to PR"
+  short_description: "GitHub Issueを実装・検証してPR作成まで進める"
+  default_prompt: "$issue-to-prで指定Issueを実装・検証し、PR作成とCI確認まで進めてください。"

@@ -1,12 +1,11 @@
 ---
 name: issue-creater
-description: docs / proof_obligations から未実装・未証明・未整理タスクを抽出し、重複を避けて GitHub Issue 化する。"issue-creater"、"create-issue"、docs から Issue を作る依頼で使う。
+description: 指定docsやproof obligationから未実装・未証明・未整理タスクを抽出し、既存Issueとの重複、依存、親子関係、source of truth、タスク型を確認してGitHub Issueを作る。"$issue-creater"、"create issue"、docsからIssueを起票する依頼で使う。実装やPR作成には使わない。
 ---
 
 # Issue Creater
 
 リポジトリ内の docs を根拠に、次に実装・証明・設計すべきタスクを GitHub Issue として起票する。
-このリポジトリでは、応答・Issue タイトル・Issue 本文は日本語で書く。
 
 ## 対象入力
 
@@ -27,7 +26,9 @@ description: docs / proof_obligations から未実装・未証明・未整理タ
    - `empirical hypothesis` のうち tooling / validation task として切れるもの
    - `TODO`, `未解決課題`, `発展課題`, `検討`, `design`
 3. 既存 Issue と照合する。
-   - `gh issue list --state all --limit 100 --json number,title,state,labels,milestone,url`
+   - `gh api --paginate 'repos/{owner}/{repo}/issues?state=all&per_page=100' --jq '.[] | select(.pull_request == null) | {number,title,state,labels:[.labels[].name],milestone:(.milestone.title // null),url:.html_url}'`
+   - pagination を最後まで完走し、照合した範囲を報告する。取得不能なら
+     重複なしと判定せず停止する。
    - タイトルが違っても、同じ proof obligation / design decision / empirical task を扱う Issue があれば新規作成しない。
 4. Issue 化する候補を絞る。
    - 候補数は固定しない。docs から抽出した未実装・未証明・未整理タスクを、
@@ -47,9 +48,8 @@ description: docs / proof_obligations から未実装・未証明・未整理タ
 6. Issue を作成する。
    - 既存 label / milestone を使う。存在しない label や milestone は、明示依頼なしに増やさない。
    - title / body は日本語。
-   - body には Issue Forms と同等の情報を入れる。最低限、`背景・課題`, `主対象領域`, `影響範囲`, `修正対象ファイル・候補`, `追加するもの`, `更新するもの`, `削除・置換するもの`, `この Issue ではやらないこと`, `完了条件`, `想定する検証`, `Lean status` を入れる。
-   - ドキュメント修正 Issue では `照合すべき source of truth` を入れる。
-   - 実装依頼 Issue では `期待する成果物` を入れ、実装変更が必須かどうかを明確にする。
+   - タスクに対応するIssue Formのrequired fieldをすべて使い、
+     [Issue補助field](references/issue-templates.md)だけを追加する。
    - 新規親 Issue を作る場合は、親 Issue を先に作り、その後で子 Issue を作る。
    - 新規親 Issue の初回本文では、子タスク名だけを仮一覧にしてよい。
    - 子 Issue の本文には、親 Issue が決まっている場合は `親 Issue: #N` を入れる。
@@ -83,31 +83,17 @@ description: docs / proof_obligations から未実装・未証明・未整理タ
 ```
 
 - **移植(Research→本体)**: `Formal/AG/Research/` の受理成果を本体へ
-  蒸留するタスク。次を必須フィールドにする。
-  - `移植元 theorem`: Research 側の宣言名とファイル
-    (まず `docs/aat/research_evidence_index.md` を検索し、無ければ
-    `rg` で Research 直接検索)
-  - `移植元 conjuncts`: 移植元 statement の結論一覧の引用
-  - Research 下限原則の明記: 「本体 statement はこの conjuncts 一覧を
-    全被覆すること。結論の削減不可(分解・補題化は可)。下限到達が
-    不能と判明した場合は実装で回避せず停止して報告する」
+  蒸留するタスク。必須fieldとResearch下限原則は
+  [Issue補助field](references/issue-templates.md#移植issue)をそのまま使う。
+  移植元はまず `docs/aat/research_evidence_index.md`、次にResearch実装を検索する。
 - タスク型を判断する材料が Issue 起票時点で不足している場合は、
   推定と明記した上で最も規律の強い型に倒す(移植の疑いがあれば移植)。
 
 ## 是正 Issue の source of truth ポインタ(必須)
 
-既存実装の未達・欠陥を直す是正 Issue には、次のポインタを必須で入れる:
-
-```text
-source of truth:
-- PRD: <path> の <節番号 / R番号 / AC番号>
-- 本文: <部・定理番号などのラベル>(該当する場合)
-- 移植元: <Research theorem 名とファイル>(移植型の場合)
-```
-
-是正が重なると直近の Issue / PR コメントが仕様を覆い隠すため、
-どの是正 Issue も単体で source へ遡れる状態を保つ。レビュー・実装は
-コメントの応酬ではなく、このポインタの先を一次仕様として読む。
+既存実装の未達・欠陥を直す是正 Issue は
+[Issue補助field](references/issue-templates.md#是正issue)を使い、単体で一次仕様へ
+遡れる状態にする。レビュー・実装はコメントの応酬ではなく、その参照先を読む。
 
 ## PRD 由来 Issue の規律(prd-loop 連携)
 
@@ -124,10 +110,15 @@ PRD の完了条件を Issue 化する場合に適用する。
 
 ## Issue 化の判断基準
 
+statusの意味は `docs/aat/guideline.md` の現行 status discipline を正本とする。
+
 - `proved`: 原則として新規 Issue は不要。rename, docs sync, theorem generalization など追加作業が明確な場合だけ候補にする。
 - `defined only`: 対応する correctness theorem, API design decision, naming stabilization が残るなら Issue 化する。
 - `future proof obligation`: 既存 Issue がなければ Issue 化する。
 - `empirical hypothesis`: Lean proof をブロックしない。extractor, dataset, validation protocol, metric definition など tooling / research task として分割できる場合だけ Issue 化する。
+- `packaged (assumption-relative)`: 未放電premiseや生成すべきpackageが残るなら、その具体的な放電・構成をIssue化する。
+- `statement-only`: 証明または実装のIssueとして扱い、証明済みに数えない。
+- `unported (Research-proved)`: 移植Issueとして扱い、別statusへ置換してcloseしない。
 
 ## Label / milestone の目安
 
@@ -154,131 +145,9 @@ area label は docs の主題に合わせる。
 - adjacency matrix / nilpotence / spectral: `area:path-matrix`
 - empirical extraction / validation: `area:empirical`
 
-## Issue 本文テンプレート
+## Issue本文
 
-### 実装 Issue
-
-```markdown
-背景・課題:
-...
-
-タスク型: 新規実装 | 修正 | 移植(Research→本体) | docs
-
-主対象領域:
-- formal | tool | website | doc
-
-親 Issue: #N
-
-影響範囲:
-- formal:
-- tool:
-- website:
-- doc:
-
-期待する成果物:
-- コード実装が必須
-
-修正対象ファイル・候補:
-- `...`
-
-追加するもの:
-- ...
-
-更新するもの:
-- ...
-
-削除・置換するもの:
-- なし
-
-この Issue ではやらないこと:
-- ドキュメント修正だけで完了扱いにしない
-
-関連 docs:
-- `docs/aat/proof_obligations.md` の「...」
-
-完了条件:
-- [ ] 指定した実装変更が入っている
-- [ ] 必要なテストまたは build が通っている
-- [ ] 必要な Lean status / docs / website copy が更新されている
-- [ ] 対象外の主張や過剰な claim を追加していない
-
-想定する検証:
-- [ ] `lake build`
-- [ ] `git diff --check`
-- [ ] hidden / bidirectional Unicode scan
-
-Lean status: future proof obligation.
-```
-
-docs にない内容を推測で増やす場合は、本文内で「推定」と分かるように書く。
-
-### ドキュメント Issue
-
-```markdown
-背景・課題:
-...
-
-主対象領域:
-- docs | formal status | tool docs | website copy | entry docs
-
-確認が必要な領域:
-- formal:
-- tool:
-- website:
-- doc:
-
-修正対象ファイル・候補:
-- `...`
-
-必要な修正:
-追加:
-- ...
-
-更新:
-- ...
-
-削除:
-- なし
-
-照合すべき source of truth:
-- `Formal/Arch/...`
-- `docs/aat/proof_obligations.md`
-
-この Issue ではやらないこと:
-- Lean theorem の追加はしない
-
-完了条件:
-- [ ] 対象文書が source of truth と矛盾していない
-- [ ] Lean status を `proved`, `defined only`, `future proof obligation`, `empirical hypothesis` のいずれかで明確にしている
-- [ ] docs と website の責務を混同していない
-- [ ] 過剰な claim や未証明の主張を追加していない
-
-想定する検証:
-- [ ] `git diff --check`
-- [ ] hidden / bidirectional Unicode scan
-- [ ] Lean status / theorem index / proof obligations の整合確認
-
-Lean status: docs index / design tracking.
-```
-
-### 親 Issue
-
-```markdown
-目的: 関連する Issue 群をまとめ、依存順と完了条件を明確にする。
-
-背景:
-...
-
-子 Issue:
-- [ ] #N ...
-- [ ] #N ...
-
-関連 docs:
-- `docs/aat/proof_obligations.md` の「...」
-
-完了条件:
-- 子 Issue がすべて完了している。
-- docs / Lean status が子 Issue の結果と一致している。
-
-Lean status: docs index / design tracking.
-```
+`.github/ISSUE_TEMPLATE/`を正本とし、不足fieldは
+[references/issue-templates.md](references/issue-templates.md)で補う。
+実装Issueとdocs Issueのfieldを混ぜて共通必須fieldへ再定義しない。
+docsにない内容を推測で増やす場合は「推定」と明記する。

@@ -194,8 +194,9 @@ silent rename は台帳との対応を切り、監査を空振りさせる repac
   固定する。PRD はループの不変条件(prd-loop SKILL)なので、この節が
   そのまま statement 改変の停止規則になる。
 - **research-loop**: 候補カードの `planned_lean_statement`
-  (candidate-card-contract)に固定する。G2 審判はこの固定 statement を
-  審査対象とし、G3 は実装との一致を合格条件とする。
+  (`research/ideas/TEMPLATE.md`)に固定する。G2審判はこの固定statementを
+  審査対象とし、G3は実装との一致を合格条件とする。G3後は同じ候補カードの
+  statementとmaterial premiseを実績へ同期する。
 - **target-theorem-loop**: GOAL カード(`research/GOALS.md`)の
   target statement が固定であり、現行手続きのまま(この基準は
   語彙参照のみ追加)。

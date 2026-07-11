@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Loop"
+  short_description: "探索型GOALの候補・Lean検証・SCORE監査を反復する"
+  default_prompt: "$research-loopで指定GOALの探索研究サイクルを進めてください。"

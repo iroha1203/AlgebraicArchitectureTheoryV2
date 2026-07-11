@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tool Release"
+  short_description: "toolingのrelease draftとassetを検証する"
+  default_prompt: "$tool-releaseで指定tagのrelease draftとasset検証を進めてください。"

@@ -1,4 +1,4 @@
 interface:
   display_name: "PRD Completion Review"
   short_description: "PRD達成条件を複数観点でレビューして達成可否を判定する"
-  default_prompt: "Use $prd-completion-review to review whether this PRD's acceptance criteria are satisfied, using multiple perspectives in Japanese."
+  default_prompt: "$prd-completion-reviewで指定PRDの達成条件を一次証拠から敵対レビューしてください。"

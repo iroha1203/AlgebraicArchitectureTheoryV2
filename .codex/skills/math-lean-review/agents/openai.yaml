@@ -1,4 +1,4 @@
 interface:
   display_name: "Math Lean Review"
-  short_description: "数学命題とLean証明を仮定放電まで厳格査読する"
-  default_prompt: "Use $math-lean-review with 4 parallel subagents to audit this theorem statement against its Lean implementation, including premise discharge and certificate provenance."
+  short_description: "数学命題とLean証明を仮定放電まで厳格に査読する"
+  default_prompt: "$math-lean-reviewで数学claimとLean実装を4本の独立査読にかけ、仮定放電まで判定してください。"

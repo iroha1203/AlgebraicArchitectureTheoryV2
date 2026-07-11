@@ -1,4 +1,4 @@
 interface:
   display_name: "Website Review"
-  short_description: "website / docs/website の差分を4観点の敵対レビューで並列査読する"
-  default_prompt: "Use $website-review to adversarially review the current website changes in Japanese with four parallel perspectives."
+  short_description: "website・docs/website差分を4観点で敵対レビューする"
+  default_prompt: "$website-reviewで現在のwebsite差分を4観点から敵対レビューしてください。"
