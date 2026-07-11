@@ -174,6 +174,8 @@ status、前提、proof obligation は、ここに重複させず、関連する
   - ArchSig、ArchView、FieldSig の tooling、schema、fixture、skill。
 - `website`
   - `src/` 以下の Eleventy source と、AAT / SFT / ArchSig の静的 Cloudflare Pages 配信物。
+- `outreach`
+  - AAT / SFT / ArchSig の外部記事、英日翻訳、下書き、記事用素材。
 - `Main.lean`
   - 実行ターゲット `aatv2` の最小 entry point。
 - `lakefile.toml`

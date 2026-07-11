@@ -117,7 +117,7 @@ codebase
 
 そして、その field のもとで到達可能になる未来の範囲を `ForecastCone` と呼びます。
 
-![PRD and pull requests shaping a forecast cone](assets/forecast-cone-prd-pr-force.png)
+![PRD and pull requests shaping a forecast cone](../assets/forecast-cone-prd-pr-force.png)
 
 ForecastCone は未来予言ではありません。
 

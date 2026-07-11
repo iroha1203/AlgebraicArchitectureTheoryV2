@@ -35,6 +35,10 @@ source of truth として扱わない。
 - [SFT directory guide](sft/README.md): SFT 配下の補助文書の読み方。
 - [Website operations](website/README.md): 公開されない website 運用メモ、route 索引、設計文書。
 
+外部記事、翻訳、記事用素材は研究 docs ではなく、リポジトリ直下の
+[`outreach/`](../outreach/README.md) で管理する。公開 website の `/outreach/` route は
+`website/src/outreach/` が管理する。
+
 ## 層の分担
 
 ```text

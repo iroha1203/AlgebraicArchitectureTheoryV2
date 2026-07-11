@@ -170,7 +170,7 @@ conclusion、proof term、axiom依存を維持し、旧Research prefixから新R
 - `docs/aat/guideline.md`、`docs/aat/lean_quality_standard.md`、evidence index、theorem index、
   proof obligationのfile pathと恒久規律を更新する。
 - `AGENTS.md`、`CLAUDE.md`、research goals / ideas / reports、`docs/note/**`、
-  `docs/outreach/**`、website公開面の現行pathを更新する。
+  `outreach/**`、website公開面の現行pathを更新する。
 - `docs/sft/software_field_theory.md`のResearch artifact pathは本Issueの明示対象とし、
   数学claimを変更せずpathだけを更新してmath reviewを通す。
 - Research変更時または手動実行の専用CI jobを用意する。

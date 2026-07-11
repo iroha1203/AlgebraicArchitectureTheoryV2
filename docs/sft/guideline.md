@@ -38,7 +38,7 @@
 - SFT 固有語彙は、危険さと魅力のある研究語彙として丁寧に定義する。特に field、force、attractor、basin、ForecastCone、ConsequenceEnvelope は計算可能な読みへ接続する。
 - AAT / ArchSig / FieldSig の境界を曖昧にしない。
 - AI agent や review / CI を完全性の証明として扱わず、field を制御する artifact / intervention として扱う。
-- outreach や website 向けの説明を SFT 本文へ混ぜない。公開コピーは `website/` または `docs/outreach/` 側で扱う。
+- outreach や website 向けの説明を SFT 本文へ混ぜない。公開コピーは `website/` または `outreach/` 側で扱う。
 
 ## 検証
 
