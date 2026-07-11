@@ -5,131 +5,78 @@ body:
   - type: markdown
     attributes:
       value: |
-        ドキュメント修正を主目的にする Issue です。Lean / tooling / website の実装変更が必要な場合は、実装依頼テンプレートを使ってください。
-
-  - type: textarea
-    id: background
-    attributes:
-      label: 背景・課題
-      description: どの記述が古い、曖昧、実装や Lean status とずれているのかを書いてください。
-      placeholder: |
-        例:
-        - `docs/aat/proof_obligations.md` の status が Lean theorem index と一致していない
-        - website copy が docs/tool の claim boundary より強い主張になっている
-    validations:
-      required: true
+        ドキュメント修正を主目的にする Issue です。何が問題で、何を実現し、どの条件を満たせば完了かを記載してください。
+        Lean / tooling / website の実装変更が必要な場合は、実装依頼テンプレートを使ってください。
 
   - type: dropdown
-    id: document_area
+    id: primary_area
     attributes:
       label: 主対象領域
       description: この Issue の中心となる文書領域を 1 つ選んでください。
       options:
         - "docs: 研究文書"
         - "formal status: Lean status / theorem index / proof obligations"
-        - "tool docs: ArchSig README / commands / schema docs"
-        - "website copy: Cloudflare Pages 公開面"
+        - "tool docs: tooling README / commands / schema docs"
+        - "website copy: 公開面"
         - "entry docs: README.md / README.jp.md"
     validations:
       required: true
 
-  - type: checkboxes
-    id: affected_areas
-    attributes:
-      label: 確認が必要な領域
-      description: 文書修正の根拠として確認すべき領域をすべて選んでください。
-      options:
-        - label: "formal: `Formal.lean`, `Formal/**`"
-        - label: "tool: `tools/archsig/**`, schema, fixture, report"
-        - label: "website: `website/**`"
-        - label: "doc: `docs/**`, `README.md`, `README.jp.md`"
-
   - type: textarea
-    id: target_files
+    id: current_problem
     attributes:
-      label: 修正対象ファイル・候補
-      description: 変更してほしいファイル、または調査してほしい候補ファイルを列挙してください。
+      label: 現状の課題
+      description: どの記述が古い、曖昧、またはsource of truthと不整合なのか、なぜ対応が必要なのかを書いてください。
       placeholder: |
-        - `docs/aat/algebraic_geometric_theory/README.md`
-        - `docs/aat/proof_obligations.md`
-        - `website/...`
+        - 現在の記述・状態:
+        - 問題となる理由:
+        - 照合できる根拠:
     validations:
       required: true
 
   - type: textarea
-    id: required_changes
+    id: solution_direction
     attributes:
-      label: 必要な修正
-      description: 追加、更新、削除、移動する内容を具体的に書いてください。
+      label: 解決方針
+      description: どのような構成・記述・参照関係へ直すかを書いてください。claimやstatusを変更する場合は根拠も示してください。
       placeholder: |
-        追加:
-        - ...
-
-        更新:
-        - ...
-
-        削除:
-        - なし
+        - 採用する方針:
+        - 維持すべき主張・責務:
     validations:
       required: true
 
   - type: textarea
-    id: source_of_truth
+    id: expected_deliverables
     attributes:
-      label: 照合すべき source of truth
-      description: 文書の根拠として確認すべき Lean ファイル、docs、tool schema、Issue、PR などを書いてください。
+      label: 期待する成果物
+      description: この Issue で追加・変更・削除する文書や索引を列挙してください。
       placeholder: |
-        - `Formal/Arch/...`
-        - `docs/tool/...`
-        - Issue #N
+        - `docs/...` の更新
+        - theorem indexとの整合
+        - 重複記述の整理
     validations:
       required: true
 
   - type: textarea
-    id: out_of_scope
+    id: acceptance_requirements
     attributes:
-      label: この Issue ではやらないこと
-      description: 実装変更、証明追加、claim 変更など、非対象を明示してください。
+      label: 受け入れ要件
+      description: 完了を第三者が客観的に判定できる条件を記載してください。ファイル更新やscanの通過だけでなく、照合先と修正後に成立すべき具体的な整合条件を含めてください。
       placeholder: |
-        - Lean theorem の追加はしない
-        - tool schema の互換性変更はしない
+        - [ ] 成果物: `<具体的に追加・変更・削除される文書>`
+        - [ ] 成立条件: `<修正後に成立する記述・構成・参照関係>`
+        - [ ] source of truthとの整合: `<照合先と一致させる内容>`
+        - [ ] 退行防止: `<残してはならない古い記述・過剰なclaim・重複>`
+        - [ ] 検証証拠: `<diff、参照先、scan、previewなど>`
     validations:
       required: true
 
   - type: textarea
-    id: acceptance
+    id: notes
     attributes:
-      label: 完了条件
-      description: レビュー時に確認できる形で、必須条件をチェックリストにしてください。
-      value: |
-        - [ ] 対象文書が source of truth と矛盾していない
-        - [ ] Lean/AAT statusに影響する場合、`docs/aat/guideline.md`の現行規律に従っている。非該当なら理由を記載した
-        - [ ] Lean/AAT statusに影響する場合、`unported (Research-proved)`を別statusへ置換して完了扱いしていない
-        - [ ] docs と website の責務を混同していない
-        - [ ] 過剰な claim や未証明の主張を追加していない
-    validations:
-      required: true
-
-  - type: textarea
-    id: verification
-    attributes:
-      label: 想定する検証
-      description: 文書のみでも実装・schema・website copy への影響確認が必要な場合は書いてください。
-      value: |
-        - [ ] `git diff --check`
-        - [ ] hidden / bidirectional Unicode scan
-        - [ ] Lean status / theorem index / proof obligations の整合確認
-        - [ ] tool schema / website copy への影響確認
-    validations:
-      required: true
-
-  - type: checkboxes
-    id: guardrails
-    attributes:
-      label: ガードレール
-      description: 該当するものを確認してください。
-      options:
-        - label: "この Issue はドキュメント修正を主目的とし、実装変更が必要なら別 Issue または実装依頼に分ける"
-        - label: "`docs/archive` を現行 source of truth として扱わない"
-        - label: "Lean で証明済みの主張と empirical hypothesis を混同しない"
-        - label: "Architecture Signature を単一スコアとして扱わない"
+      label: 備考
+      description: 関連 Issue、依存関係、source of truth、対象外、候補ファイル、参考資料などがあれば記載してください。
+      placeholder: |
+        - 関連 Issue: #N
+        - source of truth: `...`
+        - 対象外: 実装変更
