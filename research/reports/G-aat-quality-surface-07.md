@@ -18,7 +18,7 @@ Issue #3246.
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
-- decision: revise
+- decision: approve
 - result type: proof-checkpoint
 - Lean file:
   `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalDescent.lean`
