@@ -19,20 +19,20 @@ SFT makes software evolution computable.
 ```
 
 The project's core philosophy and guiding question are stated in [PHILOSOPHY](PHILOSOPHY.md).
-The main entry point for the overall research program is
-[Research Goal](docs/research_goal.md).
+The research-loop operating entry is [research/README.md](research/README.md), with
+GOAL definitions under [research/goals](research/goals/README.md).
 
 ## Research Question
 
-This project tries to move architecture review from subjective impression
-toward explicit diagnosis. Its central questions are:
+This project treats a codebase as an algebraic-geometric architecture object and
+asks how its local-to-global structure can be described. Its central questions are:
 
 ```text
-Does this change preserve the selected architecture invariant?
-If not, which obstruction witness shows the break?
-Which selected measurement coordinate or law-evaluation profile exposes the break?
-Which future architecture does this PRD / Issue / PR make easier to reach?
-Which review / CI / policy / governance narrows dangerous trajectories?
+Can the local structure, laws, obstructions, repairs, and evolution of a codebase
+be described as algebraic-geometric architecture?
+How does that geometry change through implementation, review, CI, operations,
+and AI proposals?
+Which future architectures become reachable through those changes?
 ```
 
 To answer these questions, the project keeps the following layers separate:
@@ -47,19 +47,17 @@ To answer these questions, the project keeps the following layers separate:
 | Layer | Role | Source of truth |
 | --- | --- | --- |
 | AAT | A pure algebraic-geometric theory that starts from architectural atoms and builds architecture objects, AAT sites, sheaves, law algebras, obstruction ideal sheaves, lawful loci, architecture schemes, Čech descent, derived law geometry, measurement, and evolution geometry. | [AAT algebraic-geometric mathematical text](docs/aat/algebraic_geometric_theory/README.md) |
-| AAT / SFT Interface | The interface explaining how local AAT claims are read through SFT projections, observable coordinates, and governance. | [AAT / SFT Interface](docs/sft/aat_interface.md) |
-| ArchSig / FieldSig Tooling | ArchSig reads supplied ArchMap evidence, LawPolicy, and MeasurementProfile artifacts into bounded diagnostic / measurement packets. FieldSig measures SFT software evolution evidence from ArchSig refs plus workflow evidence. | [AAT Tooling Documentation](docs/tool/README.md) |
-| SFT | A computational theory of how PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and feedback change reachable futures. | [Software Field Theory](docs/sft/software_field_theory.md) |
+| AAT / SFT Interface | The interface between the pure AAT theory and SFT's development-system model. The current SFT v2 reading is in the SFT body; the separate interface note still contains v1 material. | [Software Field Theory](docs/sft/software_field_theory.md) and [AAT / SFT interface note](docs/sft/aat_interface.md) |
+| ArchSig / ArchView / FieldSig Tooling | ArchSig reads supplied ArchMap evidence, LawPolicy, and MeasurementProfile artifacts into bounded diagnostic / measurement packets. ArchView visualizes emitted viewer data without creating a new verdict. FieldSig consumes serialized ArchSig measurement packets together with workflow evidence for SFT-oriented evolution measurement. | [AAT Tooling Documentation](docs/tool/README.md) |
+| SFT | SFT v2 models software evolution through a Development System containing development time, evolution space and transport, sources, policy, and measurement profiles. | [Software Field Theory](docs/sft/software_field_theory.md) |
 | Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md), split into classical / AG / research indexes. |
 | Proof / empirical ledger | Theorem assumptions, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md), split into classical / AG / research ledgers. |
-| Website | The public reading surface for AAT, SFT, and ArchSig, published as a no-build Cloudflare Pages site. | [Website operating notes](docs/website/README.md) and [website source](website/index.html) |
+| Website | The public reading surface for AAT, SFT, and ArchSig. It is authored and built with Eleventy, then published as a static Cloudflare Pages site. | [Website source](website/src/index.html) |
 
 The README does not duplicate detailed theorem lists or progress ledgers.
 Current Lean status, non-conclusions, and open proof obligations are tracked
 through [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md)
-and [Lean definitions and theorem index](docs/aat/lean_theorem_index.md). Those
-entrypoints route to separate classical AAT, algebraic-geometric AAT, and
-research-loop ledgers.
+and [Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
 
 Most detailed research notes are currently written in Japanese; English
 summaries will be added as the theory and Lean formalization stabilize.
@@ -67,18 +65,17 @@ summaries will be added as the theory and Lean formalization stabilize.
 ## Reading Order
 
 1. [PHILOSOPHY](PHILOSOPHY.md)
-2. [Research Goal](docs/research_goal.md)
-3. [AAT Algebraic-Geometric Mathematical Text](docs/aat/algebraic_geometric_theory/README.md)
-4. [AAT / SFT Interface](docs/sft/aat_interface.md)
-5. [Software Field Theory](docs/sft/software_field_theory.md)
-6. [Proof Obligations and Empirical Hypotheses](docs/aat/proof_obligations.md)
-7. [Lean Definitions and Theorem Index](docs/aat/lean_theorem_index.md)
-8. [AAT Tooling Documentation](docs/tool/README.md)
-9. As needed:
+2. [AAT Algebraic-Geometric Mathematical Text](docs/aat/algebraic_geometric_theory/README.md)
+3. [Software Field Theory](docs/sft/software_field_theory.md)
+4. [Proof Obligations and Empirical Hypotheses](docs/aat/proof_obligations.md)
+5. [Lean Definitions and Theorem Index](docs/aat/lean_theorem_index.md)
+6. [AAT Tooling Documentation](docs/tool/README.md)
+7. [Research-loop operating guide](research/README.md)
+8. As needed:
    [docs guide](docs/README.md),
    [AAT directory guide](docs/aat/README.md),
    [SFT directory guide](docs/sft/README.md),
-   [website operating notes](docs/website/README.md)
+   [AAT / SFT interface note](docs/sft/aat_interface.md)
 
 ## AAT
 
@@ -115,24 +112,36 @@ inside a selected algebraic-geometric regime.
 
 ## SFT
 
-SFT treats software evolution as a computable object. A codebase is not a static
-structure that merely receives changes. PRDs, specs, issues, PRs, reviews, CI,
-organizations, AI, and lifecycle decisions all shape which future changes
-become likely, which breaks are easy to miss, which constraints accumulate, and
-which shortcuts are dampened.
+SFT v2 treats software evolution as a computable development system rather than
+as a static codebase that merely receives changes. Its central object is
+represented by
 
-SFT uses the local algebra of AAT through architecture projections, observable
-coordinates, local transition laws, and governance inputs in the field model.
-However, AAT theorems do not automatically become empirical forecasts.
-`ForecastCone`, `ConsequenceEnvelope`, `FieldUpdate`, and AI proposal
-governance are handled under explicit computable cores and stated claim scopes.
+```text
+𝔇 = (𝒯, 𝔛, 𝔖, Π, 𝔐)
+
+𝒯 : development trace site and time
+𝔛 : evolution family, space, and transport data
+𝔖 : source and organization structure
+Π : policy and laws of motion
+𝔐 : measurement profiles and observation
+```
+
+PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and lifecycle
+decisions become selected sources, policies, observations, and transitions in
+this model. SFT uses AAT through architecture projections and selected local
+algebra, but AAT theorems do not automatically become empirical forecasts.
+Older v1 names such as `ForecastCone` and `ConsequenceEnvelope` remain only in
+legacy or compatibility surfaces and should not be read as the current SFT v2
+center.
 
 ## Tooling
 
 The tooling goal is to connect the vocabulary of AAT and SFT to real development
 artifacts. ArchSig reads supplied ArchMap evidence, LawPolicy, and
 MeasurementProfile artifacts, then emits bounded diagnostic / measurement
-packets that review and CI can handle.
+packets that review and CI can handle. The current handoff is the serialized
+`archsig-measurement-packet/v0.5.0`; FieldSig consumes that packet together with
+workflow and operational evidence for SFT-oriented measurement.
 
 The tooling is not the theory itself. It does not confuse measured zero with
 unmeasured, and a tool pass is not read as a Lean theorem.
@@ -140,37 +149,21 @@ unmeasured, and a tool pass is not read as a Lean theorem.
 ## Website
 
 The public website in `website/` is a Cloudflare Pages reading surface for AAT, SFT,
-and ArchSig. It is not the research ledger or the source of theorem status.
-Instead, it presents the theory as web-native preprint / monograph pages and
-presents ArchSig as a public manual while preserving the claim discipline kept
-in `docs/`.
-
-Website planning and editorial rules live in [docs/website](docs/website/README.md).
-The current stack is intentionally no-build: static HTML, CSS, small JavaScript,
-MathJax, and local assets under `website/assets`.
+and ArchSig. It is authored with Eleventy from `website/src/` and published as
+static output.
 
 ## Lean Formalization
 
 See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) for the
-main definitions and theorems currently present on the Lean side. Theorem names,
-assumption-relative readings, and non-conclusions are tracked through the
-split proof / theorem ledgers linked from
-[Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) and
-[Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
-
-The static structural core of the architecture zero-curvature theorem is proved
-in Lean. Runtime metrics, empirical hypotheses, general numerical curvature, and
-completeness of real-code extractors are not included in that QED.
+main definitions and theorems currently present on the Lean side. Detailed
+theorem status, assumptions, and proof obligations are recorded in the linked
+ledgers rather than duplicated here.
 
 ## Repository Layout
 
-- `Formal.lean`
-  - Public entry point of the Lean library.
-- `Formal/Arch`
-  - Lean formalization split into `Core`, `Law`, `Signature`, `Extension`,
-    `Operation`, `Patterns`, `Repair`, `Evolution`, and `Examples`.
-  - See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md)
-    for main definitions, theorem names, and module paths.
+- `Formal`
+  - Lean formalization and theorem packages. See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md)
+    for the current entrypoints.
 - `docs`
   - First-class theory documents, Lean status, proof obligations, tool docs,
     and empirical protocol.
@@ -183,9 +176,13 @@ completeness of real-code extractors are not included in that QED.
 - `docs/website`
   - Internal operating notes for the public website, including sitemap, design,
     tone, and publication rules.
+- `research`
+  - Research-loop operating guide, GOAL definitions, candidate ideas, and reports.
+- `tools`
+  - ArchSig, ArchView, and FieldSig tooling, schemas, fixtures, and skills.
 - `website`
-  - No-build static Cloudflare Pages site for the public AAT / SFT / ArchSig reading
-    surface.
+  - Eleventy source under `src/` and static Cloudflare Pages output for the public
+    AAT / SFT / ArchSig reading surface.
 - `Main.lean`
   - Minimal entry point for the executable target `aatv2`.
 - `lakefile.toml`
@@ -224,13 +221,9 @@ Algebraic Architecture Theory V2
 Open work is tracked in GitHub Issues. Issues are organized according to the
 research dependency structure with milestones and `type:*`, `area:*`,
 `priority:*`, and `status:*` labels. The README does not duplicate the issue
-list.
+list. Research-loop runtime state is kept in the GOAL tracking Issue; static
+GOAL definitions remain under `research/goals/`.
 
 ## License
 
 This repository is licensed under the MIT License. See [LICENSE](LICENSE).
-
-
-## FieldSig
-
-FieldSig is the SFT-based software evolution measurement crate under `tools/fieldsig`. Run `cargo test --manifest-path tools/fieldsig/Cargo.toml` for FieldSig changes. ArchSig remains the selected architecture-evidence measurement and bounded diagnostic crate under `tools/archsig`.
