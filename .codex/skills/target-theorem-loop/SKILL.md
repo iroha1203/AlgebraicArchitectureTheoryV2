@@ -1,6 +1,6 @@
 ---
 name: target-theorem-loop
-description: "research/GOALS.md の target-theorem GOAL で、大定理までの proof obligation を Lean theorem、premise discharge、blocker として固定する。\"$target-theorem-loop goal-id\"、\"大定理証明ループ\"、GOALS.md target theorem の証明依頼で使う。"
+description: "research/GOALS.mdのactiveなtarget-theorem GOALで、固定targetを弱めずproof obligationをLean theorem、premise discharge、finite witness、blockerとして消化し、独立監査とmath-lean-reviewで完了判定する。\"$target-theorem-loop goal-id\"、\"大定理証明ループ\"で使う。探索型SCORE phaseにはresearch-loopを使う。"
 ---
 
 # Target Theorem Loop
@@ -11,13 +11,9 @@ description: "research/GOALS.md の target-theorem GOAL で、大定理までの
 
 statement 品質・定義品質・スタイルの判定正本は `docs/aat/lean_quality_standard.md`(mathlib 型 statement review 基準)である。material premise の分類語彙は同 §1.1 の三分類(本文由来 / 放電済み / 未放電)を使い、GOAL カードの material premise ledger・cycle report・tracking Issue で統一する。target statement の固定は従来どおり `research/GOALS.md` の GOAL カードが正本であり、固定手続きは変えない(同 §5.1)。
 
-explicit certificate はそれだけでは premise discharge ではない。certificate / class membership / structure field / theorem argument が material premise を透明に保持しているだけなら、target theorem completion ではなく checkpoint とする。target loop は、certificate を受け取る theorem だけでなく、その certificate を対象境界の入力 data から生成する theorem / construction / finite witness / instance chain を proof obligation として潰す。
-
-ズルい proof route は fail-closed に扱う。ここでいうズルい route とは、target theorem を直接弱めなくても、証明しやすい object / cover / coefficient / certificate / class を後から選び、結論相当の性質を construction choice、structure field、certificate field、opaque membership、または未使用 premise に移して completion へ近道する経路である。特に、欲しい differential / exactness / descent / effectivity / vanishing / comparison law に合わせて selected object を ad hoc に作る場合、canonical / free / universal property / input-boundary construction / nonvacuity theorem のいずれかで正当化できなければ `proof-checkpoint` または `rejected` とする。
-
-各 cycle は `route_integrity_audit` を持つ。T1 は現在の最短 route が target-fitting construction、premise relocation、vacuous witness、unused package component、one-way theorem sold as equivalence、GOAL/report 後追い改訂のどれに近いかを明示する。T3 は独立にこの audit を検査し、中心 claim に関係する未確認項目があれば completion candidate を `no` にする。T5 では `$math-lean-review` の verdict とは別に親 Codex が route integrity を再判定し、未確認なら `target-theorem-proved` を出さない。
-
-大定理の完了判定では、必ず `$math-lean-review research/GOALS.md <goal-id>` を実行し、その正式判定を final completion record に取り込む。`$math-lean-review` が実行不能、coverage 不足、または verdict が `No major findings` 以外の場合、`target-theorem-proved` を出してはならない。結果は `target-proof-checkpoint`、`target-blocked`、または `target-refuted` に倒す。
+仮定放電、certificate provenance、proof-use、route integrity、完了禁止条件は
+下のTarget Proof Contractを正本とする。T5の正式`$math-lean-review`が
+`No major findings`を返さない限り`target-theorem-proved`を出さない。
 
 ## 入口
 
@@ -27,15 +23,22 @@ explicit certificate はそれだけでは premise discharge ではない。cert
 
 - [research/README.md](../../../research/README.md)
 - [research/GOALS.md](../../../research/GOALS.md)
-- [research/reports/README.md](../../../research/reports/README.md)
 - [research/DESIGN.md](../../../research/DESIGN.md)
-- [../math-lean-review/SKILL.md](../math-lean-review/SKILL.md)
 
-参照ファイル:
+参照ファイルは該当stageへ到達した時に読む。起動時に全件を読み込まない。
 
 - T0 の target GOAL card 検査: [references/target-goal-contract.md](references/target-goal-contract.md)
-- T1 selector / T3 audit / PR review / final review の標準プロンプト: [references/target-subagent-prompts.md](references/target-subagent-prompts.md)
-- T4 cycle result / merge / completion の tracking Issue コメント: [references/target-ledger-templates.md](references/target-ledger-templates.md)
+- T1 selector: [references/t1-prompt.md](references/t1-prompt.md)
+- T3 audit: [references/t3-prompt.md](references/t3-prompt.md)
+- T4 report / tracking Issue: [report規約](../../../research/reports/README.md)、
+  [ledger共通規律](references/ledger-contract.md)、
+  [cycle template](references/cycle-ledger.md)
+- PR review / merge: [review gate](references/pr-review.md)、
+  [merge template](references/merge-ledger.md)
+- T5 final review: [final prompt](references/final-review-prompt.md)、
+  [completion template](references/completion-ledger.md)、
+  [../math-lean-review/SKILL.md](../math-lean-review/SKILL.md)と
+  [../math-lean-review/references/reviewer-lanes.md](../math-lean-review/references/reviewer-lanes.md)
 
 `research/GOALS.md` は target theorem の正本として扱い、ループ中に編集しない。target statement、boundary、completion criteria、premise discharge policy、material premise ledger、anti-weakening rule、failure policy を弱める必要がある場合は、tracking Issue または別 Issue に GOAL 改訂提案を残して止まる。
 
@@ -54,17 +57,17 @@ cycle result は次のいずれかに分類する。
 
 `proof-checkpoint` でも、material premise が theorem argument、typeclass、structure field、certificate field、opaque membership に残る場合は、completion ではない。ambient boundary として残せるのは、対象 site、finite vocabulary、cover、coefficient object、supplied observation contract などの入力幾何だけである。
 
-`route_integrity_audit` は、proof route が target conclusion に合わせて作られたものではなく、GOAL の入力境界、canonical/free construction、universal property、finite witness、または reviewed predecessor theorem から来ているかを確認する audit である。次のいずれかが中心 claim に関係する場合は、`target-theorem-proved` を禁止する。
+`route_integrity_audit` は、proof route が target conclusion に合わせて作られたものではなく、GOAL の入力data、canonical/free construction、universal property、finite witness、または reviewed predecessor theorem から来ているかを確認する audit である。次のいずれかが中心 claim に関係する場合は、`target-theorem-proved` を禁止する。
 
 - selected object / cover / sheaf / coefficient / complex / certificate が、欲しい theorem を成立させるためだけに選ばれている。
-- differential、exactness、descent、effectivity、global coherence、obstruction vanishing、comparison/naturality が field として与えられ、その field の入力境界からの構成 theorem がない。
+- differential、exactness、descent、effectivity、global coherence、obstruction vanishing、comparison/naturality が field として与えられ、その field の入力dataからの構成 theorem がない。
 - 空型、singleton、trivial relation、degenerate cover などにより theorem が vacuous になるが、nonvacuity / adequacy theorem がない。
 - 片方向 theorem、conditional package、wrapper theorem を target の同値または completion として扱っている。
 - GOAL / report / ledger を proof 後に弱い証明へ合わせて読み替えている。
 
 `proof-obligation-discharged` と呼べるのは、対象 GOAL の `discharge-required` premise が次のいずれかで閉じた場合だけである。
 
-- 入力境界から certificate / witness を構成する Lean theorem。
+- 入力dataから certificate / witness を構成する Lean theorem。
 - 有限 witness / concrete construction が Lean theorem として固定されている。
 - 既に `$math-lean-review` または同等の target-loop audit を通った predecessor theorem から導かれる。
 
@@ -127,23 +130,8 @@ target GOAL card の必須項目と欠陥判定は [references/target-goal-contr
 7. blocker、反例、必要条件として固定すべき obstruction。
 8. report / tracking Issue の同期 drift。
 
-selector subagent は、選んだ obligation について次を cycle input として返す。
-
-```yaml
-proof_obligation:
-expected_result_type: proof-obligation-discharged | blocker-fixed | proof-checkpoint
-lean_targets:
-premise_risk:
-anti_weakening_risk:
-certificate_provenance_risk:
-proof_use_risk:
-structure_field_escape_risk:
-route_integrity_risk:
-cheat_route_risk:
-selection_reason:
-rejected_alternatives_summary:
-completion_candidate: yes | no
-```
+selector subagentのcycle input schemaは
+[T1 prompt](references/t1-prompt.md)を唯一の正本とする。
 
 ### T2 Lean 証明または blocker を固定する
 
@@ -158,12 +146,12 @@ certificate を導入する場合は、次を同じ cycle で明示する。
 
 - certificate の field が何を保持するか。
 - その certificate が conclusion-equivalent data を保持しない理由。
-- certificate を入力境界から構成する theorem / finite witness があるか。ない場合は `proof-checkpoint` とし、次 obligation を certificate construction / premise discharge にする。
+- certificate を入力dataから構成する theorem / finite witness があるか。ない場合は `proof-checkpoint` とし、次 obligation を certificate construction / premise discharge にする。
 - main theorem で certificate が proof term に使われるか。未使用なら main theorem の completion candidate にしない。
 
 selected object / cover / sheaf / coefficient / complex / realization layer を導入する場合は、同じ cycle で次を明示する。明示できない場合、成果は route construction checkpoint であり completion candidate ではない。
 
-- どの入力境界から構成されたか。
+- どの入力dataから構成されたか。
 - conclusion-side law を field に持っていない理由。
 - canonical / free / universal property / finite construction / reviewed predecessor theorem のどれで正当化されるか。
 - degenerate / vacuous な選択でないことを示す nonvacuity / adequacy evidence。
@@ -202,29 +190,9 @@ rg -n "$HOME|${TMPDIR%/}" <changed-files>
 
 ローカル検証結果、diff、T1 cycle input、Lean declaration、premise ledger を独立した audit subagent 一体に渡し、公平に監査させる。本体の期待、成功させたい verdict、実装者の自己評価は渡さない。
 
-audit subagent は `approve` / `reject` で返す。`approve` の場合も、`completion_candidate: yes` でなければ final review は走らせない。
-
-```yaml
-cycle_result:
-  decision: approve | reject
-  result_type: proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected
-  lean_artifacts:
-    - file:
-      declarations:
-  premise_delta:
-    discharged:
-    remaining:
-  certificate_provenance:
-    discharged:
-    unresolved:
-  proof_use_audit:
-  structure_field_escape_audit:
-  route_integrity_audit:
-  cheat_route_audit:
-  blocking_findings:
-  next_obligation:
-  completion_candidate: yes | no
-```
+audit subagent は `approve` / `reject` で返す。出力schemaは
+[T3 prompt](references/t3-prompt.md)を唯一の正本とする。`approve`でも
+`completion_candidate: yes`でなければfinal reviewは走らせない。
 
 ### T4 report と tracking Issue を同期する
 
@@ -290,7 +258,7 @@ final review では `unchecked` を fail-closed に扱う。中心 claim、mater
 - `discharge-required` 行に対応する certificate / structure / instance の provenance が確認済み。
 - main theorem の proof term で material premise が実質的に使われており、未使用 premise による見せかけの強化がない。
 - structure / certificate field が結論成分、exactness、descent、effectivity、global coherence、obstruction vanishing を単に供給していない。
-- selected construction / realization / certificate が target-fitting な ad hoc 選択ではなく、入力境界、canonical/free construction、universal property、finite witness、または reviewed predecessor theorem から来ている。
+- selected construction / realization / certificate が target-fitting な ad hoc 選択ではなく、入力data、canonical/free construction、universal property、finite witness、または reviewed predecessor theorem から来ている。
 - vacuity / degeneracy / one-way-as-equivalence / wrapper theorem による見せかけ completion がない。
 - Lean statement が自然言語 target を弱めていない。
 - dependency proof DAG、definition unfolding、nonvacuity、direction coverage、artifact sync が確認済み。
@@ -331,12 +299,11 @@ final completion では `$math-lean-review` の正式判定を必須にする。
 
 - `research/GOALS.md` は編集しない。target 改訂は提案に留める。
 - `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md`、docs/note は編集しない。
-- AAT の target theorem に ArchMap extraction completeness、runtime measurement completeness、whole-codebase quality を混ぜない。GOAL が明示する claim boundary だけを判定する。
+- AAT の target theorem に ArchMap extraction completeness、runtime measurement completeness、whole-codebase quality を混ぜない。GOAL が明示する claim scope だけを判定する。
 - Lean の依存は `Formal/AG/Research` から `Formal/AG` への一方向に保つ。
 - `axiom`、予想以外の `sorry`、`unsafe` を相談なく持ち込まない。
 - tracking Issue は人間の明示指示なしに close しない。
-- 破壊的 git 操作は使わない。一時出力は `.tmp/` または `/private/tmp` に置く。
 
 ## 報告
 
-終えるときは、日本語で停止条件、target proof state、完了 proof obligation、未完 proof obligation、premise discharge status、`$math-lean-review` verdict、PR / merge 結果、次の proof obligation を短く報告する。
+終えるときは、停止条件、target proof state、完了 proof obligation、未完 proof obligation、premise discharge status、`$math-lean-review` verdict、PR / merge 結果、次の proof obligation を報告する。

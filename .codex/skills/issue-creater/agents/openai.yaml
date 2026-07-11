@@ -1,3 +1,4 @@
-display_name: Issue Creater
-short_description: docsから次タスクを考え、GitHub Issueを作成する
-default_prompt: $issue-creater を使って、docsを読んで次に実装すべきタスクをGitHub Issueとして作成してください。
+interface:
+  display_name: "Issue Creater"
+  short_description: "docsから重複のない実装・証明Issueを作成する"
+  default_prompt: "$issue-createrでdocsを読み、未実装・未証明タスクを重複なくGitHub Issue化してください。"

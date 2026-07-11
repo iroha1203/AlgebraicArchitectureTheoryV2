@@ -1,21 +1,18 @@
 ---
 name: review-pr
-description: GitHub PR をレビューするマージゲート。PR 番号を受け取り、分野判定・分野別レビュー・統合判定・監査コメント投稿を行う。"$review-pr PR-number"、PR レビュー、マージ可否判定の依頼で使う。
+description: GitHub PR番号を受け取り、Issue・CI・変更責務を確認し、対応する敵対レビューSKILLへ委譲してマージ可否を統合し、監査コメントを投稿する。"$review-pr PR-number"、PRレビュー、マージ可否判定で使う。実装・修正やPR作成には使わない。
 ---
 
 # Review PR
 
 GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の照合は本体で
 行い、**内容レビューは分野別の敵対レビュー SKILL へ渡す**。
-このリポジトリでは、ユーザーへの報告は日本語で行う。
 
-## 敵対レビュー原則
+## 必須契約
 
-これは**敵対レビュー**のゲートである。目的は PR を通すことではなく、
-マージを止めるべき事実を探すこと。承認は反証の失敗としてのみ与える。
-反証の手がかりの正本は `.codex/skills/_shared/refutation-checklist.md`。
-本体・委譲先とも finding ゼロの報告には資格条件(反証試行3件の明記)が
-課される(同 reference §7)。
+`.codex/skills/_shared/review-protocol.md` と
+`.codex/skills/_shared/refutation-checklist.md` を読み、委譲結果の資格、
+fail-closed、反証試行、証拠資格、統合出力を適用する。
 
 ## 基本方針
 
@@ -23,9 +20,6 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
   リスト、「セルフレビュー実施済み」チェック、台帳・checklist の記載は
   監査対象であって証拠ではない。claim mapping はレビュー側で**独立に
   再構築**し、PR 本文の申告(conjunct 対応表を含む)と**突合**する。
-- 既存の未コミット変更はユーザー変更として扱い、勝手に戻さない。
-  破壊的操作をしない。`git reset --hard`, `git checkout --`, force push は
-  使わない。
 - PR ブランチの checkout が必要な場合は一時 worktree
   (`/tmp/aat-review-pr-<PR>`)を使う。
 - 処置種別の降格を含む PR は、PRD の降格許容リストと照合する。許可外の
@@ -53,14 +47,14 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
 3. **分野判定と委譲(このゲートの中心)。**
    changed files から分野を判定し、対応する分野別レビュー SKILL を実行する。
    分野判定はファイルパスの集合では
-   なく責務境界で行う(各分野は自分の claim に隣接する docs を所有する):
+   なく責務で行う(各分野は自分の claim に隣接する docs を所有する):
 
    | 分野 | 対象 | 委譲先 |
    | --- | --- | --- |
-   | AAT / Lean | `Formal/`、および Lean 実装変更に伴う `docs/aat/` 台帳整合 | `$math-lean-review` |
+   | AAT / Lean / 数学claim | `Formal/`、数学本文、研究GOAL、固定statement、数学claim、および Lean 実装変更に伴う `docs/aat/` 台帳整合 | `$math-lean-review` |
    | Tooling | `tools/`、`docs/tool/`、schema catalog | `$tool-review` |
    | Website | `website/`、`docs/website/` | `$website-review` |
-   | Docs | docs-only、`docs/aat/` 台帳のみ、`docs/sft/`、`docs/note/`、PRD、`.codex/skills/` | `$docs-review`(レビューモード) |
+   | Docs / governance | docs-onlyの`docs/aat/`台帳、`docs/sft/`、非数学的な`docs/note/`、PRD、README、`AGENTS.md`、`.codex/skills/`、文章主体のIssue / PR template、cross-domain docs | `$docs-review`(レビューモード) |
 
    - **Lean 実装(`Formal/`)を触る PR は、差分の大きさを問わず(1行でも)
      `$math-lean-review` の正式判定を必須とする。** `$math-lean-review`
@@ -69,11 +63,11 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
      足りる(statement と台帳の一致は一体で監査する)。
    - Lean 実装を含まない `docs/aat/` 台帳更新だけの PR は docs-only として
      `$docs-review` に渡す。
+   - 数学本文、研究GOAL、固定statement、数学claimを変更するPRは、Lean差分の
+     有無にかかわらず `$math-lean-review` に渡す。
    - 真の分野横断(例: Lean + SFT 本文)は該当する複数分野で実行する。
-   - サブエージェントが起動できない場合、本体が代替レビューをせず、
-     判定を `Blocked / cannot determine` に落とす(fail-closed)。
-   - 委譲先 SKILL が finding ゼロを返した場合でも、反証試行記録と
-     coverage limits が無いなら、その分野レビューは未実施扱いにする。
+   - 既知分野へ分類できないprose / governance差分は`$docs-review`へ渡す。
+   - 委譲結果の資格と起動不能時の処理は共有契約を適用する。
 
 4. 本体で照合する(委譲と並行してよい)。
    - Issue 完了条件と diff の照合(条件文言と実体の対応)。
@@ -106,10 +100,10 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
    - 分野別レビューの結論、finding、反証試行、coverage limits。
      これらを取得できない分野はレビュー未完了として扱い、`Mergeable`
      として統合しない。
-   - 反証試行記録(finding ゼロの分野は反証試行3件以上)
+   - 共有契約を満たす反証試行記録
    - Issue 完了条件の照合結果(満たした / 未達)
    - 実行した検証(コマンドと結果)、coverage / 残リスク
-   資格条件(reference §7)を満たさない監査コメントは、後続のフル
+   共有契約の資格条件を満たさない監査コメントは、後続のフル
    レビューで「レビュー未実施」として扱われる。
    投稿は `gh pr comment <PR> --body-file <監査コメント本文>` などで行い、
    投稿 URL または投稿成功をユーザー報告に含める。コメント投稿に失敗した
@@ -118,6 +112,4 @@ GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の
 
 ## 報告形式
 
-ユーザーへの報告は監査コメントと同じ構成で簡潔に出し、監査コメントの
-URL を添える。問題がない場合も、反証試行の記録なしに「重大な指摘なし」
-とは書かない。
+ユーザーへの報告は共有契約の構成で出し、監査コメントのURLを添える。
