@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 7
+- latest reviewed cycle: 8
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: construct the law-generated ideal sheaf and canonical additive sheafification
+- next obligation: construct the true ideal subsheaf, unconditional additive sheafification, and D1-to-D0 connection
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -435,3 +435,78 @@ construction or reviewed Mathlib import yielding
 `HasSheafify S.topology AddCommGrpCat` for the selected AAT topology.  Then
 instantiate the sheafified short exact sequence unconditionally and connect it
 to the generic D0 lift problem.
+
+## Cycle 8 — law-generated additive ideal subpresheaf provenance
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedIdealSubpresheaf.lean`
+- checkpoint spine:
+  - `observableCoefficient`
+  - `obstructionIdealRestrict`
+  - `obstructionIdealCoefficient`
+  - `obstructionIdealInclusion`
+  - `obstructionIdealInclusion_mono`
+  - `obstructionIdealSubobject`
+  - `sheafifiedObstructionIdealInclusion`
+  - `sheafifiedObstructionIdealInclusion_provenance`
+
+### Checkpoint delta
+
+The objectwise law-generated ideals now form an `AddCommGrpCat`-valued
+presheaf.  Its restriction maps are constructed from `G.restrict` and
+`G.map_obstructionIdeal_le`; identity and composition are proved from the raw
+restriction laws.  The subtype inclusions assemble into a natural
+transformation to the ambient observable presheaf, with categorical mono and
+`Subobject` presentations generated from objectwise subtype injectivity.
+
+Relative to `[HasSheafify S.topology AddCommGrpCat]`, canonical sheafification
+maps this inclusion to a sheaf morphism.  The theorem
+`sheafifiedObstructionIdealInclusion_provenance` is the canonical-unit
+naturality square, so the sheafified morphism remains tied to the raw
+law-generated inclusion rather than a supplied comparison map.
+
+### Premise delta
+
+- discharged: ambient observable additive presheaf; obstruction-ideal additive
+  presheaf; restriction stability; natural ambient inclusion; mono and
+  categorical subobject; canonical-unit provenance square.
+- conditionally discharged: the induced morphism between additive
+  sheafifications, relative to
+  `[HasSheafify S.topology AddCommGrpCat]`.
+- remaining: a concrete or imported canonical source of that `HasSheafify`
+  instance for the selected AAT topology; sheafified ring action on the
+  additive ideal object; stability under that action; a true ideal subsheaf of
+  a ring sheaf; D0 comparison and instantiation; semantic representations;
+  finite zero/nonzero witness pair; package theorem; and the `H¹ = 0`
+  corollary.
+
+The additive sheafification in this cycle is not called an ideal sheaf.
+Additive sheafification alone does not construct or prove stability under a
+sheafified ring action.  Those conditions remain undischarged and this cycle's
+mono or provenance square is not completion evidence for them.
+
+### Audits
+
+- focused Cycle 8 elaboration: pass
+- module-wide standard-axiom assertion: pass (9 declarations)
+- construction provenance: every object and morphism is generated from
+  `SemanticLawEquationWitnessIdealCore.Observable`, `obstructionIdeal`,
+  `restrict`, and `map_obstructionIdeal_le`
+- supplied-field audit: no ideal-presheaf, naturality, mono, subobject,
+  sheafification comparison, ring-action, or ideal-subsheaf field was added
+- sheafification availability audit: the same visible
+  `[HasSheafify S.topology AddCommGrpCat]` premise as Cycle 7 remains
+- target classification: additive subpresheaf and sheafification provenance
+  are proved; true ideal-subsheaf structure and unconditional sheafification
+  remain undischarged
+
+### Next obligation
+
+Construct the sheafified ambient ring action and prove stability of the
+sheafified additive subobject, yielding the true ideal subsheaf required by
+D1.  Provide the selected topology's canonical
+`HasSheafify S.topology AddCommGrpCat` construction, combine Cycle 7's
+sheafified short exact sequence with Cycle 8's inclusion provenance, and
+instantiate the generic D0 lift problem.
