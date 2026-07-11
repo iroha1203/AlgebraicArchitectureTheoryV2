@@ -128,7 +128,14 @@ for old_source, new_source, old_module, new_module in rows:
     def canonical_source(text):
         text = text.replace("\r\n", "\n")
         for prefix in (old_prefix, new_prefix):
-            text = re.sub(r"(?<![\w'.?!«»])" + re.escape(prefix) + r"(?![\w'?!«»])", "$RESEARCH", text)
+            parts = re.split(r"(«[^»]*»)", text)
+            for index in range(0, len(parts), 2):
+                parts[index] = re.sub(
+                    r"(?<![\w'.?!«»])" + re.escape(prefix) + r"(?![\w'?!«»])",
+                    "$RESEARCH",
+                    parts[index],
+                )
+            text = "".join(parts)
         text = re.sub(r"(?<![\w/.-])Formal/AG/" + "Research/", "$RESEARCH_PATH/", text)
         text = re.sub(r"(?<![\w/.-])research-lean/ResearchLean/AG/", "$RESEARCH_PATH/", text)
         return text

@@ -138,4 +138,15 @@ bang	!
 quoted	»
 EOF
 
+quoted_inner_root="$tmp/quoted-inner-root"
+cp -R "$fixture" "$quoted_inner_root"
+printf '%s\n' 'def dependencyName := "«X-FixtureOld.AG-Y»"' >>"$quoted_inner_root/old/Smoke.lean"
+printf '%s\n' 'def dependencyName := "«X-FixtureNew.AG-Y»"' >>"$quoted_inner_root/research-lean/ResearchLean/AG/Smoke.lean"
+if AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$quoted_inner_root" "$checker" \
+    ignored-base ignored-head "$quoted_inner_root/manifest.tsv" "$quoted_inner_root/old.audit.tsv" \
+    "$quoted_inner_root/new.audit.tsv" R3 "$tmp/quoted-inner-out" >"$tmp/stdout" 2>"$tmp/stderr"; then
+  echo "quoted identifier interior drift fixture unexpectedly passed" >&2; exit 1
+fi
+grep -F E_MIGRATION_SOURCE_DIGEST "$tmp/stderr" >/dev/null
+
 echo "Research migration manifest fixtures passed."
