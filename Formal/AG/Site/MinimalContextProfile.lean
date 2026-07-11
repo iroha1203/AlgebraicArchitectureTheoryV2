@@ -44,9 +44,13 @@ is stored in this data.
 -/
 structure MinimalContextProfile {U : AtomCarrier.{u}} (A : ArchitectureObject U)
     (Axis Observable : Type u) where
+  /-- Atoms read by this selected minimal context. -/
   support : Set U.Atom
+  /-- Every selected support Atom belongs to the architecture object family. -/
   support_le_object : support ⊆ { atom | A.configuration.family.mem atom }
+  /-- Axes read by this selected minimal context. -/
   axis : Set Axis
+  /-- Observables required by this selected minimal context. -/
   observable : Set Observable
 
 namespace MinimalContextProfile
@@ -182,12 +186,19 @@ different presentations may have the same extensional readings.
 -/
 structure RawMinimalContextProfile {U : AtomCarrier.{u}}
     (A : ArchitectureObject U) (Axis Observable : Type u) where
+  /-- Presentation indices for selected support readings. -/
   SupportIndex : Type u
+  /-- Atom read by each support presentation index. -/
   supportRead : SupportIndex -> U.Atom
+  /-- Each presented support reading belongs to the architecture object family. -/
   supportRead_objectFamily : ∀ support, A.configuration.family.mem (supportRead support)
+  /-- Presentation indices for selected axis readings. -/
   AxisIndex : Type u
+  /-- Axis read by each axis presentation index. -/
   axisRead : AxisIndex -> Axis
+  /-- Presentation indices for selected observable readings. -/
   ObservableIndex : Type u
+  /-- Observable read by each observable presentation index. -/
   observableRead : ObservableIndex -> Observable
 
 namespace RawMinimalContextProfile
@@ -521,11 +532,17 @@ below from value preservation and subtype extensionality.
 -/
 structure ReadableContextHom
     (W V : MinimalContextProfile A Axis Observable) where
+  /-- Covariant map between selected support subtypes. -/
   supportMap : W.support -> V.support
+  /-- The support map preserves the underlying Atom. -/
   supportMap_val : ∀ support, (supportMap support).1 = support.1
+  /-- Covariant map between selected axis subtypes. -/
   axisMap : W.axis -> V.axis
+  /-- The axis map preserves the underlying axis. -/
   axisMap_val : ∀ axis, (axisMap axis).1 = axis.1
+  /-- Contravariant restriction between selected observable subtypes. -/
   observableRestrict : V.observable -> W.observable
+  /-- Observable restriction preserves the underlying observable. -/
   observableRestrict_val :
     ∀ observable, (observableRestrict observable).1 = observable.1
 
