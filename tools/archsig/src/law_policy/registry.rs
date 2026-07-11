@@ -25,32 +25,19 @@ pub fn expand_law_policy_v1(policy: &LawPolicyDocumentV1) -> Vec<ExpandedLawPoli
         .policies
         .iter()
         .enumerate()
-        .flat_map(|(index, entry)| {
-            if let Some(pack) = entry.pack.as_deref() {
-                let _ = pack;
-                Vec::new()
-            } else if let (Some(law), Some(evaluator)) =
-                (entry.law.as_deref(), entry.evaluator.as_deref())
-            {
-                vec![ExpandedLawPolicyEntryV1 {
-                    source_policy_index: index,
-                    source_selector: law.to_string(),
-                    law: law.to_string(),
-                    evaluator: evaluator.to_string(),
-                    basis: entry.basis.clone(),
-                    scope: entry.scope.clone(),
-                    severity: entry.severity.clone(),
-                }]
-            } else {
-                Vec::new()
-            }
+        .filter_map(|(index, entry)| {
+            let (law, evaluator) = (entry.law.as_deref()?, entry.evaluator.as_deref()?);
+            Some(ExpandedLawPolicyEntryV1 {
+                source_policy_index: index,
+                source_selector: law.to_string(),
+                law: law.to_string(),
+                evaluator: evaluator.to_string(),
+                basis: entry.basis.clone(),
+                scope: entry.scope.clone(),
+                severity: entry.severity.clone(),
+            })
         })
         .collect()
-}
-
-pub fn is_known_v1_pack(pack: &str) -> bool {
-    let _ = pack;
-    false
 }
 
 pub fn is_known_evaluator(evaluator: &str) -> bool {
@@ -94,5 +81,41 @@ mod tests {
             section_manifest.typed_result_schema,
             "archsig-measurement-packet/v0.5.0"
         );
+    }
+
+    #[test]
+    fn expansion_ignores_retired_pack_selectors() {
+        let policy = LawPolicyDocumentV1 {
+            schema: "law-policy/v0.5.0".to_string(),
+            id: "policy:test".to_string(),
+            law_surface_ref: None,
+            measurement_profile_ref: None,
+            basis_ledger: vec![],
+            policies: vec![
+                crate::LawPolicyEntryV1 {
+                    pack: Some("retired-pack".to_string()),
+                    law: None,
+                    evaluator: None,
+                    basis: vec![],
+                    profile_ref: None,
+                    scope: vec![],
+                    severity: "warning".to_string(),
+                },
+                crate::LawPolicyEntryV1 {
+                    pack: None,
+                    law: Some("ag.cech-obstruction".to_string()),
+                    evaluator: Some("ag.cech-obstruction".to_string()),
+                    basis: vec![],
+                    profile_ref: None,
+                    scope: vec!["context:test".to_string()],
+                    severity: "warning".to_string(),
+                },
+            ],
+        };
+
+        let expanded = expand_law_policy_v1(&policy);
+        assert_eq!(expanded.len(), 1);
+        assert_eq!(expanded[0].source_policy_index, 1);
+        assert_eq!(expanded[0].source_selector, "ag.cech-obstruction");
     }
 }

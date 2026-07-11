@@ -60,7 +60,7 @@ route の追加・削除は `website/src/**/index.html` の増減がそのまま
 | `/sft/references/formal-anchors/` | `website/src/sft/references/formal-anchors/index.html` | SFT formal anchors。Lean status、formalized carriers、theorem-shaped surfaces。 |
 | `/sft/references/research-program/` | `website/src/sft/references/research-program/index.html` | SFT research program。workbench、calibration、AI governance benchmark、closed-loop tooling へ進む研究計画。 |
 | `/sft/references/glossary/` | `website/src/sft/references/glossary/index.html` | SFT glossary。field、force、attractor、ForecastCone、ConsequenceEnvelope などの用語境界と参照先。 |
-| `/archsig/` | `website/src/archsig/index.html` | ArchSig v1 output contract の Skill-first architecture analysis landing。 |
+| `/archsig/` | `website/src/archsig/index.html` | ArchSig v0.5.0 output contract の Skill-first architecture analysis landing。 |
 | `/archsig/getting-started/` | `website/src/archsig/getting-started/index.html` | LLM Skill onboarding、prompt examples、Skill が作る ArchMap / LawPolicy / analysis output。 |
 | `/archsig/analyses/` | `website/src/archsig/analyses/index.html` | Boundary movement、responsibility drift、semantic coupling、order sensitivity、hotspots、missing evidence の分析カタログ。 |
 | `/archsig/examples/` | `website/src/archsig/examples/index.html` | Skill request から returned findings / repair candidates / confirmation checks までの短い例。 |

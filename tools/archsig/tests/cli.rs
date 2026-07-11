@@ -11,7 +11,7 @@ use archsig::{
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ARCHSIG_GATE_REPORT_DECISIONS,
-    ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_CONCLUSION_CODES,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ArchMapDocumentV2, ArchSigRunManifestV1, compare_archmap_v2_doctrine,
 };
@@ -48,8 +48,9 @@ fn assert_policy_source_refs_resolve(fixture: &Value) {
         let section = source["section"]
             .as_str()
             .unwrap_or_else(|| panic!("{source_id} must carry a policy section"));
-        let body = fs::read_to_string(repo_root.join(path))
-            .unwrap_or_else(|error| panic!("{source_id} policy path {path} is unreadable: {error}"));
+        let body = fs::read_to_string(repo_root.join(path)).unwrap_or_else(|error| {
+            panic!("{source_id} policy path {path} is unreadable: {error}")
+        });
         assert!(
             body.lines().any(|line| {
                 let heading = line.trim_start_matches('#').trim();
@@ -1134,6 +1135,30 @@ fn cli_archmap_authoring_audit_allows_grounding_context_exemption() {
 }
 
 #[test]
+fn cli_archmap_authoring_audit_rejects_unknown_grounding_kind() {
+    let out_dir = temp_dir("archmap-authoring-audit-unknown-grounding-kind");
+    let (mut archmap, scope, mut candidate, ledger) = authoring_audit_fixture();
+    archmap["sources"]["src:derived"] = json!({
+        "kind": "unknown-grounding-kind",
+        "path": "src/derived.rs"
+    });
+    archmap["contexts"] = json!([{
+        "id": "ctx:authoring-grounding",
+        "atoms": ["atom:common"],
+        "restrictsTo": [],
+        "refs": ["src:derived"]
+    }]);
+    candidate["reviewedSources"] = json!(["src:src/a.rs", "src:derived"]);
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 1);
+    let json = read_json(&report);
+    assert_eq!(
+        check_by_id(&json, "authoring-sources-resolve")["result"],
+        "fail"
+    );
+    assert!(json_contains_substring(&json, "src:derived"));
+}
+
+#[test]
 fn cli_archmap_authoring_audit_allows_doc_section_partial_read() {
     let out_dir = temp_dir("archmap-authoring-audit-doc-section");
     let (mut archmap, mut scope, mut candidate, ledger) = authoring_audit_fixture();
@@ -1650,6 +1675,44 @@ fn cli_law_policy_registry_keeps_ag_evaluator_after_split() {
 }
 
 #[test]
+fn cli_law_policy_rejects_retired_pack_selector() {
+    let out_dir = temp_dir("law-policy-retired-pack");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_ag.json"));
+    policy["policies"][0] = json!({
+        "pack": "legacy-ag-pack",
+        "scope": ["/computedInvariants"],
+        "severity": "blocking"
+    });
+    let policy_path = out_dir.join("retired-pack.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy writes");
+    let report_path = out_dir.join("retired-pack-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-policy",
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--measurement-profile",
+            root.join("measurement_profile_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let report = read_json(&report_path);
+    assert_eq!(report["summary"]["result"], "fail");
+    assert!(report["checks"].as_array().unwrap().iter().any(|check| {
+        check["id"] == "law-policy-schema050-registry-vocabulary" && check["result"] == "fail"
+    }));
+}
+
+#[test]
 fn cli_law_policy_stage1_reserved_fields_fail_closed_and_basis_ledger_resolves() {
     let out_dir = temp_dir("ag-policy-stage1-reserved-basis");
     let root = ag_measurement_root();
@@ -1777,6 +1840,137 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         "enumerationComplete is recorded as author assumption, not verified"
     );
 
+    let mut measured_residual = read_json(&repair_plan_path);
+    measured_residual["residual"] = json!({
+        "kind": "measured",
+        "packetRef": "measurement:residual-test",
+        "invariantRef": "residual:invariant"
+    });
+    let measured_residual_path = out_dir.join("repair_plan_measured_residual.json");
+    fs::write(
+        &measured_residual_path,
+        serde_json::to_vec_pretty(&measured_residual).expect("measured residual plan serializes"),
+    )
+    .expect("measured residual plan writes");
+    let residual_packet_path = out_dir.join("residual_packet.json");
+    fs::write(
+        &residual_packet_path,
+        serde_json::to_vec_pretty(&json!({
+            "packetId": "measurement:residual-test",
+            "computedInvariants": [{"invariantId": "residual:invariant"}]
+        }))
+        .expect("residual packet serializes"),
+    )
+    .expect("residual packet writes");
+    let missing_residual_report = out_dir.join("repair-plan-missing-residual-packet.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            measured_residual_path.to_str().expect("path is utf-8"),
+            "--out",
+            missing_residual_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&missing_residual_report),
+            "repair-plan-schema050-measured-residual-binding"
+        )["result"],
+        "fail"
+    );
+    let supplied_residual_report = out_dir.join("repair-plan-supplied-residual-packet.json");
+    run_sig0(&[
+        "repair-plan",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--repair-plan",
+        measured_residual_path.to_str().expect("path is utf-8"),
+        "--residual-packet",
+        residual_packet_path.to_str().expect("path is utf-8"),
+        "--out",
+        supplied_residual_report.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(
+        check_by_id(
+            &read_json(&supplied_residual_report),
+            "repair-plan-schema050-measured-residual-binding"
+        )["result"],
+        "pass"
+    );
+    let residual_runs = [
+        out_dir.join("residual-run-a"),
+        out_dir.join("residual-run-b"),
+    ];
+    for residual_run in &residual_runs {
+        run_sig0(&[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--measurement-profile",
+            test_measurement_profile_path(Path::new(
+                root.join("law_policy_ag.json")
+                    .to_str()
+                    .expect("path is utf-8"),
+            ))
+            .to_str()
+            .expect("path is utf-8"),
+            "--repair-plan",
+            measured_residual_path.to_str().expect("path is utf-8"),
+            "--residual-packet",
+            residual_packet_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            residual_run.to_str().expect("path is utf-8"),
+        ]);
+    }
+    let residual_manifest = read_json(&residual_runs[0].join("archsig-run-manifest.json"));
+    assert_eq!(
+        residual_manifest["inputDigests"]["residualPacket"]["path"],
+        "input:residual_packet.json"
+    );
+    assert!(
+        residual_manifest["inputDigests"]["residualPacket"]["sha256"]
+            .as_str()
+            .is_some_and(|digest| !digest.is_empty())
+    );
+    let residual_measurement = read_json(&residual_runs[0].join("archsig-measurement-packet.json"));
+    assert_eq!(
+        residual_measurement["suppliedData"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|entry| entry["kind"] == "residual-packet")
+            .expect("residual packet ledger entry")["sourceArtifactRef"],
+        "input:residual_packet.json"
+    );
+    let residual_compare = out_dir.join("residual-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        residual_runs[0].to_str().expect("path is utf-8"),
+        "--head-run",
+        residual_runs[1].to_str().expect("path is utf-8"),
+        "--out-dir",
+        residual_compare.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(
+        read_json(&residual_compare.join("archsig-comparison-report.json"))["comparability"]["level"],
+        "identical"
+    );
+
     let mut missing_primitive = read_json(&repair_plan_path);
     missing_primitive["primitives"]
         .as_array_mut()
@@ -1878,6 +2072,94 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         check_by_id(&reserved_json, "repair-plan-schema050-reserved-fields")["result"],
         "fail"
     );
+
+    for field in ["gluingData", "comparison", "grounding"] {
+        let mut reserved_field = read_json(&repair_plan_path);
+        reserved_field[field] = json!({"future": true});
+        let reserved_field_path = out_dir.join(format!("repair_plan_reserved_{field}.json"));
+        fs::write(
+            &reserved_field_path,
+            serde_json::to_vec_pretty(&reserved_field).expect("reserved field plan serializes"),
+        )
+        .expect("reserved field plan writes");
+        let reserved_field_report = out_dir.join(format!("repair-plan-reserved-{field}.json"));
+        run_sig0_expect_code(
+            &[
+                "repair-plan",
+                "--archmap",
+                root.join("archmap_v2.json")
+                    .to_str()
+                    .expect("path is utf-8"),
+                "--repair-plan",
+                reserved_field_path.to_str().expect("path is utf-8"),
+                "--out",
+                reserved_field_report.to_str().expect("path is utf-8"),
+            ],
+            1,
+        );
+        assert_eq!(
+            check_by_id(
+                &read_json(&reserved_field_report),
+                "repair-plan-schema050-reserved-fields"
+            )["result"],
+            "fail",
+            "reserved field {field} must be rejected independently"
+        );
+    }
+
+    let mut supplied_faithfulness = read_json(&repair_plan_path);
+    supplied_faithfulness["faithfulness"]["mode"] = json!("supplied");
+    let supplied_faithfulness_path = out_dir.join("repair_plan_supplied_faithfulness.json");
+    fs::write(
+        &supplied_faithfulness_path,
+        serde_json::to_vec_pretty(&supplied_faithfulness)
+            .expect("supplied faithfulness plan serializes"),
+    )
+    .expect("supplied faithfulness plan writes");
+    let supplied_faithfulness_report = out_dir.join("repair-plan-supplied-faithfulness.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            supplied_faithfulness_path.to_str().expect("path is utf-8"),
+            "--out",
+            supplied_faithfulness_report
+                .to_str()
+                .expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&supplied_faithfulness_report),
+            "repair-plan-schema050-reserved-fields"
+        )["result"],
+        "fail"
+    );
+
+    let mut unknown_field = read_json(&repair_plan_path);
+    unknown_field["complex"]["unclaimedField"] = json!(true);
+    let unknown_field_path = out_dir.join("repair_plan_unknown_field.json");
+    fs::write(
+        &unknown_field_path,
+        serde_json::to_vec_pretty(&unknown_field).expect("unknown field plan serializes"),
+    )
+    .expect("unknown field plan writes");
+    let unknown_field_output = run_sig0_output(&[
+        "repair-plan",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--repair-plan",
+        unknown_field_path.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(unknown_field_output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&unknown_field_output.stderr).contains("unknown field"));
 
     let mut conclusion_token = read_json(&repair_plan_path);
     conclusion_token["semanticProjection"]["k"][0] = json!("glues");
@@ -2028,6 +2310,8 @@ fn cli_analyze_saga_descent_without_repair_plan_is_silence_by_design() {
             }),
         "missing repair-plan must be modeled as silence_by_design, not validation failure"
     );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_saga_summary_has_no_class_vocabulary(&summary);
 }
 
 #[test]
@@ -2094,10 +2378,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         summary["conclusion"],
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
     );
-    assert!(
-        !json_contains_substring(&summary, "class"),
-        "boundary-membership summary must not introduce layer C class vocabulary"
-    );
+    assert_saga_summary_has_no_class_vocabulary(&summary);
     assert_eq!(
         summary["translationRule"]["conclusionCode"],
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
@@ -2118,8 +2399,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         summary["translationRule"]["principalText"]
             .as_str()
             .is_some_and(|text| {
-                text.contains("selected SAGA residual")
-                    && text.contains("covered and faithful")
+                text.contains("selected SAGA residual") && text.contains("covered and faithful")
             }),
         "translation principal text must stay inside the selected profile"
     );
@@ -2243,6 +2523,7 @@ fn cli_analyze_saga_descent_uncovered_residual_blocks_global_coherence() {
         false
     );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_saga_summary_has_no_class_vocabulary(&summary);
     assert_ne!(
         summary["conclusion"],
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
@@ -2405,10 +2686,44 @@ fn cli_analyze_saga_descent_mode_none_keeps_global_coherence_silent() {
             })
     );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_saga_summary_has_no_class_vocabulary(&summary);
     assert_ne!(
         summary["conclusion"],
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
     );
+}
+
+#[test]
+fn cli_analyze_saga_descent_mode_none_with_nonboundary_residual_stays_silent() {
+    let root = ag_measurement_root();
+    let mut repair_plan = read_json(&root.join("repair_plan_complete_support.json"));
+    repair_plan["faithfulness"]["mode"] = json!("none");
+    repair_plan["complex"]["tripleOverlaps"] = json!([]);
+    for primitive in repair_plan["primitives"].as_array_mut().unwrap() {
+        primitive["resL"] = json!(["repair:cycle"]);
+        primitive["resR"] = json!([]);
+        primitive["support"]["variables"] = json!(["repair:cycle"]);
+    }
+    let out_dir = run_saga_fixture_lock("ag-saga-descent-mode-none-nonboundary", repair_plan);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        saga_row(&packet, "saga.residual-boundary-membership")["verdict"],
+        "measured_nonzero"
+    );
+    assert_eq!(
+        saga_row(&packet, "saga.residual-boundary-membership")["verdictData"]["methodStatus"],
+        "residual_not_in_b1"
+    );
+    assert_eq!(
+        saga_row(&packet, "saga.global-coherence")["verdict"],
+        "unmeasured"
+    );
+    assert_eq!(
+        saga_row(&packet, "saga.global-coherence")["verdictData"]["methodStatus"],
+        "complete_support_not_declared"
+    );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_saga_summary_has_no_class_vocabulary(&summary);
 }
 
 #[test]
@@ -2548,6 +2863,7 @@ fn cli_analyze_saga_descent_nonboundary_residual_is_unconditional_negative() {
         "overlap:order-shared"
     ));
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_saga_summary_has_no_class_vocabulary(&summary);
     assert_eq!(
         summary["conclusion"],
         ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL
@@ -2679,9 +2995,12 @@ fn cli_analyze_contract_fixture_locks_are_byte_deterministic() {
         primitive["resR"] = json!([]);
         primitive["support"]["variables"] = json!(["repair:cycle"]);
     }
-    let saga_negative_a =
-        run_saga_fixture_lock("saga-contract-boundary-negative-a", nonboundary_repair.clone());
-    let saga_negative_b = run_saga_fixture_lock("saga-contract-boundary-negative-b", nonboundary_repair);
+    let saga_negative_a = run_saga_fixture_lock(
+        "saga-contract-boundary-negative-a",
+        nonboundary_repair.clone(),
+    );
+    let saga_negative_b =
+        run_saga_fixture_lock("saga-contract-boundary-negative-b", nonboundary_repair);
     assert_byte_identical_analysis_artifacts(&saga_negative_a, &saga_negative_b);
     let negative_packet = read_json(&saga_negative_a.join("archsig-measurement-packet.json"));
     assert_eq!(
@@ -3171,7 +3490,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             "law": "ag.cech-obstruction",
             "target": {
                 "kind": "cover-relative-cech-h1-class",
-                "coverRef": "ag.cech-obstruction",
+                "coverRef": "cover:order-inventory",
                 "coefficient": "F2",
                 "scopeSize": {
                     "contexts": 1,
@@ -3228,7 +3547,8 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "contextCount": 4,
                 "coverCount": 1,
                 "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema050",
-                "invariantId": "finite-poset-site-shape"
+                "invariantId": "finite-poset-site-shape",
+                "evaluator": "ag.foundation"
             },
             {
                 "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
@@ -7739,6 +8059,8 @@ fn cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading() {
         .find(|reading| reading["evaluator"] == "ag.sheaf-laplacian")
         .expect("laplacian analytic reading exists");
     assert_eq!(reading["structuralVerdictRef"], Value::Null);
+    assert_eq!(reading["claimStatus"], "certified");
+    assert_eq!(reading["fidelity"], "proxy");
     assert_eq!(reading["regime"], "analytic-measurement");
     assert_eq!(
         reading["value"]["readingKind"],
@@ -10323,6 +10645,32 @@ fn cli_analyze_current_run_removes_stale_retired_artifacts() {
             "current analyze must remove stale retired artifact {artifact}"
         );
     }
+    assert!(out_dir.join("archsig-measurement-packet.json").exists());
+    assert!(out_dir.join("archsig-run-manifest.json").exists());
+
+    let malformed_profile = out_dir.join("malformed-profile.json");
+    fs::write(&malformed_profile, "{\n").expect("malformed profile writes");
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        malformed_profile.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(
+        out_dir.join("archsig-measurement-packet.json").exists(),
+        "preflight parse failure leaves the previous successful run untouched"
+    );
+    assert!(out_dir.join("archsig-run-manifest.json").exists());
 }
 
 #[test]
@@ -10779,6 +11127,43 @@ fn legacy_archsig_surface_does_not_reenter_source_or_paths() {
             !crate_root.join(removed_path).exists(),
             "legacy ArchSig path {removed_path} re-entered"
         );
+    }
+}
+
+#[test]
+fn cli_public_v050_surface_has_no_retired_archsig_vocab() {
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("repository root");
+    let paths = [
+        "website/src/archsig/index.html",
+        "website/src/archsig/reference/index.html",
+        "website/src/archsig/getting-started/index.html",
+        "tools/fieldsig/README.md",
+        "tools/archsig/skills/law-policy-creater/references/schema-guide.md",
+        "tools/archsig/skills/law-policy-creater/references/question-bank.md",
+        "tools/archsig/skills/law-policy-creater/references/convention-survey.md",
+    ];
+    let retired_tokens = [
+        "pr-review",
+        "architecture-distance",
+        "analysis-packet",
+        "typed evaluator",
+        "ArchMap v1",
+        "LawPolicy v1",
+        "--analysis-packet",
+        "domain.no-direct-infra-dependency",
+    ];
+    for path in paths {
+        let body = fs::read_to_string(repo_root.join(path))
+            .unwrap_or_else(|error| panic!("must read {path}: {error}"));
+        for token in retired_tokens {
+            assert!(
+                !body.contains(token),
+                "retired ArchSig token {token} remains in current surface {path}"
+            );
+        }
     }
 }
 
@@ -11452,6 +11837,51 @@ fn cli_locks_part4_output_contract_docs_and_skill_smoke() {
 }
 
 #[test]
+fn cli_gate_rejects_supplied_vacuous_measured_zero_packet() {
+    let out_dir = temp_dir("archsig-gate-vacuous-measured-zero");
+    let packet_path = out_dir.join("packet.json");
+    write_gate_packet(&packet_path, "measured_zero");
+    let mut packet = read_json(&packet_path);
+    packet["structuralVerdict"][0]["target"]["scopeSize"] =
+        json!({"contexts": 0, "edges": 0, "triangles": 0});
+    packet["structuralVerdict"][0]["evidence"]["computedInvariantRefs"] = json!([]);
+    fs::write(
+        &packet_path,
+        serde_json::to_vec_pretty(&packet).expect("packet serializes"),
+    )
+    .expect("packet writes");
+    let report_path = out_dir.join("gate-report.json");
+
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            ag_measurement_root()
+                .join("gate_policy_conservative.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let report = read_json(&report_path);
+    assert_eq!(report["decision"], "NOT_EVALUABLE");
+    assert!(
+        report["packetValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| {
+                check["id"] == "measurement-packet-schema050-structural-verdict-new-shape"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_gate_rejects_plain_pass_for_non_terminal_and_missing_mapping() {
     let out_dir = temp_dir("archsig-gate-invalid-policy");
     let packet_path = out_dir.join("packet.json");
@@ -11920,6 +12350,249 @@ fn cli_gate_report_is_byte_deterministic() {
 }
 
 #[test]
+fn cli_compare_asserts_identical_and_verdict_row_transitions() {
+    let out_dir = temp_dir("archsig-compare-positive-transitions");
+    let root = ag_measurement_root();
+    let source_run = out_dir.join("source-run");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(
+            root.join("law_policy_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+        ))
+        .to_str()
+        .expect("path is utf-8"),
+        "--out-dir",
+        source_run.to_str().expect("path is utf-8"),
+    ]);
+
+    let clone_run = |name: &str| {
+        let target = out_dir.join(name);
+        fs::create_dir_all(&target).expect("comparison run directory can be created");
+        for entry in fs::read_dir(&source_run).expect("source run can be read") {
+            let entry = entry.expect("source run entry can be read");
+            let file_type = entry
+                .file_type()
+                .expect("source run entry type can be read");
+            if file_type.is_file() {
+                fs::copy(entry.path(), target.join(entry.file_name()))
+                    .expect("comparison artifact can be copied");
+            }
+        }
+        target
+    };
+
+    let identical_base = clone_run("identical-base");
+    let identical_head = clone_run("identical-head");
+    let identical_out = out_dir.join("identical-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        identical_base.to_str().expect("path is utf-8"),
+        "--head-run",
+        identical_head.to_str().expect("path is utf-8"),
+        "--out-dir",
+        identical_out.to_str().expect("path is utf-8"),
+    ]);
+    let identical = read_json(&identical_out.join("archsig-comparison-report.json"));
+    assert_eq!(identical["comparability"]["level"], "identical");
+    assert_eq!(
+        identical["conclusionCode"],
+        ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED
+    );
+    assert!(
+        identical["verdictTransitions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|transition| transition["transition"] == "preexisting_recorded_row")
+    );
+
+    let mut verdict_row_archmap = read_json(&root.join("archmap_v2.json"));
+    verdict_row_archmap["atoms"][0]["object"] = json!("changed-object-for-verdict-row");
+    let verdict_row_archmap_path = out_dir.join("verdict-row-archmap.json");
+    fs::write(
+        &verdict_row_archmap_path,
+        serde_json::to_vec_pretty(&verdict_row_archmap).expect("verdict-row ArchMap serializes"),
+    )
+    .expect("verdict-row ArchMap writes");
+    let verdict_row_head = out_dir.join("verdict-row-head");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        verdict_row_archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(
+            root.join("law_policy_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+        ))
+        .to_str()
+        .expect("path is utf-8"),
+        "--out-dir",
+        verdict_row_head.to_str().expect("path is utf-8"),
+    ]);
+    let verdict_row_out = out_dir.join("verdict-row-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        source_run.to_str().expect("path is utf-8"),
+        "--head-run",
+        verdict_row_head.to_str().expect("path is utf-8"),
+        "--out-dir",
+        verdict_row_out.to_str().expect("path is utf-8"),
+    ]);
+    let verdict_row_report = read_json(&verdict_row_out.join("archsig-comparison-report.json"));
+    assert_eq!(verdict_row_report["comparability"]["level"], "verdict-row");
+
+    let source_packet = read_json(&source_run.join("archsig-measurement-packet.json"));
+    let zero_index = source_packet["structuralVerdict"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .position(|row| row["verdict"] == "measured_zero")
+        .expect("AG fixture has a measured_zero row");
+    let row_evaluator = source_packet["structuralVerdict"][zero_index]["evaluator"]
+        .as_str()
+        .expect("AG fixture row has evaluator");
+    let invariant_id = source_packet["computedInvariants"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|invariant| invariant["evaluator"] == row_evaluator)
+        .and_then(|invariant| invariant["invariantId"].as_str())
+        .expect("AG fixture has a computed invariant for the selected evaluator")
+        .to_string();
+
+    let set_row_identity = |run: &Path| {
+        let packet_path = run.join("archsig-measurement-packet.json");
+        let mut packet = read_json(&packet_path);
+        packet["structuralVerdict"][zero_index]["target"]["classRef"] =
+            json!(format!("computedInvariants/{invariant_id}"));
+        packet["structuralVerdict"][zero_index]["evidence"]["computedInvariantRefs"] =
+            json!([invariant_id]);
+        fs::write(
+            packet_path,
+            serde_json::to_vec_pretty(&packet).expect("transition packet serializes"),
+        )
+        .expect("transition packet writes");
+    };
+    let set_measured_nonzero = |run: &Path| {
+        let packet_path = run.join("archsig-measurement-packet.json");
+        let mut packet = read_json(&packet_path);
+        packet["structuralVerdict"][zero_index]["verdict"] = json!("measured_nonzero");
+        packet["structuralVerdict"][zero_index]["verdictData"]["zero"] = json!(false);
+        packet["structuralVerdict"][zero_index]["verdictData"]["nonZero"] = json!(true);
+        packet["structuralVerdict"][zero_index]["target"]["classRef"] =
+            json!(format!("computedInvariants/{invariant_id}"));
+        packet["structuralVerdict"][zero_index]["evidence"]["computedInvariantRefs"] =
+            json!([invariant_id]);
+        fs::write(
+            packet_path,
+            serde_json::to_vec_pretty(&packet).expect("transition packet serializes"),
+        )
+        .expect("transition packet writes");
+    };
+
+    let new_base = clone_run("new-base");
+    let new_head = clone_run("new-head");
+    set_row_identity(&new_base);
+    set_row_identity(&new_head);
+    set_measured_nonzero(&new_head);
+    let new_out = out_dir.join("new-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        new_base.to_str().expect("path is utf-8"),
+        "--head-run",
+        new_head.to_str().expect("path is utf-8"),
+        "--out-dir",
+        new_out.to_str().expect("path is utf-8"),
+    ]);
+    let new_report = read_json(&new_out.join("archsig-comparison-report.json"));
+    assert_eq!(
+        new_report["conclusionCode"],
+        ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE
+    );
+    assert!(
+        new_report["verdictTransitions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|transition| transition["transition"]
+                == "measured_obstruction_recorded_after_change")
+    );
+
+    let cleared_base = clone_run("cleared-base");
+    let cleared_head = clone_run("cleared-head");
+    set_row_identity(&cleared_base);
+    set_row_identity(&cleared_head);
+    set_measured_nonzero(&cleared_base);
+    let cleared_out = out_dir.join("cleared-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        cleared_base.to_str().expect("path is utf-8"),
+        "--head-run",
+        cleared_head.to_str().expect("path is utf-8"),
+        "--out-dir",
+        cleared_out.to_str().expect("path is utf-8"),
+    ]);
+    let cleared_report = read_json(&cleared_out.join("archsig-comparison-report.json"));
+    assert_eq!(
+        cleared_report["conclusionCode"],
+        ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE
+    );
+    assert!(cleared_report["verdictTransitions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|transition| transition["transition"] == "measured_obstruction_no_longer_recorded"));
+}
+
+#[test]
+fn cli_archsig_reader_default_law_policy_validates_against_current_registry() {
+    let out_dir = temp_dir("archsig-reader-default-law-policy");
+    let report_path = out_dir.join("law-policy-validation.json");
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("repository root");
+    run_sig0(&[
+        "law-policy",
+        "--law-policy",
+        repo_root
+            .join("tools/archsig/skills/archsig-reader/references/default_law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        ag_measurement_root()
+            .join("measurement_profile_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report_path.to_str().expect("path is utf-8"),
+    ]);
+    let report = read_json(&report_path);
+    assert_eq!(report["summary"]["result"], "pass");
+    assert_eq!(report["summary"]["failedCheckCount"], 0);
+}
+
+#[test]
 fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_transition() {
     let out_dir = temp_dir("archsig-compare-cover-change");
     let root = ag_measurement_root();
@@ -12350,6 +13023,22 @@ fn write_gate_packet(path: &Path, verdict: &str) {
                     "status": "validated",
                     "checkRef": "archmap/v0.5.0-validation"
                 }
+            }, {
+                "suppliedId": "supplied:law-policy",
+                "kind": "law-policy",
+                "sourceArtifactRef": "input:law-policy.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "law-policy/v0.5.0-validation"
+                }
+            }, {
+                "suppliedId": "supplied:measurement-profile",
+                "kind": "measurement-profile",
+                "sourceArtifactRef": "input:measurement-profile.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "measurement-profile/v0.5.0-validation"
+                }
             }],
             "boundaryStatements": [{
                 "id": "boundary:gate-test",
@@ -12578,6 +13267,13 @@ fn saga_row<'a>(packet: &'a Value, law: &str) -> &'a Value {
         .iter()
         .find(|row| row["evaluator"] == "ag.saga-descent" && row["law"] == law)
         .unwrap_or_else(|| panic!("missing saga row {law}"))
+}
+
+fn assert_saga_summary_has_no_class_vocabulary(summary: &Value) {
+    assert!(
+        !json_contains_substring(summary, "class"),
+        "SAGA summary must not introduce layer C class vocabulary"
+    );
 }
 
 fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {

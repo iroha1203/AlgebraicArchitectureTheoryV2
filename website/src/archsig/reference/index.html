@@ -2,7 +2,7 @@
 {
   "layout": "base.njk",
   "title": "ArchSig Reference",
-  "description": "ArchSig command, schema, artifact, and compatibility reference for reproducible analyze runs.",
+  "description": "ArchSig command, schema, and artifact reference for reproducible v0.5.0 analyze runs.",
   "order": 41,
   "llmsLabel": "ArchSig Reference",
   "navSection": "archsig"
@@ -14,51 +14,43 @@
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Reference</span></nav>
           <p class="eyebrow">Commands and artifacts</p>
           <h1>Reproduce an ArchSig run.</h1>
-          <p class="lede">Use this page when you need exact commands, artifact names, schema boundaries, or compatibility notes for ArchSig analysis.</p>
+          <p class="lede">Use this page when you need exact commands, artifact names, and schema boundaries for an ArchSig v0.5.0 analysis.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#primary">Primary workflow</a></li><li><a href="#outputs">Workflow outputs</a></li><li><a href="#commands">Command surfaces</a></li><li><a href="#schemas">Artifact schemas</a></li><li><a href="#removed">Removed runtime surfaces</a></li><li><a href="#boundaries">Reference boundaries</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#primary">Primary workflow</a></li><li><a href="#outputs">Workflow outputs</a></li><li><a href="#commands">Command surfaces</a></li><li><a href="#schemas">Artifact schemas</a></li><li><a href="#boundaries">Reference boundaries</a></li></ol></nav>
 {% include "series-nav.njk" %}
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="../manual/">Manual</a></li><li><a href="./" aria-current="page">Reference</a></li></ul></div>
           </aside>
           <div class="article-main">
             <section id="primary" class="article-section">
               <h2>Primary workflow</h2>
-              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes <code>archmap/v0.5.0</code> and <code>law-policy/v0.5.0</code>, then writes validation reports, normalized atoms, typed evaluator results, <code>architecture-distance.json</code>, summary, viewer data, and optional raw artifacts.</p>
+              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes <code>archmap/v0.5.0</code>, <code>law-policy/v0.5.0</code>, and a separate <code>measurement-profile/v0.5.0</code>, then writes the measurement packet, summary, insight report, viewer data, validation reports, and run manifest.</p>
               <figure class="code-panel">
                 <figcaption>Run analysis</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
+  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
+  --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
   --out-dir .archsig/analyze</code></pre>
               </figure>
-              <p><code>archsig-analysis-summary.json</code> is emitted by <code>analyze</code> as the compact first reading surface. It includes <code>distanceInsights</code>, <code>distanceDiagnosis</code>, <code>richPacketRefs</code>, <code>richDominantFindings</code>, <code>richReadingGuide</code>, and an <code>actionQueue</code> over generated, spectrum, homotopy, and structural refs.</p>
-              <figure class="code-panel">
-                <figcaption>Run analysis with raw artifacts</figcaption>
-                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
-  --out-dir .archsig/analyze \
-  --emit-raw-artifacts</code></pre>
-              </figure>
+              <p><code>archsig-analysis-summary.json</code> is the compact first reading surface. Read it together with <code>archsig-measurement-packet.json</code>, <code>archsig-insight-report.json</code>, <code>archsig-atom-viewer-data.json</code>, and <code>archsig-run-manifest.json</code> when source refs or measurement boundaries need inspection.</p>
             </section>
             <section id="outputs" class="article-section">
               <h2>Workflow outputs</h2>
               <ul class="status-list">
                 <li><strong><code>archmap-validation.json</code></strong><span>Validation report for the supplied <code>archmap/v0.5.0</code>.</span></li>
                 <li><strong><code>law-policy-validation.json</code></strong><span>Validation report for the selected <code>law-policy/v0.5.0</code>.</span></li>
-                <li><strong><code>normalized-archmap.json</code></strong><span>ArchMap atoms normalized into the ArchSig typed model.</span></li>
-                <li><strong><code>typed-evaluator-results.json</code></strong><span>Evaluator statuses, support refs, basis refs, and bounded conclusions.</span></li>
-                <li><strong><code>architecture-distance.json</code></strong><span>The primary <code>archsig-architecture-distance/v0.5.0</code> artifact for Part IV family summaries, <code>distanceInsights</code>, <code>distanceDiagnosis</code>, homotopy rows, curvature rows, and representation metric rows.</span></li>
-                <li><strong><code>archsig-analysis-summary.json</code></strong><span>The compact first reading surface with the same distance insights and diagnosis.</span></li>
-                <li><strong><code>archsig-atom-viewer-data.json</code></strong><span>Bounded viewer projection with the same rich packet refs and report-pane reading guide as the summary.</span></li>
-                <li><strong><code>archsig-run-manifest.json</code></strong><span>Run artifact manifest and generated / omitted artifact state.</span></li>
-                <li><strong><code>archsig-analysis-packet.json</code></strong><span>The raw <code>archsig-analysis-packet/v0.5.0</code> detail store, emitted with <code>--emit-raw-artifacts</code>.</span></li>
-                <li><strong><code>archsig-analysis-validation.json</code></strong><span>Validation report for the generated v1 analysis packet.</span></li>
-                <li><strong><code>llm-interpretation-packet.json</code></strong><span>The typed evaluator packet serialized for LLM reading when raw artifacts are emitted.</span></li>
+                <li><strong><code>normalized-archmap.json</code></strong><span>Deterministic finite-poset-site normalization of valid ArchMap input.</span></li>
+                <li><strong><code>archsig-measurement-packet.json</code></strong><span>Current AG measurement handoff with structural verdicts, computed invariants, analytic readings, assumptions, and claim boundaries.</span></li>
+                <li><strong><code>archsig-analysis-summary.json</code></strong><span>Conclusion-first compact reading surface with findings, action queue, measurement basis, and boundaries.</span></li>
+                <li><strong><code>archsig-insight-report.json</code></strong><span>Prioritized inspection queue and bounded reading guide derived from the measurement run.</span></li>
+                <li><strong><code>archsig-insight-brief.md</code></strong><span>Human-readable brief for the same bounded insight report.</span></li>
+                <li><strong><code>archsig-atom-viewer-data.json</code></strong><span>Bounded ArchView projection that adds no structural verdict.</span></li>
+                <li><strong><code>archsig-run-manifest.json</code></strong><span>Generated artifact list, input digests, validation summary, and run metadata.</span></li>
+                <li><strong><code>archsig-analysis-validation.json</code></strong><span>Validation report for the generated measurement packet.</span></li>
               </ul>
             </section>
             <section id="commands" class="article-section">
@@ -69,13 +61,15 @@
                   <tbody>
                     <tr><td><code>archmap</code></td><td>Validate an <code>archmap/v0.5.0</code>.</td></tr>
                     <tr><td><code>law-policy</code></td><td>Validate a selected <code>law-policy/v0.5.0</code> evaluator selector.</td></tr>
+                    <tr><td><code>measurement-profile</code></td><td>Validate the separate <code>measurement-profile/v0.5.0</code> measurement regime.</td></tr>
+                    <tr><td><code>repair-plan</code></td><td>Validate a supplied <code>archsig-repair-plan/v0.5.0</code> SAGA input.</td></tr>
                     <tr><td><code>analyze</code></td><td>Run the primary ArchMap plus LawPolicy analysis workflow.</td></tr>
-                    <tr><td><code>pr-review</code></td><td>Read a base ArchMap, PR-local ArchMap delta, and LawPolicy for small PR review.</td></tr>
+                    <tr><td><code>compare</code></td><td>Compare two current <code>analyze</code> run directories and compute the ArchMap diff and comparison report.</td></tr>
+                    <tr><td><code>gate</code></td><td>Apply gate policy to a measurement packet and optional comparison report.</td></tr>
                     <tr><td><code>schema-catalog</code></td><td>Emit the current ArchSig schema catalog.</td></tr>
                   </tbody>
                 </table>
               </div>
-              <p><code>--strict-distance</code> rejects missing profile selectors, blocked typed support, hidden missing families, and partial canonical distance-family bundles instead of treating them as measured zero.</p>
             </section>
             <section id="schemas" class="article-section">
               <h2>Artifact schemas</h2>
@@ -83,35 +77,31 @@
                 <table>
                   <thead><tr><th scope="col">Schema</th><th scope="col">Role</th></tr></thead>
                   <tbody>
-                    <tr><td><code>archmap/v0.5.0</code></td><td>Source-grounded atoms and explicit molecule membership over read sources.</td></tr>
-                    <tr><td><code>archmap-validation-report/v0.5.0</code></td><td>ArchMap shape, source ref, atom, molecule, and finite-poset-site validation.</td></tr>
-                    <tr><td><code>law-policy/v0.5.0</code></td><td>Policy pack / evaluator selector with basis refs, scope, and severity.</td></tr>
+                    <tr><td><code>archmap/v0.5.0</code></td><td>Source-grounded Atom observations, contexts, covers, declared sources, and fixed extraction doctrine.</td></tr>
+                    <tr><td><code>archmap-validation-report/v0.5.0</code></td><td>ArchMap shape, source, atom, context, cover, and finite-poset-site validation.</td></tr>
+                    <tr><td><code>law-policy/v0.5.0</code></td><td>Evaluator selectors, laws, basis refs, scope, severity, and the selected measurement-profile ref.</td></tr>
                     <tr><td><code>law-policy-validation-report/v0.5.0</code></td><td>LawPolicy selector validation against the evaluator registry.</td></tr>
-                    <tr><td><code>normalized-archmap/v0.5.0</code></td><td>Deterministic typed normalization of valid ArchMap atoms and molecules.</td></tr>
-                    <tr><td><code>typed-evaluator-results/v0.5.0</code></td><td>Typed evaluator statuses, support refs, basis refs, and bounded conclusions.</td></tr>
-                    <tr><td><code>archsig-architecture-distance/v0.5.0</code></td><td>Primary Part IV family bundle for atom, configuration, signature, operation, curvature, homotopy, representation, distance insights, and distance diagnosis.</td></tr>
-                    <tr><td><code>archsig-analysis-packet/v0.5.0</code></td><td>Typed evaluator detail store for measurement detail and LLM / human review reading.</td></tr>
-                    <tr><td><code>archsig-analysis-validation-report/v0.5.0</code></td><td>Analysis packet validation boundary.</td></tr>
-                    <tr><td><code>archsig-pr-review-report/v0.5.0</code></td><td>Change-local PR review output from base ArchMap, PR-local delta, and LawPolicy.</td></tr>
+                    <tr><td><code>normalized-archmap/v0.5.0</code></td><td>Canonical finite-poset-site normalization for current analysis runs.</td></tr>
+                    <tr><td><code>measurement-profile/v0.5.0</code></td><td>Selected cover, coefficient, witness family, predicates, certificate selector, and verdict discipline.</td></tr>
+                    <tr><td><code>archsig-repair-plan/v0.5.0</code></td><td>Checked SAGA Stage 1 input for an optional repair run.</td></tr>
+                    <tr><td><code>archsig-measurement-packet/v0.5.0</code></td><td>Current AG measurement packet and FieldSig handoff.</td></tr>
+                    <tr><td><code>archsig-boundary-statement/v0.5.0</code></td><td>Typed scoped qualifiers for packet rows and claim boundaries.</td></tr>
+                    <tr><td><code>archsig-gate-policy/v0.5.0</code></td><td>Institutional verdict-to-action mapping for CI decisions.</td></tr>
+                    <tr><td><code>archsig-gate-report/v0.5.0</code></td><td>Gate result preserving the original measurement verdict vocabulary.</td></tr>
+                    <tr><td><code>archmap-diff/v0.5.0</code></td><td>Computed normalized ArchMap differences between two runs.</td></tr>
+                    <tr><td><code>archsig-comparison-report/v0.5.0</code></td><td>Record-level comparison and verdict transitions between two runs.</td></tr>
+                    <tr><td><code>archsig-run-manifest/v0.5.0</code></td><td>Generated artifact list, input digests, validation summary, and run metadata.</td></tr>
+                    <tr><td><code>archsig-atom-viewer-data/v0.5.0</code></td><td>Bounded browser projection for ArchView.</td></tr>
                   </tbody>
                 </table>
               </div>
             </section>
-            <section id="removed" class="article-section">
-              <h2>Removed runtime surfaces</h2>
-              <ul class="status-list">
-                <li><strong><code>llm-native-workflow</code> / <code>north-star-workflow</code></strong><span>Removed as runtime aliases. Use <code>analyze</code>.</span></li>
-                <li><strong><code>interpretation-profile</code></strong><span>Removed as a runtime alias. Use <code>law-policy</code> with <code>law-policy/v0.5.0</code>.</span></li>
-                <li><strong><code>archsig-analysis</code> / <code>aat-analysis</code></strong><span>Removed as v0 packet-builder runtime surfaces. Use <code>analyze --emit-raw-artifacts</code>.</span></li>
-                <li><strong><code>analysis-summary</code> / <code>summary</code></strong><span>Removed as standalone runtime surfaces. Read the summary emitted by <code>analyze</code>.</span></li>
-                <li><strong><code>archmap-generate</code> / <code>codebase-inspection</code></strong><span>Removed from the v1 runtime contract.</span></li>
-              </ul>
-            </section>
             <section id="boundaries" class="article-section">
               <h2>Reference boundaries</h2>
               <ul class="status-list">
-                <li><strong>Current input contract</strong><span>ArchSig analysis consumes <code>archmap/v0.5.0</code> plus <code>law-policy/v0.5.0</code>. v0 dual reader and legacy aliases are not v1 completion requirements.</span></li>
-                <li><strong>PR input contract</strong><span><code>pr-review</code> reads base ArchMap, PR-local ArchMap delta, and LawPolicy. Raw diff is not an ArchSig PR-review input.</span></li>
+                <li><strong>Current input contract</strong><span>ArchSig analysis consumes supplied <code>archmap/v0.5.0</code>, <code>law-policy/v0.5.0</code>, and <code>measurement-profile/v0.5.0</code>. The selected vocabulary, profile, and evidence determine what the run can report.</span></li>
+                <li><strong>Comparison contract</strong><span><code>compare</code> computes record-level differences from two current run directories; it does not assign causality or semantic equivalence.</span></li>
+                <li><strong>FieldSig handoff</strong><span>FieldSig reads <code>archsig-measurement-packet/v0.5.0</code> as bounded current measurement state. It is not forecast truth, causal proof, or global safety.</span></li>
                 <li><strong>Validation boundary</strong><span>Validation checks artifact shape and guardrails. It is not a Lean proof, runtime correctness proof, or repair safety certificate.</span></li>
               </ul>
             </section>

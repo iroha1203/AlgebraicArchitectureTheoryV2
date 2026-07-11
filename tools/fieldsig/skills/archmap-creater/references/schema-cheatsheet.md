@@ -1,210 +1,64 @@
-# ArchMap Observation Schema Cheatsheet
+# ArchMap v0.5.0 Schema Cheatsheet
 
-Use this reference when filling an ArchMap observation document. Prefer the field names listed here.
-When the ArchSig source repository is available, fixtures and schema code may be used as additional examples, but they are not required for this skill.
+Use this reference when authoring the current ArchMap artifact. The accepted
+document is deliberately small and source-grounded.
 
-## Top-Level Fields
+## Top-level shape
 
-Required top-level shape:
+    {
+      "schema": "archmap/v0.5.0",
+      "id": "archmap:example",
+      "extractionDoctrineRef": {
+        "doctrineId": "doctrine:aat-canonical@1",
+        "fingerprint": "sha256:aat-canonical-doctrine-schema050",
+        "components": ["V", "Gamma", "R", "rho", "E", "N"]
+      },
+      "sources": {},
+      "atoms": [],
+      "contexts": [],
+      "covers": []
+    }
 
-```json
-{
-  "schema": "archmap/v0.5.0",
-  "mapId": "...",
-  "architectureId": "...",
-  "generatedAt": "2026-05-24T00:00:00Z",
-  "generator": {},
-  "promptRefs": [],
-  "sourceInventoryRef": {},
-  "generationBoundary": {},
-  "sourceUniverse": {},
-  "provenance": {},
-  "atomObservations": [],
-  "moleculeObservations": [],
-  "semanticObservations": [],
-  "observationGaps": [],
-  "projectionInfo": [],
-  "concernHints": [],
-  "nonConclusions": []
-}
-```
+sources is a map from source key to a source descriptor. A descriptor has a
+non-empty kind and may carry path, source, symbol, line, section, or traceId.
 
-## Source Universe
+## Atoms
 
-`sourceUniverse` must describe what was selected:
+Each atoms[] entry has id, kind, subject, and axis, plus optional predicate,
+object, refs, and label. refs[] names keys in the top-level sources map.
+Keep the atom predicate source-grounded; it is not a law verdict or an
+obstruction circuit.
 
-- `root`: repository or source root
-- `includedRefs`: files, doc sections, tests, runtime traces, policy files, PR artifacts
-- `excludedRefs`: intentionally excluded artifacts
-- `unavailableRefs`: relevant artifacts not available
-- `privateRefs`: relevant private artifacts not inspected
-- `hashes`: optional content hashes for reproducibility
-- `knownBlindSpots`: dynamic loading, framework convention expansion, runtime traces, private registries
-- `selectionBoundary`: one sentence describing the bounded scope
+## Contexts and covers
 
-Use `artifactId` values consistently. Observation `sourceRefs[]` should point back to `sourceUniverse.includedRefs[]` when possible.
+Each contexts[] entry has id and optional atoms, restrictsTo, refs, and label.
+Each atom and context reference must resolve within the same document.
 
-## Provenance
+Each covers[] entry has id and optional contexts, refs, and label. Cover
+contexts must resolve to contexts[].id. The finite-poset-site validation checks
+restriction acyclicity and selected cover shape.
 
-`provenance` records how the observation map was produced:
+## Boundary discipline
 
-- `observer`
-- `observationMethod`
-- `sourceRoot`
-- `observationBoundary`
-- `reviewedRefs`
-- `excludedReadings`
-- `nonConclusions`
+Do not add observation, molecule, semantic, gap, projection, concern, score,
+lawfulness, or forecast fields to ArchMap. Missing or private evidence belongs
+in the source inventory and review notes, not in invented positive atoms.
+ArchMap is evidence input; ArchSig computes law-relative readings after
+combining it with LawPolicy and MeasurementProfile.
 
-Use `excludedReadings` for things intentionally not read, such as lawfulness, obstruction circuits, zero curvature, private policy, runtime traces, or FieldSig forecast evidence.
+## Validation
 
-## Atom Observations
+Run the current command with all required inputs:
 
-Each `atomObservations[]` entry should include:
+    ${ARCHSIG_BIN:-archsig} archmap \
+      --input <archmap.json> \
+      --out .archsig/archmap/validation.json
 
-- `atomObservationId`
-- `atomFamily`: for example `existence`, `relation`, `contractSpecification`, `runtimeInteraction`, `effect`, `state`
-- `predicate`
-- `subjectRef`
-- `objectRefs`
-- `sourceRefs`
-- `observationStatus`: usually `observed` or `unmeasured`
-- `evidenceBoundary`: for example `sourceObserved`, `unmeasured`, `private`, `unavailable`, `outOfScope`
-- `confidence`: review priority, not probability
-- `uncertainty`
-- `projectionRefs`
-- `nonConclusions`
+    ${ARCHSIG_BIN:-archsig} law-policy \
+      --law-policy <law-policy.json> \
+      --measurement-profile <measurement-profile.json> \
+      --out .archsig/law-policy/validation.json
 
-Do not use atom families such as `obstruction` or `lawViolation`. Obstruction is law-relative ArchSig analysis, not an ArchMap atom observation.
-
-## Molecule Observations
-
-Each `moleculeObservations[]` entry should include:
-
-- `moleculeObservationId`
-- `moleculeFamily`
-- `roleName`
-- `atomObservationRefs`
-- `sourceRefs`
-- `observationStatus`
-- `evidenceBoundary`
-- `confidence`
-- `nonConclusions`
-
-Responsibility is a molecule over atom observations, not a primitive atom.
-
-## Semantic Observations
-
-Each `semanticObservations[]` entry should include:
-
-- `semanticObservationId`
-- `semanticFamily`: for example `operationMeaning`, `contractBehavior`, `workflow`, `semanticDiagram`, `commutationClaim`
-- `subjectRef`
-- `predicate`
-- `atomObservationRefs`
-- `moleculeObservationRefs`
-- `sourceRefs`
-- `observationStatus`
-- `evidenceBoundary`
-- `nonConclusions`
-
-Scope semantic observations to the selected source refs. Do not generalize a test, fixture, or doc section into global semantic correctness.
-
-## Observation Gaps
-
-Each `observationGaps[]` entry should include:
-
-- `gapId`
-- `gapKind`
-- `subjectRef`
-- `evidenceStatus`: `unmeasured`, `unavailable`, `private`, or `outOfScope`
-- `reason`
-- `expectedAtomFamilies`
-- `sourceRefs`
-- `nonConclusions`
-
-Do not use `measuredZero` for unavailable evidence. Use measured absence only when the selected measurement actually observed absence.
-
-## Projection Info
-
-Each `projectionInfo[]` entry should include:
-
-- `projectionId`
-- `projectionFamily`: for example `object`, `relation`, `signatureAxis`, `operationCandidate`, `stateTransitionCandidate`
-- `sourceObservationRef`
-- `targetSurface`
-- `reading`
-- `projectionBoundary`
-- `nonConclusions`
-
-Projection info is a handoff hint. It is not ArchMap lawfulness, Lean proof, zero curvature, or FieldSig forecast output.
-
-## Concern Hints
-
-Each `concernHints[]` entry should include:
-
-- `concernHintId`
-- `concernFamily`
-- `subjectRef`
-- `atomObservationRefs`
-- `moleculeObservationRefs`
-- `semanticObservationRefs`
-- `sourceRefs`
-- `evidenceBoundary`
-- `analysisBoundary`
-- `nonConclusions`
-
-Concern hints are review cues only. They are not obstruction circuits, not law violations, and not theorem evidence. ArchSig can construct law-relative obstruction readings only after combining ArchMap with LawPolicy.
-
-## Coverage And Boundary Rules
-
-Prefer these observation statuses:
-
-- `observed`: source evidence was inspected and cited.
-- `assumed`: supplied doc/policy assumption is used.
-- `unmeasured`: relevant evidence was not measured.
-- `unavailable`: relevant evidence is named but not available.
-- `private`: relevant evidence is private and not inspected.
-- `outOfScope`: relevant evidence is intentionally outside the selected universe.
-
-Use confidence as qualitative review priority:
-
-- `high`
-- `medium`
-- `low`
-
-Do not read confidence as probability.
-
-## Validation Checklist
-
-Before validation:
-
-- every observation id is unique
-- source refs resolve to included refs or are clearly boundary refs
-- observed claims cite source refs
-- missing evidence is not represented as measured zero
-- semantic observations have source support
-- SFT-facing projection hints are not presented as forecast results
-- atom observations are source-grounded observations, not certified atoms
-- responsibility is represented through molecule observations
-- concern hints are not represented as obstruction circuits
-- observation gaps are not represented as measured zero
-- non-conclusions exist at child and top level
-
-Validate with:
-
-```bash
-${ARCHSIG_BIN:-archsig} archmap \
-  --input <archmap.json> \
-  --out .archsig/archmap/validation.json
-```
-
-Then, for handoff:
-
-```bash
-${ARCHSIG_BIN:-archsig} law-policy --input <law-policy.json> --out .archsig/law-policy/validation.json
-${ARCHSIG_BIN:-archsig} analyze \
-  --archmap <archmap.json> \
-  --law-policy <law-policy.json> \
-  --out-dir .archsig/analyze
-```
+Read checks, summary, and nonConclusions before handing the artifact to
+analyze. Failures are schema or evidence-boundary problems; they are not
+measured zeros and do not constitute Lean proofs.

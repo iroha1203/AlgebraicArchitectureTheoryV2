@@ -33,14 +33,14 @@ Then inspect likely config and architecture surfaces:
 
 | Evidence | LawPolicy surface |
 | --- | --- |
-| "Domain layer must not depend on infrastructure" | `law: "domain.no-direct-infra-dependency"`, `evaluator: "domain.no-direct-infra-dependency"`, `basis: ["policy-basis:layering"]` |
 | "Measure selected cover for Čech obstruction" | `law: "ag.cech-obstruction"`, `evaluator: "ag.cech-obstruction"`, plus `measurementProfileRef` |
 | "Measure square-free repair candidates" | `law: "ag.square-free-repair"`, `evaluator: "ag.square-free-repair"`, plus `measurementProfileRef` |
+| "Check a supplied SAGA repair descent input" | `law: "ag.saga-descent"`, `evaluator: "ag.saga-descent"`, plus `measurementProfileRef` and a checked RepairPlan |
 | repeated but undocumented pattern | question to user, not policy yet |
 
 Do not translate evidence into witness rules, signature axes, coverage
 requirements, exactness assumptions, or distance profiles. Those are evaluator
-registry responsibilities in v1. For AG, put selected cover, coefficient,
+registry responsibilities in the current surface. For AG, put selected cover, coefficient,
 witness family, resolution selector, predicates, certificate selector, and
 verdict discipline in the separate `measurement-profile/v0.5.0` artifact.
 
@@ -54,3 +54,19 @@ Before drafting JSON, summarize:
 - candidate AG measurement profile fields, if applicable
 - decisions that need user confirmation
 - blind spots and excluded evidence
+
+## PRD-3 Residual-Zero Scope
+
+The PRD-3 residual-zero review must include the publication and authoring
+surfaces below, in addition to the runtime and archived-document checks:
+
+- `website/src/archsig/reference/index.html`
+- `website/src/archsig/getting-started/index.html`
+- `tools/fieldsig/README.md`
+- `tools/archsig/skills/law-policy-creater/references/schema-guide.md`
+- `tools/archsig/skills/law-policy-creater/references/question-bank.md`
+- `tools/archsig/skills/law-policy-creater/references/convention-survey.md`
+
+Run the same repository-root `rg` lint over all six paths after changing the
+current CLI, schema, or registry vocabulary. Historical material belongs under
+`docs/archive/` and is not a current claim.

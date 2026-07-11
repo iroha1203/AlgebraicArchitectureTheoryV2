@@ -1,9 +1,9 @@
 ---
-name: archsig-pr-checker
+name: archsig-pr-reviewer
 description: Compare ArchSig base/head measurement runs, apply gate policy, read the changed code, and turn the result into bounded source-first review questions.
 ---
 
-# ArchSig PR Checker
+# ArchSig PR Reviewer
 
 Use this skill when asked to run ArchSig-assisted PR review.
 

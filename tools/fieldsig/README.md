@@ -15,14 +15,13 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- software-field-measuremen
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- fieldsig-run-manifest --fixture --out .fieldsig/fieldsig-run-manifest.json
 ```
 
-`archsig-analysis-sft-input` is the current ArchSig handoff command. Its primary
-input is `--measurement-packet archsig-measurement-packet/v0.5.0`; legacy
-`--analysis-packet archsig-analysis-packet/v0.5.0` remains accepted as a bounded
-compatibility input. The command rejects raw ArchMap
-JSON and preserves structural verdicts, computed invariants, analytic readings,
-assumption ledger entries, and legacy packet refs as bounded SFT input refs /
-unknown remainder. It does not treat ArchSig current-state telemetry as forecast
-correctness or causal truth.
+`archsig-analysis-sft-input` is the current ArchSig handoff command. Its only
+ArchSig input is `--measurement-packet` with schema
+`archsig-measurement-packet/v0.5.0`. The command rejects other packet shapes and
+raw ArchMap JSON, then preserves structural verdicts, computed invariants,
+analytic readings, assumption ledger entries, supplied data, and boundary
+statements as bounded SFT input refs / unknown remainder. It does not treat
+ArchSig current-state measurement as forecast correctness or causal truth.
 
 ## Migrated surface
 

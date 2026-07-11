@@ -37,9 +37,8 @@ registered by `--add-evidence <kind>:<name>=<repo-relative-path>` and appended
 after file worklist entries by source id order. `--baseline <old-manifest>` is
 used for incremental manifests.
 
-Until the CLI is implemented, create the same manifest shape by hand. The manual
-procedure still uses repo-relative paths, byte-wise sorting, sha256 content
-hashes, and an explicit scope approval record.
+Use the CLI to create the manifest. It records repo-relative paths, byte-wise
+sorting, sha256 content hashes, and an explicit scope approval record.
 
 Exclusion reasons at scope approval time are:
 

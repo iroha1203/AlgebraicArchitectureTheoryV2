@@ -151,9 +151,8 @@ scope. Do not claim that all possible repository evidence was extracted.
 
 - No ArchSig binary: stop and report missing validation.
 - Scope manifest not approved: stop before source reading.
-- Authoring CLI surface not yet implemented: continue only with the hand-written
-  artifact procedure in the references, and report that authoring checks were
-  not binary-enforced.
+- Authoring audit inputs are incomplete: stop before handoff and add the required
+  scope manifest, candidate packets, extraction consistency, and coverage ledger.
 - Unreadable worklist source: record a procedural reason; do not infer content.
 - Source appears out of scope during reading: round-trip to scope-manifest
   exclusions and reapproval.

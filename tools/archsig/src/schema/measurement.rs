@@ -38,7 +38,7 @@ impl Serialize for ArchSigMeasurementPacketV1 {
         let structural_verdict = self
             .structural_verdict
             .iter()
-            .map(|row| normalized_structural_verdict(row, &invariants))
+            .map(|row| normalized_structural_verdict(row, &invariants, &self.profile))
             .collect::<Vec<_>>();
         state.serialize_field("structuralVerdict", &structural_verdict)?;
         state.serialize_field("computedInvariants", &invariants)?;
@@ -204,6 +204,11 @@ fn normalized_computed_invariant(invariant: &Value) -> Value {
     object
         .entry("kind".to_string())
         .or_insert_with(|| Value::String(invariant_kind_for_schema(&invariant_id, invariant)));
+    if invariant_id == "finite-poset-site-shape" {
+        object
+            .entry("evaluator".to_string())
+            .or_insert_with(|| Value::String("ag.foundation".to_string()));
+    }
     if !object.contains_key("value") {
         object.insert("value".to_string(), invariant_value_for_schema(invariant));
     }
@@ -213,7 +218,11 @@ fn normalized_computed_invariant(invariant: &Value) -> Value {
     Value::Object(object)
 }
 
-fn normalized_structural_verdict(row: &AgStructuralVerdictV1, invariants: &[Value]) -> Value {
+fn normalized_structural_verdict(
+    row: &AgStructuralVerdictV1,
+    invariants: &[Value],
+    profile: &MeasurementProfileV1,
+) -> Value {
     let mut value = serde_json::to_value(row).unwrap_or_else(|_| Value::Object(Default::default()));
     let Some(object) = value.as_object_mut() else {
         return value;
@@ -254,6 +263,16 @@ fn normalized_structural_verdict(row: &AgStructuralVerdictV1, invariants: &[Valu
                 *class_ref = Value::String(computed_class_ref);
             }
         }
+    }
+    if let Some(target) = object.get_mut("target").and_then(Value::as_object_mut) {
+        target.insert(
+            "coverRef".to_string(),
+            Value::String(profile.cover_ref.clone()),
+        );
+        target.insert(
+            "coefficient".to_string(),
+            Value::String(profile.coefficient.clone()),
+        );
     }
     value
 }
@@ -394,9 +413,12 @@ pub(crate) fn assumption_id_for_schema(row: &AgAssumptionLedgerEntryV1) -> Strin
     )
 }
 
-fn analytic_claim_status(reading: &AgAnalyticReadingV1) -> &'static str {
-    if reading.regime.as_deref() == Some("theorem-candidate")
-        || reading.reading_id.contains("theorem-candidate")
+pub(crate) fn analytic_claim_status(reading: &AgAnalyticReadingV1) -> &'static str {
+    if reading
+        .regime
+        .as_deref()
+        .is_some_and(|regime| regime.contains("candidate"))
+        || reading.reading_id.contains("candidate")
     {
         "candidate"
     } else {
@@ -404,11 +426,17 @@ fn analytic_claim_status(reading: &AgAnalyticReadingV1) -> &'static str {
     }
 }
 
-fn analytic_fidelity(reading: &AgAnalyticReadingV1) -> &'static str {
-    if reading
-        .regime
-        .as_deref()
-        .is_some_and(|regime| regime.contains("proxy") || regime.contains("candidate"))
+pub(crate) fn analytic_fidelity(reading: &AgAnalyticReadingV1) -> &'static str {
+    if reading.evaluator == "ag.sheaf-laplacian"
+        || reading
+            .value
+            .get("readingKind")
+            .and_then(Value::as_str)
+            .is_some_and(|kind| kind.contains("proxy"))
+        || reading
+            .regime
+            .as_deref()
+            .is_some_and(|regime| regime.contains("proxy") || regime.contains("candidate"))
     {
         "proxy"
     } else {

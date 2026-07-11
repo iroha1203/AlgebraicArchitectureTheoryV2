@@ -9,17 +9,16 @@
   law algebra / obstruction ideal / lawful locus へ持ち上げる代数幾何的アーキテクチャ論である。
   ArchMap / extractor は source code から Atom evidence や AAT measurement input を提示・検査する
   実測 surface であり、AAT の定理や完了条件を定義しない。
-- LawPolicy selector は policy pack / evaluator / basis / scope / severity を選ぶ `law-policy/v0.5.0` artifact である。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v0.5.0` を選ぶ。cover、coefficient、witness family、exactness assumption、distance rule は evaluator registry または MeasurementProfile の責務である。AAT そのものではない。
-- ArchSig v0.5.0 は ArchMap + LawPolicy + MeasurementProfile から `archsig-measurement-packet/v0.5.0` を作る AG measurement layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
+- LawPolicy selector は明示した law / evaluator / basis / scope / severity を選ぶ `law-policy/v0.5.0` artifact である。退役した policy pack selector は受理しない。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v0.5.0` を選ぶ。cover、coefficient、witness family、exactness assumption、distance rule は evaluator registry または MeasurementProfile の責務である。AAT そのものではない。
+- ArchSig v0.5.0 は、ArchMap + LawPolicy + MeasurementProfile の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.0` を作る AG measurement layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
 - ArchView は ArchSig が emitted した measurement / viewer artifact を AAT 代数幾何の幾何として投影する可視化レイヤーである。ArchView は新しい structural verdict を作らず、`archsig-atom-viewer-data.json`、同一ディレクトリの summary / manifest、または `archview-sequence/v0.5.0` の実測フレーム列だけを表示する。
-- ArchSig は tool として肯定的な bounded diagnostic conclusion を出す。たとえば
-  `SAFE_WITHIN_POLICY`、`NO_SELECTED_OBSTRUCTION`、`ACCEPTABLE_UNDER_EVIDENCE_CONTRACT`、
-  `DISTANCE_WITHIN_THRESHOLD` のように、選ばれた LawPolicy、DistanceProfile、evidence contract の中で
-  語れることを確かに語る。
+- ArchSig の `analyze` は選ばれた LawPolicy、MeasurementProfile、evidence contract の中で
+  structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、
+  `gate` は gate policy に従って measurement packet と比較記録をCI判断へ写像する。
 - ArchSig は、未観測 runtime 全体や global semantic safety のように選ばれた evidence language の外にあるものを、
   failure、残タスク、Lean linkage requirement、長い `non-conclusion` 一覧として扱わない。外側は必要最小限の
   silence boundary として扱う。
-- Review notes may exist outside ArchMap, but removed v0 fields such as `concernHints` are not v1 diagnostic input.
+- Review notes may exist outside ArchMap, but removed v0 fields such as `concernHints` are not current diagnostic input.
 - FieldSig は explicit ArchSig handoff artifacts を bounded current architecture-evidence state として読み、SFT 側の evolution measurement / governance input へ写す。raw ArchMap observations を forecast truth として読まない。
 - ArchSig validation は、schema、refs、generated middle layer、selected law-policy reading、fixture expectation など、
   明示された tooling contract を検査する。Lean theorem、実運用上の正しさ、予測精度を要求する場合は、

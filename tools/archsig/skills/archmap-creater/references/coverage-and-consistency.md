@@ -129,5 +129,6 @@ the validation layer checks:
 All passing checks produce the leading conclusion
 `AUTHORING_SURVEY_TRACEABLE_WITHIN_SCOPE`.
 
-Until the flags are implemented, perform these checks manually and report the
-conclusion as hand-checked, not binary-enforced.
+When a check fails, fix the authoring artifact or its scope evidence and rerun
+the CLI; do not report the traceability conclusion until the required checks
+pass.

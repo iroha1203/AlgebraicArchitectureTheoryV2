@@ -17,6 +17,7 @@ impl AnalyzeRunContract {
         archmap: &Path,
         law_policy: &Path,
         measurement_profile: &Path,
+        residual_packet: Option<&Path>,
         profile_fingerprint: Value,
         site_cover_digest: Value,
         stamp: bool,
@@ -25,34 +26,50 @@ impl AnalyzeRunContract {
         let law_policy_digest = canonical_json_file_digest(law_policy)?;
         let measurement_profile_digest = canonical_json_file_digest(measurement_profile)?;
         let tool_version = env!("CARGO_PKG_VERSION").to_string();
-        let run_seed = format!(
-            "{archmap_digest}|{law_policy_digest}|{measurement_profile_digest}|{tool_version}"
-        );
+        let residual_packet_digest = residual_packet
+            .map(canonical_json_file_digest)
+            .transpose()?;
+        let run_seed = if let Some(residual_packet_digest) = residual_packet_digest.as_deref() {
+            format!(
+                "{archmap_digest}|{law_policy_digest}|{measurement_profile_digest}|{residual_packet_digest}|{tool_version}"
+            )
+        } else {
+            format!(
+                "{archmap_digest}|{law_policy_digest}|{measurement_profile_digest}|{tool_version}"
+            )
+        };
         let run_hash = sha256_hex(run_seed.as_bytes());
         let mut run_id = format!("run:{}", &run_hash[..12]);
         if stamp {
             let seconds = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
             run_id.push_str(&format!("-stamp:{seconds}"));
         }
+        let mut input_digests = serde_json::json!({
+            "archmap": {
+                "path": artifact_input_ref(archmap),
+                "sha256": archmap_digest
+            },
+            "lawPolicy": {
+                "path": artifact_input_ref(law_policy),
+                "sha256": law_policy_digest
+            },
+            "measurementProfile": {
+                "path": artifact_input_ref(measurement_profile),
+                "sha256": measurement_profile_digest
+            },
+            "profileFingerprint": profile_fingerprint,
+            "siteCoverDigest": site_cover_digest
+        });
+        if let Some(residual_packet_digest) = residual_packet_digest {
+            input_digests["residualPacket"] = serde_json::json!({
+                "path": artifact_input_ref(residual_packet.expect("residual packet path is present")),
+                "sha256": residual_packet_digest
+            });
+        }
         Ok(Self {
             tool_version,
             run_id,
-            input_digests: serde_json::json!({
-                "archmap": {
-                    "path": artifact_input_ref(archmap),
-                    "sha256": archmap_digest
-                },
-                "lawPolicy": {
-                    "path": artifact_input_ref(law_policy),
-                    "sha256": law_policy_digest
-                },
-                "measurementProfile": {
-                    "path": artifact_input_ref(measurement_profile),
-                    "sha256": measurement_profile_digest
-                },
-                "profileFingerprint": profile_fingerprint,
-                "siteCoverDigest": site_cover_digest
-            }),
+            input_digests,
         })
     }
 }

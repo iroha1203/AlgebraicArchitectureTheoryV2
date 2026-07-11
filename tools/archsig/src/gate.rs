@@ -10,7 +10,7 @@ use crate::{
     ARCHSIG_GATE_NOT_EVALUABLE, ARCHSIG_GATE_PASS_WITHIN_GATE_POLICY,
     ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ArchSigMeasurementPacketV1,
-    validate_measurement_packet_v1,
+    validate_measurement_packet_value_v1,
 };
 
 const ABSOLUTE_MAPPING_KEYS: [&str; 6] = [
@@ -332,8 +332,8 @@ pub fn build_gate_report_v1(
 fn validate_gate_packet_v1(packet: &Value) -> Vec<Value> {
     let mut checks = Vec::new();
     let mut fail_count = 0_usize;
-    let typed_packet = match serde_json::from_value::<ArchSigMeasurementPacketV1>(packet.clone()) {
-        Ok(typed_packet) => {
+    match serde_json::from_value::<ArchSigMeasurementPacketV1>(packet.clone()) {
+        Ok(_) => {
             push_check(
                 &mut checks,
                 &mut fail_count,
@@ -341,7 +341,6 @@ fn validate_gate_packet_v1(packet: &Value) -> Vec<Value> {
                 true,
                 "measurement packet parses as ArchSigMeasurementPacketV1",
             );
-            typed_packet
         }
         Err(error) => {
             push_check(
@@ -359,8 +358,8 @@ fn validate_gate_packet_v1(packet: &Value) -> Vec<Value> {
             }));
             return checks;
         }
-    };
-    for check in validate_measurement_packet_v1(&typed_packet) {
+    }
+    for check in validate_measurement_packet_value_v1(packet) {
         let passed = check.result != "fail";
         if !passed {
             fail_count += 1;
@@ -531,6 +530,24 @@ fn comparison_report_shape_is_evaluable(comparison: &Value) -> bool {
     if !COMPARISON_LEVELS.contains(&level) {
         return false;
     }
+    let Some(input_digests) = comparison.get("inputDigests") else {
+        return false;
+    };
+    for run_key in ["baseRun", "headRun"] {
+        let run = &input_digests[run_key];
+        let required = [
+            run["runId"].as_str(),
+            run["toolVersion"].as_str(),
+            run["archmap"]["sha256"].as_str(),
+            run["lawPolicy"]["sha256"].as_str(),
+            run["profileFingerprint"]["sha256"].as_str(),
+            run["siteCoverDigest"]["sha256"].as_str(),
+            run["measurementPacket"]["sha256"].as_str(),
+        ];
+        if required.iter().any(|value| value.is_none_or(str::is_empty)) {
+            return false;
+        }
+    }
     if comparison["inputDigests"]["headRun"]["measurementPacket"]["sha256"]
         .as_str()
         .is_none_or(str::is_empty)
@@ -595,12 +612,7 @@ fn violated_assumption_ids(packet: &Value) -> BTreeSet<String> {
         .into_iter()
         .flatten()
         .filter(|assumption| assumption["status"].as_str() == Some("violated"))
-        .filter_map(|assumption| {
-            assumption["assumptionId"]
-                .as_str()
-                .or_else(|| assumption["theoremRef"].as_str())
-                .map(str::to_string)
-        })
+        .filter_map(|assumption| assumption["assumptionId"].as_str().map(str::to_string))
         .collect()
 }
 

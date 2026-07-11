@@ -29,7 +29,7 @@
               <h2>Ask the agent to run the Skills</h2>
               <p>You do not need to begin with commands or schema names. Ask your LLM agent to use the ArchSig Skills, then state the architecture worry you want reviewed.</p>
               <figure class="code-panel">
-                <figcaption>PR review request</figcaption>
+                <figcaption>Change review request</figcaption>
                 <pre><code>Run the ArchSig Skills to review this PR.
 The code passes tests, but I want to know whether it weakens the payment boundary.
 Return findings with source refs, repair candidates, and checks I should run before approving.</code></pre>
@@ -45,27 +45,27 @@ Summarize the architecture tendencies and list the first files reviewers should 
               <h2>Three Skills</h2>
               <p>The ArchSig workflow is built around three Skills.</p>
               <ul class="status-list">
-                <li><strong><code>archmap-creater</code></strong><span>Creates the source-backed ArchMap v1: sources, atoms, and explicit molecule membership.</span></li>
-                <li><strong><code>law-policy-creater</code></strong><span>Creates the LawPolicy v1 selector: policy pack or evaluator ids, basis refs, scope, and severity. If repository evidence does not justify a selector, the Skill should ask instead of silently choosing a generic policy.</span></li>
+                <li><strong><code>archmap-creater</code></strong><span>Creates a source-backed <code>archmap/v0.5.0</code> with observations, contexts, covers, and source refs.</span></li>
+                <li><strong><code>law-policy-creater</code></strong><span>Creates a <code>law-policy/v0.5.0</code> with registry evaluator selectors, basis refs, scope, severity, and a separate measurement-profile ref. If evidence does not justify a selector, the Skill should ask instead of choosing a generic policy.</span></li>
                 <li><strong><code>archsig-reader</code></strong><span>Runs ArchSig, reads the summary and packet detail, checks the relevant source again, and returns review findings, repair candidates, and confirmation points.</span></li>
               </ul>
             </section>
             <section id="how" class="article-section">
               <h2>How ArchSig works</h2>
-              <p>Behind the Skill workflow, ArchSig has a simple shape: feed ArchMap v1 and LawPolicy v1 into the CLI, then read typed evaluator results, the analysis packet, and the compact summary.</p>
+              <p>Behind the Skill workflow, ArchSig has a simple shape: provide <code>archmap/v0.5.0</code>, <code>law-policy/v0.5.0</code>, and <code>measurement-profile/v0.5.0</code>, run <code>analyze</code>, then read the measurement packet and compact summary.</p>
               <ol class="numbered-status-list">
-                <li><strong>ArchMap records atoms</strong><span>An ArchMap v1 is source-backed input: read sources, primitive atoms, and explicit molecule membership. It is evidence, not a verdict.</span></li>
-                <li><strong>LawPolicy selects evaluators</strong><span>A LawPolicy v1 says which policy pack or evaluator ids should run, with basis refs, scope, and severity. The evaluator registry owns witness and distance rules.</span></li>
-                <li><strong>The CLI runs typed analysis</strong><span>The agent passes ArchMap v1 and LawPolicy v1 to ArchSig <code>analyze</code>. ArchSig normalizes atoms, runs typed evaluators, and keeps blocked / unknown / unmeasured support out of measured zero.</span></li>
-                <li><strong>The summary becomes the review surface</strong><span><code>archsig-analysis-summary.json</code> exposes verdict, typed evaluator status counts, distance insights, distance diagnosis, dominant findings, action queue, detail refs, and measurement basis.</span></li>
+                <li><strong>ArchMap records evidence</strong><span><code>archmap/v0.5.0</code> records source-grounded observations, contexts, covers, and extraction doctrine. It is evidence, not a verdict.</span></li>
+                <li><strong>LawPolicy selects registry entries</strong><span><code>law-policy/v0.5.0</code> selects evaluator manifests, laws, basis refs, scope, severity, and the external measurement profile. The registry owns evaluator rules.</span></li>
+                <li><strong>The CLI runs bounded analysis</strong><span>The agent passes the three current artifacts to <code>archsig analyze</code>. ArchSig normalizes the ArchMap, validates the policy and profile, and keeps blocked, unknown, unmeasured, and not-computed support out of measured zero.</span></li>
+                <li><strong>The summary becomes the review surface</strong><span><code>archsig-analysis-summary.json</code> exposes the conclusion, structural verdict summary, dominant findings, action queue, measurement basis, boundaries, and metadata.</span></li>
               </ol>
               <figure class="code-panel">
                 <figcaption>Core shape</figcaption>
-                <pre><code>ArchMap v1
-  + LawPolicy v1
+                <pre><code>archmap/v0.5.0
+  + law-policy/v0.5.0
+  + measurement-profile/v0.5.0
   -> archsig analyze
-  -> typed-evaluator-results
-  -> archsig-analysis-packet
+  -> archsig-measurement-packet.json
   -> archsig-analysis-summary.json
   -> LLM agent review findings</code></pre>
               </figure>
@@ -85,9 +85,9 @@ Summarize the architecture tendencies and list the first files reviewers should 
               <h2>What the Skills build</h2>
               <p>The LLM agent uses the Skills to turn the request into bounded analysis artifacts. You normally read the result, not every intermediate file.</p>
               <ul class="status-list">
-                <li><strong>ArchMap</strong><span>A source-backed map of atoms and explicit molecule membership.</span></li>
-                <li><strong>LawPolicy</strong><span>The selected evaluator policy for this review: policy pack or evaluator ids, basis refs, scope, and severity.</span></li>
-                <li><strong>ArchSig output</strong><span>Typed evaluator results, analysis packet, compact summary, viewer data, and detail references.</span></li>
+                <li><strong>ArchMap</strong><span>A source-backed map of observations, contexts, covers, and source refs.</span></li>
+                <li><strong>LawPolicy</strong><span>The selected registry evaluator policy with basis refs, scope, severity, and measurement-profile ref.</span></li>
+                <li><strong>ArchSig output</strong><span>Measurement packet, compact summary, insight report, viewer data, run manifest, and validation reports.</span></li>
                 <li><strong>Source comparison</strong><span>The agent reopens the relevant code paths before turning packet readings into human-facing review work.</span></li>
               </ul>
             </section>
