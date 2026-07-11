@@ -485,6 +485,122 @@ def edgeFiberCard {Vertex Edge RelationLabel : Type z}
     letI := G.edgeFintype
     exact Fintype.card { e : Edge // G.source e = i ∧ G.target e = j }
 
+namespace FiniteDirectedGraphTarget.CountedDirectedWalk
+
+variable {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+
+/-- VII.命題3.6: a counted walk is determined by its ordered edge list. -/
+theorem edges_injective {start finish : Vertex} {n : Nat} :
+    Function.Injective
+      (@edges Vertex Edge RelationLabel G start finish n) := by
+  intro w
+  induction w with
+  | nil v =>
+      intro w' h
+      cases w'
+      rfl
+  | @cons start finish e n hsource tail ih =>
+      intro w' h
+      cases w' with
+      | cons e' n' hsource' tail' =>
+          simp only [edges, List.cons.injEq] at h
+          rcases h with ⟨rfl, htail⟩
+          have htails : tail = tail' := ih htail
+          subst tail'
+          rfl
+
+/-- VII.命題3.6: fixed-length counted walks form a finite type. -/
+noncomputable instance fintype
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel)
+    (start finish : Vertex) (n : Nat) :
+    Fintype (CountedDirectedWalk G start finish n) := by
+  classical
+  letI := G.edgeFintype
+  letI := G.edgeDecidableEq
+  let vectorFinite : Finite (List.Vector Edge n) :=
+    Finite.of_injective (fun v : List.Vector Edge n => fun i => v.get i) (by
+      intro v w h
+      apply List.Vector.ext
+      intro i
+      exact congrFun h i)
+  let walkFinite : Finite (CountedDirectedWalk G start finish n) :=
+    @Finite.of_injective _ _ vectorFinite
+      (fun w => ⟨edges w, edges_length w⟩ :
+        CountedDirectedWalk G start finish n -> List.Vector Edge n)
+      (by
+        intro w w' h
+        apply edges_injective
+        exact Subtype.ext_iff.mp h)
+  letI := walkFinite
+  exact Fintype.ofFinite _
+
+/-- VII.命題3.6: length-zero walks are exactly endpoint equalities. -/
+def zeroEquiv (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel)
+    (start finish : Vertex) :
+    CountedDirectedWalk G start finish 0 ≃
+      Subtype (fun _ : Unit => start = finish) where
+  toFun w := by cases w; exact ⟨(), rfl⟩
+  invFun h := by
+    have hEq := h.property
+    subst finish
+    exact .nil start
+  left_inv w := by cases w; rfl
+  right_inv h := Subsingleton.elim _ _
+
+/--
+VII.命題3.6: a length-`n + 1` walk is exactly a middle vertex, a selected
+first edge into that vertex, and a length-`n` tail.
+-/
+def succEquiv (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel)
+    (n : Nat) (start finish : Vertex) :
+    CountedDirectedWalk G start finish (n + 1) ≃
+      Σ middle : Vertex,
+        { e : Edge // G.source e = start ∧ G.target e = middle } ×
+          CountedDirectedWalk G middle finish n where
+  toFun w := by
+    cases w with
+    | cons e n hsource tail =>
+        exact ⟨G.target e, ⟨⟨e, hsource, rfl⟩, tail⟩⟩
+  invFun data := by
+    rcases data with ⟨middle, ⟨⟨e, hsource, htarget⟩, tail⟩⟩
+    subst middle
+    exact .cons e n hsource tail
+  left_inv w := by cases w; rfl
+  right_inv data := by
+    rcases data with ⟨middle, ⟨⟨e, hsource, htarget⟩, tail⟩⟩
+    subst middle
+    rfl
+
+/-- VII.命題3.6: cardinality of the length-zero walk type. -/
+theorem card_zero (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel)
+    [DecidableEq Vertex]
+    (start finish : Vertex) :
+    Fintype.card (CountedDirectedWalk G start finish 0) =
+      Fintype.card (Subtype (fun _ : Unit => start = finish)) := by
+  classical
+  exact Fintype.card_congr (zeroEquiv G start finish)
+
+/--
+VII.命題3.6: cardinality decomposition of length-`n + 1` walks through the
+selected first-edge fiber and length-`n` tail.
+-/
+theorem card_succ (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel)
+    [Fintype Vertex]
+    (n : Nat) (start finish : Vertex) :
+    Fintype.card (CountedDirectedWalk G start finish (n + 1)) =
+      ∑ middle : Vertex,
+        edgeFiberCard G start middle *
+          Fintype.card (CountedDirectedWalk G middle finish n) := by
+  classical
+  letI := G.edgeFintype
+  letI := G.edgeDecidableEq
+  rw [Fintype.card_congr (succEquiv G n start finish)]
+  simp only [Fintype.card_sigma, Fintype.card_prod]
+  rfl
+
+end FiniteDirectedGraphTarget.CountedDirectedWalk
+
 /-- VII.定義3.5: bundled matrix representation target attached to a graph. -/
 structure MatrixRepresentationTarget (Vertex Edge RelationLabel : Type z) where
   graph : FiniteDirectedGraphTarget Vertex Edge RelationLabel
@@ -537,8 +653,8 @@ def adjacencyMatrixPower {Vertex Edge RelationLabel : Type z}
 VII.命題3.6 precursor: selected length-`n` walk count read by matrix powers.
 
 The recursion is the usual adjacency-matrix walk recursion: length zero is the
-identity walk, and a length `n + 1` walk is a length `n` walk followed by one
-selected edge relation.
+identity walk, and a length `n + 1` walk is one selected first edge followed by
+a length `n` walk.
 -/
 def matrixWalkCount {Vertex Edge RelationLabel : Type z}
     (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) :
@@ -628,6 +744,56 @@ theorem matrixWalkCount_one_eq_edgeFiber_card
         simp [hb]
       · intro hnot
         exact False.elim (hnot (Finset.mem_univ j))
+
+/--
+VII.命題3.6: the recursive matrix walk count is the actual cardinality of the
+length-indexed counted-walk type, for every natural length.
+-/
+theorem matrixWalkCount_eq_countedDirectedWalk_card
+    {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) :
+    ∀ (n : Nat) (start finish : Vertex),
+      matrixWalkCount G n start finish =
+        Fintype.card (FiniteDirectedGraphTarget.CountedDirectedWalk
+          G start finish n) := by
+  classical
+  letI := G.vertexFintype
+  letI := G.vertexDecidableEq
+  letI := G.edgeFintype
+  letI := G.edgeDecidableEq
+  intro n
+  induction n with
+  | zero =>
+      intro start finish
+      rw [FiniteDirectedGraphTarget.CountedDirectedWalk.card_zero]
+      by_cases h : start = finish <;> simp [matrixWalkCount, h]
+  | succ n ih =>
+      intro start finish
+      rw [FiniteDirectedGraphTarget.CountedDirectedWalk.card_succ]
+      change
+        (∑ middle : Vertex,
+          adjacencyMatrix G start middle * matrixWalkCount G n middle finish) =
+        ∑ middle : Vertex,
+          edgeFiberCard G start middle *
+            Fintype.card (FiniteDirectedGraphTarget.CountedDirectedWalk
+              G middle finish n)
+      apply Finset.sum_congr rfl
+      intro middle _
+      rw [adjacencyMatrix_apply_eq_edgeFiber_card, ih]
+
+/--
+VII.命題3.6 Matrix Walk Reading: every adjacency-matrix power entry is the
+cardinality of the selected length-`n` counted-walk type.
+-/
+theorem adjacencyMatrixPower_apply_eq_countedDirectedWalk_card
+    {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel)
+    (n : Nat) (start finish : Vertex) :
+    (adjacencyMatrixPower G n) start finish =
+      Fintype.card (FiniteDirectedGraphTarget.CountedDirectedWalk
+        G start finish n) :=
+  (adjacencyMatrixPower_apply_eq_matrixWalkCount G n start finish).trans
+    (matrixWalkCount_eq_countedDirectedWalk_card G n start finish)
 
 /--
 VII.命題3.6 precursor: positive recursive walk count has a concrete counted

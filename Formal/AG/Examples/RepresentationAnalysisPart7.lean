@@ -104,6 +104,93 @@ theorem dependencyDAG_nilpotent_at_card :
     adjacencyMatrixPower dependencyDAG (Fintype.card DAGVertex) = 0 :=
   adjacencyMatrixPower_eq_zero_at_card_of_acyclic dependencyDAG_acyclic
 
+/-- Vertices of the selected three-object chain used for the length-two firing. -/
+inductive LengthTwoWalkVertex where
+  | a
+  | b
+  | c
+deriving DecidableEq, Fintype
+
+/-- The two ordered edges of the selected length-two chain. -/
+inductive LengthTwoWalkEdge where
+  | ab
+  | bc
+deriving DecidableEq, Fintype
+
+/-- Relation label carried by both selected chain edges. -/
+inductive LengthTwoWalkLabel where
+  | edge
+deriving DecidableEq, Fintype
+
+/-- VII.R13(a): selected three-vertex chain with one length-two walk. -/
+def lengthTwoWalkChain :
+    FiniteDirectedGraphTarget LengthTwoWalkVertex LengthTwoWalkEdge
+      LengthTwoWalkLabel where
+  vertexFintype := inferInstance
+  vertexDecidableEq := inferInstance
+  edgeFintype := inferInstance
+  edgeDecidableEq := inferInstance
+  source
+    | .ab => .a
+    | .bc => .b
+  target
+    | .ab => .b
+    | .bc => .c
+  relationLabel _ := .edge
+
+/-- VII.R13(a): the concrete selected length-two walk `a -> b -> c`. -/
+def lengthTwoWalk :
+    FiniteDirectedGraphTarget.CountedDirectedWalk lengthTwoWalkChain
+      LengthTwoWalkVertex.a LengthTwoWalkVertex.c 2 :=
+  .cons LengthTwoWalkEdge.ab 1 rfl
+    (.cons LengthTwoWalkEdge.bc 0 rfl (.nil LengthTwoWalkVertex.c))
+
+/-- VII.R13(a): every selected length-two walk in the chain is the concrete walk. -/
+def lengthTwoWalkEquivUnit :
+    FiniteDirectedGraphTarget.CountedDirectedWalk lengthTwoWalkChain
+      LengthTwoWalkVertex.a LengthTwoWalkVertex.c 2 ≃ Unit where
+  toFun _ := ()
+  invFun _ := lengthTwoWalk
+  left_inv w := by
+    apply FiniteDirectedGraphTarget.CountedDirectedWalk.edges_injective
+    cases w with
+    | cons e n hsource tail =>
+        cases e with
+        | ab =>
+            cases tail with
+            | cons e' n' hsource' tail' =>
+                cases e' with
+                | ab => simp [lengthTwoWalkChain] at hsource'
+                | bc =>
+                    cases tail'
+                    rfl
+        | bc => simp [lengthTwoWalkChain] at hsource
+  right_inv _ := rfl
+
+/-- VII.R13(a): the selected length-two walk type has cardinality one. -/
+theorem lengthTwoWalk_card_eq_one :
+    Fintype.card
+      (FiniteDirectedGraphTarget.CountedDirectedWalk lengthTwoWalkChain
+        LengthTwoWalkVertex.a LengthTwoWalkVertex.c 2) = 1 := by
+  rw [Fintype.card_congr lengthTwoWalkEquivUnit]
+  rfl
+
+/-- VII.R13(a): proposition 3.6 fires at the nontrivial length `n = 2`. -/
+theorem lengthTwoWalk_matrixPower_eq_card :
+    (adjacencyMatrixPower lengthTwoWalkChain 2)
+        LengthTwoWalkVertex.a LengthTwoWalkVertex.c =
+      Fintype.card
+        (FiniteDirectedGraphTarget.CountedDirectedWalk lengthTwoWalkChain
+          LengthTwoWalkVertex.a LengthTwoWalkVertex.c 2) :=
+  adjacencyMatrixPower_apply_eq_countedDirectedWalk_card lengthTwoWalkChain 2
+    LengthTwoWalkVertex.a LengthTwoWalkVertex.c
+
+/-- VII.R13(a): the length-two adjacency-power entry is exactly one. -/
+theorem lengthTwoWalk_matrixPower_eq_one :
+    (adjacencyMatrixPower lengthTwoWalkChain 2)
+      LengthTwoWalkVertex.a LengthTwoWalkVertex.c = 1 :=
+  lengthTwoWalk_matrixPower_eq_card.trans lengthTwoWalk_card_eq_one
+
 /-! ### (b) period separation toy model -/
 
 theorem periodSeparation_toy_model :

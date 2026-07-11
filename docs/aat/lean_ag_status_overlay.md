@@ -29,7 +29,6 @@
 | IV-8 | `defined only` / `packaged (assumption-relative)` | Type値obstruction sheaf / module sheafはcarrierまたは明示仮定相対のsurfaceであり、無条件なadditive/module soundnessとして数えない。 |
 | VI-5 | `packaged (assumption-relative)` | decomposition gerbe / non-abelian soundnessはsupplied dataに相対化され、banded abelian bridgeもconditionalである。 |
 | VII-1 | `未達・降格記録` | `AATSynthesisPackage`はfinite singleton/PUnit-style fixtureでのみ発火し、`costToDistanceValue _ := measured 0`も残るためtheorem-grade synthesis evidenceに数えない。 |
-| VII-3 / VII-4 / VII-6 | `部分昇格` | coboundary invariance、adequacy、actual GLB、length-one edge-fiberは実装済みだが、一般length-n cardinality theoremは未証明であり、束ねた全体を完了扱いしない。 |
 | IX-3 legacy firing | `完了根拠ではない` | 既存cohomology-level inverse firingのPUnit singleton係数wrapperはnondegenerate completion evidenceに数えない。現行の肯定的根拠はZMod 2 product-incidence route側に置く。 |
 
 新しい降格・条件付き判定を追加するときは、対象宣言、完了要求、完了根拠に
