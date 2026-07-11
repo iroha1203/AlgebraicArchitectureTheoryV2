@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 6
+- latest reviewed cycle: 7
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: sheafify the law-generated ideal-power sequence
+- next obligation: construct the law-generated ideal sheaf and canonical additive sheafification
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -335,7 +335,8 @@ not supplied exactness or comparison fields.
 - discharged: raw law-generated `I`, `O/I²`, `O/I`, `I/I²`; restriction
   functoriality; projection and inclusion naturality; objectwise kernel
   comparison; objectwise inclusion injectivity and projection surjectivity.
-- remaining: canonical sheafification of all three additive presheaves;
+- remaining: a law-generated ideal presheaf/subsheaf `I` with restriction
+  provenance; canonical sheafification of the three additive presheaves;
   sheaf-level kernel comparison and exactness; `ConDef(W)` to degree-zero
   cohomology comparison; D0 instantiation; semantic representations; finite
   zero/nonzero witness pair; package theorem; and the `H¹ = 0` corollary.
@@ -355,6 +356,82 @@ not supplied exactness or comparison fields.
 
 ### Next obligation
 
-Apply canonical AddCommGrp-valued sheafification to the generated raw sequence,
-derive the sheaf-level kernel comparison without accepting it as a field, and
-instantiate the generic D0 theorem on the selected finite-poset cover.
+Construct the law-generated ideal presheaf/subsheaf `I` from the existing
+objectwise ideals and restriction theorem.  Apply canonical AddCommGrp-valued
+sheafification to the generated raw sequence, derive the sheaf-level kernel
+comparison without accepting it as a field, and instantiate the generic D0
+theorem on the selected finite-poset cover.
+
+## Cycle 7 — categorical short exact sequence and conditional sheafification
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedIdealPowerShortExact.lean`
+- checkpoint spine:
+  - `Raw.shortComplex`
+  - `Raw.conormalInclusion_mono`
+  - `Raw.projection_epi`
+  - `Raw.kernelElement`
+  - `Raw.kernelLift`
+  - `Raw.conormalInclusionIsKernel`
+  - `Raw.shortComplex_exact`
+  - `Raw.shortComplex_shortExact`
+  - `Raw.sheafifiedShortComplex`
+  - `Raw.sheafifiedShortComplex_shortExact`
+
+### Checkpoint delta
+
+The raw law-generated sequence is now a categorical `ShortComplex` of
+`AddCommGrpCat`-valued presheaves.  Objectwise injectivity and surjectivity
+generate categorical mono and epi instances.  The Cycle 6 kernel equivalence
+constructs an explicit natural lift for every presheaf morphism killed by the
+projection, proving that the conormal inclusion is the categorical kernel.
+Consequently the raw sequence is `Exact` and `ShortExact` without accepting an
+exactness or kernel certificate.
+
+Under Mathlib's general sheafification availability class
+`HasSheafify S.topology AddCommGrpCat`, `ShortComplex.ShortExact.map_of_exact`
+sends the raw sequence through `presheafToSheaf` and proves the resulting sheaf
+sequence short exact.  This theorem uses the canonical sheafification functor;
+it does not accept selected sheaves or sheaf-condition fields.
+
+### Premise delta
+
+- discharged: categorical raw `ShortComplex`; presheaf-level mono, epi,
+  categorical kernel, exactness, and short exactness.
+- conditionally discharged: preservation of the generated short exact sequence
+  by canonical AddCommGrp-valued sheafification, relative to
+  `[HasSheafify S.topology AddCommGrpCat]`.
+- remaining: a law-generated ideal presheaf/subsheaf `I` and its sheaf-level
+  provenance; a concrete or imported canonical source of that `HasSheafify`
+  instance for the selected AAT topology; unconditional sheafified sequence;
+  the comparison to D0 coefficient sheaves; `ConDef(W)` to degree-zero
+  cohomology comparison; semantic representations; finite zero/nonzero witness
+  pair; package theorem; and the `H¹ = 0` corollary.
+
+### Audits
+
+- focused prerequisite elaboration: pass (Cycle 6 single file)
+- focused Cycle 7 elaboration: pass
+- module-wide standard-axiom assertion: pass (15 declarations)
+- exactness provenance: `kernelLift` is generated pointwise by
+  `Raw.conormalKernelEquiv` and its naturality is proved using the generated
+  conormal inclusion and the input morphism's naturality
+- supplied-field audit: no exactness, kernel, sheaf, or effectivity structure
+  field was added
+- sheafification availability audit: no arbitrary-AAT-site global instance of
+  `HasSheafify S.topology AddCommGrpCat` was found; the theorem therefore keeps
+  this typeclass visible and does not count it as discharged
+- target classification: raw categorical D1 exactness is proved; sheafified
+  exactness remains assumption-relative until the availability premise is
+  constructed
+
+### Next obligation
+
+Construct the law-generated ideal presheaf/subsheaf `I` and retain its map into
+the ambient observable presheaf through sheafification.  Provide a canonical
+construction or reviewed Mathlib import yielding
+`HasSheafify S.topology AddCommGrpCat` for the selected AAT topology.  Then
+instantiate the sheafified short exact sequence unconditionally and connect it
+to the generic D0 lift problem.
