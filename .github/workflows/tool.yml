@@ -1,0 +1,139 @@
+name: Tool
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  archsig:
+    name: archsig cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test ArchSig
+        run: cargo test --manifest-path tools/archsig/Cargo.toml
+
+  fieldsig:
+    name: fieldsig cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test FieldSig
+        run: cargo test --manifest-path tools/fieldsig/Cargo.toml
+
+  archsig-analyze-e2e:
+    name: ArchSig analyze / FieldSig handoff e2e
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run ArchSig analyze to FieldSig handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          out_dir=".tmp/archsig-analyze-e2e"
+          archsig_measurement_dir="$out_dir/archsig-measurement"
+          fieldsig_dir="$out_dir/fieldsig"
+          mkdir -p "$archsig_measurement_dir" "$fieldsig_dir"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+            --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2_support_transfer.json \
+            --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_transfer.json \
+            --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_transfer.json \
+            --out-dir "$archsig_measurement_dir"
+
+          test -s "$archsig_measurement_dir/archsig-measurement-packet.json"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+            --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
+            --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
+            --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
+            --out-dir "$archsig_measurement_dir/gate-smoke"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
+            --packet "$archsig_measurement_dir/gate-smoke/archsig-measurement-packet.json" \
+            --policy tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json \
+            --out "$archsig_measurement_dir/archsig-gate-report.json"
+
+          jq -e '
+            .schema == "archsig-gate-report/v0.5.0"
+            and .decision == "PASS_WITHIN_GATE_POLICY"
+            and ([.ruleOutcomes[]? | select(.scope == "absolute" and .status == "evaluated")] | length == 1)
+          ' "$archsig_measurement_dir/archsig-gate-report.json"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
+            --base-run "$archsig_measurement_dir/gate-smoke" \
+            --head-run "$archsig_measurement_dir/gate-smoke" \
+            --out-dir "$archsig_measurement_dir/compare-smoke"
+
+          jq -e '
+            .schema == "archsig-comparison-report/v0.5.0"
+            and .conclusionCode == "NO_NEW_MEASURED_OBSTRUCTION_RECORDED"
+            and .comparability.level == "identical"
+            and ([.verdictTransitions[]? | select(.introducedByChangeCategory == "preexisting")] | length >= 1)
+            and ([.. | strings | select(test("TRANSPORT|INTRODUCED_BY_CHANGE|CLEARED_BY_CHANGE|ZERO_PRESERVED"))] | length == 0)
+          ' "$archsig_measurement_dir/compare-smoke/archsig-comparison-report.json"
+
+          jq -e '
+            .schema == "archmap-diff/v0.5.0"
+            and ((.atoms.added | length) == 0)
+            and ((.contexts.added | length) == 0)
+            and ((.covers.added | length) == 0)
+          ' "$archsig_measurement_dir/compare-smoke/archmap-diff.json"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
+            --packet "$archsig_measurement_dir/gate-smoke/archsig-measurement-packet.json" \
+            --policy tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json \
+            --comparison "$archsig_measurement_dir/compare-smoke/archsig-comparison-report.json" \
+            --out "$archsig_measurement_dir/archsig-gate-with-comparison-report.json"
+
+          jq -e '
+            .schema == "archsig-gate-report/v0.5.0"
+            and .decision == "PASS_WITHIN_GATE_POLICY"
+            and ([.ruleOutcomes[]? | select(.scope == "introduced-by-change" and .status == "evaluated")] | length == 1)
+            and ([.ruleOutcomes[]?.appliedMapping[]? | select(.mappingKey == "preexisting" and .action == "pass_with_boundary")] | length >= 1)
+          ' "$archsig_measurement_dir/archsig-gate-with-comparison-report.json"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- schema-catalog \
+            --out "$archsig_measurement_dir/schema-version-catalog.json"
+
+          cmp "$archsig_measurement_dir/schema-version-catalog.json" \
+            tools/archsig/tests/fixtures/ag_measurement/schema_version_catalog.json
+
+          jq -e '
+            .schema == "archsig-measurement-packet/v0.5.0"
+            and .packetId == "measurement:ag-measurement-support-transfer-fixture"
+            and (.profile.profileId == "profile:ag-support-transfer@1")
+            and ((.computedInvariants | length) > 0)
+            and ((.analyticReadings | length) > 0)
+            and ([.assumptions[]? | select(.assumption == "transfer_lower_bound" and .status == "assumed")] | length == 1)
+          ' "$archsig_measurement_dir/archsig-measurement-packet.json"
+
+          cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
+            --measurement-packet "$archsig_measurement_dir/archsig-measurement-packet.json" \
+            --out "$fieldsig_dir/operation-support-estimate-measurement.json"
+
+          jq -e '
+            .schema == "operation-support-estimate/v0.5.0"
+            and .descriptorRef.artifactKind == "archsig-measurement-packet"
+            and ([.candidateOperationFamilies[]?.supportKind] | index("measurement-packet-analytic-reading") != null)
+            and ([.descriptorRef.sourceRefIds[]? | startswith("archsigMeasurementPacket:")] | any)
+            and ([.evidenceBoundary.measurementBoundaryRefs[]? | startswith("archsigMeasurementAnalytic:")] | any)
+            and ([.knownForbiddenSupport[]?.operationFamily] | index("raw-archmap-truth-promotion") != null)
+            and ([.unknownRemainder[]?.reason | contains("transfer_lower_bound")] | any)
+          ' "$fieldsig_dir/operation-support-estimate-measurement.json"
+
+      - name: Upload ArchSig analyze e2e artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: archsig-analyze-e2e-${{ github.run_id }}
+          path: .tmp/archsig-analyze-e2e

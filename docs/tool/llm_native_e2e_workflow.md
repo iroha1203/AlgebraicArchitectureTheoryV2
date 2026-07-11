@@ -63,6 +63,6 @@ archsig-run-manifest.json
 - Raw ArchMap JSON is not a FieldSig handoff input.
 - Compare + gate are the current PR / CI decision surfaces.
 
-`.github/workflows/lean.yml` contains the current e2e job. It runs ArchSig
+`.github/workflows/tool.yml` contains the current e2e job. It runs ArchSig
 `analyze`, validates gate / compare / catalog surfaces, hands the measurement
 packet to FieldSig, and rejects retired handoff forms.
