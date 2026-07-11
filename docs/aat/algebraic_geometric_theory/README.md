@@ -155,8 +155,7 @@ Theorem / Proposition / Lemma:
 
 Theorem candidate:
   今後の定義・証明設計を示す本文内の定理候補。
-  Lean の中央 proof obligation になるのは、
-  lean_theorem_index.md または proof_obligations.md に対応行を置いた場合だけである。
+  Lean で形式化する場合は、本文の命題と `Formal/` の declaration を直接突合する。
 
 Principle:
   claim boundary、読み方、非主張を固定する規律。
@@ -166,12 +165,10 @@ Analytic reading:
 ```
 
 主要な未定義語、primitive predicate、future design obligation は
-[付録](appendix.md) の status ledger にまとめる。
-Lean 形式化との対応は、必要に応じて
-[`lean_theorem_index.md`](../lean_theorem_index.md) と
-[`proof_obligations.md`](../proof_obligations.md) で確認する。
-これらの台帳に対応する Lean API または proof obligation が記載されていない theorem label は、
-本文内の数学命題であり、現在の Lean proved claim とは読まない。
+[付録](appendix.md) の status notes にまとめる。
+Lean 形式化との対応は、必要に応じて `Formal/` の declaration とその statement を直接確認する。
+本文内の theorem label は、対応する Lean declaration の statement と proof を確認するまで、
+Lean proved claim とは読まない。
 
 AAT 本文内の measurement は、固定された数学的対象と selected profile に相対化された reading である。
 選ばれていない data source、観測手段、判定手続きの完全性は仮定しない。

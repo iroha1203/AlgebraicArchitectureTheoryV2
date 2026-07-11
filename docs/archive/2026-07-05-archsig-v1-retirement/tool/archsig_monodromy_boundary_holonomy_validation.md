@@ -48,7 +48,7 @@ Non-goals remain unchanged:
 | Boundary holonomy is a measured residual boundary reading. | `featureBoundaryResidualReadings`, `boundaryHolonomyReadingFamily`, inspection report top boundary holonomy. | implemented |
 | Feature extension diagnosis is multi-label attribution. | `featureExtensionDiagnosisReadings` and validation rules. | implemented |
 | Coupon / tax / rounding fixture demonstrates semantic monodromy. | `tools/archsig/tests/fixtures/coupon_rounding/*` and `coupon_tax_rounding_fixture_locks_semantic_monodromy`. | implemented |
-| Lean formalization is a minimal guardrail. | `Formal/Arch/Signature/MonodromyMeasurement.lean`, `docs/aat/lean_theorem_index.md`, `docs/aat/proof_obligations.md`. | proved / bounded |
+| Lean formalization is a minimal guardrail. | `Formal/Arch/Signature/MonodromyMeasurement.lean`, `Formal/`, `Formal/`. | proved / bounded |
 | AAT text separates proved guardrail, theorem candidate, conjecture, and tool diagnosis. | `docs/aat/algebraic_geometric_theory/README.md`. | documented |
 | FieldSig owns batch evolution analysis. | `docs/tool/README.md`, `docs/tool/archsig_analysis_packet.md`, `docs/tool/golden_corpus.md`, `llm_native_e2e_workflow.md`. | documented |
 

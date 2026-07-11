@@ -50,14 +50,8 @@ To answer these questions, the project keeps the following layers separate:
 | AAT / SFT Interface | The interface between the pure AAT theory and SFT's development-system model. The current SFT v2 reading is in the SFT body; the separate interface note still contains v1 material. | [Software Field Theory](docs/sft/software_field_theory.md) and [AAT / SFT interface note](docs/sft/aat_interface.md) |
 | ArchSig / ArchView / FieldSig Tooling | ArchSig reads supplied ArchMap evidence, LawPolicy, and MeasurementProfile artifacts into bounded diagnostic / measurement packets. ArchView visualizes emitted viewer data without creating a new verdict. FieldSig consumes serialized ArchSig measurement packets together with workflow evidence for SFT-oriented evolution measurement. | [AAT Tooling Documentation](docs/tool/README.md) |
 | SFT | SFT v2 models software evolution through a Development System containing development time, evolution space and transport, sources, policy, and measurement profiles. | [Software Field Theory](docs/sft/software_field_theory.md) |
-| Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md), split into classical / AG / research indexes. |
-| Proof / empirical ledger | Theorem assumptions, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md), split into classical / AG / research ledgers. |
+| Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | Lean source under `Formal/`. |
 | Website | The public reading surface for AAT, SFT, and ArchSig. It is authored and built with Eleventy, then published as a static Cloudflare Pages site. | [Website source](website/src/index.html) |
-
-The README does not duplicate detailed theorem lists or progress ledgers.
-Current Lean status, non-conclusions, and open proof obligations are tracked
-through [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md)
-and [Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
 
 Most detailed research notes are currently written in Japanese; English
 summaries will be added as the theory and Lean formalization stabilize.
@@ -67,11 +61,9 @@ summaries will be added as the theory and Lean formalization stabilize.
 1. [PHILOSOPHY](PHILOSOPHY.md)
 2. [AAT Algebraic-Geometric Mathematical Text](docs/aat/algebraic_geometric_theory/README.md)
 3. [Software Field Theory](docs/sft/software_field_theory.md)
-4. [Proof Obligations and Empirical Hypotheses](docs/aat/proof_obligations.md)
-5. [Lean Definitions and Theorem Index](docs/aat/lean_theorem_index.md)
-6. [AAT Tooling Documentation](docs/tool/README.md)
-7. [Research-loop operating guide](research/README.md)
-8. As needed:
+4. [AAT Tooling Documentation](docs/tool/README.md)
+5. [Research-loop operating guide](research/README.md)
+6. As needed:
    [docs guide](docs/README.md),
    [AAT directory guide](docs/aat/README.md),
    [SFT directory guide](docs/sft/README.md),
@@ -152,23 +144,14 @@ The public website in `website/` is a Cloudflare Pages reading surface for AAT, 
 and ArchSig. It is authored with Eleventy from `website/src/` and published as
 static output.
 
-## Lean Formalization
-
-See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) for the
-main definitions and theorems currently present on the Lean side. Detailed
-theorem status, assumptions, and proof obligations are recorded in the linked
-ledgers rather than duplicated here.
-
 ## Repository Layout
 
 - `Formal`
-  - Lean formalization and theorem packages. See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md)
-    for the current entrypoints.
+  - Lean formalization and theorem packages.
 - `docs`
-  - First-class theory documents, Lean status, proof obligations, tool docs,
-    and empirical protocol.
-- `docs/aat`
-  - Canonical algebraic-geometric AAT text, proof obligations, and Lean theorem index.
+  - First-class theory documents, tool docs, and empirical protocol.
+  - `docs/aat`
+  - Canonical algebraic-geometric AAT text and supporting notes.
 - `docs/sft`
   - AAT / SFT interface and the SFT body.
 - `docs/tool`
@@ -206,26 +189,6 @@ The output of `lake exe aatv2` is:
 ```text
 Algebraic Architecture Theory V2
 ```
-
-## Proof And Documentation Policy
-
-- Do not introduce `axiom`, `admit`, `sorry`, or `unsafe` into Lean sources.
-- Record unproved claims in the appropriate split ledger linked from
-  `docs/aat/proof_obligations.md`, or in GitHub Issues.
-- Keep Lean-proved claims, definition-only concepts, future proof obligations,
-  and empirical hypotheses distinct.
-- Do not identify AAT theorems, tooling output, SFT forecasts, and empirical
-  hypotheses with each other.
-- `docs/aat/proof_obligations.md` is an entrypoint to split ledgers that also
-  index the relevant GitHub Issues.
-
-## Task Management
-
-Open work is tracked in GitHub Issues. Issues are organized according to the
-research dependency structure with milestones and `type:*`, `area:*`,
-`priority:*`, and `status:*` labels. The README does not duplicate the issue
-list. Research-loop runtime state is kept in the GOAL tracking Issue; static
-GOAL definitions remain under `research/goals/`.
 
 ## License
 

@@ -44,7 +44,7 @@ Formal/AG --glob '!Formal/AG/Research/**'
 AC1/AC2 reproducibility note: the 1685 mechanical-hit lines are not copied into
 this document one row at a time. They are classified by the pattern-level rules
 above, by the Research freeze list, by the review-layer item table I-* through
-IX-*, and by the row-level status overlay in `lean_theorem_index_ag_aat.md` and
+IX-*, and by the row-level status tables in `lean_theorem_index_ag_aat.md` and
 `proof_obligations_ag_aat.md`. A theorem-row status in either AG ledger is read
 through the R0 vocabulary table at the top of this inventory: actual theorem /
 finite firing surfaces are `proved`; assumption/certificate/accessor packages
@@ -224,8 +224,8 @@ Formal/AG/Evolution/Force.lean
 Formal/AG/Evolution/TemporalProductSite.lean
 Formal/AG/Evolution/TemporalLaw.lean
 Formal/AG/Examples/EvolutionPart9.lean
-docs/aat/lean_theorem_index_ag_aat.md
-docs/aat/proof_obligations_ag_aat.md
+Formal/AG/
+Formal/AG/
 ```
 
 | ID | Target | R0 classification | Reason / next owner |
@@ -569,11 +569,11 @@ Checklist execution scope:
 
 | Surface | Files checked | Check | Status | Follow-up |
 | --- | --- | --- | --- | --- |
-| Repo top-level overview | `README.md`, `PHILOSOPHY.md` | No standalone theorem-count number is advertised. Lean status is delegated to `docs/aat/lean_theorem_index.md` and proof-obligation ledgers. | aligned | none |
+| Repo top-level overview | `README.md`, `PHILOSOPHY.md` | No standalone theorem-count number is advertised. Lean status is delegated to `Formal/` and proof-obligation ledgers. | aligned | none |
 | Docs overview | `docs/README.md`, `docs/aat/README.md` | The docs overview separates `proved`, `defined only`, `future proof obligation`, and `empirical hypothesis`, and does not publish a numeric theorem-count claim. | aligned | none |
 | Website planning notes | `docs/note/website_renewal_design_note.md`, `docs/note/website_renewal_w2_statement_wayfinding.md` | Planning notes require website Lean-status claims to trace to `lean_theorem_index_ag_aat.md`. They are not themselves external theorem-count claims. | aligned | none |
 | Website AAT status page | `website/src/aat/status/index.html` | The page exposes the PRD-R vocabulary and representative proved anchors, but its canonical-source links are pinned to commit `bd3a1152a7b7ac067ac4862c1dac91e99db66861`, predating the final PRD-R AC19 sync. | drift recorded | #3082 |
-| AG Lean ledgers | `docs/aat/lean_theorem_index_ag_aat.md`, `docs/aat/proof_obligations_ag_aat.md`, this inventory | The authoritative internal ledger vocabulary and R0 / R1 / AC19 validation are present and current through PRD-R AC19. | aligned | none |
+| AG Lean ledgers | `Formal/AG/`, `Formal/AG/`, this inventory | The authoritative internal ledger vocabulary and R0 / R1 / AC19 validation are present and current through PRD-R AC19. | aligned | none |
 
 Targeted scan commands:
 
@@ -584,7 +584,7 @@ rg -n "[0-9]+\s*(theorem|定理|証明|proved|formalized)|定理[0-9０-９]+本
 
 rg -n "bd3a1152|PRD-R|proved rows|theorems proved" \
   website/src/aat/status/index.html docs/aat/lean_ag_peer_review_inventory.md \
-  docs/aat/proof_obligations_ag_aat.md docs/aat/lean_theorem_index_ag_aat.md
+  Formal/AG/ Formal/AG/
 ```
 
 R11 conclusion: the required external-consistency checklist exists. No external

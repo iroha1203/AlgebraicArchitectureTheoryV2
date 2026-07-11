@@ -509,8 +509,8 @@ def agenticComponent_of_agenticConfluencePackage
 ```text
 Formal.lean
 Formal/Arch/Evolution/SFTTheoremPackages.lean
-docs/aat/lean_theorem_index.md
-docs/aat/proof_obligations.md
+Formal/
+Formal/
 docs/sft/sft_theorem_roadmap_and_research_vision.md
 ```
 
@@ -549,7 +549,7 @@ agenticComponent_of_agenticConfluencePackage
 
 ## Phase 12: docs の claim boundary を更新する
 
-`docs/aat/lean_theorem_index.md` に新節を追加する。
+`Formal/` に新節を追加する。
 
 候補見出し:
 
@@ -587,7 +587,7 @@ All real governance interventions are effective.
 The implemented theorem proves empirical forecast correctness.
 ```
 
-`docs/aat/proof_obligations.md` では、既存の
+`Formal/` では、既存の
 `SFT theorem roadmap / fundamental modularity family` 行を更新する。
 
 更新後の status は次のように読む。
@@ -649,8 +649,8 @@ The full theorem is completely proved for all software systems.
 15. closed-loop calibration package から final calibration component を作れる。
 16. agentic confluence package から final agentic component を作れる。
 17. `Formal.lean` と `SFTTheoremPackages.lean` の public entrypoint が更新される。
-18. `docs/aat/lean_theorem_index.md` が更新される。
-19. `docs/aat/proof_obligations.md` が更新される。
+18. `Formal/` が更新される。
+19. `Formal/` が更新される。
 20. `docs/sft/sft_theorem_roadmap_and_research_vision.md` が更新される。
 21. `lake build` が通る。
 22. `git diff --check` が通る。

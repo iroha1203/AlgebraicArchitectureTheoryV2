@@ -56,25 +56,17 @@ SFT makes software evolution computable.
 | AAT / SFT Interface | 純粋な AAT 理論と SFT の development-system model を接続する interface。現行 SFT v2 の読み方は SFT 本文にあり、独立した interface note には v1 記述が残る。 | [ソフトウェアの場の理論](docs/sft/software_field_theory.md) と [AAT / SFT interface note](docs/sft/aat_interface.md) |
 | ArchSig / ArchView / FieldSig Tooling | ArchSig は supplied ArchMap evidence、LawPolicy、MeasurementProfile から bounded diagnostic / measurement packet を作る。ArchView は出力された viewer data を可視化し、新しい verdict は作らない。FieldSig は serialized ArchSig measurement packet と workflow evidence を受け取り、SFT 側の進化計測を行う。 | [AAT Tooling Documentation](docs/tool/README.md) |
 | SFT | SFT v2 は development time、evolution space と transport、source、policy、measurement profile からなる Development System を通じてソフトウェア進化を扱う。 | [ソフトウェアの場の理論](docs/sft/software_field_theory.md) |
-| Lean 形式化 | 前提を明示できる構造的命題、finite universe、lawfulness bridge、bounded theorem package。 | [Lean 定義・定理索引](docs/aat/lean_theorem_index.md) |
-| Proof / empirical ledger | theorem assumptions、未解決 proof obligation、empirical hypothesis、Issue との対応。 | [証明義務と実証仮説](docs/aat/proof_obligations.md) |
+| Lean 形式化 | 前提を明示できる構造的命題、finite universe、lawfulness bridge、bounded theorem package。 | `Formal/` 以下のLean source |
 | Website | AAT、SFT、ArchSig を公開向けに読むためのサイト。Eleventy で authoring / build し、静的な Cloudflare Pages site として配信する。 | [Website source](website/src/index.html) |
-
-README は詳細な theorem 一覧や進捗台帳を重複して持ちません。
-現在の Lean status、non-conclusions、未解決 proof obligation は
-[証明義務と実証仮説](docs/aat/proof_obligations.md) と
-[Lean 定義・定理索引](docs/aat/lean_theorem_index.md) で管理します。
 
 ## 読む順序
 
 1. [PHILOSOPHY](PHILOSOPHY.md)
 2. [代数幾何的 AAT 数学本文](docs/aat/algebraic_geometric_theory/README.md)
 3. [ソフトウェアの場の理論](docs/sft/software_field_theory.md)
-4. [証明義務と実証仮説](docs/aat/proof_obligations.md)
-5. [Lean 定義・定理索引](docs/aat/lean_theorem_index.md)
-6. [AAT Tooling Documentation](docs/tool/README.md)
-7. [Research-loop 運用ガイド](research/README.md)
-8. 必要に応じて [docs 読み方](docs/README.md),
+4. [AAT Tooling Documentation](docs/tool/README.md)
+5. [Research-loop 運用ガイド](research/README.md)
+6. 必要に応じて [docs 読み方](docs/README.md),
    [AAT directory guide](docs/aat/README.md),
    [SFT directory guide](docs/sft/README.md),
    [AAT / SFT interface note](docs/sft/aat_interface.md)
@@ -148,20 +140,14 @@ measured zero と unmeasured を混同せず、tool pass を Lean theorem とし
 `website/` は、AAT、SFT、ArchSig を公開向けに読むための Cloudflare Pages
 reading surface です。`website/src/` を Eleventy で authoring し、静的な配信物を生成します。
 
-## Lean 形式化
-
-現在 Lean 側に存在する主要な定義・定理は
-[Lean 定義・定理索引](docs/aat/lean_theorem_index.md) を参照してください。詳細な theorem
-status、前提、proof obligation は、ここに重複させず、関連する台帳で管理します。
-
 ## リポジトリ構成
 
 - `Formal`
-  - Lean 形式化と theorem package。現在の entrypoint は [Lean 定義・定理索引](docs/aat/lean_theorem_index.md) を参照。
+  - Lean 形式化と theorem package。
 - `docs`
-  - 第一級理論文書、Lean status、proof obligations、tool docs、empirical protocol。
-- `docs/aat`
-  - 代数幾何的 AAT 正典本文、proof obligations、Lean theorem index。
+  - 第一級理論文書、tool docs、empirical protocol。
+  - `docs/aat`
+  - 代数幾何的 AAT 正典本文と補助文書。
 - `docs/sft`
   - AAT / SFT interface と SFT 本文。
 - `docs/tool`
@@ -196,22 +182,6 @@ lake exe aatv2
 ```text
 Algebraic Architecture Theory V2
 ```
-
-## 証明と文書の扱い
-
-- Lean ソースに `axiom`, `admit`, `sorry`, `unsafe` を導入しない。
-- 未証明の主張は `docs/aat/proof_obligations.md` または GitHub Issues に明示する。
-- Lean で証明済みの主張、定義のみの概念、将来の証明義務、実証仮説を混同しない。
-- AAT theorem、tooling output、SFT forecast、empirical hypothesis を同一視しない。
-- `docs/aat/proof_obligations.md` は GitHub Issues への索引としても使う。
-
-## タスク管理
-
-未解決課題は GitHub Issues で管理します。
-Issue は研究の依存構造に沿って milestone と
-`type:*`, `area:*`, `priority:*`, `status:*` label で整理します。
-README には Issue 一覧を重複して持たせません。Research-loop の実行状態は GOAL ごとの
-tracking Issue に置き、静的な GOAL 定義は `research/goals/` に置きます。
 
 ## ライセンス
 

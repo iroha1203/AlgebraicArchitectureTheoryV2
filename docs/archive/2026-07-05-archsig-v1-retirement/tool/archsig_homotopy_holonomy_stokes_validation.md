@@ -74,7 +74,7 @@ Non-goals remain unchanged:
 | `archmap/v1` runtime emits HomotopyReport from normalized atoms / explicit molecule candidates without v0 operation-square inputs. | `cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler` and `archsig.v1.architectureHomotopyReportSurface` validation check. | implemented |
 | Missing filler evidence does not become measured zero. | `archmap_homotopy_hole.json` fixture keeps `homotopyDistance=null`, `measurementStatus=blockedByMissingFiller`, and `observationGapLowerBound>0`. | implemented |
 | Lean minimal theorem guardrail exists and builds. | `Formal/Arch/Signature/HomotopyHolonomyStokes.lean`, imported by `Formal.lean`; local and CI `lake build`. | proved / bounded |
-| Proof obligations and theorem index reflect Lean additions and claim boundary. | `docs/aat/proof_obligations.md`, `docs/aat/lean_theorem_index.md`. | documented |
+| Proof obligations and theorem index reflect Lean additions and claim boundary. | `Formal/`, `Formal/`. | documented |
 | AAT mathematical text reflects the Homotopy-Holonomy Stokes reading as theory, not implementation status. | `docs/aat/algebraic_geometric_theory/README.md`. | documented |
 | Tool docs explain ArchitectureHomotopyReport. | `docs/tool/README.md`, `docs/tool/law_policy.md`, `docs/tool/archsig_analysis_packet.md`. | documented |
 | Website / public manual explains the reading surface and non-conclusions. | `website/archsig/index.html`, `getting-started`, and `reading-output`. | documented |

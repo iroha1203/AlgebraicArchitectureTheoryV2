@@ -421,10 +421,10 @@ algebraic architecture stack と呼ぶのは、diagonal representability、atlas
 
 ## B. Claim Status and Finite Worked Example
 
-## B.1 Claim Status Ledger
+## B.1 Claim Status Notes
 
 本文の主要な predicate と theorem label は、次の status で読む。
-`local theorem candidate` は中央 Lean obligation ではなく、登録時に `proof_obligations.md` 側へ移す。
+`local theorem candidate` は本文内の候補であり、Lean側では対応する declaration と statement を直接確認する。
 
 | 語 | status | 読み方 |
 | --- | --- | --- |
@@ -501,8 +501,7 @@ Theorem / Proposition / Lemma:
 
 Theorem candidate:
   将来の定義・証明設計を明示した本文内の定理候補。
-  Lean の中央 proof obligation になるのは、
-  lean_theorem_index.md または proof_obligations.md に対応行を置いた場合だけである。
+  Lean で形式化する場合は、本文の命題と対応する declaration の statement を直接確認する。
 
 Principle:
   claim boundary または読み方の規律。

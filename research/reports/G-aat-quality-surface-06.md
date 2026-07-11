@@ -23,8 +23,7 @@ artifacts, proof-obligation deltas, and discharge audits only.
   accepted final review following Cycle 352.
 - `research/goals/G-aat-quality-surface-06.md`: the G-06 card moved from `active` to `completed`, with
   completion result, completion date, and completion report recorded.
-- `docs/aat/proof_obligations.md`: the research target-theorem ledger gained
-  the G-06 row.
+- The historical completion record gained the G-06 status.
 - tracking Issue #2636: closed as `COMPLETED` with a final ledger comment.
 - boundary carry-over: the accepted final review packet's boundary notes
   (identity comparison, selected circle nerve, degenerate witness site,

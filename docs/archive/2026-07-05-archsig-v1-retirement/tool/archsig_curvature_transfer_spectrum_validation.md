@@ -64,7 +64,7 @@ Non-goals remain unchanged:
 | Zero, nonzero semantic curvature, transfer cycle, coverage gap, and coupon / tax / rounding fixtures are covered. | `tools/archsig/tests/fixtures/acts_spectrum/manifest.json` locks the five cases against minimal and coupon validation artifacts. `complete_archmap_acceptance_fixture_runs_full_measurement_without_private_names` additionally verifies a sanitized large-repo class complete-first ArchMap emits `ArchitectureSpectrumReport` hotspots and recurrent pressure. | implemented |
 | Validation checks schema shape, refs, coverage boundary, and non-conclusions. | `acts_spectrum_fixture_manifest_locks_golden_validation`, packet validation checks, minimal / coupon validation fixtures. | implemented |
 | Lean minimal theorem guardrail exists and builds. | `Formal/Arch/Signature/CurvatureTransferSpectrum.lean`, imported by `Formal.lean`; CI and local `lake build`. | proved / bounded |
-| Proof obligations and theorem index reflect Lean additions and claim boundary. | `docs/aat/proof_obligations.md`, `docs/aat/lean_theorem_index.md`. | documented |
+| Proof obligations and theorem index reflect Lean additions and claim boundary. | `Formal/`, `Formal/`. | documented |
 | AAT mathematical text reflects ACTS as a theory reading, not implementation status. | `docs/aat/algebraic_geometric_theory/README.md`. | documented |
 | Tool docs explain ArchitectureSpectrumReport. | `docs/tool/README.md`, `docs/tool/law_policy.md`, `docs/tool/archsig_analysis_packet.md`. | documented |
 | Website / public manual explains the reading surface and non-conclusions. | `website/archsig/index.html`, `getting-started`, `reading-output`, `schemas`. | documented |

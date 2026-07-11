@@ -320,8 +320,8 @@ This is not full Fundamental Modularity Theorem.
 更新先:
 
 ```text
-docs/aat/lean_theorem_index.md
-docs/aat/proof_obligations.md
+Formal/
+Formal/
 docs/sft/sft_theorem_roadmap_and_research_vision.md
 docs/sft/sft_theorem_roadmap_update_lean_4.md
 ```

@@ -965,7 +965,7 @@ That is why ArchSig must distinguish `unmeasured` from `zero`. When something th
 
 The structure above is not built only from metaphor. Some of the core vocabulary of AAT has been implemented as Lean definitions and theorems under `Formal/Arch`.
 
-The repository is [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2). The proved API is summarized in the [Lean definition and theorem index](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index.md).
+The repository is [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2). The proved API lives in the Lean source under `Formal/`.
 
 The vocabulary used in the second half of this article mainly corresponds to `Formal/Arch/Evolution/SignatureDynamics.lean` and `Formal/Arch/Evolution/AttractorEngineering.lean`.
 

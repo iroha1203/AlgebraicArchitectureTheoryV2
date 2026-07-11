@@ -533,8 +533,8 @@ SFTTheoremRoadmap.finiteForecastConeDescent_of_laws
 更新先:
 
 ```text
-docs/aat/lean_theorem_index.md
-docs/aat/proof_obligations.md
+Formal/
+Formal/
 docs/sft/sft_theorem_roadmap_and_research_vision.md
 docs/sft/sft_theorem_roadmap_update_lean_5.md
 ```

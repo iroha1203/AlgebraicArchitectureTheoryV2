@@ -56,7 +56,7 @@
 - Lean statusとResearch下限原則: `docs/aat/guideline.md`
 - Lean品質・固定statement: `docs/aat/lean_quality_standard.md`
 - Research成果と移植状況: `docs/aat/research_evidence_index.md`、
-  `docs/aat/lean_theorem_index_research.md`、`research/reports/**`
+  Research Lean source、`research/reports/**`
 - review規律: `.codex/skills/math-lean-review/SKILL.md`、
   `.codex/skills/_shared/lean-refutation-checklist.md`
 - 現行build構成: `lakefile.toml`、`Formal/AG/Research.lean`
@@ -143,7 +143,7 @@ conclusion、proof term、axiom依存を維持し、旧Research prefixから新R
 ### R5: Research→本体の昇格監査を実装する
 
 - `docs/aat/research_evidence_index.md` の全 `ported` 行に加え、
-  `docs/aat/lean_theorem_index_research.md`、reports、本体側のResearch対応記述から
+  Research Lean source、reports、本体側のResearch対応記述から
   本体対応がある受理成果を検索し、非空の昇格manifestを作る。
 - manifestは少なくともResearch
   `lawEquation_constructs_groundedComparisonPacket`と対応する本体generated-pair routeを含む。
@@ -166,9 +166,9 @@ conclusion、proof term、axiom依存を維持し、旧Research prefixから新R
 ### R6: 運用surfaceを同期する
 
 - `research/DESIGN.md`、`research/README.md`、research loop skills、target theorem skill、
-  math review skill、shared checklistを新path・新build commandへ更新する。
-- `docs/aat/guideline.md`、`docs/aat/lean_quality_standard.md`、evidence index、theorem index、
-  proof obligationのfile pathと恒久規律を更新する。
+  math review skill、shared checklistを現行source path・build commandへ更新する。
+- `docs/aat/guideline.md`、`docs/aat/lean_quality_standard.md`、evidence index、
+  Research Lean source、reportsの恒久規律を更新する。
 - `AGENTS.md`、`CLAUDE.md`、research goals / ideas / reports、`docs/note/**`、
   `outreach/**`、website公開面の現行pathを更新する。
 - `docs/sft/software_field_theory.md`のResearch artifact pathは本Issueの明示対象とし、
@@ -195,7 +195,7 @@ conclusion、proof term、axiom依存を維持し、旧Research prefixから新R
 - [ ] **AC5**: 239 file全件が`ResearchLean.AG`へ移り、39 fileと200 fileの各移動PRで
   `check_research_migration_manifest`がcanonicalized source、declaration数、type/value digest、
   axiom setの全件一致を機械検査し、合計239/239のartifactがある。
-- [ ] **AC6**: evidence index、Research theorem index、reports、本体側対応記述から作った
+- [ ] **AC6**: evidence index、Research Lean source、reports、本体側対応記述から作った
   非空の昇格manifestにaudit declarationがあり、少なくともgenerated-pair routeを含め、
   各Research元の全conjunctとmaterial premiseを本体routeから再構成する。
 - [ ] **AC7**: `#assert_promotion_signature`、`#assert_promotion_dependencies`、
@@ -208,7 +208,7 @@ conclusion、proof term、axiom依存を維持し、旧Research prefixから新R
   Research専用buildを使用する。
 - [ ] **AC9**: Research変更時または手動実行のCI jobがResearch full buildとauditを実行し、
   通常PRのroot buildにResearch full buildを重複させない。
-- [ ] **AC10**: evidence index、theorem index、proof obligation、research reportsの
+- [ ] **AC10**: evidence index、Research source、research reportsの
   現行pathが新配置と一致し、`docs/aat/guideline.md`と`lean_quality_standard.md`の恒久規律、
   AGENTS / CLAUDE / goals / ideas / notes / outreach / website / SFT artifact pathも同期する。
 - [ ] **AC11**: `Formal/AG/Research/**`、`Formal/AG/Research.lean`、`FormalAGResearch`、
