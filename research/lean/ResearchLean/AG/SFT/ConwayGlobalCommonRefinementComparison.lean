@@ -14,7 +14,7 @@ obstruction beyond the global-boundary receiver; it records a comparison layer
 between global boundary exactness and common-refinement support provenance.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -205,4 +205,4 @@ theorem selectedGlobalCommonRefinementComparisonPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

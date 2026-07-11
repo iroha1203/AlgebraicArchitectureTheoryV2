@@ -14,7 +14,7 @@ arbitrary repair calculus, a canonical assignment, optimality, or empirical
 organizational causality.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -183,4 +183,4 @@ theorem selectedCommunicationSupportAssignmentPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

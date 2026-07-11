@@ -13,7 +13,7 @@ The receiver is deliberately finite-combinatorial.  It does not claim a full
 lives before a later `C^1/B^1` quotient or comparison-functor receiver is chosen.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -253,4 +253,4 @@ theorem selectedSupportReceiverPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

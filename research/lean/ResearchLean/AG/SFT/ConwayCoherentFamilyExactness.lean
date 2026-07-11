@@ -16,7 +16,7 @@ naturality or a true sheaf gluing theorem; it identifies that the present
 family obstruction.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -178,4 +178,4 @@ theorem selectedCoherentFamilyExactnessPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

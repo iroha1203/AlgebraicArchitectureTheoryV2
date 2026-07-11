@@ -13,7 +13,7 @@ This is still selected finite receiver vocabulary.  It is not a full boundary
 map, quotient object, sheaf cohomology class, or functorial comparison theorem.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -224,4 +224,4 @@ theorem selectedGeneratorBoundaryReceiverPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

@@ -16,7 +16,7 @@ not claim real organizational causality, optimal repair, arbitrary-cover
 naturality, or a sheaf cohomology statement.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -283,4 +283,4 @@ theorem selectedReorgRefactorKillingPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

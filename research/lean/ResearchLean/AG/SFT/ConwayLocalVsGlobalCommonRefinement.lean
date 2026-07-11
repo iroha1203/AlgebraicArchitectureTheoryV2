@@ -14,7 +14,7 @@ it fixes the exact point where local additive exactness fails to imply global
 compatibility plus common-refinement provenance.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -102,4 +102,4 @@ theorem selectedLocalVsGlobalCommonRefinementPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

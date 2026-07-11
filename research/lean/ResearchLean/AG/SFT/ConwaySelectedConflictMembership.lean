@@ -14,7 +14,7 @@ This is still selected finite Conway vocabulary.  It is not an arbitrary
 conflict enumeration algorithm.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -222,4 +222,4 @@ theorem selectedConflictMembershipPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

@@ -15,7 +15,7 @@ This is a selected finite witness.  It is not an arbitrary refactor calculus or
 an empirical claim about real organization changes.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -130,4 +130,4 @@ theorem selectedRefactorTwoOwnerObstructionPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

@@ -13,7 +13,7 @@ This is still finite selected Conway vocabulary.  It is not a sheaf complex,
 functorial cohomology theory, or empirical mirroring theorem.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -237,4 +237,4 @@ theorem selectedGlobalBoundaryMapPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

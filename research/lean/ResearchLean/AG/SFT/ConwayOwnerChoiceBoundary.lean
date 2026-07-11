@@ -14,7 +14,7 @@ map uses degree-zero data" from the stronger, still open, problem of building a
 nontrivial functorial `C0 -> C1` complex.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -229,4 +229,4 @@ theorem selectedOwnerChoiceBoundaryPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

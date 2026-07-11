@@ -14,7 +14,7 @@ This remains selected finite Conway vocabulary.  It is not an arbitrary repair
 calculus, runtime extraction algorithm, or general conflict enumeration result.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -188,4 +188,4 @@ theorem selectedMissRepairCriterionPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

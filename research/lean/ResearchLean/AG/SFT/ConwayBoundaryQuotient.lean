@@ -15,7 +15,7 @@ This is intentionally a finite `C^1/B^1`-style receiver, not a full sheaf
 cohomology construction.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -238,4 +238,4 @@ theorem selectedBoundaryQuotientReceiverPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

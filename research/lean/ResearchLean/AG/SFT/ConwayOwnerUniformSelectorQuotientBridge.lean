@@ -16,7 +16,7 @@ a true quotient object, canonical selector, arbitrary-cover naturality, or a
 sheaf `H^1` theorem.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -178,4 +178,4 @@ theorem selectedOwnerUniformSelectorQuotientBridgePackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

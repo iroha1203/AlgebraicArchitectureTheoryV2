@@ -32,7 +32,7 @@ complex with vertex coboundaries (the ∂Δ² witness of SFT 付録 D.12), stage
 Nothing is claimed about real merges, textual diffs, or extraction.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFTDynamics
 
 /--
@@ -142,4 +142,4 @@ theorem resolvedRoundingDatum_obstructionVanishes :
   TwoBranchLawDatum.obstructionVanishes_of_top _ rfl
 
 end SFTDynamics
-end Formal.AG.Research
+end ResearchLean.AG

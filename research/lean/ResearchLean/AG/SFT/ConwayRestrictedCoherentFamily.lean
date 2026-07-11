@@ -15,7 +15,7 @@ cover naturality or a sheaf theorem; it is the first restricted-span obstruction
 showing why Cycle 14's unconstrained Sigma assembly is too permissive.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -308,4 +308,4 @@ theorem selectedRestrictedCoherentFamilyPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

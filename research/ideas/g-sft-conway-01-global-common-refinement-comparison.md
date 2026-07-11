@@ -58,8 +58,8 @@ Conway 対応の receiver chain で、global exactness と common-refinement pro
 
 - `score_reason`: global-boundary receiver と同値な comparison bridge として base 55。
 - `dullness_risk`: 検出力は Cycle 5 global-boundary receiver を越えない。
-- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayGlobalCommonRefinementComparison.lean`、
-  `lake build ResearchLean.AG`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayGlobalCommonRefinementComparison.lean`、
+  `旧Research aggregate build`、`#print axioms` で検証する。
 
 ## Lean evidence
 
@@ -81,5 +81,5 @@ Conway 対応の receiver chain で、global exactness と common-refinement pro
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayGlobalCommonRefinementComparison.lean`、
-  module build、`lake build ResearchLean.AG`、full `lake build` が通過。G2 二審判 pass、final score +110。
+- 2026-07-04: 作成。`cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayGlobalCommonRefinementComparison.lean`、
+  module build、`旧Research aggregate build`、full `lake build` が通過。G2 二審判 pass、final score +110。

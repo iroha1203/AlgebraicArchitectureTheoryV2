@@ -101,4 +101,4 @@ Lean で次を証明した。
 ## 進捗ログ
 
 - 2026-07-04: Cycle 19 候補として作成し、Lean bridge を追加。
-- 2026-07-04: G2 A/B/C/D は全員 accept、base 30 / final 60。対象 Lean、module build、`ResearchLean.AG`、full `lake build`、axiom audit は pass。
+- 2026-07-04: G2 A/B/C/D は全員 accept、base 30 / final 60。対象 Lean、module build、`旧Research aggregate`、full `lake build`、axiom audit は pass。

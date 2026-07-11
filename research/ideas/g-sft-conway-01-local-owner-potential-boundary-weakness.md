@@ -59,8 +59,8 @@ support/global compatibility または common-refinement constraint が必要で
 
 - `score_reason`: additive local boundary とその failure-mode を固定するが、canonical finite fork 上の negative bridge なので base 60。
 - `dullness_risk`: finite example 上の negative bridge なので、過大評価しない。
-- `proof_or_evidence_plan`: `lake env lean research/lean/ResearchLean/AG/SFT/ConwayOwnerPotentialBoundary.lean`、
-  `lake build ResearchLean.AG`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayOwnerPotentialBoundary.lean`、
+  `旧Research aggregate build`、`#print axioms` で検証する。
 
 ## Lean evidence
 
@@ -83,6 +83,6 @@ support/global compatibility または common-refinement constraint が必要で
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean research/lean/ResearchLean/AG/SFT/ConwayOwnerPotentialBoundary.lean`、
-  `lake build ResearchLean.AG.SFT.ConwayOwnerPotentialBoundary`、`lake build ResearchLean.AG`、full `lake build` が通過。
+- 2026-07-04: 作成。`cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayOwnerPotentialBoundary.lean`、
+  `cd research/lean && lake build ResearchLean.AG.SFT.ConwayOwnerPotentialBoundary`、`旧Research aggregate build`、full `lake build` が通過。
   G2/G3 後、score を base 60 / final 120 に修正。

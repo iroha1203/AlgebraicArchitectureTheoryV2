@@ -13,7 +13,7 @@ This is still selected finite Conway vocabulary.  It is not an arbitrary
 conflict enumeration algorithm or a general repair calculus.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -242,4 +242,4 @@ theorem selectedConflictSetPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

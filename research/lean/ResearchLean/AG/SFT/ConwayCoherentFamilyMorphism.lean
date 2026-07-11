@@ -15,7 +15,7 @@ naturality failure for the selected family interface; it does not claim a full
 cover category, sheaf condition, or arbitrary refinement naturality.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -235,4 +235,4 @@ theorem selectedCoherentFamilyMorphismPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

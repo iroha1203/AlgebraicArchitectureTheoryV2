@@ -29,7 +29,7 @@ real repositories, extraction completeness, or the old `Formal/Arch/Evolution`
 surface (which stays frozen).
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFTDynamics
 
 /--
@@ -145,4 +145,4 @@ theorem canonicalMerge_base :
     canonicalMerge.base = 0 := rfl
 
 end SFTDynamics
-end Formal.AG.Research
+end ResearchLean.AG

@@ -13,7 +13,7 @@ This is a selected finite scanner over the Conway two-module vocabulary.  It is
 not a runtime extraction algorithm or arbitrary conflict enumeration procedure.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -303,4 +303,4 @@ theorem selectedMissScannerPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

@@ -12,7 +12,7 @@ This is still selected finite Conway vocabulary.  It does not claim arbitrary
 repair composition, optimality, or a general conflict-set calculus.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -189,4 +189,4 @@ theorem selectedRepairTransitionCriterionPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

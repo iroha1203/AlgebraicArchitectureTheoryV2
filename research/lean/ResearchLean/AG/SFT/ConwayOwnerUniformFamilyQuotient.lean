@@ -16,7 +16,7 @@ This is selected finite receiver vocabulary.  It is not a true sheaf `H^1`
 construction, arbitrary-cover naturality, or a functorial quotient theorem.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -227,4 +227,4 @@ theorem selectedOwnerUniformFamilyQuotientPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

@@ -14,7 +14,7 @@ This remains finite selected Conway vocabulary.  It is not a quotient object,
 not arbitrary-cover naturality, and not a sheaf `H^1` theorem.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -227,4 +227,4 @@ theorem selectedOwnerUniformSubfamilyDescentPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

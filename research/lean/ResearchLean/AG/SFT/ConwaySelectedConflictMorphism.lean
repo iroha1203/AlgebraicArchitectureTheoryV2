@@ -15,7 +15,7 @@ conflict-set morphism category, arbitrary conflict enumeration algorithm, or
 repair composition theorem.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -133,4 +133,4 @@ theorem selectedConflictBridgePackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

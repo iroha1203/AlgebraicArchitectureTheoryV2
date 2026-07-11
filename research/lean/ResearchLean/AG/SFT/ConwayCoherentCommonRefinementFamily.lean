@@ -14,7 +14,7 @@ cover naturality or sheaf cohomology; it records the first family-level
 coherence interface for common-refinement support.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -204,4 +204,4 @@ theorem selectedCoherentCommonRefinementFamilyPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

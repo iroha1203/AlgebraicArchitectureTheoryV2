@@ -13,7 +13,7 @@ This is still selected finite Conway vocabulary.  It is not a full functorial
 cochain complex or sheaf cohomology theory.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -191,4 +191,4 @@ theorem selectedSupportConstrainedOwnerPotentialPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

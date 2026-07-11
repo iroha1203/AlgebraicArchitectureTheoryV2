@@ -14,7 +14,7 @@ support constraint into common-refinement vocabulary for later comparison
 theorems.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -231,4 +231,4 @@ theorem selectedCommonRefinementOwnerPotentialPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

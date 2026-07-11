@@ -14,7 +14,7 @@ sheaf `H^1`, arbitrary-site cohomology, arbitrary-cover naturality, or a
 canonical selector.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -219,4 +219,4 @@ theorem selectedOwnerUniformRelativeCechShadowPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

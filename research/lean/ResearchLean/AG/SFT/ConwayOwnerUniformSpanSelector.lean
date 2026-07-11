@@ -15,7 +15,7 @@ algorithmic selector, arbitrary-cover naturality, a true quotient object, or a
 sheaf `H^1` theorem.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -306,4 +306,4 @@ theorem selectedOwnerUniformSpanSelectorObstructionPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

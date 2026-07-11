@@ -13,7 +13,7 @@ This remains selected finite Conway vocabulary.  It is not an arbitrary repair
 calculus or runtime diagnostic procedure.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -89,4 +89,4 @@ theorem selectedNoMissRepairCriterionPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

@@ -16,7 +16,7 @@ common-refinement constraints rather than treat local additive exactness as the
 Conway obstruction.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -133,4 +133,4 @@ theorem selectedOwnerPotentialBoundaryPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

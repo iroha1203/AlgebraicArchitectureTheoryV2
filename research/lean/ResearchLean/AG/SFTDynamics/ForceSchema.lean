@@ -24,7 +24,7 @@ proved here.  Nothing is claimed about transports along nontrivial
 connections, about applied forces on trace edges, or about real diffs.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFTDynamics
 
 /--
@@ -114,4 +114,4 @@ theorem mergeConfig_comm
 end ForceSchema
 
 end SFTDynamics
-end Formal.AG.Research
+end ResearchLean.AG

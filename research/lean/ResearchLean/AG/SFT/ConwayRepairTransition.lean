@@ -15,7 +15,7 @@ This remains selected finite Conway vocabulary.  It is not an arbitrary repair
 calculus, optimality theorem, or empirical organizational-causality claim.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -196,4 +196,4 @@ theorem selectedRepairTransitionPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG

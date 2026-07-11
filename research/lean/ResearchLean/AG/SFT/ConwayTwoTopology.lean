@@ -11,7 +11,7 @@ selected mismatch by changing either the communication side or the ownership
 side.
 -/
 
-namespace Formal.AG.Research
+namespace ResearchLean.AG
 namespace SFT
 namespace ConwayTwoTopology
 
@@ -259,4 +259,4 @@ theorem selectedConwayTwoCoverWitnessPackage :
 
 end ConwayTwoTopology
 end SFT
-end Formal.AG.Research
+end ResearchLean.AG
