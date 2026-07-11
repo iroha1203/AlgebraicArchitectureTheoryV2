@@ -16,7 +16,7 @@ open Opposite
 /--
 IV.定義2.1 / 定義2.2: obstruction coefficient sheaf.
 
-The carrier is still the PRD-2 Type-valued AAT sheaf surface.  The extra field
+The carrier is still the Part II Type-valued AAT sheaf surface.  The extra field
 records the abelian group structure needed before Cech cochains can use this as
 an obstruction coefficient object.
 -/
@@ -111,7 +111,7 @@ theorem ofAddCommGrpValued_map_add
 
 end ObstructionSheaf
 
-/-- IV.定義2.1: PRD notation `Ob_U` for an obstruction coefficient sheaf. -/
+/-- IV.定義2.1: Part IV notation `Ob_U` for an obstruction coefficient sheaf. -/
 abbrev Ob_U {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (S : Site.AATSite A) :=
   ObstructionSheaf S
@@ -132,7 +132,7 @@ structure ModuleObstructionSheaf {U : AtomCarrier.{u}} {A : ArchitectureObject U
 
 attribute [instance] ModuleObstructionSheaf.moduleStructure
 
-/-- IV.定義2.2: PRD notation for an `O_X^U`-module-valued `Ob_U`. -/
+/-- IV.定義2.2: Part IV notation for an `O_X^U`-module-valued `Ob_U`. -/
 abbrev OXModuleOb_U {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (S : Site.AATSite A) (k : Type v) [CommRing k]
     (P : LawAlgebra.LawAlgebraSheafPackage S k) :=
@@ -142,7 +142,7 @@ namespace StandardObstruction
 
 variable (A : Type v) [CommRing A]
 
-/-- IV.定義2.4: `Def_U := I_U`, read from the PRD-3 local obstruction ideal. -/
+/-- IV.定義2.4: `Def_U := I_U`, read from the Part III local obstruction ideal. -/
 def Def_U (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.{u, v} A) :
     Ideal A :=
   F.localObstructionIdeal
@@ -190,7 +190,7 @@ attribute [instance] PushforwardConDef.addCommGroup
 /--
 IV.定義2.4: standard obstruction package.
 
-It records the PRD-3 local obstruction ideal as `Def_U`, exposes
+It records the Part III local obstruction ideal as `Def_U`, exposes
 `ConDef_U = I_U / I_U^2`, and keeps the selected `i_* ConDef_U` carrier
 separate from the lawful-locus module.
 -/
@@ -208,7 +208,7 @@ def defU (P : CanonicalPackage A) : Ideal A :=
 abbrev conDefU (P : CanonicalPackage A) : Type v :=
   ConDef_U A P.selectedIdeals
 
-/-- IV.定義2.4: the package's `Def_U` is definitionally the PRD-3 local obstruction ideal. -/
+/-- IV.定義2.4: the package's `Def_U` is definitionally the Part III local obstruction ideal. -/
 theorem defU_eq_localObstructionIdeal (P : CanonicalPackage A) :
     P.defU = P.selectedIdeals.localObstructionIdeal :=
   rfl

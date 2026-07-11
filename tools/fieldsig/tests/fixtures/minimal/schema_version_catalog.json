@@ -261,10 +261,10 @@
       "artifactName": "IntentMap supplied JSON artifact",
       "schemaName": "intentmap/v0.5.0",
       "artifactRole": "planning-intent-input",
-      "ownerPhase": "PRD v3",
+      "ownerPhase": "FieldSig planning contract v3",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_archmap_prd_v3.md"
+        "tools/fieldsig/docs/artifacts-and-boundaries.md"
       ],
       "downstreamIssues": [
         "#1149",
@@ -292,10 +292,10 @@
       "artifactName": "IntentMap to ArchMap AlignmentMap",
       "schemaName": "intent-archmap-alignment/v0.5.0",
       "artifactRole": "planning-alignment-input",
-      "ownerPhase": "PRD v3",
+      "ownerPhase": "FieldSig planning contract v3",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_archmap_prd_v3.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md",
         "tools/fieldsig/docs/commands.md"
       ],
       "downstreamIssues": [
@@ -454,10 +454,10 @@
       "artifactName": "PR Quality Analysis report",
       "schemaName": "pr-quality-analysis-report/v0.5.0",
       "artifactRole": "review-output",
-      "ownerPhase": "PRD v3",
+      "ownerPhase": "FieldSig planning contract v3",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_archmap_prd_v3.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md",
         "tools/archsig/docs/commands.md"
       ],
       "downstreamIssues": [
@@ -529,10 +529,10 @@
       "artifactName": "Intent calibration record",
       "schemaName": "intent-calibration-record/v0.5.0",
       "artifactRole": "empirical-feedback",
-      "ownerPhase": "PRD v3",
+      "ownerPhase": "FieldSig planning contract v3",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_archmap_prd_v3.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md",
         "docs/tool/sft_calibration_benchmark.md"
       ],
       "downstreamIssues": [

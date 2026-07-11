@@ -73,7 +73,7 @@ theorem each_chart_lawful (chart : Chart) : LocallyLawful chart :=
 IV.R10 / AC13: H0-style witness counting sees no obstruction.
 
 This is the "all local charts pass" reading.  It is intentionally separated
-from the H1 class below, so the example records the PRD distinction between
+from the H1 class below, so the example records the Part IV distinction between
 local witness counting and gluing obstruction.
 -/
 def witnessCountingObstruction : Nat :=
@@ -112,7 +112,7 @@ theorem boundaryCocycle_AB_nonzero :
 /--
 IV.R10 / AC13: cover-relative H1 witness for the pseudo-circle golden example.
 
-This is the bridge from the finite edge-value model to the genuine PRD-4
+This is the bridge from the finite edge-value model to the genuine Part IV
 cover-relative cohomology surface.  The concrete cocycle lives in
 `K.CechCocycle 1`, its class is the existing `HiddenCouplingData` class
 `[hc_U(X)] in H^1(𝒰, Ob_U)`, and nonvanishing is stated in that actual
@@ -214,7 +214,7 @@ R5 / IV-2: Part IV firing package for a selected pseudo-circle nonzero
 cover-relative `H^1` instance.
 
 This package is independent of the `HiddenCouplingData` interface above.  It is
-the direct Part IV reading consumed by PRD-10 circle-nerve examples: H0-style
+the direct Part IV reading consumed by Part X circle-nerve examples: H0-style
 witness counting is zero, but a selected degree-one cover-relative class is
 nonzero.
 -/
@@ -237,7 +237,7 @@ variable {Ob : ObstructionSheaf S}
 variable {K : CoverRelativeCechComplex 𝒰 Ob}
 
 /--
-R5 / IV-2: the selected pseudo-circle firing records the PRD distinction:
+R5 / IV-2: the selected pseudo-circle firing records the Part IV distinction:
 local H0 witness counting is zero while degree-one cover-relative cohomology is
 nonzero.
 -/

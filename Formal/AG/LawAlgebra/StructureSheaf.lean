@@ -27,7 +27,7 @@ abbrev AATCommAlgCat (k : Type v) [CommRing k] :=
 /--
 III.R3: a commutative `k`-algebra-valued presheaf on an AAT site.
 
-This extends the PRD-2 Type-valued presheaf surface by changing the codomain to
+This extends the Part II Type-valued presheaf surface by changing the codomain to
 the bundled category of commutative `k`-algebras.
 -/
 abbrev AlgebraValuedAATPresheaf {U : AtomCarrier.{u}} {A : ArchitectureObject U}

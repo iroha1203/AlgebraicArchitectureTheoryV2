@@ -8,7 +8,7 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R1 / AC2--AC3 evolution profile and geometry surface.
+Part IX R1 / AC2--AC3 evolution profile and geometry surface.
 
 An evolution profile fixes a static geometry universe, a measurement profile,
 and one selected trace category. All later temporal laws and obstruction

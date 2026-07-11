@@ -8,7 +8,7 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R7 / AC16 finite dissipation stopping.
+Part IX R7 / AC16 finite dissipation stopping.
 
 Theorem 5.3 is split into two bounded statements:
 

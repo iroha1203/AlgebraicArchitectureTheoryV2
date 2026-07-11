@@ -182,9 +182,9 @@ theorem nonAbelianReading_holds (G : GerbeObstructionData.{z} D) :
 end GerbeObstructionData
 
 /--
-VI.定義16.1: bridge from a banded abelian gerbe to the PRD-4 `H^2` surface.
+VI.定義16.1: bridge from a banded abelian gerbe to the Part IV `H^2` surface.
 
-The bridge is conditional on the existing PRD-4 Čech-to-space cohomology
+The bridge is conditional on the existing Part IV Čech-to-space cohomology
 surface. It records a selected class in `H^2(X, A)` without constructing
 general non-abelian gerbe cohomology.
 -/

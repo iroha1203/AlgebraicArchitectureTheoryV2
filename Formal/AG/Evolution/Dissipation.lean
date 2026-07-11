@@ -8,7 +8,7 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R6 / AC14--AC15 evolution functionals and dissipative policies.
+Part IX R6 / AC14--AC15 evolution functionals and dissipative policies.
 
 This file defines the measurement-relative value reading `Phi_M`, selected
 dissipative steps, terminal predicates, strict decrease outside terminal
@@ -20,7 +20,7 @@ stopping theorem is intentionally left to R7.
 IX.§5.1 / AC14: measurement-relative evolution functional `Phi_M`.
 
 The value type and preorder are selected data.  Optional representative
-readings are exposed as predicates over the selected PRD-8 measurement domain;
+readings are exposed as predicates over the selected Part VIII measurement domain;
 they do not assert any empirical calibration or forecast outside the selected
 profile.
 -/
@@ -51,7 +51,7 @@ def value (Phi : EvolutionFunctional St) (p : T.Point) (s : St.State p) :
     Phi.Value :=
   Phi.read p s
 
-/-- IX.§5.1 / AC14: the functional is relative to the selected PRD-8 profile. -/
+/-- IX.§5.1 / AC14: the functional is relative to the selected Part VIII profile. -/
 theorem measurement_profile_selected (Phi : EvolutionFunctional St) :
     Phi.measurementProfile = E.measurementProfile :=
   Phi.measurementProfile_eq

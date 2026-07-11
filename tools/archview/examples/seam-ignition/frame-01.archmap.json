@@ -28,27 +28,27 @@
     },
     "src:cover": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "B.8.2"
     },
     "ctx:top": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "B.8.2"
     },
     "ctx:left": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "B.8.2"
     },
     "ctx:right": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "B.8.2"
     },
     "ctx:bottom": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "B.8.2"
     }
   },

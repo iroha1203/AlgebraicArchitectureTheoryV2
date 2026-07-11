@@ -74,7 +74,7 @@ end CotangentData
 VI.定義3.2: selected tangent-complex data.
 
 `RHom` and Ext/cohomology calculations are represented by explicit carrier
-fields and certificates. General `RHom` construction remains outside this PRD
+fields and certificates. General `RHom` construction remains outside this implementation scope
 step.
 -/
 structure TangentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}

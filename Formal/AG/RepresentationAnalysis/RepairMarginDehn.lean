@@ -12,7 +12,7 @@ universe u v w x y z
 VII.定義12.1: selected repair route from a state to a flat candidate.
 
 The route is relative to the AC12 operation-distance / distance-to-flatness
-context.  The PRD-3 lawful-locus factorization is carried as explicit selected
+context.  The Part III lawful-locus factorization is carried as explicit selected
 section data; no global repair existence theorem is asserted here.
 -/
 structure RepairRoute {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
@@ -55,7 +55,7 @@ theorem routeCost_eq_pathCost_holds (R : RepairRoute.{u, v, w} C) :
     R.routeCost = C.operationDistance.pathCost R.operationPath :=
   R.routeCost_eq_pathCost
 
-/-- VII.定義12.1: expose the PRD-3 lawful-locus factorization certificate. -/
+/-- VII.定義12.1: expose the Part III lawful-locus factorization certificate. -/
 theorem factorsThroughLawfulLocus_certificate
     (R : RepairRoute.{u, v, w} C) :
     R.lawfulSection.FactorsThroughLawfulLocus :=
@@ -75,7 +75,7 @@ inductive RepairOptimizationMode where
 VII.定義12.2: selected repair profiles.
 
 Shortest and safest are profile predicates over AC12 route / margin data.
-Structural and stable profiles carry explicit selected PRD-6 / PRD-4--6
+Structural and stable profiles carry explicit selected Part VI / Part IV--6
 readings as data rather than deriving global correctness.
 -/
 structure RepairProfileReading {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
@@ -268,7 +268,7 @@ end MarginStabilityProfile
 /--
 VII.定義12.4: architectural Dehn function interface.
 
-The presentation two-complex is a selected PRD-6 carrier.  The Dehn function is
+The presentation two-complex is a selected Part VI carrier.  The Dehn function is
 defined only relative to selected loops and filling-area readings.
 -/
 structure ArchitecturalDehnProfile where
@@ -420,7 +420,7 @@ theorem upper_bound_holds
 end BiLipschitzRepresentationProfile
 
 /--
-VII.定義13.1: singularity profile as an analytic reading of PRD-6
+VII.定義13.1: singularity profile as an analytic reading of Part VI
 singularity data.
 
 The profile bundles a selected stratum, tangent/deformation interface, normal
@@ -497,10 +497,10 @@ theorem selectedRepairDifficulty_certificate
 end SingularityProfile
 
 /--
-VII.定義13.2: bounded monodromy index as an analytic reading of PRD-6
+VII.定義13.2: bounded monodromy index as an analytic reading of Part VI
 monodromy data.
 
-The index is relative to one selected loop `gamma` and a supplied PRD-6
+The index is relative to one selected loop `gamma` and a supplied Part VI
 `MonodromyAction`.  It records the obstruction / semantic / effect actions,
 period change, loop residue, and an underlying finite AMI-style bounded
 reading.  Measurement verdicts remain reserved for later measurement-facing
@@ -561,7 +561,7 @@ variable {Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.{
 variable {M : SingularityMonodromyStack.MonodromyAction.{u, v, w, x, y, z} Pi}
 variable {gamma : Pi.Pi1}
 
-/-- VII.定義13.2: expose the selected PRD-6 monodromy action. -/
+/-- VII.定義13.2: expose the selected Part VI monodromy action. -/
 theorem monodromyAction_eq_Mon_gamma_holds
     (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
     I.monodromyAction = M.Mon_gamma gamma :=
@@ -597,7 +597,7 @@ theorem boundedReading_certificate
     I.boundedReading :=
   I.boundedReading_holds
 
-/-- VII.定義13.2: expose the underlying PRD-6 finite AMI weighted-sum reading. -/
+/-- VII.定義13.2: expose the underlying Part VI finite AMI weighted-sum reading. -/
 theorem architecturalMonodromyIndex_value_eq_weighted_sum
     (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
     I.architecturalMonodromyIndex.value =

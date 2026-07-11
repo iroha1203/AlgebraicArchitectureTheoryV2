@@ -60,7 +60,7 @@ Do not use `semantic` for:
 If the same subject has different observed use evidence, keep separate semantic
 atoms. Do not merge them merely because they point to the same component.
 
-This is the observation-side counterpart to PRD-4 `aliasWitnesses`: ArchSig may
+This is the observation-side counterpart to SAGA `aliasWitnesses`: ArchSig may
 detect alias collapse later, but ArchMap authoring must not collapse the input
 aliases first.
 

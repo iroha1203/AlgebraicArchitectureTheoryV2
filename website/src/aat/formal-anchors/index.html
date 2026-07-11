@@ -109,9 +109,8 @@
                 certified bounded inferences whose assumptions are explicit
                 Lean arguments; <code>statement only</code> and
                 <code>theorem candidate statement-only</code> mark statements
-                placed without a proof claim. Since the PRD-R R0 inventory,
-                theorem-grade statuses are additionally normalized by
-                <code>docs/aat/lean_ag_peer_review_inventory.md</code> into the
+                placed without a proof claim. Under the current AG status discipline, the
+                current ledgers normalize theorem-grade statuses into the
                 three-way vocabulary <code>proved</code> /
                 <code>packaged (assumption-relative)</code> /
                 <code>statement-only</code>: theorems read off structure-field
@@ -138,7 +137,7 @@
                     </div>
                     <div>
                       <dt>Ledger section</dt>
-                      <dd>AG AAT Lean formalization PRD-1 bootstrap in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                      <dd>AG AAT Lean formalization Part I bootstrap in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
                     </div>
                   </dl>
                   <div style="overflow-x: auto;">
@@ -179,7 +178,7 @@
                     </div>
                     <div>
                       <dt>Ledger section</dt>
-                      <dd>PRD-2 / Part II, Architecture Geometry / Site / Sheaf in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                      <dd>Part II, Architecture Geometry / Site / Sheaf in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
                     </div>
                   </dl>
                   <div style="overflow-x: auto;">
@@ -189,7 +188,7 @@
                       </thead>
                       <tbody>
                         <tr><td><code>II.Definition 3.1 / §5.1-5.4</code></td><td><code>AAT.AG.Site.ArchitectureContext</code>, <code>AAT.AG.Site.ContextMorphism</code>, <code>ContextMorphism.IsRestriction</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
-                        <tr><td><code>II.Definition 4.1 / Proposition 4.2 / Assumption 4.3</code></td><td><code>ContextPreorderCategory</code>, <code>quotientFiniteMeetPosetCategoryOf</code>, <code>ContextOverlapPullback</code></td><td><code>defined only</code> / <code>proved</code> / <code>packaged (assumption-relative)</code></td></tr>
+                        <tr><td><code>II.Definition 4.1 / Proposition 4.2 / Assumption 4.3</code></td><td><code>ContextPreorderCategory</code>, <code>quotientFiniteMeetPosetCategoryOf</code>, <code>ContextOverlapPullback</code></td><td><code>defined only</code> / <code>proved</code> / <code>packaged (assumption-relative)</code>; completion evidence: <code>unmet</code></td></tr>
                         <tr><td><code>II.Definition 7.1(second half) / R4</code></td><td><code>AAT.AG.Site.AATGrothendieckTopology</code>, <code>AATGrothendieckTopology.eq_coverage_toGrothendieck</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
                         <tr><td><code>II.Definition 7.2 / Lemma 7.2A</code></td><td><code>AAT.AG.Site.UAdequateCover</code>, <code>AAT.AG.Site.witnessClosureCover_uAdequate</code>, <code>SeedWitnessClosureCover.uAdequate</code></td><td><code>defined only</code> / <code>proved</code> / <code>packaged (assumption-relative)</code></td></tr>
                         <tr><td><code>II.Definition 8.1 / Definition 2.1</code></td><td><code>AAT.AG.Site.AATSite</code>, <code>AAT.AG.Site.ArchitectureGeometry</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
@@ -222,7 +221,7 @@
                     </div>
                     <div>
                       <dt>Ledger section</dt>
-                      <dd>PRD-3 / Part III, Law Algebra / Obstruction Ideal / Lawful Locus in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                      <dd>Part III, Law Algebra / Obstruction Ideal / Lawful Locus in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
                     </div>
                   </dl>
                   <div style="overflow-x: auto;">
@@ -264,7 +263,7 @@
                     </div>
                     <div>
                       <dt>Ledger section</dt>
-                      <dd>PRD-4 / Part IV, Obstruction Cohomology in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                      <dd>Part IV, Obstruction Cohomology in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
                     </div>
                   </dl>
                   <div style="overflow-x: auto;">
@@ -306,7 +305,7 @@
                     </div>
                     <div>
                       <dt>Ledger section</dt>
-                      <dd>PRD-5 / Part V, Derived Law Geometry and Repair in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                      <dd>Part V, Derived Law Geometry and Repair in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
                     </div>
                   </dl>
                   <div style="overflow-x: auto;">
@@ -321,7 +320,7 @@
                         <tr><td><code>V.R4 / Definition 5.4 / Proposition 5.5</code></td><td><code>AAT.AG.Derived.FreeResolution.SelectedFiniteFreeResolution</code>, <code>SelectedTensorComplex.tensorOfResolution_certificate</code></td><td><code>proved under explicit Mathlib projective-resolution / Taylor identification data</code></td></tr>
                         <tr><td><code>V.Theorem 6.1 / Definition 7.1-7.4 / Theorem 7.3</code></td><td><code>AAT.AG.Derived.Transversality.LawConflictVanishes</code>, <code>DerivedNonTransverse</code>, <code>MathlibTorVanishes</code></td><td><code>proved under explicit selected transversality criterion data</code></td></tr>
                         <tr><td><code>V.Definition 10.1 / Definition 10.4 / Theorem 10.5 / Theorem 10.6</code></td><td><code>AAT.AG.Derived.Transfer.TransferredObstruction</code>, <code>TransferPairingData.supportLocalized_or_pairingJustified</code></td><td><code>proved under explicit transfer-pairing data</code></td></tr>
-                        <tr><td><code>V.Definition 13.1 / Definition 13.2 / Theorem 13.3 / Theorem 13.4</code></td><td><code>AAT.AG.Derived.WellFoundedRepair.RepairComparisonProfile</code>, <code>RepairComparisonProfile.no_infinite_repair_sequence</code></td><td><code>proved under explicit well-founded repair profile / finite synthesis data</code></td></tr>
+                        <tr><td><code>V.Definition 13.1 / Definition 13.2 / Theorem 13.3 / Theorem 13.4</code></td><td><code>AAT.AG.Derived.WellFoundedRepair.RepairComparisonProfile</code>, <code>RepairComparisonProfile.no_infinite_repair_sequence</code></td><td><code>proved under explicit well-founded repair profile</code>; theorem-grade sound-step emission completion evidence: <code>unmet</code></td></tr>
                         <tr><td><code>V.R11 finite examples</code></td><td><code>AAT.AG.FiniteModel.DerivedPart5.Example56TorCalculation</code>, <code>Example56TorCalculation.tor1_nonzero</code></td><td><code>proved examples under explicit selected LawConflict package / principal-kernel data</code></td></tr>
                       </tbody>
                     </table>
@@ -347,7 +346,7 @@
                     </div>
                     <div>
                       <dt>Ledger section</dt>
-                      <dd>PRD-6 / Part VI, Singularity / Monodromy / Stack in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                      <dd>Part VI, Singularity / Monodromy / Stack in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
                     </div>
                   </dl>
                   <div style="overflow-x: auto;">
@@ -388,7 +387,7 @@
                     </div>
                     <div>
                       <dt>Ledger section</dt>
-                      <dd>PRD-7 / Part VII, Representation / Periods / Analysis in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                      <dd>Part VII, Representation / Periods / Analysis in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
                     </div>
                   </dl>
                   <div style="overflow-x: auto;">
@@ -404,11 +403,12 @@
                         <tr><td><code>VII.Theorem 6.1 / Example 6.2</code></td><td><code>PeriodSeparationReadingFamily</code>, <code>PeriodSeparation</code></td><td><code>proved under selected finite witness</code></td></tr>
                         <tr><td><code>VII.Theorem 12.5</code></td><td><code>MarginStabilityProfile.marginStability_no_boundary_crossing</code></td><td><code>proved under explicit margin assumptions</code></td></tr>
                         <tr><td><code>VII.Theorem 15.4</code></td><td><code>RepresentationConservativityUnderAdequacy.representation_conservativity_under_adequacy</code></td><td><code>proved under explicit adequacy and witness-exactness assumptions</code></td></tr>
-                        <tr><td><code>VII.Theorem 16.1</code></td><td><code>AATSynthesisPackage</code>, <code>AATSynthesisPackage.aatSite_is_geometry_site</code></td><td><code>proved theorem package</code></td></tr>
+                        <tr><td><code>VII.Theorem 16.1</code></td><td><code>AATSynthesisPackage</code>, <code>AATSynthesisPackage.aatSite_is_geometry_site</code></td><td><code>packaged (assumption-relative)</code>; completion evidence: <code>unmet</code></td></tr>
                         <tr><td><code>VII.R13 finite examples</code></td><td><code>AAT.AG.FiniteModel.RepresentationAnalysisPart7.dependencyDAG</code>, <code>dependencyDAG_walkCount_ab_positive</code>, <code>periodSeparation_toy_model</code></td><td><code>proved selected examples</code></td></tr>
                       </tbody>
                     </table>
                   </div>
+                  <p class="formal-anchor-note">The completion-evidence overlay keeps VII-1 unmet and VII-3 / VII-4 / VII-6 partially promoted. Declaration-level proofs in this table do not promote the bundled Part VII requirements as a whole.</p>
                 </article>
               </div>
             </section>
@@ -527,7 +527,8 @@
                         <tr><td><code>X.§4 additive H1</code></td><td><code>SemanticRepairCover</code>, <code>SemanticRepairAdditiveCechH1Data</code></td><td><code>defined only</code> / <code>proved theorem package construction</code></td></tr>
                         <tr><td><code>X.§6 Atom-generated site / Čech bridge</code></td><td><code>atomGeneratedCoverage_generates_AATGrothendieckTopology</code>, <code>SemanticRepairCover.toCoverRelativeCechCover</code></td><td><code>proved theorem package construction</code></td></tr>
                         <tr><td><code>X.Definition 7.1 / Theorem 7.2</code></td><td><code>SemanticRepairAdditiveH1Surface</code>, <code>SemanticRepairCoverRelativeH1Comparison</code></td><td><code>proved theorem package construction</code></td></tr>
-                        <tr><td><code>X.Theorem 7.3 / Theorem 7.5</code></td><td><code>boundedAdditiveH1Zero_iff_surfaceH1Zero</code>, <code>trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package</code></td><td><code>proved theorem package construction</code></td></tr>
+                        <tr><td><code>X.Theorem 7.3</code></td><td><code>boundedAdditiveH1Zero_iff_surfaceH1Zero</code>, <code>trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package</code></td><td><code>proved theorem package construction</code></td></tr>
+                        <tr><td><code>X.Theorem 7.5 finite-free ten-conclusion final</code></td><td><code>lawEquation_constructs_finiteFreeLawIndependentConjuncts</code>, <code>lawEquation_constructs_groundedComparisonPacket_finiteFree</code></td><td><code>proved finite-free ten-conclusion final theorem</code></td></tr>
                         <tr><td><code>X.Theorem 8.1 / 8.2 / 8.4 / 8.5</code></td><td><code>GeneratedSourceC0ZeroPackage</code>, <code>displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage</code></td><td><code>proved boundary theorem package construction</code></td></tr>
                         <tr><td><code>X.Example 9.1</code></td><td><code>Examples.SemanticRepairPart10.quotientPresheaf</code>, <code>quotientIsSheaf</code>, <code>semanticCechData</code></td><td><code>proved lawful firing instance</code></td></tr>
                         <tr><td><code>X.Example 9.2</code></td><td><code>Examples.SemanticRepairPart10.circleCoverageRequirements</code>, <code>circleSite</code>, <code>circleF2Presheaf</code></td><td><code>proved nonzero circle-nerve transfer instance</code></td></tr>
@@ -549,9 +550,9 @@
                 <code>docs/aat/lean_theorem_index_ag_aat.md</code> for
                 implemented Lean declarations and
                 <code>docs/aat/proof_obligations_ag_aat.md</code> for proof
-                obligations and empirical hypotheses &mdash; together with the
-                peer-review status normalization in
-                <code>docs/aat/lean_ag_peer_review_inventory.md</code>. The
+                obligations and empirical hypotheses &mdash; together with
+                <code>docs/aat/lean_ag_status_overlay.md</code> for row-level
+                completion-evidence judgments. The
                 appendix carries no Lean declaration rows of its own, so this
                 page anchors it to those documents rather than to a
                 declaration table.

@@ -8,7 +8,7 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R5 / AC11--AC13 replay descent and the temporal descent criterion.
+Part IX R5 / AC11--AC13 replay descent and the temporal descent criterion.
 
 This file packages local replay data over a selected temporal cover, reads its
 mismatch as a degree-one temporal cochain, records effective adjustment by a
@@ -130,7 +130,7 @@ end ReplayMismatchCocycle
 /--
 IX.§4 / AC12: effective temporal adjustment by a zero-cochain.
 
-The central equation is the PRD statement
+The central equation is the Part IX statement
 `m(adjust(c,r)) = m(r) - d c`, expressed in the selected Čech complex.
 -/
 structure EffectiveTemporalAdjustment {U : AtomCarrier.{u}} {A : ArchitectureObject U}

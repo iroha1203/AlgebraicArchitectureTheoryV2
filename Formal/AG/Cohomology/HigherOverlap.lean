@@ -48,7 +48,7 @@ end TripleOverlapCoherenceFailure
 IV.定理候補10.4: low-degree five-term exact-sequence statement data.
 
 This is deliberately only the five-object low-degree statement shape needed by
-the PRD.  It records finite-cover Cech-filtration provenance, but does not
+the implementation plan.  It records finite-cover Cech-filtration provenance, but does not
 introduce a general spectral sequence mechanism.
 -/
 structure LowDegreeFiveTermData {U : AtomCarrier.{u}}

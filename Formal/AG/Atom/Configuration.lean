@@ -72,7 +72,7 @@ end Subconfiguration
 
 namespace Molecule
 
-/-- PRD-R I-3: a molecule is concretely finite when its selected family has a list cover. -/
+/-- peer-review hardening I-3: a molecule is concretely finite when its selected family has a list cover. -/
 def ListFinite {U : AtomCarrier.{u}} {C : AtomConfiguration U}
     (M : Molecule C) : Prop :=
   M.configuration.family.ListFinite
@@ -90,7 +90,7 @@ theorem finite_marker {U : AtomCarrier.{u}} {C : AtomConfiguration U}
   M.finite_holds
 
 /--
-PRD-R I-3: explicit list-finite evidence is the preferred finite reading for
+peer-review hardening I-3: explicit list-finite evidence is the preferred finite reading for
 new molecules; the legacy marker remains available for frozen declarations.
 -/
 theorem listFinite_has_cover {U : AtomCarrier.{u}} {C : AtomConfiguration U}

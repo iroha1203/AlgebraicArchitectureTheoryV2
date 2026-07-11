@@ -8,7 +8,7 @@ universe u
 I.定義5.1: an architecture object `A = (C, S, Q)`.
 
 The concrete readings of structure maps `S` and selected quantities `Q` remain
-abstract in PRD-1. Graph, category, algebra, diagram, and state-transition
+abstract in Part I. Graph, category, algebra, diagram, and state-transition
 instances are later specialization work.
 -/
 structure ArchitectureObject (U : AtomCarrier.{u}) where

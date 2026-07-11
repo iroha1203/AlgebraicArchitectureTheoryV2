@@ -52,7 +52,7 @@ structure ObjectAlgebra (U : AtomCarrier.{u}) where
         (obstructionObject obstruction)
   signature : ArchitectureSignature U
 
-/-- I.命題10.4: the six operation readings tracked in PRD-1. -/
+/-- I.命題10.4: the six operation readings tracked in Part I. -/
 inductive OperationRole where
   | preservation
   | reflection

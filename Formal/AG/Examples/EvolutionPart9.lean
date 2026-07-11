@@ -16,7 +16,7 @@ open CategoryTheory
 open Evolution
 
 /-!
-PRD-9 R10 / AC20 finite temporal examples.
+Part IX R10 / AC20 finite temporal examples.
 
 These are selected finite fixtures for Part IX.  They exercise the actual
 Part IX Lean surfaces on tiny finite data, while keeping nonzero obstruction
@@ -133,7 +133,7 @@ def TinyState.energy : TinyState -> Nat
   | .terminal => 0
   | .nonlawfulTerminal => 0
 
-/-- R10: finite Part IX profile over the PRD-8 pseudo-circle measurement profile. -/
+/-- R10: finite Part IX profile over the Part VIII pseudo-circle measurement profile. -/
 def evolutionProfile : EvolutionProfile where
   BaseGeometry := Unit
   BaseMorphism := fun _ _ => Unit
@@ -408,7 +408,7 @@ abbrev ZMod2TemporalIncidenceSimplex :=
       temporalSite.IncidenceLeg p q
 
 /--
-IX-3 / #3100: cover-relative PRD-4 cover whose degree-zero simplices are
+IX-3 / #3100: cover-relative Part IV cover whose degree-zero simplices are
 temporal points and whose degree-one simplices are selected temporal incidence
 legs.
 -/
@@ -495,7 +495,7 @@ def zmod2TemporalProductIncidenceThreeTerm :
     exact Empty.elim σ
 
 /--
-IX-3 / #3100: product-incidence PRD-4 cover-relative complex over the
+IX-3 / #3100: product-incidence Part IV cover-relative complex over the
 non-`PUnit` generated `ZMod 2` coefficient sheaf.
 -/
 def zmod2TemporalProductCoverRelativeComplex :
@@ -608,7 +608,7 @@ def zmod2TemporalProductCoverRelativeComplex :
         | succ _ =>
             rfl
 
-/-- IX-3 / #3100: curry incidence one-cochains to PRD-4 degree-one cochains. -/
+/-- IX-3 / #3100: curry incidence one-cochains to Part IV degree-one cochains. -/
 def zmod2TemporalIncidenceToSigma :
     zmod2TemporalCoefficient.FiberIncidenceOneCochain →+
       (ZMod2TemporalIncidenceSimplex -> ZMod 2) where
@@ -618,7 +618,7 @@ def zmod2TemporalIncidenceToSigma :
     intro _x _y
     rfl
 
-/-- IX-3 / #3100: uncurry PRD-4 degree-one cochains to incidence one-cochains. -/
+/-- IX-3 / #3100: uncurry Part IV degree-one cochains to incidence one-cochains. -/
 def zmod2TemporalIncidenceFromSigma :
     (ZMod2TemporalIncidenceSimplex -> ZMod 2) →+
       zmod2TemporalCoefficient.FiberIncidenceOneCochain where
@@ -630,7 +630,7 @@ def zmod2TemporalIncidenceFromSigma :
 
 /--
 IX-3 / #3100: cochain-level equivalence between the product-incidence
-three-term complex and the PRD-4 cover-relative complex.
+three-term complex and the Part IV cover-relative complex.
 -/
 def zmod2TemporalProductCoverRelativeEquivalence :
     Cohomology.AdditiveThreeTermComplex.Equivalence
@@ -678,7 +678,7 @@ def zmod2TemporalProductCoverRelativeEquivalence :
     exact Empty.elim σ
 
 /--
-IX-3 / #3100: generated H¹ comparison is a left inverse on the PRD-4
+IX-3 / #3100: generated H¹ comparison is a left inverse on the Part IV
 cover-relative side.
 -/
 theorem zmod2TemporalProductCoverRelativeH1_to_from
@@ -770,7 +770,7 @@ def replayTemporalCover : TemporalCover temporalSite where
   traceToBase_selected := fun _ => trivial
   contextToBase := fun _ => trivial
 
-/-- R10(b/g): PRD-4 site cover induced by the finite Part II singleton site. -/
+/-- R10(b/g): Part IV site cover induced by the finite Part II singleton site. -/
 def replaySiteCover : Cohomology.CoverRelativeCechCover FiniteModel.site :=
   Cohomology.finitePosetCoverRelativeCover FiniteModel.finitePosetCechComplex
 
@@ -924,36 +924,36 @@ def unitFinitePosetTemporalCechBridge :
   coverComparison := replayCoverComparison
   comparison := unitFinitePosetTemporalCechComparisonData
 
-/-- IX-3 / #3100: product incidence plus PRD-4 cohomology comparison instance. -/
-def unitProductIncidencePRD4Comparison :
-    TemporalCoefficient.ProductIncidencePRD4Comparison temporalCoefficient where
+/-- IX-3 / #3100: product incidence plus Part IV cohomology comparison instance. -/
+def unitProductIncidencePartIVComparison :
+    TemporalCoefficient.ProductIncidencePartIVComparison temporalCoefficient where
   incidenceComplex := unitTemporalProductIncidenceComplex
   finitePosetBridge := unitFinitePosetTemporalCechBridge
 
-/-- IX-3 / #3100: the product instance exposes PRD-4 differential compatibility. -/
-theorem unitProductIncidence_prd4_differential_compatible
+/-- IX-3 / #3100: the product instance exposes Part IV differential compatibility. -/
+theorem unitProductIncidence_partIV_differential_compatible
     (n : Nat)
-    (c : unitProductIncidencePRD4Comparison.finitePosetBridge.comparison.generalComplex.Cn n) :
-    unitProductIncidencePRD4Comparison.prd4_differential_compatible n c =
+    (c : unitProductIncidencePartIVComparison.finitePosetBridge.comparison.generalComplex.Cn n) :
+    unitProductIncidencePartIVComparison.partIV_differential_compatible n c =
       unitFinitePosetTemporalCechBridge.differential_compatible n c :=
   rfl
 
 /-- IX-3 / #3100: cohomology comparison is a left inverse on finite-poset cohomology. -/
-theorem unitProductIncidence_prd4_cohomology_to_from
+theorem unitProductIncidence_partIV_cohomology_to_from
     (n : Nat)
     (h : Site.FinitePosetCechCohomology
       FiniteModel.finitePosetCechComplex n
       (FiniteModel.finitePosetCechCoboundaryRelation n)) :
-    unitProductIncidencePRD4Comparison.prd4_cohomology_to_from n h =
+    unitProductIncidencePartIVComparison.partIV_cohomology_to_from n h =
       unitFinitePosetTemporalCechBridge.cohomology_to_from n h :=
   rfl
 
-/-- IX-3 / #3100: cohomology comparison is a right inverse on PRD-4 cohomology. -/
-theorem unitProductIncidence_prd4_cohomology_from_to
+/-- IX-3 / #3100: cohomology comparison is a right inverse on Part IV cohomology. -/
+theorem unitProductIncidence_partIV_cohomology_from_to
     (n : Nat)
     (h :
-      unitProductIncidencePRD4Comparison.finitePosetBridge.comparison.generalComplex.CoverRelativeHn n) :
-    unitProductIncidencePRD4Comparison.prd4_cohomology_from_to n h =
+      unitProductIncidencePartIVComparison.finitePosetBridge.comparison.generalComplex.CoverRelativeHn n) :
+    unitProductIncidencePartIVComparison.partIV_cohomology_from_to n h =
       unitFinitePosetTemporalCechBridge.cohomology_from_to n h :=
   rfl
 
@@ -1171,7 +1171,7 @@ theorem twoStep_dissipation_reaches_terminal_by_theorem53 :
     twoStep_dissipation_endpoint_executable
     twoStep_dissipation_last_maximal
 
-/-- R10(f): Lyapunov reading backed by the PRD-8 harmonic-mass hook. -/
+/-- R10(f): Lyapunov reading backed by the Part VIII harmonic-mass hook. -/
 def lyapunovReading : AATLyapunovReading dissipativePolicy terminalState where
   selectedFiniteEvolutionProfileScope := True
   selectedFiniteEvolutionProfileScope_cert := trivial
@@ -1404,15 +1404,15 @@ theorem replay_selectedConcreteClassNonzero :
   replayDescentNonzeroExample.edge_nonzero
 
 /--
-IX.R10 / IX-5: the replay nonzero fixture is paired with the PRD-10
+IX.R10 / IX-5: the replay nonzero fixture is paired with the Part X
 circle-nerve Part IV nonzero H1 instance.
 
 This does not identify the temporal mismatch carrier with the semantic-repair
 cover-relative H1 carrier.  It records that the finite replay obstruction and
-the PRD-10 circle instance are both backed by concrete nonzero pseudo-circle
+the Part X circle instance are both backed by concrete nonzero pseudo-circle
 data rather than by a `True` marker.
 -/
-theorem replay_nonzero_and_prd10_circle_coverRelativeH1_nonzero :
+theorem replay_nonzero_and_partX_circle_coverRelativeH1_nonzero :
     pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 ∧
       SemanticRepairPart10.circleCoverRelativeComplex.cohomologyClassSucc 0
           SemanticRepairPart10.circleCoverRelativeResidualCocycle ≠

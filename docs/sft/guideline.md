@@ -18,6 +18,8 @@
   SFT 側でも、AAT の外部にある観測限界を AAT の未完了 theorem として扱わない。
 - `docs/sft/software_field_theory.md` は SFT 本文、`docs/sft/aat_interface.md` は AAT / SFT 境界の source of truth である。
 - `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT / interface の根幹文書である。ユーザーの明示的な指示なしに更新しない。
+- 文書 lifecycle は [repository documentation guideline](../guideline.md) に従う。SFT の恒久情報は
+  現行本文、interface、台帳、artifact contract に置く。
 
 ## claim discipline
 

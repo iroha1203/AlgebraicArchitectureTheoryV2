@@ -4,27 +4,27 @@
   "sources": {
     "src:period-alpha": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R7-period-alpha"
     },
     "src:period-beta": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R7-period-beta"
     },
     "src:stokes-domega": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R7-stokes-domega"
     },
     "src:stokes-boundary": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R7-stokes-boundary"
     },
     "src:cover": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R7"
     }
   },

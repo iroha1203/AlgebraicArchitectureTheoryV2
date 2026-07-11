@@ -47,12 +47,12 @@ def classicalJointLawfulLocus (P : LawUniversePair.{u, v} A) :
     Set (PrimeSpectrum A) :=
   LawAlgebra.LawfulLocus.lawfulLocus A P.classicalJointIdeal
 
-/-- V.R1: the `U` locus reuses the PRD-3 lawful-locus surface. -/
+/-- V.R1: the `U` locus reuses the Part III lawful-locus surface. -/
 theorem flatU_eq_lawfulLocus (P : LawUniversePair.{u, v} A) :
     P.flatU = LawAlgebra.LawfulLocus.localLawfulLocus A P.U :=
   rfl
 
-/-- V.R1: the `V` locus reuses the PRD-3 lawful-locus surface. -/
+/-- V.R1: the `V` locus reuses the Part III lawful-locus surface. -/
 theorem flatV_eq_lawfulLocus (P : LawUniversePair.{u, v} A) :
     P.flatV = LawAlgebra.LawfulLocus.localLawfulLocus A P.V :=
   rfl

@@ -9,7 +9,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R7 / AC17 common ambient pairs, LawConflict measurement, and flat
+Part VIII R7 / AC17 common ambient pairs, LawConflict measurement, and flat
 base-change candidate statements.
 
 LawConflict readings are only recorded relative to an explicitly selected

@@ -8,7 +8,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R1 / AC3-AC4 verdict discipline.
+Part VIII R1 / AC3-AC4 verdict discipline.
 
 `MeasurementVerdict` separates measured zero, measured nonzero, unmeasured,
 unknown, and not-computed states by constructors with profile-relative payloads.

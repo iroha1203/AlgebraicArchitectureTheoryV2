@@ -13,7 +13,7 @@ open CategoryTheory.Limits
 open Opposite
 
 /-!
-Finite witness examples for PRD-7 / R13.
+Finite witness examples for Part VII / R13.
 
 Each example is deliberately selected and finite.  The file checks the Part VII
 theorem APIs without adding measurement verdicts or external artifact claims.

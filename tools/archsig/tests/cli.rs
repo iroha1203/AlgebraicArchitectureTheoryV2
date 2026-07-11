@@ -11,7 +11,7 @@ use archsig::{
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ARCHSIG_GATE_REPORT_DECISIONS,
-    ARCHSIG_PRD4_CONCLUSION_CODES, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ArchMapDocumentV2, ArchSigRunManifestV1, compare_archmap_v2_doctrine,
 };
@@ -23,6 +23,41 @@ fn practical_rust_service_root() -> PathBuf {
 
 fn ag_measurement_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/ag_measurement")
+}
+
+fn assert_policy_source_refs_resolve(fixture: &Value) {
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("tools root")
+        .parent()
+        .expect("repository root");
+    let Some(sources) = fixture.get("sources").and_then(Value::as_object) else {
+        return;
+    };
+    for (source_id, source) in sources {
+        if source["kind"] != "policy" {
+            continue;
+        }
+        let path = source["path"]
+            .as_str()
+            .unwrap_or_else(|| panic!("{source_id} must carry a policy path"));
+        assert!(
+            !path.to_ascii_lowercase().contains("prd"),
+            "{source_id} must not depend on a PRD path: {path}"
+        );
+        let section = source["section"]
+            .as_str()
+            .unwrap_or_else(|| panic!("{source_id} must carry a policy section"));
+        let body = fs::read_to_string(repo_root.join(path))
+            .unwrap_or_else(|error| panic!("{source_id} policy path {path} is unreadable: {error}"));
+        assert!(
+            body.lines().any(|line| {
+                let heading = line.trim_start_matches('#').trim();
+                heading == section || heading.starts_with(&format!("{section} "))
+            }),
+            "{source_id} section {section} must resolve in {path}"
+        );
+    }
 }
 
 #[test]
@@ -2606,15 +2641,15 @@ fn cli_analyze_saga_descent_alias_witness_blocks_global_coherence() {
 }
 
 #[test]
-fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
+fn cli_analyze_contract_fixture_locks_are_byte_deterministic() {
     let root = ag_measurement_root();
 
     let saga_positive_a = run_saga_fixture_lock(
-        "prd4-r12-boundary-positive-a",
+        "saga-contract-boundary-positive-a",
         read_json(&root.join("repair_plan_complete_support.json")),
     );
     let saga_positive_b = run_saga_fixture_lock(
-        "prd4-r12-boundary-positive-b",
+        "saga-contract-boundary-positive-b",
         read_json(&root.join("repair_plan_complete_support.json")),
     );
     assert_byte_identical_analysis_artifacts(&saga_positive_a, &saga_positive_b);
@@ -2645,8 +2680,8 @@ fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
         primitive["support"]["variables"] = json!(["repair:cycle"]);
     }
     let saga_negative_a =
-        run_saga_fixture_lock("prd4-r12-boundary-negative-a", nonboundary_repair.clone());
-    let saga_negative_b = run_saga_fixture_lock("prd4-r12-boundary-negative-b", nonboundary_repair);
+        run_saga_fixture_lock("saga-contract-boundary-negative-a", nonboundary_repair.clone());
+    let saga_negative_b = run_saga_fixture_lock("saga-contract-boundary-negative-b", nonboundary_repair);
     assert_byte_identical_analysis_artifacts(&saga_negative_a, &saga_negative_b);
     let negative_packet = read_json(&saga_negative_a.join("archsig-measurement-packet.json"));
     assert_eq!(
@@ -2691,8 +2726,8 @@ fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
         {"atomRef": "atom:order", "subject": "src:order"},
         {"atomRef": "atom:order-inventory-restriction", "subject": "src:order"}
     ]);
-    let alias_a = run_saga_fixture_lock("prd4-r12-alias-negative-a", alias_repair.clone());
-    let alias_b = run_saga_fixture_lock("prd4-r12-alias-negative-b", alias_repair);
+    let alias_a = run_saga_fixture_lock("saga-contract-alias-negative-a", alias_repair.clone());
+    let alias_b = run_saga_fixture_lock("saga-contract-alias-negative-b", alias_repair);
     assert_byte_identical_analysis_artifacts(&alias_a, &alias_b);
     let alias_packet = read_json(&alias_a.join("archsig-measurement-packet.json"));
     assert_eq!(
@@ -2715,13 +2750,13 @@ fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
     );
 
     let cech_a = run_analyze_fixture_lock(
-        "prd4-r12-cech-b8-a",
+        "saga-contract-cech-b8-a",
         "archmap_v2_cech_b8_toy.json",
         "law_policy_ag.json",
         None,
     );
     let cech_b = run_analyze_fixture_lock(
-        "prd4-r12-cech-b8-b",
+        "saga-contract-cech-b8-b",
         "archmap_v2_cech_b8_toy.json",
         "law_policy_ag.json",
         None,
@@ -2753,13 +2788,13 @@ fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
     );
 
     let repair_a = run_analyze_fixture_lock(
-        "prd4-r12-square-free-a",
+        "saga-contract-square-free-a",
         "archmap_v2_square_free_repair.json",
         "law_policy_square_free.json",
         None,
     );
     let repair_b = run_analyze_fixture_lock(
-        "prd4-r12-square-free-b",
+        "saga-contract-square-free-b",
         "archmap_v2_square_free_repair.json",
         "law_policy_square_free.json",
         None,
@@ -3175,7 +3210,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                     object.contains_key("kind")
                         && object.contains_key("value")
                         && object.contains_key("representation"),
-                    "computed invariant must expose PRD-2 typed invariant fields"
+                    "computed invariant must expose measurement packet typed invariant fields"
                 );
                 object.remove("kind");
                 object.remove("value");
@@ -3766,9 +3801,10 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
         }));
     archmap["sources"]["src:triple-overlap"] = json!({
         "kind": "policy",
-        "path": "docs/tool/archsig_viewer_gluing_geometry_prd.md",
-        "section": "cover nerve triple-overlap fixture"
+        "path": "docs/tool/archview_gluing_geometry_contract.md",
+        "section": "Golden cases"
     });
+    assert_policy_source_refs_resolve(&archmap);
     for context_id in ["ctx:top", "ctx:left", "ctx:bottom"] {
         let context = archmap["contexts"]
             .as_array_mut()
@@ -5748,7 +5784,7 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
     assert_eq!(
         gluing_geometry["nerve"]["h2CoherenceVisualized"].as_bool(),
         Some(false),
-        "gluing viewer PRD must preserve the H2 silence boundary"
+        "gluing viewer contract must preserve the H2 silence boundary"
     );
     assert!(
         gluing_geometry["cocycleRibbon"]["closureGapEncoding"]["nonClaim"]
@@ -8354,7 +8390,7 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
 }
 
 #[test]
-fn cli_analyze_v2_common_structural_verdict_discipline_locks_prd_m_evaluators() {
+fn cli_analyze_v2_common_structural_verdict_discipline_locks_measurement_evaluators() {
     let root_out = temp_dir("ag-measurement-common-structural-verdict-discipline");
     let mut observed_new_structural_evaluators = BTreeSet::new();
 
@@ -8935,9 +8971,10 @@ fn cli_analyze_v2_refactor_transport_reading_requires_functoriality_witness() {
     let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
     archmap["sources"]["src:refactor"] = serde_json::json!({
         "kind": "policy",
-        "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md",
+        "path": "docs/tool/ag_measurement_evidence_contract.md",
         "section": "AC-M10"
     });
+    assert_policy_source_refs_resolve(&archmap);
     archmap["atoms"]
         .as_array_mut()
         .expect("atoms is array")
@@ -9445,6 +9482,39 @@ fn cli_locks_archview_gluing_geometry_golden_ux_fixture() {
         manifest["schema"],
         "archsig-viewer-gluing-geometry-golden-ux/v0.5.0"
     );
+    assert_eq!(
+        manifest
+            .as_object()
+            .expect("golden manifest is an object")
+            .keys()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>(),
+        BTreeSet::from([
+            "cases",
+            "description",
+            "designRef",
+            "requiredViewerFunctions",
+            "schema",
+        ]),
+        "golden manifest top-level contract must remain closed"
+    );
+    assert_eq!(
+        manifest["designRef"],
+        "docs/tool/archview_gluing_geometry_contract.md"
+    );
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("tools root")
+        .parent()
+        .expect("repository root");
+    let design_body = fs::read_to_string(
+        repo_root.join(manifest["designRef"].as_str().expect("designRef is string")),
+    )
+    .expect("ArchView gluing geometry contract can be read");
+    assert!(
+        design_body.lines().any(|line| line == "## Golden cases"),
+        "designRef must expose the Golden cases contract"
+    );
 
     let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -9718,6 +9788,29 @@ fn cli_locks_archview_gluing_geometry_golden_ux_fixture() {
                 "{case_id} scene {scene_id} must expose complete visual encoding legend"
             );
         }
+    }
+}
+
+#[test]
+fn ag_measurement_fixture_policy_refs_resolve_to_contract_sections() {
+    let fixture_root = ag_measurement_root();
+
+    for entry in fs::read_dir(&fixture_root).expect("fixture directory can be read") {
+        let path = entry.expect("fixture entry can be read").path();
+        if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+            continue;
+        }
+        let fixture = read_json(&path);
+        assert_policy_source_refs_resolve(&fixture);
+    }
+
+    for fixture in [
+        restriction_archmap("compatible"),
+        boundary_residue_archmap("zero"),
+        section_archmap("lawful"),
+        coherence_triangle_archmap(true),
+    ] {
+        assert_policy_source_refs_resolve(&fixture);
     }
 }
 
@@ -10803,12 +10896,12 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
-                        ARCHSIG_PRD4_CONCLUSION_CODES
+                        ARCHSIG_SAGA_CONCLUSION_CODES
                             .iter()
                             .all(|code| description.contains(code))
                     })
         }),
-        "schema catalog must register PRD-4 conclusionCode values"
+        "schema catalog must register SAGA conclusionCode values"
     );
     assert!(
         artifacts.iter().any(|entry| {
@@ -11352,7 +11445,7 @@ fn cli_locks_part4_output_contract_docs_and_skill_smoke() {
         for snippet in required_snippets {
             assert!(
                 body.contains(snippet),
-                "{path} must mention Part IV output contract snippet {snippet}"
+                "{path} must mention current output contract snippet {snippet}"
             );
         }
     }
@@ -12578,7 +12671,7 @@ fn assert_byte_identical_analysis_artifacts(first_out: &Path, second_out: &Path)
         assert_eq!(
             fs::read(first_out.join(artifact)).expect("first artifact is readable"),
             fs::read(second_out.join(artifact)).expect("second artifact is readable"),
-            "{artifact} must be byte-identical across repeated PRD-4 fixture runs"
+            "{artifact} must be byte-identical across repeated SAGA fixture runs"
         );
     }
 }
@@ -12952,10 +13045,10 @@ fn restriction_archmap(case: &str) -> Value {
         "sources": {
             "src:source": {"kind": "rust", "path": "src/source.rs", "symbol": "Source", "line": 1},
             "src:target": {"kind": "rust", "path": "src/target.rs", "symbol": "Target", "line": 1},
-            "src:source-generator": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M2 source generator"},
-            "src:target-generator": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M2 target generator"},
-            "ctx:source": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M2"},
-            "ctx:target": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M2"}
+            "src:source-generator": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M2 source generator"},
+            "src:target-generator": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M2 target generator"},
+            "ctx:source": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M2"},
+            "ctx:target": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M2"}
         },
         "atoms": atoms,
         "contexts": [
@@ -13154,16 +13247,16 @@ fn boundary_residue_archmap(case: &str) -> Value {
         "schema": "archmap/v0.5.0",
         "id": format!("ag-boundary-residue-fixture-{case}"),
         "sources": {
-            "src:core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 core patch"},
-            "src:feature": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 feature patch"},
-            "src:boundary": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 boundary patch"},
-            "src:role": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 patch role"},
-            "src:d0-core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 Mayer-Vietoris d0"},
-            "src:d0-feature": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 Mayer-Vietoris d0"},
-            "src:boundary-section": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 boundary section"},
-            "ctx:core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6"},
-            "ctx:feature": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6"},
-            "ctx:boundary": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6"}
+            "src:core": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 core patch"},
+            "src:feature": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 feature patch"},
+            "src:boundary": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 boundary patch"},
+            "src:role": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 patch role"},
+            "src:d0-core": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 Mayer-Vietoris d0"},
+            "src:d0-feature": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 Mayer-Vietoris d0"},
+            "src:boundary-section": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 boundary section"},
+            "ctx:core": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6"},
+            "ctx:feature": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6"},
+            "ctx:boundary": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6"}
         },
         "atoms": atoms,
         "contexts": [
@@ -13257,13 +13350,13 @@ fn section_archmap(case: &str) -> Value {
         "schema": "archmap/v0.5.0",
         "id": format!("ag-section-fixture-{case}"),
         "sources": {
-            "src:section-carrier": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 section"},
-            "src:forbidden-support": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 minimal forbidden support"},
-            "src:section-assignment-a": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 total section assignment A"},
-            "src:section-assignment-b": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 total section assignment B"},
-            "src:section-partial": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 partial section"},
-            "src:section-assignment-no-generator": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 assignment without raw support"},
-            "ctx:section": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3"}
+            "src:section-carrier": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 section"},
+            "src:forbidden-support": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 minimal forbidden support"},
+            "src:section-assignment-a": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 total section assignment A"},
+            "src:section-assignment-b": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 total section assignment B"},
+            "src:section-partial": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 partial section"},
+            "src:section-assignment-no-generator": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 assignment without raw support"},
+            "ctx:section": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3"}
         },
         "atoms": atoms,
         "contexts": [{
@@ -13679,7 +13772,7 @@ fn coherence_oversized_archmap() -> Value {
     for index in 0..13 {
         archmap["sources"][format!("ctx:n{index}")] = json!({
             "kind": "policy",
-            "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md",
+            "path": "docs/tool/ag_measurement_evidence_contract.md",
             "section": "M5"
         });
     }
@@ -13751,15 +13844,15 @@ fn archmap_with_contexts(atoms: Vec<Value>, contexts: Vec<Value>) -> Value {
             "src:b": {"kind": "rust", "path": "src/b.rs", "symbol": "B", "line": 1},
             "src:c": {"kind": "rust", "path": "src/c.rs", "symbol": "C", "line": 1},
             "src:d": {"kind": "rust", "path": "src/d.rs", "symbol": "D", "line": 1},
-            "src:abc": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
-            "src:face-abc": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
-            "src:face-abd": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
-            "src:face-acd": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
-            "src:face-bcd": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
-            "ctx:a": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
-            "ctx:b": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
-            "ctx:c": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"},
-            "ctx:d": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M5"}
+            "src:abc": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
+            "src:face-abc": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
+            "src:face-abd": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
+            "src:face-acd": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
+            "src:face-bcd": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
+            "ctx:a": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
+            "ctx:b": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
+            "ctx:c": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
+            "ctx:d": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"}
         },
         "atoms": atoms,
         "contexts": contexts,

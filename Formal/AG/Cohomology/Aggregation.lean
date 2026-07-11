@@ -24,7 +24,7 @@ structure FiniteSiteMorphism {U : AtomCarrier.{u}}
 /--
 IV.定義14.1: selected pushforward coefficient surface `pi_* Ob`.
 
-The carrier is explicit because this PRD layer only needs the comparison
+The carrier is explicit because this implementation layer only needs the comparison
 surface and does not construct direct images for arbitrary site morphisms.
 -/
 structure PushforwardObstructionSheaf {U : AtomCarrier.{u}}

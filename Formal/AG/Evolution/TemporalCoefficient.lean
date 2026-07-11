@@ -9,11 +9,11 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R2 / AC5--AC6 temporal coefficient surface.
+Part IX R2 / AC5--AC6 temporal coefficient surface.
 
 The coefficient object is profile-relative: it combines the selected Part IX
 coefficient profile, an obstruction sheaf over the selected AAT site, and a
-finite measurement/effective-coefficient interface inherited from PRD-8.
+finite measurement/effective-coefficient interface inherited from Part VIII.
 -/
 
 /--
@@ -21,7 +21,7 @@ IX.§3 / AC5: temporal coefficient object `TempCoeff_A`.
 
 The temporal fibers are indexed by selected trace/context points and carry
 restriction maps along the selected product/incidence legs of `Tr_E × X`.
-The link to the PRD-4 obstruction sheaf is typed as a comparison map on every
+The link to the Part IV obstruction sheaf is typed as a comparison map on every
 temporal point, not as an unstructured global claim.
 -/
 structure TemporalCoefficient {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -85,7 +85,7 @@ theorem restrict_composition (C : TemporalCoefficient T)
   C.restrict_comp f g x
 
 /--
-IX.§3 / AC5: compare a temporal coefficient fiber with the PRD-4 obstruction
+IX.§3 / AC5: compare a temporal coefficient fiber with the Part IV obstruction
 sheaf section over the architecture context component.
 -/
 def to_obstruction_section (C : TemporalCoefficient T) (p : T.Point) :
@@ -173,30 +173,30 @@ end ProductIncidenceComplex
 
 /--
 IX.§3 / AC5--AC6: product-incidence temporal coefficient data together with
-the finite-poset PRD-4 comparison bridge.
+the finite-poset Part IV comparison bridge.
 
 This is the explicit finite poset x trace bridge used by IX-3: it keeps the
-product incidence complex and the PRD-4 finite-poset comparison package in one
+product incidence complex and the Part IV finite-poset comparison package in one
 object, without asserting a general product-site cohomology theorem.
 -/
-structure ProductIncidencePRD4Comparison
+structure ProductIncidencePartIVComparison
     (C : TemporalCoefficient T) where
   incidenceComplex : ProductIncidenceComplex C
   finitePosetBridge : FinitePosetTemporalCechBridge T C.obstructionSheaf
 
-namespace ProductIncidencePRD4Comparison
+namespace ProductIncidencePartIVComparison
 
 variable {C : TemporalCoefficient T}
 
 /-- IX.§3 / AC5--AC6: expose the product incidence differential formula. -/
 theorem incidence_d0_eq
-    (P : ProductIncidencePRD4Comparison C) :
+    (P : ProductIncidencePartIVComparison C) :
     P.incidenceComplex.d0 = C.incidenceDifferential :=
   P.incidenceComplex.d0_eq_incidenceDifferential
 
-/-- IX.§3 / AC5--AC6: expose PRD-4 finite-poset differential compatibility. -/
-theorem prd4_differential_compatible
-    (P : ProductIncidencePRD4Comparison C)
+/-- IX.§3 / AC5--AC6: expose Part IV finite-poset differential compatibility. -/
+theorem partIV_differential_compatible
+    (P : ProductIncidencePartIVComparison C)
     (n : Nat) (c : P.finitePosetBridge.comparison.generalComplex.Cn n) :
     P.finitePosetBridge.comparison.comparisonTarget.toFinitePosetCochain (n + 1)
         (P.finitePosetBridge.comparison.generalComplex.d n c) =
@@ -204,9 +204,9 @@ theorem prd4_differential_compatible
         (P.finitePosetBridge.comparison.comparisonTarget.toFinitePosetCochain n c) :=
   P.finitePosetBridge.differential_compatible n c
 
-/-- IX-3 / #3100: product-incidence bridge exposes PRD-4 cohomology left inverse. -/
-theorem prd4_cohomology_to_from
-    (P : ProductIncidencePRD4Comparison C)
+/-- IX-3 / #3100: product-incidence bridge exposes Part IV cohomology left inverse. -/
+theorem partIV_cohomology_to_from
+    (P : ProductIncidencePartIVComparison C)
     (n : Nat)
     (h : Site.FinitePosetCechCohomology
       P.finitePosetBridge.finitePosetComplex n
@@ -215,16 +215,16 @@ theorem prd4_cohomology_to_from
       (P.finitePosetBridge.comparison.comparisonTarget.fromFinitePosetCohomology n h) = h :=
   P.finitePosetBridge.cohomology_to_from n h
 
-/-- IX-3 / #3100: product-incidence bridge exposes PRD-4 cohomology right inverse. -/
-theorem prd4_cohomology_from_to
-    (P : ProductIncidencePRD4Comparison C)
+/-- IX-3 / #3100: product-incidence bridge exposes Part IV cohomology right inverse. -/
+theorem partIV_cohomology_from_to
+    (P : ProductIncidencePartIVComparison C)
     (n : Nat)
     (h : P.finitePosetBridge.comparison.generalComplex.CoverRelativeHn n) :
     P.finitePosetBridge.comparison.comparisonTarget.fromFinitePosetCohomology n
       (P.finitePosetBridge.comparison.comparisonTarget.toFinitePosetCohomology n h) = h :=
   P.finitePosetBridge.cohomology_from_to n h
 
-end ProductIncidencePRD4Comparison
+end ProductIncidencePartIVComparison
 
 end TemporalCoefficient
 
@@ -254,7 +254,7 @@ variable {E : EvolutionProfile.{u, v, w, x, y, z}}
 variable {T : TemporalSite S E}
 variable {C : TemporalCoefficient T}
 
-/-- IX.§3 / AC6: read the selected PRD-8 finite measurement regime. -/
+/-- IX.§3 / AC6: read the selected Part VIII finite measurement regime. -/
 def measurement (R : FiniteTemporalCoefficientRegime C) :
     Measurement.FiniteMeasurementRegime E.measurementProfile :=
   R.measurementRegime
@@ -265,22 +265,22 @@ theorem effectiveCoefficient_matches_measurement
     R.effectiveCoefficient = R.measurementRegime.effCoeff :=
   R.effectiveCoefficient_eq
 
-/-- IX.§3 / AC6: finiteness is inherited from the selected PRD-8 measurement regime. -/
+/-- IX.§3 / AC6: finiteness is inherited from the selected Part VIII measurement regime. -/
 theorem finite_temporal_site (R : FiniteTemporalCoefficientRegime C) :
     R.measurementRegime.finiteSite :=
   R.measurementRegime.finiteSite_holds
 
-/-- IX.§3 / AC6: finite-cover evidence is inherited from PRD-8. -/
+/-- IX.§3 / AC6: finite-cover evidence is inherited from Part VIII. -/
 theorem finite_temporal_cover (R : FiniteTemporalCoefficientRegime C) :
     R.measurementRegime.finiteCover :=
   R.measurementRegime.finiteCover_holds
 
-/-- IX.§3 / AC6: effective-coefficient evidence is inherited from PRD-8. -/
+/-- IX.§3 / AC6: effective-coefficient evidence is inherited from Part VIII. -/
 theorem effective_coefficient_holds (R : FiniteTemporalCoefficientRegime C) :
     R.measurementRegime.effectiveCoefficient :=
   R.measurementRegime.effectiveCoefficient_holds
 
-/-- IX.§3 / AC6: the selected temporal coefficient profile is measured by PRD-8 data. -/
+/-- IX.§3 / AC6: the selected temporal coefficient profile is measured by Part VIII data. -/
 theorem coefficient_backed_by_measurement
     (R : FiniteTemporalCoefficientRegime C) :
     R.measuredCoefficientProfile R.selectedMeasurementCoefficient C.coefficientProfile :=

@@ -219,7 +219,7 @@
 - **問い案:** 「ArchSig は AG Part IV 定義10.1 の H^2 triple-overlap coherence を、banded abelian F2 に限れば忠実に計測できる。設計済みの planned silence(selectedH2 not_measured)を、どこまで本文忠実に解除すべきか」
 - **含む計測:** P1-1(coherence-obstruction、structural verdict)を核に、P1-4(高次 H^n / stack-gerbe の typed boundary)を sibling として同梱。
 - **受け入れ条件の方向性:** 新 evaluator `ag.coherence-obstruction@1` + MeasurementProfile/v1 行 + 新 fixture(pairwise-compatible/triple-incompatible witness を持つ archmap_v2 × law_policy ペア)+ #[test](δ2 h=0 cocycle ゲート、im δ1 membership、measured_zero/nonzero、banding violated→not_computed、projectionBoundary)。invariant 散文 `ker d^2/im d^1` の訂正と cocycle ゲート追加を AC に明記。non-abelian は banding violated で沈黙、5値 verdict・CBI ledger・projectionBoundary を既存規律のまま継承。
-- **可視化フェーズとの接続:** nerveTriangle の `coherenceClaim` flip と `h2CoherenceVisualized=true` は別 PRD の viewer フェーズ。三角膜の開閉(viewer ノート)を「正しく」駆動する計測が先に確定する。**投影 scaffolding が既に packet 内にあるので計測 PRD 完了直後に viewer PRD へ繋げられる。**
+- **可視化フェーズとの接続:** nerveTriangle の `coherenceClaim` flip と `h2CoherenceVisualized=true` は後続の viewer 実装フェーズ。三角膜の開閉(viewer ノート)を「正しく」駆動する計測が先に確定する。**投影 scaffolding が既に packet 内にあるので計測実装完了直後に viewer 実装へ繋げられる。**
 
 ### Framing β: 忠実性の核を一点束ねる(候補A 中心・即効・低リスク)
 
@@ -233,7 +233,7 @@
 - **問い案:** 「feature extension の core/feature が各々 lawful でも boundary residue が大域障害になりうる。定義8.3 の connecting hom δ を F2 で忠実計測し、縫い目の裂けを正しく駆動すべきか」
 - **含む計測:** P1-2(boundary-residue δ、structural verdict)単独。
 - **受け入れ条件の方向性:** 新 evaluator `ag.boundary-residue@1` + core/feature/boundary 分類 atom 規約 + boundary mismatch atom + #[test](δ=0/≠0、coefficient=F2 を ledger checked・Z-zero 持ち上げは assumed、coefficient 非固定時は片方向 obstruction statement、period-Stokes modelRelative との分離、π1 非復活)。原則7.2 の引用を Part IV に訂正。
-- **可視化フェーズとの接続:** 縫い目=裂け目メタファ(viewer ノート)を δ verdict が駆動。core/feature 二パッチと B 縫い目の幾何は計測完了後の viewer PRD。
+- **可視化フェーズとの接続:** 縫い目=裂け目メタファ(viewer ノート)を δ verdict が駆動。core/feature 二パッチと B 縫い目の幾何は計測完了後の viewer 実装。
 
 ### Framing δ: 既測未投影の analytic overlay バンドル(候補C・実装最小・低リスク)
 

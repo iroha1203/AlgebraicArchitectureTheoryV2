@@ -8,7 +8,7 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R8 / AC17 AAT Lyapunov reading.
+Part IX R8 / AC17 AAT Lyapunov reading.
 
 The Lyapunov surface is relative to one selected evolution functional and one
 selected policy.  It records non-increase inside that selected profile,
@@ -137,7 +137,7 @@ end AATLyapunovReading
 /--
 IX.§6.1 / AC17: harmonic-mass Lyapunov instance surface.
 
-This is a generic selected instance hook: if a PRD-8 Hodge/harmonic-mass
+This is a generic selected instance hook: if a Part VIII Hodge/harmonic-mass
 reading is supplied for one selected state, the Lyapunov value can be read as
 that harmonic mass.  Concrete finite examples are left to R10.
 -/
@@ -166,7 +166,7 @@ theorem state_value_eq_harmonic_mass (H : HarmonicMassLyapunovInstance Phi) :
     Phi.value H.point H.state = H.value :=
   H.value_eq_harmonicMass
 
-/-- IX.§6.1 / AC17: read the supplied PRD-8 harmonic-mass predicate. -/
+/-- IX.§6.1 / AC17: read the supplied Part VIII harmonic-mass predicate. -/
 theorem harmonic_mass_reading (H : HarmonicMassLyapunovInstance Phi) :
     Phi.harmonicMassReading H.domain H.value :=
   H.harmonicMassReading

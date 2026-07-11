@@ -58,7 +58,7 @@ def carrier : AtomCarrier where
 def allFamily : AtomFamily carrier where
   mem _ := True
 
-/-- PRD-R I-3: the selected finite family has an explicit list cover. -/
+/-- peer-review hardening I-3: the selected finite family has an explicit list cover. -/
 theorem allFamily_listFinite : allFamily.ListFinite :=
   ⟨FiniteAtom.all, fun atom _hmem => FiniteAtom.mem_all atom⟩
 
@@ -82,7 +82,7 @@ def configuration : AtomConfiguration carrier where
   relation a b := cycleRelation a b ∨ substitutionRelation a b
   identification _ _ := False
 
-/-- PRD-R I-1/I-3: acyclic finite configuration over the same nonempty atom family. -/
+/-- peer-review hardening I-1/I-3: acyclic finite configuration over the same nonempty atom family. -/
 def acyclicConfiguration : AtomConfiguration carrier where
   family := allFamily
   relation _ _ := False
@@ -105,7 +105,7 @@ def object : ArchitectureObject carrier where
   structureMaps := PUnit.unit
   selectedQuantities := PUnit.unit
 
-/-- PRD-R I-1: acyclic finite architecture object used for concrete three-reading firing. -/
+/-- peer-review hardening I-1: acyclic finite architecture object used for concrete three-reading firing. -/
 def acyclicObject : ArchitectureObject carrier where
   configuration := acyclicConfiguration
   StructureMaps := PUnit
@@ -158,11 +158,11 @@ theorem lawUniverse_required (index : lawUniverse.Index) :
   cases index
   rfl
 
-/-- PRD-R I-1: canonical required-law witness family for the finite NoCycle universe. -/
+/-- peer-review hardening I-1: canonical required-law witness family for the finite NoCycle universe. -/
 def concreteNoCycleWitnessFamily : LawWitnessFamily carrier :=
   requiredLawWitnessFamily lawUniverse
 
-/-- PRD-R I-1: canonical required-law signature axes for the finite NoCycle universe. -/
+/-- peer-review hardening I-1: canonical required-law signature axes for the finite NoCycle universe. -/
 def concreteNoCycleSignatureAxes : SignatureAxes carrier :=
   requiredLawSignatureAxes lawUniverse
 
@@ -235,7 +235,7 @@ def cycleObstructionCircuit : ObstructionCircuit noCycleLaw object where
     exact h ⟨Or.inl cycle_dependsAB_BC,
       Or.inl cycle_dependsBC_CA, Or.inl cycle_dependsCA_AB⟩
 
-/-- PRD-R I-3: the cycle obstruction circuit has explicit finite support. -/
+/-- peer-review hardening I-3: the cycle obstruction circuit has explicit finite support. -/
 theorem cycleObstructionCircuit_listFinite :
     cycleObstructionCircuit.ListFinite :=
   allFamily_listFinite
@@ -270,7 +270,7 @@ def substitutionObstructionCircuit :
     exact h ⟨Or.inr substitution_contract_impl_base,
       Or.inr substitution_impl_base⟩
 
-/-- PRD-R I-3: the substitution obstruction circuit has explicit finite support. -/
+/-- peer-review hardening I-3: the substitution obstruction circuit has explicit finite support. -/
 theorem substitutionObstructionCircuit_listFinite :
     substitutionObstructionCircuit.ListFinite :=
   allFamily_listFinite
@@ -286,50 +286,50 @@ theorem object_hasCycleWitness : hasCycleWitness object :=
   ⟨Or.inl cycle_dependsAB_BC,
     Or.inl cycle_dependsBC_CA, Or.inl cycle_dependsCA_AB⟩
 
-/-- PRD-R I-1: the acyclic finite object satisfies the selected NoCycle law. -/
+/-- peer-review hardening I-1: the acyclic finite object satisfies the selected NoCycle law. -/
 theorem acyclic_noCycleLaw_holds :
     noCycleLaw.holds acyclicObject := by
   intro hcycle
   exact hcycle.1
 
-/-- PRD-R I-1: the acyclic finite object is semantically lawful. -/
+/-- peer-review hardening I-1: the acyclic finite object is semantically lawful. -/
 theorem acyclic_lawfulness :
     Lawfulness acyclicObject lawUniverse := by
   intro index _hrequired
   cases index
   exact acyclic_noCycleLaw_holds
 
-/-- PRD-R I-1: the cyclic finite object is not semantically lawful. -/
+/-- peer-review hardening I-1: the cyclic finite object is not semantically lawful. -/
 theorem object_lawfulness_fails :
     ¬ Lawfulness object lawUniverse := by
   intro h
   exact cycle_obstruction_law_failure (h PUnit.unit rfl)
 
-/-- PRD-R I-1: the concrete witness family is nondegenerate on the cyclic object. -/
+/-- peer-review hardening I-1: the concrete witness family is nondegenerate on the cyclic object. -/
 theorem object_hasConcreteNoCycleBadWitness :
     ∃ witness : concreteNoCycleWitnessFamily.Witness,
       concreteNoCycleWitnessFamily.badWitness object witness :=
   ⟨⟨PUnit.unit, rfl⟩, cycle_obstruction_law_failure⟩
 
-/-- PRD-R I-1: the acyclic object has no concrete required-law bad witness. -/
+/-- peer-review hardening I-1: the acyclic object has no concrete required-law bad witness. -/
 theorem acyclic_noConcreteNoCycleBadWitness :
     NoRequiredObstruction acyclicObject concreteNoCycleWitnessFamily :=
   (semanticLawful_iff_noRequiredObstruction_requiredLawWitness
     acyclicObject lawUniverse).mp acyclic_lawfulness
 
-/-- PRD-R I-1: the acyclic object has zero on the concrete required-law axis. -/
+/-- peer-review hardening I-1: the acyclic object has zero on the concrete required-law axis. -/
 theorem acyclic_requiredLawAxesZero :
     RequiredSignatureAxesZero acyclicObject concreteNoCycleSignatureAxes :=
   (semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes
     acyclicObject lawUniverse).mp acyclic_lawfulness
 
-/-- PRD-R I-1: the cyclic object has a nonzero concrete required-law axis. -/
+/-- peer-review hardening I-1: the cyclic object has a nonzero concrete required-law axis. -/
 theorem object_requiredLawAxesZero_fails :
     ¬ RequiredSignatureAxesZero object concreteNoCycleSignatureAxes := by
   intro hzero
   exact cycle_obstruction_law_failure (hzero ⟨PUnit.unit, rfl⟩ trivial)
 
-/-- PRD-R I-1: concrete three-reading agreement fires on the acyclic finite object. -/
+/-- peer-review hardening I-1: concrete three-reading agreement fires on the acyclic finite object. -/
 theorem acyclic_concreteThreeReadingAgreement :
     (SemanticLawful acyclicObject lawUniverse ↔
         NoRequiredObstruction acyclicObject concreteNoCycleWitnessFamily) ∧
@@ -339,7 +339,7 @@ theorem acyclic_concreteThreeReadingAgreement :
           RequiredSignatureAxesZero acyclicObject concreteNoCycleSignatureAxes) :=
   concreteThreeReadingAgreement acyclicObject lawUniverse
 
-/-- PRD-R I-1: concrete three-reading agreement also detects the cyclic failure. -/
+/-- peer-review hardening I-1: concrete three-reading agreement also detects the cyclic failure. -/
 theorem object_concreteThreeReadingAgreement_fires :
     (¬ SemanticLawful object lawUniverse) ∧
       (∃ witness : concreteNoCycleWitnessFamily.Witness,
@@ -419,7 +419,7 @@ def corePackage : AATCorePackage carrier :=
   AATCorePackage.ofComponents axiomSystem allFamily configuration object rfl rfl
     invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit signature
 
-/-- PRD-R I-2: the finite model realizes the abstract A0-A8 family/configuration tower. -/
+/-- peer-review hardening I-2: the finite model realizes the abstract A0-A8 family/configuration tower. -/
 def atomTowerRealization : AATCorePackage.AtomTowerRealization axiomSystem where
   familyToken := PUnit.unit
   configurationToken := PUnit.unit
@@ -432,12 +432,12 @@ def atomTowerRealization : AATCorePackage.AtomTowerRealization axiomSystem where
   configurationToken_eq := rfl
   configuration_family_eq := rfl
 
-/-- PRD-R I-2: finite model core package using the axiom-system realization bridge. -/
+/-- peer-review hardening I-2: finite model core package using the axiom-system realization bridge. -/
 def corePackageFromAxiomRealization : AATCorePackage carrier :=
   AATCorePackage.ofAxiomRealization axiomSystem atomTowerRealization object rfl
     invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit signature
 
-/-- PRD-R I-2: the finite realization theorem has no HEq in its conclusion. -/
+/-- peer-review hardening I-2: the finite realization theorem has no HEq in its conclusion. -/
 theorem corePackageFromAxiomRealization_exists_noHEq :
     ∃ core : AATCorePackage carrier,
       core.axioms = axiomSystem ∧
@@ -488,7 +488,7 @@ def siteContextIdentityMorphism (W : Site.ArchCtx object) :
   observableRestrict := id
 
 /--
-R11 / PRD-R II-3: the singleton finite context reads only atoms from the
+R11 / peer-review hardening II-3: the singleton finite context reads only atoms from the
 selected architecture object's Atom family.
 -/
 theorem siteContext_supportReads_objectFamily
@@ -498,7 +498,7 @@ theorem siteContext_supportReads_objectFamily
   siteContext.supportReads_objectFamily h
 
 /--
-R11 / PRD-R II-3: the finite model's selected identity morphism fires all
+R11 / peer-review hardening II-3: the finite model's selected identity morphism fires all
 concrete context-morphism role predicates.
 -/
 theorem siteContextIdentityMorphism_rolesConcrete :
@@ -602,7 +602,7 @@ def siteCoverageRequirements :
   axisReadableOn := fun _ _ => True
   boundaryVisibleOn := fun _ _ => True
 
-/-- R11 / II.AC16: the finite AAT site over the PRD-1 finite model. -/
+/-- R11 / II.AC16: the finite AAT site over the Part I finite model. -/
 def site : Site.AATSite object where
   contextPreorder := siteContextPreorder
   lawUniverse := lawUniverse
@@ -644,7 +644,7 @@ theorem siteSingletonCover_uAdequate :
   boundaryWitnessesVisible := fun _i _j => trivial
   restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial
 
-/-- PRD-R II-6: every morphism in the singleton finite context site is an isomorphism. -/
+/-- peer-review hardening II-6: every morphism in the singleton finite context site is an isomorphism. -/
 theorem siteContextCategoryObject_eq_of_hom {X Y : site.category} (_f : X ⟶ Y) :
     X = Y := by
   cases X
@@ -695,7 +695,7 @@ private theorem siteContextPresieve_ofArrows_eq_unit
       (Subsingleton.elim _ _)
 
 /--
-PRD-R II-6: the singleton finite AAT admissible precoverage has pullbacks.
+peer-review hardening II-6: the singleton finite AAT admissible precoverage has pullbacks.
 
 This is a concrete finite firing instance for the Mathlib `Coverage` bridge:
 the selected context category is equality-thin, so every arrow in a covering
@@ -716,7 +716,7 @@ noncomputable instance siteAdmissiblePrecoverage_hasPullbacks :
     exact Limits.hasPullback_of_left_iso h f
 
 /--
-PRD-R II-6: the singleton finite AAT admissible precoverage is stable under
+peer-review hardening II-6: the singleton finite AAT admissible precoverage is stable under
 base change.
 
 The base-changed family uses the pulled-back objects supplied by Mathlib's
@@ -746,7 +746,7 @@ noncomputable instance siteAdmissiblePrecoverage_stableUnderBaseChange :
     exact siteContextPresieve_ofArrows_eq_unit P p₁
 
 /--
-PRD-R II-6: the Mathlib `Coverage.toGrothendieck` bridge fires on the
+peer-review hardening II-6: the Mathlib `Coverage.toGrothendieck` bridge fires on the
 selected finite singleton site.
 -/
 theorem siteTopology_eq_coverage_toGrothendieck :
@@ -1013,7 +1013,7 @@ theorem finitePosetRegime_cech_vanishes_above_dimension {n : Nat} (hn : 0 < n) :
     finitePosetRegime_nerveDimension_zero hn
 
 /-!
-## PRD-R II-5: two-patch finite site firing example
+## peer-review hardening II-5: two-patch finite site firing example
 
 The singleton site above remains as the small compatibility fixture used by
 earlier examples.  The following selected finite regime has two patches, an
@@ -1022,7 +1022,7 @@ success, a sheafification-gap witness, and a nonzero degree-zero Čech
 differential calculation.
 -/
 
-/-- PRD-R II-5: selected contexts for the two-patch finite site. -/
+/-- peer-review hardening II-5: selected contexts for the two-patch finite site. -/
 inductive TwoPatchContextIndex where
   | overlap
   | left
@@ -1032,11 +1032,11 @@ inductive TwoPatchContextIndex where
 
 namespace TwoPatchContextIndex
 
-/-- PRD-R II-5: explicit finite enumeration of the selected two-patch contexts. -/
+/-- peer-review hardening II-5: explicit finite enumeration of the selected two-patch contexts. -/
 def all : List TwoPatchContextIndex :=
   [overlap, left, right, base]
 
-/-- PRD-R II-5: the enumeration covers every selected two-patch context. -/
+/-- peer-review hardening II-5: the enumeration covers every selected two-patch context. -/
 theorem mem_all (i : TwoPatchContextIndex) : i ∈ all := by
   cases i <;> simp [all]
 
@@ -1050,7 +1050,7 @@ instance : Fintype TwoPatchContextIndex where
     cases i <;> simp
 
 /--
-PRD-R II-5: selected finite poset order.
+peer-review hardening II-5: selected finite poset order.
 
 `overlap` refines both patches, each patch refines `base`, and `base` is the
 selected top context.
@@ -1064,25 +1064,25 @@ def twoPatchContextIndexLe : TwoPatchContextIndex -> TwoPatchContextIndex -> Pro
   | TwoPatchContextIndex.base, TwoPatchContextIndex.base => True
   | _, _ => False
 
-/-- PRD-R II-5: reflexivity of the selected two-patch context order. -/
+/-- peer-review hardening II-5: reflexivity of the selected two-patch context order. -/
 theorem twoPatchContextIndexLe_refl (i : TwoPatchContextIndex) :
     twoPatchContextIndexLe i i := by
   cases i <;> simp [twoPatchContextIndexLe]
 
-/-- PRD-R II-5: transitivity of the selected two-patch context order. -/
+/-- peer-review hardening II-5: transitivity of the selected two-patch context order. -/
 theorem twoPatchContextIndexLe_trans {i j k : TwoPatchContextIndex}
     (hij : twoPatchContextIndexLe i j) (hjk : twoPatchContextIndexLe j k) :
     twoPatchContextIndexLe i k := by
   cases i <;> cases j <;> cases k <;>
     simp [twoPatchContextIndexLe] at hij hjk ⊢
 
-/-- PRD-R II-5: antisymmetry of the selected two-patch context order. -/
+/-- peer-review hardening II-5: antisymmetry of the selected two-patch context order. -/
 theorem twoPatchContextIndexLe_antisymm {i j : TwoPatchContextIndex}
     (hij : twoPatchContextIndexLe i j) (hji : twoPatchContextIndexLe j i) :
     i = j := by
   cases i <;> cases j <;> simp [twoPatchContextIndexLe] at hij hji ⊢
 
-/-- PRD-R II-5: selected meet in the two-patch finite context poset. -/
+/-- peer-review hardening II-5: selected meet in the two-patch finite context poset. -/
 def twoPatchContextMeet : TwoPatchContextIndex -> TwoPatchContextIndex ->
     TwoPatchContextIndex
   | TwoPatchContextIndex.base, j => j
@@ -1091,24 +1091,24 @@ def twoPatchContextMeet : TwoPatchContextIndex -> TwoPatchContextIndex ->
   | TwoPatchContextIndex.right, TwoPatchContextIndex.right => TwoPatchContextIndex.right
   | _, _ => TwoPatchContextIndex.overlap
 
-/-- PRD-R II-5: the selected meet maps to its left factor. -/
+/-- peer-review hardening II-5: the selected meet maps to its left factor. -/
 theorem twoPatchContextMeet_le_left (i j : TwoPatchContextIndex) :
     twoPatchContextIndexLe (twoPatchContextMeet i j) i := by
   cases i <;> cases j <;> simp [twoPatchContextMeet, twoPatchContextIndexLe]
 
-/-- PRD-R II-5: the selected meet maps to its right factor. -/
+/-- peer-review hardening II-5: the selected meet maps to its right factor. -/
 theorem twoPatchContextMeet_le_right (i j : TwoPatchContextIndex) :
     twoPatchContextIndexLe (twoPatchContextMeet i j) j := by
   cases i <;> cases j <;> simp [twoPatchContextMeet, twoPatchContextIndexLe]
 
-/-- PRD-R II-5: universal property of the selected two-patch meet. -/
+/-- peer-review hardening II-5: universal property of the selected two-patch meet. -/
 theorem twoPatchContext_le_meet {i j k : TwoPatchContextIndex}
     (hik : twoPatchContextIndexLe k i) (hjk : twoPatchContextIndexLe k j) :
     twoPatchContextIndexLe k (twoPatchContextMeet i j) := by
   cases i <;> cases j <;> cases k <;>
     simp [twoPatchContextMeet, twoPatchContextIndexLe] at hik hjk ⊢
 
-/-- PRD-R II-5: concrete context over the finite object indexed by the two-patch poset. -/
+/-- peer-review hardening II-5: concrete context over the finite object indexed by the two-patch poset. -/
 def twoPatchContext (i : TwoPatchContextIndex) : Site.ArchCtx object where
   minimal := {
     Support := PUnit
@@ -1122,24 +1122,24 @@ def twoPatchContext (i : TwoPatchContextIndex) : Site.ArchCtx object where
   Extension := TwoPatchContextIndex
   extension := i
 
-/-- PRD-R II-5: readable morphism between selected two-patch contexts. -/
+/-- peer-review hardening II-5: readable morphism between selected two-patch contexts. -/
 def twoPatchContextMorphism (i j : TwoPatchContextIndex) :
     Site.ContextMorphism (twoPatchContext i) (twoPatchContext j) where
   supportMap := id
   axisMap := id
   observableRestrict := id
 
-/-- PRD-R II-5: selected two-patch morphisms satisfy the concrete restriction role. -/
+/-- peer-review hardening II-5: selected two-patch morphisms satisfy the concrete restriction role. -/
 theorem twoPatchContextMorphism_isRestriction (i j : TwoPatchContextIndex) :
     (twoPatchContextMorphism i j).IsRestriction :=
   ⟨fun h => h, fun h => h, fun h => h,
     fun h => (twoPatchContext j).supportReads_objectFamily h⟩
 
-/-- PRD-R II-5: canonical restriction preorder used by the two-patch selected site. -/
+/-- peer-review hardening II-5: canonical restriction preorder used by the two-patch selected site. -/
 noncomputable abbrev twoPatchContextPreorder : Site.ContextPreorderCategory object :=
   Site.contextMorphismPreorderCategory object
 
-/-- PRD-R II-5: selected order maps into the canonical restriction preorder. -/
+/-- peer-review hardening II-5: selected order maps into the canonical restriction preorder. -/
 theorem twoPatchContextLe_sound {i j : TwoPatchContextIndex}
     (_h : twoPatchContextIndexLe i j) :
     twoPatchContextPreorder.le (twoPatchContext i) (twoPatchContext j) :=
@@ -1149,12 +1149,12 @@ private theorem twoPatchContext_le_any (i j : TwoPatchContextIndex) :
     twoPatchContextPreorder.le (twoPatchContext i) (twoPatchContext j) :=
   ⟨twoPatchContextMorphism i j, twoPatchContextMorphism_isRestriction i j⟩
 
-/-- PRD-R II-5: overlap package inherited from the canonical product meet. -/
+/-- peer-review hardening II-5: overlap package inherited from the canonical product meet. -/
 noncomputable def twoPatchOverlap :
     Site.ContextOverlapPullback twoPatchContextPreorder :=
   Site.meetOverlapPullback twoPatchContextPreorder Site.productContextFiniteMeet
 
-/-- PRD-R II-5: selected cover index with two patches. -/
+/-- peer-review hardening II-5: selected cover index with two patches. -/
 inductive TwoPatchCoverIndex where
   | left
   | right
@@ -1162,11 +1162,11 @@ inductive TwoPatchCoverIndex where
 
 namespace TwoPatchCoverIndex
 
-/-- PRD-R II-5: explicit finite enumeration of the selected two-patch cover. -/
+/-- peer-review hardening II-5: explicit finite enumeration of the selected two-patch cover. -/
 def all : List TwoPatchCoverIndex :=
   [left, right]
 
-/-- PRD-R II-5: the enumeration covers both selected patches. -/
+/-- peer-review hardening II-5: the enumeration covers both selected patches. -/
 theorem mem_all (i : TwoPatchCoverIndex) : i ∈ all := by
   cases i <;> simp [all]
 
@@ -1178,16 +1178,16 @@ instance : Fintype TwoPatchCoverIndex where
     intro i
     cases i <;> simp
 
-/-- PRD-R II-5: map cover indices to their selected context indices. -/
+/-- peer-review hardening II-5: map cover indices to their selected context indices. -/
 def twoPatchCoverContextIndex : TwoPatchCoverIndex -> TwoPatchContextIndex
   | TwoPatchCoverIndex.left => TwoPatchContextIndex.left
   | TwoPatchCoverIndex.right => TwoPatchContextIndex.right
 
-/-- PRD-R II-5: selected context carried by each cover patch. -/
+/-- peer-review hardening II-5: selected context carried by each cover patch. -/
 def twoPatchCoverPatch (i : TwoPatchCoverIndex) : Site.ArchCtx object :=
   twoPatchContext (twoPatchCoverContextIndex i)
 
-/-- PRD-R II-5: the left patch visibly reads `componentA`. -/
+/-- peer-review hardening II-5: the left patch visibly reads `componentA`. -/
 def twoPatchSupportVisibleOn (W : Site.ArchCtx object) (atom : carrier.Atom) : Prop :=
   (W = twoPatchContext TwoPatchContextIndex.left ∧
       atom = FiniteAtom.componentA) ∨
@@ -1196,7 +1196,7 @@ def twoPatchSupportVisibleOn (W : Site.ArchCtx object) (atom : carrier.Atom) : P
       (W = twoPatchContext TwoPatchContextIndex.overlap ∧
         atom = FiniteAtom.dependsAB)
 
-/-- PRD-R II-5: selected requirements for the two-patch cover. -/
+/-- peer-review hardening II-5: selected requirements for the two-patch cover. -/
 def twoPatchCoverageRequirements :
     Site.CoverageRequirements object lawUniverse signature where
   selectedReading := lawUniverse.selectedReading
@@ -1211,7 +1211,7 @@ def twoPatchCoverageRequirements :
       W = twoPatchContext TwoPatchContextIndex.right
   boundaryVisibleOn := fun _ _ => True
 
-/-- PRD-R II-5: the two-patch AAT site over the finite model. -/
+/-- peer-review hardening II-5: the two-patch AAT site over the finite model. -/
 noncomputable def twoPatchSite : Site.AATSite object where
   contextPreorder := twoPatchContextPreorder
   lawUniverse := lawUniverse
@@ -1219,12 +1219,12 @@ noncomputable def twoPatchSite : Site.AATSite object where
   requirements := twoPatchCoverageRequirements
   overlap := twoPatchOverlap
 
-/-- PRD-R II-5: base object of the two-patch finite site. -/
+/-- peer-review hardening II-5: base object of the two-patch finite site. -/
 def twoPatchBase : twoPatchSite.category :=
   Site.ContextCategoryObject.of twoPatchContextPreorder
     (twoPatchContext TwoPatchContextIndex.base)
 
-/-- PRD-R II-5: admissible cover with two selected patches. -/
+/-- peer-review hardening II-5: admissible cover with two selected patches. -/
 noncomputable def twoPatchCover :
     Site.AATCoverageFamily twoPatchCoverageRequirements twoPatchOverlap
       twoPatchBase where
@@ -1259,19 +1259,19 @@ noncomputable def twoPatchCover :
       exact trivial
   }
 
-/-- PRD-R II-5: the generated two-patch cover is a topology cover. -/
+/-- peer-review hardening II-5: the generated two-patch cover is a topology cover. -/
 theorem twoPatchCover_topologyCover :
     Sieve.generate twoPatchCover.presieve ∈ twoPatchSite.topology twoPatchBase :=
   Site.AATGrothendieckTopology.generate_mem twoPatchCover
 
-/-- PRD-R II-5: selected adequacy requirements for the two-patch site. -/
+/-- peer-review hardening II-5: selected adequacy requirements for the two-patch site. -/
 def twoPatchAdequacyRequirements :
     Site.UAdequacyRequirements twoPatchContextPreorder
       twoPatchCoverageRequirements where
   selectedWitnessIdeal := fun _ _ => True
   witnessIdealPreservedBy := fun _h _hideal => trivial
 
-/-- PRD-R II-5: direct `U`-adequacy for the two-patch finite cover. -/
+/-- peer-review hardening II-5: direct `U`-adequacy for the two-patch finite cover. -/
 theorem twoPatchCover_uAdequate :
     Site.UAdequateCover twoPatchAdequacyRequirements twoPatchCover where
   topologyCover := twoPatchCover_topologyCover
@@ -1281,41 +1281,41 @@ theorem twoPatchCover_uAdequate :
   boundaryWitnessesVisible := twoPatchCover.admissible.boundaryCoverage
   restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial
 
-/-- PRD-R II-5: the selected overlap context maps to the left patch. -/
+/-- peer-review hardening II-5: the selected overlap context maps to the left patch. -/
 theorem twoPatch_overlap_le_left :
     twoPatchContextPreorder.le
       (twoPatchContext TwoPatchContextIndex.overlap)
       (twoPatchContext TwoPatchContextIndex.left) :=
   twoPatchContext_le_any TwoPatchContextIndex.overlap TwoPatchContextIndex.left
 
-/-- PRD-R II-5: the selected overlap context maps to the right patch. -/
+/-- peer-review hardening II-5: the selected overlap context maps to the right patch. -/
 theorem twoPatch_overlap_le_right :
     twoPatchContextPreorder.le
       (twoPatchContext TwoPatchContextIndex.overlap)
       (twoPatchContext TwoPatchContextIndex.right) :=
   twoPatchContext_le_any TwoPatchContextIndex.overlap TwoPatchContextIndex.right
 
-/-- PRD-R II-5: the selected overlap visibly reads the boundary atom. -/
+/-- peer-review hardening II-5: the selected overlap visibly reads the boundary atom. -/
 theorem twoPatch_overlap_reads_boundary :
     twoPatchSupportVisibleOn
       (twoPatchContext TwoPatchContextIndex.overlap) FiniteAtom.dependsAB := by
   simp [twoPatchSupportVisibleOn]
 
-/-- PRD-R II-5: coefficient presheaf with nontrivial Boolean sections. -/
+/-- peer-review hardening II-5: coefficient presheaf with nontrivial Boolean sections. -/
 def twoPatchBoolCoefficient : Site.AATPresheaf twoPatchSite where
   obj _ := Bool
   map _ x := x
   map_id _ := rfl
   map_comp _ _ := rfl
 
-/-- PRD-R II-5: unit-valued sheaf used for the concrete descent success. -/
+/-- peer-review hardening II-5: unit-valued sheaf used for the concrete descent success. -/
 def twoPatchUnitPresheaf : Site.AATPresheaf twoPatchSite where
   obj _ := PUnit
   map _ x := x
   map_id _ := rfl
   map_comp _ _ := rfl
 
-/-- PRD-R II-5: the unit presheaf satisfies the AAT sheaf condition. -/
+/-- peer-review hardening II-5: the unit presheaf satisfies the AAT sheaf condition. -/
 theorem twoPatchUnit_isSheaf :
     Site.AATSheafCondition twoPatchSite twoPatchUnitPresheaf := by
   intro _base _cover _hcover family _compatible
@@ -1327,26 +1327,26 @@ theorem twoPatchUnit_isSheaf :
     cases y
     rfl
 
-/-- PRD-R II-5: packaged unit sheaf on the two-patch finite site. -/
+/-- peer-review hardening II-5: packaged unit sheaf on the two-patch finite site. -/
 def twoPatchUnitSheaf : Site.AATSheaf twoPatchSite where
   carrier := twoPatchUnitPresheaf
   isSheaf := twoPatchUnit_isSheaf
 
-/-- PRD-R II-5: the two-patch cover satisfies descent for the unit sheaf. -/
+/-- peer-review hardening II-5: the two-patch cover satisfies descent for the unit sheaf. -/
 theorem twoPatchUnit_descent :
     Site.AATDescent twoPatchSite twoPatchUnitPresheaf
       (Sieve.generate twoPatchCover.presieve) :=
   Site.AATSheafCondition.descent twoPatchUnit_isSheaf
     (Sieve.generate twoPatchCover.presieve) twoPatchCover_topologyCover
 
-/-- PRD-R II-5: canonical comparison from raw Boolean data to the unit sheaf. -/
+/-- peer-review hardening II-5: canonical comparison from raw Boolean data to the unit sheaf. -/
 def twoPatchBoolToUnit :
     twoPatchBoolCoefficient ⟶ twoPatchUnitPresheaf where
   app _ _ := PUnit.unit
   naturality _ _ _ := rfl
 
 /--
-PRD-R II-5: selected sheafification comparison whose canonical map forgets
+peer-review hardening II-5: selected sheafification comparison whose canonical map forgets
 the Boolean distinction.
 -/
 def twoPatchSheafificationComparison :
@@ -1355,7 +1355,7 @@ def twoPatchSheafificationComparison :
   plus := twoPatchUnitSheaf
   canonical := twoPatchBoolToUnit
 
-/-- PRD-R II-5: the selected comparison has a concrete sheafification gap. -/
+/-- peer-review hardening II-5: the selected comparison has a concrete sheafification gap. -/
 theorem twoPatchSheafificationGap :
     Site.AATSheafificationGap twoPatchSheafificationComparison := by
   refine ⟨twoPatchBase, ?_⟩
@@ -1363,27 +1363,27 @@ theorem twoPatchSheafificationGap :
   have htf : true = false := hbij.1 (by rfl)
   cases htf
 
-/-- PRD-R II-5: selected nerve simplices for the two-patch cover. -/
+/-- peer-review hardening II-5: selected nerve simplices for the two-patch cover. -/
 def twoPatchNerveSimplex : Nat -> Type
   | 0 => TwoPatchCoverIndex
   | 1 => PUnit
   | _ + 2 => Empty
 
-/-- PRD-R II-5: selected cover indices of the two-patch nerve. -/
+/-- peer-review hardening II-5: selected cover indices of the two-patch nerve. -/
 def twoPatchSimplexIndices :
     ∀ n : Nat, twoPatchNerveSimplex n -> Fin (n + 1) -> TwoPatchCoverIndex
   | 0, simplex, _ => simplex
   | 1, _simplex, k => if k.val = 0 then TwoPatchCoverIndex.left else TwoPatchCoverIndex.right
   | _ + 2, simplex, _ => Empty.elim simplex
 
-/-- PRD-R II-5: selected overlap context of each two-patch nerve simplex. -/
+/-- peer-review hardening II-5: selected overlap context of each two-patch nerve simplex. -/
 def twoPatchSimplexOverlap :
     ∀ n : Nat, twoPatchNerveSimplex n -> Site.ArchCtx object
   | 0, simplex => twoPatchCoverPatch simplex
   | 1, _simplex => twoPatchContext TwoPatchContextIndex.overlap
   | _ + 2, simplex => Empty.elim simplex
 
-/-- PRD-R II-5: finite-poset regime for the non-singleton two-patch site. -/
+/-- peer-review hardening II-5: finite-poset regime for the non-singleton two-patch site. -/
 noncomputable def twoPatchFinitePosetRegime :
     Site.FinitePosetAATSiteRegime twoPatchSite where
   ContextIndex := TwoPatchContextIndex
@@ -1441,17 +1441,17 @@ noncomputable def twoPatchFinitePosetRegime :
   coverAdequate := twoPatchCover_uAdequate
   coefficient := twoPatchBoolCoefficient
 
-/-- PRD-R II-5: the two-patch selected context poset has four finite contexts. -/
+/-- peer-review hardening II-5: the two-patch selected context poset has four finite contexts. -/
 theorem twoPatchFinitePosetRegime_context_finite :
     Finite twoPatchFinitePosetRegime.ContextIndex :=
   twoPatchFinitePosetRegime.context_index_finite
 
-/-- PRD-R II-5: the two-patch selected cover has two finite patches. -/
+/-- peer-review hardening II-5: the two-patch selected cover has two finite patches. -/
 theorem twoPatchFinitePosetRegime_cover_finite :
     Finite twoPatchFinitePosetRegime.cover.Index :=
   twoPatchFinitePosetRegime.cover_index_finite
 
-/-- PRD-R II-5: the two-patch nerve has dimension one. -/
+/-- peer-review hardening II-5: the two-patch nerve has dimension one. -/
 theorem twoPatchFinitePosetRegime_nerveDimension_one :
     Site.FinitePosetNerveDimension twoPatchFinitePosetRegime 1 := by
   intro n hn
@@ -1466,7 +1466,7 @@ theorem twoPatchFinitePosetRegime_nerveDimension_one :
           change IsEmpty Empty
           infer_instance
 
-/-- PRD-R II-5: selected additive data for the Boolean two-patch Čech surface. -/
+/-- peer-review hardening II-5: selected additive data for the Boolean two-patch Čech surface. -/
 def twoPatchCechAdditiveData :
     Site.FinitePosetCechAdditiveData twoPatchFinitePosetRegime where
   zeroSection := by
@@ -1495,7 +1495,7 @@ def twoPatchCechAdditiveData :
         | succ _ =>
             exact Empty.elim simplex
 
-/-- PRD-R II-5: selected face maps for the two-patch nerve. -/
+/-- peer-review hardening II-5: selected face maps for the two-patch nerve. -/
 def twoPatchCechFaceData :
     Site.FinitePosetCechFaceData twoPatchFinitePosetRegime where
   face := by
@@ -1521,7 +1521,7 @@ def twoPatchCechFaceData :
         | zero => exact Empty.elim simplex
         | succ _ => exact Empty.elim simplex
 
-/-- PRD-R II-5: degree-zero Boolean Čech differential for the two-patch cover. -/
+/-- peer-review hardening II-5: degree-zero Boolean Čech differential for the two-patch cover. -/
 def twoPatchCechDifferential :
     ∀ n : Nat,
       Site.FinitePosetCechCochain twoPatchFinitePosetRegime n ->
@@ -1531,7 +1531,7 @@ def twoPatchCechDifferential :
         (show Bool from cochain TwoPatchCoverIndex.right)
   | _ + 1, _cochain, simplex => Empty.elim simplex
 
-/-- PRD-R II-5: selected Boolean Čech complex on the two-patch finite site. -/
+/-- peer-review hardening II-5: selected Boolean Čech complex on the two-patch finite site. -/
 def twoPatchCechComplex :
     Site.FinitePosetCechComplex twoPatchFinitePosetRegime where
   additive := twoPatchCechAdditiveData
@@ -1571,7 +1571,7 @@ def twoPatchCechComplex :
     | succ _ => exact Empty.elim simplex
 
 /--
-PRD-R II-5: universal selected image-killing quotient relation for the
+peer-review hardening II-5: universal selected image-killing quotient relation for the
 two-patch cohomology surface.
 
 The nonzero calculation below is the degree-zero differential value.  This
@@ -1587,7 +1587,7 @@ def twoPatchCechCoboundaryRelation (n : Nat) :
   trans := fun _hleft _hright => trivial
   kills_image := fun _himage => trivial
 
-/-- PRD-R II-5: positive degrees above one vanish for the selected two-patch nerve. -/
+/-- peer-review hardening II-5: positive degrees above one vanish for the selected two-patch nerve. -/
 theorem twoPatchFinitePosetRegime_cech_vanishes_above_one {n : Nat} (hn : 1 < n) :
     Site.FinitePosetCechCohomologyVanishes twoPatchCechComplex n
       (twoPatchCechCoboundaryRelation n) :=
@@ -1595,7 +1595,7 @@ theorem twoPatchFinitePosetRegime_cech_vanishes_above_one {n : Nat} (hn : 1 < n)
     twoPatchCechComplex (twoPatchCechCoboundaryRelation n)
     twoPatchFinitePosetRegime_nerveDimension_one hn
 
-/-- PRD-R II-5: degree-zero cochain separating the two selected patches. -/
+/-- peer-review hardening II-5: degree-zero cochain separating the two selected patches. -/
 def twoPatchSeparatedCochain :
     Site.FinitePosetCechCochain twoPatchFinitePosetRegime 0
   | TwoPatchCoverIndex.left => by
@@ -1605,7 +1605,7 @@ def twoPatchSeparatedCochain :
       change Bool
       exact false
 
-/-- PRD-R II-5: the separated cochain has nonzero degree-one Čech differential. -/
+/-- peer-review hardening II-5: the separated cochain has nonzero degree-one Čech differential. -/
 theorem twoPatchSeparatedCochain_differential_nonzero :
     twoPatchCechComplex.differential 0 twoPatchSeparatedCochain PUnit.unit = true :=
   rfl

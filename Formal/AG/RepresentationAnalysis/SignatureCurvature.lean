@@ -11,10 +11,10 @@ namespace RepresentationAnalysis
 universe u v w x y
 
 /--
-VII.定義7.1: signature reading selected from PRD-1 signature axes.
+VII.定義7.1: signature reading selected from Part I signature axes.
 
 The profile is a reading interface: it exposes a target predicate for each
-selected axis and records that the reading is exactly the PRD-1 axis-zero
+selected axis and records that the reading is exactly the Part I axis-zero
 predicate.  It does not add new axes or infer unselected axes.
 -/
 structure SignatureReadingProfile {U : AtomCarrier.{u}} (S : SignatureAxes U) where
@@ -37,7 +37,7 @@ def RequiredSignatureReadingZero (P : SignatureReadingProfile S)
   ∀ axis : S.Axis, S.selected axis -> P.signatureReading Obj axis
 
 /--
-VII.定義7.1: required signature reading zero is exactly PRD-1
+VII.定義7.1: required signature reading zero is exactly Part I
 `RequiredSignatureAxesZero`.
 -/
 theorem requiredSignatureReadingZero_iff_requiredSignatureAxesZero
@@ -56,7 +56,7 @@ theorem selected_axis_reading
     P.signatureReading Obj axis :=
   h axis hselected
 
-/-- VII.定義7.1: expose one selected PRD-1 axis-zero certificate. -/
+/-- VII.定義7.1: expose one selected Part I axis-zero certificate. -/
 theorem selected_axis_zero
     (P : SignatureReadingProfile S) {Obj : ArchitectureObject U} {axis : S.Axis}
     (h : P.RequiredSignatureReadingZero Obj) (hselected : S.selected axis) :
@@ -67,7 +67,7 @@ theorem selected_axis_zero
 end SignatureReadingProfile
 
 /--
-VII.定義7.2: curvature reading as the selected PRD-1 aggregate obstruction
+VII.定義7.2: curvature reading as the selected Part I aggregate obstruction
 valuation `omega_U`.
 
 The value is a representation reading; zero is interpreted only through the
@@ -127,7 +127,7 @@ theorem curvatureZero_iff_requiredObstructionValuesZero
 end CurvatureReadingProfile
 
 /--
-VII.定義7.2: PRD-4 obstruction-class handle read by the curvature profile.
+VII.定義7.2: Part IV obstruction-class handle read by the curvature profile.
 
 This is a selected bridge to the already formalized
 `Cohomology.GluingObstructionClass`; it does not construct a new general
@@ -150,7 +150,7 @@ variable {𝒰 : Cohomology.CoverRelativeCechCover S}
 variable {Ob : Cohomology.ObstructionSheaf S}
 variable {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
 
-/-- VII.定義7.2: expose the selected PRD-4 obstruction class. -/
+/-- VII.定義7.2: expose the selected Part IV obstruction class. -/
 def h1Class (G : GluingObstructionCurvatureReading K) :
     K.CoverRelativeHn 1 :=
   G.gluingClass.h1Class
@@ -164,7 +164,7 @@ theorem curvatureReadsObstructionClass_certificate
 end GluingObstructionCurvatureReading
 
 /--
-VII.定義7.2: PRD-5 law-conflict handle read by the curvature profile.
+VII.定義7.2: Part V law-conflict handle read by the curvature profile.
 
 The selected degree is a bounded reading of an existing
 `Derived.Intersection.LawConflictPackage`, not a new Tor computation.
@@ -186,7 +186,7 @@ variable {P : Derived.Intersection.LawConflictPackage.{u, v} A I_U I_V}
 abbrev selectedLawConflict (C : LawConflictCurvatureReading A P) : Type v :=
   P.LawConflict C.selectedDegree
 
-/-- VII.定義7.2: selected law-conflict reading is backed by PRD-5 Tor data. -/
+/-- VII.定義7.2: selected law-conflict reading is backed by Part V Tor data. -/
 theorem selectedLawConflict_eq_tor (C : LawConflictCurvatureReading A P) :
     C.selectedLawConflict = P.torBridge.Tor C.selectedDegree :=
   Derived.Intersection.LawConflictPackage.lawConflict_eq_tor P C.selectedDegree
@@ -203,9 +203,9 @@ end LawConflictCurvatureReading
 VII.定義7.2: signature / curvature context for the zero-curvature to lawful
 factorization theorems.
 
-The correspondence assumptions are exactly the PRD-3 theorem arguments:
+The correspondence assumptions are exactly the Part III theorem arguments:
 soundness, completeness, coverage, axis exactness, witness exactness, descent,
-and ring-restriction compatibility.  The PRD-4 and PRD-5 reading connections
+and ring-restriction compatibility.  The Part IV and Part V reading connections
 are explicit selected certificates, not inferred global claims.
 -/
 structure SignatureCurvatureLawfulFactorizationContext
@@ -235,14 +235,14 @@ variable {Value : Type u} {valuation : ObstructionValuation U Value}
 variable {aggregation :
   ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex}
 
-/-- VII.定義7.2: expose the selected PRD-4 obstruction-class bridge. -/
+/-- VII.定義7.2: expose the selected Part IV obstruction-class bridge. -/
 theorem obstructionClassReading_certificate
     (C : SignatureCurvatureLawfulFactorizationContext
       s Obj LU Sig valuation aggregation) :
     C.obstructionClassReading :=
   C.obstructionClassReading_holds
 
-/-- VII.定義7.2: expose the selected PRD-5 law-conflict bridge. -/
+/-- VII.定義7.2: expose the selected Part V law-conflict bridge. -/
 theorem lawConflictReading_certificate
     (C : SignatureCurvatureLawfulFactorizationContext
       s Obj LU Sig valuation aggregation) :
@@ -269,7 +269,7 @@ theorem curvature_zero_iff_requiredObstructionValuesZero
         valuation.omega (LU.law index.1) Obj = valuation.domain.zero :=
   C.curvatureProfile.curvatureZero_iff_requiredObstructionValuesZero Obj
 
-/-- VII.定義7.2: zero curvature is PRD-1 required signature axes zero. -/
+/-- VII.定義7.2: zero curvature is Part I required signature axes zero. -/
 theorem curvature_zero_iff_requiredSignatureAxesZero
     (C : SignatureCurvatureLawfulFactorizationContext
       s Obj LU Sig valuation aggregation) :
@@ -315,7 +315,7 @@ theorem curvature_zero_of_factorsThroughLawfulLocus
 
 /--
 VII.定義7.2: zero curvature and lawful factorization are equivalent under the
-explicit PRD-3 correspondence assumptions.
+explicit Part III correspondence assumptions.
 -/
 theorem curvature_zero_iff_factorsThroughLawfulLocus
     (C : SignatureCurvatureLawfulFactorizationContext

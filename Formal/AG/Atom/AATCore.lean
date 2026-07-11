@@ -37,7 +37,7 @@ structure AATCorePackage (U : AtomCarrier.{u}) where
 namespace AATCorePackage
 
 /--
-PRD-R I-2: a realization tying the abstract `AtomAxiomSystem` tower to the
+peer-review hardening I-2: a realization tying the abstract `AtomAxiomSystem` tower to the
 actual Part I Lean tower. The maps are explicit, so later examples can show how
 `S.configurationOf` feeds an `AtomConfiguration` without changing the frozen
 `AtomAxiomSystem` record.
@@ -56,13 +56,13 @@ structure AtomTowerRealization {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) whe
 
 namespace AtomTowerRealization
 
-/-- PRD-R I-2: the selected configuration is obtained from the selected axiom family token. -/
+/-- peer-review hardening I-2: the selected configuration is obtained from the selected axiom family token. -/
 theorem realized_configuration_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
     (R : AtomTowerRealization S) :
     R.configurationOf (S.configurationOf R.familyToken) = R.configuration := by
   rw [R.configurationToken_eq, R.configuration_eq]
 
-/-- PRD-R I-2: the selected family is obtained from the selected axiom family token. -/
+/-- peer-review hardening I-2: the selected family is obtained from the selected axiom family token. -/
 theorem realized_family_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
     (R : AtomTowerRealization S) :
     R.familyOf R.familyToken = R.family :=
@@ -144,7 +144,7 @@ def ofComponents {U : AtomCarrier.{u}}
   algebra_signature_eq := rfl
 
 /--
-PRD-R I-2: construct the core package from an explicit realization of the
+peer-review hardening I-2: construct the core package from an explicit realization of the
 `AtomAxiomSystem` tower. This additive constructor makes the use of `S` visible
 through `AtomTowerRealization`, while preserving the original constructor for
 Research imports.
@@ -183,7 +183,7 @@ theorem exists_ofComponents {U : AtomCarrier.{u}}
     rfl, rfl, rfl, rfl, hconfiguration, hobject, rfl, rfl, HEq.rfl, rfl⟩
 
 /--
-PRD-R I-2: HEq-free existence statement for the selected Part I tower. The
+peer-review hardening I-2: HEq-free existence statement for the selected Part I tower. The
 dependent obstruction-circuit equality remains available through the frozen
 `exists_ofComponents`; reviewers can use this theorem when they only need the
 core tower components.
@@ -210,7 +210,7 @@ theorem exists_ofComponents_noHEq {U : AtomCarrier.{u}}
     rfl, rfl, rfl, rfl, hconfiguration, hobject, rfl, rfl, rfl⟩
 
 /--
-PRD-R I-2: HEq-free existence statement from an explicit axiom-system
+peer-review hardening I-2: HEq-free existence statement from an explicit axiom-system
 realization.
 -/
 theorem exists_ofAxiomRealization_noHEq {U : AtomCarrier.{u}}

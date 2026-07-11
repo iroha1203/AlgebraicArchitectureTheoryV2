@@ -116,7 +116,7 @@ forecast correctness、future outcome probability ではない。
 claim を生成しない。missing evidence、unsupported constructs、forecast non-conclusions は
 後段 artifact に引き継ぐ境界として読む。
 
-PRD v3 の planning forecast では、PRD-only forecast を意味のある forecast として扱わず、
+FieldSig planning contract v3 の planning forecast では、PRD-only forecast を意味のある forecast として扱わず、
 `intentmap/v0.5.0` と `intent-archmap-alignment/v0.5.0` を先に作る。LLM は semantic extraction と
 artifact reading を担当し、ArchSig は schema validation と deterministic projection を担当する。
 `intent-forecast` は AlignmentMap から `operation-support-estimate/v0.5.0`、`forecast-cone-skeleton/v0.5.0`、

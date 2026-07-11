@@ -8,14 +8,14 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R3 / AC9 temporal law surface.
+Part IX R3 / AC9 temporal law surface.
 
 Temporal laws are selected predicates/equation packages over a fixed
 state-transition presheaf.  They do not assert anything about unselected
 runtime traces or future paths.
 -/
 
-/-- IX.§3 / AC9: selected temporal law vocabulary from PRD-9 R3. -/
+/-- IX.§3 / AC9: selected temporal law vocabulary from Part IX R3. -/
 inductive TemporalLawKind where
   | closedTemporalEquation
   | commutativeTemporalSquare

@@ -8,7 +8,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R8 / AC18-AC20 support-localized transfer measurement and finite
+Part VIII R8 / AC18-AC20 support-localized transfer measurement and finite
 Wasserstein transfer cost.
 
 The support-localized transfer theorem is a sufficient-condition theorem

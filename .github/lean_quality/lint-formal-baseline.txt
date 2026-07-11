@@ -860,8 +860,8 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Evolution.TemporalCoefficient.ProductIncidenceComplex.zeroCochain /- definition missing documentation string -/
 #check @AAT.AG.Evolution.TemporalCoefficient.ProductIncidenceComplex.oneCochain /- definition missing documentation string -/
 #check @AAT.AG.Evolution.TemporalCoefficient.ProductIncidenceComplex.d0 /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalCoefficient.ProductIncidencePRD4Comparison.incidenceComplex /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalCoefficient.ProductIncidencePRD4Comparison.finitePosetBridge /- definition missing documentation string -/
+#check @AAT.AG.Evolution.TemporalCoefficient.ProductIncidencePartIVComparison.incidenceComplex /- definition missing documentation string -/
+#check @AAT.AG.Evolution.TemporalCoefficient.ProductIncidencePartIVComparison.finitePosetBridge /- definition missing documentation string -/
 #check @AAT.AG.Evolution.FiniteTemporalCoefficientRegime.measurementRegime /- definition missing documentation string -/
 #check @AAT.AG.Evolution.FiniteTemporalCoefficientRegime.effectiveCoefficient /- definition missing documentation string -/
 #check @AAT.AG.Evolution.FiniteTemporalCoefficientRegime.measuredCoefficientProfile /- definition missing documentation string -/

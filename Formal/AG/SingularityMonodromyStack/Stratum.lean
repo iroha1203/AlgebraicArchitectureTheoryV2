@@ -75,7 +75,7 @@ VI.定義2.1: an architecture stratum inside a selected architecture scheme.
 The carrier is a selected subset of an explicit point type. The predicates keep
 the intended subobject, local-closedness, decoration compatibility, and reading
 compatibility assumptions visible without constructing general stratification
-theory in this PRD step.
+theory in this implementation step.
 -/
 structure ArchitectureStratum {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} (P : StratumReadingParameter S) (k : Type v) [CommRing k] where

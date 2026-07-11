@@ -8,7 +8,7 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R4 / AC10 temporal mismatch, cocycle, and class surface.
+Part IX R4 / AC10 temporal mismatch, cocycle, and class surface.
 
 This file records temporal obstruction classes only after the selected
 temporal site, coefficient, Čech bridge, temporal law, and mismatch cocycle
@@ -19,7 +19,7 @@ cohomology group alone.
 /--
 IX.§3.4 / AC10: temporal mismatch cochain for a selected temporal law.
 
-The cochain lives in the PRD-4 cover-relative Čech complex selected by the
+The cochain lives in the Part IV cover-relative Čech complex selected by the
 temporal bridge and the obstruction sheaf backing `TempCoeff_A`.
 -/
 structure TemporalMismatch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -79,7 +79,7 @@ variable {Coeff : TemporalCoefficient T}
 variable {Law : TemporalLaw St}
 variable {m : TemporalMismatch Coeff Law}
 
-/-- IX.§3.4 / AC10: package a mismatch cocycle as the PRD-4 cocycle subtype. -/
+/-- IX.§3.4 / AC10: package a mismatch cocycle as the Part IV cocycle subtype. -/
 def asCechCocycle (hm : TemporalCocycle m) :
     m.bridge.siteComplex.CechCocycle m.degree :=
   ⟨m.cochain, hm.differential_zero⟩

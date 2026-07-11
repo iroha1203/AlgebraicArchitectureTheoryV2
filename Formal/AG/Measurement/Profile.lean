@@ -8,7 +8,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R1 / AC2 measurement profile surface.
+Part VIII R1 / AC2 measurement profile surface.
 
 The profile is intentionally bounded: every predicate and certificate is
 relative to the selected profile, and no complement relation between `Zero`

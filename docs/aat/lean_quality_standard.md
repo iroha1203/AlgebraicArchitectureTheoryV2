@@ -188,11 +188,12 @@ silent rename は台帳との対応を切り、監査を空振りさせる repac
 
 ### 5.1 固定場所
 
-- **PRD**: Lean 実装を要求する PRD は `## Target Statements` 節を必須と
-  する。各 target theorem の**名前+完全な signature**、および
-  statement が参照する**新規 def の signature** を Lean コードブロックで
-  固定する。PRD はループの不変条件(prd-loop SKILL)なので、この節が
-  そのまま statement 改変の停止規則になる。
+- **Lean実装計画**: 各 target theorem の**名前+完全な signature**、および
+  statement が参照する**新規 def の signature**を、`docs/aat/statement_contracts/`
+  などの現行statement contractへLeanコードブロックで固定する。PRDはその
+  contractを参照し、完全signatureや固定規律の正本をPRD自身に置かない。
+  実装ループ中も現行statement contractを不変入力として扱い、この節を
+  statement改変の停止規則とする。
 - **research-loop**: 候補カードの `planned_lean_statement`
   (`research/ideas/TEMPLATE.md`)に固定する。G2審判はこの固定statementを
   審査対象とし、G3は実装との一致を合格条件とする。G3後は同じ候補カードの

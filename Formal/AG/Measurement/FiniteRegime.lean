@@ -8,7 +8,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R2 / AC5 finite measurement regime.
+Part VIII R2 / AC5 finite measurement regime.
 
 The effective coefficient interface records only the selected procedures and
 certificates used by a profile. It does not assert decidability for arbitrary

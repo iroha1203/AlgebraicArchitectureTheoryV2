@@ -6,7 +6,7 @@ namespace AAT.AG
 namespace Measurement
 
 /-!
-PRD-8 R11 / AC25 finite measurement examples.
+Part VIII R11 / AC25 finite measurement examples.
 
 These examples are selected finite fixtures. They verify the Part VIII
 measurement boundaries on tiny carriers and theorem packages, but do not assert
@@ -252,13 +252,13 @@ theorem finiteComputabilityExample_verified :
     Nonempty (FiniteAATComputability pseudoCircleMeasurementProfile) :=
   ⟨finiteComputabilityExamplePackage⟩
 
-/-- R11(b): selected PRD-3 square-free witness regime for the repair fixture. -/
+/-- R11(b): selected Part III square-free witness regime for the repair fixture. -/
 def squareFreeSourceWitnessRegime :
     UsesSquareFreeWitnessRegime SquareFreeSupportVertex where
   Forb := fun support =>
     support = forbiddenSupportPQFinset ∨ support = forbiddenSupportQRFinset
 
-/-- R11(b): the PRD-3 simplicial complex selected by the repair fixture. -/
+/-- R11(b): the Part III simplicial complex selected by the repair fixture. -/
 def squareFreeSourceDelta :
     LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex
       SquareFreeSupportVertex :=

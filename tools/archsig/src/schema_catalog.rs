@@ -6,7 +6,7 @@ use crate::{
     ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_PRD4_CONCLUSION_CODES,
+    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_SAGA_CONCLUSION_CODES,
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA,
     MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
     SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
@@ -56,7 +56,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA,
                 "authoring",
                 "ArchSig v0.5.0 ArchMap authoring",
-                vec!["archsig-contract:v0.5.0-prd5-archmap-skill"],
+                vec!["archsig-contract:archmap-authoring-v0.5.0"],
                 "Scope manifest v0.5.0 records the selected authoring scope, repository revision, deterministic worklist, content hashes, exclusions, and author-supplied evidence files before reading begins.",
                 vec![
                     "Scope manifest records the selected scope only; it does not assert source extraction completeness.",
@@ -69,7 +69,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA,
                 "authoring",
                 "ArchSig v0.5.0 ArchMap authoring",
-                vec!["archsig-contract:v0.5.0-prd5-archmap-skill"],
+                vec!["archsig-contract:archmap-authoring-v0.5.0"],
                 "Candidate packet v0.5.0 records one reading pass chunk: reviewed sources, candidate observations, survey rows, unavailable notes, and self-review gates.",
                 vec![
                     "Candidate packets are not final ArchMap artifacts.",
@@ -82,7 +82,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
                 "authoring",
                 "ArchSig v0.5.0 ArchMap authoring",
-                vec!["archsig-contract:v0.5.0-prd5-archmap-skill"],
+                vec!["archsig-contract:archmap-authoring-v0.5.0"],
                 "Extraction consistency v0.5.0 records atom-match-key comparison between reading passes, unmatched queues, matchRate, context differences, and integrator adjudications.",
                 vec![
                     "matchRate is a record, not a verdict.",
@@ -95,7 +95,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA,
                 "authoring",
                 "ArchSig v0.5.0 ArchMap authoring",
-                vec!["archsig-contract:v0.5.0-prd5-archmap-skill"],
+                vec!["archsig-contract:archmap-authoring-v0.5.0"],
                 "Coverage ledger v0.5.0 records selected-scope survey rows and the fixed claim boundary for authoring provenance.",
                 vec![
                     "Coverage ledger rows record authoring survey state; they do not assert extraction completeness.",
@@ -134,7 +134,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.5.0 SAGA Stage 1",
-                vec!["archsig-contract:v0.5.0-prd4-lawpolicy-saga"],
+                vec!["archsig-contract:saga-stage1-v0.5.0"],
                 "RepairPlan v1 supplies the checked SAGA descent input side: residual refs, finite complex, primitive restriction differences, semantic projection, faithfulness regime, and F2-additive coefficient.",
                 vec![
                     "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
@@ -179,8 +179,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.4.0-ag-measurement"],
                 &format!(
-                    "ArchSig measurement packet v1 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered PRD-4 conclusionCode values include {}.",
-                    registry_sentence(&ARCHSIG_PRD4_CONCLUSION_CODES),
+                    "ArchSig measurement packet v1 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered SAGA conclusionCode values include {}.",
+                    registry_sentence(&ARCHSIG_SAGA_CONCLUSION_CODES),
                 ),
                 vec![
                     "Structural verdicts are limited to measured_zero, measured_nonzero, unmeasured, unknown, and not_computed.",
@@ -209,7 +209,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHSIG_GATE_POLICY_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / CI workflow",
-                vec!["archsig-contract:v0.5.0-prd2-artifact-ci"],
+                vec!["archsig-contract:artifact-ci-v0.5.0"],
                 "Gate policy v1 records institutional verdict-to-action mappings for absolute and introduced-by-change rules. Absolute rules must map measured_zero, measured_nonzero, unmeasured, unknown, not_computed, and violated_assumption_dependency; introduced-by-change rules must map new, cleared, preexisting, removed, and other.",
                 vec![
                     "Gate policy is authored institutional judgment, not a measurement packet verdict.",
@@ -223,7 +223,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHSIG_GATE_REPORT_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / CI workflow",
-                vec!["archsig-contract:v0.5.0-prd2-artifact-ci"],
+                vec!["archsig-contract:artifact-ci-v0.5.0"],
                 &format!(
                     "Gate report v1 records {} together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
                     registry_sentence(&ARCHSIG_GATE_REPORT_DECISIONS),
@@ -240,7 +240,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / CI workflow",
-                vec!["archsig-contract:v0.5.0-prd2-artifact-ci"],
+                vec!["archsig-contract:artifact-ci-v0.5.0"],
                 "ArchMap diff v1 records deterministic added, removed, and modified sources, atoms, contexts, and covers computed from two normalized-archmap/v0.5.0 artifacts.",
                 vec![
                     "ArchMap diff is a computed record artifact, not supplied observation evidence.",
@@ -253,7 +253,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / CI workflow",
-                vec!["archsig-contract:v0.5.0-prd2-artifact-ci"],
+                vec!["archsig-contract:artifact-ci-v0.5.0"],
                 &format!(
                     "Comparison report v1 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions and archmap-diff intersections. Registered conclusionCode values are {}.",
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),

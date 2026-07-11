@@ -7,7 +7,7 @@ import Formal.AG.LawAlgebra.FiniteExamples
 import Formal.Util.AssertStandardAxioms
 
 /-!
-Kernel axiom audit entrypoint for PRD-R R1.
+Kernel axiom audit entrypoint for peer-review hardening R1.
 
 This file is intended to be run in CI with:
 
@@ -31,7 +31,7 @@ namespace AAT.AG.AxiomAudit
 open CategoryTheory
 
 /-
-PRD-10 / PRD-R R1: Part X [CBI] theorem constants audited by direct alias.
+Part X / peer-review hardening R1: Part X [CBI] theorem constants audited by direct alias.
 The aliases keep the original dependent theorem types intact while making the
 kernel audit entrypoint elaborate the six advertised Part X CBI declarations.
 -/
@@ -705,21 +705,21 @@ theorem temporalPseudoCircleNonzero :
         Examples.EvolutionPart9.PseudoCircleEdge.ab ≠ 0 :=
   Examples.EvolutionPart9.pseudoCircleMismatch_ab_nonzero
 
-theorem temporalProductIncidencePRD4CohomologyToFrom
+theorem temporalProductIncidencePartIVCohomologyToFrom
     (n : Nat)
     (h : Site.FinitePosetCechCohomology
       FiniteModel.finitePosetCechComplex n
       (FiniteModel.finitePosetCechCoboundaryRelation n)) :
-    Examples.EvolutionPart9.unitProductIncidencePRD4Comparison.prd4_cohomology_to_from n h =
+    Examples.EvolutionPart9.unitProductIncidencePartIVComparison.partIV_cohomology_to_from n h =
       Examples.EvolutionPart9.unitFinitePosetTemporalCechBridge.cohomology_to_from n h :=
-  Examples.EvolutionPart9.unitProductIncidence_prd4_cohomology_to_from n h
+  Examples.EvolutionPart9.unitProductIncidence_partIV_cohomology_to_from n h
 
-theorem temporalProductIncidencePRD4CohomologyFromTo
+theorem temporalProductIncidencePartIVCohomologyFromTo
     (n : Nat)
     (h : Examples.EvolutionPart9.unitFinitePosetTemporalCechBridge.comparison.generalComplex.CoverRelativeHn n) :
-    Examples.EvolutionPart9.unitProductIncidencePRD4Comparison.prd4_cohomology_from_to n h =
+    Examples.EvolutionPart9.unitProductIncidencePartIVComparison.partIV_cohomology_from_to n h =
       Examples.EvolutionPart9.unitFinitePosetTemporalCechBridge.cohomology_from_to n h :=
-  Examples.EvolutionPart9.unitProductIncidence_prd4_cohomology_from_to n h
+  Examples.EvolutionPart9.unitProductIncidence_partIV_cohomology_from_to n h
 
 theorem forceCandidateConcreteNonzero :
     Examples.EvolutionPart9.forceCandidateFixture.concreteObstructionValue ≠ 0 :=

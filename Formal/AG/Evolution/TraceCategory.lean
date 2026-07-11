@@ -8,7 +8,7 @@ namespace Evolution
 universe u v
 
 /-!
-PRD-9 R1 / AC2 selected trace category surface.
+Part IX R1 / AC2 selected trace category surface.
 
 The trace category is selected data. Objects are selected time points,
 operation stages, or abstract event states; arrows are selected transitions.
