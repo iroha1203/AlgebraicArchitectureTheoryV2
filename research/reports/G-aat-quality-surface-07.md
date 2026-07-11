@@ -75,4 +75,3 @@ Construct from law-witness input the ideal-power coefficient sequence supplying
 the D0 fields: `N = I/I^2`, `E = O/I^2`, `Q = O/I`, the projection and kernel
 comparison, objectwise exactness, restriction naturality, and the required
 sheaf conditions.
-
