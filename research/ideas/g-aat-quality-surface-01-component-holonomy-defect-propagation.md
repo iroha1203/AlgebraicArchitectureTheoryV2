@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle26
 tags: [quality-surface, holonomy, component-defect, propagation, cancellation]
 created: 2026-06-20
 cycle: 26
-lean: Formal/AG/Research/QualitySurface/ComponentDefectPropagation.lean
+lean: research/lean/ResearchLean/QualitySurface/ComponentDefectPropagation.lean
 ---
 
 # Component holonomy defect propagation and cancellation law
@@ -32,10 +32,10 @@ right zero leg に沿っても defect は保存・反映される。packet-level
 
 ## 依拠
 
-- Cycle 22: `Formal/AG/Research/QualitySurface/TupleHolonomyDefect.lean`
-- Cycle 23: `Formal/AG/Research/QualitySurface/CodebaseTraceHolonomyPacket.lean`
-- Cycle 24: `Formal/AG/Research/QualitySurface/SourceRefExactVisualization.lean`
-- Cycle 25: `Formal/AG/Research/QualitySurface/SourceRefRepairHolonomy.lean`
+- Cycle 22: `research/lean/ResearchLean/QualitySurface/TupleHolonomyDefect.lean`
+- Cycle 23: `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`
+- Cycle 24: `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 25: `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
 
 ## 非自明性
 
@@ -74,7 +74,7 @@ component defect iff を component ごとに証明した。
 
 Lean file:
 
-- `Formal/AG/Research/QualitySurface/ComponentDefectPropagation.lean`
+- `research/lean/ResearchLean/QualitySurface/ComponentDefectPropagation.lean`
 
 Declarations:
 
@@ -93,8 +93,8 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean Formal/AG/Research/QualitySurface/ComponentDefectPropagation.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/ComponentDefectPropagation.lean`: pass
+- `lake build ResearchLean`: pass
 - `lake env lean .tmp/component_defect_propagation_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; statements include tuple/packet zero-defect calculus, component-indexed propagation, packet-to-tuple projection after propagation, and concrete cancellation witnesses rather than mere transitivity wrappers

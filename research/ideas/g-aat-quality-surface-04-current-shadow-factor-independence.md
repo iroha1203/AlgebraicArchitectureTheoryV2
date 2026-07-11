@@ -20,7 +20,7 @@ origin: G-04-Cycle60
 tags: [target-theorem, finite-query, current-shadow-factorization, recovery, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 60
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean
 ---
 
 # Raw Current-Shadow Factor Recovery / Certificate Independence
@@ -65,7 +65,7 @@ query-coordinate certificate や recovery は得られない。
 
 - `score_reason`: raw factorization / target factorization の強い route でも certificate / recovery を含まない witness。
 - `dullness_risk`: 中。既存 Bool witness の拡張だが、raw factorization face の anti-weakening を明示する。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -95,8 +95,8 @@ recovery の否定は Cycle50/51 の witness を再利用する。target-surface
 
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-factorization-boundary.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateIndependence.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateIndependence.lean`
 
 ## 進捗ログ
 

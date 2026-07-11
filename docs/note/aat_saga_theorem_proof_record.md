@@ -91,7 +91,7 @@ claim boundary が硬化され(cover refinement / naturality と full sheaf coho
 
 ## 6. 主要 Lean 成果物
 
-置き場所: `Formal/AG/Research/QualitySurface/`
+置き場所: `research/lean/ResearchLean/QualitySurface/`
 
 - `SemanticRepairCechGrounding.lean` — 352 サイクルの本体(site/topology bridge、comparison、zero-predicate equivalence、boundary theorems、no-go 定理群、一点圧縮の等価類)
 - `SemanticRepairLawEquationRealization.lean` — laws-as-equations 層(witness ideal、商係数生成、消滅定理、evaluator 定理化、detector soundness)

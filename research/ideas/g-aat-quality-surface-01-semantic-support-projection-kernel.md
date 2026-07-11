@@ -83,7 +83,7 @@ viewer / dashboard / review surface は component support だけでなく semant
 
 ## 証明・根拠
 
-Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticSupportProjectionKernel.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticSupportProjectionKernel.lean` に固定した。
 
 - `RefinedSemanticRepairAtom`
 - `refinedSemanticComponent`
@@ -118,8 +118,8 @@ Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticSupportProjectionKerne
 
 G3 実績:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SemanticSupportProjectionKernel.lean`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticSupportProjectionKernel.lean`: pass。
+- `lake build ResearchLean`: pass。
 - axiom probe: generic projection criterion と core support/projection declarations は axiom-free。selected counterexample / component-projected adequacy / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`Quot.sound`、`unsafe` はない。
 
 ## 審判メモ
@@ -155,5 +155,5 @@ G3 実績:
 ## 進捗ログ
 
 - 2026-06-22: G1 四ロール候補 pool で refined semantic support projection kernel と residual fiber singleton criterion が有力候補として収束。Cycle 78 picked とした。
-- 2026-06-22: Lean 証拠を `SemanticSupportProjectionKernel.lean` に固定し、単体 `lake env lean` と `lake build FormalAGResearch` が通った。
+- 2026-06-22: Lean 証拠を `SemanticSupportProjectionKernel.lean` に固定し、単体 `lake env lean` と `lake build ResearchLean` が通った。
 - 2026-06-22: G2 四審判はすべて accept、base 80、multiplier 2.0、genius support。G4 SCORE 監査は final +160 を confirm。

@@ -27,10 +27,10 @@ visible tuple equivalence が固定された selected repair/transport commutato
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/RouteDefectSupport.lean`
-- `Formal/AG/Research/QualitySurface/VisibleRepairTransportCommutator.lean`
-- `Formal/AG/Research/QualitySurface/SourceRefExactVisualization.lean`
-- `Formal/AG/Research/QualitySurface/InternalExcursionMinSupport.lean`
+- `research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`
+- `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
+- `research/lean/ResearchLean/QualitySurface/InternalExcursionMinSupport.lean`
 
 ## 非自明性
 
@@ -60,7 +60,7 @@ loss-aware quality view で route defect を表示するだけでなく、どの
 
 ## 証明・根拠の見込み
 
-Lean file: `Formal/AG/Research/QualitySurface/SelectedRouteDefectSupportHitting.lean`
+Lean file: `research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean`
 
 Planned / proved declarations:
 
@@ -81,8 +81,8 @@ Planned / proved declarations:
 
 Verification:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SelectedRouteDefectSupportHitting.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean`: pass
+- `lake build ResearchLean`: pass
 - `#print axioms` for all listed declarations: all `does not depend on any axioms`
 - forbidden-token scan on the Lean file and candidate card: no matches
 
@@ -108,6 +108,6 @@ Boundary:
 
 ## 進捗ログ
 
-- 2026-06-21: Cycle 43 候補として作成。Lean 単体チェックは `lake env lean Formal/AG/Research/QualitySurface/SelectedRouteDefectSupportHitting.lean` で pass。
+- 2026-06-21: Cycle 43 候補として作成。Lean 単体チェックは `lake env lean research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean` で pass。
 - 2026-06-21: G2 厳密性 revise に対応し、selected branch minimality と packet-level correction semantics を Lean に追加。単体チェックは再度 pass。
-- 2026-06-21: G3 で `lake build FormalAGResearch`、網羅的 `#print axioms`、形式化品質監査が pass。
+- 2026-06-21: G3 で `lake build ResearchLean`、網羅的 `#print axioms`、形式化品質監査が pass。

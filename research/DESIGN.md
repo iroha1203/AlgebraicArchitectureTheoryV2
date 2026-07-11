@@ -16,7 +16,7 @@
 
 **Lean をループの中の検証ゲートにする。** 生成した主張をそのまま信じないために、`lake build`、公理検査、Lean 形式化品質監査を通してからレポートに残す。定理候補は証明の穴(sorry)を残さず完全に証明し、予想は結論部だけを sorry で保留する。Lean 形式化品質監査では、命題が強すぎて自明化していないか、弱すぎて元の主張を失っていないか、claim boundary が型と仮定に反映されているかを見る。
 
-**検証は独立したライブラリ `FormalAGResearch` で行う。** Lean のライブラリ `Formal` は起点から参照を辿って到達するファイルしかビルドしないため、どこからも参照されていない壊れたファイルがあっても `lake build Formal` は通ってしまう。これでは検証の合否を判定できない。そこで `Formal/AG/Research/` のすべてのファイルをビルドする独立したライブラリを用意し、その成否を合格の信号とする。正式版である `Formal/AG` とは疎結合に保ち、依存は `Formal/AG/Research` から `Formal/AG` への一方向だけに限る。`Formal/AG` 本体は参照のみ可とし、このループでは直接編集しない。
+**検証は独立したライブラリ `ResearchLean` で行う。** Lean のライブラリ `Formal` は起点から参照を辿って到達するファイルしかビルドしないため、どこからも参照されていない壊れたファイルがあっても `lake build Formal` は通ってしまう。これでは検証の合否を判定できない。そこで `research/lean/ResearchLean/` のすべてのファイルをビルドする独立したライブラリを用意し、その成否を合格の信号とする。正式版である `Formal/AG` とは疎結合に保ち、依存は `research/lean/ResearchLean` から `Formal/AG` への一方向だけに限る。`Formal/AG` 本体は参照のみ可とし、このループでは直接編集しない。
 
 **状態の正本は tracking Issue 一つに集める。** active SCORE threshold、current SCORE、カテゴリ別 SCORE、サイクル履歴は tracking Issue の状態である。`goals/<goal-id>.md` の GOAL 定義、探索型 GOAL の候補カード frontmatter、target-theorem の cycle result、検証結果のレポートはいずれも証拠 artifact であり、進行状態そのものではない。リポジトリの中にもう一つ台帳を置くと、サイクルのたびに両者がずれていく。だからサイクルの履歴と threshold 設定は Issue のコメントとして残し、そのための専用ファイルは作らない。target-theorem では候補カードを作らず、report と tracking Issue をサイクル完了時にまとめて同期する。
 

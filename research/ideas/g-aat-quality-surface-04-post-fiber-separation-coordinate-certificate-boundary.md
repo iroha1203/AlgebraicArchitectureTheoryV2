@@ -20,7 +20,7 @@ origin: G-04-Cycle49
 tags: [target-theorem, finite-query, post-fiber-separation, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 49
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean
 ---
 
 # Post-Fiber Separation Coordinate-Certificate Boundary
@@ -59,7 +59,7 @@ finite output や decoder が存在しても、post-fiber が separated なら c
 
 - `score_reason`: T2 は target-support として accept。separation が coordinate certificate / assignment entry を block する recovery-free direction と、visible recovery + decidable output 下の exact iff を追加した。
 - `dullness_risk`: 中。既存 Cycle35/47/48 の合成だが、obstruction boundary と certificate boundary を明示的に接続する。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -87,8 +87,8 @@ certificate から current-shadow factorization を得て、separated post-fiber
 ## 関連
 
 - `research/ideas/g-aat-quality-surface-04-coordinate-certificate-target-surface-entry-boundary.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationNoSeparation.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationNoSeparation.lean`
 
 ## 進捗ログ
 

@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle29
 tags: [quality-surface, source-ref, transport, token-identity, obstruction]
 created: 2026-06-20
 cycle: 29
-lean: Formal/AG/Research/QualitySurface/SourceRefTableLawObstruction.lean
+lean: research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean
 ---
 
 # Source-ref table law as a sharp non-visible-only transport obstruction
@@ -31,10 +31,10 @@ visualization も失敗する。
 
 ## 依拠
 
-- Cycle 17: `Formal/AG/Research/QualitySurface/SourceRefPacketTransport.lean`
-- Cycle 23 / 24: `Formal/AG/Research/QualitySurface/CodebaseTraceHolonomyPacket.lean`,
-  `Formal/AG/Research/QualitySurface/SourceRefExactVisualization.lean`
-- Cycle 28: `Formal/AG/Research/QualitySurface/VisibleRepairTransportCommutator.lean`
+- Cycle 17: `research/lean/ResearchLean/QualitySurface/SourceRefPacketTransport.lean`
+- Cycle 23 / 24: `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`,
+  `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 28: `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`
 
 ## 非自明性
 
@@ -70,7 +70,7 @@ commutator は非ゼロになる。
 
 Lean file:
 
-- `Formal/AG/Research/QualitySurface/SourceRefTableLawObstruction.lean`
+- `research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean`
 
 Declarations:
 
@@ -102,8 +102,8 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SourceRefTableLawObstruction.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean`: pass
+- `lake build ResearchLean`: pass
 - `lake env lean .tmp/source_ref_table_law_obstruction_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; the same `PacketUpdate` proves non-table laws globally and isolates source-ref table identity failure
@@ -135,6 +135,6 @@ previous_cycle_delta: Cycle 28 の visible-only commutator obstruction を、よ
 - 2026-06-20: Cycle 29 G1 で作成。
 - 2026-06-20: G2 initial review。A は `revise`、B/C は `accept`。token permutation update で table 以外の bidirectional laws を満たす形に修正し、base 60 / final 120 に下げた。
 - 2026-06-20: G2-A recheck `accept`。base 60 / final 120 で picked。
-- 2026-06-20: G3 Lean verification pass。対象 Lean、`FormalAGResearch`、axiom harness、独立公理検査、独立形式化品質監査が pass。
+- 2026-06-20: G3 Lean verification pass。対象 Lean、`ResearchLean`、axiom harness、独立公理検査、独立形式化品質監査が pass。
 - 2026-06-20: G3.5 sync audit pass。initial declaration-list mismatch を修正し、candidate card / Lean declarations / report entry は同期済み。
 - 2026-06-20: G4 SCORE audit confirm。base 60、evidence multiplier 2.0、penalty 0、final SCORE 120。

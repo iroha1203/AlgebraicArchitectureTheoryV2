@@ -34,10 +34,10 @@ packet extractor、任意 codebase traceability、実コード全体の品質判
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/SourceRefTupleBridge.lean`
-- `Formal/AG/Research/QualitySurface/SourceRefTokenIdentityReflection.lean`
-- `Formal/AG/Research/QualitySurface/TupleHolonomyDefect.lean`
-- `Formal/AG/Research/QualitySurface/CodebaseTraceHolonomyPacket.lean`
+- `research/lean/ResearchLean/QualitySurface/SourceRefTupleBridge.lean`
+- `research/lean/ResearchLean/QualitySurface/SourceRefTokenIdentityReflection.lean`
+- `research/lean/ResearchLean/QualitySurface/TupleHolonomyDefect.lean`
+- `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`
 - `CodebaseTraceHolonomyPacket.NoSourceRefPacketHolonomyDefect`
 - `CodebaseTraceHolonomyPacket.SourceRefPacketHolonomyDefect`
 - `CodebaseTraceHolonomyPacket.noPacketHolonomy_projects_to_noTupleHolonomy`
@@ -86,8 +86,8 @@ tuple protected data の defect として検出できる。
 
 ## 証明・根拠
 
-Lean proof は `Formal/AG/Research/QualitySurface/SourceRefExactVisualization.lean` に閉じた。
-`Formal/AG/Research.lean` はこの Research evidence file を import する。
+Lean proof は `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean` に閉じた。
+`research/lean/ResearchLean.lean` はこの Research evidence file を import する。
 
 主要 theorem / declaration:
 
@@ -122,8 +122,8 @@ Lean proof は `Formal/AG/Research/QualitySurface/SourceRefExactVisualization.le
 
 検証:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SourceRefExactVisualization.lean`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`: pass。
+- `lake build ResearchLean`: pass。
 - `.tmp/source_ref_exact_visualization_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - 対象 Lean file の `axiom` / `admit` / `sorry` / `unsafe` / `Classical` / `choice` / `propext` /
@@ -156,6 +156,6 @@ Lean proof は `Formal/AG/Research/QualitySurface/SourceRefExactVisualization.le
 - 2026-06-20: Cycle 24 candidate card 作成。
 - 2026-06-20: G2-A revise を反映し、`SourceRefExactVisualization` を packet zero defect ではなく
   tuple zero holonomy 側で定義する方針に修正し、expected score を base 60 / final 120 に下げた。
-- 2026-06-20: `SourceRefExactVisualization.lean` を追加し、単体 Lean、`FormalAGResearch`、axiom harness、
+- 2026-06-20: `SourceRefExactVisualization.lean` を追加し、単体 Lean、`ResearchLean`、axiom harness、
   G3 Lean 形式化品質監査を通した。
 - 2026-06-20: G4 SCORE 監査 confirm。report の Cycle 24 と Current SCORE を total 2920 に更新した。

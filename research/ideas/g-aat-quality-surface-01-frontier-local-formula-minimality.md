@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle35
 tags: [quality-surface, repair, support, frontier, minimality, source-ref]
 created: 2026-06-20
 cycle: 35
-lean: Formal/AG/Research/QualitySurface/FrontierLocalFormulaMinimality.lean
+lean: research/lean/ResearchLean/QualitySurface/FrontierLocalFormulaMinimality.lean
 ---
 
 # Frontier-local formula minimality criterion
@@ -43,10 +43,10 @@ frontier formula に対して sharp な criterion である。
 
 ## 依拠
 
-- Cycle 21: `Formal/AG/Research/QualitySurface/CodebaseTraceRepairTrajectory.lean`
-- Cycle 31: `Formal/AG/Research/QualitySurface/SupportLocalRepairFrontier.lean`
-- Cycle 32: `Formal/AG/Research/QualitySurface/OutsideSupportMutationObstruction.lean`
-- Cycle 34: `Formal/AG/Research/QualitySurface/SupportLocalRepairTransportCommutator.lean`
+- Cycle 21: `research/lean/ResearchLean/QualitySurface/CodebaseTraceRepairTrajectory.lean`
+- Cycle 31: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean`
+- Cycle 32: `research/lean/ResearchLean/QualitySurface/OutsideSupportMutationObstruction.lean`
+- Cycle 34: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean`
 
 ## 非自明性
 
@@ -85,7 +85,7 @@ table-local trace correctness を分けることで、repair UI / analysis packe
 
 Lean file:
 
-- `Formal/AG/Research/QualitySurface/FrontierLocalFormulaMinimality.lean`
+- `research/lean/ResearchLean/QualitySurface/FrontierLocalFormulaMinimality.lean`
 
 Proved declarations:
 
@@ -106,10 +106,10 @@ Proved declarations:
 
 Local G3 checks:
 
-- `lake env lean Formal/AG/Research/QualitySurface/FrontierLocalFormulaMinimality.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/FrontierLocalFormulaMinimality.lean`: pass
+- `lake build ResearchLean`: pass
 - `lake env lean .tmp/frontier_local_formula_minimality_axioms.lean`: pass; all reported declarations depend on no axioms
-- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" Formal/AG/Research/QualitySurface/FrontierLocalFormulaMinimality.lean`: pass; no hits
+- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/QualitySurface/FrontierLocalFormulaMinimality.lean`: pass; no hits
 
 ## 審判メモ
 
@@ -128,4 +128,4 @@ Local G3 checks:
 
 - 2026-06-20: Cycle 35 G1 で作成。二つの G1 候補生成が最上位候補として挙げ、scratch Lean feasibility check が pass。
 - 2026-06-20: G2 三審判すべて `accept`。A は直接性リスクから base 75、B/C は base 80。picked は保守的に base 75 / final 150 とした。
-- 2026-06-20: G3 Lean verification pass。対象 Lean、`FormalAGResearch`、axiom harness が pass。
+- 2026-06-20: G3 Lean verification pass。対象 Lean、`ResearchLean`、axiom harness が pass。

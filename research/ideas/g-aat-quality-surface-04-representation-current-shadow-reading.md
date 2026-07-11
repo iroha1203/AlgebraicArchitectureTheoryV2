@@ -18,7 +18,7 @@ Cycle 36 exposes the semantic-reading premise behind the Cycle 35
 no-separation boundary.
 
 The new Lean file
-`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationCurrentShadowReading.lean`
+`research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationCurrentShadowReading.lean`
 proves that, for a visible finite-query representation, faithfulness of the
 canonical current-shadow reading for the representing package is exactly the
 represented observation's current-shadow extensionality and raw

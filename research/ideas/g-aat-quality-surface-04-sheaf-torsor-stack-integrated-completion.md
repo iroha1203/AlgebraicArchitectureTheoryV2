@@ -40,11 +40,11 @@ lean: proved-in-research
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTorsor.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairStackyH2.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairUniversalShadow.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairTargetCompletion.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTorsor.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairStackyH2.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairUniversalShadow.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetCompletion.lean`
 - tracking Issue `#2482` latest `$math-lean-review` blocker
 
 ## 非自明性
@@ -67,7 +67,7 @@ ADL / static analysis / conformance checker / AI review は local repair signal 
 
 - `score_reason`: latest blocker に直接対応し、既存 support nodes を統合 theorem package として接続する target-proof checkpoint candidate。
 - `dullness_risk`: `universalSemanticRepairSheafTorsorStackCompletion_package` は comparison certificates を引数に残すため completion evidence には使わない。finite-certificate package avoids external comparisons, raw `sheafDischarge`, and raw layer decidability assumptions, but remains finite/small and uses finite certificates rather than a full target-level `S_A/R_A/T_A/St_A` theorem.
-- `proof_or_evidence_plan`: focused Lean、module build、`FormalAGResearch`、full `lake build`、reported declaration の `#print axioms`、placeholder scan、T2/T3/T4/T6 anti-weakening review を通す。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean`、full `lake build`、reported declaration の `#print axioms`、placeholder scan、T2/T3/T4/T6 anti-weakening review を通す。
 - `score_audit`: T4 raise / confirmed as checkpoint: base 92、evidence multiplier 2.0、penalty 0、final 184。
 
 ## Target Theorem 寄与
@@ -118,7 +118,7 @@ Reuse existing proved support nodes from `SemanticRepairSheafH1`, `SemanticRepai
 ## Math Lean Review Scope
 
 - GOAL claim: `research/goals/G-aat-quality-surface-04.md` G-04 target theorem and material premise ledger.
-- Candidate Lean declarations: `Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion.universalSemanticRepairSheafTorsorStackCompletion_package`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion.universalSemanticRepairIntegratedLayerCompletion_package`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion.universalSemanticRepairIntegratedLayerCompletion_package_of_finiteCertificates`.
+- Candidate Lean declarations: `ResearchLean.AG.QualitySurface.SemanticRepairTargetCompletion.universalSemanticRepairSheafTorsorStackCompletion_package`, `ResearchLean.AG.QualitySurface.SemanticRepairTargetCompletion.universalSemanticRepairIntegratedLayerCompletion_package`, `ResearchLean.AG.QualitySurface.SemanticRepairTargetCompletion.universalSemanticRepairIntegratedLayerCompletion_package_of_finiteCertificates`.
 - Relevant files: `SemanticRepairSheafH1.lean`, `SemanticRepairNonabelianTorsor.lean`, `SemanticRepairStackyH2.lean`, `SemanticRepairUniversalShadow.lean`, `SemanticRepairTargetCompletion.lean`.
 
 ## CS / SWE への帰結

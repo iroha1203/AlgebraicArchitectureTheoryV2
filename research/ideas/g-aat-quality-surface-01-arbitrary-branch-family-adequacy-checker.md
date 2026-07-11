@@ -85,7 +85,7 @@ refinement / viewer / diagnostic surface が first failure を表示するとき
 
 ## 証明・根拠
 
-Lean 証拠は `Formal/AG/Research/QualitySurface/ArbitraryBranchFamilyAdequacy.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/QualitySurface/ArbitraryBranchFamilyAdequacy.lean` に固定した。
 
 - `TargetOrderEnumerates`
 - `ListedTargetCodesCovered`
@@ -110,8 +110,8 @@ Lean 証拠は `Formal/AG/Research/QualitySurface/ArbitraryBranchFamilyAdequacy.
 
 G3 実績:
 
-- `lake env lean Formal/AG/Research/QualitySurface/ArbitraryBranchFamilyAdequacy.lean`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/ArbitraryBranchFamilyAdequacy.lean`: pass。
+- `lake build ResearchLean`: pass。
 - `#print axioms`: definitions、`listedCoverage_gives_branchFamilyAdequacy`、`branchFamilyAdequacy_transportsTransversal`、`selectedTraceOnlyCoveredByCollapsed_iff_reflection` は axiom-free。`firstUncoveredTargetBranch?_some_*`、list / iff / selected-collapsed witness / package 系 theorem は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`Quot.sound`、`unsafe` は出ていない。
 - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b"` on changed files: no matches。
 
@@ -161,6 +161,6 @@ G3 実績:
 - 2026-06-22: G1 四ロールの候補 pool から Cycle 75 通常候補として作成。genius target seed への support role を明記した。
 - 2026-06-22: G2 A の revise により、`arbitrary finite branch family` を exact target-order enumeration と decidable coverage に相対化し、checker の `none iff adequacy` が target order omission で破綻しないよう主張を修正した。
 - 2026-06-22: G2 四審判が accept。base は A=84, B=90, C=86, D=90。strict base 84 / expected final 168 として picked に更新。
-- 2026-06-22: G3 Lean 証拠を `ArbitraryBranchFamilyAdequacy.lean` に固定し、`FormalAGResearch` が通った。
+- 2026-06-22: G3 Lean 証拠を `ArbitraryBranchFamilyAdequacy.lean` に固定し、`ResearchLean` が通った。
 - 2026-06-22: G3 形式化品質監査の minor caveat を受け、generic `some -> listed ∧ targetFamily ∧ uncovered` を `firstUncoveredTargetBranch?_some_witness` として追加し、package theorem に含めて再ビルドした。
 - 2026-06-22: G4 SCORE 監査が confirm。base 84、multiplier 2.0、final +168。genius は通常 SCORE へ downgrade。

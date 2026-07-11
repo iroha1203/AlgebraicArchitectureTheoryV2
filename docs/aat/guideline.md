@@ -73,7 +73,7 @@
   `statement-only` も使う。`packaged (assumption-relative)` は仮定 record / certificate /
   selected package の field 合成から得る帰結、`statement-only` は型・candidate surface はあるが
   証明済み theorem として数えないものを指す。
-- **`unported (Research-proved)`**: Research 側(`Formal/AG/Research/`)に同等以上の
+- **`unported (Research-proved)`**: Research 側(`research/lean/ResearchLean/`)に同等以上の
   statement が受理済みだが、本体(`Formal/AG/` 本線)に蒸留されていない状態。
   **残タスクであり、境界ではない。** Research に同主題の受理 theorem が存在する限り、
   本体側の欠落を `packaged (assumption-relative)` +境界注記で close してはならない
@@ -81,13 +81,13 @@
   (下限到達)または「下限到達不能の停止報告」のみで行う。移植状況は
   `docs/aat/research_evidence_index.md` で追跡する。
 - **移植 ≠ import(Research 境界の不変条件)**: 本体(`Formal/AG` 本線、
-  `Formal.lean` / `Formal/AG.lean` の配線を含む)から `Formal.AG.Research` を
+  `Formal.lean` / `Formal/AG.lean` の配線を含む)から `ResearchLean.AG` を
   import してはならない。import 方向は Research → 本体のみ可
   (研究 sandbox と正本の疎結合、peer-review hardening AC18)。「移植」とは本体内で構成を
   再構成する蒸留であり、Research module の import +再導出ラッパーは
   依存 repackage として `unported` のまま扱う。検査:
-  `rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**' --glob '!Formal/AG/Research.lean'`
-  が no match であること(Research 集約ルート `Formal/AG/Research.lean` 自身の
+  `rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!research/lean/ResearchLean/**' --glob '!research/lean/ResearchLean.lean'`
+  が no match であること(Research 集約ルート `research/lean/ResearchLean.lean` 自身の
   内部 import は正当なので除外する)。
 - **scope 記載の資格条件**: 台帳・docs・PR 本文に scope 制限(selected input、no-go、沈黙、
   「〜とは主張しない」)を書いてよい条件は、`.codex/skills/_shared/refutation-checklist.md`

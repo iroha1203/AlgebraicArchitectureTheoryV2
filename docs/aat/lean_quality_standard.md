@@ -275,7 +275,7 @@ baseline を更新する場合は、`.github/lean_quality/LintFormal.lean` を
 | namespace 重複・不能 instance | §3 | CI step `Lean quality lint baseline`: `dupNamespace`, `impossibleInstance` を baseline 差分で検出 |
 | statement contract elaboration | §5.2 | CI step `Statement contracts`: `Formal/AG/StatementContracts.lean` |
 | AxiomAudit | §4.1 | CI step `Kernel axiom audit`: `lake env lean Formal/AG/AxiomAudit.lean` と末尾 `#assert_standard_axioms_only AAT.AG.AxiomAudit` 確認 |
-| Research import 方向 | refutation-checklist §6 | CI step `Research import direction scan`: `.github/lean_quality/check_research_import_direction.sh` が `Formal/AG/Research` 外への新規 `import Formal.AG.Research` 追加を fail |
+| Research import 方向 | refutation-checklist §6 | CI step `Research import direction scan`: `.github/lean_quality/check_research_import_direction.sh` が `research/lean/ResearchLean` 外への新規 `import ResearchLean.AG` 追加を fail |
 | premise 一覧 | §1.1 | CI step `Premise diff report`: `.github/lean_quality/list_premise_diff.sh` が `.tmp/lean-quality/premise-diff.txt` を出力する。これはレビュー突合用で hard fail ではない |
 
 Research import 方向 scan は diff 上の新規追加行だけを hard fail にする。

@@ -40,10 +40,10 @@ finite/small target boundary 内で、higher coherence / stack effectiveness の
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTorsor.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTriple.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairObstructionTower.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTorsor.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTriple.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairObstructionTower.lean`
 - Cycle 6 G6 checkpoint: next largest blocker is true `H2` / stacky descent or stack effectiveness theorem.
 
 ## 非自明性
@@ -82,7 +82,7 @@ G-04 の open support node である true `H^2` / stacky descent or stack effect
 
 ## 証明・根拠
 
-`Formal/AG/Research/QualitySurface/SemanticRepairStackyH2.lean` を追加した。
+`research/lean/ResearchLean/QualitySurface/SemanticRepairStackyH2.lean` を追加した。
 
 主な Lean 証拠は次の通り。
 
@@ -116,5 +116,5 @@ G-04 の open support node である true `H^2` / stacky descent or stack effect
 
 - 2026-06-24: Cycle 6 G6 checkpoint を受け、finite stacky `H2` / stacky descent blocker に対応する candidate として作成。
 - 2026-06-24: G2 四審判は accept。全審判 base 94。SCORE 見込みは base 94 / x2.0 / final 188。
-- 2026-06-24: `SemanticRepairStackyH2.lean` を追加し、target-support evidence を Lean proof として固定。`lake env lean`、対象 module build、`FormalAGResearch`、`lake build`、axiom harness、scan は pass。
+- 2026-06-24: `SemanticRepairStackyH2.lean` を追加し、target-support evidence を Lean proof として固定。`lake env lean`、対象 module build、`ResearchLean`、`lake build`、axiom harness、scan は pass。
 - 2026-06-24: scoped tracking issue #2494 を作成。

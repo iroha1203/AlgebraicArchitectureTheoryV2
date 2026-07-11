@@ -39,8 +39,8 @@ traceability、全 repair semantics は結論しない。
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/ProfileTupleIntegration.lean`
-- `Formal/AG/Research/QualitySurface/FiniteSquareCriterion.lean`
+- `research/lean/ResearchLean/QualitySurface/ProfileTupleIntegration.lean`
+- `research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean`
 - `endpointTuple_visibleAgreement`
 - `endpointTuple_protectedData_diff`
 - `same_surface_but_profile_tuple_diff`
@@ -85,7 +85,7 @@ tuple witness に相対化され、tooling completeness や global code quality 
 
 ## 証明・根拠の見込み
 
-Lean proof は `Formal/AG/Research/QualitySurface/TupleProtectedDataSquareCriterion.lean` に閉じる。
+Lean proof は `research/lean/ResearchLean/QualitySurface/TupleProtectedDataSquareCriterion.lean` に閉じる。
 
 主要 theorem / declaration:
 
@@ -114,8 +114,8 @@ Lean proof は `Formal/AG/Research/QualitySurface/TupleProtectedDataSquareCriter
 
 検証:
 
-- `lake env lean Formal/AG/Research/QualitySurface/TupleProtectedDataSquareCriterion.lean` pass。
-- `lake build FormalAGResearch` pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/TupleProtectedDataSquareCriterion.lean` pass。
+- `lake build ResearchLean` pass。
 - `lake env lean .tmp/tuple_protected_data_square_axioms.lean` pass。
 - reported declaration はすべて `does not depend on any axioms`。
 - changed-file scan で hidden / bidirectional Unicode と local path は no matches。
@@ -142,7 +142,7 @@ Lean proof は `Formal/AG/Research/QualitySurface/TupleProtectedDataSquareCriter
 ## G3 監査
 
 - `TupleProtectedDataSquareCriterion.lean` は selected tuple square、underlying grid transport compatibility、endpointPairOfSquare agreement、visible flatness、component-wise protected discrepancy、ReadingCurved instance、visible faithfulness no-go を証明する。
-- G3 axiom audit: pass。target Lean、`FormalAGResearch`、axiom harness は pass。reported declaration はすべて axiom-free。
+- G3 axiom audit: pass。target Lean、`ResearchLean`、axiom harness は pass。reported declaration はすべて axiom-free。
 - G3 formalization quality audit: pass。statement は revised candidate の強さと一致し、global tuple transport、global flatness、ArchMap correctness、source completeness は encoding していない。
 
 ## 進捗ログ

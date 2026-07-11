@@ -40,9 +40,9 @@ finite/small target boundary 内で、repair-choice の非可換 twisting を fi
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTriple.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairObstructionTower.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTriple.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairObstructionTower.lean`
 - Cycle 5 G6 checkpoint: next largest blocker is finite/small nonabelian `H1` / torsor descent adequacy.
 
 ## 非自明性
@@ -83,7 +83,7 @@ G-04 の open support node である full nonabelian `H^1` / torsor descent adeq
 
 ## 証明・根拠
 
-`Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTorsor.lean` を追加した。
+`research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTorsor.lean` を追加した。
 
 主な Lean 証拠は次の通り。
 
@@ -112,5 +112,5 @@ G-04 の open support node である full nonabelian `H^1` / torsor descent adeq
 ## 進捗ログ
 
 - 2026-06-24: Cycle 5 G6 checkpoint を受け、candidate を作成。strict judge の指摘に従い、`full nonabelian H1` ではなく finite/small pointed torsor descent envelope へ claim boundary を狭めた。
-- 2026-06-24: `SemanticRepairNonabelianTorsor.lean` を追加し、target-support evidence を Lean proof として固定。`lake env lean`、対象 module build、`FormalAGResearch`、`lake build`、axiom harness、scan は pass。
+- 2026-06-24: `SemanticRepairNonabelianTorsor.lean` を追加し、target-support evidence を Lean proof として固定。`lake env lean`、対象 module build、`ResearchLean`、`lake build`、axiom harness、scan は pass。
 - 2026-06-24: scoped tracking issue #2492 を作成。

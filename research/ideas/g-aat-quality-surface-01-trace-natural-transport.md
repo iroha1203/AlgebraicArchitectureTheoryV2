@@ -36,8 +36,8 @@ profile transport が保つべき certificate geometry の成分である。
 
 - `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
 - `docs/note/aat_quality_surface.md` の source reference claim boundary と trace locus
-- cycle 1 の `Formal/AG/Research/QualitySurface/SupportHitting.lean`
-- cycle 3 の `Formal/AG/Research/QualitySurface/ProfileCurvature.lean`
+- cycle 1 の `research/lean/ResearchLean/QualitySurface/SupportHitting.lean`
+- cycle 3 の `research/lean/ResearchLean/QualitySurface/ProfileCurvature.lean`
 
 ## 非自明性
 
@@ -110,6 +110,6 @@ trace-missing atom が残ることを証明する。
 - 2026-06-20: cycle 4 の G1 候補生成から審判対象として作成。
 - 2026-06-20: G2 revise を受け、主成果を trace availability preservation から
   support transport と trace transport を分離する finite missing-trace witness へ寄せ、expected base score を 70 に調整。
-- 2026-06-20: `Formal/AG/Research/QualitySurface/TraceTransport.lean` を追加。`lake build FormalAGResearch`
+- 2026-06-20: `research/lean/ResearchLean/QualitySurface/TraceTransport.lean` を追加。`lake build ResearchLean`
   pass。G2 再審判は accept。G3 公理検査 pass: requested declarations depend on no axioms。G3 形式化品質監査 pass。
 - 2026-06-20: G4 SCORE 監査 reduce: base 60, multiplier 2.0, penalty 0, final 120。

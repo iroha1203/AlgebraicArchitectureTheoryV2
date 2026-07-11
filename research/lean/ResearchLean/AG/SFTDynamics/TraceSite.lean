@@ -1,4 +1,4 @@
-import Formal.AG.Research.Basic
+import ResearchLean.AG.Basic
 
 /-!
 SFT v2 Lean tower, target **L1** (skeleton note `docs/note/

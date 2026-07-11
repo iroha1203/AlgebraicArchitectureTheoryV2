@@ -20,7 +20,7 @@ origin: G-04-Cycle61
 tags: [target-theorem, finite-query, current-shadow-factorization, semantic-reading-adequacy, recovery, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 61
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorSemanticIndependence.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorSemanticIndependence.lean
 ---
 
 # Raw Current-Shadow Factor / Semantic Adequacy Independence
@@ -67,7 +67,7 @@ query-coordinate recovery や coordinate certificate は得られない。
 
 - `score_reason`: recovery-free faces を同時に満たす Bool witness で、exact-boundary の recovery premise を隠せないことを固定する。
 - `dullness_risk`: 中。既存 witness の合成だが、target route graph の誤読を防ぐ package になっている。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -98,8 +98,8 @@ Cycle53 の semantic adequacy witness と Cycle60 の raw factorization witness 
 
 - `research/ideas/g-aat-quality-surface-04-semantic-adequacy-independence.md`
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-independence.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyIndependence.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyIndependence.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean`
 
 ## 進捗ログ
 

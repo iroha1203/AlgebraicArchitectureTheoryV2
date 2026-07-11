@@ -41,9 +41,9 @@ completeness, or whole-codebase quality.
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/HandoffCechExactness.lean`
-- `Formal/AG/Research/QualitySurface/HandoffRepairTransversal.lean`
-- `Formal/AG/Research/QualitySurface/SourceRefHandoffComponentSupport.lean`
+- `research/lean/ResearchLean/QualitySurface/HandoffCechExactness.lean`
+- `research/lean/ResearchLean/QualitySurface/HandoffRepairTransversal.lean`
+- `research/lean/ResearchLean/QualitySurface/SourceRefHandoffComponentSupport.lean`
 - Cycle 63-65 の component support、repair transversal、Cech overlap exactness。
 
 ## 非自明性
@@ -129,14 +129,14 @@ Lean declarations:
 - `overlapObstructionBasisRepairDuality_package`
 
 Lean evidence stage: `proved-in-research` in
-`Formal/AG/Research/QualitySurface/OverlapObstructionBasis.lean`, imported by
-`Formal/AG/Research.lean`.
+`research/lean/ResearchLean/QualitySurface/OverlapObstructionBasis.lean`, imported by
+`research/lean/ResearchLean.lean`.
 
 G3 checks:
 
-- `lake env lean Formal/AG/Research/QualitySurface/OverlapObstructionBasis.lean`: pass.
-- `lake build Formal.AG.Research.QualitySurface.OverlapObstructionBasis`: pass.
-- `lake build FormalAGResearch`: pass.
+- `lake env lean research/lean/ResearchLean/QualitySurface/OverlapObstructionBasis.lean`: pass.
+- `lake build ResearchLean.AG.QualitySurface.OverlapObstructionBasis`: pass.
+- `lake build ResearchLean`: pass.
 - `lake build`: pass; existing unrelated linter warnings remain in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/overlap_obstruction_basis_axioms.lean`: pass.

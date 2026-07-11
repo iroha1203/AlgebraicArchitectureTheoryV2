@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle34
 tags: [quality-surface, repair, support, transport, source-ref, frontier]
 created: 2026-06-20
 cycle: 34
-lean: Formal/AG/Research/QualitySurface/SupportLocalRepairTransportCommutator.lean
+lean: research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean
 ---
 
 # Support-local repair/transport frontier commutator criterion
@@ -36,10 +36,10 @@ transportThenRepairPacket τ transportedAction packet
 
 ## 依拠
 
-- Cycle 30: `Formal/AG/Research/QualitySurface/LawfulRepairTransportCommutator.lean`
-- Cycle 31: `Formal/AG/Research/QualitySurface/SupportLocalRepairFrontier.lean`
-- Cycle 32: `Formal/AG/Research/QualitySurface/OutsideSupportMutationObstruction.lean`
-- Cycle 33: `Formal/AG/Research/QualitySurface/SupportedTokenMismatchObstruction.lean`
+- Cycle 30: `research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`
+- Cycle 31: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean`
+- Cycle 32: `research/lean/ResearchLean/QualitySurface/OutsideSupportMutationObstruction.lean`
+- Cycle 33: `research/lean/ResearchLean/QualitySurface/SupportedTokenMismatchObstruction.lean`
 
 ## 非自明性
 
@@ -76,7 +76,7 @@ bounded correctness criterion になる。ただし canonical repair planning、
 
 Lean file:
 
-- `Formal/AG/Research/QualitySurface/SupportLocalRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean`
 
 Proved declarations:
 
@@ -90,8 +90,8 @@ Proved declarations:
 
 Local G3 checks:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SupportLocalRepairTransportCommutator.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean`: pass
+- `lake build ResearchLean`: pass
 - `lake env lean .tmp/support_local_repair_transport_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; transported exact pre-frontier, transported support-locality, left/right route frontier formula, route frontier agreement, and source-ref exact visualization are all in the theorem package
@@ -113,5 +113,5 @@ Local G3 checks:
 
 - 2026-06-20: Cycle 34 G1 で作成。二つの G1 候補生成が第一候補として挙げた。
 - 2026-06-20: G2 三審判すべて `accept`。A は既存 theorem 合成に近いリスクから base 65、B/C は base 70。picked は保守的に base 65 / final 130 とした。
-- 2026-06-20: G3 Lean verification pass。対象 Lean、`FormalAGResearch`、axiom harness が pass。
+- 2026-06-20: G3 Lean verification pass。対象 Lean、`ResearchLean`、axiom harness が pass。
 - 2026-06-20: G3 independent axiom audit / formalization-quality audit pass。

@@ -44,11 +44,11 @@ lean: proved-in-research
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTorsor.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairStackyH2.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairTargetCompletion.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairTargetSurface.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTorsor.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairStackyH2.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetCompletion.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetSurface.lean`
 
 ## 非自明性
 
@@ -62,7 +62,7 @@ Cycle 10 は sheaf/torsor/stack integrated theorem を構成したが、GOAL sta
 
 - `score_reason`: GOAL の target objects と Cycle 10 finite-certificate theorem package の対応を Lean theorem surface に固定する checkpoint。
 - `dullness_risk`: 新しい obstruction / universality theorem ではなく target surface alignment が中心。score は主補題級より下げる。
-- `proof_or_evidence_plan`: focused Lean、`Formal.AG.Research` / `FormalAGResearch` build、reported declaration の `#print axioms`、placeholder scan、T2/T4 anti-weakening review を通す。
+- `proof_or_evidence_plan`: focused Lean、`ResearchLean.AG` / `ResearchLean` build、reported declaration の `#print axioms`、placeholder scan、T2/T4 anti-weakening review を通す。
 - `score_audit`: T4 confirm as checkpoint: base 78、evidence multiplier 2.0、penalty 0、final 156。
 
 ## Target Theorem 寄与
@@ -104,7 +104,7 @@ finite/small semantic repair site, residual coefficient sheaf, finite pointed no
 ## Math Lean Review Scope
 
 - GOAL claim: `research/goals/G-aat-quality-surface-04.md` G-04 target theorem and material premise ledger.
-- Candidate Lean declarations: `Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface.UniversalSemanticRepairTargetSurface`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface.Obs_A`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface.universalSemanticRepairTargetSurface_package_of_finiteCertificates`.
+- Candidate Lean declarations: `ResearchLean.AG.QualitySurface.SemanticRepairTargetSurface.UniversalSemanticRepairTargetSurface`, `ResearchLean.AG.QualitySurface.SemanticRepairTargetSurface.Obs_A`, `ResearchLean.AG.QualitySurface.SemanticRepairTargetSurface.universalSemanticRepairTargetSurface_package_of_finiteCertificates`.
 - Relevant files: `SemanticRepairSheafH1.lean`, `SemanticRepairNonabelianTorsor.lean`, `SemanticRepairStackyH2.lean`, `SemanticRepairTargetCompletion.lean`, `SemanticRepairTargetSurface.lean`.
 
 ## 証明・根拠の見込み

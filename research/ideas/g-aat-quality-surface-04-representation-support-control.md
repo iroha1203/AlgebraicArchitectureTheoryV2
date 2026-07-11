@@ -18,7 +18,7 @@ Cycle 37 narrows the Cycle 36 faithfulness obligation to a visible query /
 support determinacy certificate.
 
 The new Lean file
-`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportControl.lean`
+`research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportControl.lean`
 proves that, if the current canonical shadow determines the concrete query
 trace shadow, then every post-map on that query is invariant on realized
 current-shadow query fibers.  Consequently the canonical current-shadow

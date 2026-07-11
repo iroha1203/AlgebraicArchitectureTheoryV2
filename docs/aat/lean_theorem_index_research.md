@@ -1,6 +1,6 @@
 # 研究ループ Lean API 索引
 
-この文書は、`Formal/AG/Research` と research / target-theorem loop で追加された
+この文書は、`research/lean/ResearchLean` と research / target-theorem loop で追加された
 theorem package の public Lean API を追跡する分割索引である。研究成果は canonical
 mathematical text ではなく、GOAL card、tracking Issue、report、最終 review の境界に
 相対化して読む。分割全体の入口は
@@ -11,7 +11,7 @@ mathematical text ではなく、GOAL card、tracking Issue、report、最終 re
 
 ## Research Target Theorem Packages
 
-Research target theorem artifacts live under `Formal/AG/Research/` and remain
+Research target theorem artifacts live under `research/lean/ResearchLean/` and remain
 research evidence, not canonical mathematical text. The GOAL card and tracking
 Issue define the theorem boundary; this index records the public Lean API needed
 for review.
@@ -24,16 +24,16 @@ The correspondence and implementation history are tracked in Issue
 future canonical status updates for these results belong in
 `lean_theorem_index_ag_aat.md`, not in this research evidence index.
 
-File: `Formal/AG/Research/QualitySurface/SemanticRepairGluingComplex.lean`.
-Certificate surface: `Formal/AG/Research/QualitySurface/SemanticRepairAdequacyDischarge.lean`.
-Additional target theorem files: `Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`,
-`Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`,
-`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`,
-`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationRealization.lean`,
-`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`,
-`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`,
-`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`,
-`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`.
+File: `research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean`.
+Certificate surface: `research/lean/ResearchLean/QualitySurface/SemanticRepairAdequacyDischarge.lean`.
+Additional target theorem files: `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`,
+`research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`,
+`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`,
+`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationRealization.lean`,
+`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`,
+`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`,
+`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`,
+`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`.
 Tracking Issue: [#2476](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2476).
 Report: [`research/reports/G-aat-quality-surface-02.md`](../../research/reports/G-aat-quality-surface-02.md).
 Final review: `$math-lean-review` passed with four `No major findings` lanes for

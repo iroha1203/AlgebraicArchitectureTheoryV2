@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle38
 tags: [quality-surface, route-defect, holonomy, support, repair-transport, source-ref]
 created: 2026-06-20
 cycle: 38
-lean: Formal/AG/Research/QualitySurface/RouteDefectSupport.lean
+lean: research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean
 ---
 
 # Route defect support calculus for selected repair/transport endpoints
@@ -41,10 +41,10 @@ off-coordinate nonmembership を Lean statement に含める。
 
 ## 依拠
 
-- Cycle 23: `Formal/AG/Research/QualitySurface/CodebaseTraceHolonomyPacket.lean`
-- Cycle 26: `Formal/AG/Research/QualitySurface/ComponentDefectPropagation.lean`
-- Cycle 28: `Formal/AG/Research/QualitySurface/VisibleRepairTransportCommutator.lean`
-- Cycle 37: `Formal/AG/Research/QualitySurface/TransportTableLawRouteLocalization.lean`
+- Cycle 23: `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`
+- Cycle 26: `research/lean/ResearchLean/QualitySurface/ComponentDefectPropagation.lean`
+- Cycle 28: `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`
+- Cycle 37: `research/lean/ResearchLean/QualitySurface/TransportTableLawRouteLocalization.lean`
 
 ## 非自明性
 
@@ -82,7 +82,7 @@ Lean witness であり、source extraction completeness、ArchMap correctness、
 
 Lean file:
 
-- `Formal/AG/Research/QualitySurface/RouteDefectSupport.lean`
+- `research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`
 
 Lean declarations:
 
@@ -112,16 +112,16 @@ Claim boundary:
 
 - finite `SourceRefPacket`
 - component-indexed `SourceRefPacketProtectedComponent`
-- selected repair/transport endpoint pairs already supplied in `Formal/AG/Research`
+- selected repair/transport endpoint pairs already supplied in `research/lean/ResearchLean`
 - explicit packet-to-tuple bridge
 - pointwise support membership / non-membership, not global codebase quality
 
 Local G3 checks:
 
-- `lake env lean Formal/AG/Research/QualitySurface/RouteDefectSupport.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`: pass
+- `lake build ResearchLean`: pass
 - `lake env lean .tmp/route_defect_support_axioms.lean`: pass; reported declarations depend on no axioms
-- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" Formal/AG/Research/QualitySurface/RouteDefectSupport.lean`: pass; no hits in the Lean evidence file
+- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`: pass; no hits in the Lean evidence file
 
 ## 審判メモ
 
@@ -141,4 +141,4 @@ Local G3 checks:
 - 2026-06-20: Cycle 38 G1 で三者の候補生成から採択候補として作成。複数 agent が route defect support calculus または exact support localization を推した。
 - 2026-06-20: G2 A の `revise` を受け、expected score を base 75 / final 150 に下げ、exact support と off-coordinate nonmembership を必須化した。実装前確認により Cycle 37 は singleton ではなく endpoint/worker の exact two-table support として修正した。
 - 2026-06-20: G2 A 再審査が `accept`、base 70。保守評価に合わせて expected score を base 70 / final 140 に更新した。
-- 2026-06-20: G3 Lean 実装を追加。対象 file、`FormalAGResearch`、axiom harness が pass。
+- 2026-06-20: G3 Lean 実装を追加。対象 file、`ResearchLean`、axiom harness が pass。

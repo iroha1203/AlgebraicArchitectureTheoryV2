@@ -40,9 +40,9 @@ source extraction completeness、ArchMap correctness、実コード全体の tra
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/ProfileGridHolonomy.lean`
-- `Formal/AG/Research/QualitySurface/FiniteSquareCriterion.lean`
-- `Formal/AG/Research/QualitySurface/TupleProtectedDataSquareCriterion.lean`
+- `research/lean/ResearchLean/QualitySurface/ProfileGridHolonomy.lean`
+- `research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean`
+- `research/lean/ResearchLean/QualitySurface/TupleProtectedDataSquareCriterion.lean`
 - `gridHolonomy_visibleAgreement`
 - `localized_curvature_cell`
 - `same_grid_surface_but_path_ordered_frontier_diff`
@@ -82,8 +82,8 @@ grid endpoint の quality reading が同じでも protected data が違う場合
 
 ## 証明・根拠
 
-Lean proof は `Formal/AG/Research/QualitySurface/GridHolonomyLocalization.lean` に閉じた。
-`Formal/AG/Research.lean` はこの Research evidence file を import する。
+Lean proof は `research/lean/ResearchLean/QualitySurface/GridHolonomyLocalization.lean` に閉じた。
+`research/lean/ResearchLean.lean` はこの Research evidence file を import する。
 
 主要 theorem / declaration:
 
@@ -124,8 +124,8 @@ Lean proof は `Formal/AG/Research/QualitySurface/GridHolonomyLocalization.lean`
 
 検証:
 
-- `lake env lean Formal/AG/Research/QualitySurface/GridHolonomyLocalization.lean`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/GridHolonomyLocalization.lean`: pass。
+- `lake build ResearchLean`: pass。
 - `.tmp/grid_holonomy_localization_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - G3 公理検査: pass。
@@ -152,4 +152,4 @@ Lean proof は `Formal/AG/Research/QualitySurface/GridHolonomyLocalization.lean`
 
 - 2026-06-20: Cycle 20 candidate card 作成。
 - 2026-06-20: G2-A revise を反映し、cellwise visible-flatness と shared-boundary protected compatibility を required evidence に追加し、base 60 / final 120 に下げた。
-- 2026-06-20: G2-A 再審判 accept。`GridHolonomyLocalization.lean` を追加し、単体 Lean、`FormalAGResearch`、axiom harness、G3 公理検査、G3 Lean 形式化品質監査を通した。
+- 2026-06-20: G2-A 再審判 accept。`GridHolonomyLocalization.lean` を追加し、単体 Lean、`ResearchLean`、axiom harness、G3 公理検査、G3 Lean 形式化品質監査を通した。

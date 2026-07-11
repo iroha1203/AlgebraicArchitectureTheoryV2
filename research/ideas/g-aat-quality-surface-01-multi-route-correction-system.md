@@ -27,9 +27,9 @@ lean: proved-in-research
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/SelectedRouteFamilyExactness.lean`
-- `Formal/AG/Research/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
-- `Formal/AG/Research/QualitySurface/SelectedSupportDefectLocalization.lean`
+- `research/lean/ResearchLean/QualitySurface/SelectedRouteFamilyExactness.lean`
+- `research/lean/ResearchLean/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
+- `research/lean/ResearchLean/QualitySurface/SelectedSupportDefectLocalization.lean`
 
 ## 非自明性
 
@@ -59,7 +59,7 @@ multi-route repair dashboard では、一つの route が exact でも family ex
 
 ## 証明・根拠
 
-Lean file: `Formal/AG/Research/QualitySurface/MultiRouteCorrectionSystem.lean`
+Lean file: `research/lean/ResearchLean/QualitySurface/MultiRouteCorrectionSystem.lean`
 
 Proved declarations:
 
@@ -96,8 +96,8 @@ Boundary:
 
 ## Verification
 
-- `lake env lean Formal/AG/Research/QualitySurface/MultiRouteCorrectionSystem.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/MultiRouteCorrectionSystem.lean`: pass
+- `lake build ResearchLean`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/multi_route_correction_system_axioms.lean`: pass
   - standard axioms only: package and supporting declarations depend only on `propext` / `Quot.sound`

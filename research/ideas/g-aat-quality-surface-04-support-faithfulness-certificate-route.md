@@ -20,7 +20,7 @@ origin: G-04-Cycle70
 tags: [target-theorem, finite-query, support-shadow, current-shadow-reading, faithfulness, coordinate-certificate, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 70
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessCertificateRoute.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessCertificateRoute.lean
 ---
 
 # Support-Shadow Faithfulness / Coordinate Certificate Target Route
@@ -66,7 +66,7 @@ trace evidence ではこの surface は満たされない。
 
 - `score_reason`: faithfulness/certificate exact boundary と certificate-visible target route package。
 - `dullness_risk`: 中。既存同値を target route 文脈で接続するが、premise boundary の可視化が強い。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -98,8 +98,8 @@ tooling は current-shadow reading faithfulness claim を coordinate certificate
 - `research/ideas/g-aat-quality-surface-04-support-faithfulness-target-route.md`
 - `research/ideas/g-aat-quality-surface-04-support-faithfulness-independence.md`
 - `research/ideas/g-aat-quality-surface-04-support-shadow-certificate-route.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateRoute.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateRoute.lean`
 
 ## 進捗ログ
 

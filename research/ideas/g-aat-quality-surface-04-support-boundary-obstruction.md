@@ -20,7 +20,7 @@ origin: G-04-Cycle72
 tags: [target-theorem, finite-query, support-shadow, obstruction, support-control, current-shadow-factorization, faithfulness, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 72
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryObstruction.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryObstruction.lean
 ---
 
 # Support-Shadow Boundary Obstruction
@@ -65,7 +65,7 @@ finite support recovery を持つ analyzer でも、raw current-shadow factoriza
 
 - `score_reason`: Cycle71 square の contrapositive obstruction と complete Bool recovery witness の一括 package。
 - `dullness_risk`: 中。既存 witness の再利用が多いが、一般 obstruction theorem と square 境界の audit value がある。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -96,8 +96,8 @@ Cycle71 の iff を contrapositive として使い、Bool complete support witne
 - `research/ideas/g-aat-quality-surface-04-support-boundary-square.md`
 - `research/ideas/g-aat-quality-surface-04-support-faithfulness-independence.md`
 - `research/ideas/g-aat-quality-surface-04-support-shadow-certificate-independence.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundarySquare.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessIndependence.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundarySquare.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessIndependence.lean`
 
 ## 進捗ログ
 

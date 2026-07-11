@@ -75,7 +75,7 @@ quality surface は transport success を component equality ではなく residu
 
 ## 証明・根拠
 
-Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualTransportNaturality.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualTransportNaturality.lean` に固定した。
 
 - `TransportedSemanticSupportExact`
 - `TargetResidualLiftedBySourceResidual`
@@ -103,9 +103,9 @@ Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualTransportNatur
 
 G3 実績:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualTransportNaturality.lean`: pass。
-- `lake build Formal.AG.Research.QualitySurface.SemanticResidualTransportNaturality`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualTransportNaturality.lean`: pass。
+- `lake build ResearchLean.AG.QualitySurface.SemanticResidualTransportNaturality`: pass。
+- `lake build ResearchLean`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
 - axiom probe: generic theorem 群は axiom-free。selected witness / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 - `git diff --check`: pass。

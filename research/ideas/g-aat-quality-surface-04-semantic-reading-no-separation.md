@@ -25,7 +25,7 @@ origin: G-04 Cycle 32
 tags: [target-theorem, target-support, finite-query, semantic-reading, no-separation]
 created: 2026-06-25
 cycle: 32
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryNoSeparation.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryNoSeparation.lean
 ---
 
 # Semantic Reading No-Separation Bridge

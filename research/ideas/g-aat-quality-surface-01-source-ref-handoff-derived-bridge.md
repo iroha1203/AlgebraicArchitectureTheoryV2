@@ -12,7 +12,7 @@ origin: cycle-59
 tags: [quality-surface, source-ref, handoff, bridge, obstruction]
 created: 2026-06-21
 cycle: 59
-lean: Formal/AG/Research/QualitySurface/SourceRefHandoffBridge.lean
+lean: research/lean/ResearchLean/QualitySurface/SourceRefHandoffBridge.lean
 ---
 
 # Source-ref handoff derived bridge certificate theorem
@@ -113,7 +113,7 @@ Lean file `SourceRefHandoffBridge.lean` に置いた。
 - G2 B: `accept`, base 85。required evidence は derived certificate、三成分 failure-to-obstruction、positive comparator、local exact product と interaction exactness の分離。
 - G2 C: `accept`, base 85。repo-wide value は Lean / paper / tooling / website。runtime extraction や repair generation へ越境しないことが条件。
 - G2 D: `accept`, base 88。ADL / conformance checker が表示する mismatch を bounded source-ref handoff theorem に移す点を評価。ただし ADL-style Boolean constraint の包装は不可。
-- G3: `lake env lean Formal/AG/Research/QualitySurface/SourceRefHandoffBridge.lean` と `lake build FormalAGResearch` は pass。core construction、alignment equivalence、failure-to-obstruction constructor、aligned packet-tuple witness は axiom-free。repair / interaction witness と package は標準 `propext` / `Quot.sound` を継承する。`sorryAx`、custom axiom、`Classical.choice` はない。
+- G3: `lake env lean research/lean/ResearchLean/QualitySurface/SourceRefHandoffBridge.lean` と `lake build ResearchLean` は pass。core construction、alignment equivalence、failure-to-obstruction constructor、aligned packet-tuple witness は axiom-free。repair / interaction witness と package は標準 `propext` / `Quot.sound` を継承する。`sorryAx`、custom axiom、`Classical.choice` はない。
 - G3 形式化品質: `pass`。三 component compatibility は packet / endpoint tuple data 上で定義され、`BridgeCertificate.component = true` の循環定義ではない。`SourceRefHandoffFailure` は `certifiedFalse` と underlying `lawFailure` の両方を保持するため、anti-rename 条件を満たす。
 
 ## 関連

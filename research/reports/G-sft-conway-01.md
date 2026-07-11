@@ -88,7 +88,7 @@ rival_delta: 既存 rival は owner mismatch や org/code incidence を可視化
 formalization_quality: `cd research/lean && lake env lean ResearchLean/AG/SFT/ConwaySupportReceiver.lean` と
   `cd research/lean && lake build ResearchLean.AG.SFT.ConwaySupportReceiver` が通過。初回 `旧Research aggregate build` は
   新規 `ResearchLean.AG.SFT.ConwaySupportReceiver` まで build した後、既存
-  `Formal.AG.Research.QualitySurface.VisibleRepairTransportCommutator` の `.setup.json` 読み込み失敗で停止したが、
+  `ResearchLean.AG.QualitySurface.VisibleRepairTransportCommutator` の `.setup.json` 読み込み失敗で停止したが、
   再実行で `旧Research aggregate build` は通過した。`#print axioms` では receiver 変換本体は axiom-free、
   finite example receiver 系は Cycle 1 由来の `propext` に依存する。
 open_questions: full nerve map / comparison functor、finite `C^1/B^1` quotient、reorg/refactor の

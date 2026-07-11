@@ -136,6 +136,7 @@ allowed_path() {
     .github/lean_quality/check_research_legacy_refs.sh|\
     .github/lean_quality/fixtures/research_legacy_refs/negative/expectations.tsv|\
     research/lean/migrations/R3/manifest.tsv|\
+    research/lean/migrations/R4/manifest.tsv|\
     docs/archive/*) return 0 ;;
   esac
   registered_fixture "$path"

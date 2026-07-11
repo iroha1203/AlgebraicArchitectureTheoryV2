@@ -34,10 +34,10 @@ packet extractor、任意 codebase traceability、実コード全体の品質判
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/CodebaseTracePacket.lean`
-- `Formal/AG/Research/QualitySurface/SourceRefTupleBridge.lean`
-- `Formal/AG/Research/QualitySurface/SourceRefTokenIdentityReflection.lean`
-- `Formal/AG/Research/QualitySurface/TupleHolonomyDefect.lean`
+- `research/lean/ResearchLean/QualitySurface/CodebaseTracePacket.lean`
+- `research/lean/ResearchLean/QualitySurface/SourceRefTupleBridge.lean`
+- `research/lean/ResearchLean/QualitySurface/SourceRefTokenIdentityReflection.lean`
+- `research/lean/ResearchLean/QualitySurface/TupleHolonomyDefect.lean`
 - `CodebaseTracePacket.fullPacket`
 - `CodebaseTracePacket.partialPacket`
 - `CodebaseTracePacket.full_partial_supportSurface_equivalent`
@@ -90,8 +90,8 @@ loss-aware visualization / drill-down report では code atom level の source-r
 
 ## 証明・根拠
 
-Lean proof は `Formal/AG/Research/QualitySurface/CodebaseTraceHolonomyPacket.lean` に閉じた。
-`Formal/AG/Research.lean` はこの Research evidence file を import する。
+Lean proof は `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean` に閉じた。
+`research/lean/ResearchLean.lean` はこの Research evidence file を import する。
 
 主要 theorem / declaration:
 
@@ -132,8 +132,8 @@ Lean proof は `Formal/AG/Research/QualitySurface/CodebaseTraceHolonomyPacket.le
 
 検証:
 
-- `lake env lean Formal/AG/Research/QualitySurface/CodebaseTraceHolonomyPacket.lean`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`: pass。
+- `lake build ResearchLean`: pass。
 - `.tmp/codebase_trace_holonomy_packet_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - 対象 Lean file の `axiom` / `admit` / `sorry` / `unsafe` / `Classical` / `choice` / `propext` /
@@ -165,6 +165,6 @@ Lean proof は `Formal/AG/Research/QualitySurface/CodebaseTraceHolonomyPacket.le
 
 - 2026-06-20: Cycle 23 candidate card 作成。
 - 2026-06-20: G2-A revise / G2-C accept base 60 を反映し、expected score を base 60 / final 120 に下げた。
-- 2026-06-20: `CodebaseTraceHolonomyPacket.lean` を追加し、単体 Lean、`FormalAGResearch`、axiom harness、
+- 2026-06-20: `CodebaseTraceHolonomyPacket.lean` を追加し、単体 Lean、`ResearchLean`、axiom harness、
   G3 Lean 形式化品質監査を通した。
 - 2026-06-20: G4 SCORE 監査 confirm。report の Cycle 23 と Current SCORE を total 2800 に更新した。

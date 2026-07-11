@@ -20,7 +20,7 @@ origin: G-04-Cycle54
 tags: [target-theorem, finite-query, semantic-reading, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 54
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean
 ---
 
 # Semantic-Reading Adequacy Certificate Boundary
@@ -69,7 +69,7 @@ G-04 target theorem に向け、semantic-reading adequacy から coordinate cert
 
 - `score_reason`: Cycle53 の anti-weakening に対応する positive exact bridge。visible recovery premise を隠さず iff 化した。
 - `dullness_risk`: 中。既存 extraction theorem と entry boundary の合成だが、semantic adequacy / certificate / recovery の proof DAG を明示的に閉じる。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -101,8 +101,8 @@ adequacy iff に渡す。no-certificate blocker は iff の contrapositive。
 
 - `research/ideas/g-aat-quality-surface-04-semantic-reading-adequacy-independence-target-surface-entry.md`
 - `research/ideas/g-aat-quality-surface-04-coordinate-certificate-target-surface-entry-boundary.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQuerySemanticReadingCertificateExtraction.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQuerySemanticReadingCertificateExtraction.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
 
 ## 進捗ログ
 

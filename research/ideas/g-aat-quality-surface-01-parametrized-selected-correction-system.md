@@ -27,9 +27,9 @@ selected route correction を parameterized system として読み、correction 
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/SelectedRouteDefectSupportHitting.lean`
-- `Formal/AG/Research/QualitySurface/SelectedRouteCorrectionExactness.lean`
-- `Formal/AG/Research/QualitySurface/SelectedRouteFamilyExactness.lean`
+- `research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean`
+- `research/lean/ResearchLean/QualitySurface/SelectedRouteCorrectionExactness.lean`
+- `research/lean/ResearchLean/QualitySurface/SelectedRouteFamilyExactness.lean`
 
 ## 非自明性
 
@@ -59,7 +59,7 @@ repair pipeline の stage や policy parameter を、選択された defect atom
 
 ## 証明・根拠
 
-Lean file: `Formal/AG/Research/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
+Lean file: `research/lean/ResearchLean/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
 
 Proved declarations:
 
@@ -105,8 +105,8 @@ Boundary:
 
 ## Verification
 
-- `lake env lean Formal/AG/Research/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`: pass
+- `lake build ResearchLean`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/parametrized_selected_correction_system_axioms.lean`: pass
   - axiom-free: `correctionLe_refl`, `correctionLe_trans`, `correctionSourceRefExact_iff_hitsAllBranches`, `correctionHitsAllBranches_monotone`, `correctionSourceRefExact_monotone`, `systemSourceRefExact_iff_hitsAllBranches`, `monotoneCorrectionSystem_exact_upwardClosed`

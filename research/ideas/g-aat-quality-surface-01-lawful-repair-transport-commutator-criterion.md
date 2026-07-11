@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle30
 tags: [quality-surface, repair, transport, commutator, source-ref, exactness]
 created: 2026-06-20
 cycle: 30
-lean: Formal/AG/Research/QualitySurface/LawfulRepairTransportCommutator.lean
+lean: research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean
 ---
 
 # Lawful repair/transport commutator criterion
@@ -32,12 +32,12 @@ source-ref exact visualization になる。
 
 ## 依拠
 
-- Cycle 17: `Formal/AG/Research/QualitySurface/SourceRefPacketTransport.lean`
-- Cycle 21 / 25: `Formal/AG/Research/QualitySurface/CodebaseTraceRepairTrajectory.lean`,
-  `Formal/AG/Research/QualitySurface/SourceRefRepairHolonomy.lean`
-- Cycle 24: `Formal/AG/Research/QualitySurface/SourceRefExactVisualization.lean`
-- Cycle 28 / 29: `Formal/AG/Research/QualitySurface/VisibleRepairTransportCommutator.lean`,
-  `Formal/AG/Research/QualitySurface/SourceRefTableLawObstruction.lean`
+- Cycle 17: `research/lean/ResearchLean/QualitySurface/SourceRefPacketTransport.lean`
+- Cycle 21 / 25: `research/lean/ResearchLean/QualitySurface/CodebaseTraceRepairTrajectory.lean`,
+  `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
+- Cycle 24: `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 28 / 29: `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`,
+  `research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean`
 
 ## 非自明性
 
@@ -73,7 +73,7 @@ component laws が揃えば protected commutator は zero になる。
 
 Lean file:
 
-- `Formal/AG/Research/QualitySurface/LawfulRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`
 
 Declarations:
 
@@ -92,8 +92,8 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean Formal/AG/Research/QualitySurface/LawfulRepairTransportCommutator.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`: pass
+- `lake build ResearchLean`: pass
 - `lake env lean .tmp/lawful_repair_transport_commutator_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; `LawfulRepairTransportSquare` is non-circular and does not assume endpoint equality, packet zero holonomy, tuple zero holonomy, or source-ref exact visualization
@@ -125,6 +125,6 @@ previous_cycle_delta: Cycle 28/29 の negative obstructions を positive lawful 
 - 2026-06-20: Cycle 30 G1 で作成。
 - 2026-06-20: G2 initial review。A は `revise`、B/C は `accept`。repair action field naturality を非循環に明文化し、base 65 / final 130 に下げた。
 - 2026-06-20: G2-A recheck `accept`。base 65 / final 130 で picked。
-- 2026-06-20: G3 Lean verification pass。対象 Lean、`FormalAGResearch`、axiom harness、独立公理検査、独立形式化品質監査が pass。
+- 2026-06-20: G3 Lean verification pass。対象 Lean、`ResearchLean`、axiom harness、独立公理検査、独立形式化品質監査が pass。
 - 2026-06-20: G3.5 sync audit pass。candidate card / Lean declarations / report entry は同期済み。
 - 2026-06-20: G4 SCORE audit confirm。base 65、evidence multiplier 2.0、penalty 0、final SCORE 130。

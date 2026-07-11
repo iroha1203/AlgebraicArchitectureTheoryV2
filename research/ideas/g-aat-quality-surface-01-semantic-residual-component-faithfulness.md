@@ -78,7 +78,7 @@ component row が green でも、actual residual obligation atom を alias atom 
 
 ## 証明・根拠
 
-Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualComponentFaithfulness.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualComponentFaithfulness.lean` に固定した。
 
 - `ResidualAtomAwareReading`
 - `residualAtomAwareReading_reflects_semanticRepairClosed`
@@ -103,8 +103,8 @@ Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualComponentFaith
 
 G3 実績:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualComponentFaithfulness.lean`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualComponentFaithfulness.lean`: pass。
+- `lake build ResearchLean`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
 - axiom probe: generic theorem 群は axiom-free。selected witness / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 - `axiom|admit|sorry|unsafe` scan: 対象 Lean には該当なし。
@@ -141,5 +141,5 @@ G3 実績:
 ## 進捗ログ
 
 - 2026-06-22: G1 closer / unifier candidate として picked。
-- 2026-06-22: Lean 証拠を `SemanticResidualComponentFaithfulness.lean` に固定し、単体 `lake env lean` と `lake build FormalAGResearch` が通った。
+- 2026-06-22: Lean 証拠を `SemanticResidualComponentFaithfulness.lean` に固定し、単体 `lake env lean` と `lake build ResearchLean` が通った。
 - 2026-06-22: G4 SCORE 監査で base 75 / final +150 に確定した。

@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle36
 tags: [quality-surface, repair, support, frontier, transport, commutator, source-ref]
 created: 2026-06-20
 cycle: 36
-lean: Formal/AG/Research/QualitySurface/FrontierLocalRepairTransportCommutator.lean
+lean: research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean
 ---
 
 # Frontier-local repair/transport commutator criterion
@@ -42,10 +42,10 @@ Cycle 35 の token-renaming witness により、この仮定は `SupportLocalSou
 
 ## 依拠
 
-- Cycle 30: `Formal/AG/Research/QualitySurface/LawfulRepairTransportCommutator.lean`
-- Cycle 31: `Formal/AG/Research/QualitySurface/SupportLocalRepairFrontier.lean`
-- Cycle 34: `Formal/AG/Research/QualitySurface/SupportLocalRepairTransportCommutator.lean`
-- Cycle 35: `Formal/AG/Research/QualitySurface/FrontierLocalFormulaMinimality.lean`
+- Cycle 30: `research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`
+- Cycle 31: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean`
+- Cycle 34: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean`
+- Cycle 35: `research/lean/ResearchLean/QualitySurface/FrontierLocalFormulaMinimality.lean`
 
 ## 非自明性
 
@@ -86,7 +86,7 @@ Lean-backed に説明できる。
 
 Lean file:
 
-- `Formal/AG/Research/QualitySurface/FrontierLocalRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean`
 
 Proved declarations:
 
@@ -115,14 +115,14 @@ or whole-codebase quality.
 
 Local G3 checks:
 
-- `lake env lean Formal/AG/Research/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass
+- `lake build ResearchLean`: pass
 - `lake env lean .tmp/frontier_local_repair_transport_commutator_axioms.lean`: pass; reported declarations depend on no axioms
-- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" Formal/AG/Research/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass; no hits in the Lean evidence file
+- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass; no hits in the Lean evidence file
 
 G3 audit summary:
 
-- 公理検査: `pass`。reported declarations と主要 dependency checks は `sorryAx`、`propext`、`Classical.choice`、`Quot.sound` を含む axiom dependency を持たない。Research evidence module と `Formal/AG/Research.lean` import aggregator 以外の `Formal/AG` は編集していない。
+- 公理検査: `pass`。reported declarations と主要 dependency checks は `sorryAx`、`propext`、`Classical.choice`、`Quot.sound` を含む axiom dependency を持たない。Research evidence module と `research/lean/ResearchLean.lean` import aggregator 以外の `Formal/AG` は編集していない。
 - 形式化品質: `pass`。`LawfulRepairTransportSquare`、`FrontierLocalSourceRefRepair action packet`、`RepairFrontierExact packet` から route frontier formula、route agreement、source-ref exact visualization を導き、`SupportLocalSourceRefRepair` は主仮定に隠れていない。strict weakening は identity lawful square 上の commutator-contextual witness として実装されている。
 
 ## 審判メモ

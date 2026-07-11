@@ -20,7 +20,7 @@ origin: G-04-Cycle56
 tags: [target-theorem, finite-query, target-surface-entry, no-separation, coordinate-certificate]
 created: 2026-06-25
 cycle: 56
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryExactnessBoundary.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryExactnessBoundary.lean
 ---
 
 # Represented Finite-Query Entry Exact Boundary
@@ -72,7 +72,7 @@ G-04 target theorem に向け、finite-query recovery boundary 周辺の exact p
 
 - `score_reason`: Cycle54/55 の exact bridge を represented target-surface entry まで閉じる support-node。
 - `dullness_risk`: 中。既存 theorem の合成だが、entry face と obstruction side を一つの theorem package に固定する。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -105,8 +105,8 @@ obstruction theorem を組み合わせる。
 
 - `research/ideas/g-aat-quality-surface-04-no-separation-semantic-adequacy-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-semantic-reading-adequacy-certificate-boundary.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationSemanticAdequacyBoundary.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationSemanticAdequacyBoundary.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean`
 
 ## 進捗ログ
 

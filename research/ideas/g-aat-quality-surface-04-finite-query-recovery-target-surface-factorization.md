@@ -20,7 +20,7 @@ origin: T1-cycle46
 tags: [target-theorem-loop, G-04, finite-query-representation, target-surface, finite-shadow, anti-weakening]
 created: 2026-06-25
 cycle: 46
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceFactorization.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceFactorization.lean
 ---
 
 # Finite Query Recovery Target-Surface Factorization
@@ -80,7 +80,7 @@ semantic-reading recovery 条件を theorem-level に分離しにくい。この
 
 - `score_reason`: Cycle 45 の explicit coordinate certificate extraction を、target-surface finite-shadow factorization へ接続する最初の proof-DAG bridge になる。
 - `dullness_risk`: 単に `ShadowExtensionalTowerObservation` を仮定するだけなら Cycle 12 の再包装になる。semantic-reading / no-separation / recovery から shadow-extensional assignment を構成することを主成果にする。
-- `proof_or_evidence_plan`: 新規 Lean file、reported declarations の `#print axioms`、`FormalAGResearch` build、full `lake build`、placeholder / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: 新規 Lean file、reported declarations の `#print axioms`、`ResearchLean` build、full `lake build`、placeholder / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -161,4 +161,4 @@ Proved declarations:
 ## 進捗ログ
 
 - 2026-06-25: Cycle 46 T1 で picked。T2 four-judge gate accepted/pass.
-- 2026-06-25: Lean file、focused build、`FormalAGResearch`、full `lake build`、axiom audit、placeholder / hidden Unicode / local path scan は pass。
+- 2026-06-25: Lean file、focused build、`ResearchLean`、full `lake build`、axiom audit、placeholder / hidden Unicode / local path scan は pass。

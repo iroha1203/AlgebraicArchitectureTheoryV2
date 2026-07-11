@@ -20,7 +20,7 @@ origin: G-04 Cycle 13
 tags: [target-theorem, target-obstruction, finite-shadow, trace, representation-adequacy]
 created: 2026-06-25
 cycle: 13
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteShadowSeparation.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteShadowSeparation.lean
 ---
 
 # Finite Shadow Trace Separation
