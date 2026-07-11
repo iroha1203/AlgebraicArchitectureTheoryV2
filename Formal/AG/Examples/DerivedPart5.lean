@@ -694,62 +694,173 @@ def smallRepairProfile : Derived.WellFoundedRepair.RepairComparisonProfile where
   State := Nat
   ltRep := fun B A => B < A
   wellFounded_ltRep := Nat.lt_wfRel.wf
-  step := fun A B => B < A
-  step_decreases := fun hstep => hstep
+  step := fun A B => B < A ∧ A ≠ 3
+  step_decreases := fun hstep => hstep.1
   targetCleared := fun A => A = 0
-  noSolutionCertificate := fun A => A = 3
+  noSolutionCertificate := fun A => A = 3 ∧ ∀ B, ¬ (B < A ∧ A ≠ 3)
 
 /-- V.R11(d): the example repair step `2 -> 1` decreases. -/
 theorem smallRepair_step_two_one :
     smallRepairProfile.step (2 : Nat) (1 : Nat) := by
-  change (1 : Nat) < 2
-  decide
+  exact ⟨by decide, by decide⟩
 
 /-- V.R11(d): the example repair step `1 -> 0` decreases. -/
 theorem smallRepair_step_one_zero :
     smallRepairProfile.step (1 : Nat) (0 : Nat) := by
-  change (0 : Nat) < 1
-  decide
+  exact ⟨by decide, by decide⟩
+
+/-- V.R11(d): the example repair step `5 -> 4` decreases. -/
+theorem smallRepair_step_five_four :
+    smallRepairProfile.step (5 : Nat) (4 : Nat) := by
+  exact ⟨by decide, by decide⟩
+
+/-- V.R11(d): the example repair step `4 -> 3` decreases. -/
+theorem smallRepair_step_four_three :
+    smallRepairProfile.step (4 : Nat) (3 : Nat) := by
+  exact ⟨by decide, by decide⟩
+
+/-- V.R11(d): state three has no selected repair successor. -/
+theorem smallRepair_three_noSolution :
+    smallRepairProfile.noSolutionCertificate (3 : Nat) := by
+  constructor
+  · rfl
+  · intro B hstep
+    exact hstep.2 rfl
 
 /-- V.R11(d): theorem 13.3 applied to the small finite repair profile. -/
 theorem smallRepair_no_infinite_sequence :
     ¬ smallRepairProfile.InfiniteRepairSequence :=
   smallRepairProfile.no_infinite_repair_sequence
 
-/-- V.R11(d): a two-step selected repair trace ending in `cleared`. -/
+/--
+V.R11(d): constructor-level rule that clears zero, returns the selected
+certificate at three, and otherwise emits the predecessor step.
+-/
+def smallRepairRule (state : Nat) :
+    Derived.WellFoundedRepair.SynthesisDecision smallRepairProfile state :=
+  if hzero : state = 0 then
+    .cleared hzero
+  else if hthree : state = 3 then
+    .noSolution ⟨hthree, by
+      intro next hstep
+      exact hstep.2 hthree⟩
+  else
+    match state with
+    | 0 => (hzero rfl).elim
+    | n + 1 => .step n ⟨Nat.lt_succ_self n, hthree⟩
+
+/-- V.R11(d): constructor-generated two-step repair run ending in `cleared`. -/
 def smallRepairClearedSynthesis :
-    Derived.WellFoundedRepair.SoundRepairSynthesisPackage smallRepairProfile where
-  trace := [(2 : Nat), (1 : Nat), (0 : Nat)]
-  outputState := (0 : Nat)
-  output := Derived.WellFoundedRepair.SynthesisOutput.cleared rfl
-  emitsOnlySoundStepsOrNoSolutionCertificate := True
-  emitsOnlySoundStepsOrNoSolutionCertificate_holds := trivial
+    Derived.WellFoundedRepair.SoundRepairSynthesisPackage smallRepairProfile :=
+  ⟨(2 : Nat),
+    .step smallRepair_step_two_one
+      (.step smallRepair_step_one_zero (.cleared rfl))⟩
 
 /-- V.R11(d): the small repair trace has finite length three. -/
 theorem smallRepairCleared_trace_length :
     smallRepairClearedSynthesis.trace.length = 3 :=
   rfl
 
+/-- V.R11(d): every adjacent step of the generated cleared trace is sound. -/
+theorem smallRepairCleared_emitsOnlySoundSteps :
+    Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps
+      smallRepairProfile smallRepairClearedSynthesis.trace :=
+  Derived.WellFoundedRepair.SoundRepairSynthesisPackage.emitsOnlySoundStepsOrNoSolutionCertificate_certificate
+    smallRepairClearedSynthesis
+
 /-- V.R11(d): the small repair trace terminates with a cleared target. -/
 theorem smallRepairCleared_output :
-    smallRepairProfile.targetCleared smallRepairClearedSynthesis.outputState ∨
-      smallRepairProfile.noSolutionCertificate smallRepairClearedSynthesis.outputState :=
-  smallRepairClearedSynthesis.output_cleared_or_noSolution
+    smallRepairProfile.targetCleared smallRepairClearedSynthesis.outputState :=
+  rfl
 
-/-- V.R11(d): a selected synthesis trace ending in a no-solution certificate. -/
+/-- V.R11(d): a generated two-step synthesis run ending in a no-solution certificate. -/
 def smallRepairNoSolutionSynthesis :
-    Derived.WellFoundedRepair.SoundRepairSynthesisPackage smallRepairProfile where
-  trace := [(3 : Nat)]
-  outputState := (3 : Nat)
-  output := Derived.WellFoundedRepair.SynthesisOutput.noSolution rfl
-  emitsOnlySoundStepsOrNoSolutionCertificate := True
-  emitsOnlySoundStepsOrNoSolutionCertificate_holds := trivial
+    Derived.WellFoundedRepair.SoundRepairSynthesisPackage smallRepairProfile :=
+  ⟨(5 : Nat),
+    .step smallRepair_step_five_four
+      (.step smallRepair_step_four_three
+        (.noSolution smallRepair_three_noSolution))⟩
+
+/-- V.R11(d): the generated no-solution trace has two selected steps. -/
+theorem smallRepairNoSolution_trace_length :
+    smallRepairNoSolutionSynthesis.trace.length = 3 :=
+  rfl
+
+/-- V.R11(d): the generated no-solution trace satisfies the sound-step discipline. -/
+theorem smallRepairNoSolution_emitsOnlySoundSteps :
+    Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps
+      smallRepairProfile smallRepairNoSolutionSynthesis.trace :=
+  Derived.WellFoundedRepair.SoundRepairSynthesisPackage.emitsOnlySoundStepsOrNoSolutionCertificate_certificate
+    smallRepairNoSolutionSynthesis
 
 /-- V.R11(d): the no-solution trace terminates with the selected certificate. -/
 theorem smallRepairNoSolution_output :
-    smallRepairProfile.targetCleared smallRepairNoSolutionSynthesis.outputState ∨
-      smallRepairProfile.noSolutionCertificate smallRepairNoSolutionSynthesis.outputState :=
-  smallRepairNoSolutionSynthesis.output_cleared_or_noSolution
+    smallRepairProfile.noSolutionCertificate
+      smallRepairNoSolutionSynthesis.outputState :=
+  smallRepair_three_noSolution
+
+/-- V.R11(d): a non-step adjacent trace is rejected by the sound-trace predicate. -/
+theorem smallRepair_nonStep_trace_rejected :
+    ¬ Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps
+      smallRepairProfile [(3 : Nat), (4 : Nat)] := by
+  simp [Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps,
+    smallRepairProfile]
+
+/--
+V.R11(d): well-founded execution of the selected rule from two is exactly the
+explicit two-step cleared run.
+-/
+theorem smallRepairRule_synthesize_two :
+    Derived.WellFoundedRepair.synthesize
+        smallRepairProfile smallRepairRule (2 : Nat) =
+      smallRepairClearedSynthesis.2 := by
+  rw [Derived.WellFoundedRepair.synthesize_eq]
+  simp [smallRepairRule]
+  rw [Derived.WellFoundedRepair.synthesize_eq]
+  simp [smallRepairRule]
+  rw [Derived.WellFoundedRepair.synthesize_eq]
+  simp [smallRepairRule]
+  rfl
+
+/--
+V.R11(d): well-founded execution of the selected rule from five returns the
+explicit no-solution run.
+-/
+theorem smallRepairRule_synthesize_five :
+    Derived.WellFoundedRepair.synthesize
+        smallRepairProfile smallRepairRule (5 : Nat) =
+      smallRepairNoSolutionSynthesis.2 := by
+  rw [Derived.WellFoundedRepair.synthesize_eq]
+  simp [smallRepairRule]
+  rw [Derived.WellFoundedRepair.synthesize_eq]
+  simp [smallRepairRule]
+  rw [Derived.WellFoundedRepair.synthesize_eq]
+  simp [smallRepairRule]
+  rfl
+
+/--
+V.R11(d): theorem 13.4 fires from the constructor-level rule at both selected
+starts, rather than from a supplied soundness proposition.
+-/
+theorem smallRepair_soundSynthesis_fires :
+    (let run := Derived.WellFoundedRepair.synthesize
+        smallRepairProfile smallRepairRule (2 : Nat);
+      Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps
+          smallRepairProfile run.trace ∧
+        run.trace.length = run.depth + 1 ∧
+          (smallRepairProfile.targetCleared run.outputState ∨
+            smallRepairProfile.noSolutionCertificate run.outputState)) ∧
+      (let run := Derived.WellFoundedRepair.synthesize
+          smallRepairProfile smallRepairRule (5 : Nat);
+        Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps
+            smallRepairProfile run.trace ∧
+          run.trace.length = run.depth + 1 ∧
+            (smallRepairProfile.targetCleared run.outputState ∨
+              smallRepairProfile.noSolutionCertificate run.outputState)) :=
+  ⟨Derived.WellFoundedRepair.soundRepairSynthesis
+      smallRepairProfile smallRepairRule (2 : Nat),
+    Derived.WellFoundedRepair.soundRepairSynthesis
+      smallRepairProfile smallRepairRule (5 : Nat)⟩
 
 end DerivedPart5
 end FiniteModel

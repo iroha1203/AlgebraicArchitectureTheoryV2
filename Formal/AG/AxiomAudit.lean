@@ -337,6 +337,75 @@ theorem derivedG5AllDegree :
         FiniteModel.DerivedPart5.sharedWitnessConflictAlternatingSeries).coeff n :=
   FiniteModel.DerivedPart5.sharedWitnessG5_all_degree_coefficient_identity
 
+/-- Kernel-audit entry for constructor-generated sound repair synthesis. -/
+theorem soundRepairSynthesisConstructorGenerated
+    (P : Derived.WellFoundedRepair.RepairComparisonProfile)
+    (rule : (state : P.State) ->
+      Derived.WellFoundedRepair.SynthesisDecision P state)
+    (start : P.State) :
+    let run := Derived.WellFoundedRepair.synthesize P rule start
+    Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps P run.trace ∧
+      run.trace.length = run.depth + 1 ∧
+        (P.targetCleared run.outputState ∨
+          P.noSolutionCertificate run.outputState) :=
+  Derived.WellFoundedRepair.soundRepairSynthesis P rule start
+
+/-- Kernel-audit entry for the finite cleared rule execution. -/
+theorem smallRepairRuleSynthesizeTwo :
+    Derived.WellFoundedRepair.synthesize
+        FiniteModel.DerivedPart5.smallRepairProfile
+        FiniteModel.DerivedPart5.smallRepairRule (2 : Nat) =
+      FiniteModel.DerivedPart5.smallRepairClearedSynthesis.2 :=
+  FiniteModel.DerivedPart5.smallRepairRule_synthesize_two
+
+/-- Kernel-audit entry for the finite no-solution rule execution. -/
+theorem smallRepairRuleSynthesizeFive :
+    Derived.WellFoundedRepair.synthesize
+        FiniteModel.DerivedPart5.smallRepairProfile
+        FiniteModel.DerivedPart5.smallRepairRule (5 : Nat) =
+      FiniteModel.DerivedPart5.smallRepairNoSolutionSynthesis.2 :=
+  FiniteModel.DerivedPart5.smallRepairRule_synthesize_five
+
+/-- Kernel-audit entry for the nontrivial cleared terminal branch. -/
+theorem smallRepairClearedOutput :
+    FiniteModel.DerivedPart5.smallRepairProfile.targetCleared
+      FiniteModel.DerivedPart5.smallRepairClearedSynthesis.outputState :=
+  FiniteModel.DerivedPart5.smallRepairCleared_output
+
+/-- Kernel-audit entry for the nontrivial no-solution terminal branch. -/
+theorem smallRepairNoSolutionOutput :
+    FiniteModel.DerivedPart5.smallRepairProfile.noSolutionCertificate
+      FiniteModel.DerivedPart5.smallRepairNoSolutionSynthesis.outputState :=
+  FiniteModel.DerivedPart5.smallRepairNoSolution_output
+
+/-- Kernel-audit entry rejecting a non-step adjacent trace. -/
+theorem smallRepairNonStepTraceRejected :
+    ¬ Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps
+      FiniteModel.DerivedPart5.smallRepairProfile [(3 : Nat), (4 : Nat)] :=
+  FiniteModel.DerivedPart5.smallRepair_nonStep_trace_rejected
+
+/-- Kernel-audit entry for theorem 13.4 firing at both finite starts. -/
+theorem smallRepairSoundSynthesisFires :
+    (let run := Derived.WellFoundedRepair.synthesize
+        FiniteModel.DerivedPart5.smallRepairProfile
+        FiniteModel.DerivedPart5.smallRepairRule (2 : Nat);
+      Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps
+          FiniteModel.DerivedPart5.smallRepairProfile run.trace ∧
+        run.trace.length = run.depth + 1 ∧
+          (FiniteModel.DerivedPart5.smallRepairProfile.targetCleared run.outputState ∨
+            FiniteModel.DerivedPart5.smallRepairProfile.noSolutionCertificate
+              run.outputState)) ∧
+      (let run := Derived.WellFoundedRepair.synthesize
+          FiniteModel.DerivedPart5.smallRepairProfile
+          FiniteModel.DerivedPart5.smallRepairRule (5 : Nat);
+        Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps
+            FiniteModel.DerivedPart5.smallRepairProfile run.trace ∧
+          run.trace.length = run.depth + 1 ∧
+            (FiniteModel.DerivedPart5.smallRepairProfile.targetCleared run.outputState ∨
+              FiniteModel.DerivedPart5.smallRepairProfile.noSolutionCertificate
+                run.outputState)) :=
+  FiniteModel.DerivedPart5.smallRepair_soundSynthesis_fires
+
 theorem example56LawConflictPackageFiringLawConflict1Nonzero
     {k : Type} [CommRing k]
     (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
