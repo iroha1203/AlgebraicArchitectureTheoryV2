@@ -10,11 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 1
+- latest reviewed cycle: 2
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: construct the section-specific connecting cocycle on the
-  generated small complex
+- next obligation: prove local-lift choice independence in repository H1
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -78,3 +77,54 @@ derive gluing from the generated-presieve sheaf API. Then construct from
 law-witness input the ideal-power coefficient sequence supplying `N = I/I^2`,
 `E = O/I^2`, `Q = O/I`, the projection and kernel comparison, objectwise
 exactness, restriction naturality, and the required sheaf conditions.
+
+## Cycle 2 — section-specific connecting class
+
+- decision: approve
+- result type: proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalDescent.lean`
+- checkpoint spine:
+  - `SmallCanonicalTupleCover.LiftProblem`
+  - `LiftProblem.map_differential`
+  - `LiftProblem.baseSectionCochain_cocycle`
+  - `LiftProblem.localLiftDifference`
+  - `LiftProblem.localLiftDifference_cocycle`
+  - `LiftProblem.connectingCocycle`
+  - `LiftProblem.connectingClass`
+
+### Checkpoint delta
+
+Generic additive `N / E / Q`, objectwise kernel comparison, sheaf conditions,
+a quotient section, and generator-indexed local lifts now generate a
+kernel-valued degree-one cocycle on the Cycle 1 repository complex. The cocycle
+proof is derived from naturality of the kernel map and the middle complex's
+generated `d^1 d^0 = 0` theorem. Its class lies directly in repository
+`AdditiveCechH1`.
+
+### Premise delta
+
+- checkpoint: section-specific local-lift difference, cocycle equation, and
+  repository connecting class.
+- remaining: choice independence, class zero iff actual global lift,
+  generated-presieve gluing, lift-fiber torsor, law-generated coefficient
+  sequence and exactness, conormal instantiation, semantic representations,
+  finite zero/nonzero witness pair, package theorem, and `H^1 = 0` corollary.
+
+### Audits
+
+- focused elaboration: pass
+- module-wide standard-axiom assertion: pass (47 declarations)
+- placeholder / hidden Unicode / private-path scans: pass
+- statement classification: proof-checkpoint; not D0 discharge
+- certificate provenance: the cocycle is generated from explicit local lifts,
+  the projection equation, objectwise kernel comparison, and standard
+  differential naturality
+- structure-field escape: no cocycle, cocycle equation, class, class zero, or
+  global lift is supplied as an input field
+
+### Next obligation
+
+Generalize the generator local-lift choice, construct its chartwise kernel
+change primitive, and prove equality of the resulting repository H1 classes
+through `additiveH1Class_eq_iff_legacy_setoid`.
