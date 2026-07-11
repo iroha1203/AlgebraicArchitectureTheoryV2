@@ -183,6 +183,9 @@ ledgers rather than duplicated here.
 - `website`
   - Eleventy source under `src/` and static Cloudflare Pages output for the public
     AAT / SFT / ArchSig reading surface.
+- `outreach`
+  - External article drafts, English and Japanese translations, and publication assets
+    for AAT, SFT, and ArchSig.
 - `Main.lean`
   - Minimal entry point for the executable target `aatv2`.
 - `lakefile.toml`

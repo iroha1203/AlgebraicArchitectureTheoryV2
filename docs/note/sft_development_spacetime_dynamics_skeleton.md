@@ -995,7 +995,7 @@ T0・T5・T7 は Model theorem として D6 を満たす形で書けるかが勝
 | `Formal/Arch/Evolution/` 配下 39 ファイル | 旧 SFT の Lean 塔(`SFT*.lean` 27 本 + AttractorEngineering・SignatureDynamics・Chapter7–11 等 12 本)。Formal.lean が import 済みで root build に組み込まれている | **凍結**。operational 定義: (a) 凍結対象 = `Formal/Arch/Evolution/` 配下の全 39 ファイル(旧 SFT 理論 surface として)、(b) Formal.lean の import は維持(`lake build` の対象のまま)、(c) 変更は build 修復のみ許可、(d) 新規 import・新規定理参照を禁止、(e) 新塔が対応部を覆った時点で個別に削除判断(削除時に Formal.lean から import 行を落とす) |
 | `tools/fieldsig` | 旧 artifact(forecast-cone-skeleton 等)前提 | **凍結**。第I–III部確定後に再設計。v2 の一次 workflow 候補を先に命名しておく: **merge-residue probe**(H2 の曲率計器; merge queue の投機ビルドを利用)と**並列度アドバイザ**(T2 の台過大近似 + 衝突確率)。買い手は agent オーケストレーションのスケジューラ |
 | `website/sft/` 約 20 ページ | 旧構成(field-and-force / forecast-cone / workbench) | 現状維持 → 本文確定後に追随 |
-| `docs/outreach/`・website の過去 outreach 記事 | 旧語彙(ForecastCone 等)を含む公開文書 | **残す**(歴史的文書としてそのまま保存。新本文からは参照しない) |
+| `outreach/`・website の過去 outreach 記事 | 旧語彙(ForecastCone 等)を含む公開文書 | **残す**(歴史的文書としてそのまま保存。新本文からは参照しない) |
 | `docs/note/Grothendieck_Derived_AAT-SFT.md` | ポジションペーパー | 参照維持。AAT 半分は実現済み、SFT 半分(§9)は本骨格が後継であることを本文冒頭の系譜に記す |
 
 ArchSig は影響を受けない(AAT 静的計測のまま。軌道に沿った時系列供給源として第IX部の計器の実例になる)。
