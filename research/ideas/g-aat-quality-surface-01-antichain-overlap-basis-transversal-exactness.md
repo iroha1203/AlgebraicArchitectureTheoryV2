@@ -141,8 +141,8 @@ Actual declaration names:
 
 Build evidence:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/AntichainOverlapBasisTransversal.lean`: pass.
-- `lake build ResearchLean`: pass.
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/AntichainOverlapBasisTransversal.lean`: pass.
+- `cd research/lean && lake build ResearchLean`: pass.
 - `lake build`: pass, with only pre-existing linter warnings in `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 
 Axiom audit:
@@ -220,4 +220,4 @@ component-level clearance predicate.
 
 - 2026-06-21: Cycle 69 の picked 候補として作成。G2 へ進める。
 - 2026-06-21: G2 A の revise を受け、branch-clearance と component-level `HandoffCechRepairObligation` の分離、residual branch semantics、exact overlap component basis への grounding、visible projection の固定を明記。
-- 2026-06-21: Lean evidence を追加し、`lake build ResearchLean` と full `lake build` を通過。G3 公理検査・形式化品質監査はいずれも pass。
+- 2026-06-21: Lean evidence を追加し、`cd research/lean && lake build ResearchLean` と full `lake build` を通過。G3 公理検査・形式化品質監査はいずれも pass。

@@ -77,8 +77,8 @@ Planned / proved declarations:
 
 Verification:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/RouteDefectLocalRepairCalculusBridge.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/RouteDefectLocalRepairCalculusBridge.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `#print axioms` for reported declarations: first support/adapter declarations have no 公理依存; theorem declarations using the `Set`-based local repair calculus depend only on standard `propext`, `Classical.choice`, and `Quot.sound`.
 - Forbidden-token scan over the Cycle 46 Lean/card files: no matches.
 - G3 公理監査: pass。`sorryAx` and nonstandard axioms are absent; standard axioms come from the existing `Set`-based `LocalRepairSupportCalculus` theorem path.
@@ -109,4 +109,4 @@ Boundary:
 
 - 2026-06-21: Cycle 46 候補として作成。
 - 2026-06-21: G2 A の revise を反映し、`Eliminates` を after-repair family の空性として定義する Lean 実装を追加。Lean 単体チェックは pass。
-- 2026-06-21: `lake build ResearchLean`、公理監査、形式化品質監査は pass。SCORE 見込みを保守的に base 70 / final 140 へ同期。
+- 2026-06-21: `cd research/lean && lake build ResearchLean`、公理監査、形式化品質監査は pass。SCORE 見込みを保守的に base 70 / final 140 へ同期。

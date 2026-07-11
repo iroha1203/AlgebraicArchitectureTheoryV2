@@ -100,7 +100,7 @@ T3 audit:
 - decision: approve
 - build status: `lake env lean
   research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
-  `lake build ResearchLean` passed.
+  `cd research/lean && lake build ResearchLean` passed.
 - axiom audit: reported declarations do not depend on any axioms.
 - placeholder / hidden Unicode / local path scans: clean.
 - anti-weakening: no hidden conclusion-equivalent premise found; completion
@@ -167,7 +167,7 @@ T3 audit:
 - decision: approve
 - build status: `lake env lean
   research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
-  `lake build ResearchLean` passed.
+  `cd research/lean && lake build ResearchLean` passed.
 - axiom audit: reported Cycle 2 declarations do not depend on any axioms.
 - placeholder / hidden Unicode / local path scans: clean.
 - anti-weakening: `SemanticRepairCoverH1ExactnessCertificate` contains only
@@ -234,7 +234,7 @@ T3 audit:
 - decision: approve
 - build status: `lake env lean
   research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
-  `lake build ResearchLean` passed.
+  `cd research/lean && lake build ResearchLean` passed.
 - axiom audit: reported Cycle 3 declarations do not depend on any axioms.
 - placeholder / hidden Unicode / local path scans: clean.
 - anti-weakening: `SemanticRepairCoverH1EffectiveDescentCertificate` stores
@@ -295,7 +295,7 @@ T3 audit:
 - decision: approve
 - build status: `lake env lean
   research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
-  `lake build ResearchLean` passed.
+  `cd research/lean && lake build ResearchLean` passed.
 - axiom audit: reported Cycle 4 declarations depend only on standard
   `propext` through the AAT / Mathlib sheaf-descent interface.
 - placeholder / hidden Unicode / local path scans: clean.
@@ -358,7 +358,7 @@ T3 audit:
 - decision: approve
 - build status: `lake env lean
   research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
-  `lake build ResearchLean` passed.
+  `cd research/lean && lake build ResearchLean` passed.
 - axiom audit: reported Cycle 5 declarations depend only on standard
   `Quot.sound`.
 - placeholder / hidden Unicode / local path scans: clean.
@@ -419,7 +419,7 @@ T3 audit:
 - decision: approve
 - build status: `lake env lean
   research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
-  `lake build ResearchLean` passed.
+  `cd research/lean && lake build ResearchLean` passed.
 - axiom audit: reported
   `coverEnvelope_archSigFiniteShadow_of_sheafH1Zero` has no axioms; the G-02
   bridge theorem and package depend only on standard `Quot.sound`.
@@ -483,7 +483,7 @@ T3 audit:
 - decision: approve
 - build status: `lake env lean
   research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
-  `lake build ResearchLean` passed.
+  `cd research/lean && lake build ResearchLean` passed.
 - axiom audit: reported
   `coverEnvelope_refinement_boundary_pullback`,
   `coverEnvelope_refinement_sheafH1Zero_pullback`, and
@@ -636,8 +636,8 @@ Axiom / dependency audit:
 
 Validation commands:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_final_axioms.lean`
 - placeholder scan for `axiom|admit|sorry|unsafe`, `by trivial`, and trivial
   end-of-line `by simp` in the target and direct support Lean files
@@ -709,8 +709,8 @@ Historical second review lanes, superseded:
 
 Final validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_final_axioms.lean`
 - placeholder scan over direct target/support Lean files
 - hidden Unicode scan over changed public files
@@ -793,8 +793,8 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - placeholder scan over direct target/support Lean files
 - independent T3 audit: approve for the selected Cycle 9 obligation; no final
@@ -881,8 +881,8 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files
@@ -959,8 +959,8 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files
@@ -1010,7 +1010,7 @@ Major findings:
 
 Passing evidence:
 
-- `lake build ResearchLean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - focused placeholder scan over direct target/support Lean files
@@ -1097,9 +1097,9 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairTrueSheafH1`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticRepairTrueSheafH1`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files
@@ -1177,9 +1177,9 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairTrueSheafH1`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticRepairTrueSheafH1`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files
@@ -1277,8 +1277,8 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files
@@ -1338,8 +1338,8 @@ Material premise status after review:
 
 Validation available to reviewers:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files
@@ -1435,9 +1435,9 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files
@@ -1533,9 +1533,9 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files
@@ -1629,8 +1629,8 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files
@@ -1758,9 +1758,9 @@ Axiom audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `cd research/lean && lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
 - placeholder scan over direct target/support Lean files

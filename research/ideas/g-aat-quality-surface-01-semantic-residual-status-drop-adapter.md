@@ -100,9 +100,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualSta
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualStatusDropAdapter.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualStatusDropAdapter`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualStatusDropAdapter.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualStatusDropAdapter`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `#print axioms`: generic status-drop adapter theorem 群は axiom-free。selected witness と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
 claim boundary は、supplied exact boolean residual status reading、finite status-drop pair/cochain、canonical cut-noise equivalence、canonical vanishing/nonzero iff status-drop absence/existence、nonzero status-drop closure/data no-go に限定する。
@@ -138,4 +138,4 @@ unchecked: true H1/cohomology、Cech quotient、coboundary quotient、vanishing-
 ## 進捗ログ
 
 - 2026-06-23: Cycle 98 G1/G2 で finite residual status-drop obstruction adapter を採択。
-- 2026-06-23: Lean 証拠を `SemanticResidualStatusDropAdapter.lean` に固定し、単体 `lake env lean`、module build、`lake build ResearchLean`、axiom 監査が通った。
+- 2026-06-23: Lean 証拠を `SemanticResidualStatusDropAdapter.lean` に固定し、単体 `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。

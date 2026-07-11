@@ -116,9 +116,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAtl
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAtlasMorphism.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualAtlasMorphism`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualAtlasMorphism.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualAtlasMorphism`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `#print axioms`: generic push/transport/canonical theorem は axiom-free。selected cut-surjectivity は標準 `propext`。selected nonzero と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
 claim boundary は、finite semantic repair atlas skeleton 間の supplied residual cut-locus embedding/equivalence、pushforward cochains、canonical vanishing/nonzero transport、selected extended carrier witness に限定する。
@@ -155,4 +155,4 @@ unchecked: arbitrary atlas morphism category、atom-map semantic completeness、
 ## 進捗ログ
 
 - 2026-06-23: Cycle 94 G1/G2 で beyond-same-carrier residual cut-locus transport を採択。
-- 2026-06-23: Lean 証拠を `SemanticResidualAtlasMorphism.lean` に固定し、単体 `lake env lean`、module build、`lake build ResearchLean`、axiom 監査が通った。
+- 2026-06-23: Lean 証拠を `SemanticResidualAtlasMorphism.lean` に固定し、単体 `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。

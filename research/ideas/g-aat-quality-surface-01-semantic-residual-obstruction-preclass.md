@@ -100,9 +100,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObs
 
 G3 初期実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObstructionPreclass.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualObstructionPreclass`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualObstructionPreclass.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualObstructionPreclass`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `#print axioms`: `residualObstructionOnePreclass_vanishes_iff_no_cut`、`residualObstructionOnePreclass_nonzero_iff_cut`、`sameResidualObstructionSupport_preserves_vanishes`、`sameResidualObstructionSupport_preserves_nonzero` は axiom-free。scanner bridge は標準 `propext` のみ。selected nonzero witness と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 - G3 形式化品質監査: pass。preclass は H^1/cohomology/coboundary ではなく support predicate criterion に留まり、`vanishing -> closure` は主張しない。support exactness、same-support preservation、scanner measurement、selected concrete support witness は Lean とカードで一致している。
 - G3.5 初回 revise 解決: candidate card に Lean 形式化品質監査要約と unresolved/unchecked boundary を追記した。aggregate import、declaration list、axiom summary は同期済み。

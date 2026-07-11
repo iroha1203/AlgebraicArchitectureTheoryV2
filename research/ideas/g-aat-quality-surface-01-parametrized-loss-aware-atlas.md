@@ -95,8 +95,8 @@ Boundary:
 
 ## Verification
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/ParametrizedLossAwareAtlas.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ParametrizedLossAwareAtlas.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/parametrized_loss_aware_atlas_axioms.lean`: pass
   - axiom-free: `paramCell_exact_iff_visible_empty`, `stagedCell_visibleTupleFlat`, `baseline_visibleLawDeletion_is_visibleLawLoss`, `baseline_tableLawDeletion_is_protectedSupportLoss`

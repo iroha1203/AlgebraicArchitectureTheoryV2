@@ -113,6 +113,6 @@ Lean proof は `research/lean/ResearchLean/AG/QualitySurface/SupportAntichainSqu
 
 - 2026-06-20: Cycle 15 candidate picked.
 - 2026-06-20: `SupportAntichainSquareCriterion.lean` added.
-- 2026-06-20: `lake env lean research/lean/ResearchLean/AG/QualitySurface/SupportAntichainSquareCriterion.lean` pass.
-- 2026-06-20: `lake build ResearchLean` pass.
+- 2026-06-20: `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SupportAntichainSquareCriterion.lean` pass.
+- 2026-06-20: `cd research/lean && lake build ResearchLean` pass.
 - 2026-06-20: `lake env lean .tmp/support_antichain_square_axioms.lean` pass; reported theorem package is axiom-free.

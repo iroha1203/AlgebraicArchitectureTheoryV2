@@ -103,9 +103,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualTra
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualTransportNaturality.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualTransportNaturality`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualTransportNaturality.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualTransportNaturality`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
 - axiom probe: generic theorem 群は axiom-free。selected witness / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 - `git diff --check`: pass。

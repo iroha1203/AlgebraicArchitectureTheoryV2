@@ -79,9 +79,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualEdg
 
 G3 初期実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualEdgeTransitionObstruction`: pass。
-- `lake build ResearchLean.AG`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualEdgeTransitionObstruction`: pass。
+- `cd research/lean && lake build ResearchLean.AG`: pass。
 - axiom probe: generic edge criterion は axiom-free。selected residual-present / residual-free / no-go / package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 
 ## 審判メモ

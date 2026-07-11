@@ -106,8 +106,8 @@ Proved declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/FrontierLocalFormulaMinimality.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/FrontierLocalFormulaMinimality.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `lake env lean .tmp/frontier_local_formula_minimality_axioms.lean`: pass; all reported declarations depend on no axioms
 - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/AG/QualitySurface/FrontierLocalFormulaMinimality.lean`: pass; no hits
 

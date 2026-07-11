@@ -82,8 +82,8 @@ Planned / proved declarations:
 
 Verification:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/LossAwareCommutatorAtlas.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/LossAwareCommutatorAtlas.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `#print axioms` for the reported theorem declarations: all reported theorem declarations have no 公理依存.
 - Forbidden-token scan over the Cycle 45 Lean/card files: no matches.
 - G3 公理監査: pass。reported declarations は clean で、`Formal/AG` 本体は参照のみ。
@@ -112,5 +112,5 @@ Boundary:
 
 ## 進捗ログ
 
-- 2026-06-21: Cycle 45 候補として作成。Lean 単体チェックと `lake build ResearchLean` は pass。
+- 2026-06-21: Cycle 45 候補として作成。Lean 単体チェックと `cd research/lean && lake build ResearchLean` は pass。
 - 2026-06-21: G2 で base 70 / multiplier 2.0 に修正。G3 公理監査と Lean 形式化品質監査は pass。

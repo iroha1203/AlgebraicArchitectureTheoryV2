@@ -118,10 +118,10 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualInd
 
 G3 初期実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualIndexedTransport.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualIndexedTransport`: pass。
-- `lake build ResearchLean.AG`: pass。
-- `lake env lean research/lean/ResearchLean.lean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualIndexedTransport.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualIndexedTransport`: pass。
+- `cd research/lean && lake build ResearchLean.AG`: pass。
+- `cd research/lean && lake env lean ResearchLean.lean`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
 - axiom probe: indexed closure iff、transition-coherent closure iff、exact support / supported-lift iff は axiom-free。selected frontier-to-flat no-go、transition-coherent no-go、package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 

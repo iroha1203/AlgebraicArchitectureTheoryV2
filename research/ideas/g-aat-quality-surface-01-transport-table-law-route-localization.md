@@ -112,8 +112,8 @@ or whole-codebase quality.
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/TransportTableLawRouteLocalization.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/TransportTableLawRouteLocalization.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `lake env lean .tmp/transport_table_law_route_localization_axioms.lean`: pass; reported declarations depend on no axioms
 - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/AG/QualitySurface/TransportTableLawRouteLocalization.lean`: pass; no hits in the Lean evidence file
 

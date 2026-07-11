@@ -100,9 +100,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualTra
 
 G3 初期実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualTransitionCutScanner.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualTransitionCutScanner`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualTransitionCutScanner.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualTransitionCutScanner`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `#print axioms`: `firstResidualTransitionCut?_some_pairCut`、`firstResidualTransitionCut?_some_obstructs_atlasTransitionClosure`、`firstResidualTransitionCut?_none_iff_noResidualTransitionCut` は標準 `propext` のみ。selected scanner witness と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 - G3 形式化品質監査: pass。`none` は listed cut-free / complete edge-order no-cut に限定され、`none -> transition closure`、absolute minimality、H^1 class、global gluing claim は主張していない。
 - G3.5 同期監査の revise に従い、`selectedFrontierFlatScanOrder`、`selectedFrontierFlatCutPairDecidable`、axiom audit、G2 revise 解決、genius support role 同期を追記した。

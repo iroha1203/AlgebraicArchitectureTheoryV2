@@ -96,8 +96,8 @@ Boundary:
 
 ## Verification
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/MultiRouteCorrectionSystem.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/MultiRouteCorrectionSystem.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/multi_route_correction_system_axioms.lean`: pass
   - standard axioms only: package and supporting declarations depend only on `propext` / `Quot.sound`

@@ -106,7 +106,8 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
   `lake env lean <target-file>`だけとする。aggregate root、module群、全file loopは禁止する。
 - package / module check: 統括エージェントだけがPR前に
   `lake build <module>`または`lake build`のどちらか1回を実行し、結果を各review laneへ渡す。
-  独立package側の残るfull buildはCI required checkを証拠にする。subagentは実行しない。
+  Research packageのfull buildはCIで実行しない。必要な場合だけ統括エージェントが
+  `cd research/lean && lake build`をローカルで1回実行し、subagentは実行しない。
 - theorem dependency audit: 対象 Lean declaration ごとに `#print axioms <DeclarationName>` を一時確認する。複数 declaration が対象なら全件必須とし、未実行の declaration 名は最終報告の coverage に列挙する。確認用 scratch は `.tmp/` に置き、成果物に混ぜない。
 - placeholder scan: `rg -n "\b(axiom|admit|sorry|unsafe)\b|by\\s+trivial|by\\s+simp\\s*$" Formal`
 - hidden / bidi scan when reporting changed artifacts: `rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-or-reviewed-files>`

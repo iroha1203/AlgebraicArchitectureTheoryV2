@@ -133,8 +133,8 @@ Lean proof は `research/lean/ResearchLean/AG/QualitySurface/TupleHolonomyDefect
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/TupleHolonomyDefect.lean`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/TupleHolonomyDefect.lean`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `.tmp/tuple_holonomy_defect_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - 対象 Lean file の `axiom` / `admit` / `sorry` / `unsafe` scan: no hits。

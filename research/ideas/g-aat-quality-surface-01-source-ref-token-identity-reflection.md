@@ -106,8 +106,8 @@ Lean proof は `research/lean/ResearchLean/AG/QualitySurface/SourceRefTokenIdent
 
 ## G3 監査
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SourceRefTokenIdentityReflection.lean` pass。
-- `lake build ResearchLean` pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SourceRefTokenIdentityReflection.lean` pass。
+- `cd research/lean && lake build ResearchLean` pass。
 - `lake env lean .tmp/source_ref_token_identity_axioms.lean` pass。
 - reported declaration はすべて `does not depend on any axioms`。
 - G3 公理検査: pass。`sorryAx` なし、標準公理もなし。

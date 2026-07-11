@@ -93,8 +93,8 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/ComponentDefectPropagation.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ComponentDefectPropagation.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `lake env lean .tmp/component_defect_propagation_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; statements include tuple/packet zero-defect calculus, component-indexed propagation, packet-to-tuple projection after propagation, and concrete cancellation witnesses rather than mere transitivity wrappers

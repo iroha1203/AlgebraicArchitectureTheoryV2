@@ -81,8 +81,8 @@ Planned / proved declarations:
 
 Verification:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `#print axioms` for all listed declarations: all `does not depend on any axioms`
 - forbidden-token scan on the Lean file and candidate card: no matches
 
@@ -108,6 +108,6 @@ Boundary:
 
 ## 進捗ログ
 
-- 2026-06-21: Cycle 43 候補として作成。Lean 単体チェックは `lake env lean research/lean/ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean` で pass。
+- 2026-06-21: Cycle 43 候補として作成。Lean 単体チェックは `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean` で pass。
 - 2026-06-21: G2 厳密性 revise に対応し、selected branch minimality と packet-level correction semantics を Lean に追加。単体チェックは再度 pass。
-- 2026-06-21: G3 で `lake build ResearchLean`、網羅的 `#print axioms`、形式化品質監査が pass。
+- 2026-06-21: G3 で `cd research/lean && lake build ResearchLean`、網羅的 `#print axioms`、形式化品質監査が pass。

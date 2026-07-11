@@ -138,11 +138,11 @@ auditable.
 
 Verification already passed for this candidate:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairFiniteQueryRepresentationSupportRecovery`
-- `lake env lean research/lean/ResearchLean.lean`
-- `lake build ResearchLean.AG`
-- `lake build ResearchLean`
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticRepairFiniteQueryRepresentationSupportRecovery`
+- `cd research/lean && lake env lean ResearchLean.lean`
+- `cd research/lean && lake build ResearchLean.AG`
+- `cd research/lean && lake build ResearchLean`
 - `lake build`
 - `.tmp/g04_support_recovery_axioms.lean` axiom audit: 5 reported declarations,
   no axioms.

@@ -90,8 +90,8 @@ Proved declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairTransportCommutator.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SupportLocalRepairTransportCommutator.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `lake env lean .tmp/support_local_repair_transport_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; transported exact pre-frontier, transported support-locality, left/right route frontier formula, route frontier agreement, and source-ref exact visualization are all in the theorem package

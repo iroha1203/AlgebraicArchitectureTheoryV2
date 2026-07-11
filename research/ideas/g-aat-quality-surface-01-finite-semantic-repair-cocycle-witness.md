@@ -116,8 +116,8 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCocyc
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCocycleWitness.lean`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairCocycleWitness.lean`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - axiom probe: core semantic definitions と `SemanticRepairGluingExact` / `semanticResidual_obstructs_globalGluing` は axiom-free。flat exactness / nonfaithfulness / package は既存 Cech exactness infrastructure 由来の標準 `propext` / `Quot.sound` を継承する。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 
 ## 審判メモ
@@ -153,7 +153,7 @@ G3 実績:
 ## 進捗ログ
 
 - 2026-06-22: G1 四ロール候補 pool で finite semantic repair cocycle witness が最有力候補として収束。Cycle 77 picked とした。
-- 2026-06-22: Lean 証拠を `SemanticRepairCocycleWitness.lean` に固定し、単体 `lake env lean` と `lake build ResearchLean` が通った。
+- 2026-06-22: Lean 証拠を `SemanticRepairCocycleWitness.lean` に固定し、単体 `lake env lean` と `cd research/lean && lake build ResearchLean` が通った。
 - 2026-06-22: G2 A の revise を受け、`HandoffCechGlobalExact` 風の強い global gluing 表現を削除し、Research 側定義 `SemanticRepairGluingExact := no semantic residual` に対する finite support witness として claim と expected SCORE を下げた。
 - 2026-06-22: G2 再審査は四者 accept、base 55、multiplier 2.0、genius support。G4 SCORE 監査は final +110 を confirm。
 - 2026-06-22: G3 formalization audit の revise を受け、`repairTransportFlat_semanticGluingExact` を追加し、同じ visible/local projection の flat exact / residual non-exact 分離を Lean package に含めた。

@@ -142,7 +142,7 @@ path holonomy として固定する。
 
 ## G3 監査
 
-- build: `lake env lean research/lean/ResearchLean/AG/QualitySurface/ProfileGridHolonomy.lean` pass、`lake build ResearchLean` pass。
+- build: `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ProfileGridHolonomy.lean` pass、`cd research/lean && lake build ResearchLean` pass。
 - axiom check: pass。主要 declaration はすべて `does not depend on any axioms`。
 - formalization quality audit: pass。typed 3x3 grid、length-4 paths、middle vertices、localized curvature cell、surrounding preservation steps、endpoint nonfaithfulness が Lean statement として分離されている。
 - theorem highlights: `lawFirst_uses_middle_grid_vertices`、`coverFirst_uses_middle_grid_vertices`、`surrounding_steps_preserve_trace_frontier`、`localized_curvature_cell`、`endpointSurface_not_faithful_to_gridRepairFrontier`、`same_grid_surface_but_path_ordered_frontier_diff`。
@@ -170,5 +170,5 @@ path holonomy として固定する。
 
 - 2026-06-20: cycle 10 候補として作成。
 - 2026-06-20: G2-A/B の revise を受け、base 65 / final 130 に下げ、length-4 path、localized curvature cell、surrounding preservation steps を必須 evidence にした。
-- 2026-06-20: `ProfileGridHolonomy.lean` を追加し、単体型検査、`lake build ResearchLean`、G3 公理検査が pass。
+- 2026-06-20: `ProfileGridHolonomy.lean` を追加し、単体型検査、`cd research/lean && lake build ResearchLean`、G3 公理検査が pass。
 - 2026-06-20: G4 SCORE 監査が confirm。report Cycle 10 と total SCORE 1410 を更新。

@@ -97,9 +97,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualMap
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualMappedStatusDropScannerOrder.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualMappedStatusDropScannerOrder`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualMappedStatusDropScannerOrder.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualMappedStatusDropScannerOrder`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `#print axioms`: theorem family は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
 claim boundary は、source-complete edge order の map image、mapped old status-drop coverage、target scanner
@@ -139,4 +139,4 @@ ArchMap correctness、runtime/UI correctness、whole-codebase quality、arbitrar
 
 - 2026-06-23: Cycle 103 candidate として generated mapped status-drop scanner order を採択。
 - 2026-06-23: Lean 証拠を `SemanticResidualMappedStatusDropScannerOrder.lean` に固定し、単体
-  `lake env lean`、module build、`lake build ResearchLean`、axiom 監査が通った。
+  `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。

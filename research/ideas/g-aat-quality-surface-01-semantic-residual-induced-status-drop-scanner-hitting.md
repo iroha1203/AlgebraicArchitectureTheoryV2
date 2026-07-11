@@ -96,9 +96,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualInd
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualInducedStatusDropScannerHitting.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualInducedStatusDropScannerHitting`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualInducedStatusDropScannerHitting.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualInducedStatusDropScannerHitting`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `#print axioms`: generic / complete-order theorem 群は標準 `propext` のみ。selected witness と package は標準
   `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
@@ -138,4 +138,4 @@ runtime/UI correctness、whole-codebase quality、arbitrary atlas category/funct
 
 - 2026-06-23: Cycle 102 G1/G2 で induced target status-drop scanner hit obligations を採択。
 - 2026-06-23: Lean 証拠を `SemanticResidualInducedStatusDropScannerHitting.lean` に固定し、単体
-  `lake env lean`、module build、`lake build ResearchLean`、axiom 監査が通った。
+  `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。

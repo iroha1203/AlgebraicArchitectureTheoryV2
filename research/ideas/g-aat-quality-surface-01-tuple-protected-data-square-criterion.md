@@ -114,8 +114,8 @@ Lean proof は `research/lean/ResearchLean/AG/QualitySurface/TupleProtectedDataS
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/TupleProtectedDataSquareCriterion.lean` pass。
-- `lake build ResearchLean` pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/TupleProtectedDataSquareCriterion.lean` pass。
+- `cd research/lean && lake build ResearchLean` pass。
 - `lake env lean .tmp/tuple_protected_data_square_axioms.lean` pass。
 - reported declaration はすべて `does not depend on any axioms`。
 - changed-file scan で hidden / bidirectional Unicode と local path は no matches。

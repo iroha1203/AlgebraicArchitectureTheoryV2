@@ -107,9 +107,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualCut
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualCutRepairHitting.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualCutRepairHitting`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualCutRepairHitting.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualCutRepairHitting`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `#print axioms`: generic repair-hitting theorem 群は axiom-free。selected witness と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
 claim boundary は、same-carrier old/new finite semantic repair atlas skeleton、supplied bookkeeping predicates としての explicit `edgeHit` / `sourceHit` / `targetHit`、supplied unhit persistence law、vanishing implies old residual cuts are hit、unhit old cut preserves new nonzero obstruction、new closure/data no-go に限定する。
@@ -145,4 +145,4 @@ unchecked: hit sufficiency、actual repair synthesis、global minimal repair set
 ## 進捗ログ
 
 - 2026-06-23: Cycle 96 G1/G2 で residual cut obstruction repair-hitting theorem を採択。
-- 2026-06-23: Lean 証拠を `SemanticResidualCutRepairHitting.lean` に固定し、単体 `lake env lean`、module build、`lake build ResearchLean`、axiom 監査が通った。
+- 2026-06-23: Lean 証拠を `SemanticResidualCutRepairHitting.lean` に固定し、単体 `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。

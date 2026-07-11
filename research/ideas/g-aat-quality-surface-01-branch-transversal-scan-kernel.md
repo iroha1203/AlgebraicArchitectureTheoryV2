@@ -151,8 +151,8 @@ Lean proves:
 
 Local checks:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/BranchTransversalScanKernel.lean`: pass.
-- `lake build ResearchLean`: pass.
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/BranchTransversalScanKernel.lean`: pass.
+- `cd research/lean && lake build ResearchLean`: pass.
 - `lake build`: pass, with only the pre-existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warnings.
 - `#print axioms`: selector type, branch interpretation, selected order, hit predicates, both scan functions, and concrete residual predicate are axiom-free.  Selector enumeration, list membership / none-iff proofs, trace-only concrete scan result, deletion/restoration, visible-equivalent kernel pair, nonfaithfulness, and the package use only standard `propext`.  No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported.
 

@@ -89,8 +89,8 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticFiberAwareV
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticFiberAwareViewerCriterion.lean`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticFiberAwareViewerCriterion.lean`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - axiom probe: generic reading/reflection lemmas は axiom-free。selected component-only no-go / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 
 ## 審判メモ
@@ -125,4 +125,4 @@ G3 実績:
 ## 進捗ログ
 
 - 2026-06-22: G1 viewer criterion candidate として semantic-fiber-aware viewer criterion を提示し、Cycle 82 picked とした。
-- 2026-06-22: Lean 証拠を `SemanticFiberAwareViewerCriterion.lean` に固定し、単体 `lake env lean`、`lake build ResearchLean`、axiom probe が通った。
+- 2026-06-22: Lean 証拠を `SemanticFiberAwareViewerCriterion.lean` に固定し、単体 `lake env lean`、`cd research/lean && lake build ResearchLean`、axiom probe が通った。

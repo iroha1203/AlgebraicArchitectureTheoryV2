@@ -107,7 +107,7 @@ local exactness product と all-loop holonomy clearance との関係は theorem 
 
 ## 審判メモ
 
-- G3: `lake env lean research/lean/ResearchLean/AG/QualitySurface/RouteHolonomyObstructionSupport.lean`、`lake build ResearchLean`、full `lake build` は pass。full build のみ既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` warning を再生した。
+- G3: `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/RouteHolonomyObstructionSupport.lean`、`cd research/lean && lake build ResearchLean`、full `lake build` は pass。full build のみ既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` warning を再生した。
 - G3 axiom audit: `bridgeHolonomyClear_iff_bridgeAligned`、`bridgeObstruction_of_holonomySupport`、`routeLoopHolonomyClear_iff_interactionExact_of_local`、`routeAtlasInteractionExact_iff_localAndHolonomyClear` は axiom-free。boolean / scan selector family は `propext`、mixed / aligned atlas evidence と package theorem は existing exactness infrastructure 由来の `propext` / `Quot.sound` を継承する。`sorryAx`、nonstandard axiom、`Classical.choice` はない。
 - G3 formalization quality: pass。`RouteLoop` / `HolonomySupport` / `LoopHolonomyClear` / `RouteAtlasInteractionExact` は分離され、mixed atlas は local exact かつ not interaction exact、aligned comparator は interaction exact として固定された。
 - 研究価値: G2 B は accept、base 88。base 95 は高すぎ、強い中間定理として評価。

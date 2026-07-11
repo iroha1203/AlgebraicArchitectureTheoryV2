@@ -90,9 +90,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/VisibleLocalSemanti
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/VisibleLocalSemanticGluingObstruction.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.VisibleLocalSemanticGluingObstruction`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/VisibleLocalSemanticGluingObstruction.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.VisibleLocalSemanticGluingObstruction`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - axiom probe: selected profile / selected obstruction / existential witness / no-reflection theorem / finite atlas obstruction / selected finite atlas theorem / package は既存 Cech infrastructure 由来の標準 `propext` / `Quot.sound` のみを使う。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 
 ## 審判メモ
@@ -128,4 +128,4 @@ G3 実績:
 ## 進捗ログ
 
 - 2026-06-22: G1 obstruction candidate として visible/local semantic gluing obstruction を提示し、Cycle 80 picked とした。
-- 2026-06-22: Lean 証拠を `VisibleLocalSemanticGluingObstruction.lean` に固定し、単体 `lake env lean`、module build、`lake build ResearchLean` が通った。
+- 2026-06-22: Lean 証拠を `VisibleLocalSemanticGluingObstruction.lean` に固定し、単体 `lake env lean`、module build、`cd research/lean && lake build ResearchLean` が通った。

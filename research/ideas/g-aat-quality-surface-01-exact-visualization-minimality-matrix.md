@@ -75,8 +75,8 @@ Planned / proved declarations:
 
 Verification:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/ExactVisualizationCriterionMinimality.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ExactVisualizationCriterionMinimality.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `#print axioms` for the reported declarations: no axioms
 - `sorryAx`: none
 - Formal boundary: `research/lean/ResearchLean` only; `Formal/AG` proper is imported but not edited.
@@ -96,7 +96,7 @@ Verification:
 
 ## 進捗ログ
 
-- 2026-06-21: Cycle 42 候補として作成。Lean 単体チェックは `lake env lean research/lean/ResearchLean/AG/QualitySurface/ExactVisualizationCriterionMinimality.lean` で pass。
+- 2026-06-21: Cycle 42 候補として作成。Lean 単体チェックは `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ExactVisualizationCriterionMinimality.lean` で pass。
 - 2026-06-21: G2 四審判は全員 `accept`。厳密性審判に従い expected score を base 70 / final 140 へ下げ、obligation deletion cell に action naturality 保存を明記。
 - 2026-06-21: G3 公理検査は pass。reported declarations はすべて no axioms / no `sorryAx`。形式化品質監査も pass。
 - 2026-06-21: G3.5 sync audit は `synced`。G4 SCORE audit は `confirm`、base 70、multiplier 2.0、penalty 0、final 140。`research/reports/G-aat-quality-surface-01.md` Cycle 42 と total SCORE 5250 を更新。

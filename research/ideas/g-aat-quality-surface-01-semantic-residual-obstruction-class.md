@@ -107,9 +107,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObs
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObstructionClass.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualObstructionClass`: pass。
-- `lake build ResearchLean`: pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualObstructionClass.lean`: pass。
+- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualObstructionClass`: pass。
+- `cd research/lean && lake build ResearchLean`: pass。
 - `#print axioms`: `cutNoiseEquivalent_preserves_cutVanishes`、`cutNoiseEquivalent_preserves_cutNonzero`、`canonicalResidualCutClass_vanishes_iff_no_cut`、`canonicalResidualCutClass_nonzero_iff_cut` は axiom-free。scanner bridge と selected noisy equivalence は標準 `propext`。selected noisy nonzero と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
 claim boundary は、finite semantic repair atlas、selected semantic atom vocabulary、residual transition cut predicate、cut-locus class equivalence、supplied finite edge-order scanner measurement に限定する。
@@ -152,4 +152,4 @@ unchecked: true H1 cohomology class、Cech quotient、coboundary quotient、vani
 ## 進捗ログ
 
 - 2026-06-23: Cycle 92 G1/G2 で cut-noise invariant residual obstruction class reading を採択。
-- 2026-06-23: Lean 証拠を `SemanticResidualObstructionClass.lean` に固定し、単体 `lake env lean`、module build、`lake build ResearchLean`、axiom 監査が通った。
+- 2026-06-23: Lean 証拠を `SemanticResidualObstructionClass.lean` に固定し、単体 `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。

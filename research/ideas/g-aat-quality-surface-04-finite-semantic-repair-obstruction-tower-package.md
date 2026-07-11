@@ -120,7 +120,7 @@ Lean file: `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairObstructi
 - `finiteGluingComplex_as_obstructionTower_shadow`
 - `universalSemanticRepairObstructionTower_package`
 
-`lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairObstructionTower.lean`、`lake build ResearchLean`、reported declarations の `#print axioms` は pass。reported declarations はすべて axiom-free。
+`cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairObstructionTower.lean`、`cd research/lean && lake build ResearchLean`、reported declarations の `#print axioms` は pass。reported declarations はすべて axiom-free。
 
 ## Target Theorem 寄与
 

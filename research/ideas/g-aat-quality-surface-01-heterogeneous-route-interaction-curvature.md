@@ -82,7 +82,7 @@ Lean file `HeterogeneousRouteInteraction.lean` に置く。
 - 研究価値: accept; base 80. Product-local-exactness と heterogeneous interaction exactness の分離は frontier を進めるが、bridge はまだ supplied contract なので base 90 ではない。
 - repo 全体価値: accept; base 80. Future tooling / website surface として有効だが、bridge law は supplied evidence contract として扱う必要がある。
 - ライバル比較: accept after one revise; base 80. First G2 D noted that ADL can also express cross-route constraints. Revised to make the advantage the certificate-bearing bridge obstruction, not merely an extra Boolean check.
-- G3: `lake env lean` and `lake build ResearchLean` pass. `BridgeCertificate` / `BridgeObstruction` / concrete trace obstruction are axiom-free; package and local exactness witnesses inherit standard `propext` / `Quot.sound` from imported exactness infrastructure.
+- G3: `lake env lean` and `cd research/lean && lake build ResearchLean` pass. `BridgeCertificate` / `BridgeObstruction` / concrete trace obstruction are axiom-free; package and local exactness witnesses inherit standard `propext` / `Quot.sound` from imported exactness infrastructure.
 - genius: not eligible. All G2 judges treated this as a normal orientation / obstruction result, not a 1000-point breakthrough.
 
 ## 関連

@@ -112,8 +112,8 @@ Lean proof は `research/lean/ResearchLean/AG/QualitySurface/TupleTransportCompo
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/TupleTransportComponentLaws.lean` pass。
-- `lake build ResearchLean` pass。
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/TupleTransportComponentLaws.lean` pass。
+- `cd research/lean && lake build ResearchLean` pass。
 - `lake env lean .tmp/tuple_transport_component_laws_axioms.lean` pass。
 - reported declaration はすべて `does not depend on any axioms`。
 - changed-file scan で hidden / bidirectional Unicode と local path は no matches。

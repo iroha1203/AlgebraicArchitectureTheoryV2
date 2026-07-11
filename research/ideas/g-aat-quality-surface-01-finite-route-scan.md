@@ -90,8 +90,8 @@ Boundary:
 
 ## Verification
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/FiniteRouteScan.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/FiniteRouteScan.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `lake build`: pass, with the pre-existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning only
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting in the Lean file: pass
 - hidden / bidirectional Unicode scan and private/local path scan: pass

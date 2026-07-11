@@ -121,8 +121,8 @@ Lean proves:
 
 Local checks:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/CurvatureBasisExchange.lean`: pass.
-- `lake build ResearchLean`: pass.
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/CurvatureBasisExchange.lean`: pass.
+- `cd research/lean && lake build ResearchLean`: pass.
 - `#print axioms`: `selectedBasisExchangeFamily_sideGrounded`, `selected_collapsed_same_visibleUnion`, `traceOnly_hits_collapsedVisibleExchange`, `traceOnly_misses_refinedRepairFrontierExchangeBranch`, `traceOnly_refinedRepairFrontierExchange_residual`, `traceOnly_not_hits_selectedBasisExchange`, and `sameVisibleUnion_not_faithful_to_basisExchange` are axiom-free.  Cech grounding, common-clearance, trace-only common-clearance failure, and the package use only standard `propext` inherited from existing Cech predicate-equality evidence.  No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported in the new core evidence.
 
 ## 可視 projection

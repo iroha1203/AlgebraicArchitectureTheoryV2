@@ -97,8 +97,8 @@ Planned declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SupportedTokenMismatchObstruction.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SupportedTokenMismatchObstruction.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `lake env lean .tmp/supported_token_mismatch_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; `supportedTokenMismatch_frontierRestriction_holds` is the full all-atom frontier formula, not only empty-frontier collapse, and the witness is a repair action obstruction rather than a transport token-swap restatement

@@ -80,8 +80,8 @@ route dashboard の green / red や first failing loop は、source-ref handoff 
 ## 証明・根拠
 
 Lean file `research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean` に固定した。
-`lake env lean research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean`、
-`lake env lean research/lean/ResearchLean.lean`、`lake build ResearchLean`、full `lake build` は通過した。
+`cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean`、
+`cd research/lean && lake env lean ResearchLean.lean`、`cd research/lean && lake build ResearchLean`、full `lake build` は通過した。
 full build の警告は既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter 警告のみである。
 
 証明済み declaration は次である。

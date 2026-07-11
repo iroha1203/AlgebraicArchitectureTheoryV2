@@ -92,8 +92,8 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean`: pass
-- `lake build ResearchLean`: pass
+- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean`: pass
+- `cd research/lean && lake build ResearchLean`: pass
 - `lake env lean .tmp/lawful_repair_transport_commutator_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; `LawfulRepairTransportSquare` is non-circular and does not assume endpoint equality, packet zero holonomy, tuple zero holonomy, or source-ref exact visualization
