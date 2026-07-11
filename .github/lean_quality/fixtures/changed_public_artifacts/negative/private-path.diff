@@ -1,0 +1,4 @@
+diff --git a/docs/note/path.md b/docs/note/path.md
++++ b/docs/note/path.md
+@@ -0,0 +1 @@
++/Users/example/private.txt

@@ -1,0 +1,2 @@
+# module<TAB>source
+ResearchLean.AG.Smoke	ResearchLean/AG/Smoke.lean

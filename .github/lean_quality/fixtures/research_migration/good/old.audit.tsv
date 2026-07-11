@@ -1,0 +1,3 @@
+MIGRATION_META	TEST_BASE	FixtureOld.AG.Smoke	old/Smoke.lean	TEST_DIGEST
+MIGRATION_DECL	$RESEARCH.Smoke	$RESEARCH.Smoke.witness		type:nat	value:1	$NO_AXIOMS
+MIGRATION_DECL	$RESEARCH.Smoke	$RESEARCH.Shared.Inner.witness		type:nat	value:2	$NO_AXIOMS

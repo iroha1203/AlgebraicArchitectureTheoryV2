@@ -1,0 +1,3 @@
+namespace FixtureNew.AG.QualitySurface.SemanticRepairLawEquationGroundedPacket
+def lawEquation_constructs_groundedComparisonPacket : Nat := 1
+end FixtureNew.AG.QualitySurface.SemanticRepairLawEquationGroundedPacket

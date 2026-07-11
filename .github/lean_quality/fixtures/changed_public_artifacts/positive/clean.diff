@@ -1,0 +1,4 @@
+diff --git a/docs/note/clean.md b/docs/note/clean.md
++++ b/docs/note/clean.md
+@@ -0,0 +1 @@
++public artifact text

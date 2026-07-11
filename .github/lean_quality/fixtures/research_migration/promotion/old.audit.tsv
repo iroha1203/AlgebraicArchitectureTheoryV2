@@ -1,0 +1,2 @@
+MIGRATION_META	TEST_BASE	FixtureOld.AG.QualitySurface.SemanticRepairLawEquationGroundedPacket	old/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean	TEST_DIGEST
+MIGRATION_DECL	$RESEARCH.QualitySurface.SemanticRepairLawEquationGroundedPacket	$RESEARCH.QualitySurface.SemanticRepairLawEquationGroundedPacket.lawEquation_constructs_groundedComparisonPacket		type:nat	value:1	$NO_AXIOMS

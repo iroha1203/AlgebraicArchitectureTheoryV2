@@ -1,0 +1,7 @@
+diff --git a/Formal/Bad.lean b/Formal/Bad.lean
++++ b/Formal/Bad.lean
+@@ -0,0 +1,4 @@
++axiom bad : True
++def admitted : True := by admit
++theorem unfinished : True := by sorry
++unsafe def bypass : Nat := 0
