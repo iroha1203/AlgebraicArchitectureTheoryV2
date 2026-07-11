@@ -1,5 +1,6 @@
 import Formal.AG.Cohomology.FinitePosetStandardComplex
 import Formal.Util.AssertStandardAxioms
+import Mathlib.Algebra.AddTorsor.Defs
 import Mathlib.Tactic
 
 /-!
@@ -13,10 +14,10 @@ criterion.
 
 The section-specific connecting cocycle and class are generated from explicit
 local lifts, and their independence of the local-lift choice is proved through
-the repository additive H1 relation.  An actual global lift is proved to kill
-the class.  Constructing a global lift from class zero and the lift-fiber
-torsor remain proof obligations.  No conclusion equivalent to those claims is
-accepted as an input field here.
+the repository additive H1 relation.  Class zero is equivalent to an actual
+global lift by generated-presieve sheaf descent, and the nonempty lift fiber is
+an additive torsor under global kernel sections.  No conclusion equivalent to
+those claims is accepted as an input field here.
 -/
 
 noncomputable section
@@ -579,6 +580,421 @@ theorem connectingClassFor_eq_zero_of_nonempty_globalLift
     Nonempty P.GlobalLift → P.connectingClassFor L = 0 := by
   rintro ⟨lift⟩
   exact P.connectingClassFor_eq_zero_of_globalLift L lift
+
+/-! ## Class zero produces an actual global lift -/
+
+/-- Canonical degree-zero simplex displaying one cover generator. -/
+def zeroSimplex (i : geometry.cover.Index) :
+    (Cover (geometry := geometry) P.nOb).simplex 0 :=
+  fun _ => i
+
+/-- Canonical degree-one simplex displaying an ordered pair of generators. -/
+def pairSimplex (i j : geometry.cover.Index) :
+    (Cover (geometry := geometry) P.nOb).simplex 1 :=
+  Fin.cases i (fun _ => j)
+
+/-- Apply the kernel natural transformation pointwise to a kernel cochain. -/
+def kernelCochain (n : Nat)
+    (b : (complex (geometry := geometry) P.nOb).Cn n) :
+    (complex (geometry := geometry) P.eOb).Cn n :=
+  fun sigma => by
+    simpa [Cover, TupleGeometry,
+      AAT.AG.Cohomology.StandardFinitePosetCech.canonicalTupleStandardCoverRelativeCechCover,
+      AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+      AAT.AG.Site.FinitePosetCechOverlapObject,
+      AAT.AG.Site.FinitePosetCanonicalTupleCoverGeometry.toCoverGeometry,
+      AAT.AG.Site.FinitePosetCoverGeometry.toObstructionCoefficientRegime,
+      AAT.AG.Site.FinitePosetCoverGeometry.toRegime] using
+      P.kernel.app _ (b sigma)
+
+/-- Pointwise kernel inclusion commutes with the standard differential. -/
+theorem kernelCochain_d (n : Nat)
+    (b : (complex (geometry := geometry) P.nOb).Cn n) :
+    P.kernelCochain (n + 1) ((complex (geometry := geometry) P.nOb).d n b) =
+      (complex (geometry := geometry) P.eOb).d n (P.kernelCochain n b) := by
+  simpa [kernelCochain] using map_differential (geometry := geometry)
+    P.nIsSheaf P.eIsSheaf P.kernel n b
+
+/-- Degree-zero middle cochain associated to corrected generator-local lifts. -/
+def correctedLocalLiftCochain (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0) :
+    (complex (geometry := geometry) P.eOb).Cn 0 :=
+  P.localLiftCochainFor L - P.kernelCochain 0 b
+
+/-- Correct a generator-local lift by a kernel-valued degree-zero cochain. -/
+def correctedLocalLift (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (i : geometry.cover.Index) :
+    P.E.obj (op
+      (AAT.AG.Site.ContextCategoryObject.of S.contextPreorder (geometry.cover.patch i))) := by
+  simpa [correctedLocalLiftCochain, localLiftCochainFor, zeroSimplex, Cover, TupleGeometry,
+    AAT.AG.Cohomology.StandardFinitePosetCech.canonicalTupleStandardCoverRelativeCechCover,
+    AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+    AAT.AG.Site.FinitePosetCechOverlapObject,
+    AAT.AG.Site.FinitePosetCanonicalTupleCoverGeometry.toCoverGeometry,
+    AAT.AG.Site.FinitePosetCoverGeometry.toObstructionCoefficientRegime,
+    AAT.AG.Site.FinitePosetCoverGeometry.toRegime,
+    AAT.AG.Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
+    AAT.AG.Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap] using
+    P.correctedLocalLiftCochain L b (P.zeroSimplex i)
+
+/-- The corrected generator section is evaluation at its zero-simplex. -/
+theorem correctedLocalLift_eq_cochain (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (i : geometry.cover.Index) :
+  P.correctedLocalLift L b i =
+      P.correctedLocalLiftCochain L b (P.zeroSimplex i) := by
+  simp [correctedLocalLift, correctedLocalLiftCochain,
+    AAT.AG.Cohomology.StandardFinitePosetCech.canonicalTupleStandardCoverRelativeCechCover,
+    AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+    AAT.AG.Site.FinitePosetCechOverlapObject,
+    AAT.AG.Site.FinitePosetCanonicalTupleCoverGeometry.toCoverGeometry,
+    AAT.AG.Site.FinitePosetCoverGeometry.toObstructionCoefficientRegime,
+    AAT.AG.Site.FinitePosetCoverGeometry.toRegime,
+    AAT.AG.Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
+    AAT.AG.Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap]
+
+/-- A correction whose kernel coboundary is the lift-difference cocycle is compatible on canonical pairs. -/
+theorem correctedLocalLiftCochain_d_eq_zero
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (hb : P.localLiftDifferenceFor L =
+      (complex (geometry := geometry) P.nOb).d 0 b) :
+    (complex (geometry := geometry) P.eOb).d 0
+      (P.correctedLocalLiftCochain L b) = 0 := by
+  have hcochain : P.correctedLocalLiftCochain L b =
+      P.localLiftCochainFor L - P.kernelCochain 0 b := rfl
+  rw [hcochain, map_sub]
+  rw [← P.kernelCochain_d 0 b]
+  rw [show (complex (geometry := geometry) P.eOb).d 0
+        (P.localLiftCochainFor L) =
+      P.kernelCochain 1 (P.localLiftDifferenceFor L) by
+        funext sigma
+        simpa [kernelCochain] using (P.kernel_localLiftDifferenceFor L sigma).symm]
+  rw [hb, sub_self]
+
+/-- Class zero supplies a concrete correction cochain. -/
+theorem exists_correction_of_connectingClassFor_eq_zero
+    (L : P.GeneratorLocalLiftFamily)
+    (hzero : P.connectingClassFor L = 0) :
+    ∃ b : (complex (geometry := geometry) P.nOb).Cn 0,
+      P.localLiftDifferenceFor L =
+        (complex (geometry := geometry) P.nOb).d 0 b := by
+  exact (additiveH1Class_eq_zero_iff (geometry := geometry) P.nOb
+    (P.connectingCocycleFor L)).1 hzero
+
+/-- Degree-zero cochain evaluation agrees with the displayed corrected generator section. -/
+theorem map_correctedLocalLiftCochain_eq
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (tau : (Cover (geometry := geometry) P.eOb).simplex 0)
+    {X : S.category}
+    (f : X ⟶ (Cover (geometry := geometry) P.eOb).overlap 0 tau)
+    (g : X ⟶ AAT.AG.Site.ContextCategoryObject.of S.contextPreorder
+      (geometry.cover.patch (tau 0))) :
+    (P.E ⋙ forget AddCommGrpCat).map f.op
+        (P.correctedLocalLiftCochain L b tau) =
+      (P.E ⋙ forget AddCommGrpCat).map g.op
+        (P.correctedLocalLift L b (tau 0)) := by
+  let i := tau 0
+  have htau : tau = P.zeroSimplex i := by
+    funext k
+    have hk : k = 0 := Fin.eq_zero k
+    subst k
+    rfl
+  revert f g
+  rw [htau]
+  intro f g
+  rw [P.correctedLocalLift_eq_cochain L b]
+  rw [show f = g from Subsingleton.elim _ _]
+  rfl
+
+/-- Corrected generator sections agree on each canonical pair overlap. -/
+theorem correctedLocalLift_pairAgreement
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (hb : P.localLiftDifferenceFor L =
+      (complex (geometry := geometry) P.nOb).d 0 b)
+    (i j : geometry.cover.Index) :
+    let sigma := P.pairSimplex i j
+    let overlapObj : S.category := AAT.AG.Site.ContextCategoryObject.of
+      S.contextPreorder (geometry.canonicalTupleOverlapFromOverlap 1 sigma)
+    let toI : overlapObj ⟶ AAT.AG.Site.ContextCategoryObject.of S.contextPreorder
+        (geometry.cover.patch i) :=
+      homOfLE (geometry.canonicalTupleOverlapFromOverlap_le_patch 1 sigma (0 : Fin 2))
+    let toJ : overlapObj ⟶ AAT.AG.Site.ContextCategoryObject.of S.contextPreorder
+        (geometry.cover.patch j) :=
+      homOfLE (geometry.canonicalTupleOverlapFromOverlap_le_patch 1 sigma (1 : Fin 2))
+    (P.E ⋙ forget AddCommGrpCat).map toJ.op (P.correctedLocalLift L b j) =
+      (P.E ⋙ forget AddCommGrpCat).map toI.op (P.correctedLocalLift L b i) := by
+  intro sigma overlapObj toI toJ
+  let faces := (((TupleGeometry (geometry := geometry)).toSimplicialFaceAction
+    P.eOb.carrier.toPresheaf).toFaceData)
+  have hpair :=
+    (AAT.AG.Cohomology.StandardFinitePosetCech.standardDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+      faces (P.correctedLocalLiftCochain L b) sigma).1
+      (congrFun (P.correctedLocalLiftCochain_d_eq_zero L b hb) sigma)
+  let tau0 := faces.face 0 sigma (0 : Fin 2)
+  let tau1 := faces.face 0 sigma (1 : Fin 2)
+  let f0 : overlapObj ⟶ (Cover (geometry := geometry) P.eOb).overlap 0 tau0 :=
+    homOfLE (faces.faceOverlap_le 0 sigma (0 : Fin 2))
+  let f1 : overlapObj ⟶ (Cover (geometry := geometry) P.eOb).overlap 0 tau1 :=
+    homOfLE (faces.faceOverlap_le 0 sigma (1 : Fin 2))
+  have h0 := P.map_correctedLocalLiftCochain_eq L b tau0 f0 toJ
+  have h1 := P.map_correctedLocalLiftCochain_eq L b tau1 f1 toI
+  change (P.E ⋙ forget AddCommGrpCat).map f0.op
+      (P.correctedLocalLiftCochain L b tau0) =
+    (P.E ⋙ forget AddCommGrpCat).map f1.op
+      (P.correctedLocalLiftCochain L b tau1) at hpair
+  simpa [tau0, tau1, faces, sigma, pairSimplex] using h0.symm.trans (hpair.trans h1)
+
+/--
+Load-bearing effectivity step: canonical-pair compatibility extends to every
+common refinement of two displayed cover arrows.
+-/
+theorem correctedLocalLift_arrowsCompatible
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (hb : P.localLiftDifferenceFor L =
+      (complex (geometry := geometry) P.nOb).d 0 b) :
+    Presieve.Arrows.Compatible (P.E ⋙ forget AddCommGrpCat)
+      (fun i : geometry.cover.Index =>
+        homOfLE (geometry.cover.inclusion i))
+      (P.correctedLocalLift L b) := by
+  intro i j Z gi gj hcomm
+  let sigma := P.pairSimplex i j
+  let tupleGeometry := TupleGeometry (geometry := geometry)
+  let overlapObj : S.category :=
+    AAT.AG.Site.ContextCategoryObject.of S.contextPreorder
+      (geometry.canonicalTupleOverlapFromOverlap 1 sigma)
+  have hZi : S.contextPreorder.le Z.ctx (geometry.cover.patch i) := leOfHom gi
+  have hZj : S.contextPreorder.le Z.ctx (geometry.cover.patch j) := leOfHom gj
+  have hkLe : S.contextPreorder.le Z.ctx
+      (geometry.canonicalTupleOverlapFromOverlap 1 sigma) :=
+    geometry.canonicalTupleOverlapFromOverlap_lift sigma (by
+      intro k
+      refine Fin.cases hZi (fun _ => hZj) k)
+  let kHom : Z ⟶ overlapObj := homOfLE hkLe
+  let toI : overlapObj ⟶
+      AAT.AG.Site.ContextCategoryObject.of S.contextPreorder (geometry.cover.patch i) :=
+    homOfLE (geometry.canonicalTupleOverlapFromOverlap_le_patch 1 sigma (0 : Fin 2))
+  let toJ : overlapObj ⟶
+      AAT.AG.Site.ContextCategoryObject.of S.contextPreorder (geometry.cover.patch j) :=
+    homOfLE (geometry.canonicalTupleOverlapFromOverlap_le_patch 1 sigma (1 : Fin 2))
+  have hpairDirect := P.correctedLocalLift_pairAgreement L b hb i j
+  dsimp only at hpairDirect
+  rw [show gi = kHom ≫ toI from Subsingleton.elim _ _,
+    show gj = kHom ≫ toJ from Subsingleton.elim _ _]
+  change (P.E ⋙ forget AddCommGrpCat).map (kHom ≫ toI).op
+      (P.correctedLocalLift L b i) =
+    (P.E ⋙ forget AddCommGrpCat).map (kHom ≫ toJ).op
+      (P.correctedLocalLift L b j)
+  rw [op_comp, op_comp, FunctorToTypes.map_comp_apply,
+    FunctorToTypes.map_comp_apply]
+  exact congrArg ((P.E ⋙ forget AddCommGrpCat).map kHom.op) hpairDirect.symm
+
+/-- The selected adequate cover carries the middle sheaf condition. -/
+theorem eIsSheafFor_cover :
+    Presieve.IsSheafFor (P.E ⋙ forget AddCommGrpCat) geometry.cover.presieve := by
+  apply (Presieve.isSheafFor_iff_generate geometry.cover.presieve).2
+  exact P.eIsSheaf (Sieve.generate geometry.cover.presieve)
+    geometry.coverAdequate.isCover
+
+/-- The selected adequate cover carries the quotient sheaf condition. -/
+theorem qIsSheafFor_cover :
+    Presieve.IsSheafFor (P.Q ⋙ forget AddCommGrpCat) geometry.cover.presieve := by
+  apply (Presieve.isSheafFor_iff_generate geometry.cover.presieve).2
+  exact P.qIsSheaf (Sieve.generate geometry.cover.presieve)
+    geometry.coverAdequate.isCover
+
+/-- Kernel correction preserves the fixed quotient restriction on each generator. -/
+theorem projection_correctedLocalLift
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (i : geometry.cover.Index) :
+    P.projection.app _ (P.correctedLocalLift L b i) =
+      P.Q.map (homOfLE (geometry.cover.inclusion i)).op P.baseSection := by
+  rw [P.correctedLocalLift_eq_cochain L b i]
+  change P.projection.app _
+      (P.localLiftCochainFor L (P.zeroSimplex i) -
+        P.kernelCochain 0 b (P.zeroSimplex i)) = _
+  rw [map_sub, P.projection_localLiftCochainFor,
+    show P.projection.app _ (P.kernelCochain 0 b (P.zeroSimplex i)) = 0 by
+      simpa [kernelCochain] using P.projection_kernel _ (b (P.zeroSimplex i)),
+    sub_zero]
+  rfl
+
+/-- Compatible corrected generator sections as a presieve family. -/
+noncomputable def correctedLocalLiftFamily
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (hb : P.localLiftDifferenceFor L =
+      (complex (geometry := geometry) P.nOb).d 0 b) :
+    Presieve.FamilyOfElements (P.E ⋙ forget AddCommGrpCat)
+      geometry.cover.presieve := by
+  simpa [AAT.AG.Site.AATCoverageFamily.presieve] using
+    (P.correctedLocalLift_arrowsCompatible L b hb).familyOfElements
+
+/-- The corrected presieve family is compatible. -/
+theorem correctedLocalLiftFamily_compatible
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (hb : P.localLiftDifferenceFor L =
+      (complex (geometry := geometry) P.nOb).d 0 b) :
+    (P.correctedLocalLiftFamily L b hb).Compatible := by
+  simpa [correctedLocalLiftFamily, AAT.AG.Site.AATCoverageFamily.presieve] using
+    (P.correctedLocalLift_arrowsCompatible L b hb).familyOfElements_compatible
+
+/-- Glue the corrected compatible local lifts in the middle sheaf. -/
+noncomputable def amalgamatedCorrectedLocalLift
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (hb : P.localLiftDifferenceFor L =
+      (complex (geometry := geometry) P.nOb).d 0 b) :
+    P.E.obj (op geometry.base) :=
+  P.eIsSheafFor_cover.amalgamate (P.correctedLocalLiftFamily L b hb)
+    (P.correctedLocalLiftFamily_compatible L b hb)
+
+/-- The amalgamated section restricts to every corrected generator lift. -/
+theorem amalgamatedCorrectedLocalLift_restrict
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (hb : P.localLiftDifferenceFor L =
+      (complex (geometry := geometry) P.nOb).d 0 b)
+    (i : geometry.cover.Index) :
+    P.E.map (homOfLE (geometry.cover.inclusion i)).op
+        (P.amalgamatedCorrectedLocalLift L b hb) =
+      P.correctedLocalLift L b i := by
+  have hvalid := P.eIsSheafFor_cover.valid_glue
+    (P.correctedLocalLiftFamily_compatible L b hb)
+    (homOfLE (geometry.cover.inclusion i))
+    (show geometry.cover.presieve (homOfLE (geometry.cover.inclusion i)) by
+      exact Presieve.ofArrows.mk i)
+  change (P.E ⋙ forget AddCommGrpCat).map
+      (homOfLE (geometry.cover.inclusion i)).op
+      (P.amalgamatedCorrectedLocalLift L b hb) = _
+  calc
+    _ = P.correctedLocalLiftFamily L b hb
+        (homOfLE (geometry.cover.inclusion i))
+        (show geometry.cover.presieve (homOfLE (geometry.cover.inclusion i)) by
+          exact Presieve.ofArrows.mk i) := by
+      simpa [amalgamatedCorrectedLocalLift] using hvalid
+    _ = P.correctedLocalLift L b i := by
+      simp [correctedLocalLiftFamily, AAT.AG.Site.AATCoverageFamily.presieve]
+
+/-- Quotient separatedness identifies the projected amalgam with the fixed section. -/
+theorem projection_amalgamatedCorrectedLocalLift
+    (L : P.GeneratorLocalLiftFamily)
+    (b : (complex (geometry := geometry) P.nOb).Cn 0)
+    (hb : P.localLiftDifferenceFor L =
+      (complex (geometry := geometry) P.nOb).d 0 b) :
+    P.projection.app _ (P.amalgamatedCorrectedLocalLift L b hb) =
+      P.baseSection := by
+  apply P.qIsSheafFor_cover.isSeparatedFor.ext
+  rintro Y _ ⟨i⟩
+  let f : AAT.AG.Site.ContextCategoryObject.of S.contextPreorder
+      (geometry.cover.patch i) ⟶ geometry.base :=
+    homOfLE (geometry.cover.inclusion i)
+  have hnat := P.projection.naturality_apply f.op
+    (P.amalgamatedCorrectedLocalLift L b hb)
+  calc
+    P.Q.map f.op
+        (P.projection.app _ (P.amalgamatedCorrectedLocalLift L b hb)) =
+        P.projection.app _
+          (P.E.map f.op (P.amalgamatedCorrectedLocalLift L b hb)) := hnat.symm
+    _ = P.projection.app _ (P.correctedLocalLift L b i) := by
+      exact congrArg (fun x => P.projection.app _ x)
+        (by simpa [f] using P.amalgamatedCorrectedLocalLift_restrict L b hb i)
+    _ = P.Q.map f.op P.baseSection := P.projection_correctedLocalLift L b i
+
+/-- A zero connecting class produces an actual global lift. -/
+theorem nonempty_globalLift_of_connectingClassFor_eq_zero
+    (L : P.GeneratorLocalLiftFamily)
+    (hzero : P.connectingClassFor L = 0) :
+    Nonempty P.GlobalLift := by
+  obtain ⟨b, hb⟩ := P.exists_correction_of_connectingClassFor_eq_zero L hzero
+  exact ⟨⟨P.amalgamatedCorrectedLocalLift L b hb,
+    P.projection_amalgamatedCorrectedLocalLift L b hb⟩⟩
+
+/-- Primary D0 effectivity equivalence in repository additive Cech H1. -/
+theorem connectingClassFor_eq_zero_iff_nonempty_globalLift
+    (L : P.GeneratorLocalLiftFamily) :
+    P.connectingClassFor L = 0 ↔ Nonempty P.GlobalLift := by
+  constructor
+  · exact P.nonempty_globalLift_of_connectingClassFor_eq_zero L
+  · exact P.connectingClassFor_eq_zero_of_nonempty_globalLift L
+
+/-! ## The global-lift fiber is a kernel-section torsor -/
+
+/-- Global kernel sections act on actual global lifts. -/
+def kernelAction (n : P.N.obj (op geometry.base))
+    (lift : P.GlobalLift) : P.GlobalLift :=
+  ⟨lift.1 + P.kernel.app _ n, by
+    rw [map_add, lift.2, P.projection_kernel, add_zero]⟩
+
+/-- The unique global kernel section measuring the difference of two lifts. -/
+def kernelVSub (left right : P.GlobalLift) :
+    P.N.obj (op geometry.base) :=
+  (P.kernelEquiv _).symm
+    ⟨left.1 - right.1, by
+      change P.projection.app _ (left.1 - right.1) = 0
+      rw [map_sub, left.2, right.2, sub_self]⟩
+
+/-- Kernel inclusion recovers the literal difference of two global lifts. -/
+theorem kernel_kernelVSub (left right : P.GlobalLift) :
+    P.kernel.app _ (P.kernelVSub left right) = left.1 - right.1 := by
+  rw [← P.kernelEquiv_apply]
+  change ((P.kernelEquiv _) ((P.kernelEquiv _).symm _)).1 = _
+  rw [AddEquiv.apply_symm_apply]
+
+/-- A nonempty actual-lift fiber is an additive torsor under global kernel sections. -/
+noncomputable instance [Nonempty P.GlobalLift] :
+    AddTorsor (P.N.obj (op geometry.base)) P.GlobalLift where
+  vadd := P.kernelAction
+  zero_vadd := by
+    intro lift
+    apply Subtype.ext
+    change lift.1 + P.kernel.app _ 0 = lift.1
+    rw [map_zero, add_zero]
+  add_vadd := by
+    intro a b lift
+    apply Subtype.ext
+    change lift.1 + P.kernel.app _ (a + b) =
+      (lift.1 + P.kernel.app _ b) + P.kernel.app _ a
+    rw [map_add]
+    abel
+  nonempty := inferInstance
+  vsub := P.kernelVSub
+  vsub_vadd' := by
+    intro left right
+    apply Subtype.ext
+    change right.1 + P.kernel.app _ (P.kernelVSub left right) = left.1
+    rw [P.kernel_kernelVSub]
+    abel
+  vadd_vsub' := by
+    intro n lift
+    apply (P.kernelEquiv _).injective
+    apply Subtype.ext
+    rw [P.kernelEquiv_apply]
+    rw [P.kernelEquiv_apply]
+    rw [P.kernel_kernelVSub]
+    change (lift.1 + P.kernel.app _ n) - lift.1 = P.kernel.app _ n
+    abel
+
+/-- Explicit simple transitivity of the global kernel-section action. -/
+theorem globalLiftFiber_simplyTransitive [Nonempty P.GlobalLift]
+    (left right : P.GlobalLift) :
+    ∃! n : P.N.obj (op geometry.base), P.kernelAction n left = right := by
+  change ∃! n : P.N.obj (op geometry.base), n +ᵥ left = right
+  refine ⟨right -ᵥ left, vsub_vadd right left, ?_⟩
+  intro n hn
+  exact vadd_right_cancel left (hn.trans (vsub_vadd right left).symm)
+
+/-- Choosing one lift identifies kernel sections with the entire lift fiber. -/
+noncomputable def globalLiftFiberEquiv [Nonempty P.GlobalLift]
+    (origin : P.GlobalLift) :
+    P.N.obj (op geometry.base) ≃ P.GlobalLift :=
+  Equiv.vaddConst origin
 
 end LiftProblem
 
