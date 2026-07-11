@@ -38,6 +38,12 @@
       "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs"
     },
     {
+      "sourceId": "src:ledger",
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/ledger.rs",
+      "note": "compiled only in the psp-compliance / settlement-authority feature states observed by archmap_head.json and archmap_repaired.json"
+    },
+    {
       "sourceId": "runtime:demo",
       "kind": "runtimeTrace",
       "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"

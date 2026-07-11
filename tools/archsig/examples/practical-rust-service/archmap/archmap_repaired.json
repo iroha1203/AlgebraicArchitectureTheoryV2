@@ -1,6 +1,6 @@
 {
   "schema": "archmap/v0.5.0",
-  "id": "practical-rust-commerce-fulfillment/v0.5.0",
+  "id": "practical-rust-commerce-fulfillment-repaired/v0.5.0",
   "sources": {
     "src:domain": {
       "kind": "rust",
@@ -245,6 +245,27 @@
       "kind": "policy",
       "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
       "section": "contexts.ctx:shared"
+    },
+    "src:ledger": {
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/ledger.rs"
+    },
+    "ledger:SettlementLedger": {
+      "kind": "symbol",
+      "source": "src:ledger",
+      "symbol": "SettlementLedger",
+      "line": 76
+    },
+    "store:CaptureAmount": {
+      "kind": "symbol",
+      "source": "src:store",
+      "symbol": "InMemoryCommercePlatform::capture_amount",
+      "line": 96
+    },
+    "ctx:settlement": {
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap_repaired.json",
+      "section": "contexts.ctx:settlement"
     }
   },
   "atoms": [
@@ -916,7 +937,7 @@
       "id": "atom:cech-money-domain",
       "kind": "semantic",
       "subject": "ctx:domain",
-      "object": "section=money-amount:grand-total-half-up",
+      "object": "section=money-amount:checkout-total-authoritative",
       "axis": "cech",
       "predicate": "sectionValue",
       "refs": [
@@ -929,7 +950,7 @@
       "id": "atom:cech-money-ports",
       "kind": "semantic",
       "subject": "ctx:ports",
-      "object": "section=money-amount:grand-total-half-up",
+      "object": "section=money-amount:checkout-total-authoritative",
       "axis": "cech",
       "predicate": "sectionValue",
       "refs": [
@@ -942,7 +963,7 @@
       "id": "atom:cech-money-application",
       "kind": "semantic",
       "subject": "ctx:application",
-      "object": "section=money-amount:grand-total-half-up",
+      "object": "section=money-amount:checkout-total-authoritative",
       "axis": "cech",
       "predicate": "sectionValue",
       "refs": [
@@ -956,20 +977,20 @@
       "id": "atom:cech-money-infrastructure",
       "kind": "semantic",
       "subject": "ctx:infrastructure",
-      "object": "section=money-amount:grand-total-half-up",
+      "object": "section=money-amount:checkout-total-authoritative",
       "axis": "cech",
       "predicate": "sectionValue",
       "refs": [
         "ctx:infrastructure",
-        "store:PaymentPortImpl"
+        "store:CaptureAmount"
       ],
-      "label": "Payment adapter captures the amount handed to it by checkout"
+      "label": "Payment adapter submits PSP line items plus an explicit rounding adjustment so the checkout total stays authoritative"
     },
     {
       "id": "atom:cech-money-policy",
       "kind": "semantic",
       "subject": "ctx:policy",
-      "object": "section=money-amount:grand-total-half-up",
+      "object": "section=money-amount:checkout-total-authoritative",
       "axis": "cech",
       "predicate": "sectionValue",
       "refs": [
@@ -982,7 +1003,7 @@
       "id": "atom:cech-money-runtime",
       "kind": "semantic",
       "subject": "ctx:runtime",
-      "object": "section=money-amount:grand-total-half-up",
+      "object": "section=money-amount:checkout-total-authoritative",
       "axis": "cech",
       "predicate": "sectionValue",
       "refs": [
@@ -995,7 +1016,7 @@
       "id": "atom:cech-money-shared",
       "kind": "semantic",
       "subject": "ctx:shared",
-      "object": "section=money-amount:grand-total-half-up",
+      "object": "section=money-amount:checkout-total-authoritative",
       "axis": "cech",
       "predicate": "sectionValue",
       "refs": [
@@ -1003,6 +1024,54 @@
         "domain:DomainEvent"
       ],
       "label": "OrderPriced events carry the checkout-priced total in the shared vocabulary"
+    },
+    {
+      "id": "atom:settlement-ledger-component",
+      "kind": "component",
+      "subject": "ledger:SettlementLedger",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "ledger:SettlementLedger"
+      ],
+      "label": "SettlementLedger is the finance book of record"
+    },
+    {
+      "id": "atom:ledger-books-payment-capture",
+      "kind": "relation",
+      "subject": "ledger:SettlementLedger",
+      "axis": "dataflow",
+      "predicate": "booksCaptureFor",
+      "object": "store:PaymentPortImpl",
+      "refs": [
+        "ledger:SettlementLedger",
+        "store:PaymentPortImpl"
+      ]
+    },
+    {
+      "id": "atom:ledger-books-priced-order",
+      "kind": "relation",
+      "subject": "ledger:SettlementLedger",
+      "axis": "dataflow",
+      "predicate": "booksPricedOrderFrom",
+      "object": "app:CheckoutService",
+      "refs": [
+        "ledger:SettlementLedger",
+        "app:CheckoutService"
+      ]
+    },
+    {
+      "id": "atom:cech-money-settlement",
+      "kind": "semantic",
+      "subject": "ctx:settlement",
+      "object": "section=money-amount:checkout-total-authoritative",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
+        "ctx:settlement",
+        "ledger:SettlementLedger"
+      ],
+      "label": "Settlement ledger books the checkout total and records the exact rounding residual as its own entry"
     }
   ],
   "contexts": [
@@ -1081,11 +1150,13 @@
         "atom:contract-platform-port-bound",
         "atom:semantic-layered-commerce",
         "atom:runtime-checkout-trace",
-        "atom:cech-money-application"
+        "atom:cech-money-application",
+        "atom:ledger-books-priced-order"
       ],
       "restrictsTo": [
         "ctx:ports",
         "ctx:domain",
+        "ctx:settlement",
         "ctx:shared"
       ],
       "refs": [
@@ -1109,10 +1180,12 @@
         "atom:effect-outbox-appended",
         "atom:contract-platform-port-bound",
         "atom:runtime-concurrency-trace",
-        "atom:cech-money-infrastructure"
+        "atom:cech-money-infrastructure",
+        "atom:ledger-books-payment-capture"
       ],
       "restrictsTo": [
         "ctx:ports",
+        "ctx:settlement",
         "ctx:shared"
       ],
       "refs": [
@@ -1172,6 +1245,22 @@
         "policy:cover"
       ],
       "label": "Shared interpretation overlap for selected cover"
+    },
+    {
+      "id": "ctx:settlement",
+      "atoms": [
+        "atom:settlement-ledger-component",
+        "atom:ledger-books-payment-capture",
+        "atom:ledger-books-priced-order",
+        "atom:cech-money-settlement"
+      ],
+      "restrictsTo": [
+        "ctx:shared"
+      ],
+      "refs": [
+        "ctx:settlement"
+      ],
+      "label": "Settlement ledger and reconciliation context"
     }
   ],
   "covers": [
@@ -1184,7 +1273,8 @@
         "ctx:infrastructure",
         "ctx:policy",
         "ctx:runtime",
-        "ctx:shared"
+        "ctx:shared",
+        "ctx:settlement"
       ],
       "refs": [
         "policy:cover"

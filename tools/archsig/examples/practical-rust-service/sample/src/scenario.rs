@@ -12,14 +12,14 @@ pub fn build_demo_platform() -> Result<InMemoryCommercePlatform, AppError> {
     let kit = CatalogItem::new(
         Sku::new("KIT-RED")?,
         "Red field repair kit",
-        Money::new(12_500, Currency::Usd)?,
+        Money::new(12_490, Currency::Usd)?,
         1_800,
         true,
     )?;
     let cable = CatalogItem::new(
         Sku::new("CBL-2M")?,
         "Two meter shielded cable",
-        Money::new(3_000, Currency::Usd)?,
+        Money::new(4_505, Currency::Usd)?,
         400,
         false,
     )?;
@@ -56,7 +56,7 @@ pub fn demo_command() -> CheckoutCommand {
             },
             CheckoutLineCommand {
                 sku: "CBL-2M".to_string(),
-                quantity: 3,
+                quantity: 2,
             },
         ],
         service_level: ServiceLevel::Expedited,
@@ -78,8 +78,15 @@ pub fn run_demo() -> Result<PresentationSnapshot, AppError> {
         outcome.decision.reservation.lines().len()
     ));
     snapshot.push(format!(
-        "payment {} authorized",
-        outcome.decision.payment.id().as_str()
+        "displayed total {} cents ({} minus {} loyalty discount)",
+        outcome.pricing.total_due().cents(),
+        outcome.pricing.subtotal().cents(),
+        outcome.pricing.discount().cents()
+    ));
+    snapshot.push(format!(
+        "payment {} authorized for {} cents",
+        outcome.decision.payment.id().as_str(),
+        outcome.decision.payment.amount().cents()
     ));
     snapshot.push(format!(
         "shipment {} planned",
@@ -97,6 +104,17 @@ pub fn run_demo() -> Result<PresentationSnapshot, AppError> {
         "insight tags: {}",
         outcome.decision.insight_tags().join(", ")
     ));
+    #[cfg(feature = "psp-compliance")]
+    {
+        use crate::domain::VIP_LOYALTY_DISCOUNT_BPS;
+        use crate::ledger::SettlementLedger;
+
+        let mut ledger = SettlementLedger::new();
+        let report = ledger.book_order(&outcome, VIP_LOYALTY_DISCOUNT_BPS)?;
+        for line in report.render_lines() {
+            snapshot.push(line);
+        }
+    }
     Ok(snapshot)
 }
 
