@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 2
+- latest reviewed cycle: 3
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: prove local-lift choice independence in repository H1
+- next obligation: prove connecting class zero iff actual global lift
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -128,3 +128,52 @@ generated `d^1 d^0 = 0` theorem. Its class lies directly in repository
 Generalize the generator local-lift choice, construct its chartwise kernel
 change primitive, and prove equality of the resulting repository H1 classes
 through `additiveH1Class_eq_iff_legacy_setoid`.
+
+## Cycle 3 — local-lift choice independence
+
+- decision: approve
+- result type: proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalDescent.lean`
+- checkpoint spine:
+  - `LiftProblem.GeneratorLocalLiftFamily`
+  - `LiftProblem.localLiftDifferenceFor`
+  - `LiftProblem.connectingCocycleFor`
+  - `LiftProblem.connectingClassFor`
+  - `LiftProblem.changePrimitive`
+  - `LiftProblem.localLiftDifferenceFor_sub`
+  - `LiftProblem.connectingClass_choice_independent`
+
+### Checkpoint delta
+
+Every explicit generator-local lift choice now generates its own repository
+connecting class. The pointwise difference of two choices generates a
+kernel-valued degree-zero primitive, and differential naturality proves that
+the two overlap cocycles differ by its coboundary. The repository H1 setoid
+therefore identifies their classes.
+
+### Premise delta
+
+- checkpoint: local-lift choice independence in repository `AdditiveCechH1`.
+- remaining: class zero iff actual global lift, generated-presieve gluing,
+  lift-fiber torsor, law-generated coefficient sequence and exactness,
+  conormal instantiation, semantic representations, finite zero/nonzero
+  witness pair, package theorem, and `H^1 = 0` corollary.
+
+### Audits
+
+- focused elaboration: pass
+- module-wide standard-axiom assertion: pass (61 declarations)
+- placeholder / hidden Unicode / private-path scans: pass
+- certificate provenance: the change primitive is generated from the literal
+  difference of two explicit local-lift choices
+- structure-field escape: choice independence and the coboundary equation are
+  proved, not supplied as fields
+
+### Next obligation
+
+Use the repository zero-class criterion to obtain a correction cochain, prove
+the corrected chart family is compatible on the generated presieve, glue it
+with the middle sheaf, and use quotient separatedness to fix its projection to
+the original base section. Prove the reverse implication from an actual global
+lift by constructing its chartwise kernel primitive.
