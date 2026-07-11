@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 4
+- latest reviewed cycle: 5
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: prove class zero constructs an actual global lift
+- next obligation: construct the law-generated ideal-power sheaf sequence
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -227,3 +227,71 @@ From a zero-class witness, construct the corrected local family, prove its
 compatibility on the generated presieve through canonical pair overlaps, glue
 it using the middle sheaf, and use quotient separatedness to prove that the
 global middle section maps to the fixed base section.
+
+## Cycle 5 — primary effectivity equivalence and lift-fiber torsor
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalDescent.lean`
+- checkpoint spine:
+  - `LiftProblem.exists_correction_of_connectingClassFor_eq_zero`
+  - `LiftProblem.correctedLocalLift_arrowsCompatible`
+  - `LiftProblem.amalgamatedCorrectedLocalLift`
+  - `LiftProblem.projection_amalgamatedCorrectedLocalLift`
+  - `LiftProblem.connectingClassFor_eq_zero_iff_nonempty_globalLift`
+  - `LiftProblem.kernelAction`
+  - `LiftProblem.kernelVSub`
+  - `LiftProblem.globalLiftFiber_simplyTransitive`
+  - `LiftProblem.globalLiftFiberEquiv`
+
+### Checkpoint delta
+
+The repository zero-class criterion now yields a concrete kernel correction
+cochain.  Subtracting its kernel image from the chosen local lifts gives a
+degree-zero middle cochain with zero differential.  Canonical pair agreement
+is transported to every common refinement by the overlap universal property,
+producing an actual `Presieve.Arrows.Compatible` family on the selected cover.
+The middle sheaf amalgamates that family.  Naturality of the projection and
+separatedness of the quotient sheaf identify the projected amalgam with the
+fixed quotient section.  This proves the primary generic equivalence
+`connectingClassFor L = 0 ↔ Nonempty GlobalLift`.
+
+Global kernel sections act on the actual-lift fiber.  The inverse difference
+is constructed through the objectwise kernel comparison, and the action is
+proved free and transitive as a Mathlib `AddTorsor`.  Thus the generic D0
+effectivity and lift-fiber torsor are discharged without adding compatibility,
+amalgamation, global-lift, or class-zero fields to `LiftProblem`.
+
+### Premise delta
+
+- discharged: generic connecting class, local-choice independence, zero iff
+  actual global lift, generated-presieve gluing, quotient separatedness, and
+  the nonempty lift-fiber torsor under `N(W)`.
+- remaining: law-generated `I`, `O/I²`, `O/I`, `I/I²`; sheafified kernel
+  comparison and exactness; `ConDef(W)` to the required degree-zero
+  cohomology comparison; conormal instantiation; semantic representations;
+  finite zero/nonzero witness pair; package theorem; and the `H¹ = 0`
+  corollary.
+
+### Audits
+
+- focused elaboration: pass
+- module-wide standard-axiom assertion: pass (100 declarations)
+- placeholder / hidden Unicode / private-path scans: pass
+- certificate provenance: the correction comes from the repository H1
+  zero-class witness; compatibility is proved from actual canonical-pair
+  restrictions and the overlap lifting property
+- proof use: middle sheaf amalgamation and quotient separatedness are both
+  used to construct and verify the actual global section
+- structure-field escape: no correction, compatibility, amalgamation,
+  global-lift, class-zero, action, freeness, or transitivity field was added
+- target classification: D0 discharged; G-07 remains a proof checkpoint until
+  D1--D3 and the final package are complete
+
+### Next obligation
+
+Construct from the law witness the raw ideal-power presheaves `O/I²` and
+`O/I`, the conormal coefficient `I/I²`, their natural maps and objectwise
+exactness, then sheafify canonically and prove the sheaf-level kernel
+comparison used to instantiate this generic D0 theorem.
