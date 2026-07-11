@@ -15,7 +15,7 @@ use crate::{
     ArchSigMeasurementPacketV1, BoundaryStatementV1, LawPolicyDocumentV1, MeasurementProfileV1,
     NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2,
     RepairPlanDocumentV1, SuppliedDataLedgerEntryV1, ValidationCheck, ValidationExample,
-    assumption_id_for_schema,
+    analytic_claim_status, analytic_fidelity, assumption_id_for_schema,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -441,7 +441,20 @@ pub fn build_foundation_measurement_packet_v1(
     law_policy_ref: &str,
     measurement_profile_ref: &str,
     repair_plan_ref: Option<&str>,
+    residual_packet_ref: Option<&str>,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
+    if repair_plan.is_some_and(|plan| plan.faithfulness.mode == "supplied") {
+        return Err(
+            "Stage 1 measurement packet builder rejects faithfulness.mode=supplied; use complete-support or none"
+            .to_string(),
+        );
+    }
+    if policy.policies.iter().any(|entry| entry.pack.is_some()) {
+        return Err(
+            "Stage 1 measurement packet builder rejects retired LawPolicy pack selectors; use explicit law/evaluator entries"
+                .to_string(),
+        );
+    }
     let profile = selected_measurement_profile_v1(policy, measurement_profile)
         .ok_or_else(|| "AG measurement packet requires measurementProfileRef".to_string())?
         .clone();
@@ -802,6 +815,7 @@ pub fn build_foundation_measurement_packet_v1(
             law_policy_ref,
             measurement_profile_ref,
             repair_plan_ref,
+            residual_packet_ref,
         ),
         boundary_statements: Vec::new(),
         non_conclusions,
@@ -816,6 +830,7 @@ fn supplied_data_ledger(
     law_policy_ref: &str,
     measurement_profile_ref: &str,
     repair_plan_ref: Option<&str>,
+    residual_packet_ref: Option<&str>,
 ) -> Vec<SuppliedDataLedgerEntryV1> {
     let mut entries = vec![
         supplied_data_entry(
@@ -846,6 +861,15 @@ fn supplied_data_ledger(
             "repair-plan",
             repair_plan_ref,
             "repair-plan/v0.5.0-validation",
+            "validated",
+        ));
+    }
+    if let Some(residual_packet_ref) = residual_packet_ref {
+        entries.push(supplied_data_entry(
+            "supplied:residual-packet",
+            "residual-packet",
+            residual_packet_ref,
+            "residual-packet/v0.5.0-validation",
             "validated",
         ));
     }
@@ -11374,19 +11398,265 @@ fn validate_profile_refs(
     Ok(())
 }
 
-pub fn validate_measurement_packet_v1(packet: &ArchSigMeasurementPacketV1) -> Vec<ValidationCheck> {
+#[cfg(test)]
+fn validate_measurement_packet_v1(packet: &ArchSigMeasurementPacketV1) -> Vec<ValidationCheck> {
+    let packet_value = serde_json::to_value(packet).unwrap_or_else(|_| json!({}));
+    validate_measurement_packet_components(packet, &packet_value)
+}
+
+pub fn validate_measurement_packet_value_v1(packet_value: &Value) -> Vec<ValidationCheck> {
+    let typed_packet =
+        match serde_json::from_value::<ArchSigMeasurementPacketV1>(packet_value.clone()) {
+            Ok(packet) => packet,
+            Err(error) => {
+                let mut check = validation_check(
+                    "measurement-packet-schema050-typed-shape",
+                    "measurement packet parses as ArchSigMeasurementPacketV1",
+                    "fail",
+                );
+                check.reason = Some(format!("measurement packet shape is invalid: {error}"));
+                return vec![check];
+            }
+        };
+    validate_measurement_packet_components(&typed_packet, packet_value)
+}
+
+fn validate_measurement_packet_components(
+    packet: &ArchSigMeasurementPacketV1,
+    packet_value: &Value,
+) -> Vec<ValidationCheck> {
     vec![
+        check_packet_unknown_fields(packet_value),
         check_packet_schema(packet),
         check_structural_verdict_values(packet),
         check_structural_verdict_evaluators(packet),
         check_structural_verdict_data(packet),
-        check_structural_verdict_new_shape(packet),
-        check_computed_invariant_shape(packet),
-        check_analytic_regime_boundary(packet),
-        check_assumption_ledger(packet),
+        check_structural_verdict_new_shape_value(packet_value),
+        check_computed_invariant_shape_value(packet_value),
+        check_analytic_regime_boundary(packet, packet_value),
+        check_assumption_ledger_value(packet, packet_value),
         check_supplied_data_shape(packet),
         check_boundary_statements(packet),
     ]
+}
+
+fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
+    let mut examples = Vec::new();
+    check_object_keys(
+        packet_value,
+        "measurementPacket",
+        &[
+            "schema",
+            "packetId",
+            "profile",
+            "structuralVerdict",
+            "computedInvariants",
+            "analyticReadings",
+            "assumptions",
+            "suppliedData",
+            "boundaryStatements",
+            "nonConclusions",
+            "toolVersion",
+            "runId",
+            "inputDigests",
+        ],
+        &mut examples,
+    );
+    check_object_keys(
+        &packet_value["profile"],
+        "profile",
+        &[
+            "schema",
+            "profileId",
+            "siteRef",
+            "coverRef",
+            "coefficient",
+            "effCoeff",
+            "witnessFamily",
+            "resolutionSelector",
+            "domain",
+            "zeroPredicate",
+            "nonZeroPredicate",
+            "certSelector",
+            "verdictDiscipline",
+            "finiteBounds",
+        ],
+        &mut examples,
+    );
+    check_object_keys(
+        &packet_value["profile"]["finiteBounds"],
+        "profile.finiteBounds",
+        &[
+            "maxSquareFreeWitnessVariables",
+            "maxCoherenceContexts",
+            "maxTorWitnessVariables",
+            "maxBoundaryResidueVariables",
+            "maxLaplacianCells",
+            "maxPeriodCycles",
+            "maxTransferTargets",
+        ],
+        &mut examples,
+    );
+    for (index, witness) in packet_value["profile"]["witnessFamily"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        check_object_keys(
+            witness,
+            &format!("profile.witnessFamily[{index}]"),
+            &["law", "variable"],
+            &mut examples,
+        );
+    }
+    for (index, row) in packet_value["structuralVerdict"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let prefix = format!("structuralVerdict[{index}]");
+        check_object_keys(
+            row,
+            &prefix,
+            &[
+                "verdictRef",
+                "evaluator",
+                "law",
+                "target",
+                "verdict",
+                "verdictData",
+                "dependsOnAssumptions",
+                "evidence",
+                "reason",
+            ],
+            &mut examples,
+        );
+        check_object_keys(
+            &row["target"],
+            &format!("{prefix}.target"),
+            &["kind", "coverRef", "coefficient", "scopeSize", "classRef"],
+            &mut examples,
+        );
+        check_object_keys(
+            &row["target"]["scopeSize"],
+            &format!("{prefix}.target.scopeSize"),
+            &["contexts", "edges", "triangles"],
+            &mut examples,
+        );
+        check_object_keys(
+            &row["verdictData"],
+            &format!("{prefix}.verdictData"),
+            &["inScope", "zero", "nonZero", "methodStatus", "certRef"],
+            &mut examples,
+        );
+        check_object_keys(
+            &row["evidence"],
+            &format!("{prefix}.evidence"),
+            &["computedInvariantRefs", "sourceRefs"],
+            &mut examples,
+        );
+    }
+    for (index, reading) in packet_value["analyticReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        check_object_keys(
+            reading,
+            &format!("analyticReadings[{index}]"),
+            &[
+                "readingId",
+                "evaluator",
+                "claimStatus",
+                "fidelity",
+                "value",
+                "regime",
+                "structuralVerdictRef",
+            ],
+            &mut examples,
+        );
+    }
+    for (index, assumption) in packet_value["assumptions"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        check_object_keys(
+            assumption,
+            &format!("assumptions[{index}]"),
+            &[
+                "assumptionId",
+                "theoremRef",
+                "assumption",
+                "status",
+                "checkedBy",
+                "assumedBy",
+                "scopeRefs",
+            ],
+            &mut examples,
+        );
+    }
+    for (index, supplied) in packet_value["suppliedData"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        check_object_keys(
+            supplied,
+            &format!("suppliedData[{index}]"),
+            &["suppliedId", "kind", "sourceArtifactRef", "conformance"],
+            &mut examples,
+        );
+        check_object_keys(
+            &supplied["conformance"],
+            &format!("suppliedData[{index}].conformance"),
+            &["status", "checkRef", "boundary"],
+            &mut examples,
+        );
+    }
+    for (index, boundary) in packet_value["boundaryStatements"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        check_object_keys(
+            boundary,
+            &format!("boundaryStatements[{index}]"),
+            &["id", "kind", "scopeRefs", "reason", "text"],
+            &mut examples,
+        );
+    }
+    check_examples(
+        "measurement-packet-schema050-unknown-fields",
+        "measurement packet objects reject unknown fields",
+        examples,
+    )
+}
+
+fn check_object_keys(
+    value: &Value,
+    path: &str,
+    allowed: &[&str],
+    examples: &mut Vec<ValidationExample>,
+) {
+    let Some(object) = value.as_object() else {
+        return;
+    };
+    for key in object.keys() {
+        if !allowed.contains(&key.as_str()) {
+            examples.push(generic_validation_example(
+                &format!("{path}.{key}"),
+                "unknown",
+                "unknown measurement packet fields are rejected",
+            ));
+        }
+    }
 }
 
 fn check_packet_schema(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
@@ -11423,7 +11693,7 @@ fn check_structural_verdict_values(packet: &ArchSigMeasurementPacketV1) -> Valid
         .collect::<Vec<_>>();
     check_examples(
         "measurement-packet-schema050-five-verdict-values",
-        "structural verdicts are limited to the five v0.4.0 values",
+        "structural verdicts are limited to the five v0.5.0 values",
         examples,
     )
 }
@@ -11505,8 +11775,7 @@ fn check_structural_verdict_data(packet: &ArchSigMeasurementPacketV1) -> Validat
     )
 }
 
-fn check_structural_verdict_new_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
-    let packet_value = serde_json::to_value(packet).unwrap_or_else(|_| json!({}));
+fn check_structural_verdict_new_shape_value(packet_value: &Value) -> ValidationCheck {
     let invariant_ids = packet_value["computedInvariants"]
         .as_array()
         .into_iter()
@@ -11514,6 +11783,7 @@ fn check_structural_verdict_new_shape(packet: &ArchSigMeasurementPacketV1) -> Va
         .filter_map(|invariant| invariant["invariantId"].as_str())
         .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
+    let mut verdict_refs = BTreeSet::new();
     for (index, row) in packet_value["structuralVerdict"]
         .as_array()
         .into_iter()
@@ -11521,6 +11791,41 @@ fn check_structural_verdict_new_shape(packet: &ArchSigMeasurementPacketV1) -> Va
         .enumerate()
     {
         let row_label = format!("structuralVerdict[{index}]");
+        if let Some(verdict_ref) = row["verdictRef"].as_str() {
+            if !verdict_refs.insert(verdict_ref) {
+                examples.push(generic_validation_example(
+                    &row_label,
+                    verdict_ref,
+                    "structural verdict verdictRef values must be unique",
+                ));
+            }
+        }
+        if row["verdictRef"].as_str().is_none_or(str::is_empty) {
+            examples.push(generic_validation_example(
+                &row_label,
+                "verdictRef",
+                "structural verdict rows must carry a non-empty verdictRef",
+            ));
+        } else {
+            let expected_verdict_ref = format!(
+                "structuralVerdict/{}/{}/{}",
+                measurement_ref_segment(row["evaluator"].as_str().unwrap_or_default()),
+                measurement_ref_segment(row["law"].as_str().unwrap_or_default()),
+                measurement_ref_segment(
+                    row["verdictData"]["methodStatus"]
+                        .as_str()
+                        .or_else(|| row["methodStatus"].as_str())
+                        .unwrap_or_default(),
+                )
+            );
+            if row["verdictRef"].as_str() != Some(expected_verdict_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &row_label,
+                    "verdictRef",
+                    "verdictRef must be derived from evaluator, law, and methodStatus",
+                ));
+            }
+        }
         let target = &row["target"];
         if !target.is_object() {
             examples.push(generic_validation_example(
@@ -11539,6 +11844,20 @@ fn check_structural_verdict_new_shape(packet: &ArchSigMeasurementPacketV1) -> Va
                 ));
             }
         }
+        if target["coverRef"].as_str() != packet_value["profile"]["coverRef"].as_str() {
+            examples.push(generic_validation_example(
+                &row_label,
+                "target.coverRef",
+                "structural verdict target.coverRef must equal profile.coverRef",
+            ));
+        }
+        if target["coefficient"].as_str() != packet_value["profile"]["coefficient"].as_str() {
+            examples.push(generic_validation_example(
+                &row_label,
+                "target.coefficient",
+                "structural verdict target.coefficient must equal profile.coefficient",
+            ));
+        }
         if !target["scopeSize"].is_object() {
             examples.push(generic_validation_example(
                 &row_label,
@@ -11546,12 +11865,61 @@ fn check_structural_verdict_new_shape(packet: &ArchSigMeasurementPacketV1) -> Va
                 "target.scopeSize must be an object",
             ));
         }
-        let computed_refs = row["evidence"]["computedInvariantRefs"]
-            .as_array()
-            .into_iter()
-            .flatten()
-            .filter_map(Value::as_str)
-            .collect::<Vec<_>>();
+        let Some(evidence) = row.get("evidence").and_then(Value::as_object) else {
+            examples.push(generic_validation_example(
+                &row_label,
+                "evidence",
+                "structural verdict rows must carry evidence block",
+            ));
+            continue;
+        };
+        let Some(computed_refs_value) = evidence.get("computedInvariantRefs") else {
+            examples.push(generic_validation_example(
+                &row_label,
+                "evidence.computedInvariantRefs",
+                "structural verdict evidence must carry computedInvariantRefs array",
+            ));
+            continue;
+        };
+        let Some(computed_refs_array) = computed_refs_value.as_array() else {
+            examples.push(generic_validation_example(
+                &row_label,
+                "evidence.computedInvariantRefs",
+                "structural verdict evidence computedInvariantRefs must be an array",
+            ));
+            continue;
+        };
+        let mut computed_refs = Vec::new();
+        for (ref_index, invariant_ref) in computed_refs_array.iter().enumerate() {
+            let Some(invariant_ref) = invariant_ref.as_str().filter(|value| !value.is_empty())
+            else {
+                examples.push(generic_validation_example(
+                    &row_label,
+                    &format!("evidence.computedInvariantRefs[{ref_index}]"),
+                    "computed invariant refs must be non-empty strings",
+                ));
+                continue;
+            };
+            computed_refs.push(invariant_ref);
+        }
+        match evidence.get("sourceRefs").and_then(Value::as_array) {
+            None => examples.push(generic_validation_example(
+                &row_label,
+                "evidence.sourceRefs",
+                "structural verdict evidence must carry sourceRefs array",
+            )),
+            Some(source_refs) => {
+                for (ref_index, source_ref) in source_refs.iter().enumerate() {
+                    if source_ref.as_str().is_none_or(str::is_empty) {
+                        examples.push(generic_validation_example(
+                            &row_label,
+                            &format!("evidence.sourceRefs[{ref_index}]"),
+                            "source refs must be non-empty strings",
+                        ));
+                    }
+                }
+            }
+        }
         if matches!(
             row["verdict"].as_str(),
             Some("measured_zero" | "measured_nonzero")
@@ -11569,6 +11937,29 @@ fn check_structural_verdict_new_shape(packet: &ArchSigMeasurementPacketV1) -> Va
                     &row_label,
                     invariant_ref,
                     "evidence.computedInvariantRefs must resolve to computedInvariants[].invariantId",
+                ));
+            } else if let Some(invariant_evaluator) = packet_value["computedInvariants"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .find(|invariant| invariant["invariantId"].as_str() == Some(invariant_ref))
+                .and_then(|invariant| invariant["evaluator"].as_str())
+            {
+                let row_evaluator = row["evaluator"].as_str().unwrap_or_default();
+                if invariant_evaluator != row_evaluator {
+                    examples.push(generic_validation_example(
+                        &row_label,
+                        invariant_ref,
+                        &format!(
+                            "computed invariant evaluator {invariant_evaluator} must match structural verdict evaluator {row_evaluator}"
+                        ),
+                        ));
+                }
+            } else {
+                examples.push(generic_validation_example(
+                    &row_label,
+                    invariant_ref,
+                    "referenced computed invariant must carry evaluator provenance",
                 ));
             }
         }
@@ -11604,6 +11995,33 @@ fn check_structural_verdict_new_shape(packet: &ArchSigMeasurementPacketV1) -> Va
                     "measured_nonzero target.classRef must resolve to computed invariant evidence",
                 ));
             }
+            let class_id = class_ref
+                .strip_prefix("computedInvariants/")
+                .unwrap_or(class_ref);
+            if let Some(invariant_evaluator) = packet_value["computedInvariants"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .find(|invariant| invariant["invariantId"].as_str() == Some(class_id))
+                .and_then(|invariant| invariant["evaluator"].as_str())
+            {
+                let row_evaluator = row["evaluator"].as_str().unwrap_or_default();
+                if invariant_evaluator != row_evaluator {
+                    examples.push(generic_validation_example(
+                        &row_label,
+                        class_ref,
+                        &format!(
+                            "target.classRef evaluator {invariant_evaluator} must match structural verdict evaluator {row_evaluator}"
+                        ),
+                        ));
+                }
+            } else {
+                examples.push(generic_validation_example(
+                    &row_label,
+                    class_ref,
+                    "measured_nonzero classRef invariant must carry evaluator provenance",
+                ));
+            }
         }
     }
     check_examples(
@@ -11621,9 +12039,16 @@ fn scope_size_has_positive_component(scope_size: &Value) -> bool {
         .any(|value| value.as_u64().is_some_and(|count| count > 0))
 }
 
-fn check_computed_invariant_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
-    let packet_value = serde_json::to_value(packet).unwrap_or_else(|_| json!({}));
+fn measurement_ref_segment(value: &str) -> String {
+    value
+        .chars()
+        .map(|ch| if ch.is_ascii_alphanumeric() { ch } else { '-' })
+        .collect()
+}
+
+fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck {
     let mut examples = Vec::new();
+    let mut invariant_ids = BTreeSet::new();
     for (index, invariant) in packet_value["computedInvariants"]
         .as_array()
         .into_iter()
@@ -11631,6 +12056,15 @@ fn check_computed_invariant_shape(packet: &ArchSigMeasurementPacketV1) -> Valida
         .enumerate()
     {
         let label = format!("computedInvariants[{index}]");
+        if let Some(invariant_id) = invariant["invariantId"].as_str() {
+            if !invariant_ids.insert(invariant_id) {
+                examples.push(generic_validation_example(
+                    &label,
+                    invariant_id,
+                    "computed invariant invariantId values must be unique",
+                ));
+            }
+        }
         for field in ["invariantId", "kind"] {
             if invariant[field].as_str().is_none_or(str::is_empty) {
                 examples.push(generic_validation_example(
@@ -11639,6 +12073,13 @@ fn check_computed_invariant_shape(packet: &ArchSigMeasurementPacketV1) -> Valida
                     "computed invariant must carry invariantId and closed kind",
                 ));
             }
+        }
+        if invariant["evaluator"].as_str().is_none_or(str::is_empty) {
+            examples.push(generic_validation_example(
+                &label,
+                "evaluator",
+                "computed invariant must carry evaluator provenance",
+            ));
         }
         if let Some(kind) = invariant["kind"].as_str() {
             if !COMPUTED_INVARIANT_KINDS.contains(&kind) {
@@ -11664,12 +12105,20 @@ fn check_computed_invariant_shape(packet: &ArchSigMeasurementPacketV1) -> Valida
     )
 }
 
-fn check_analytic_regime_boundary(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
-    let packet_value = serde_json::to_value(packet).unwrap_or_else(|_| json!({}));
+fn check_analytic_regime_boundary(
+    packet: &ArchSigMeasurementPacketV1,
+    packet_value: &Value,
+) -> ValidationCheck {
     let structural_evaluators = packet
         .structural_verdict
         .iter()
         .map(|row| row.evaluator.as_str())
+        .collect::<BTreeSet<_>>();
+    let structural_refs = packet_value["structuralVerdict"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|row| row["verdictRef"].as_str())
         .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
     for (index, reading_value) in packet_value["analyticReadings"]
@@ -11695,6 +12144,28 @@ fn check_analytic_regime_boundary(packet: &ArchSigMeasurementPacketV1) -> Valida
                 "analytic reading fidelity must be faithful or proxy",
             ));
         }
+        if let Some(reading) = packet.analytic_readings.get(index) {
+            let expected_claim_status = analytic_claim_status(reading);
+            if claim_status != expected_claim_status {
+                examples.push(generic_validation_example(
+                    &label,
+                    claim_status,
+                    &format!(
+                        "authored analytic reading claimStatus must match derived value {expected_claim_status}"
+                    ),
+                ));
+            }
+            let expected_fidelity = analytic_fidelity(reading);
+            if fidelity != expected_fidelity {
+                examples.push(generic_validation_example(
+                    &label,
+                    fidelity,
+                    &format!(
+                        "authored analytic reading fidelity must match derived value {expected_fidelity}"
+                    ),
+                ));
+            }
+        }
         if claim_status == "candidate" && !reading_value["structuralVerdictRef"].is_null() {
             examples.push(generic_validation_example(
                 &label,
@@ -11702,9 +12173,22 @@ fn check_analytic_regime_boundary(packet: &ArchSigMeasurementPacketV1) -> Valida
                 "candidate readings must remain analytic-only",
             ));
         }
+        if claim_status != "candidate"
+            && let Some(structural_ref) = reading_value["structuralVerdictRef"].as_str()
+            && !structural_refs.contains(structural_ref)
+        {
+            examples.push(generic_validation_example(
+                &label,
+                structural_ref,
+                "certified analytic reading structuralVerdictRef must resolve to a structural verdict",
+            ));
+        }
     }
     for reading in &packet.analytic_readings {
-        if reading.regime.as_deref() == Some("theorem-candidate")
+        if reading
+            .regime
+            .as_deref()
+            .is_some_and(|regime| regime.contains("candidate"))
             && reading.structural_verdict_ref.is_some()
         {
             examples.push(generic_validation_example(
@@ -11713,7 +12197,10 @@ fn check_analytic_regime_boundary(packet: &ArchSigMeasurementPacketV1) -> Valida
                 "theorem-candidate readings must remain analytic-only",
             ));
         }
-        if reading.regime.as_deref() == Some("theorem-candidate")
+        if reading
+            .regime
+            .as_deref()
+            .is_some_and(|regime| regime.contains("candidate"))
             && structural_evaluators.contains(reading.evaluator.as_str())
         {
             examples.push(generic_validation_example(
@@ -11749,6 +12236,8 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
             "measurement packet must record supplied input artifacts",
         ));
     }
+    let mut supplied_kinds = BTreeSet::new();
+    let mut supplied_ids = BTreeSet::new();
     for (index, supplied) in packet_value["suppliedData"]
         .as_array()
         .into_iter()
@@ -11756,6 +12245,15 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
         .enumerate()
     {
         let label = format!("suppliedData[{index}]");
+        if let Some(supplied_id) = supplied["suppliedId"].as_str() {
+            if !supplied_ids.insert(supplied_id) {
+                examples.push(generic_validation_example(
+                    &label,
+                    supplied_id,
+                    "suppliedData suppliedId values must be unique",
+                ));
+            }
+        }
         for field in ["suppliedId", "kind", "sourceArtifactRef"] {
             if supplied[field].as_str().is_none_or(str::is_empty) {
                 examples.push(generic_validation_example(
@@ -11766,6 +12264,13 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
             }
         }
         if let Some(kind) = supplied["kind"].as_str() {
+            if !supplied_kinds.insert(kind) {
+                examples.push(generic_validation_example(
+                    &label,
+                    kind,
+                    "suppliedData kind values must be unique",
+                ));
+            }
             if !matches!(
                 kind,
                 "archmap"
@@ -11789,12 +12294,30 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
             ));
         } else if supplied["conformance"]["status"]
             .as_str()
-            .is_none_or(str::is_empty)
+            .is_none_or(|status| !matches!(status, "validated" | "assumed" | "derived"))
         {
             examples.push(generic_validation_example(
                 &label,
                 "conformance.status",
-                "suppliedData conformance must record validation status",
+                "suppliedData conformance status must be validated, assumed, or derived",
+            ));
+        } else if supplied["conformance"]["checkRef"]
+            .as_str()
+            .is_none_or(str::is_empty)
+        {
+            examples.push(generic_validation_example(
+                &label,
+                "conformance.checkRef",
+                "suppliedData conformance must carry a non-empty checkRef",
+            ));
+        }
+    }
+    for required_kind in ["archmap", "law-policy", "measurement-profile"] {
+        if !supplied_kinds.contains(required_kind) {
+            examples.push(generic_validation_example(
+                "suppliedData",
+                required_kind,
+                "measurement packet suppliedData must ledger archmap, law-policy, and measurement-profile inputs",
             ));
         }
     }
@@ -11818,7 +12341,16 @@ fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationChe
         .map(assumption_id_for_schema)
         .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
+    let mut authored_assumption_ids = BTreeSet::new();
     for entry in &packet.assumptions {
+        let derived_id = assumption_id_for_schema(entry);
+        if !authored_assumption_ids.insert(derived_id.clone()) {
+            examples.push(generic_validation_example(
+                &entry.theorem_ref,
+                &derived_id,
+                "assumptionId values must be unique",
+            ));
+        }
         if !matches!(entry.status.as_str(), "checked" | "assumed" | "violated") {
             examples.push(generic_validation_example(
                 &entry.theorem_ref,
@@ -11871,6 +12403,47 @@ fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationChe
     )
 }
 
+fn check_assumption_ledger_value(
+    packet: &ArchSigMeasurementPacketV1,
+    packet_value: &Value,
+) -> ValidationCheck {
+    let mut check = check_assumption_ledger(packet);
+    let mut raw_examples = Vec::new();
+    for (index, assumption) in packet_value["assumptions"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let label = format!("assumptions[{index}]");
+        let expected_id = packet
+            .assumptions
+            .get(index)
+            .map(assumption_id_for_schema)
+            .unwrap_or_default();
+        let authored_id = assumption["assumptionId"].as_str();
+        if authored_id.is_none_or(str::is_empty) {
+            raw_examples.push(generic_validation_example(
+                &label,
+                "assumptionId",
+                "assumption entries must carry authored assumptionId; theoremRef is not a fallback",
+            ));
+        } else if authored_id != Some(expected_id.as_str()) {
+            raw_examples.push(generic_validation_example(
+                &label,
+                authored_id.unwrap_or_default(),
+                &format!("authored assumptionId must match derived value {expected_id}"),
+            ));
+        }
+    }
+    if !raw_examples.is_empty() {
+        check.result = "fail".to_string();
+        check.examples.extend(raw_examples);
+        check.count = Some(check.examples.len());
+    }
+    check
+}
+
 fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
     let mut examples = Vec::new();
     let mut ids = BTreeSet::new();
@@ -11907,7 +12480,7 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
             examples.push(generic_validation_example(
                 &statement.id,
                 &statement.kind,
-                "boundary statement kind must be one of the v1 boundary kinds",
+                "boundary statement kind must be one of the v0.5.0 boundary kinds",
             ));
         }
         if statement.reason.trim().is_empty() {
@@ -12142,6 +12715,22 @@ mod tests {
                     "status": "validated",
                     "checkRef": "archmap/v0.5.0-validation"
                 }
+            }, {
+                "suppliedId": "supplied:law-policy",
+                "kind": "law-policy",
+                "sourceArtifactRef": "input:law-policy.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "law-policy/v0.5.0-validation"
+                }
+            }, {
+                "suppliedId": "supplied:measurement-profile",
+                "kind": "measurement-profile",
+                "sourceArtifactRef": "input:measurement-profile.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "measurement-profile/v0.5.0-validation"
+                }
             }],
             "nonConclusions": ["test fixture"]
         }))
@@ -12332,12 +12921,210 @@ mod tests {
         let mut packet = packet_fixture();
         packet.structural_verdict[0].verdict = "measured_zero".to_string();
         packet.structural_verdict[0].verdict_data.zero = true;
-        packet.structural_verdict[0].depends_on_assumptions = vec!["part8/4.2".to_string()];
+        packet.structural_verdict[0].depends_on_assumptions =
+            vec![assumption_id_for_schema(&packet.assumptions[0])];
         packet.assumptions[0].status = "violated".to_string();
         packet.assumptions[0].checked_by = None;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-schema050-assumption-ledger" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn supplied_measured_zero_with_empty_scope_fails_raw_validation() {
+        let packet = packet_fixture();
+        let mut raw = serde_json::to_value(&packet).expect("packet serializes");
+        raw["structuralVerdict"][0]["verdict"] = json!("measured_zero");
+        raw["structuralVerdict"][0]["verdictData"]["inScope"] = json!(true);
+        raw["structuralVerdict"][0]["verdictData"]["zero"] = json!(true);
+        raw["structuralVerdict"][0]["target"]["scopeSize"] =
+            json!({"contexts": 0, "edges": 0, "triangles": 0});
+        raw["structuralVerdict"][0]["evidence"]["computedInvariantRefs"] = json!([]);
+
+        let checks = validate_measurement_packet_value_v1(&raw);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-structural-verdict-new-shape"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn supplied_structural_evidence_shape_rejects_missing_and_non_string_refs() {
+        let packet = packet_fixture();
+        let mut missing_evidence = serde_json::to_value(&packet).expect("packet serializes");
+        missing_evidence["structuralVerdict"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove("evidence");
+        let checks = validate_measurement_packet_value_v1(&missing_evidence);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-structural-verdict-new-shape"
+                && check.result == "fail"
+        }));
+
+        let mut non_string_ref = serde_json::to_value(&packet).expect("packet serializes");
+        non_string_ref["structuralVerdict"][0]["evidence"]["computedInvariantRefs"] = json!([123]);
+        let checks = validate_measurement_packet_value_v1(&non_string_ref);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-structural-verdict-new-shape"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn supplied_packet_rejects_unknown_duplicate_and_dangling_fields() {
+        let mut raw = serde_json::to_value(packet_fixture()).expect("packet serializes");
+        raw["unexpected"] = json!(true);
+        raw["computedInvariants"] = json!([
+            {
+                "invariantId": "duplicate:invariant",
+                "kind": "measurement-invariant",
+                "evaluator": "ag.foundation",
+                "value": 0,
+                "representation": {}
+            },
+            {
+                "invariantId": "duplicate:invariant",
+                "kind": "measurement-invariant",
+                "evaluator": "ag.foundation",
+                "value": 0,
+                "representation": {}
+            }
+        ]);
+        raw["analyticReadings"][0]["regime"] = json!("candidate-preview");
+        raw["analyticReadings"][0]["claimStatus"] = json!("candidate");
+        raw["analyticReadings"][0]["structuralVerdictRef"] = json!("structuralVerdict/missing");
+        raw["suppliedData"][1]["suppliedId"] = json!("supplied:archmap");
+        let checks = validate_measurement_packet_value_v1(&raw);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-unknown-fields" && check.result == "fail"
+        }));
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-computed-invariants-typed"
+                && check.result == "fail"
+        }));
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-supplied-data-ledger"
+                && check.result == "fail"
+        }));
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+                && check.result == "fail"
+        }));
+        raw["analyticReadings"][0]["regime"] = json!("certified");
+        raw["analyticReadings"][0]["claimStatus"] = json!("certified");
+        raw["analyticReadings"][0]["structuralVerdictRef"] = json!("structuralVerdict/missing");
+        let certified_checks = validate_measurement_packet_value_v1(&raw);
+        assert!(certified_checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn supplied_candidate_reading_with_structural_ref_fails_raw_validation() {
+        let packet = packet_fixture();
+        let mut raw = serde_json::to_value(&packet).expect("packet serializes");
+        raw["analyticReadings"][0]["claimStatus"] = json!("candidate");
+        raw["analyticReadings"][0]["structuralVerdictRef"] = json!("/structuralVerdict/0");
+
+        let checks = validate_measurement_packet_value_v1(&raw);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+                && check.result == "fail"
+        }));
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn supplied_measured_nonzero_class_ref_must_resolve_without_rewrite() {
+        let packet = packet_fixture();
+        let mut raw = serde_json::to_value(&packet).expect("packet serializes");
+        raw["structuralVerdict"][0]["verdict"] = json!("measured_nonzero");
+        raw["structuralVerdict"][0]["verdictData"]["inScope"] = json!(true);
+        raw["structuralVerdict"][0]["verdictData"]["zero"] = json!(false);
+        raw["structuralVerdict"][0]["verdictData"]["nonZero"] = json!(true);
+        raw["structuralVerdict"][0]["target"]["scopeSize"] =
+            json!({"contexts": 1, "edges": 1, "triangles": 0});
+        raw["structuralVerdict"][0]["target"]["classRef"] = json!("computedInvariants/missing");
+        raw["structuralVerdict"][0]["evidence"]["computedInvariantRefs"] =
+            json!(["invariant:actual"]);
+        raw["computedInvariants"] = json!([{
+            "invariantId": "invariant:actual",
+            "kind": "measurement-invariant",
+            "evaluator": "ag.cech-obstruction",
+            "value": 1,
+            "representation": {"source": "test"}
+        }]);
+
+        let checks = validate_measurement_packet_value_v1(&raw);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-structural-verdict-new-shape"
+                && check.result == "fail"
+                && check
+                    .examples
+                    .iter()
+                    .any(|example| example.target.as_deref() == Some("computedInvariants/missing"))
+        }));
+    }
+
+    #[test]
+    fn supplied_computed_invariant_empty_object_fails_raw_validation() {
+        let packet = packet_fixture();
+        let mut raw = serde_json::to_value(&packet).expect("packet serializes");
+        raw["computedInvariants"] = json!([{}]);
+
+        let checks = validate_measurement_packet_value_v1(&raw);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-computed-invariants-typed"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn supplied_assumption_without_authored_id_fails_raw_validation() {
+        let packet = packet_fixture();
+        let mut raw = serde_json::to_value(&packet).expect("packet serializes");
+        raw["assumptions"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove("assumptionId");
+
+        let checks = validate_measurement_packet_value_v1(&raw);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-assumption-ledger"
+                && check.result == "fail"
+                && check
+                    .examples
+                    .iter()
+                    .any(|example| example.target.as_deref() == Some("assumptionId"))
+        }));
+    }
+
+    #[test]
+    fn supplied_laplacian_reading_must_be_marked_proxy() {
+        let packet = packet_fixture();
+        let mut raw = serde_json::to_value(&packet).expect("packet serializes");
+        raw["analyticReadings"][0]["evaluator"] = json!("ag.sheaf-laplacian");
+        raw["analyticReadings"][0]["value"] = json!({
+            "readingKind": "graph-laplacian-hodge-proxy@1"
+        });
+        raw["analyticReadings"][0]["regime"] = json!("analytic-measurement");
+        raw["analyticReadings"][0]["claimStatus"] = json!("certified");
+        raw["analyticReadings"][0]["fidelity"] = json!("faithful");
+
+        let checks = validate_measurement_packet_value_v1(&raw);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+                && check.result == "fail"
+                && check
+                    .examples
+                    .iter()
+                    .any(|example| example.target.as_deref() == Some("faithful"))
         }));
     }
 

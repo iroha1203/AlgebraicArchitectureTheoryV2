@@ -17,7 +17,7 @@ use archsig::{
     build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
     build_repair_plan_validation_report_v1, build_scope_manifest_v1, normalize_archmap_v2,
     static_schema_version_catalog, validate_archmap_v2_report, validate_authoring_audit_input_v1,
-    validate_law_policy_v1_report, validate_measurement_packet_v1,
+    validate_law_policy_v1_report, validate_measurement_packet_value_v1,
     validate_measurement_profile_v1_checks,
 };
 use clap::{Parser, Subcommand};
@@ -137,13 +137,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a LawPolicy v1 selector artifact for ArchSig AAT analysis.
+    /// Validate a LawPolicy v0.5.0 selector artifact for ArchSig AAT analysis.
     LawPolicy {
-        /// Input LawPolicy v1 JSON path.
+        /// Input LawPolicy v0.5.0 JSON path.
         #[arg(long = "law-policy")]
         law_policy: PathBuf,
 
-        /// Input MeasurementProfile v1 JSON path.
+        /// Input MeasurementProfile v0.5.0 JSON path.
         #[arg(long = "measurement-profile")]
         measurement_profile: PathBuf,
 
@@ -152,9 +152,9 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a standalone MeasurementProfile v1 artifact.
+    /// Validate a standalone MeasurementProfile v0.5.0 artifact.
     MeasurementProfile {
-        /// Input MeasurementProfile v1 JSON path.
+        /// Input MeasurementProfile v0.5.0 JSON path.
         #[arg(long = "measurement-profile")]
         measurement_profile: PathBuf,
 
@@ -163,13 +163,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a standalone RepairPlan v1 artifact.
+    /// Validate a standalone RepairPlan v0.5.0 artifact.
     RepairPlan {
         /// Input ArchMap observation artifact path used to resolve RepairPlan chart and semantic refs.
         #[arg(long)]
         archmap: PathBuf,
 
-        /// Input RepairPlan v1 JSON path.
+        /// Input RepairPlan v0.5.0 JSON path.
         #[arg(long = "repair-plan")]
         repair_plan: PathBuf,
 
@@ -756,6 +756,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let law_policy_input_ref = artifact_input_ref(&law_policy);
             let measurement_profile_input_ref = artifact_input_ref(&measurement_profile);
             let repair_plan_input_ref = repair_plan.as_ref().map(|path| artifact_input_ref(path));
+            let residual_packet_input_ref =
+                residual_packet.as_ref().map(|path| artifact_input_ref(path));
             let archmap_contract_input: Value = read_json(&archmap)?;
             let law_policy_contract_input: Value = read_json(&law_policy)?;
             let measurement_profile_contract_input: Value = read_json(&measurement_profile)?;
@@ -786,6 +788,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &archmap,
                 &law_policy,
                 &measurement_profile,
+                residual_packet.as_deref(),
                 contract_profile_fingerprint(
                     &law_policy_contract_input,
                     &measurement_profile_contract_input,
@@ -891,9 +894,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &law_policy_input_ref,
                 &measurement_profile_input_ref,
                 repair_plan_input_ref.as_deref(),
+                residual_packet_input_ref.as_deref(),
             )
             .map_err(|message| -> Box<dyn Error> { message.into() })?;
-            let packet_validation = validate_measurement_packet_v1(&measurement_packet);
+            let packet_value = serde_json::to_value(&measurement_packet)?;
+            let packet_validation = validate_measurement_packet_value_v1(&packet_value);
             let packet_failed = packet_validation.iter().any(|check| check.result == "fail");
             let packet_failed_check_count = packet_validation
                 .iter()

@@ -16,7 +16,7 @@ mod validation;
 pub use ag_measurement::{
     build_foundation_measurement_packet_v1, build_insight_brief_v1, build_insight_report_v1,
     build_measurement_summary_v1, build_measurement_viewer_data_v1,
-    selected_measurement_profile_v1, validate_measurement_packet_v1,
+    selected_measurement_profile_v1, validate_measurement_packet_value_v1,
 };
 pub use archmap::{
     compare_archmap_v2_doctrine, static_aat_atom_vocabulary_v1, validate_archmap_v2_report,
@@ -53,8 +53,8 @@ pub use schema::{
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
-    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
+    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT, AatAtomVocabularyEntryV1, AatAtomVocabularyV1,
     AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,

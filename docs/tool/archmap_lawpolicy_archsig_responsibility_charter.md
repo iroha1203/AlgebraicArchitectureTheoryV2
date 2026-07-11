@@ -83,7 +83,7 @@ ArchMap が書かないもの:
 
 ## LawPolicy は何か —— 制度選択層
 
-LawPolicy は、policy pack / evaluator / basis / scope / severity を **選ぶ** selector である。
+LawPolicy は、明示した law / evaluator / basis / scope / severity を **選ぶ** selector である。退役した policy pack selector は受理しない。
 加えて、何が forbidden か(law universe)を指定する。第III部は「law は atom を生成しない、coordinate を生成しない、law は loci を切り出す」と述べる。
 law は存在の根拠ではなく、どの witness ideal / defect representative を読むか、どの signature axis を要求するか、どの witness family を選ぶかを指定する装置である。
 
@@ -95,7 +95,7 @@ LawPolicy が書かないもの: witness predicate の手書き、signature axis
 
 ## ArchSig は何か —— 計算層
 
-ArchSig は `ArchMap + LawPolicy + MeasurementProfile` から `archsig-measurement-packet/v1` を作る AG measurement layer である。
+ArchSig は、`ArchMap + LawPolicy + MeasurementProfile` の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.0` を作る AG measurement layer である。
 **Lean 証明器ではない。** 神の視点も持たない。
 
 判定はすべてここで生まれる。cech defect の比較、minimal forbidden support の enumeration、obstruction ideal、
@@ -116,7 +116,8 @@ ArchSig は「分からない」を「ある/ない」に丸めない。
 そして第VIII部 **原則2.2(Measurement Is Internal)** と tooling 側の **ウィトゲンシュタイン的責務境界**:
 ArchSig は与えられた contract から語れることだけを語り、語れないことには沈黙する。入力 contract を補完・推測・拡張しない。
 source extraction の健全性、semantic の正しさ、global lawfulness、未来予測は主張しない。
-出力は肯定的で有界な diagnostic conclusion(`SAFE_WITHIN_POLICY` のような)を中心に置き、未観測領域の長い non-conclusion 一覧を主役化しない。
+`analyze` の出力は選択された contract に対する structural verdict と analytic reading である。
+`compare` は analyze run の比較記録を作り、`gate` は必須の measurement packet と任意の比較記録に対して gate policy を適用し、CI判断へ写像する。
 
 ## 三層を混同すると何が壊れるか
 

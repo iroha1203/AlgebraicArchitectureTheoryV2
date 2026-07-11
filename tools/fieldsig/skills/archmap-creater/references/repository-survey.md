@@ -78,24 +78,22 @@ Prefer 5-20 high-value included refs for an initial ArchMap. A small accurate Ar
 
 Read enough to support claims:
 
-- For object items, read the declaration or module boundary.
-- For relation items, read both endpoints and the connecting evidence.
-- For semantic roles, read the responsibility-bearing code and the policy/doc/test that gives it meaning.
-- For semantic diagrams, read the test/spec/fixture that observes the path or equivalence.
-- For SFT candidates, read the operation/workflow/state source and record missing runtime/calibration evidence.
+- For component atoms, read the declaration or module boundary.
+- For relation atoms, read both endpoints and the connecting evidence.
+- For policy or contract atoms, read the relevant code and the policy/doc/test that gives it meaning.
+- For context and cover membership, read the selected source and record only resolvable ids.
+- For runtime or SFT readings, record the available source descriptor and keep unavailable evidence in review notes.
 
-If a claim requires more reading than the current scope allows, keep it out of `atomObservations[]` / `semanticObservations[]` or record it as an `observationGaps[]` entry.
+If a claim requires more reading than the current scope allows, keep it out of `atoms[]` or record the limitation in the source inventory and review notes.
 
 ## Drafting Order
 
 Draft items in this order:
 
-1. `object` items for selected components.
-2. `relation` items for selected dependencies.
-3. `policyBoundary` or `semanticRole` items for responsibilities and rules.
-4. `semanticDiagram`, `semanticCommutationClaim`, or `nonfillabilityWitness` items for selected observations.
-5. SFT-facing candidate items such as `operationCandidate`, `workflowCandidate`, `stateTransitionCandidate`, or `testOracleCandidate`.
-6. `reviewBoundary` items for runtime, framework, dynamic, private, or unsupported areas.
+1. `sources` entries for the selected evidence.
+2. `atoms` entries for source-grounded components, relations, or contracts.
+3. `contexts` entries for selected finite site regions and atom membership.
+4. `covers` entries for selected context coverage.
 
 After drafting, revise coverage:
 

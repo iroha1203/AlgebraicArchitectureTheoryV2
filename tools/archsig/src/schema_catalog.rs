@@ -6,8 +6,8 @@ use crate::{
     ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_SAGA_CONCLUSION_CODES,
-    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA,
+    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES, LAW_POLICY_V1_SCHEMA,
     MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
     SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
     SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
@@ -29,7 +29,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchMap Atom-to-AAT contract",
                 vec![
                     "archsig-contract:archmap-minimal-observation",
-                    "archsig-contract:v0.4.0-ag-measurement",
+                    "archsig-contract:v0.5.0-ag-measurement",
                 ],
                 "ArchMap v0.5.0 records source-grounded architecture observations. Finite-poset-site inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. They reject legacy v0 root fields, unknown atom kinds or predicates, and unresolved source refs before analysis.",
                 vec![
@@ -39,12 +39,12 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "aat-atom-vocabulary/v0.5.0",
-                "AAT atom vocabulary v1",
+                "AAT atom vocabulary v0.5.0",
                 AAT_ATOM_VOCABULARY_V1_SCHEMA,
                 "primary",
-                "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["archsig-contract:v0.4.0-improvement"],
-                "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atoms[].kind membership.",
+                "ArchSig v0.5.0 Algebraic Geometry Measurement",
+                vec!["archsig-contract:v0.5.0-improvement"],
+                "AAT atom vocabulary v0.5.0 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atoms[].kind membership.",
                 vec![
                     "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
                     "The linter does not decide whether a new atom kind should be added to the doctrine.",
@@ -104,25 +104,25 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "law-policy/v0.5.0",
-                "LawPolicy v1 selector artifact",
+                "LawPolicy v0.5.0 selector artifact",
                 LAW_POLICY_V1_SCHEMA,
                 "primary",
                 "ArchMap Atom-to-AAT contract",
                 vec!["archsig-contract:archmap-minimal-observation"],
-                "LawPolicy v1 selects policy packs or explicit law/evaluator pairs with registry-owned basis, scope, and severity. It rejects unknown packs, unknown evaluators, unresolved basis refs, and DSL-style witness rules before analysis.",
+                "LawPolicy v0.5.0 selects explicit law/evaluator pairs with registry-owned basis, scope, and severity. Retired policy pack selectors, unknown evaluators, unresolved basis refs, and DSL-style witness rules are rejected before analysis.",
                 vec![
-                    "LawPolicy v1 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
-                    "LawPolicy v1 validation does not run the v1 evaluator pipeline.",
+                    "LawPolicy v0.5.0 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
+                    "LawPolicy validation does not run the evaluator pipeline.",
                 ],
             ),
             artifact(
                 "measurement-profile/v0.5.0",
-                "MeasurementProfile v1 AG evaluator selector",
+                "MeasurementProfile v0.5.0 AG evaluator selector",
                 MEASUREMENT_PROFILE_V1_SCHEMA,
                 "primary",
-                "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["archsig-contract:v0.4.0-ag-measurement"],
-                "MeasurementProfile v1 declares selected site, cover, coefficient, EffCoeff procedure, witness family, resolution selector, Dom/Zero/NonZero/Cert predicates, and five-valued verdict discipline.",
+                "ArchSig v0.5.0 Algebraic Geometry Measurement",
+                vec!["archsig-contract:v0.5.0-ag-measurement"],
+                "MeasurementProfile v0.5.0 declares selected site, cover, coefficient, EffCoeff procedure, witness family, resolution selector, Dom/Zero/NonZero/Cert predicates, and five-valued verdict discipline.",
                 vec![
                     "MeasurementProfile selects a bounded measurement regime; it does not prove adequacy or theorem hypotheses.",
                     "Profile absence for AG evaluators is a validation error, not an unmeasured zero result.",
@@ -130,12 +130,12 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archsig-repair-plan/v0.5.0",
-                "ArchSig RepairPlan v1 SAGA supplied input artifact",
+                "ArchSig RepairPlan v0.5.0 SAGA supplied input artifact",
                 ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.5.0 SAGA Stage 1",
                 vec!["archsig-contract:saga-stage1-v0.5.0"],
-                "RepairPlan v1 supplies the checked SAGA descent input side: residual refs, finite complex, primitive restriction differences, semantic projection, faithfulness regime, and F2-additive coefficient.",
+                    "RepairPlan v0.5.0 supplies the checked SAGA descent input side: residual refs, finite complex, primitive restriction differences, semantic projection, faithfulness regime, and F2-additive coefficient.",
                 vec![
                     "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
                     "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
@@ -144,15 +144,15 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "law-evaluator-registry/v0.5.0",
-                "Law evaluator registry v1",
+                "Law evaluator registry v0.5.0",
                 "law-evaluator-registry/v0.5.0",
                 "primary",
                 "ArchMap Atom-to-AAT contract",
                 vec!["archsig-contract:archmap-minimal-observation"],
-                "Law evaluator registry v1 owns evaluator manifests, policy pack expansion, basis refs, missing blocker rules, pass / violation criteria, and output refs. LawPolicy v1 selects entries from this registry.",
+                "Law evaluator registry v0.5.0 owns evaluator manifests, basis refs, missing blocker rules, pass / violation criteria, and output refs. LawPolicy v0.5.0 selects entries from this registry.",
                 vec![
                     "Evaluator registry manifest is an ArchSig computation contract, not a Lean theorem proof.",
-                    "LawPolicy v1 cannot override witness rules, axis rules, distance formula, pass criteria, or violation criteria.",
+                    "LawPolicy v0.5.0 cannot override witness rules, axis rules, distance formula, pass criteria, or violation criteria.",
                 ],
             ),
             artifact(
@@ -163,7 +163,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchMap Atom-to-AAT contract",
                 vec![
                     "archsig-contract:archmap-minimal-observation",
-                    "archsig-contract:v0.4.0-ag-measurement",
+                    "archsig-contract:v0.5.0-ag-measurement",
                 ],
                 "Normalized ArchMap v0.5.0 is generated by the ArchSig normalizer without rereading the source repository. Finite-poset-site output records deterministic context, cover, and selected-site presentation under the fixed AAT canonical doctrine fingerprint.",
                 vec![
@@ -173,13 +173,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archsig-measurement-packet/v0.5.0",
-                "ArchSig measurement packet v1",
+                "ArchSig measurement packet v0.5.0",
                 ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
                 "primary",
-                "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["archsig-contract:v0.4.0-ag-measurement"],
+                "ArchSig v0.5.0 Algebraic Geometry Measurement",
+                vec!["archsig-contract:v0.5.0-ag-measurement"],
                 &format!(
-                    "ArchSig measurement packet v1 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered SAGA conclusionCode values include {}.",
+                    "ArchSig measurement packet v0.5.0 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered SAGA conclusionCode values include {}.",
                     registry_sentence(&ARCHSIG_SAGA_CONCLUSION_CODES),
                 ),
                 vec![
@@ -192,12 +192,12 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archsig-boundary-statement/v0.5.0",
-                "ArchSig BoundaryStatement v1",
+                "ArchSig BoundaryStatement v0.5.0",
                 ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA,
                 "primary",
-                "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["archsig-contract:v0.4.0-improvement"],
-                "BoundaryStatement v1 is the typed scoped qualifier contract for measurement packet boundaries. It records id, kind, scopeRefs, reason, and text while preserving nonConclusions as a compatibility view.",
+                "ArchSig v0.5.0 Algebraic Geometry Measurement",
+                vec!["archsig-contract:v0.5.0-improvement"],
+                "BoundaryStatement v0.5.0 is the typed scoped qualifier contract for measurement packet boundaries. It records id, kind, scopeRefs, reason, and text while preserving nonConclusions as a compatibility view.",
                 vec![
                     "Boundary statements qualify selected packet rows; they do not prove source extraction soundness, semantic correctness, or Lean theorem discharge.",
                     "Boundary kinds keep blocked, unmeasured, not-applicable, and violated-assumption states distinct from measured_zero.",
@@ -205,12 +205,12 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archsig-gate-policy/v0.5.0",
-                "ArchSig gate policy v1",
+                "ArchSig gate policy v0.5.0",
                 ARCHSIG_GATE_POLICY_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.0"],
-                "Gate policy v1 records institutional verdict-to-action mappings for absolute and introduced-by-change rules. Absolute rules must map measured_zero, measured_nonzero, unmeasured, unknown, not_computed, and violated_assumption_dependency; introduced-by-change rules must map new, cleared, preexisting, removed, and other.",
+                "Gate policy v0.5.0 records institutional verdict-to-action mappings for absolute and introduced-by-change rules. Absolute rules must map measured_zero, measured_nonzero, unmeasured, unknown, not_computed, and violated_assumption_dependency; introduced-by-change rules must map new, cleared, preexisting, removed, and other.",
                 vec![
                     "Gate policy is authored institutional judgment, not a measurement packet verdict.",
                     "Non-terminal measurement states and removed / other transitions cannot be mapped to plain pass.",
@@ -219,13 +219,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archsig-gate-report/v0.5.0",
-                "ArchSig gate report v1",
+                "ArchSig gate report v0.5.0",
                 ARCHSIG_GATE_REPORT_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.0"],
                 &format!(
-                    "Gate report v1 records {} together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
+                    "Gate report v0.5.0 records {} together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
                     registry_sentence(&ARCHSIG_GATE_REPORT_DECISIONS),
                 ),
                 vec![
@@ -241,7 +241,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.0"],
-                "ArchMap diff v1 records deterministic added, removed, and modified sources, atoms, contexts, and covers computed from two normalized-archmap/v0.5.0 artifacts.",
+                "ArchMap diff v0.5.0 records deterministic added, removed, and modified sources, atoms, contexts, and covers computed from two normalized-archmap/v0.5.0 artifacts.",
                 vec![
                     "ArchMap diff is a computed record artifact, not supplied observation evidence.",
                     "Diff entries are mechanical JSON differences and do not assign causality to verdict changes.",
@@ -249,13 +249,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archsig-comparison-report/v0.5.0",
-                "ArchSig comparison report v1",
+                "ArchSig comparison report v0.5.0",
                 ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.0"],
                 &format!(
-                    "Comparison report v1 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions and archmap-diff intersections. Registered conclusionCode values are {}.",
+                    "Comparison report v0.5.0 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions and archmap-diff intersections. Registered conclusionCode values are {}.",
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
                 ),
                 vec![

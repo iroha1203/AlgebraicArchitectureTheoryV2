@@ -3,9 +3,9 @@ use std::collections::BTreeSet;
 use super::registry::{expand_law_policy_v1, is_known_evaluator};
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
-    LawPolicyDocumentV1, LawPolicyValidationInputV1, LawPolicyValidationReportV1,
-    LawPolicyValidationSummaryV1, MeasurementProfileV1, ValidationCheck, ValidationExample,
-    LAW_POLICY_V1_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
+    LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1, LawPolicyValidationInputV1,
+    LawPolicyValidationReportV1, LawPolicyValidationSummaryV1, MEASUREMENT_PROFILE_V1_SCHEMA,
+    MeasurementProfileV1, ValidationCheck, ValidationExample,
 };
 
 pub fn validate_law_policy_v1_report(
@@ -74,7 +74,7 @@ pub fn validate_measurement_profile_v1_checks(
 fn check_v1_schema(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
         "law-policy-schema050-schema",
-        "LawPolicy v1 uses the selector schema discriminator",
+        "LawPolicy v0.5.0 uses the selector schema discriminator",
         if policy.schema == LAW_POLICY_V1_SCHEMA {
             "pass"
         } else {
@@ -96,19 +96,19 @@ fn check_v1_identity(policy: &LawPolicyDocumentV1) -> ValidationCheck {
         examples.push(generic_validation_example(
             "id",
             "empty",
-            "LawPolicy v1 id must be non-empty",
+            "LawPolicy v0.5.0 id must be non-empty",
         ));
     }
     if policy.policies.is_empty() {
         examples.push(generic_validation_example(
             "policies",
             "empty",
-            "LawPolicy v1 must select at least one policy entry",
+            "LawPolicy v0.5.0 must select at least one policy entry",
         ));
     }
     check_examples(
         "law-policy-schema050-identity",
-        "LawPolicy v1 identity and selected policies are recorded",
+        "LawPolicy v0.5.0 identity and selected policies are recorded",
         examples,
     )
 }
@@ -270,7 +270,7 @@ fn check_v1_pack_and_evaluator_vocabulary(policy: &LawPolicyDocumentV1) -> Valid
             examples.push(generic_validation_example(
                 &format!("policies[{index}].pack"),
                 pack,
-                "v1 policy pack selectors are retired; use an explicit law/evaluator selector",
+                "v0.5.0 policy pack selectors are retired; use an explicit law/evaluator selector",
             ));
         }
         if let Some(evaluator) = entry.evaluator.as_deref() {
@@ -312,7 +312,7 @@ fn check_v1_measurement_profile_selector(
     }
     check_examples(
         "law-policy-schema050-measurement-profile-selector",
-        "LawPolicy v1 selects an external MeasurementProfile artifact for AG evaluators",
+        "LawPolicy v0.5.0 selects an external MeasurementProfile artifact for AG evaluators",
         examples,
     )
 }
@@ -323,7 +323,7 @@ fn measurement_profile_v1_checks(profile: &MeasurementProfileV1) -> Vec<Validati
     vec![
         check_examples(
             "measurement-profile-schema050-shape",
-            "MeasurementProfile v1 declares site, cover, coefficients, predicates, certificates, verdict discipline, and finite bounds",
+            "MeasurementProfile v0.5.0 declares site, cover, coefficients, predicates, certificates, verdict discipline, and finite bounds",
             examples,
         ),
         check_measurement_profile_finite_bounds(profile),
@@ -366,7 +366,7 @@ fn measurement_profile_errors(
         examples.push(generic_validation_example(
             &profile.profile_id,
             &profile.verdict_discipline,
-            "verdict discipline must select the v0.4.0 five-valued structural verdict rule",
+            "verdict discipline must select the v0.5.0 five-valued structural verdict rule",
         ));
     }
     for witness in &profile.witness_family {

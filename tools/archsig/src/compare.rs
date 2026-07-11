@@ -13,7 +13,7 @@ use crate::{
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
-    ArchSigMeasurementPacketV1, NORMALIZED_ARCHMAP_V2_SCHEMA, validate_measurement_packet_v1,
+    ArchSigMeasurementPacketV1, NORMALIZED_ARCHMAP_V2_SCHEMA, validate_measurement_packet_value_v1,
 };
 
 const RECORD_DISCIPLINE: &str = "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim class transport, causal repair, semantic equivalence, or preserved obstruction identity.";
@@ -139,10 +139,11 @@ fn build_archmap_diff(
 fn comparability(base: &Value, head: &Value) -> Value {
     let same_tool = text_at(base, &["toolVersion"]) == text_at(head, &["toolVersion"]);
     let same_archmap = digest_at(base, "archmap") == digest_at(head, "archmap");
+    let same_law_policy = digest_at(base, "lawPolicy") == digest_at(head, "lawPolicy");
     let same_profile =
         digest_at(base, "profileFingerprint") == digest_at(head, "profileFingerprint");
     let same_cover = digest_at(base, "siteCoverDigest") == digest_at(head, "siteCoverDigest");
-    let level = if same_tool && same_archmap && same_profile {
+    let level = if same_tool && same_archmap && same_law_policy && same_profile {
         "identical"
     } else if same_tool && same_profile && same_cover {
         "verdict-row"
@@ -153,9 +154,10 @@ fn comparability(base: &Value, head: &Value) -> Value {
         "level": level,
         "sameToolVersion": same_tool,
         "sameArchmapDigest": same_archmap,
+        "sameLawPolicyDigest": same_law_policy,
         "sameProfileFingerprint": same_profile,
         "sameSiteCoverDigest": same_cover,
-        "basis": "identical requires archmap digest, profile fingerprint, and tool version equality; verdict-row requires profile fingerprint, site cover digest, and tool version equality"
+        "basis": "identical requires archmap and LawPolicy digests, profile fingerprint, and tool version equality; verdict-row requires profile fingerprint, site cover digest, and tool version equality"
     })
 }
 
@@ -368,9 +370,9 @@ fn verdict_row_map(packet: &Value) -> BTreeMap<String, Value> {
 }
 
 fn validate_compare_packet(packet: &Value, label: &str) -> Result<(), Box<dyn Error>> {
-    let typed_packet: ArchSigMeasurementPacketV1 = serde_json::from_value(packet.clone())
+    serde_json::from_value::<ArchSigMeasurementPacketV1>(packet.clone())
         .map_err(|error| format!("{label} shape is invalid: {error}"))?;
-    let failed = validate_measurement_packet_v1(&typed_packet)
+    let failed = validate_measurement_packet_value_v1(packet)
         .into_iter()
         .any(|check| check.result == "fail");
     if failed {
@@ -389,7 +391,11 @@ fn row_key(row: &Value) -> String {
     let evaluator = row["evaluator"].as_str().unwrap_or("unknown-evaluator");
     let law = row["law"].as_str().unwrap_or("unknown-law");
     let target = if row.get("target").is_some() {
-        canonical_value(&row["target"])
+        let mut target = row["target"].clone();
+        if let Some(target_object) = target.as_object_mut() {
+            target_object.remove("classRef");
+        }
+        canonical_value(&target)
     } else {
         row["verdictRef"]
             .as_str()
@@ -461,6 +467,7 @@ fn run_digest(run: &Path, manifest: &Value) -> Value {
         "runId": manifest["runId"],
         "toolVersion": manifest["toolVersion"],
         "archmap": manifest["inputDigests"]["archmap"],
+        "lawPolicy": manifest["inputDigests"]["lawPolicy"],
         "profileFingerprint": manifest["inputDigests"]["profileFingerprint"],
         "siteCoverDigest": manifest["inputDigests"]["siteCoverDigest"],
         "measurementPacket": {
