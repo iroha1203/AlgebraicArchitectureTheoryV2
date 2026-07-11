@@ -22,6 +22,7 @@ import ResearchLean.AG.QualitySurface.HandoffCechExactness
 import ResearchLean.AG.QualitySurface.HandoffRepairTransversal
 import ResearchLean.AG.QualitySurface.HeterogeneousRouteInteraction
 import ResearchLean.AG.QualitySurface.InternalExcursionMinSupport
+import ResearchLean.AG.QualitySurface.LawGeneratedConormalDescent
 import ResearchLean.AG.QualitySurface.LawfulRepairTransportCommutator
 import ResearchLean.AG.QualitySurface.LossAwareCommutatorAtlas
 import ResearchLean.AG.QualitySurface.MultiRouteCorrectionSystem

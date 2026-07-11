@@ -10,57 +10,47 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest accepted cycle: 1
+- latest reviewed cycle: 1
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: D1 law-generated ideal / quotient / kernel sheaf sequence
+- next obligation: construct the section-specific connecting cocycle on the
+  generated small complex
 
-## Cycle 1 — generic additive short-exact lift descent
+## Cycle 1 — small generated cover and repository H1 checkpoint
 
-- decision: approve
-- result type: proof-obligation-discharged
+- decision: revise
+- result type: proof-checkpoint
 - Lean file:
   `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalDescent.lean`
-- accepted spine:
-  - `ShortExactLiftProblem.d1_d0`
-  - `ShortExactLiftProblem.localLiftDifference_cocycle`
-  - `ShortExactLiftProblem.localLiftDifference_change`
-  - `ShortExactLiftProblem.connectingClass_choice_independent`
-  - `ShortExactLiftProblem.connectingClass_eq_zero_iff`
-  - `ShortExactLiftProblem.correctedLocalLifts_compatible_iff`
-  - `ShortExactLiftProblem.connectingClass_zero_iff_exists_globalLift`
-  - `ShortExactLiftProblem.coverRelativeConnectingClass_choice_independent`
-  - `ShortExactLiftProblem.coverRelativeConnectingClass_eq_zero_iff`
-  - `ShortExactLiftProblem.coverRelativeConnectingClass_zero_iff_exists_globalLift`
-  - `ShortExactLiftProblem.instAddTorsorGlobalLift`
-  - `ShortExactLiftProblem.globalLiftFiber_addTorsor`
+- checkpoint spine:
+  - `SmallCanonicalTupleCover.TupleGeometry`
+  - `SmallCanonicalTupleCover.FiniteComplex`
+  - `SmallCanonicalTupleCover.Cover`
+  - `SmallCanonicalTupleCover.complex`
+  - `SmallCanonicalTupleCover.H1`
+  - `SmallCanonicalTupleCover.additiveH1Class_eq_zero_iff`
 
-### Proof-obligation delta
+### Checkpoint delta
 
-The selected sieve now generates the twofold and threefold common-refinement
-indices, the additive `C0 / C1 / C2` complex, and both differentials. Explicit
-local lifts generate their kernel-valued overlap cocycle. The cycle proves the
-cocycle equation, change-of-choice coboundary, choice independence, correction
-compatibility, class-zero iff actual global lift, and the kernel-section
-`AddTorsor` on every nonempty lift fiber.
+The failed all-sieve presentation has been removed. A selected finite-poset
+cover now generates its canonical tuple nerve and standard face-restriction
+differential. That differential is bundled as the repository
+`CoverRelativeCechComplex`, and the checkpoint exposes the repository
+`AdditiveCechH1` and its zero-class iff degree-zero-coboundary theorem.
 
-The same sieve-native data construct the repository's
-`CoverRelativeCechCover`, kernel `ObstructionSheaf`, and
-`CoverRelativeCechComplex`. The accepted primary theorem places the connecting
-class in `CoverRelativeCechComplex.AdditiveCechH1`; the cochain-level
-realization proves choice independence and transports the zero-iff-lift result
-to that existing API.
-
-The reverse implication corrects the local lifts and calls
-`AATDescent.exists_global`. It then uses uniqueness for the quotient sheaf to
-prove that the glued middle-sheaf section maps to the fixed base section.
+No section-specific cocycle or lift-effectivity theorem is present yet. This
+cycle therefore establishes the small Čech target required by D0 but does not
+discharge D0.
 
 ### Premise delta
 
-- discharged: D0 generic additive lift-descent engine, connecting-class
-  provenance, choice independence, actual gluing, and lift-fiber torsor.
-- remaining: law-generated `N / E / Q`, kernel comparison, objectwise
-  exactness, generated-cover provenance, `N / E / Q` sheaf conditions, conormal
+- checkpoint: selected small generated cover realization, standard
+  face-restriction differential, repository `AdditiveCechH1`, and its
+  zero-class criterion.
+- remaining: local-lift connecting cocycle, choice independence, zero iff
+  actual global lift, lift-fiber torsor, law-generated `N / E / Q`, kernel
+  comparison, objectwise exactness, generated-cover provenance, sheaf
+  conditions, conormal
   instantiation, semantic representations, finite zero/nonzero witness pair,
   package theorem, and `H^1 = 0` corollary.
 
@@ -69,12 +59,11 @@ prove that the glued middle-sheaf section maps to the fixed base section.
 - focused elaboration: pass
 - module-wide standard-axiom assertion: pass
 - placeholder / hidden Unicode / private-path scans: pass
-- statement weakening: none found
-- certificate provenance: D0 constructions are generated from the generic
-  input; law-generated provenance remains unresolved and is not counted here
-- proof use: kernel exactness, local lift projection, kernel naturality,
-  cover membership, and all three sheaf conditions are used either in the
-  cover-relative coefficient construction or the lift equivalence
+- statement classification: proof-checkpoint; not D0 discharge
+- certificate provenance: tuple geometry, faces, differential, and H1 are
+  generated from the selected finite-poset geometry and obstruction sheaf
+- proof use: the standard differential uses actual face restrictions and its
+  square-zero theorem; no lift data are introduced in this checkpoint
 - structure-field escape: none found
 - route integrity: pass
 - target-fitting / vacuity / one-way-as-equivalence / GOAL reinterpretation:
@@ -82,9 +71,10 @@ prove that the glued middle-sheaf section maps to the fixed base section.
 
 ### Next obligation
 
-Construct from law-witness input the ideal-power coefficient sequence supplying
-the D0 fields: `N = I/I^2`, `E = O/I^2`, `Q = O/I`, the projection and kernel
-comparison, objectwise exactness, restriction naturality, and the required
-sheaf conditions. The D0 theorem now already uses the repository's
-`CoverRelativeCechComplex.AdditiveCechH1`; D1 supplies its law-generated
-coefficient instance rather than a later comparison to a private quotient.
+Construct the local-lift difference as a cocycle of the generated repository
+complex, prove choice independence, and prove that its `AdditiveCechH1` class
+is zero exactly when an actual global lift exists. The reverse direction must
+derive gluing from the generated-presieve sheaf API. Then construct from
+law-witness input the ideal-power coefficient sequence supplying `N = I/I^2`,
+`E = O/I^2`, `Q = O/I`, the projection and kernel comparison, objectwise
+exactness, restriction naturality, and the required sheaf conditions.
