@@ -62,8 +62,8 @@ AAT / Lean / ArchSig の責務境界を作業前に必ず分ける。
 
 - `docs/README.md` — 研究 docs 全体の読み方
 - `docs/aat/algebraic_geometric_theory/README.md` — 代数幾何的 AAT 数学本文の入口
-- `docs/aat/proof_obligations.md` — proof obligation と empirical hypothesis の台帳
-- `docs/aat/lean_theorem_index.md` — Lean 定義・定理索引
+- `Formal/` — Lean 形式化の実体
+- `research/goals/` / GitHub Issues — 作業状態と未解決課題
 - `docs/tool/README.md` — 現行 tooling 境界
 - `research/README.md` — ループ研究 engine の入口(`$research-loop`)
 

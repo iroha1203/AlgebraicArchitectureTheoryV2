@@ -4,8 +4,7 @@ import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 Executable elaboration contracts for the Part X theorem-7.5 finite-free route.
 The examples below fix the signatures against the declarations imported from
 `Formal.AG.SemanticRepair.LawEquationGeneratedPair`.
-The complete input-structure and ten-field contract is recorded in
-`docs/aat/statement_contracts/semantic_repair_part_x.md`.
+The examples below fix the complete input-structure and ten-field contract.
 -/
 
 namespace AAT.AG

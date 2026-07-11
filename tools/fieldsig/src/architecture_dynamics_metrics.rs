@@ -1432,7 +1432,7 @@ fn support_risk_entries(section_boundary: MeasurementBoundaryV0) -> Vec<SupportR
             0.32,
             "proved",
             &[
-                "docs/lean_theorem_index.md#operation-role-schema",
+                "Formal/Arch/Operation/OperationInvariant.lean#preservesInvariant_of_discharged_preserve",
                 "Formal.Arch.OperationRoleSchema.preservesInvariant_of_discharged_preserve",
             ],
             "safePreservingProved",

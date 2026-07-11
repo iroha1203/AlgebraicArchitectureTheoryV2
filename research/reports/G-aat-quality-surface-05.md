@@ -1770,7 +1770,7 @@ Validation:
 Report / tracking sync:
 
 - `research/reports/G-aat-quality-surface-05.md`: final review pass recorded.
-- `docs/aat/proof_obligations.md`: G-05 status updated to
+- G-05 status was updated to
   `target-theorem-proved`.
 - tracking Issue `#2631`: final target-cycle result synchronized.
 - PR `#2634`: CI passed for the final theorem / review-sync branch:
@@ -1793,7 +1793,7 @@ Completion sync:
   `completed`.
 - tracking Issue `#2631`: closed after the final
   `target-theorem-proved` ledger and PR / CI synchronization.
-- `docs/aat/proof_obligations.md`: already records G-05 as
+- The historical status record already records G-05 as
   `target-theorem-proved` for the selected finite/small true-sheaf
   boundary-relation additive package.
 

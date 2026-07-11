@@ -862,8 +862,8 @@ docs 更新も必須。
 ```text
 Formal.lean
 Formal/Arch/Evolution/SFTTheoremPackages.lean
-docs/aat/lean_theorem_index.md
-docs/aat/proof_obligations.md
+Formal/
+Formal/
 docs/sft/sft_theorem_roadmap_and_research_vision.md
 ```
 

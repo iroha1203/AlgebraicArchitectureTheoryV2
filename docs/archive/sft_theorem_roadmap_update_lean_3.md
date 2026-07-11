@@ -386,8 +386,8 @@ theorem binaryForecastConeDescent_of_endpoint_laws
 更新先:
 
 ```text
-docs/aat/lean_theorem_index.md
-docs/aat/proof_obligations.md
+Formal/
+Formal/
 docs/sft/sft_theorem_roadmap_and_research_vision.md
 docs/sft/sft_theorem_roadmap_update_lean_2.md
 ```
@@ -420,7 +420,7 @@ Fundamental Modularity Theorem is fully proved.
 
 ## Phase 10: proof obligation を明示する
 
-`docs/aat/proof_obligations.md` に残すべき future proof obligation:
+`Formal/` に残すべき future proof obligation:
 
 ```text
 Strict path-level projection/glue inverse laws

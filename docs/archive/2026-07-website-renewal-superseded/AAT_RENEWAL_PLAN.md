@@ -44,8 +44,8 @@ Atom
 - `docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md`
 - `docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md`
 - `docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md`
-- `docs/aat/lean_theorem_index.md`
-- `docs/aat/proof_obligations.md`
+- `Formal/`
+- `Formal/`
 - `docs/sft/aat_interface.md`
 - `docs/tool/**`
 - `Formal/Arch/Atom/Foundation.lean`

@@ -27,7 +27,7 @@
 - forecast、probability、causal reading、safety、CI/Test/human review との関係は、明示された model /
   dataset / operational artifact に相対化して扱う。
 - empirical dataset、operational feedback、calibration artifact は、相関・観測・仮説を因果 theorem と混同しない。
-- Lean theorem claim として読める範囲は AAT / Lean 側に置く。SFT docs で theorem boundary に触れる場合は、対応する `docs/aat/proof_obligations.md` や `docs/aat/lean_theorem_index.md` も確認する。
+- Lean theorem claim として読める範囲は AAT / Lean 側に置く。SFT docs で theorem claim に触れる場合は、AAT数学本文と対応する `Formal/` declaration を確認する。
 - ArchSig / FieldSig 由来の report は、選ばれた evidence contract の中で語れる肯定的な conclusion として読む。
   語れない外側を一般的な non-conclusion や残タスクとして増幅しない。
 - レビューやタスク整理では、SFT 文書が定義した artifact、typed conclusion、accessor theorem、

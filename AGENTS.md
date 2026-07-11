@@ -163,8 +163,8 @@ no-go 風の説明は免罪符にしない。
 - `PHILOSOPHY.md`: プロジェクトの核となる思想と問い(なぜ)。
 - `docs/README.md`: 研究 docs 全体の読み方。
 - `docs/aat/algebraic_geometric_theory/README.md`: 代数幾何的 AAT 数学本文の入口。
-- `docs/aat/proof_obligations.md`: Lean proof obligation と empirical hypothesis の台帳。
-- `docs/aat/lean_theorem_index.md`: Lean 定義・定理索引。
+- `Formal/`: Lean 形式化の実体。
+- `research/goals/` と GitHub Issues: 作業状態と未解決課題。
 - `docs/sft/software_field_theory.md`: SFT 本文。
 - `docs/sft/aat_interface.md`: AAT / SFT interface。
 - `docs/tool/README.md`: ArchMap / LawPolicy / ArchSig / ArchView / FieldSig の現行 tooling scope。

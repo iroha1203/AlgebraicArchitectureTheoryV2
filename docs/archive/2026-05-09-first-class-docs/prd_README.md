@@ -2,7 +2,7 @@
 
 このディレクトリには、実装前または検討中の product requirement document を置く。
 
-PRD は、研究主張そのものではなく、CLI、dataset、CI、AI reviewer などの tooling に落とすための要求仕様として扱う。Lean status は PRD 内で確定させず、実装・証明・実証仮説に反映する段階で `docs/aat/proof_obligations.md` や個別 design document に移す。
+PRD は、研究主張そのものではなく、CLI、dataset、CI、AI reviewer などの tooling に落とすための要求仕様として扱う。Lean status は PRD 内で確定させず、実装・証明・実証仮説に反映する段階で `Formal/` や個別 design document に移す。
 
 ## 現在のPRD
 

@@ -5,7 +5,7 @@ Lean status: `empirical hypothesis` / `tooling validation`.
 この文書は、ArchSig tooling の schema、CLI、fixture、non-conclusion boundary を追跡する
 tooling-side index である。数学的な定義・定理候補・非目標は
 [`docs/aat/mathematical_theory/README.md`](../../../aat/mathematical_theory/README.md) に置き、Lean status と
-Issue 対応は [`docs/aat/proof_obligations.md`](../aat/proof_obligations.md) に置く。
+Issue 対応は [`Formal/`](../aat/proof_obligations.md) に置く。
 
 ここに記載する tooling artifact は、CI / PR review / empirical validation の入力または
 出力であり、artifact の存在だけで architecture lawfulness、Lean theorem claim、設計判断の

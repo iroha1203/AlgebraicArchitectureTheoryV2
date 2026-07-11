@@ -10,7 +10,7 @@ _作成: 2026-06-14 / ダイナミックワークフロー(16レンズ生成 →
 
 ## 読み方と claim boundary
 
-- すべて **定理候補(22件)** または **予想(28件)** であり、本文内の数学命題である。Lean で証明済みではない。中央 proof obligation 化は `lean_theorem_index.md` / `proof_obligations.md` に対応行を置いた場合のみ。
+- すべて **定理候補(22件)** または **予想(28件)** であり、本文内の数学命題である。Lean で証明済みではない。Leanで扱う場合は、本文命題と対応する `Formal/AG` declaration を直接確認する。
 - 各命題は固定された vocabulary / law universe / coverage topology / 係数 に相対化される。神の視点・現実コード全体・意味宇宙全体・全未来予測の無制限 claim はしない。
 - 計測(measurement)を伴う CS 帰結は「移植仮定付き」(metric / cost 接続の仮定の下で)であり、ArchSig は Lean 証明器ではなく ArchMap + LawPolicy + evidence contract に相対化された diagnostic を返す道具である。
 - ID は NT-01〜NT-50。既存の G1〜G8 とは別系列で衝突しない。

@@ -60,7 +60,6 @@ structure AATImplementationFrontier where
   nextWorkPackage : String
   parallelAllowed : Bool
   coordinationRequired : Bool
-  docsTarget : String
   deriving DecidableEq, Repr
 
 namespace AATImplementationFrontier
@@ -1418,7 +1417,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
       nextWorkPackage := "Preserve this kernel as a shared prerequisite."
       parallelAllowed := false
       coordinationRequired := true
-      docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
+      }
   , { family := .generatedMoleculeObject
       suiteField := "AATTheoremSuite.generatedMoleculeObject"
       status := .connected
@@ -1432,7 +1431,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve generated object carriers and ArchMap handoff as connected suite fields."
       parallelAllowed := true
       coordinationRequired := false
-      docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
+      }
   , { family := .generatedGraphRank
       suiteField := "AATTheoremSuite.generatedGraphRank"
       status := .connected
@@ -1447,7 +1446,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve relation/runtime generated rank as a connected suite field."
       parallelAllowed := false
       coordinationRequired := false
-      docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
+      }
   , { family := .generatedLawSignature
       suiteField :=
         "AATTheoremSuite.generatedLawModelLawful / generatedSignatureAxesZero / generatedStaticStructuralCore / generatedAATCoreNoObservationDependency / generatedAATCoreCircuitBoundary"
@@ -1462,7 +1461,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve the connected generated law / Signature / AATCore bridge fields as later suite families are filled."
       parallelAllowed := true
       coordinationRequired := false
-      docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
+      }
   , { family := .generatedFlatnessCurvature
       suiteField := "AATTheoremSuite.generatedFlatnessCurvature"
       status := .connected
@@ -1474,7 +1473,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve generated flatness / curvature as a bounded generated-world package."
       parallelAllowed := true
       coordinationRequired := false
-      docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
+      }
   , { family := .generatedPathDiagram
       suiteField := "AATTheoremSuite.generatedPathDiagram"
       status := .connected
@@ -1489,7 +1488,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve generated path, diagram, and selected non-fillability as connected suite fields."
       parallelAllowed := false
       coordinationRequired := false
-      docsTarget := "docs/aat/lean_theorem_index.md#chapter-8-homotopy-skeleton-entrypoint" }
+      }
   , { family := .generatedFeatureExtension
       suiteField := "AATTheoremSuite.generatedFeatureExtension"
       status := .connected
@@ -1505,7 +1504,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve explicit feature-extension coverage assumptions, lifting premises, obstruction bridge, and extension-formula boundary as downstream fields are filled."
       parallelAllowed := false
       coordinationRequired := false
-      docsTarget := "docs/aat/lean_theorem_index.md#chapter-9-diagram-filling-entrypoint" }
+      }
   , { family := .generatedOperationRepairSynthesis
       suiteField := "AATTheoremSuite.generatedOperationRepairSynthesis"
       status := .connected
@@ -1520,7 +1519,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve generated operation, repair, and synthesis as connected suite fields."
       parallelAllowed := true
       coordinationRequired := false
-      docsTarget := "docs/aat/lean_theorem_index.md#chapter-7-theorem-package-entrypoints" }
+      }
   , { family := .generatedDistanceMeasureGeometry
       suiteField := "AATTheoremSuite.generatedDistanceMeasureGeometry"
       status := .connected
@@ -1539,7 +1538,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve Part IV distance / measure geometry as a connected generated theorem-family field."
       parallelAllowed := false
       coordinationRequired := false
-      docsTarget := "docs/aat/proof_obligations.md" }
+      }
   , { family := .generatedAnalyticRepresentation
       suiteField := "AATTheoremSuite.generatedAnalyticRepresentation"
       status := .connected
@@ -1554,7 +1553,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve generated analytic representation, selected valuation, and identity formula package as connected suite fields."
       parallelAllowed := true
       coordinationRequired := false
-      docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
+      }
   , { family := .generatedSFTArchSigFieldSig
       suiteField := "AATTheoremSuite.generatedSFTArchSigFieldSig"
       status := .connected
@@ -1569,7 +1568,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Preserve generated SFT / ArchSig / FieldSig handoff as a connected suite field."
       parallelAllowed := true
       coordinationRequired := false
-      docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
+      }
   , { family := .theoremClassification
       suiteField :=
         "AATTheoremSuite.classificationRegistryHasNoBridgeAssumedRows / classificationRegistryHasNoRewriteTargets"
@@ -1583,7 +1582,7 @@ def currentImplementationFrontier : List AATImplementationFrontier :=
         "Keep registry audit synchronized as suite fields are filled."
       parallelAllowed := false
       coordinationRequired := true
-      docsTarget := "docs/aat/lean_theorem_index.md#atom-generated-algebra-kernel" }
+      }
   ]
 
 def currentImplementationFamilies : List AATTheoremFamily :=

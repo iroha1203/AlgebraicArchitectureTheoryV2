@@ -47,7 +47,7 @@
 /aat/semantic-repair-saga/        X.    (W1b)SAGA: repair gluing = descent、SAGA 比較定理
 /aat/appendix/                    付録  (W1b)ambient convention、標準AGへの埋め込み、worked example
 /aat/related-work/                関連研究と novelty boundary(W1b で AG 語彙へ改訂)
-/aat/status/                      Lean status(AG 索引・proof obligations 台帳を典拠。W1b で改訂)
+/aat/status/                      Lean statusの公開読解(W1b で改訂)
 /aat/formal-anchors/              Lean declarations の audit index(W1b で AG 基準へ改訂)
 ```
 
@@ -136,13 +136,12 @@ Definition
   website 独自のラベル・主張を発明しない。
 - theorem-grade claim は theorem-card / lean-status-card で命題名、Lean 名、
   status、仮定、境界を近接表示する。
-- Lean status バッジは `lean_theorem_index_ag_aat.md` に対応行がある場合だけ表示する。
-  status 語彙は現行status overlayの三分化
+- Lean status バッジは対応する `Formal/` declaration が確認できる場合だけ表示する。
+  status 語彙は `docs/aat/guideline.md` の現行 Lean status discipline にある三分化
   (`proved` / `packaged (assumption-relative)` / `statement-only`)+ `defined only` に従う。
 - 数学本文への commit-pinned link は各章のサイドバーに置かず、リファレンス面に集約する。
-  Lean index・proof-obligation ledger・status overlay は更新される現行status面なので、同じリファレンス面から
-  `main` 上の現行文書へリンクする。正式なリファレンス面は `/aat/status/` の
-  Canonical sources とする。
+  statusの説明は数学本文とLean sourceから作り、手書きのstatus台帳をsourceとして扱わない。
+  正式なリファレンス面は `/aat/status/` のCanonical sourcesとする。
 
 ## ArchSig page の参照元対応
 
@@ -168,7 +167,7 @@ measured zero と unmeasured は異なる / policy pass は architecture lawfuln
 | `/aat/` landing | 実装済み | 正典宣言・中心図式・claim taxonomy・部索引 | 正典改訂時に同期 |
 | `/aat/` Part I〜IV | 実装済み | 正典第I〜IV部の publication edition | 正典改訂時に同期 |
 | `/aat/` Part V〜X+付録 | 実装済み | 正典第V〜X部と付録の publication edition | 正典改訂時に同期 |
-| `/aat/related-work/`, `/aat/status/`, `/aat/formal-anchors/` | 実装済み | AG 基準の関連研究・status・形式化アンカー | 台帳更新時に同期 |
+| `/aat/related-work/`, `/aat/status/`, `/aat/formal-anchors/` | 実装済み | AG 基準の関連研究・status・形式化アンカー | Lean source更新時に同期 |
 | `/sft/**` | 実装済み | SFT publication edition | SFT本文改訂時に同期 |
 | `/archsig/**` | 実装済み | Skill-first overview、analyses、examples、manual、reference | tooling契約更新時に同期 |
 | `/outreach/` | 実装済み | 外部記事 hub | 記事追加時に更新 |

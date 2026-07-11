@@ -32,8 +32,8 @@ SFT の大きな魅力である次の三点を弱く見せている。
 - `tools/fieldsig/docs/operational-feedback.md`
 - `tools/archsig/docs/artifacts-and-boundaries.md`
 - `docs/aat/algebraic_geometric_theory/README.md`
-- `docs/aat/lean_theorem_index.md`
-- `docs/aat/proof_obligations.md`
+- `Formal/`
+- `Formal/`
 
 `website/sft/**` は source of truth ではない。公開読書面である。
 website 独自の theorem claim、calibrated prediction claim、tool capability claim は追加しない。
@@ -644,8 +644,8 @@ References
 主な source:
 
 - existing `website/sft/theorem-candidates/` を参照してよいが、旧 navigation は捨てる。
-- `docs/aat/lean_theorem_index.md`
-- `docs/aat/proof_obligations.md`
+- `Formal/`
+- `Formal/`
 
 ### `/sft/research-program/`
 

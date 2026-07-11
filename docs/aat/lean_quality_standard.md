@@ -161,7 +161,7 @@ finding にする。
   概念は AAT の語彙で書き、mathlib 概念への接続は §1.3 の
   comparison map で行う。
 
-## §4 検証と台帳
+## §4 検証と記録
 
 ### 4.1 公理検査 [機械]
 
@@ -174,14 +174,13 @@ finding にする。
 
 ### 4.2 rename の deprecation 規律 [査読]
 
-`docs/aat/lean_theorem_index.md`(分割索引を含む)または
-`docs/aat/research_evidence_index.md` に登録済みの宣言を rename する
+`Formal/` または `Formal/AG/Research/` に実在する宣言を rename する
 場合、次のどちらかを同一 PR で行う。
 
 - `@[deprecated (since := "<日付>")]` alias を残す
-- 該当する台帳行を同時更新する
+- 対応するLean source、GOAL、Issueを同時に更新する
 
-silent rename は台帳との対応を切り、監査を空振りさせる repackage
+silent rename は対応するLean source・GOAL・Issueの追跡を切り、監査を空振りさせる repackage
 経路なので finding とする。
 
 ## §5 Target statement 固定手続き

@@ -38,7 +38,7 @@ route の追加・削除は `website/src/**/index.html` の増減がそのまま
 | `/aat/representations-and-effects/` | `website/src/aat/representations-and-effects/index.html` | AAT Part III. Geometry and Analytic Connections。Graph、thin category、walk / matrix、analytic representation、state-transition algebra、effect law surface。 |
 | `/aat/canonical-examples-and-readings/` | `website/src/aat/canonical-examples-and-readings/index.html` | AAT Part III. Geometry and Analytic Connections。Atom / molecule / law / circuit、coupon extension、static-flat semantic obstruction、repair transfer、SOLID counterexamples。 |
 | `/aat/related-work/` | `website/src/aat/related-work/index.html` | AAT References。Related work and novelty claim。 |
-| `/aat/status/` | `website/src/aat/status/index.html` | AAT Lean status、proof obligations、proved / defined only / future obligation の読み方。 |
+| `/aat/status/` | `website/src/aat/status/index.html` | AAT Lean sourceのstatusと、proved / defined only / future obligationの読み方。 |
 | `/aat/formal-anchors/` | `website/src/aat/formal-anchors/index.html` | AAT 章の public claims と代表 Lean declarations の audit index。 |
 | `/sft/` | `website/src/sft/index.html` | SFT overview。短い abstract、章インデックス、status / glossary への入口。 |
 | `/sft/field-and-force/` | `website/src/sft/field-and-force/index.html` | 1. Field and Force。開発組織全体を field of forces として記述する第1部の入口。 |

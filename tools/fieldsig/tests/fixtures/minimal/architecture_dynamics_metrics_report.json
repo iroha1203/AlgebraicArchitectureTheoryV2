@@ -3391,7 +3391,7 @@
         },
         "preservationPreconditionStatus": "proved",
         "theoremPreconditionRefs": [
-          "docs/lean_theorem_index.md#operation-role-schema",
+          "Formal/Arch/Operation/OperationInvariant.lean#preservesInvariant_of_discharged_preserve",
           "Formal.Arch.OperationRoleSchema.preservesInvariant_of_discharged_preserve"
         ],
         "riskState": "safePreservingProved",
@@ -4997,7 +4997,7 @@
         },
         "theoremPreconditionRefs": [
           "Formal.Arch.OperationRoleSchema.preservesInvariant_of_discharged_preserve",
-          "docs/lean_theorem_index.md#operation-role-schema"
+          "Formal/Arch/Operation/OperationInvariant.lean#preservesInvariant_of_discharged_preserve"
         ],
         "unknownSupportWeight": 0.25
       },

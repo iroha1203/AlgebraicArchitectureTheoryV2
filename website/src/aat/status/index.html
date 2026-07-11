@@ -110,64 +110,31 @@
             <section id="ledgers" class="article-section">
               <h2>Ledger discipline</h2>
               <p>
-                Three documents carry the formal accounting, and this page is a
-                summary of them, not a replacement.
+                The mathematical text and Lean source carry the formal content;
+                this page is a public reading summary, not a replacement.
               </p>
               <ul>
                 <li>
-                  <code>docs/aat/lean_theorem_index_ag_aat.md</code> maps each
-                  canonical-text label of Parts I through X to its Lean
-                  declarations in <code>Formal/AG</code> with a status column.
-                  It is organized by the ten formalization tranches (Part I
-                  through Part X), one per part.
+                  <code>Formal/AG</code> contains the Lean declarations for
+                  Parts I through X. The source files are organized by the
+                  formalization tranches.
                 </li>
                 <li>
-                  <code>docs/aat/proof_obligations_ag_aat.md</code> is the
-                  per-part obligations ledger: residual boundaries, future
-                  proof obligations, explicit non-goals, and the current
-                  re-judgment of earlier acceptance criteria.
-                </li>
-                <li>
-                  <code>docs/aat/lean_ag_status_overlay.md</code> preserves
-                  row-level judgments that distinguish a Lean construction
-                  from theorem-grade completion evidence.
+                  GOAL cards, GitHub Issues, and PRs carry work status and
+                  unresolved tasks; they do not alter the mathematical text.
                 </li>
               </ul>
-              <h3>Completion-evidence exceptions</h3>
-              <p>
-                These rows override any reading that treats declaration existence
-                or a selected fixture as completion evidence for the bundled requirement.
-              </p>
-              <div style="overflow-x: auto;">
-                <table>
-                  <thead>
-                    <tr><th scope="col">Item</th><th scope="col">Current judgment</th><th scope="col">Completion reading</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr><td><code>I-4</code></td><td><code>packaged (assumption-relative)</code></td><td>Selected coverage and exactness slots do not complete the concrete three-reading requirement.</td></tr>
-                    <tr><td><code>II-2</code></td><td><code>unmet</code></td><td>The quotient finite-meet construction does not close the empty-theorem / over-promotion concern.</td></tr>
-                    <tr><td><code>IV-8</code></td><td><code>defined only</code> / <code>packaged (assumption-relative)</code></td><td>Type-valued and module-sheaf carriers do not establish unconditional additive or module soundness.</td></tr>
-                    <tr><td><code>V.R11</code></td><td><code>unmet</code></td><td>The selected repair fixture does not establish theorem-grade sound-step emission.</td></tr>
-                    <tr><td><code>VI-5</code></td><td><code>packaged (assumption-relative)</code></td><td>Gerbe and non-abelian soundness remain supplied-data relative; the abelian bridge is conditional.</td></tr>
-                    <tr><td><code>VII-1</code></td><td><code>unmet</code></td><td>The singleton / zero-cost synthesis fixture is not theorem-grade synthesis evidence.</td></tr>
-                    <tr><td><code>VII-3 / VII-4 / VII-6</code></td><td>partially promoted</td><td>Implemented invariance, adequacy, GLB, and length-one results do not prove the general length-n theorem.</td></tr>
-                    <tr><td><code>IX-3 legacy firing</code></td><td>not completion evidence</td><td>The PUnit inverse wrapper is excluded; the positive route is the nontrivial ZMod 2 product-incidence construction.</td></tr>
-                  </tbody>
-                </table>
-              </div>
               <p>
                 The whole <code>Formal/AG</code> tower builds with
-                <code>lake build</code>, and the ledgers record that the
-                declaration-level scan for <code>axiom</code>,
-                <code>admit</code>, <code>sorry</code>, and
-                <code>unsafe</code> over <code>Formal/AG</code> has no matches.
+                <code>lake build</code>. Declaration-level checks are run
+                against the Lean source itself.
               </p>
               <figure class="code-panel">
                 <figcaption>Audit path</figcaption>
                 <pre><code>concept page
   -&gt; status label
   -&gt; formal anchor
-  -&gt; AG Lean theorem index
+  -&gt; Lean source in Formal/AG
   -&gt; Lean source in Formal/AG</code></pre>
               </figure>
             </section>
@@ -177,8 +144,8 @@
               <p>
                 Each part of the monograph has a dedicated tranche in
                 <code>Formal/AG</code>. The anchors below are representative
-                proved rows of the AG Lean theorem index; the index itself
-                remains the complete listing.
+                proved rows from the AG Lean source; the source files remain
+                authoritative.
               </p>
 
               <h3>Part I &mdash; Atoms, Objects, and Laws</h3>
@@ -288,9 +255,7 @@
                 <code>AAT.AG.RepresentationAnalysis.RepresentationConservativityUnderAdequacy.representation_conservativity_under_adequacy</code>
                 (under adequacy and witness exactness, analytically-zero
                 classes are the zero class). An
-                <code>algebraicGeometricAATSynthesis</code> package exists, while
-                the completion-evidence overlay keeps VII-1 unmet and the
-                bundled Part VII requirement out of the completed set.
+                <code>algebraicGeometricAATSynthesis</code> package exists.
               </p>
 
               <h3>Part VIII &mdash; Measurement Theory</h3>
@@ -366,10 +331,9 @@
               </p>
               <p>
                 Empirical hypotheses &mdash; extraction quality, review
-                usefulness, operational prediction &mdash; are not rows of the
-                AG mathematical ledger. They live with the classical and
-                downstream ledgers and the tooling documentation, entered
-                through <code>docs/aat/proof_obligations.md</code>.
+                usefulness, operational prediction &mdash; are not part of the
+                AG mathematical source. They live in research GOALs, Issues,
+                and tooling documentation.
               </p>
             </section>
 
@@ -377,8 +341,7 @@
               <h2>Canonical sources</h2>
               <p>
                 The canonical text of the monograph is pinned to this edition.
-                The formal ledgers and status overlay resolve to their current
-                versions because they track the evolving formalization.
+                The Lean implementation is read from the current source tree.
               </p>
               <h3>Canonical text</h3>
               <ul>
@@ -417,18 +380,6 @@
                 </li>
                 <li>
                   <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/appendix.md" target="_blank" rel="noopener noreferrer">Appendix &mdash; Status ledger of the canonical text</a>
-                </li>
-              </ul>
-              <h3>Formal ledgers</h3>
-              <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index_ag_aat.md" target="_blank" rel="noopener noreferrer">AG Lean theorem index</a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/proof_obligations_ag_aat.md" target="_blank" rel="noopener noreferrer">AG proof obligations ledger</a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_ag_status_overlay.md" target="_blank" rel="noopener noreferrer">AG completion-evidence status overlay</a>
                 </li>
               </ul>
             </section>

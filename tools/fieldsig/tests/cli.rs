@@ -8268,7 +8268,7 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                         .expect("theoremPreconditionRefs is array")
                         .iter()
                         .any(|reference| {
-                            reference == "docs/lean_theorem_index.md#operation-role-schema"
+                            reference == "Formal/Arch/Operation/OperationInvariant.lean#preservesInvariant_of_discharged_preserve"
                         })
             })
     );
