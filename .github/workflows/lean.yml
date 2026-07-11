@@ -134,6 +134,16 @@ jobs:
             END { exit (meta == 1 && decl == 2 && bad == 0) ? 0 : 1 }
           ' .tmp/research-migration/smoke.audit.tsv
 
+      - name: Migration extractor legacy-source resolution smoke
+        if: steps.research-changes.outputs.run == 'true'
+        run: |
+          research/lean/emit_migration_audit.sh \
+            ResearchLean.AG.Smoke \
+            Formal/AG/Research/Basic.lean \
+            .tmp/research-migration/legacy-source.audit.tsv
+          grep -F $'\tFormal/AG/Research/Basic.lean\t' \
+            .tmp/research-migration/legacy-source.audit.tsv >/dev/null
+
       - name: Upload migration extractor smoke
         if: steps.research-changes.outputs.run == 'true'
         uses: actions/upload-artifact@v4
