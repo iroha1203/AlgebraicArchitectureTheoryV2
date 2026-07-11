@@ -4,7 +4,7 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 fixture="$repo_root/.github/lean_quality/fixtures/research_package_direction/root_imports_research.lean"
 
-if rg -n '^name = "ResearchLean"$|^path = "research-lean"$' "$repo_root/lakefile.toml" >/dev/null; then
+if grep -En '^name = "ResearchLean"$|^path = "research-lean"$' "$repo_root/lakefile.toml" >/dev/null; then
   echo "E_ROOT_REQUIRES_RESEARCH: root lakefile references the Research package" >&2
   exit 1
 fi
