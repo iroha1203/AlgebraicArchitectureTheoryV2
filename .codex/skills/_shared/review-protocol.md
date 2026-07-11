@@ -20,6 +20,11 @@
 - 利用可能な同時実行枠まで並行し、枠が空いたら残りを新しいsubagentで実行する。
   全laneの同時起動は要求しない。同時実行枠の不足だけをBlocked理由にしない。
 - subagentへ親の期待、想定finding、通したい判定、他laneの出力を渡さない。
+- subagentはtarget指定の有無を問わず`lake build`を実行しない。`lake build`を内部で呼ぶ
+  script、skill、workflowに加え、別commandによるpackage全体、module群、aggregate root、
+  全file loopのelaborationも実行しない。focused checkは親が明示した単一の非aggregate fileに限る。
+  必要な全体検証は統括エージェントがPR前に1回だけ実行し、その結果をSubagent入力の
+  「既に実行済みの検証結果」として渡す。
 - 必須laneが起動不能、未完了、または必要なcoverageを欠く場合、親が肩代わりして
   合格を作らず `Blocked / cannot determine` とする。
 - 1 laneでも中心 claim に関わるfindingを出した場合、親の裁量だけで棄却しない。

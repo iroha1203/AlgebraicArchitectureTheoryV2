@@ -176,9 +176,11 @@ no-go 風の説明は免罪符にしない。
 
 ### Lean build 運用(hard rule)
 
-- 通常作業とサブエージェント査読では、対象ファイルの
+- 通常作業とサブエージェント査読では、親が明示した単一の非aggregate fileに対する
   `lake env lean <target-file>` だけを実行する。
-- 複数サブエージェントによる並列 `lake build` は開発マシンへ大きな CPU・メモリ負荷をかけるため禁止する。
+- サブエージェントからの `lake build` はtarget指定の有無を問わず禁止する。
+  `lake build` を内部で呼ぶscript、skill、workflowに加え、別commandによるpackage全体、
+  module群、aggregate root、全file loopのelaborationも禁止する。
 - `lake build` は target 指定を含め、PR 前に統括エージェントが1回だけ実行する。
 - PR 作成後のフルビルドは CI に任せ、ローカルで繰り返さない。
 
