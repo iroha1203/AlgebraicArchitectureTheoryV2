@@ -30,6 +30,8 @@ namespace AAT.AG.AxiomAudit
 
 open CategoryTheory
 
+universe u
+
 /-
 Part X / peer-review hardening R1: Part X [CBI] theorem constants audited by direct alias.
 The aliases keep the original dependent theorem types intact while making the
@@ -843,14 +845,294 @@ theorem finiteSeedWitnessClosureUAdequate :
       FiniteModel.siteSeedWitnessClosureCover.toAATCoverageFamily :=
   FiniteModel.siteSeedWitnessClosureCover_uAdequate
 
-theorem finiteRestrictionQuotientFiniteMeetPoset :
-    ∃ site : Site.QuotientFiniteMeetPosetCategory
-        (Site.contextMorphismPreorderCategory FiniteModel.object),
-      site =
-        Site.quotientFiniteMeetPosetCategoryOf
-          (Site.contextMorphismPreorderCategory FiniteModel.object)
-          (Site.productContextFiniteMeet (A := FiniteModel.object)) :=
-  FiniteModel.siteRestrictionQuotientFiniteMeetPosetCategory_fromFiniteMeet
+/-- Kernel-audit entry for readable equivalence in the proposition 4.2 profile. -/
+theorem minimalContextProfileReadableEquivalenceIffEq
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W V : Site.MinimalContextProfile A Axis Observable) :
+    (W ≤ V ∧ V ≤ W) ↔ W = V :=
+  Site.MinimalContextProfile.readableEquivalence_iff_eq W V
+
+/-- Kernel-audit entry for the presentation-level finite meet. -/
+theorem rawMinimalContextProfileNormalizeInf
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W V : Site.MinimalContextProfile.RawMinimalContextProfile A Axis Observable) :
+    Site.MinimalContextProfile.RawMinimalContextProfile.normalize
+        (Site.MinimalContextProfile.RawMinimalContextProfile.inf W V) =
+      Site.MinimalContextProfile.RawMinimalContextProfile.normalize W ⊓
+        Site.MinimalContextProfile.RawMinimalContextProfile.normalize V :=
+  Site.MinimalContextProfile.RawMinimalContextProfile.normalize_inf W V
+
+/-- Kernel-audit entry for raw preorder-category hom thinness. -/
+theorem rawMinimalContextProfileHomSubsingleton
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W V : Site.MinimalContextProfile.RawMinimalContextProfile A Axis Observable) :
+    Subsingleton (W ⟶ V) :=
+  Site.MinimalContextProfile.RawMinimalContextProfile.hom_subsingleton W V
+
+/-- Kernel-audit packet for the raw binary meet and nullary meet laws. -/
+theorem rawMinimalContextProfileMeetTopApi
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (X W V : Site.MinimalContextProfile.RawMinimalContextProfile A Axis Observable) :
+    Site.MinimalContextProfile.RawMinimalContextProfile.inf W V ≤ W ∧
+      Site.MinimalContextProfile.RawMinimalContextProfile.inf W V ≤ V ∧
+      (X ≤ W -> X ≤ V ->
+        X ≤ Site.MinimalContextProfile.RawMinimalContextProfile.inf W V) ∧
+      Site.MinimalContextProfile.RawMinimalContextProfile.normalize
+          (Site.MinimalContextProfile.RawMinimalContextProfile.top :
+            Site.MinimalContextProfile.RawMinimalContextProfile A Axis Observable) = ⊤ ∧
+      W ≤ Site.MinimalContextProfile.RawMinimalContextProfile.top :=
+  ⟨Site.MinimalContextProfile.RawMinimalContextProfile.inf_le_left W V,
+    Site.MinimalContextProfile.RawMinimalContextProfile.inf_le_right W V,
+    fun hXW hXV => Site.MinimalContextProfile.RawMinimalContextProfile.le_inf hXW hXV,
+    Site.MinimalContextProfile.RawMinimalContextProfile.normalize_top,
+    Site.MinimalContextProfile.RawMinimalContextProfile.le_top W⟩
+
+/-- Kernel-audit entry for raw readability versus normalization equality. -/
+theorem rawMinimalContextProfileReadableEquivalentIffNormalizeEq
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W V : Site.MinimalContextProfile.RawMinimalContextProfile A Axis Observable) :
+    Site.MinimalContextProfile.RawMinimalContextProfile.readableSetoid W V ↔
+      Site.MinimalContextProfile.RawMinimalContextProfile.normalize W =
+        Site.MinimalContextProfile.RawMinimalContextProfile.normalize V :=
+  Site.MinimalContextProfile.RawMinimalContextProfile.readableEquivalent_iff_normalize_eq W V
+
+/-- Kernel-audit entry for canonical raw presentation normalization. -/
+theorem rawMinimalContextProfileNormalizeOfNormalized
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W : Site.MinimalContextProfile A Axis Observable) :
+    Site.MinimalContextProfile.RawMinimalContextProfile.normalize
+        (Site.MinimalContextProfile.RawMinimalContextProfile.ofNormalized W) = W :=
+  Site.MinimalContextProfile.RawMinimalContextProfile.normalize_ofNormalized W
+
+/-- Kernel-audit entry for the raw meet as categorical binary product. -/
+theorem rawMinimalContextProfileInfBinaryFanIsLimit
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W V : Site.MinimalContextProfile.RawMinimalContextProfile A Axis Observable) :
+    Nonempty (CategoryTheory.Limits.IsLimit
+      (Site.MinimalContextProfile.RawMinimalContextProfile.infBinaryFan W V)) :=
+  ⟨Site.MinimalContextProfile.RawMinimalContextProfile.infBinaryFanIsLimit W V⟩
+
+/-- Kernel-audit entry for finite limits before readable quotienting. -/
+theorem rawMinimalContextProfileHasFiniteLimits
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u} :
+    CategoryTheory.Limits.HasFiniteLimits
+      (Site.MinimalContextProfile.RawMinimalContextProfile A Axis Observable) :=
+  Site.MinimalContextProfile.RawMinimalContextProfile.hasFiniteLimits
+
+/-- Kernel-audit entry for the readable quotient normalization order isomorphism. -/
+theorem rawMinimalContextProfileQuotientOrderIso
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u} :
+    Nonempty
+      (Site.MinimalContextProfile.RawMinimalContextProfile.QuotientProfile
+          (A := A) (Axis := Axis) (Observable := Observable) ≃o
+        Site.MinimalContextProfile A Axis Observable) :=
+  ⟨Site.MinimalContextProfile.RawMinimalContextProfile.quotientOrderIso⟩
+
+/-- Kernel-audit entry for meet descent through the readable quotient. -/
+theorem rawMinimalContextProfileQuotientNormalizeInf
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W V : Site.MinimalContextProfile.RawMinimalContextProfile.QuotientProfile
+      (A := A) (Axis := Axis) (Observable := Observable)) :
+    Site.MinimalContextProfile.RawMinimalContextProfile.quotientNormalize
+        (Site.MinimalContextProfile.RawMinimalContextProfile.quotientInf W V) =
+      Site.MinimalContextProfile.RawMinimalContextProfile.quotientNormalize W ⊓
+        Site.MinimalContextProfile.RawMinimalContextProfile.quotientNormalize V :=
+  Site.MinimalContextProfile.RawMinimalContextProfile.quotientNormalize_inf W V
+
+/-- Kernel-audit entry for top preservation through quotient normalization. -/
+theorem rawMinimalContextProfileQuotientNormalizeTop
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u} :
+    Site.MinimalContextProfile.RawMinimalContextProfile.quotientNormalize
+        (Site.MinimalContextProfile.RawMinimalContextProfile.quotientTop :
+          Site.MinimalContextProfile.RawMinimalContextProfile.QuotientProfile
+            (A := A) (Axis := Axis) (Observable := Observable)) = ⊤ :=
+  Site.MinimalContextProfile.RawMinimalContextProfile.quotientNormalize_top
+
+/-- Kernel-audit entry for finite limits on the readable quotient. -/
+theorem rawMinimalContextProfileQuotientHasFiniteLimits
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u} :
+    CategoryTheory.Limits.HasFiniteLimits
+      (Site.MinimalContextProfile.RawMinimalContextProfile.QuotientProfile
+        (A := A) (Axis := Axis) (Observable := Observable)) :=
+  Site.MinimalContextProfile.RawMinimalContextProfile.quotient_hasFiniteLimits
+
+/-- Kernel-audit entry for actual selected hom thinness. -/
+theorem minimalContextProfileHomSubsingleton
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W V : Site.MinimalContextProfile A Axis Observable) :
+    Subsingleton (W ⟶ V) :=
+  Site.MinimalContextProfile.hom_subsingleton W V
+
+/-- Kernel-audit entry for function-valued selected readable hom thinness. -/
+theorem minimalContextProfileReadableContextHomSubsingleton
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W V : Site.MinimalContextProfile A Axis Observable) :
+    Subsingleton (Site.MinimalContextProfile.ReadableContextHom W V) :=
+  Site.MinimalContextProfile.readableContextHom_subsingleton W V
+
+/-- Kernel-audit entry for order recovery from an actual selected readable hom. -/
+theorem minimalContextProfileLeOfReadableContextHom
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    {W V : Site.MinimalContextProfile A Axis Observable}
+    (f : Site.MinimalContextProfile.ReadableContextHom W V) : W ≤ V :=
+  Site.MinimalContextProfile.leOfReadableContextHom f
+
+/-- Kernel-audit entry for finite limits of the proposition 4.2 profile. -/
+theorem minimalContextProfileHasFiniteLimits
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u} :
+    CategoryTheory.Limits.HasFiniteLimits
+      (Site.MinimalContextProfile A Axis Observable) :=
+  Site.MinimalContextProfile.hasFiniteLimits
+
+/-- Kernel-audit entry for categorical pullback as context meet. -/
+theorem minimalContextProfilePullbackEqInf
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    {base left right : Site.MinimalContextProfile A Axis Observable}
+    (hl : left ⟶ base) (hr : right ⟶ base) :
+    CategoryTheory.Limits.pullback hl hr = left ⊓ right :=
+  Site.MinimalContextProfile.pullback_eq_inf hl hr
+
+/-- Kernel-audit entry for the pullback square under the legacy comparison. -/
+theorem minimalContextProfilePullbackContextMorphismCommutes
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    {base left right : Site.MinimalContextProfile A Axis Observable}
+    (hl : left ⟶ base) (hr : right ⟶ base) :
+    Site.contextMorphismComp
+        (Site.MinimalContextProfile.homToContextMorphism
+          (CategoryTheory.Limits.pullback.fst hl hr))
+        (Site.MinimalContextProfile.homToContextMorphism hl) =
+      Site.contextMorphismComp
+        (Site.MinimalContextProfile.homToContextMorphism
+          (CategoryTheory.Limits.pullback.snd hl hr))
+        (Site.MinimalContextProfile.homToContextMorphism hr) :=
+  Site.MinimalContextProfile.pullback_contextMorphism_commutes hl hr
+
+/-- Kernel-audit entry for the legacy restriction comparison. -/
+theorem minimalContextProfileHomToContextMorphismIsRestriction
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    {W V : Site.MinimalContextProfile A Axis Observable} (f : W ⟶ V) :
+    (Site.MinimalContextProfile.homToContextMorphism f).IsRestriction :=
+  Site.MinimalContextProfile.homToContextMorphism_isRestriction f
+
+/-- Kernel-audit entry for identity compatibility of the legacy comparison. -/
+theorem minimalContextProfileHomToContextMorphismId
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W : Site.MinimalContextProfile A Axis Observable) :
+    Site.MinimalContextProfile.homToContextMorphism (𝟙 W) =
+      Site.identityContextMorphism W.toArchitectureContext :=
+  Site.MinimalContextProfile.homToContextMorphism_id W
+
+/-- Kernel-audit entry for composition compatibility of the legacy comparison. -/
+theorem minimalContextProfileHomToContextMorphismComp
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    {W V X : Site.MinimalContextProfile A Axis Observable}
+    (f : W ⟶ V) (g : V ⟶ X) :
+    Site.MinimalContextProfile.homToContextMorphism (f ≫ g) =
+      Site.contextMorphismComp
+        (Site.MinimalContextProfile.homToContextMorphism f)
+        (Site.MinimalContextProfile.homToContextMorphism g) :=
+  Site.MinimalContextProfile.homToContextMorphism_comp f g
+
+/-- Kernel-audit entry for meet representative independence. -/
+theorem minimalContextProfileInfRepresentativeIndependent
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    {W W' V V' : Site.MinimalContextProfile A Axis Observable}
+    (hW : W ≤ W' ∧ W' ≤ W) (hV : V ≤ V' ∧ V' ≤ V) :
+    W ⊓ V = W' ⊓ V' :=
+  Site.MinimalContextProfile.inf_eq_inf_of_mutual_readability hW hV
+
+/-- Kernel-audit packet for the no-unfold meet and top API equations. -/
+theorem minimalContextProfileApiEquations
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {Axis Observable : Type u}
+    (W V : Site.MinimalContextProfile A Axis Observable) :
+    (W ⊓ V).support = W.support ∩ V.support ∧
+      (W ⊓ V).axis = W.axis ∩ V.axis ∧
+      (W ⊓ V).observable = W.observable ∪ V.observable ∧
+      (⊤ : Site.MinimalContextProfile A Axis Observable).support =
+        { atom | A.configuration.family.mem atom } ∧
+      (⊤ : Site.MinimalContextProfile A Axis Observable).axis = Set.univ ∧
+      (⊤ : Site.MinimalContextProfile A Axis Observable).observable = ∅ :=
+  ⟨Site.MinimalContextProfile.inf_support W V,
+    Site.MinimalContextProfile.inf_axis W V,
+    Site.MinimalContextProfile.inf_observable W V,
+    Site.MinimalContextProfile.top_support,
+    Site.MinimalContextProfile.top_axis,
+    Site.MinimalContextProfile.top_observable⟩
+
+/-- Kernel-audit entry for the finite absent selected hom. -/
+theorem finiteComponentAProfileToBIsEmpty :
+    IsEmpty (FiniteModel.siteComponentAProfile ⟶ FiniteModel.siteComponentBProfile) :=
+  FiniteModel.siteComponentAProfile_to_siteComponentBProfile_isEmpty
+
+/-- Kernel-audit entry for the finite representative-independence firing. -/
+theorem finiteComponentProfilesMeetRepresentativeIndependent :
+    FiniteModel.siteComponentAProfile ⊓ FiniteModel.siteComponentBProfile =
+      FiniteModel.siteComponentAProfileCopy ⊓ FiniteModel.siteComponentBProfile :=
+  FiniteModel.siteComponentProfiles_meet_representative_independent
+
+/-- Kernel-audit entry for distinct raw representatives. -/
+theorem finiteComponentARawProfilesNe :
+    FiniteModel.siteComponentARawProfileOne ≠
+      FiniteModel.siteComponentARawProfileTwo :=
+  FiniteModel.siteComponentARawProfiles_ne
+
+/-- Kernel-audit entry for equality of distinct raw representatives after quotienting. -/
+theorem finiteComponentARawProfilesQuotientEq :
+    (Quotient.mk _ FiniteModel.siteComponentARawProfileOne :
+      Site.MinimalContextProfile.RawMinimalContextProfile.QuotientProfile) =
+    Quotient.mk _ FiniteModel.siteComponentARawProfileTwo :=
+  FiniteModel.siteComponentARawProfiles_quotient_eq
+
+/-- Kernel-audit entry for raw-representative-independent descended meet. -/
+theorem finiteComponentARawProfilesQuotientInfIndependent :
+    Site.MinimalContextProfile.RawMinimalContextProfile.quotientInf
+        (Quotient.mk _ FiniteModel.siteComponentARawProfileOne)
+        (Site.MinimalContextProfile.RawMinimalContextProfile.quotientOfNormalized
+          FiniteModel.siteComponentBProfile) =
+      Site.MinimalContextProfile.RawMinimalContextProfile.quotientInf
+        (Quotient.mk _ FiniteModel.siteComponentARawProfileTwo)
+        (Site.MinimalContextProfile.RawMinimalContextProfile.quotientOfNormalized
+          FiniteModel.siteComponentBProfile) :=
+  FiniteModel.siteComponentARawProfiles_quotientInf_independent
+
+/-- Kernel-audit entry for the nondegenerate finite proposition 4.2 firing. -/
+theorem finiteMinimalContextFiniteMeetNondegenerateFires :
+    FiniteModel.siteComponentARawProfileOne ≠
+        FiniteModel.siteComponentARawProfileTwo ∧
+      (Quotient.mk _ FiniteModel.siteComponentARawProfileOne :
+        Site.MinimalContextProfile.RawMinimalContextProfile.QuotientProfile) =
+        Quotient.mk _ FiniteModel.siteComponentARawProfileTwo ∧
+      Site.MinimalContextProfile.RawMinimalContextProfile.quotientInf
+          (Quotient.mk _ FiniteModel.siteComponentARawProfileOne)
+          (Site.MinimalContextProfile.RawMinimalContextProfile.quotientOfNormalized
+            FiniteModel.siteComponentBProfile) =
+        Site.MinimalContextProfile.RawMinimalContextProfile.quotientInf
+          (Quotient.mk _ FiniteModel.siteComponentARawProfileTwo)
+          (Site.MinimalContextProfile.RawMinimalContextProfile.quotientOfNormalized
+            FiniteModel.siteComponentBProfile) ∧
+      CategoryTheory.Limits.HasFiniteLimits
+        FiniteModel.SiteRawMinimalContextProfile ∧
+      FiniteModel.siteComponentAProfile ≠ FiniteModel.siteComponentBProfile ∧
+      FiniteModel.siteComponentAProfile ≠
+        FiniteModel.siteComponentAProfile ⊓ FiniteModel.siteComponentBProfile ∧
+      FiniteModel.siteComponentBProfile ≠
+        FiniteModel.siteComponentAProfile ⊓ FiniteModel.siteComponentBProfile ∧
+      CategoryTheory.Limits.pullback FiniteModel.siteComponentAProfileToTop
+          FiniteModel.siteComponentBProfileToTop =
+        FiniteModel.siteComponentAProfile ⊓ FiniteModel.siteComponentBProfile ∧
+      Subsingleton (FiniteModel.siteComponentAProfile ⟶
+        (⊤ : FiniteModel.SiteMinimalContextProfile)) ∧
+      Subsingleton (Site.MinimalContextProfile.ReadableContextHom
+        FiniteModel.siteComponentAProfile
+          (⊤ : FiniteModel.SiteMinimalContextProfile)) ∧
+      Nonempty (Site.MinimalContextProfile.ReadableContextHom
+        FiniteModel.siteComponentAProfile
+          (⊤ : FiniteModel.SiteMinimalContextProfile)) ∧
+      IsEmpty (Site.MinimalContextProfile.ReadableContextHom
+        FiniteModel.siteComponentAProfile FiniteModel.siteComponentBProfile) ∧
+      (Site.MinimalContextProfile.homToContextMorphism
+        FiniteModel.siteComponentAProfileToTop).IsRestriction :=
+  FiniteModel.siteMinimalContextFiniteMeet_nondegenerate_fires
 
 theorem finiteContextMorphismRolesConcrete :
     (FiniteModel.siteContextIdentityMorphism FiniteModel.siteContext).IsRestriction ∧

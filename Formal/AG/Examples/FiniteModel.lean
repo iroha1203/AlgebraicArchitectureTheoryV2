@@ -2,6 +2,7 @@ import Formal.AG.Atom.AATCore
 import Formal.AG.Atom.LawfulnessZero
 import Formal.AG.Atom.ThreeReading
 import Formal.AG.Site.FinitePoset
+import Formal.AG.Site.MinimalContextProfile
 import Formal.AG.Site.SheafCategory
 import Mathlib.Data.Fintype.Basic
 
@@ -573,6 +574,271 @@ theorem siteRestrictionQuotientFiniteMeetPosetCategory_fromFiniteMeet :
   Site.minimalContextQuotientFiniteMeetPosetCategory_fromFiniteMeet
     (Site.contextMorphismPreorderCategory object)
     (Site.productContextFiniteMeet (A := object))
+
+/-- Issue #3195: finite selected minimal-context profile type. -/
+abbrev SiteMinimalContextProfile :=
+  Site.MinimalContextProfile object FiniteAtom FiniteAtom
+
+/--
+Issue #3195: a nonempty finite profile reading component A, its axis, and the
+base contract observable.
+-/
+def siteComponentAProfile : SiteMinimalContextProfile where
+  support := {FiniteAtom.componentA}
+  support_le_object := fun {_atom} _h => trivial
+  axis := {FiniteAtom.componentA}
+  observable := {FiniteAtom.contractBase}
+
+/--
+Issue #3195: an independently declared representative of the component-A
+profile, used to fire representative independence.
+-/
+def siteComponentAProfileCopy : SiteMinimalContextProfile where
+  support := {FiniteAtom.componentA}
+  support_le_object := fun {_atom} _h => trivial
+  axis := {FiniteAtom.componentA}
+  observable := {FiniteAtom.contractBase}
+
+/--
+Issue #3195: a second nonempty finite profile reading component B, its axis,
+and the implementation-contract observable.
+-/
+def siteComponentBProfile : SiteMinimalContextProfile where
+  support := {FiniteAtom.componentB}
+  support_le_object := fun {_atom} _h => trivial
+  axis := {FiniteAtom.componentB}
+  observable := {FiniteAtom.contractImpl}
+
+/-- Issue #3195: presentation-level profile type before readable quotienting. -/
+abbrev SiteRawMinimalContextProfile :=
+  Site.MinimalContextProfile.RawMinimalContextProfile
+    object FiniteAtom FiniteAtom
+
+/-- Issue #3195: first nonempty presentation of the component-A readings. -/
+def siteComponentARawProfileOne : SiteRawMinimalContextProfile where
+  SupportIndex := PUnit
+  supportRead := fun _ => FiniteAtom.componentA
+  supportRead_objectFamily := fun _ => trivial
+  AxisIndex := PUnit
+  axisRead := fun _ => FiniteAtom.componentA
+  ObservableIndex := PUnit
+  observableRead := fun _ => FiniteAtom.contractBase
+
+/--
+Issue #3195: a genuinely different presentation with duplicate indices and the
+same extensional component-A readings.
+-/
+def siteComponentARawProfileTwo : SiteRawMinimalContextProfile where
+  SupportIndex := Bool
+  supportRead := fun _ => FiniteAtom.componentA
+  supportRead_objectFamily := fun _ => trivial
+  AxisIndex := Bool
+  axisRead := fun _ => FiniteAtom.componentA
+  ObservableIndex := Bool
+  observableRead := fun _ => FiniteAtom.contractBase
+
+/-- Issue #3195: raw presentation one normalizes to the component-A profile. -/
+theorem siteComponentARawProfileOne_normalize :
+    Site.MinimalContextProfile.RawMinimalContextProfile.normalize
+        siteComponentARawProfileOne = siteComponentAProfile := by
+  apply Site.MinimalContextProfile.ext <;> ext value <;>
+    simp [Site.MinimalContextProfile.RawMinimalContextProfile.normalize,
+      siteComponentARawProfileOne, siteComponentAProfile]
+
+/-- Issue #3195: raw presentation two normalizes to the same profile. -/
+theorem siteComponentARawProfileTwo_normalize :
+    Site.MinimalContextProfile.RawMinimalContextProfile.normalize
+        siteComponentARawProfileTwo = siteComponentAProfile := by
+  apply Site.MinimalContextProfile.ext <;> ext value <;>
+    simp [Site.MinimalContextProfile.RawMinimalContextProfile.normalize,
+      siteComponentARawProfileTwo, siteComponentAProfile]
+
+/-- Issue #3195: the two raw presentations are not equal before quotienting. -/
+theorem siteComponentARawProfiles_ne :
+    siteComponentARawProfileOne ≠ siteComponentARawProfileTwo := by
+  intro h
+  have hType : PUnit = Bool := congrArg
+    (fun W : SiteRawMinimalContextProfile => W.SupportIndex) h
+  have hCard := Fintype.card_congr (Equiv.cast hType)
+  simp at hCard
+
+/-- Issue #3195: the two raw presentations are mutually readable. -/
+theorem siteComponentARawProfiles_readableEquivalent :
+    Site.MinimalContextProfile.RawMinimalContextProfile.readableSetoid
+      siteComponentARawProfileOne siteComponentARawProfileTwo := by
+  apply (Site.MinimalContextProfile.RawMinimalContextProfile.readableEquivalent_iff_normalize_eq
+    _ _).mpr
+  rw [siteComponentARawProfileOne_normalize,
+    siteComponentARawProfileTwo_normalize]
+
+/-- Issue #3195: distinct raw presentations become equal in the quotient. -/
+theorem siteComponentARawProfiles_quotient_eq :
+    (Quotient.mk _ siteComponentARawProfileOne :
+      Site.MinimalContextProfile.RawMinimalContextProfile.QuotientProfile) =
+    Quotient.mk _ siteComponentARawProfileTwo :=
+  Quotient.sound siteComponentARawProfiles_readableEquivalent
+
+/--
+Issue #3195: descended meet is independent of the two distinct raw
+representatives.
+-/
+theorem siteComponentARawProfiles_quotientInf_independent :
+    Site.MinimalContextProfile.RawMinimalContextProfile.quotientInf
+        (Quotient.mk _ siteComponentARawProfileOne)
+        (Site.MinimalContextProfile.RawMinimalContextProfile.quotientOfNormalized
+          siteComponentBProfile) =
+      Site.MinimalContextProfile.RawMinimalContextProfile.quotientInf
+        (Quotient.mk _ siteComponentARawProfileTwo)
+        (Site.MinimalContextProfile.RawMinimalContextProfile.quotientOfNormalized
+          siteComponentBProfile) := by
+  rw [siteComponentARawProfiles_quotient_eq]
+
+/-- Issue #3195: the raw finite example lives in a finite-limit preorder category. -/
+theorem siteRawMinimalContext_hasFiniteLimits :
+    Limits.HasFiniteLimits SiteRawMinimalContextProfile :=
+  Site.MinimalContextProfile.RawMinimalContextProfile.hasFiniteLimits
+
+/-- Issue #3195: component A is not readable below component B. -/
+theorem siteComponentAProfile_not_le_siteComponentBProfile :
+    ¬ siteComponentAProfile ≤ siteComponentBProfile := by
+  intro h
+  have hmem : FiniteAtom.componentA ∈ siteComponentBProfile.support :=
+    h.1 (by simp [siteComponentAProfile])
+  simp [siteComponentBProfile] at hmem
+
+/-- Issue #3195: component B is not readable below component A. -/
+theorem siteComponentBProfile_not_le_siteComponentAProfile :
+    ¬ siteComponentBProfile ≤ siteComponentAProfile := by
+  intro h
+  have hmem : FiniteAtom.componentB ∈ siteComponentAProfile.support :=
+    h.1 (by simp [siteComponentBProfile])
+  simp [siteComponentAProfile] at hmem
+
+/-- Issue #3195: the two finite profiles are distinct quotient-normal forms. -/
+theorem siteComponentAProfile_ne_siteComponentBProfile :
+    siteComponentAProfile ≠ siteComponentBProfile := by
+  intro h
+  apply siteComponentAProfile_not_le_siteComponentBProfile
+  rw [h]
+
+/-- Issue #3195: the independently declared A profiles are mutually readable. -/
+theorem siteComponentAProfiles_mutuallyReadable :
+    siteComponentAProfile ≤ siteComponentAProfileCopy ∧
+      siteComponentAProfileCopy ≤ siteComponentAProfile := by
+  constructor <;> simp [siteComponentAProfile, siteComponentAProfileCopy]
+
+/-- Issue #3195: no selected hom exists from the A profile to the B profile. -/
+theorem siteComponentAProfile_to_siteComponentBProfile_isEmpty :
+    IsEmpty (siteComponentAProfile ⟶ siteComponentBProfile) :=
+  ⟨fun f => siteComponentAProfile_not_le_siteComponentBProfile f.le⟩
+
+/-- Issue #3195: the actual selected A-to-top context-morphism subtype is inhabited. -/
+theorem siteComponentAProfile_to_top_readableContextHom_nonempty :
+    Nonempty (Site.MinimalContextProfile.ReadableContextHom
+      siteComponentAProfile (⊤ : SiteMinimalContextProfile)) :=
+  ⟨Site.MinimalContextProfile.readableContextHomOfLE le_top⟩
+
+/-- Issue #3195: the actual selected A-to-B context-morphism subtype is empty. -/
+theorem siteComponentAProfile_to_B_readableContextHom_isEmpty :
+    IsEmpty (Site.MinimalContextProfile.ReadableContextHom
+      siteComponentAProfile siteComponentBProfile) :=
+  ⟨fun f => siteComponentAProfile_not_le_siteComponentBProfile
+    (Site.MinimalContextProfile.leOfReadableContextHom f)⟩
+
+/-- Issue #3195: the meet is distinct from component A. -/
+theorem siteComponentAProfile_ne_meet :
+    siteComponentAProfile ≠ siteComponentAProfile ⊓ siteComponentBProfile := by
+  intro h
+  apply siteComponentAProfile_not_le_siteComponentBProfile
+  have hMeet := inf_le_right (a := siteComponentAProfile) (b := siteComponentBProfile)
+  rwa [← h] at hMeet
+
+/-- Issue #3195: the meet is distinct from component B. -/
+theorem siteComponentBProfile_ne_meet :
+    siteComponentBProfile ≠ siteComponentAProfile ⊓ siteComponentBProfile := by
+  intro h
+  apply siteComponentBProfile_not_le_siteComponentAProfile
+  have hMeet := inf_le_left (a := siteComponentAProfile) (b := siteComponentBProfile)
+  rwa [← h] at hMeet
+
+/-- Issue #3195: selected cospan leg from component A to the terminal profile. -/
+def siteComponentAProfileToTop : siteComponentAProfile ⟶ (⊤ : SiteMinimalContextProfile) :=
+  homOfLE le_top
+
+/-- Issue #3195: selected cospan leg from component B to the terminal profile. -/
+def siteComponentBProfileToTop : siteComponentBProfile ⟶ (⊤ : SiteMinimalContextProfile) :=
+  homOfLE le_top
+
+/--
+Issue #3195: the nontrivial finite cospan has the componentwise meet as its
+categorical pullback.
+-/
+theorem siteComponentProfiles_pullback_eq_meet :
+    Limits.pullback siteComponentAProfileToTop siteComponentBProfileToTop =
+      siteComponentAProfile ⊓ siteComponentBProfile :=
+  Site.MinimalContextProfile.pullback_eq_inf
+    siteComponentAProfileToTop siteComponentBProfileToTop
+
+/-- Issue #3195: the selected A cospan leg is an actual legacy restriction. -/
+theorem siteComponentAProfileToTop_isRestriction :
+    (Site.MinimalContextProfile.homToContextMorphism
+      siteComponentAProfileToTop).IsRestriction :=
+  Site.MinimalContextProfile.homToContextMorphism_isRestriction
+    siteComponentAProfileToTop
+
+/-- Issue #3195: meet is independent of the selected A representative. -/
+theorem siteComponentProfiles_meet_representative_independent :
+    siteComponentAProfile ⊓ siteComponentBProfile =
+      siteComponentAProfileCopy ⊓ siteComponentBProfile :=
+  Site.MinimalContextProfile.inf_eq_inf_of_mutual_readability
+    siteComponentAProfiles_mutuallyReadable ⟨le_rfl, le_rfl⟩
+
+/--
+Issue #3195: nondegenerate proposition 4.2 firing combines distinct profiles,
+a third meet object, categorical pullback, actual hom thinness, and legacy
+restriction comparison.
+-/
+theorem siteMinimalContextFiniteMeet_nondegenerate_fires :
+    siteComponentARawProfileOne ≠ siteComponentARawProfileTwo ∧
+      (Quotient.mk _ siteComponentARawProfileOne :
+        Site.MinimalContextProfile.RawMinimalContextProfile.QuotientProfile) =
+        Quotient.mk _ siteComponentARawProfileTwo ∧
+      Site.MinimalContextProfile.RawMinimalContextProfile.quotientInf
+          (Quotient.mk _ siteComponentARawProfileOne)
+          (Site.MinimalContextProfile.RawMinimalContextProfile.quotientOfNormalized
+            siteComponentBProfile) =
+        Site.MinimalContextProfile.RawMinimalContextProfile.quotientInf
+          (Quotient.mk _ siteComponentARawProfileTwo)
+          (Site.MinimalContextProfile.RawMinimalContextProfile.quotientOfNormalized
+            siteComponentBProfile) ∧
+      Limits.HasFiniteLimits SiteRawMinimalContextProfile ∧
+      siteComponentAProfile ≠ siteComponentBProfile ∧
+      siteComponentAProfile ≠ siteComponentAProfile ⊓ siteComponentBProfile ∧
+      siteComponentBProfile ≠ siteComponentAProfile ⊓ siteComponentBProfile ∧
+      Limits.pullback siteComponentAProfileToTop siteComponentBProfileToTop =
+        siteComponentAProfile ⊓ siteComponentBProfile ∧
+      Subsingleton (siteComponentAProfile ⟶ (⊤ : SiteMinimalContextProfile)) ∧
+      Subsingleton (Site.MinimalContextProfile.ReadableContextHom
+        siteComponentAProfile (⊤ : SiteMinimalContextProfile)) ∧
+      Nonempty (Site.MinimalContextProfile.ReadableContextHom
+        siteComponentAProfile (⊤ : SiteMinimalContextProfile)) ∧
+      IsEmpty (Site.MinimalContextProfile.ReadableContextHom
+        siteComponentAProfile siteComponentBProfile) ∧
+      (Site.MinimalContextProfile.homToContextMorphism
+        siteComponentAProfileToTop).IsRestriction :=
+  ⟨siteComponentARawProfiles_ne,
+    siteComponentARawProfiles_quotient_eq,
+    siteComponentARawProfiles_quotientInf_independent,
+    siteRawMinimalContext_hasFiniteLimits,
+    siteComponentAProfile_ne_siteComponentBProfile,
+    siteComponentAProfile_ne_meet,
+    siteComponentBProfile_ne_meet,
+    siteComponentProfiles_pullback_eq_meet,
+    Site.MinimalContextProfile.hom_subsingleton _ _,
+    Site.MinimalContextProfile.readableContextHom_subsingleton _ _,
+    siteComponentAProfile_to_top_readableContextHom_nonempty,
+    siteComponentAProfile_to_B_readableContextHom_isEmpty,
+    siteComponentAProfileToTop_isRestriction⟩
 
 /-- R11 / II.AC16: explicit pullback / overlap package for the equality context preorder. -/
 def siteOverlap : Site.ContextOverlapPullback siteContextPreorder where
