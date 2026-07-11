@@ -17,9 +17,13 @@ run_check() {
 
 run_check "$fixture/manifest.tsv" "$fixture/old.audit.tsv" "$fixture/new.audit.tsv" R3
 test -s "$tmp/out/declarations.jsonl"
-jq -e '.schema == "aat-research-migration/v1" and .moduleCount == 1 and .declarationCount == 2' "$tmp/out/metadata.json" >/dev/null
-jq -s -e 'map(.migration_record) | sort == ["R3/Smoke.lean#Shared.Inner.witness", "R3/Smoke.lean#Smoke.witness"]' "$tmp/out/declarations.jsonl" >/dev/null
+jq -e '.schema == "aat-research-migration/v1" and .moduleCount == 1 and .declarationCount == 4' "$tmp/out/metadata.json" >/dev/null
+jq -s -e 'map(.migration_record) | sort == ["R3/Smoke.lean#Shared.Inner.witness", "R3/Smoke.lean#Smoke.witness", "R3/Smoke.lean#commit!", "R3/Smoke.lean#firstFailingSlot?"]' "$tmp/out/declarations.jsonl" >/dev/null
 "$record_checker" "$tmp/out/declarations.jsonl"
+printf '%s\n' $'research_decl\tmigration_record' \
+  $'ResearchLean.AG.Smoke.firstFailingSlot?\tR3/Smoke.lean#firstFailingSlot?' \
+  $'ResearchLean.AG.Smoke.commit!\tR3/Smoke.lean#commit!' >"$tmp/symbol-promotion.tsv"
+"$join_checker" "$tmp/symbol-promotion.tsv" "$tmp/out/declarations.jsonl"
 
 mkdir -p "$tmp/promotion-out"
 AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$promotion_fixture" \

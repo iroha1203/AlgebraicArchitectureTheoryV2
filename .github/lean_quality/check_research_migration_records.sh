@@ -12,7 +12,7 @@ import sys
 keys = set()
 count = 0
 old_prefix = "Formal.AG." + "Research"
-pattern = re.compile(r"R[34]/[A-Za-z0-9_./'-]+\.lean#[A-Za-z0-9_.$']+")
+pattern = re.compile(r"R[34]/[A-Za-z0-9_./'-]+\.lean#[A-Za-z0-9_.$'?!]+")
 for filename in sys.argv[1:]:
     for number, raw in enumerate(pathlib.Path(filename).read_text().splitlines(), 1):
         try:

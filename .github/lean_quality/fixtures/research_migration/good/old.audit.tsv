@@ -1,3 +1,5 @@
 MIGRATION_META	TEST_BASE	FixtureOld.AG.Smoke	old/Smoke.lean	TEST_DIGEST
 MIGRATION_DECL	$RESEARCH.Smoke	$RESEARCH.Smoke.witness		type:nat	value:1	$NO_AXIOMS
 MIGRATION_DECL	$RESEARCH.Smoke	$RESEARCH.Shared.Inner.witness		type:nat	value:2	$NO_AXIOMS
+MIGRATION_DECL	$RESEARCH.Smoke	$RESEARCH.Smoke.firstFailingSlot?		type:nat	value:3	$NO_AXIOMS
+MIGRATION_DECL	$RESEARCH.Smoke	$RESEARCH.Smoke.commit!		type:nat	value:4	$NO_AXIOMS

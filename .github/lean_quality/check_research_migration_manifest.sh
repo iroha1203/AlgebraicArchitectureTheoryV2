@@ -162,7 +162,7 @@ for old_source, new_source, old_module, new_module in rows:
         suffix = name[len(research_root):] if name.startswith(research_root) else name
         declaration_name = suffix if leaf_counts[leaf] > 1 else leaf
         key = f"{batch}/{relative}#{declaration_name}"
-        if ("Formal.AG." + "Research") in key or "ResearchLean.AG" in key or "$RESEARCH" in key or not re.fullmatch(r"R[34]/[A-Za-z0-9_./'-]+\.lean#[A-Za-z0-9_.$']+", key):
+        if ("Formal.AG." + "Research") in key or "ResearchLean.AG" in key or "$RESEARCH" in key or not re.fullmatch(r"R[34]/[A-Za-z0-9_./'-]+\.lean#[A-Za-z0-9_.$'?!]+", key):
             print(f"E_MIGRATION_RECORD_FORMAT: {key}", file=sys.stderr); raise SystemExit(1)
         if key in keys:
             print(f"E_MIGRATION_RECORD_DUPLICATE: {key}", file=sys.stderr); raise SystemExit(1)
