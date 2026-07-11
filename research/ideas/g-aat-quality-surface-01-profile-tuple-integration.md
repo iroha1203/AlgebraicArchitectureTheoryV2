@@ -34,7 +34,7 @@ trace-missing locus を含む tuple reading が repair frontier に faithful に
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-01`。
+- `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`。
 - cycle 5 の `StateSeparation.QualityCertificate`。
 - cycle 6 の `TraceLocus.TraceLocusCertificate`。
 - cycle 8 の `ReadingAdequacy.Reading` と exact trace-repair faithfulness。

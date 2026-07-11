@@ -197,7 +197,7 @@ silent rename は台帳との対応を切り、監査を空振りさせる repac
   (`research/ideas/TEMPLATE.md`)に固定する。G2審判はこの固定statementを
   審査対象とし、G3は実装との一致を合格条件とする。G3後は同じ候補カードの
   statementとmaterial premiseを実績へ同期する。
-- **target-theorem-loop**: GOAL カード(`research/GOALS.md`)の
+- **target-theorem-loop**: GOAL カード(`research/goals/<goal-id>.md`)の
   target statement が固定であり、現行手続きのまま(この基準は
   語彙参照のみ追加)。
 

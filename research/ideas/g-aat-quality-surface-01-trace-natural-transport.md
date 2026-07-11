@@ -34,7 +34,7 @@ profile transport が保つべき certificate geometry の成分である。
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-01`
+- `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
 - `docs/note/aat_quality_surface.md` の source reference claim boundary と trace locus
 - cycle 1 の `Formal/AG/Research/QualitySurface/SupportHitting.lean`
 - cycle 3 の `Formal/AG/Research/QualitySurface/ProfileCurvature.lean`

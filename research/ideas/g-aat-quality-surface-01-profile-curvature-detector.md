@@ -39,7 +39,7 @@ path coherence を満たさず、profile-curvature cell である。
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-01`
+- `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
 - `docs/note/aat_quality_surface.md` の profile curvature、finite profile grid、regular cell / curvature cell
 - cycle 1 の `Formal/AG/Research/QualitySurface/SupportHitting.lean`
 - cycle 2 の `Formal/AG/Research/QualitySurface/ScalarCollapse.lean`

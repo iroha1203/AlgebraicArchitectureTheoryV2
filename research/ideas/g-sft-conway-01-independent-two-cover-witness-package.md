@@ -57,7 +57,7 @@ ownership index を communication index から導く退化 construction では o
 
 ## 依拠
 
-- `research/GOALS.md` の `G-sft-conway-01`
+- `research/goals/G-sft-conway-01.md` の `G-sft-conway-01`
 - `docs/sft/software_field_theory.md` 第V部予告
 - `docs/note/sft_development_spacetime_dynamics_skeleton.md` 第V部 Conway 対応
 

@@ -3,7 +3,7 @@
 This report tracks proof-obligation evidence for the target theorem
 `True Sheaf H^1 Semantic Repair-Gluing Theorem`.
 
-Static theorem statement and completion criteria live in `research/GOALS.md`.
+Static theorem statement and completion criteria live in `research/goals/G-aat-quality-surface-05.md`.
 Runtime state lives in GitHub tracking Issue #2631. This report records Lean
 artifacts and proof-obligation deltas only.
 
@@ -14,7 +14,7 @@ artifacts and proof-obligation deltas only.
   superseded by a strict discharge re-audit that found undischarged material
   premises.
 - tracking Issue: #2631
-- protected boundary: this report does not change `research/GOALS.md`, math
+- protected boundary: this report does not change `research/goals/G-aat-quality-surface-05.md`, math
   source docs, or the target theorem statement.
 
 Latest strict discharge review:
@@ -656,7 +656,7 @@ Anti-weakening audit:
 - No final declaration claims ArchMap correctness, runtime extraction
   completeness, repair synthesis completeness, arbitrary site-morphism
   functoriality, or unbounded sheaf / stack completeness.
-- The report and tracking Issue remain the runtime ledger; `research/GOALS.md`
+- The report and tracking Issue remain the runtime ledger; `research/goals/G-aat-quality-surface-05.md`
   was not edited.
 
 Tracking refs:
@@ -675,7 +675,7 @@ target cycle result: target-proof-checkpoint
 Claim mapping:
 
 - GOAL theorem: `True Sheaf H^1 Semantic Repair-Gluing Theorem` in
-  `research/GOALS.md`.
+  `research/goals/G-aat-quality-surface-05.md`.
 - Primary Lean equivalence:
   `SemanticRepairTrueSheafH1.trueSheafH1_semanticRepairGluing_iff`.
 - Primary Lean package:
@@ -1310,7 +1310,7 @@ Findings:
 
 - mathematics A/B both found that the current Lean surface still does not prove
   the target-strength `[r_A] ∈ H^1(U, R_A) = Z^1/B^1` quotient claim from
-  `research/GOALS.md`.
+  `research/goals/G-aat-quality-surface-05.md`.
 - Cycle 14 honestly discharges current-boundary-generated relation provenance,
   but `CechH1BoundarySameClass` is still a zero-class detector:
   `left = right \/ CechB1 left /\ CechB1 right`.
@@ -1789,7 +1789,7 @@ result type: goal-completed
 
 Completion sync:
 
-- `research/GOALS.md`: moved `G-aat-quality-surface-05` from `active` to
+- `research/goals/G-aat-quality-surface-05.md`: moved `G-aat-quality-surface-05` from `active` to
   `completed`.
 - tracking Issue `#2631`: closed after the final
   `target-theorem-proved` ledger and PR / CI synchronization.

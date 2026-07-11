@@ -4,7 +4,7 @@
 
 ```text
 Use the target-theorem-loop criteria to choose exactly one proof obligation for GOAL <goal-id>.
-Inputs: research/GOALS.md target theorem section, T0 state memo, tracking Issue proof state summary, report summary, material premise ledger, premise discharge policy, anti-weakening rule, proof DAG / proof obligation list, relevant Lean files named by the GOAL.
+Inputs: research/goals/<goal-id>.md target theorem section, T0 state memo, tracking Issue proof state summary, report summary, material premise ledger, premise discharge policy, anti-weakening rule, proof DAG / proof obligation list, relevant Lean files named by the GOAL.
 Do not edit files. Do not generate a candidate pool. Do not weaken the target theorem to make an easy success.
 Choose the obligation that most directly reduces proof distance to the target theorem.
 Prioritize discharge-required premises whose current evidence is only an explicit certificate argument, structure field, opaque class membership, selected comparison data, or unused theorem premise.

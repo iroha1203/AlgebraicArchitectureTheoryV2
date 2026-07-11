@@ -1,0 +1,21 @@
+# G-sft-ensemble-01 — 力のアンサンブルと開発の統計力学
+
+- `id`: `G-sft-ensemble-01`
+- `status`: `draft`
+- `research mode`: `score-phase`
+- `predecessor`: SFT v2 第VI部の内生コスト吸収域(定理 40.2)と第IV部の delegator 相関(定義 30.1)を単一方針・単一源の先行結果として読む。この GOAL は第VIII部(開発の統計力学)の前提模型群を立ち上げる。
+- `source note`: [SFT v2 本文 第VIII部予告・§30・§40・付録 B(H4)](../../docs/sft/software_field_theory.md)、[骨格ノート §5 第VIII部・§10 台帳](../../docs/note/sft_development_spacetime_dynamics_skeleton.md)
+- `research aim`: delegator 相関つきの力の生成核(アンサンブル)を定義し、SFT 第VIII部の中心命題群を Model theorem 規律(D6: 両相非空)で立ち上げる: (a) アーキテクチャエントロピー(measurement packet 繊維計数)の比較可能性条件つき定義、(b) 第二法則の実体としての計数補題(低質量配置の指数的希少性)、(c) regime 境界の族化(誘導連鎖の再帰 / 推移境界と、系サイズ n → ∞ の sharp threshold)、(d) 台の重なり分布と review 帯域から throughput 上界(USL 型)を**導出**する定理、(e) diversity premium(混成 delegator 群の優位; SFT 台帳 H4 の模型内対応物)。
+- `core tension`: 有限決定系でエントロピーは平気で減少する — 単調性の機構(確率的混合・粗視化・計数)をどの最小模型で明示すれば第二法則が定理になり、どの模型では偽のままか(D6 の両相)。相関 ρ の site 論的定義(共通 delegator 経由の分解)から、hotspot 重なり確率の下界を導けるか、それとも相関の型がもっと要るか。「相転移」を名乗れるのは n → ∞ の族の sharp threshold だけである(SFT 付録 C)— 有限 regime 境界との区別を保てるか。
+- `rival`: DORA 系メトリクス・開発生産性研究、キュー理論的 delivery 分析、モンテカルロ的シミュレーション、AI による組織スループット予測。これらは測定・当てはめ・予測を返すが、幾何的不変量(質量・衝突類)に接続された模型定理と反証条件を返さない。
+- `novelty hypothesis`: Lehman の進化法則群は経験則として 50 年立っているが、その数学的実体(何を仮定した模型でどれが定理になるか)は薄い。SFT v2 は質量・衝突類・相関の担い手を既に定義済みであり、統計力学の言葉を比喩でなく計数と drift の定理として置ける。
+- `research lift`: 生産性・負債の議論を「観測と相関」から「宣言された模型の内部での計数補題・regime 境界・上界の導出 + 台帳の反証条件」へ移す。
+- `claim boundary`: 宣言された有限または可算の確率模型、delegator 構造つき生成核、選ばれた粗視化(packet)、選ばれた質量・衝突読みに相対化する。現実の組織の生産性の断定、Lehman の法則の経験的成立(それは SFT 台帳 H5 の仮説)、AI モデルの能力比較は主張しない。SFT の Model theorem 規律(D6)と反証規律(D7)を継承する。
+- `capability categories`: force-ensemble、delegator-correlation、architecture-entropy、entropy-comparability、second-law-counting、regime-boundary-family、sharp-threshold、throughput-derivation、diversity-premium、model-nontriviality、finite-witness。
+- `threshold policy`: tracking Issue の threshold state で管理(`$research-loop G-sft-ensemble-01 threshold <N>`)。threshold は、相関つき生成核・エントロピー定義・計数補題・regime 族・throughput 導出のうち複数が連動する水準に置く。
+- `portfolio constraint`: 4 カテゴリ以上で正の SCORE。少なくとも 1 件は `proved-in-research`(有限模型の計数補題または drift 定理の Lean 化)、少なくとも 1 件は D6 の両相非空を明示する相境界、少なくとも 1 件はエントロピーの比較可能性条件(fiber が動く場合の固定サイズ族・固定測度・輸送写像のいずれか)、少なくとも 1 件は相関 ρ から衝突確率への下界(または不可能性)、を含むこと。最終 SCORE の 50% 以上をシミュレーション報告・パラメータ当てはめで占めてはならない。
+- `phase boundary criteria`: `research/reports/G-sft-ensemble-01.md` が読めること。相関つき生成核の定義、エントロピーの主候補と比較可能性条件、計数補題(有限クラスでの証明と、単調性が破れる相)、regime 境界の族化と sharp threshold の区別、throughput 上界の導出(仮定の明示)、diversity premium の模型内定理(または反例境界)、SFT 第VIII部の本文化(§47–50)に足りる statement 集合が揃っていること。
+- `reward rubric`: `0`: メトリクスの言い換え、シミュレーション観察の報告、「並列は難しい」の再記述。`10-20`: 模型 record・記法。`30-40`: 生成核・エントロピー・regime の定義と片側の例。`50-70`: 計数補題の有限証明、相関→重なり確率の下界、有限 regime 境界の族化。`80-100`: 第二法則の模型定理(単調機構明示 + 両相非空)、sharp threshold、throughput 導出、diversity premium のいずれか複数を theorem package として固定。penalty は、`-30`: 模型に結論を書き込んで定理と呼ぶ(D6 違反)、`-40`: 有限系の閾値を相転移と呼ぶ、`-40`: エントロピーの比較可能性条件なしの時間比較、`-40`: 相関を分布の仮定だけで置き site 論的担い手に接続しない、`-50`: 現実の組織生産性への越境。
+- `dullness filter`: シミュレーションの数値報告だけの候補、既存キュー理論の定理の言い換え、パラメータを増やして当てはめただけの模型、定理 40.2 の再掲、粗視化を宣言しないエントロピー、を弾く。
+- `frontier`: 相関の型(delegator 木の深さ・共有プロンプトの部分共有)、混合時間と review 帯域、注入過程の非定常化、質量と衝突類の結合模型(第III部接続)、実効分離容量(レビューのラバースタンプ; 第IV部)を組み込んだ相図、Foster–Lyapunov 族の一般化、SFT 台帳 H1–H5 との対応表。
+- `spine`: 相関つき生成核 record → packet 繊維計数エントロピーと比較可能性条件 → 計数補題の有限クラス証明(単調性が破れる相と対で)→ regime 境界の族化と n → ∞ sharp threshold → 台重なり → 衝突確率 → throughput 上界の導出 → diversity premium(D6 両相)→ SFT 第VIII部 statement 集合。

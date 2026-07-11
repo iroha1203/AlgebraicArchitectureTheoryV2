@@ -1,0 +1,21 @@
+# G-sft-law-transport-01 — law universe 輸送と動く lawful locus
+
+- `id`: `G-sft-law-transport-01`
+- `status`: `draft`
+- `research mode`: `score-phase`
+- `predecessor`: SFT v2 の U 定数 regime(P1–P3)を第一段として読む。この GOAL はその凍結を解くための前提数学であり、SFT 第VI部の目標移動(T0 の v の目標項)・第X部の終焉判定の目標方向項・第I部の U-transport データを activate する。
+- `source note`: [SFT v2 本文 §8.1・§36・§57](../../docs/sft/software_field_theory.md)、[骨格ノート §10 台帳「law universe 輸送」](../../docs/note/sft_development_spacetime_dynamics_skeleton.md)
+- `research aim`: トレース辺ごとの selected law 対応(U-transport)を定義し、動く lawful locus を「同じ目標の運動」と読むための輸送の数学を立ち上げる。輸送された obstruction / ギャップ値の比較補題(ギャップ輸送補題)を、AAT 第V部 §8(repair comparison profile)・§10(transferred obstruction、定理10.5/10.6)の同一 site 版先行機械と、AAT 第VIII部 定義6.1(Witness Perturbation Distance)・定理候補6.5(Monotone Witness Stability)を anchor に構成する。目標編集の力(spec capitulation; SFT 定義 11.3 の一類)を輸送の言葉で型付ける。
+- `core tension`: 異なる fiber 上の異なる law universe の lawful loci を同一視する輸送は、何を保存し何を保存しないか(AAT 原則2.2「Law Universes Are Distinct Readings」を破らずに「動く目標」を語れるか)。輸送でギャップ値はどれだけ動くか(摂動上界)。U 変化(要求)と A 変化(コード)の二重の運動は可換か、交換子は何に住むか。目標を点の方へ動かしてギャップを消す目標編集を、修復と区別する不変量は何か。
+- `rival`: requirements traceability ツール、spec 差分・影響分析、AI による要求-実装整合チェック。これらは差分と指摘を返すが、輸送されたギャップの上界・保存則、目標移動下の追跡可能性の前提補題を定理として返さない。
+- `novelty hypothesis`: 「要求が変わる」を、law universe の path とその輸送として扱い、追跡力学(T0)の v 項に数学的実現子を与える枠組みは薄い。AAT は同一 site 上の law 比較機械を既に持つため、時間方向への拡張は自然な次の一歩である。
+- `research lift`: 要求変更の影響を「差分の列挙」から「輸送されたギャップの上界と、追跡可能性条件(r vs v)の入力」へ移す。
+- `claim boundary`: 有限トレース、辺ごとの selected law 対応、選ばれた距離・質量読み(AAT 第VII部 §8–12・第VIII部)、U 定数 regime との比較に相対化する。要求の意味論的正しさ・価値(SFT 序 §5 の非主張)、要求抽出の完全性は主張しない。
+- `capability categories`: law-transport、moving-lawful-locus、gap-transport-bound、transferred-obstruction、pursuit-activation、target-edit-typing、commutation-of-motions、finite-witness、computability。
+- `threshold policy`: tracking Issue の threshold state で管理(`$research-loop G-sft-law-transport-01 threshold <N>`)。threshold は、U-transport record・ギャップ輸送上界・U 可変 T0 の前提補題・目標編集の型付けが連動する水準に置く。
+- `portfolio constraint`: 4 カテゴリ以上で正の SCORE。少なくとも 1 件は `proved-in-research`(輸送の有限 witness)、少なくとも 1 件はギャップ輸送の上界または反例(輸送で任意に壊れる例)、少なくとも 1 件は目標編集と修復を分離する不変量、少なくとも 1 件は U 定数 regime への退化(transport 恒等で SFT P1–P3 の定理群が回収される)を含むこと。
+- `phase boundary criteria`: `research/reports/G-sft-law-transport-01.md` が読めること。U-transport の基礎語彙、ギャップ輸送補題(上界と、上界が破れる反例境界)、U 可変 regime の T0 の前提(v の目標項の実現子)、目標編集の型付け、U 定数への退化定理、SFT 第I・VI・X部の改訂に足りる statement 集合が揃っていること。
+- `reward rubric`: `0`: spec 差分ツールの言い換え、「要求は変わる」の再記述。`10-20`: 記法・record 整備。`30-40`: 辺上 law 対応の定義、輸送された locus の基礎補題、片側の例。`50-70`: ギャップ輸送上界(AAT VIII 6.1/6.5 anchor)、二重運動の交換子の定式化、目標編集の不変量。`80-100`: 輸送補題 + 反例境界 + U 可変 T0 前提 + U 定数退化を同時に満たす theorem package。penalty は、`-30`: 輸送を恒等にして自明化、`-40`: AAT 原則2.2 を破って law universe を無条件同一視、`-40`: 目標編集と修復の混同、`-50`: 要求の価値・正しさへの越境。
+- `dullness filter`: U-transport を全単射ラベル替えに限定した自明例だけの候補、AAT V §8/§10 の言い換え、差分列挙、輸送の定義展開だけの候補を弾く。
+- `frontier`: 辺ごとの law 対応の合成と path 依存性、輸送された obstruction の単調性、perturbation distance の時間版、目標速度 v の測度化、目標編集の holonomy(目標を往復させると何が残るか)、U と A の同時変形(第VII部接続)。
+- `spine`: U-transport record → 輸送された lawful locus / mass の比較補題 → ギャップ輸送上界と反例境界 → U 可変 T0 の前提補題(v の実現子)→ 目標編集の型付けと不変量 → 正準実例で目標移動一回分の輸送を手計算 → SFT 改訂 statement 集合。

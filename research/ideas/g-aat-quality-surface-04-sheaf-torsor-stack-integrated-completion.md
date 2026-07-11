@@ -117,7 +117,7 @@ Reuse existing proved support nodes from `SemanticRepairSheafH1`, `SemanticRepai
 
 ## Math Lean Review Scope
 
-- GOAL claim: `research/GOALS.md` G-04 target theorem and material premise ledger.
+- GOAL claim: `research/goals/G-aat-quality-surface-04.md` G-04 target theorem and material premise ledger.
 - Candidate Lean declarations: `Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion.universalSemanticRepairSheafTorsorStackCompletion_package`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion.universalSemanticRepairIntegratedLayerCompletion_package`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion.universalSemanticRepairIntegratedLayerCompletion_package_of_finiteCertificates`.
 - Relevant files: `SemanticRepairSheafH1.lean`, `SemanticRepairNonabelianTorsor.lean`, `SemanticRepairStackyH2.lean`, `SemanticRepairUniversalShadow.lean`, `SemanticRepairTargetCompletion.lean`.
 

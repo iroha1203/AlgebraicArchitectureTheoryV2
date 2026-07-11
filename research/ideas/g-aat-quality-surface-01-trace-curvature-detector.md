@@ -32,7 +32,7 @@ profile change に沿う path-ordered trace locus / repair frontier の coherenc
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-01`
+- `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
 - cycle 3 の `Formal/AG/Research/QualitySurface/ProfileCurvature.lean`
 - cycle 4 の `Formal/AG/Research/QualitySurface/TraceTransport.lean`
 - cycle 6 の `Formal/AG/Research/QualitySurface/TraceLocus.lean`

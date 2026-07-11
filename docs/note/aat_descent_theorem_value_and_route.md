@@ -3,7 +3,7 @@
 SAGA 定理([証明記録](aat_saga_theorem_proof_record.md))の次に狙う
 **Law-Generated Conormal First-Order Descent Theorem(未証明)** の設計ノート。
 固定 statement と完了条件の正本は
-[research/GOALS.md](../../research/GOALS.md)の`G-aat-quality-surface-07`であり、
+[research/goals/G-aat-quality-surface-07.md](../../research/goals/G-aat-quality-surface-07.md)の`G-aat-quality-surface-07`であり、
 本ノートは数学的根拠と証明順序を記録する。
 
 参照:

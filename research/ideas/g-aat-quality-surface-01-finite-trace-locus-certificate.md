@@ -32,7 +32,7 @@ database atom に trace token を欠く。
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-01`
+- `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
 - cycle 4 の `Formal/AG/Research/QualitySurface/TraceTransport.lean`
 - cycle 5 の `Formal/AG/Research/QualitySurface/StateSeparation.lean`
 

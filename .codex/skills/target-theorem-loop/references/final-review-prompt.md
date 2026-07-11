@@ -2,7 +2,7 @@
 
 ## Final math-lean-review completion gate
 
-`$math-lean-review research/GOALS.md <goal-id>` を実行するときは、次の
+`$math-lean-review research/goals/<goal-id>.md <goal-id>` を実行するときは、次の
 completion gate 入力と判定条件を渡す。
 
 Inputs to prepare: final_review_packet, GOAL target theorem claim, completion Lean declarations, relevant files, proof artifacts, tracking Issue proof state, report summary, T1/T3/T4 evidence.

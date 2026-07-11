@@ -33,7 +33,7 @@ ArchMap / observation layer が供給する有限 source-ref token table を opa
 - `Formal/AG/Research/QualitySurface/StateSeparation.lean`
 - `Formal/AG/Research/QualitySurface/TraceLocus.lean`
 - `Formal/AG/Research/QualitySurface/ReadingAdequacy.lean`
-- `research/GOALS.md` の `finite codebase trace example` frontier
+- `research/goals/G-aat-quality-surface-01.md` の `finite codebase trace example` frontier
 
 ## 非自明性
 

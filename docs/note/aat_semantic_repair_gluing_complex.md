@@ -1,6 +1,6 @@
 # AAT semantic repair-gluing 複体の据え方 — genius unlock への設計図
 
-研究 GOAL [`G-aat-quality-surface-01`](../../research/GOALS.md) の本丸 (open genius target)
+研究 GOAL [`G-aat-quality-surface-01`](../../research/goals/G-aat-quality-surface-01.md) の本丸 (open genius target)
 である **semantic repair-gluing obstruction theorem** を、過大主張せずに有限から積み上げる
 ための設計考察ノート。これはメモであり、正本 (`docs/aat/algebraic_geometric_theory/`) でも
 研究レポート (`research/reports/`) でもない。確定した成果ではなく、これから PRD 化して

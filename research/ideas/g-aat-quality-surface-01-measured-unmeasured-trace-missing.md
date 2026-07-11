@@ -36,7 +36,7 @@ verdict projection は certificate state に faithful ではない。
 
 ## 依拠
 
-- `research/GOALS.md` の `G-aat-quality-surface-01`
+- `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
 - `docs/note/aat_quality_surface.md` の measured zero / unmeasured 区別、trace field、reading fold
 - cycle 2 の `Formal/AG/Research/QualitySurface/ScalarCollapse.lean`
 - cycle 4 の `Formal/AG/Research/QualitySurface/TraceTransport.lean`

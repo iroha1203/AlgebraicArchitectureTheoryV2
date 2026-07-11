@@ -25,7 +25,8 @@ GOAL(研究で成し遂げたいこと)
 
 | 場所 | 置くもの |
 | --- | --- |
-| `GOALS.md` | GOAL そのものと、候補を採点する reward function。threshold policy と phase boundary criteria もここに置く。`target-theorem` では target theorem、proof boundary、proof obligation priority、completion criteria、failure policy もここに置く |
+| `goals/README.md` | GOAL 一覧、GOAL card contract、運用規則 |
+| `goals/<goal-id>.md` | 個別 GOAL の静的定義と reward function。`target-theorem` では target theorem、proof scope、proof obligation priority、completion criteria、failure policyもここに置く |
 | `ideas/` | 候補を一件ずつ書いたカード。選にもれたものや保留は `ideas/archived/` へ移す |
 | `reports/` | GOAL の能力がどう増えたかを書くレポート。GOAL ひとつにつき一つ |
 | `DESIGN.md` | この仕組みをいまの形にした理由の記録 |
@@ -33,7 +34,7 @@ GOAL(研究で成し遂げたいこと)
 
 ## 状態の正本
 
-ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、探索型 GOAL では active SCORE threshold、current SCORE、候補カード、PR、iteration comment をこの Issue に集約する。`GOALS.md` は GOAL 定義、カードの frontmatter と検証結果のレポートは証拠 artifact であり、作業を中断してもこの Issue を読めば同じ地点から再開できる。`target-theorem` では候補カードを作らず、target theorem の statement と completion criteria は `GOALS.md` が正本で、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、target_cycle_result、`$math-lean-review` の completion gate 結果を置く。
+ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、探索型 GOAL では active SCORE threshold、current SCORE、候補カード、PR、iteration comment をこの Issue に集約する。`goals/<goal-id>.md` は GOAL 定義、カードの frontmatter と検証結果のレポートは証拠 artifact であり、作業を中断してもこの Issue を読めば同じ地点から再開できる。`target-theorem` では候補カードを作らず、target theorem の statement と completion criteria は `goals/<goal-id>.md` が正本で、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、target_cycle_result、`$math-lean-review` の completion gate 結果を置く。
 
 tracking Issue は、通常 GOAL の「完全達成」を機械的に閉じるためのものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、研究フェーズとしてキリが良いかを判定し、phase summary を残して人間に返す。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、といった判断はループ外で行う。`target-theorem` では、GOAL カードの completion criteria を満たし、さらに `$math-lean-review` gate を通った場合だけ `target-theorem-proved` として止まる。target が未証明、または `$math-lean-review` が通らない場合は checkpoint にすぎない。
 
