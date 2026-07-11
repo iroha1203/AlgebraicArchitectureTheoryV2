@@ -15,7 +15,13 @@ private def normalizeName (name : Name) : String :=
     userName.replacePrefix newPrefix sentinel
   else
     userName
-  normalized.toString.replace "«$RESEARCH»" "$RESEARCH"
+  -- Lean-generated private binder names can embed the declaring module path
+  -- as a string (for example `x._@.Formal.AG.Research...`).
+  -- Canonicalize those embedded paths as well so a package-root move does
+  -- not alter the declaration digest.
+  (normalized.toString.replace "«$RESEARCH»" "$RESEARCH")
+    |>.replace "Formal.AG.Research." "$RESEARCH."
+    |>.replace "ResearchLean.AG." "$RESEARCH."
 
 mutual
   private partial def serializeLevel : Level → String
