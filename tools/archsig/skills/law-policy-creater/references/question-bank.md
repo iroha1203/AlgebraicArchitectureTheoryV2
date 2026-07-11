@@ -10,11 +10,14 @@ Ask only what is needed to select evaluator manifests.
 
 ## Policy Selection
 
-- Is domain-to-infrastructure dependency forbidden? If yes, use `domain.no-direct-infra-dependency`.
+- Which current registry evaluator is supported by the repository evidence?
 - Are there project-specific policies that need a registry evaluator before they can be selected?
-- Is this an AG measurement run? If yes, which AG evaluator(s) should be
-  selected: Čech obstruction, square-free repair, law-conflict Tor, sheaf
-  Laplacian, period/Stokes, support transfer, or a newer registry evaluator?
+- Is this an AG measurement run? If yes, which registered evaluator(s) should be
+  selected: `ag.cech-obstruction`, `ag.coherence-obstruction`,
+  `ag.restriction-compatibility`, `ag.section-factorization`,
+  `ag.boundary-residue`, `ag.square-free-repair`, `ag.law-conflict-tor`,
+  `ag.sheaf-laplacian`, `ag.period-stokes`, `ag.period-stokes-audit`,
+  `ag.support-transfer`, or `ag.saga-descent`?
 
 ## AG MeasurementProfile
 
@@ -52,4 +55,5 @@ Do not ask users to hand-author:
 - spectrum or homotopy profiles
 - U-adequacy / Leray / theorem-hypothesis proofs
 
-If those are needed, the evaluator registry must grow first.
+If those are needed and no current registry evaluator matches the evidence, the
+evaluator registry must grow first.

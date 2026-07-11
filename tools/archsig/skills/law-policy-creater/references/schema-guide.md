@@ -40,8 +40,8 @@ authoring surface.
 
 ```json
 {
-  "law": "domain.no-direct-infra-dependency",
-  "evaluator": "domain.no-direct-infra-dependency",
+  "law": "ag.cech-obstruction",
+  "evaluator": "ag.cech-obstruction",
   "basis": ["policy-basis:layering"],
   "scope": ["domain."],
   "severity": "error"
@@ -55,7 +55,6 @@ when present.
 
 Evaluator ids:
 
-- `domain.no-direct-infra-dependency`
 - `ag.cech-obstruction`
 - `ag.coherence-obstruction`
 - `ag.restriction-compatibility`
@@ -67,8 +66,9 @@ Evaluator ids:
 - `ag.period-stokes`
 - `ag.period-stokes-audit`
 - `ag.support-transfer`
+- `ag.saga-descent`
 
-## MeasurementProfile v1
+## MeasurementProfile
 
 AG evaluator selectors require `measurementProfileRef` resolving to the
 external `--measurement-profile` artifact's `profileId`.
