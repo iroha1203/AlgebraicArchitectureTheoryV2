@@ -98,6 +98,7 @@
   共通の反証観点は `.codex/skills/_shared/refutation-checklist.md` を正本とする。
 - Lean 実装(`Formal/`)を触る差分は、大きさを問わず `math-lean-review` の
   4本の独立査読を行い、4本すべての承認を必須とする。
+- 修正後の再レビューと確認の詳細は、`.codex/skills/_shared/review-protocol.md`を正本とする。
 - Research 側で受理済みの成果が本体に無い状態は、scope 制限ではなく
   `unported (Research-proved)`(未移植)と呼ぶ。詳細は
   `docs/aat/guideline.md` の Lean status discipline と
