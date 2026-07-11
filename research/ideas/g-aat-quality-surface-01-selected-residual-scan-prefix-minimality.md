@@ -75,7 +75,7 @@ protected scan payload の意味も明確になる。
 
 ## 証明・根拠
 
-Lean 証拠は `Formal/AG/Research/QualitySurface/SelectedResidualScanPrefixMinimality.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/QualitySurface/SelectedResidualScanPrefixMinimality.lean` に固定した。
 
 - `selectedPrefixBefore`
 - `firstMissedSelectedBranch?_some_prefixHit`
@@ -100,9 +100,9 @@ Lean 証拠は `Formal/AG/Research/QualitySurface/SelectedResidualScanPrefixMini
 
 ## G3 監査結果
 
-- `lake env lean Formal/AG/Research/QualitySurface/SelectedResidualScanPrefixMinimality.lean`: pass。
-- `lake build Formal.AG.Research.QualitySurface.SelectedResidualScanPrefixMinimality`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/SelectedResidualScanPrefixMinimality.lean`: pass。
+- `lake build ResearchLean.AG.QualitySurface.SelectedResidualScanPrefixMinimality`: pass。
+- `lake build ResearchLean`: pass。
 - `#print axioms`: `selectedPrefixBefore`, `dropSelectedScanBranch`, branch inequality lemmas、earlier deletion non-restoration、no-earlier-deletion theorem は axiom-free。`firstMissedSelectedBranch?_some_prefixHit`, `traceOnly_firstResidual_prefixExact`, `traceOnly_returnedDeletionRestoresSelectedTransversal`, `selectedResidualPrefix_visibleContrast`, `selectedResidualScanPrefixMinimality_package` は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`Quot.sound`、`unsafe` なし。
 - Lean 形式化品質監査: pass。minimality は selector-relative singleton deletion に限定されており、global minimality は主張していない。`selectedPrefixBefore` は固定 selected order の inductive relation であり、将来の可変 scan order には別途 list-based predicate が必要。
 

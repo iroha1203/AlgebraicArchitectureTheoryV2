@@ -83,7 +83,7 @@ data.
 - Cycle 38 current-shadow coordinate obligations.
 - Cycle 39 recoverable readings boundary.
 - Lean file:
-  `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
+  `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
 
 ## Lean Surface
 
@@ -164,11 +164,11 @@ theorem-level.
 
 Verification already passed for this candidate:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
-- `lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationRealizedRecovery`
-- `lake env lean Formal/AG/Research.lean`
-- `lake build Formal.AG.Research`
-- `lake build FormalAGResearch`
+- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
+- `lake build ResearchLean.AG.QualitySurface.SemanticRepairFiniteQueryRepresentationRealizedRecovery`
+- `lake env lean research/lean/ResearchLean.lean`
+- `lake build ResearchLean.AG`
+- `lake build ResearchLean`
 - `lake build`
 - `.tmp/g04_realized_recovery_axioms.lean` axiom audit: 13 reported
   declarations, no axioms.
@@ -188,7 +188,7 @@ Verification already passed for this candidate:
 - project value: T2 accept with base score 44.
 - T3 axiom/formalization quality: pass.  Focused checks, aggregate builds,
   full `lake build`, and the 13-declaration axiom audit passed; the target file
-  remains under `Formal/AG/Research`.
+  remains under `research/lean/ResearchLean`.
 - T3.5 sync: initial revise until this card/report synchronization; final
   sync audit should see Cycle 40 report entry, T4 score, and explicit
   visible-undischarged premise status.
@@ -198,7 +198,7 @@ Verification already passed for this candidate:
 ## Related
 
 - `research/ideas/g-aat-quality-surface-04-recoverable-readings-boundary.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean`
 
 ## Progress Log
 

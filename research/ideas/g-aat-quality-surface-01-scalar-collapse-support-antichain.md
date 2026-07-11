@@ -31,7 +31,7 @@ lean: proved-in-research
 
 - `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
 - `docs/note/aat_quality_surface.md` の reading fold、scalar-collapse counterexample、Atom support
-- cycle 1 の `Formal/AG/Research/QualitySurface/SupportHitting.lean`
+- cycle 1 の `research/lean/ResearchLean/QualitySurface/SupportHitting.lean`
 
 ## 非自明性
 

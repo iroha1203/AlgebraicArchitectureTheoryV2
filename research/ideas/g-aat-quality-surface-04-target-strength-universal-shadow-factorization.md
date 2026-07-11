@@ -40,10 +40,10 @@ finite/small target boundary 内で、tower 全層を読む canonical finite sha
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/SemanticRepairObstructionTower.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTorsor.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairStackyH2.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairObstructionTower.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTorsor.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairStackyH2.lean`
 - Cycle 7 G6 checkpoint: remaining blockers are concrete finite shadow adequacy and target-strength universality / factorization.
 
 ## 非自明性
@@ -84,7 +84,7 @@ G-04 の残り blocker である concrete finite shadow connection と target-st
 
 ## 証明・根拠
 
-`Formal/AG/Research/QualitySurface/SemanticRepairUniversalShadow.lean` を追加した。
+`research/lean/ResearchLean/QualitySurface/SemanticRepairUniversalShadow.lean` を追加した。
 
 主な Lean 証拠は次の通り。
 
@@ -118,5 +118,5 @@ G-04 の残り blocker である concrete finite shadow connection と target-st
 
 - 2026-06-24: Cycle 7 G6 checkpoint を受け、finite shadow / universality blocker に対応する candidate として作成。
 - 2026-06-24: G2 は A revise / B-C-D accept。A の指摘に従い、assignment の `factors_*` equality field を避ける finite observation algebra へ修正。SCORE 見込みは conservative に base 94 / x2.0 / final 188。
-- 2026-06-24: `SemanticRepairUniversalShadow.lean` を追加し、target-support evidence を Lean proof として固定。`lake env lean`、対象 module build、`FormalAGResearch`、`lake build`、axiom harness、scan は pass。
+- 2026-06-24: `SemanticRepairUniversalShadow.lean` を追加し、target-support evidence を Lean proof として固定。`lake env lean`、対象 module build、`ResearchLean`、`lake build`、axiom harness、scan は pass。
 - 2026-06-24: scoped tracking issue #2496 を作成。

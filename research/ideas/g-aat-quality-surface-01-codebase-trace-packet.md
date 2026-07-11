@@ -11,7 +11,7 @@ origin: cycle-9
 tags: [quality-surface, traceability, codebase-trace, repair-frontier, finite-witness]
 created: 2026-06-20
 cycle: 9
-lean: Formal/AG/Research/QualitySurface/CodebaseTracePacket.lean
+lean: research/lean/ResearchLean/QualitySurface/CodebaseTracePacket.lean
 ---
 
 # Finite codebase trace packet with exact repair frontier
@@ -29,10 +29,10 @@ ArchMap / observation layer が供給する有限 source-ref token table を opa
 ## 依拠
 
 - `research/reports/G-aat-quality-surface-01.md` cycle 4, 5, 6, 8
-- `Formal/AG/Research/QualitySurface/TraceTransport.lean`
-- `Formal/AG/Research/QualitySurface/StateSeparation.lean`
-- `Formal/AG/Research/QualitySurface/TraceLocus.lean`
-- `Formal/AG/Research/QualitySurface/ReadingAdequacy.lean`
+- `research/lean/ResearchLean/QualitySurface/TraceTransport.lean`
+- `research/lean/ResearchLean/QualitySurface/StateSeparation.lean`
+- `research/lean/ResearchLean/QualitySurface/TraceLocus.lean`
+- `research/lean/ResearchLean/QualitySurface/ReadingAdequacy.lean`
 - `research/goals/G-aat-quality-surface-01.md` の `finite codebase trace example` frontier
 
 ## 非自明性
@@ -53,7 +53,7 @@ GOAL の frontier に明示された finite codebase trace example を、source-
 
 - `score_reason`: finite codebase trace example frontier に直接対応し、供給済み source-ref packet、trace-locus certificate 射影、exact repair frontier / nonfaithfulness を Lean-backed に固定するため revised base 75 を見込む。
 - `dullness_risk`: source-ref token を並べるだけなら dull。`CodebaseTracePacket`、available / missing partition、repair frontier exactness、surface reading nonfaithfulness を入れて回避する。
-- `proof_or_evidence_plan`: `Formal/AG/Research/QualitySurface/CodebaseTracePacket.lean` を追加し、opaque code atom、source-ref token、partial trace table、packet support、trace-missing locus、repair frontier、`TraceLocusCertificate` への射影を定義する。主要 theorem は axiom-free で証明する。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/CodebaseTracePacket.lean` を追加し、opaque code atom、source-ref token、partial trace table、packet support、trace-missing locus、repair frontier、`TraceLocusCertificate` への射影を定義する。主要 theorem は axiom-free で証明する。
 
 ## CS / SWE への帰結
 
@@ -119,7 +119,7 @@ cycle 4 は trace transport と trace naturality を分離し、cycle 6 は toy 
 
 ## G3 監査
 
-- build: `lake env lean Formal/AG/Research/QualitySurface/CodebaseTracePacket.lean` pass、`lake build FormalAGResearch` pass。
+- build: `lake env lean research/lean/ResearchLean/QualitySurface/CodebaseTracePacket.lean` pass、`lake build ResearchLean` pass。
 - axiom check: pass。主要 declaration はすべて `does not depend on any axioms`。
 - formalization quality audit: pass。主張は supplied opaque source-ref table に相対化され、source extraction completeness、実コード全体の品質判定、現行 tooling schema impact は主張しない。
 - theorem highlights: `sourceRef_missing_projects_to_trace_missing`、`exact_packet_projects_to_exact_trace_repair`、`sourceRefLocusAware_faithful_to_repairFrontier_of_exact`、`same_surface_support_but_codebase_trace_frontier_diff`。

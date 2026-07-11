@@ -38,10 +38,10 @@ Cycle 12 は、`Obs(A)` の canonical finite shadow を通る factorization を 
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/SemanticRepairUniversalShadow.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairTargetCompletion.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairTargetSurface.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairTargetFactorization.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairUniversalShadow.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetCompletion.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetSurface.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetFactorization.lean`
 
 ## 非自明性
 
@@ -55,7 +55,7 @@ Cycle 12 は、`Obs(A)` の canonical finite shadow を通る factorization を 
 
 - `score_reason`: arbitrary assignment blocker を「shadow-extensionality / representation adequacy が必要」という theorem-level gap に変換する target-refinement checkpoint。
 - `dullness_risk`: 新しい unrestricted universality theorem ではなく、既存 finite-shadow factorization の target-surface specialization と必要条件の整理であるため、score は Cycle 11 より低め。
-- `proof_or_evidence_plan`: focused Lean、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declaration の `#print axioms`、placeholder scan、T2/T4 anti-weakening review を通す。
+- `proof_or_evidence_plan`: focused Lean、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declaration の `#print axioms`、placeholder scan、T2/T4 anti-weakening review を通す。
 - `score_audit`: T4 confirm as checkpoint: base 68、evidence multiplier 2.0、penalty 0、final 136。
 
 ## Target Theorem 寄与
@@ -96,7 +96,7 @@ finite/small target surface, finite certificates, canonical finite all-layer sha
 ## Math Lean Review Scope
 
 - GOAL claim: `research/goals/G-aat-quality-surface-04.md` G-04 target theorem and material premise ledger.
-- Candidate Lean declarations: `Formal.AG.Research.QualitySurface.SemanticRepairTargetFactorization.ShadowExtensionalObstructionAssignment`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetFactorization.shadowExtensional_of_factorization`, `Formal.AG.Research.QualitySurface.SemanticRepairTargetFactorization.targetSurfaceShadowExtensionalObservation_universalFactorization`.
+- Candidate Lean declarations: `ResearchLean.AG.QualitySurface.SemanticRepairTargetFactorization.ShadowExtensionalObstructionAssignment`, `ResearchLean.AG.QualitySurface.SemanticRepairTargetFactorization.shadowExtensional_of_factorization`, `ResearchLean.AG.QualitySurface.SemanticRepairTargetFactorization.targetSurfaceShadowExtensionalObservation_universalFactorization`.
 - Relevant files: `SemanticRepairUniversalShadow.lean`, `SemanticRepairTargetCompletion.lean`, `SemanticRepairTargetSurface.lean`, `SemanticRepairTargetFactorization.lean`.
 
 ## 証明・根拠の見込み

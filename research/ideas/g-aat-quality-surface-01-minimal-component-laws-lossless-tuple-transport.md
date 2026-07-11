@@ -42,8 +42,8 @@ traceability は結論しない。
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/TupleTransportExactness.lean`
-- `Formal/AG/Research/QualitySurface/ProfileTupleIntegration.lean`
+- `research/lean/ResearchLean/QualitySurface/TupleTransportExactness.lean`
+- `research/lean/ResearchLean/QualitySurface/ProfileTupleIntegration.lean`
 - `tupleTransport_preserves_traceMissingLocus`
 - `tupleTransport_reflects_traceMissingLocus`
 - `tupleTransport_exactRepair_iff_of_bidirectional`
@@ -85,7 +85,7 @@ transport 内の数学的 obstruction であり、実コード全体や tooling 
 
 ## 証明・根拠の見込み
 
-Lean proof は `Formal/AG/Research/QualitySurface/TupleTransportComponentLaws.lean` に閉じる。
+Lean proof は `research/lean/ResearchLean/QualitySurface/TupleTransportComponentLaws.lean` に閉じる。
 
 主要 theorem / declaration:
 
@@ -112,8 +112,8 @@ Lean proof は `Formal/AG/Research/QualitySurface/TupleTransportComponentLaws.le
 
 検証:
 
-- `lake env lean Formal/AG/Research/QualitySurface/TupleTransportComponentLaws.lean` pass。
-- `lake build FormalAGResearch` pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/TupleTransportComponentLaws.lean` pass。
+- `lake build ResearchLean` pass。
 - `lake env lean .tmp/tuple_transport_component_laws_axioms.lean` pass。
 - reported declaration はすべて `does not depend on any axioms`。
 - changed-file scan で hidden / bidirectional Unicode と local path は no matches。
@@ -139,7 +139,7 @@ Lean proof は `Formal/AG/Research/QualitySurface/TupleTransportComponentLaws.le
 ## G3 監査
 
 - `TupleTransportComponentLaws.lean` は trace/repair witnesses の visible tuple surface preservation、support witnesses の scalar/verdict preservation、各 component-law failure と missing-locus / exact-repair failure を証明する。
-- G3 axiom audit: pass。target Lean、`FormalAGResearch`、axiom harness は pass。reported declaration はすべて axiom-free。
+- G3 axiom audit: pass。target Lean、`ResearchLean`、axiom harness は pass。reported declaration はすべて axiom-free。
 - G3 formalization quality audit: pass。finite supplied witnesses、trace/repair visible-surface preservation、support scalar/verdict-only preservation、global minimality を主張しない境界が Lean statement に反映されている。
 
 ## 進捗ログ

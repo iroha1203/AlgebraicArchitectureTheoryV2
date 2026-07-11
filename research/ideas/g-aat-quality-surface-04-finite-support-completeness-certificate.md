@@ -20,7 +20,7 @@ origin: G-04 Cycle 19
 tags: [target-theorem, target-support, finite-shadow, trace-support, completeness-certificate]
 created: 2026-06-25
 cycle: 19
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteSupportCompleteness.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteSupportCompleteness.lean
 ---
 
 # Finite Support Completeness Certificate

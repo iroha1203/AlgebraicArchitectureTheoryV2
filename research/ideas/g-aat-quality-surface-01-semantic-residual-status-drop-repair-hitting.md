@@ -76,7 +76,7 @@ ADL、static analyzer、dashboard、AI summary は status transition や red/gre
  三つの unhit preservation law から導く status-level theorem として接続した。
 - `dullness_risk`: 単なる合成に見える危険がある。`ExistsResidualStatusDrop` bridge、canonical
   vanishing bridge、selected witness/no-go package を揃えて回避する。
-- `proof_or_evidence_plan`: `Formal/AG/Research/QualitySurface/SemanticResidualStatusDropRepairHitting.lean`
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/SemanticResidualStatusDropRepairHitting.lean`
   で generic theorem と selected frontier-to-flat witness を証明する。
 
 ## CS / SWE への帰結
@@ -87,7 +87,7 @@ repair hit が入ったことを説明しなければならない。
 
 ## 証明・根拠
 
-Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualStatusDropRepairHitting.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualStatusDropRepairHitting.lean` に固定した。
 
 - `ResidualStatusDropRepairTransport`
 - `AllOldStatusDropsHit`
@@ -110,9 +110,9 @@ Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualStatusDropRepa
 
 検証実績:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualStatusDropRepairHitting.lean`: pass。
-- `lake build Formal.AG.Research.QualitySurface.SemanticResidualStatusDropRepairHitting`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualStatusDropRepairHitting.lean`: pass。
+- `lake build ResearchLean.AG.QualitySurface.SemanticResidualStatusDropRepairHitting`: pass。
+- `lake build ResearchLean`: pass。
 - `#print axioms`: generic theorem 群は axiom-free。selected witness と package は標準
   `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
@@ -156,4 +156,4 @@ whole-codebase quality。
 
 - 2026-06-23: Cycle 99 G1/G2 で status-drop repair-hitting necessity を採択。
 - 2026-06-23: Lean 証拠を `SemanticResidualStatusDropRepairHitting.lean` に固定し、単体
-  `lake env lean`、module build、`lake build FormalAGResearch`、axiom 監査が通った。
+  `lake env lean`、module build、`lake build ResearchLean`、axiom 監査が通った。

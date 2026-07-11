@@ -20,7 +20,7 @@ origin: G-04-Cycle65
 tags: [target-theorem, finite-query, support-shadow, recovery, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 65
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateIndependence.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateIndependence.lean
 ---
 
 # Support-Shadow Recovery / Coordinate Certificate Independence
@@ -64,7 +64,7 @@ target route の certificate premise は満たされない。
 
 - `score_reason`: Cycle64 positive route の hidden premise 化を防ぐ complete-support Bool anti-weakening witness。
 - `dullness_risk`: 中。既存 no-current-factor witness から certificate non-existence を抽出する。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -94,8 +94,8 @@ tooling が support-shadow recovery を持っていても、coordinate certifica
 ## 関連
 
 - `research/ideas/g-aat-quality-surface-04-support-shadow-certificate-route.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateRoute.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoveredFactorization.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateRoute.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoveredFactorization.lean`
 
 ## 進捗ログ
 

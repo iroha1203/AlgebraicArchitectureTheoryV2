@@ -20,7 +20,7 @@ origin: G-04-Cycle69
 tags: [target-theorem, finite-query, support-shadow, recovery, current-shadow-reading, faithfulness, anti-weakening]
 created: 2026-06-25
 cycle: 69
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessIndependence.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessIndependence.lean
 ---
 
 # Support-Shadow Recovery / Current-Reading Faithfulness Independence
@@ -65,7 +65,7 @@ coordinate certificate を別途示さなければ Cycle68 の target route prem
 
 - `score_reason`: Cycle68 positive route の hidden premise 化を防ぐ complete-support Bool anti-weakening witness。
 - `dullness_risk`: 中。既存 no-faithfulness / no-control witness を一つの package に束ねる。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -96,8 +96,8 @@ route の前提は満たされない。
 
 - `research/ideas/g-aat-quality-surface-04-support-faithfulness-target-route.md`
 - `research/ideas/g-aat-quality-surface-04-support-control-independence.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlIndependence.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlIndependence.lean`
 
 ## 進捗ログ
 

@@ -20,7 +20,7 @@ origin: T1-cycle43
 tags: [target-theorem-loop, G-04, finite-query-representation, anti-weakening]
 created: 2026-06-25
 cycle: 43
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQuerySupportedCurrentShadowFactorization.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQuerySupportedCurrentShadowFactorization.lean
 ---
 
 # Supported Current-Shadow Factorization Boundary
@@ -63,7 +63,7 @@ ADL、静的解析、metric dashboard は「support に入っている」「read
 
 - `score_reason`: Cycle 37/38/42 の proof surface を接続し、supported finite query package で毎回 query-coordinate extensionality を仮定する圧力を減らす。ただし support determinacy 自体は未放電なので base は控えめ。
 - `dullness_risk`: 既存 theorem の合成に近い。report では proof-DAG edge と anti-weakening boundary として扱い、target completion と呼ばない。
-- `proof_or_evidence_plan`: 新規 Lean file、reported declarations の `#print axioms`、`FormalAGResearch` build、placeholder / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: 新規 Lean file、reported declarations の `#print axioms`、`ResearchLean` build、placeholder / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 

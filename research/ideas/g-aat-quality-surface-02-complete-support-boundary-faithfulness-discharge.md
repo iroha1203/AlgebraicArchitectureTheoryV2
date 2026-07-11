@@ -22,7 +22,7 @@ tags: [target-theorem, semantic-repair, gluing, descent, finite-complex, faithfu
 created: 2026-06-24
 lean: proved-in-research
 lean_files:
-  - Formal/AG/Research/QualitySurface/SemanticRepairGluingComplex.lean
+  - research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean
 lean_declarations:
   - CompleteRepairSupportBoundaryComplex
   - completeRepairSupportBoundary_semanticFaithfulnessHypotheses
@@ -51,10 +51,10 @@ lean_declarations:
 ## 依拠
 
 - `research/goals/G-aat-quality-surface-02.md` の `G-aat-quality-surface-02`
-- `Formal/AG/Research/QualitySurface/SemanticRepairGluingComplex.lean`
-- `Formal/AG/Research/QualitySurface/SemanticResidualComponentFaithfulness.lean`
-- `Formal/AG/Research/QualitySurface/SemanticSupportProjectionKernel.lean`
-- `Formal/AG/Research/QualitySurface/VisibleLocalSemanticGluingObstruction.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticResidualComponentFaithfulness.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticSupportProjectionKernel.lean`
+- `research/lean/ResearchLean/QualitySurface/VisibleLocalSemanticGluingObstruction.lean`
 
 ## 非自明性
 
@@ -76,7 +76,7 @@ ADL や architecture conformance checker は component / connector / view / cons
 
 - `score_reason`: target theorem の唯一の残 blocker である `SemanticFaithfulnessHypotheses` 放電に直撃する。conditional package を weak completion とせず、explicit finite atlas class の no-undischarged-faithfulness package に上げる。ただし既存 `completeRepairSupport_closed_decomposes_as_componentCoverage_and_faithfulness` の direct specialization でもあるため、G2 A/C の判断に合わせて base 90 とする。
 - `dullness_risk`: 既存 theorem の単なる再包装なら低く採点すべきである。今回は no-undischarged-faithfulness package theorem、selected faithful boundary complex、axiom audit、report / Issue state 同期が必要。
-- `proof_or_evidence_plan`: `CompleteRepairSupportBoundaryComplex`、`completeRepairSupportBoundary_semanticFaithfulnessHypotheses`、`finiteSemanticRepairGluingDescent_iff_of_completeRepairSupportBoundary`、`selectedFaithfulBoundary_*`、`finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary` を追加し、`lake env lean` / `lake build FormalAGResearch` / `#print axioms` で確認する。
+- `proof_or_evidence_plan`: `CompleteRepairSupportBoundaryComplex`、`completeRepairSupportBoundary_semanticFaithfulnessHypotheses`、`finiteSemanticRepairGluingDescent_iff_of_completeRepairSupportBoundary`、`selectedFaithfulBoundary_*`、`finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary` を追加し、`lake env lean` / `lake build ResearchLean` / `#print axioms` で確認する。
 
 ## Target Theorem 寄与
 

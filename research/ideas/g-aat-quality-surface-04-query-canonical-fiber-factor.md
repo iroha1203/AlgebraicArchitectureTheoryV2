@@ -25,7 +25,7 @@ origin: G-04 Cycle 29
 tags: [target-theorem, target-support, finite-query, current-shadow, explicit-factor]
 created: 2026-06-25
 cycle: 29
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryFiberFactor.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryFiberFactor.lean
 ---
 
 # Query Canonical Fiber Factor

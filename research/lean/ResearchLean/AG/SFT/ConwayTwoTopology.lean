@@ -1,4 +1,4 @@
-import Formal.AG.Research.Basic
+import ResearchLean.AG.Basic
 
 /-!
 Cycle 1 evidence for `G-sft-conway-01`.

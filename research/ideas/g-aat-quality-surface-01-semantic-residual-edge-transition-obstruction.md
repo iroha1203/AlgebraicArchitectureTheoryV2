@@ -67,7 +67,7 @@ component row の pass/fail だけでなく、residual presence / absence の ed
 
 ## 証明・根拠
 
-Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean` に固定した。
 
 - `IndexedResidualFreeAt`
 - `IndexedResidualPresentAt`
@@ -79,9 +79,9 @@ Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualEdgeTransition
 
 G3 初期実績:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean`: pass。
-- `lake build Formal.AG.Research.QualitySurface.SemanticResidualEdgeTransitionObstruction`: pass。
-- `lake build Formal.AG.Research`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean`: pass。
+- `lake build ResearchLean.AG.QualitySurface.SemanticResidualEdgeTransitionObstruction`: pass。
+- `lake build ResearchLean.AG`: pass。
 - axiom probe: generic edge criterion は axiom-free。selected residual-present / residual-free / no-go / package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 
 ## 審判メモ
@@ -114,5 +114,5 @@ G3 初期実績:
 ## 進捗ログ
 
 - 2026-06-22: Cycle 88 edge obstruction closer として picked。
-- 2026-06-22: Lean 証拠を `SemanticResidualEdgeTransitionObstruction.lean` に固定し、単体 `lake env lean`、module build、`Formal.AG.Research` build が通った。
+- 2026-06-22: Lean 証拠を `SemanticResidualEdgeTransitionObstruction.lean` に固定し、単体 `lake env lean`、module build、`ResearchLean.AG` build が通った。
 - 2026-06-22: G4 SCORE 監査で base 30 / final +60 に確定し、total SCORE 12052 で active threshold 12000 を超えた。

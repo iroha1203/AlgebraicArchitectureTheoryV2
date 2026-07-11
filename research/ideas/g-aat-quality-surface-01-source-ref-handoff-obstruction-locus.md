@@ -12,7 +12,7 @@ origin: cycle-61
 tags: [quality-surface, source-ref, handoff, obstruction, invariance, holonomy]
 created: 2026-06-21
 cycle: 61
-lean: Formal/AG/Research/QualitySurface/SourceRefHandoffObstructionLocus.lean
+lean: research/lean/ResearchLean/QualitySurface/SourceRefHandoffObstructionLocus.lean
 ---
 
 # Order-independent source-ref handoff obstruction locus for finite atlases
@@ -85,9 +85,9 @@ route dashboard の first failing item は有用な表示であるが、canonica
 
 ## 証明・根拠
 
-Lean file `Formal/AG/Research/QualitySurface/SourceRefHandoffObstructionLocus.lean` に固定した。
-`lake env lean Formal/AG/Research/QualitySurface/SourceRefHandoffObstructionLocus.lean`、
-`lake env lean Formal/AG/Research.lean`、`lake build FormalAGResearch`、full `lake build` は通過した。
+Lean file `research/lean/ResearchLean/QualitySurface/SourceRefHandoffObstructionLocus.lean` に固定した。
+`lake env lean research/lean/ResearchLean/QualitySurface/SourceRefHandoffObstructionLocus.lean`、
+`lake env lean research/lean/ResearchLean.lean`、`lake build ResearchLean`、full `lake build` は通過した。
 full build の警告は既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter 警告のみである。
 
 証明済み declaration は次である。

@@ -29,10 +29,10 @@ Quality Surface の reading projection を、宣言された有限 reading chain
 ## 依拠
 
 - `research/reports/G-aat-quality-surface-01.md` cycle 2, 5, 6, 7
-- `Formal/AG/Research/QualitySurface/ScalarCollapse.lean`
-- `Formal/AG/Research/QualitySurface/StateSeparation.lean`
-- `Formal/AG/Research/QualitySurface/TraceLocus.lean`
-- `Formal/AG/Research/QualitySurface/TraceCurvature.lean`
+- `research/lean/ResearchLean/QualitySurface/ScalarCollapse.lean`
+- `research/lean/ResearchLean/QualitySurface/StateSeparation.lean`
+- `research/lean/ResearchLean/QualitySurface/TraceLocus.lean`
+- `research/lean/ResearchLean/QualitySurface/TraceCurvature.lean`
 - `docs/note/aat_quality_surface.md` の loss-aware visualization と protected certificate data の構想
 
 ## 非自明性
@@ -51,7 +51,7 @@ reading fold、traceability、repair frontier、multi-axis quality signature の
 
 - `score_reason`: scalar-collapse、state separation、trace locus、trace curvature の個別 witness を、有限 reading chain と faithfulness の階層へ圧縮する。report / paper seed で Quality Surface の loss-aware surface を説明する整理定理になる。G2 後の基礎点は 55 とする。
 - `dullness_risk`: 既存 theorem の索引化だけなら dull になる。`ReadingRefines`、faithfulness preservation、strictness witness、exact repair frontier の sufficient reading、cycle 7 の path-ordered trace case への接続を Lean statement として固定することで避ける。
-- `proof_or_evidence_plan`: `Formal/AG/Research/QualitySurface/ReadingAdequacy.lean` を追加する。`Reading` とその `Equivalent` field、`ReadingRefines`、`FaithfulToInvariant`、`FaithfulToInvariantOn`、`RepairFrontierExact` を定義し、既存 `TraceLocus` / `TraceCurvature` witness を使って strictness、exact repair-frontier faithfulness、path-ordered trace case の adequacy gap を証明する。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/ReadingAdequacy.lean` を追加する。`Reading` とその `Equivalent` field、`ReadingRefines`、`FaithfulToInvariant`、`FaithfulToInvariantOn`、`RepairFrontierExact` を定義し、既存 `TraceLocus` / `TraceCurvature` witness を使って strictness、exact repair-frontier faithfulness、path-ordered trace case の adequacy gap を証明する。
 
 ## CS / SWE への帰結
 
@@ -59,7 +59,7 @@ Quality Surface の dashboard や website surface で、scalar、verdict、suppo
 
 ## 証明・根拠の見込み
 
-Lean 証拠は `Formal/AG/Research/QualitySurface/ReadingAdequacy.lean` に置いた。`TraceLocus.TraceLocusCertificate` を使い、reading equivalence を次のように段階化した。
+Lean 証拠は `research/lean/ResearchLean/QualitySurface/ReadingAdequacy.lean` に置いた。`TraceLocus.TraceLocusCertificate` を使い、reading equivalence を次のように段階化した。
 
 - visible surface: scalar と verdict の一致。
 - support surface: scalar、verdict、selected support の一致。
@@ -136,7 +136,7 @@ cycle 2 は scalar reading の非忠実性、cycle 5 は zero-looking state sepa
 
 ## G3 監査
 
-- build: `lake build FormalAGResearch` pass、`lake env lean Formal/AG/Research/QualitySurface/ReadingAdequacy.lean` pass。
+- build: `lake build ResearchLean` pass、`lake env lean research/lean/ResearchLean/QualitySurface/ReadingAdequacy.lean` pass。
 - axiom check: pass。主要 declaration はすべて `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - formalization quality audit: pass。候補の finite reading chain 相対の主張を適切な強さで表す。絶対 lattice、絶対最小性、source extraction completeness、実コード全体の品質判定は主張していない。
 - caveat: scalar-only 段と full protected signature / obligation-aware reading は今回の独立 declaration としては切っていない。cycle 8 の主張は support surface、trace-locus-aware reading、repair-aware reading、path-ordered trace case に限定する。

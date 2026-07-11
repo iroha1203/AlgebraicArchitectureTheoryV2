@@ -20,7 +20,7 @@ origin: G-04 Cycle 18
 tags: [target-theorem, target-support, finite-shadow, trace-support, membership]
 created: 2026-06-25
 cycle: 18
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteSupportMembership.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteSupportMembership.lean
 ---
 
 # Finite Support Membership Coordinate Factorization

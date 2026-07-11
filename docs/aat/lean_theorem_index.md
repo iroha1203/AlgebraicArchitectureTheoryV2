@@ -12,7 +12,7 @@ Lean API を確認する入口として扱う。
 | --- | --- | --- |
 | [古典 AAT / downstream Lean API 索引](lean_theorem_index_classical_aat.md) | `Formal/Arch`、finite static structural core、Atom-generated kernel、SFT / ArchSig / tooling bridge | 既存 bounded theorem package、古典 AAT 由来 API、downstream bridge API を確認する。 |
 | [代数幾何 AAT Lean API 索引](lean_theorem_index_ag_aat.md) | `Formal/AG`、AG 版 AAT Part I〜10 | 現行 AAT 数学本文に対応する Lean declaration、本文ラベル、status を確認する。 |
-| [研究ループ Lean API 索引](lean_theorem_index_research.md) | `Formal/AG/Research`、target-theorem / research-loop theorem package | 研究ループで追加された theorem package と review 境界を確認する。 |
+| [研究ループ Lean API 索引](lean_theorem_index_research.md) | `research/lean/ResearchLean`、target-theorem / research-loop theorem package | 研究ループで追加された theorem package と review 境界を確認する。 |
 
 ## 索引の読み方
 
@@ -31,6 +31,6 @@ coverage / exactness assumptions を併せて確認する。
 
 - `Formal/Arch`、SFT bridge、tooling-side theorem metadata、古典 Atom-generated kernel を更新した場合は、原則として [lean_theorem_index_classical_aat.md](lean_theorem_index_classical_aat.md) を更新する。
 - `Formal/AG` の AG 版 AAT PRD / 本文ラベル対応を更新した場合は、[lean_theorem_index_ag_aat.md](lean_theorem_index_ag_aat.md) を更新する。
-- `Formal/AG/Research` や target-theorem / research-loop theorem package を更新した場合は、[lean_theorem_index_research.md](lean_theorem_index_research.md) を更新する。
+- `research/lean/ResearchLean` や target-theorem / research-loop theorem package を更新した場合は、[lean_theorem_index_research.md](lean_theorem_index_research.md) を更新する。
 - 未解決 proof obligation、empirical hypothesis、Issue tracking は [proof_obligations.md](proof_obligations.md) 入口から対応する分割台帳へ置く。
 - この入口は分割方針とリンクだけを持つ。詳細な declaration 表は分割索引へ置く。

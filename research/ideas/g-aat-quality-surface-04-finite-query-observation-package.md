@@ -20,7 +20,7 @@ origin: G-04 Cycle 22
 tags: [target-theorem, target-support, finite-shadow, trace-support, observation-package]
 created: 2026-06-25
 cycle: 22
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryObservation.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryObservation.lean
 ---
 
 # Finite Query Observation Package

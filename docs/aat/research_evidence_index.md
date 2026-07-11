@@ -1,6 +1,6 @@
 # Research 成果索引(research evidence index)
 
-Research 側(`Formal/AG/Research/`)で受理された成果の1行台帳。
+Research 側(`research/lean/ResearchLean/`)で受理された成果の1行台帳。
 本体実装・レビューが「Research 側にすでに到達点があるか」を、巨大 Lean
 ファイルの実読なしに grep で検索するための索引であり、Research 下限原則
 (`docs/aat/guideline.md` の Lean status discipline)の検索基盤である。
@@ -15,7 +15,7 @@ Research 側(`Formal/AG/Research/`)で受理された成果の1行台帳。
   として負う(各 SKILL の ledger 手順を参照)。
 - 列の意味:
   - `theorem`: Research 側の宣言名(コードブロック表記)
-  - `file`: `Formal/AG/Research/` 配下のファイル
+  - `file`: `research/lean/ResearchLean/` 配下のファイル
   - `本文ラベル`: 対応する数学本文の部・定理番号(無ければ `-`)
   - `conjuncts 要旨`: 結論一覧の要約。移植時の下限照合で結論の
     数え漏れが出ない粒度で書く
@@ -34,7 +34,7 @@ Research 側(`Formal/AG/Research/`)で受理された成果の1行台帳。
   - `本体対応`: `ported` なら本体側の宣言名、`unported` なら追跡 Issue、
     `not-for-porting` なら理由
 - 検索の作法(実装・レビュー側): まずこの索引を `rg` で検索し、
-  該当が無ければ `Formal/AG/Research/` を直接 `rg` する。索引に無いことは
+  該当が無ければ `research/lean/ResearchLean/` を直接 `rg` する。索引に無いことは
   「Research に無い」ことを意味しない。
 
 ## 索引

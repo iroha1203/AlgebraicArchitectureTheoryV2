@@ -12,7 +12,7 @@ origin: cycle-64
 tags: [quality-surface, source-ref, handoff, repair, transversal]
 created: 2026-06-21
 cycle: 64
-lean: Formal/AG/Research/QualitySurface/HandoffRepairTransversal.lean
+lean: research/lean/ResearchLean/QualitySurface/HandoffRepairTransversal.lean
 ---
 
 # Component-support transversal theorem for handoff repairs
@@ -113,7 +113,7 @@ visible shape が同じ repair 候補でも protected component support が違�
 
 ## 証明・根拠の見込み
 
-Lean file: `Formal/AG/Research/QualitySurface/HandoffRepairTransversal.lean`
+Lean file: `research/lean/ResearchLean/QualitySurface/HandoffRepairTransversal.lean`
 
 予定 declaration:
 
@@ -169,12 +169,12 @@ Lean file: `Formal/AG/Research/QualitySurface/HandoffRepairTransversal.lean`
 
 ## G3 evidence
 
-- Lean file: `Formal/AG/Research/QualitySurface/HandoffRepairTransversal.lean`
-- aggregate import: `Formal/AG/Research.lean`
+- Lean file: `research/lean/ResearchLean/QualitySurface/HandoffRepairTransversal.lean`
+- aggregate import: `research/lean/ResearchLean.lean`
 - local checks:
-  - `lake env lean Formal/AG/Research/QualitySurface/HandoffRepairTransversal.lean`: pass
-  - `lake env lean Formal/AG/Research.lean`: pass
-  - `lake build FormalAGResearch`: pass
+  - `lake env lean research/lean/ResearchLean/QualitySurface/HandoffRepairTransversal.lean`: pass
+  - `lake env lean research/lean/ResearchLean.lean`: pass
+  - `lake build ResearchLean`: pass
   - `lake build`: pass。既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter warning のみ。
   - `lake env lean .tmp/handoff_repair_transversal_axioms.lean`: pass
   - target `axiom|admit|sorry|unsafe` scan: no matches

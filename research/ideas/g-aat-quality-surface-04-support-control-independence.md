@@ -20,7 +20,7 @@ origin: G-04-Cycle67
 tags: [target-theorem, finite-query, support-shadow, support-control, recovery, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 67
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlIndependence.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlIndependence.lean
 ---
 
 # Support-Control Premise Independence
@@ -65,7 +65,7 @@ finite support recovery を持つ analyzer でも、support-control / current-sh
 
 - `score_reason`: Cycle66 positive route の hidden premise 化を防ぐ complete-support Bool anti-weakening witness。
 - `dullness_risk`: 中。既存 no-current-factor / no-certificate witness を support-control premise へ接続する。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -96,8 +96,8 @@ tooling が support-shadow recovery を持っていても、support-control cert
 
 - `research/ideas/g-aat-quality-surface-04-support-control-target-route.md`
 - `research/ideas/g-aat-quality-surface-04-support-shadow-certificate-independence.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlRoute.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateIndependence.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlRoute.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateIndependence.lean`
 
 ## 進捗ログ
 

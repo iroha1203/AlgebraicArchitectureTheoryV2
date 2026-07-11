@@ -20,7 +20,7 @@ origin: G-04 Cycle 17
 tags: [target-theorem, target-refinement, finite-shadow, trace-support, missed-coordinate]
 created: 2026-06-25
 cycle: 17
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteSupportSeparation.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteSupportSeparation.lean
 ---
 
 # Finite Support Missed Coordinate Boundary

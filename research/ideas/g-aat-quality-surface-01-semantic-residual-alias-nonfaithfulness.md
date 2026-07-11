@@ -70,7 +70,7 @@ viewer / dashboard / review tooling は component row だけでなく semantic r
 
 ## 証明・根拠
 
-Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualAliasNonfaithfulness.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualAliasNonfaithfulness.lean` に固定した。
 
 - `SameSemanticComponentProjection`
 - `ResidualAliasGap`
@@ -87,8 +87,8 @@ Lean 証拠は `Formal/AG/Research/QualitySurface/SemanticResidualAliasNonfaithf
 
 G3 実績:
 
-- `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualAliasNonfaithfulness.lean`: pass。
-- `lake build FormalAGResearch`: pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualAliasNonfaithfulness.lean`: pass。
+- `lake build ResearchLean`: pass。
 - axiom probe: generic alias-gap lemmas は axiom-free。selected refined repair-frontier witness / selected closure nonfaithfulness / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 
 ## 審判メモ
@@ -123,4 +123,4 @@ G3 実績:
 ## 進捗ログ
 
 - 2026-06-22: G1 generic obstruction candidate として residual alias gap を提示し、Cycle 81 picked とした。
-- 2026-06-22: Lean 証拠を `SemanticResidualAliasNonfaithfulness.lean` に固定し、単体 `lake env lean`、`lake build FormalAGResearch`、axiom probe が通った。
+- 2026-06-22: Lean 証拠を `SemanticResidualAliasNonfaithfulness.lean` に固定し、単体 `lake env lean`、`lake build ResearchLean`、axiom probe が通った。

@@ -30,7 +30,7 @@ GOAL(研究で成し遂げたいこと)
 | `ideas/` | 候補を一件ずつ書いたカード。選にもれたものや保留は `ideas/archived/` へ移す |
 | `reports/` | GOAL の能力がどう増えたかを書くレポート。GOAL ひとつにつき一つ |
 | `DESIGN.md` | この仕組みをいまの形にした理由の記録 |
-| `Formal/AG/Research/` | Lean による検証の作業場。`research/` には入れず、リポジトリ内の別ディレクトリに置く。`Formal/AG` 本体は参照のみ可 |
+| `research/lean/ResearchLean/` | Lean による検証の作業場。`research/` には入れず、リポジトリ内の別ディレクトリに置く。`Formal/AG` 本体は参照のみ可 |
 
 ## 状態の正本
 

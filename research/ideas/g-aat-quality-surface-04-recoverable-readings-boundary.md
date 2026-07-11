@@ -20,7 +20,7 @@ anti_weakening_verdict: pass as target-refinement; reject if promoted to target 
 claim_boundary: not target completion; exact support-shadow adequacy and recoverability are completion-sensitive visible premises.
 math_lean_review_scope: not run this cycle
 lean_files:
-  - Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean
+  - research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean
 lean_declarations:
   - QueryReadingsRecoveringPost
   - queryTraceReadingsPost
@@ -43,7 +43,7 @@ lean_declarations:
   - not_boolTrueTraceQuerySupportShadowObservation_exists_semanticReadingAdequacy
   - nilQuery_queryTraceReadingsObservation_currentShadowSemanticReading_faithful
   - not_boolTrueQueryTraceReadingsObservation_currentShadowSemanticReading_faithful
-t3_verification: focused Lean, module build, Formal.AG.Research, FormalAGResearch, full lake build, axiom audit, placeholder scan, hidden Unicode scan, local path scan, and git diff check passed.
+t3_verification: focused Lean, module build, ResearchLean.AG, ResearchLean, full lake build, axiom audit, placeholder scan, hidden Unicode scan, local path scan, and git diff check passed.
 ---
 
 # Recoverable Readings Coordinate-Extraction Boundary
@@ -53,7 +53,7 @@ faithfulness to query-coordinate extensionality for uniformly output-decodable
 post-maps.
 
 The new Lean file
-`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean`
+`research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean`
 defines `QueryReadingsRecoveringPost`, a visible decoder premise saying that the
 post-map output uniformly recovers the finite query readings.  Under this
 premise, current-shadow reading faithfulness forces the query trace vector to

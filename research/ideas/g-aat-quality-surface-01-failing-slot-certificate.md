@@ -27,8 +27,8 @@ lean: proved-in-research
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/FiniteRouteFamilyExactLocus.lean`
-- `Formal/AG/Research/QualitySurface/MultiRouteCorrectionSystem.lean`
+- `research/lean/ResearchLean/QualitySurface/FiniteRouteFamilyExactLocus.lean`
+- `research/lean/ResearchLean/QualitySurface/MultiRouteCorrectionSystem.lean`
 
 ## 非自明性
 
@@ -58,7 +58,7 @@ route family repair status が失敗したとき、その失敗は単なる bool
 
 ## 証明・根拠
 
-Lean file: `Formal/AG/Research/QualitySurface/FailingSlotCertificate.lean`
+Lean file: `research/lean/ResearchLean/QualitySurface/FailingSlotCertificate.lean`
 
 Proved declarations:
 
@@ -78,15 +78,15 @@ Boundary:
 
 ## 審判メモ
 
-- 厳密性: accept/base70。Cycle 53 の exact locus と failing-slot theorem から直接に出る面はあるが、typed certificate、no-certificate exactness、mixed concrete package により単なる rename ではない。claim boundary は `Formal/AG/Research` の route-slot family に限定する。
+- 厳密性: accept/base70。Cycle 53 の exact locus と failing-slot theorem から直接に出る面はあるが、typed certificate、no-certificate exactness、mixed concrete package により単なる rename ではない。claim boundary は `research/lean/ResearchLean` の route-slot family に限定する。
 - 研究価値: accept/base70。Cycle 53 の exact locus を failure certificate interface へ上げる。minimality / computable scan までは出ていないため base80 にはしない。
 - repo 全体価値: accept/base70。reportable obstruction certificate として route-family failure を固定し、paper seed と次 frontier へ接続する。
 - ライバル比較: accept/base70。ADL / conformance checker との差分は failing status 表示ではなく、certificate object と no-certificate exactness theorem に限定する。
 
 ## Verification
 
-- `lake env lean Formal/AG/Research/QualitySurface/FailingSlotCertificate.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/FailingSlotCertificate.lean`: pass
+- `lake build ResearchLean`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting in the Lean file: pass
 - `.tmp/failing_slot_certificate_axioms.lean`: pass
   - axiom-free: `mixedRouteSlotFailingCertificate`, `mixedRouteSlot_exists_failingSlotCertificate`

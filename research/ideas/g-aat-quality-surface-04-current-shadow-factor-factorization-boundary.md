@@ -20,7 +20,7 @@ origin: G-04-Cycle59
 tags: [target-theorem, finite-query, current-shadow-factorization, target-surface, universal-factorization]
 created: 2026-06-25
 cycle: 59
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorFactorizationBoundary.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorFactorizationBoundary.lean
 ---
 
 # Raw Current-Shadow Factor Target-Surface Route
@@ -67,7 +67,7 @@ factorization へ直接使える。ただし coordinate certificate との交換
 
 - `score_reason`: raw current-shadow factorization face を target-surface universal factorization route graph に接続する support-node。
 - `dullness_risk`: 中。既存 theorem の合成だが、factorization claim の強さと route を明示する。
-- `proof_or_evidence_plan`: focused Lean、module build、`Formal.AG.Research` / `FormalAGResearch` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: focused Lean、module build、`ResearchLean.AG` / `ResearchLean` / full `lake build`、reported declarations の axiom audit、diff / unfinished-marker / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -99,8 +99,8 @@ route package は Cycle58 の exact boundary と、各 face から target-surfac
 
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-entry-factorization-boundary.md`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`
-- `Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryFactorizationBoundary.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`
+- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryFactorizationBoundary.lean`
 
 ## 進捗ログ
 

@@ -20,7 +20,7 @@ origin: T1-cycle45
 tags: [target-theorem-loop, G-04, finite-query-representation, semantic-reading, anti-weakening]
 created: 2026-06-25
 cycle: 45
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQuerySemanticReadingCertificateExtraction.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQuerySemanticReadingCertificateExtraction.lean
 ---
 
 # Semantic Reading Recovery Certificate Extraction
@@ -80,7 +80,7 @@ Lean 上の bridge として固定する。
 
 - `score_reason`: Cycle 40 の realized recovery と Cycle 44 の explicit certificate surface を接続し、certificate の非循環な構成条件を theorem-level にする。
 - `dullness_risk`: current-shadow reading 固定の既存 theorem を単に certificate 語彙へ言い換えるだけなら弱い。任意 reading の collapse + faithfulness + recovery から構成することを主成果にする。
-- `proof_or_evidence_plan`: 新規 Lean file、reported declarations の `#print axioms`、`FormalAGResearch` build、placeholder / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: 新規 Lean file、reported declarations の `#print axioms`、`ResearchLean` build、placeholder / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 
@@ -139,4 +139,4 @@ Proved declarations:
 ## 進捗ログ
 
 - 2026-06-25: Cycle 45 T1 で picked。T2 four-judge gate accepted.
-- 2026-06-25: Lean file と report 同期中。focused build、`FormalAGResearch`、full `lake build`、axiom audit は pass。
+- 2026-06-25: Lean file と report 同期中。focused build、`ResearchLean`、full `lake build`、axiom audit は pass。

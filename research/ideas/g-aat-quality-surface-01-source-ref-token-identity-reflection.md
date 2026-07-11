@@ -40,8 +40,8 @@ namespace の injectivity は主張しない。
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/CodebaseTracePacket.lean`
-- `Formal/AG/Research/QualitySurface/SourceRefTupleBridge.lean`
+- `research/lean/ResearchLean/QualitySurface/CodebaseTracePacket.lean`
+- `research/lean/ResearchLean/QualitySurface/SourceRefTupleBridge.lean`
 - `sourceRefToTraceToken`
 - `projectedTraceField`
 - `PacketTupleAligned`
@@ -84,7 +84,7 @@ losslessness である。
 
 ## 証明・根拠の見込み
 
-Lean proof は `Formal/AG/Research/QualitySurface/SourceRefTokenIdentityReflection.lean`
+Lean proof は `research/lean/ResearchLean/QualitySurface/SourceRefTokenIdentityReflection.lean`
 に閉じる。
 
 主要 theorem:
@@ -106,8 +106,8 @@ Lean proof は `Formal/AG/Research/QualitySurface/SourceRefTokenIdentityReflecti
 
 ## G3 監査
 
-- `lake env lean Formal/AG/Research/QualitySurface/SourceRefTokenIdentityReflection.lean` pass。
-- `lake build FormalAGResearch` pass。
+- `lake env lean research/lean/ResearchLean/QualitySurface/SourceRefTokenIdentityReflection.lean` pass。
+- `lake build ResearchLean` pass。
 - `lake env lean .tmp/source_ref_token_identity_axioms.lean` pass。
 - reported declaration はすべて `does not depend on any axioms`。
 - G3 公理検査: pass。`sorryAx` なし、標準公理もなし。

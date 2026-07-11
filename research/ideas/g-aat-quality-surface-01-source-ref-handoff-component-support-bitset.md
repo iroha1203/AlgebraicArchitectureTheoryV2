@@ -12,7 +12,7 @@ origin: cycle-63
 tags: [quality-surface, source-ref, handoff, component-support, minimality]
 created: 2026-06-21
 cycle: 63
-lean: Formal/AG/Research/QualitySurface/SourceRefHandoffComponentSupport.lean
+lean: research/lean/ResearchLean/QualitySurface/SourceRefHandoffComponentSupport.lean
 ---
 
 # Source-ref handoff component support bitset and law minimality matrix
@@ -106,7 +106,7 @@ report が「trace だけの失敗」「repair-frontier だけの失敗」「sup
 
 ## 証明・根拠計画
 
-Lean file: `Formal/AG/Research/QualitySurface/SourceRefHandoffComponentSupport.lean`
+Lean file: `research/lean/ResearchLean/QualitySurface/SourceRefHandoffComponentSupport.lean`
 
 証明済み declaration:
 
@@ -162,12 +162,12 @@ G2-A revise への対応:
 
 ## G3 evidence
 
-- Lean file: `Formal/AG/Research/QualitySurface/SourceRefHandoffComponentSupport.lean`
-- aggregate import: `Formal/AG/Research.lean`
+- Lean file: `research/lean/ResearchLean/QualitySurface/SourceRefHandoffComponentSupport.lean`
+- aggregate import: `research/lean/ResearchLean.lean`
 - local checks:
-  - `lake env lean Formal/AG/Research/QualitySurface/SourceRefHandoffComponentSupport.lean`: pass
-  - `lake env lean Formal/AG/Research.lean`: pass
-  - `lake build FormalAGResearch`: pass
+  - `lake env lean research/lean/ResearchLean/QualitySurface/SourceRefHandoffComponentSupport.lean`: pass
+  - `lake env lean research/lean/ResearchLean.lean`: pass
+  - `lake build ResearchLean`: pass
   - `lake build`: pass。既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter warning のみ。
   - `lake env lean .tmp/source_ref_handoff_component_support_axioms.lean`: pass
   - target `axiom|admit|sorry|unsafe` scan: no matches

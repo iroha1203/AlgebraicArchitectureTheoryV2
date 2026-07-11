@@ -27,8 +27,8 @@ Cycle 45 の loss-aware atlas と Cycle 48 の staged selected correction system
 
 ## 依拠
 
-- `Formal/AG/Research/QualitySurface/LossAwareCommutatorAtlas.lean`
-- `Formal/AG/Research/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
+- `research/lean/ResearchLean/QualitySurface/LossAwareCommutatorAtlas.lean`
+- `research/lean/ResearchLean/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
 
 ## 非自明性
 
@@ -58,7 +58,7 @@ repair stage UI や diagnostic table は、visible pass/fail だけではなく�
 
 ## 証明・根拠
 
-Lean file: `Formal/AG/Research/QualitySurface/ParametrizedLossAwareAtlas.lean`
+Lean file: `research/lean/ResearchLean/QualitySurface/ParametrizedLossAwareAtlas.lean`
 
 Proved declarations:
 
@@ -95,8 +95,8 @@ Boundary:
 
 ## Verification
 
-- `lake env lean Formal/AG/Research/QualitySurface/ParametrizedLossAwareAtlas.lean`: pass
-- `lake build FormalAGResearch`: pass
+- `lake env lean research/lean/ResearchLean/QualitySurface/ParametrizedLossAwareAtlas.lean`: pass
+- `lake build ResearchLean`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/parametrized_loss_aware_atlas_axioms.lean`: pass
   - axiom-free: `paramCell_exact_iff_visible_empty`, `stagedCell_visibleTupleFlat`, `baseline_visibleLawDeletion_is_visibleLawLoss`, `baseline_tableLawDeletion_is_protectedSupportLoss`

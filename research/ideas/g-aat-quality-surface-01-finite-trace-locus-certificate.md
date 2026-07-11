@@ -11,7 +11,7 @@ origin: G1-quality-surface-cycle-6
 tags: [quality-surface, trace-locus, missing-trace, repair-frontier, scalar-collapse]
 created: 2026-06-20
 cycle: 6
-lean: Formal/AG/Research/QualitySurface/TraceLocus.lean
+lean: research/lean/ResearchLean/QualitySurface/TraceLocus.lean
 ---
 
 # Finite trace-locus certificate grid
@@ -33,8 +33,8 @@ database atom に trace token を欠く。
 ## 依拠
 
 - `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
-- cycle 4 の `Formal/AG/Research/QualitySurface/TraceTransport.lean`
-- cycle 5 の `Formal/AG/Research/QualitySurface/StateSeparation.lean`
+- cycle 4 の `research/lean/ResearchLean/QualitySurface/TraceTransport.lean`
+- cycle 5 の `research/lean/ResearchLean/QualitySurface/StateSeparation.lean`
 
 ## 非自明性
 
@@ -95,7 +95,7 @@ Lean では `TraceLocusCertificate` に visible scalar、verdict、selected supp
 ## 進捗ログ
 
 - 2026-06-20: cycle 6 の G1 候補として作成。
-- 2026-06-20: `TraceLocus.lean` を追加し、`lake env lean Formal/AG/Research/QualitySurface/TraceLocus.lean` と
-  `lake build FormalAGResearch` の通過を確認。
+- 2026-06-20: `TraceLocus.lean` を追加し、`lake env lean research/lean/ResearchLean/QualitySurface/TraceLocus.lean` と
+  `lake build ResearchLean` の通過を確認。
 - 2026-06-20: G2-A / G3 revise を受け、repair frontier exactness と repair frontier nonfaithfulness を追加し、
   主要 theorem の axiom 依存がないことを確認。

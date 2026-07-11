@@ -27,7 +27,7 @@ anti_weakening_verdict: pass if reported as an exact criterion; reject if recove
 score_reason: A Lean-feasible exact criterion closes the gap between support-shadow recovery and current-shadow factorization without hiding the coordinate premise.
 goal_advancement: Converts the open current-shadow factorization / semantic-reading adequacy node into a precise coordinate criterion under visible recovery.
 dullness_risk: low; the result is not a rename of support recovery, because it proves the missing current-shadow direction is exactly coordinate extensionality and adds a no-go witness.
-proof_or_evidence_plan: Lean theorem package added under Formal/AG/Research/QualitySurface and imported from Formal/AG/Research.lean; T3 build, axiom, and formalization quality audits pass.
+proof_or_evidence_plan: Lean theorem package added under research/lean/ResearchLean/QualitySurface and imported from research/lean/ResearchLean.lean; T3 build, axiom, and formalization quality audits pass.
 planned_theorem_names: representedFiniteTraceQueryObservation_currentShadowFactor_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings; representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings; representedFiniteTraceQueryObservation_semanticReadingAdequacy_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings; supportTraceShadowRepresentation_currentShadowFactor_iff_queryCoordinateCurrentShadowExtensional; supportTraceShadowRepresentation_currentShadowSemanticReading_faithful_iff_queryCoordinateCurrentShadowExtensional; supportTraceShadowRepresentation_semanticReadingAdequacy_iff_queryCoordinateCurrentShadowExtensional; boolCompleteSupportTraceShadow_recoversBoolTrueReadings_but_no_currentShadowFactor
 claim_boundary: finite query representations with visible observation-level recovery; no arbitrary semantic observation factorization, runtime extraction, global coherence, obstruction vanish, or target theorem completion.
 statement_strength_audit: The iff theorem makes the hidden premise visible: under recovery, current-shadow factorization / faithfulness is neither automatic nor stronger than the coordinate criterion.
@@ -37,7 +37,7 @@ origin: G-aat-quality-surface-04-cycle-42
 tags: [target-theorem, target-support, finite-query, current-shadow, anti-weakening]
 created: 2026-06-25
 cycle: 42
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoveredFactorization.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoveredFactorization.lean
 lean_declarations: representedFiniteTraceQueryObservation_currentShadowFactor_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings; representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings; representedFiniteTraceQueryObservation_semanticReadingAdequacy_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings; supportTraceShadowRepresentation_currentShadowFactor_iff_queryCoordinateCurrentShadowExtensional; supportTraceShadowRepresentation_currentShadowSemanticReading_faithful_iff_queryCoordinateCurrentShadowExtensional; supportTraceShadowRepresentation_semanticReadingAdequacy_iff_queryCoordinateCurrentShadowExtensional; boolCompleteSupportTraceShadow_recoversBoolTrueReadings_but_no_currentShadowFactor
 ---
 
@@ -126,7 +126,7 @@ The no-go witness combines Cycle 41 Bool recovery with the existing complete-sup
 - 研究価値: T2 B accept。proof distance は moderate positive、base 56。
 - material premise: T2 C accept。`ObservationRecoversQueryReadings` と `QueryTraceCoordinatesCurrentShadowExtensional` は visible support-node criteria であり、completion premise ではない。
 - repo 全体価値 / ライバル比較: T2 D accept。finite output recovery と current-shadow descent を分離する点で positive、base 56。
-- T3 axiom/build: pass。focused Lean、module build、`Formal.AG.Research`、`FormalAGResearch`、full `lake build` は通過。reported declarations 7 件は axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
+- T3 axiom/build: pass。focused Lean、module build、`ResearchLean.AG`、`ResearchLean`、full `lake build` は通過。reported declarations 7 件は axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
 - T3 formalization quality: pass。statement matches candidate、material premises visible、no hidden conclusion premise。
 - T4 SCORE / target progress: confirm。base 54、evidence multiplier 2.0、penalty 0、final +108、target_progress `support-node`。GOAL card ledger change は不要で、coordinate criterion は visible のまま残る。
 

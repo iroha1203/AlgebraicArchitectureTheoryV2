@@ -20,7 +20,7 @@ origin: T1-cycle44
 tags: [target-theorem-loop, G-04, finite-query-representation, anti-weakening]
 created: 2026-06-25
 cycle: 44
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean
 ---
 
 # Explicit Current-Shadow Coordinate Certificates
@@ -62,7 +62,7 @@ ADL、静的解析、metric dashboard、AI reviewer は support membership や r
 
 - `score_reason`: Cycle 25/26/43 の近傍整理だが、factor certificate と Bool no-current-factor witness まで明示するため proof-DAG 上の監査単位が具体化する。
 - `dullness_risk`: 既存 extensionality premise の再包装に見える危険がある。report では target completion ではなく explicit certificate boundary として書く。
-- `proof_or_evidence_plan`: 新規 Lean file、reported declarations の `#print axioms`、`FormalAGResearch` build、placeholder / hidden Unicode / local path scan。
+- `proof_or_evidence_plan`: 新規 Lean file、reported declarations の `#print axioms`、`ResearchLean` build、placeholder / hidden Unicode / local path scan。
 
 ## Target Theorem 寄与
 

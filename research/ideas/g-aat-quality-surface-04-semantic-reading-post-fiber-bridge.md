@@ -25,7 +25,7 @@ origin: G-04 Cycle 30
 tags: [target-theorem, target-support, finite-query, semantic-reading, current-shadow]
 created: 2026-06-25
 cycle: 30
-lean: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQuerySemanticSoundness.lean
+lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQuerySemanticSoundness.lean
 ---
 
 # Semantic Reading Post-Fiber Bridge
