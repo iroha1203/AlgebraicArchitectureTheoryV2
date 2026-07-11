@@ -16,7 +16,7 @@ private def normalizeName (name : Name) : String :=
   else
     userName
   -- Lean-generated private binder names can embed the declaring module path
-  -- as a string (for example `x._@.Formal.AG.Research...`).
+  -- as a string (for example a private binder with an embedded legacy path).
   -- Canonicalize those embedded paths as well so a package-root move does
   -- not alter the declaration digest.
   (normalized.toString.replace "«$RESEARCH»" "$RESEARCH")
