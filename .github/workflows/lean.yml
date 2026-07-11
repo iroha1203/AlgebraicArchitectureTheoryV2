@@ -139,7 +139,8 @@ jobs:
         run: |
           legacy_source="Formal/AG/"'Research'"/Basic.lean"
           resolved_source="$(research/lean/emit_migration_audit.sh --resolve-source "$legacy_source")"
-          test "$resolved_source" = $'MIGRATION_SOURCE\tFormal/AG/Research/Basic.lean'
+          expected_source="Formal/AG/"'Research'"/Basic.lean"
+          test "$resolved_source" = $'MIGRATION_SOURCE\t'"$expected_source"
 
       - name: Upload migration extractor smoke
         if: steps.research-changes.outputs.run == 'true'
