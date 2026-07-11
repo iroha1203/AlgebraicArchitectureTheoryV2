@@ -926,6 +926,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let insight_brief = build_insight_brief_v1(&insight_report);
             let measurement_viewer_data = build_measurement_viewer_data_v1(
                 &normalized_archmap,
+                &archmap_document,
                 &measurement_packet,
                 &measurement_summary,
                 &insight_report,

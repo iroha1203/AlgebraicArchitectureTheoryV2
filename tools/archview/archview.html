@@ -104,6 +104,17 @@
   #detail .a-pred { color: var(--ink-faint); font-style: italic; }
   #detail .a-obj { color: var(--ink-dim); }
   #detail .a-src { color: var(--ink-faint); font-size: 10.5px; margin-top: 3px; word-break: break-word; }
+  .src-row { display: flex; gap: 7px; align-items: center; font-size: 11.5px; margin: 3px 0; }
+  .src-loc { color: #8fe0ff; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; word-break: break-all; }
+  .src-sym { color: var(--ink-faint); font-size: 10.5px; }
+  .src-sem { color: var(--ink-faint); font-size: 11px; word-break: break-all; }
+  .src-copy { padding: 1px 6px; font-size: 10.5px; flex: 0 0 auto; }
+  .fid-row { display: flex; gap: 7px; align-items: flex-start; font-size: 11px; color: var(--ink-dim); margin: 3px 0; }
+  .fid-tag { flex: 0 0 auto; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.4px; padding: 1px 6px;
+    border-radius: 999px; margin-top: 1px; }
+  .fid-tag.measured { background: rgba(56,224,200,0.14); color: var(--structural-zero); }
+  .fid-tag.layout { background: rgba(120,150,200,0.16); color: #9fc0e8; }
+  .fid-tag.decoration { background: rgba(106,119,144,0.18); color: var(--ink-faint); }
   #detail .ins-action { font-size: 12.5px; color: var(--structural-zero); }
   #detail .ins-btn { margin: 10px 8px 0 0; font-size: 11.5px; }
   #detail .ins-nonclaim { font-size: 10.5px; color: var(--ink-faint); line-height: 1.45; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--glass-line); }
@@ -193,6 +204,11 @@
     <div class="group" id="scene-buttons"></div>
     <div class="sep"></div>
     <div class="group" id="layer-toggles"></div>
+    <div class="sep"></div>
+    <div class="group">
+      <div class="chip" id="term-mode" title="Switch between engineer wording and the precise AG vocabulary">Engineer terms</div>
+      <label class="toggle" title="Off = draw only measurement-driven geometry: no glow, no pulse, no arcs"><input type="checkbox" id="decor-toggle" checked />Decoration</label>
+    </div>
     <div class="grow"></div>
     <input id="search" placeholder="find atom / context…" autocomplete="off" />
     <button class="bare" id="reset-cam">Reset view</button>
@@ -293,6 +309,57 @@ const FAMILY_COLORS = {
   runtime: 0xffc14d,
 };
 const familyColor = (f) => FAMILY_COLORS[f] ?? 0xb9c4d6;
+
+/* ---- terminology lanes ----------------------------------------------------
+ * Every user-facing phrase has an engineer lane and a math lane. Both describe
+ * the SAME measured content; the lane changes wording only, never the claim.
+ * -------------------------------------------------------------------------- */
+let TERM_MODE = localStorage.getItem("archview.termMode") === "math" ? "math" : "engineer";
+const T = (pair) => (typeof pair === "string" ? pair : (TERM_MODE === "math" ? pair.math : pair.eng));
+
+/* ---- decoration switch ----------------------------------------------------
+ * DECOR=false draws measurement-driven geometry only: no bloom, no pulse,
+ * no probes, seams as straight solid tubes. Same data, no theater.
+ * -------------------------------------------------------------------------- */
+let DECOR = localStorage.getItem("archview.decor") !== "off";
+
+/* per-element fidelity declaration: which visual channels are measured, which
+ * are layout embedding, which are pure decoration. Shown in the detail panel. */
+const FIDELITY = {
+  context: [
+    ["radius", "measured", "∝ number of atoms observed in this context"],
+    ["adjacency to neighbors", "measured", "cover restriction edges"],
+    ["absolute position", "layout", "force-directed embedding of the measured adjacency; coordinates carry no verdict"],
+    ["glass material, iridescence", "decoration", ""],
+  ],
+  atom: [
+    ["shape and hue", "measured", "atom family (kind)"],
+    ["size", "measured", "∝ valence"],
+    ["amber color", "measured", "membership in the measured H¹ cocycle support"],
+    ["position inside the cell", "layout", "centroid of measured context memberships + deterministic declump jitter"],
+    ["glow / pulse", "decoration", ""],
+  ],
+  strut: [
+    ["existence", "measured", "cover restriction edge"],
+    ["thickness", "measured", "∝ number of mismatch markers"],
+    ["amber vs grey", "measured", "carries a mismatch marker or not"],
+    ["glow", "decoration", ""],
+  ],
+  seam: [
+    ["which edges", "measured", "the H¹ cocycle support edges"],
+    ["arch shape, dashes, knots, probe", "decoration", "the straight measured edge is shown when decoration is off"],
+  ],
+  face: [
+    ["existence", "measured", "triple overlap in the nerve"],
+    ["opacity", "measured", "∝ shared atoms"],
+  ],
+  curvature: [["height", "measured", "∝ hotspot weight (analytic lane)"], ["cone shape", "decoration", ""]],
+  spectralGap: [["slab height", "measured", "∝ spectral gap (analytic lane)"]],
+  period: [["tube radius", "measured", "∝ pairing magnitude"], ["ring placement", "decoration", "schematic, not measured winding"]],
+  cage: [["which atoms", "measured", "forbidden support"], ["box shape", "decoration", ""]],
+  repair: [["rung count", "measured", "= hitting-set size"], ["ladder, probe", "decoration", ""]],
+  spectrumCell: [["pin height/sign", "measured", "signed curvature (analytic lane)"]],
+};
 
 /* ---- deterministic prng (no Math.random in layout) ----------------------- */
 function hash32(str) {
@@ -402,7 +469,7 @@ function restoreMaterial(obj) {
 function restoreHidden() { for (const o of hiddenForBloom) o.visible = true; hiddenForBloom.length = 0; }
 let bloomOk = true;
 function renderFrame() {
-  if (!bloomOk) { renderer.render(scene, camera); return; }
+  if (!bloomOk || !DECOR) { renderer.render(scene, camera); return; }
   const bg = scene.background;
   try {
     scene.background = null;                 // keep the backdrop out of the bloom pass (only evidence blooms)
@@ -552,6 +619,7 @@ function buildModel(data) {
     anchorByAtom.set(n.nodeId, {
       subjectRef: n.subjectRef, objectRef: n.objectRef, predicate: n.predicate,
       family: n.atomFamily, sourceRefs: (n.sourceRefSamples || []).map((s) => s.ref),
+      sourceSamples: n.sourceRefSamples || [],   // resolved {ref, path, symbol, line, section} when the ArchMap declares them
     });
   }
   // ranked insight cards. Rank = projection of emitted fields only: measured-first, then severity, then magnitude.
@@ -824,14 +892,16 @@ function buildAtoms() {
       color: isObstruction ? COL.nonzero : fc,
       roughness: 0.22, metalness: 0.15,
       emissive: isObstruction ? COL.nonzero : fc,
-      emissiveIntensity: isObstruction ? 1.7 : 1.45,   // calm self-glow for lawful beads; only obstruction blooms
+      // calm self-glow for lawful beads; only obstruction blooms. Glow is decoration —
+      // measured-only mode keeps color/shape/size (measured) and drops the theater.
+      emissiveIntensity: DECOR ? (isObstruction ? 1.7 : 1.45) : (isObstruction ? 0.6 : 0.35),
     });
     const m = makeGlyph(atom.family, mat);
     m.position.copy(p); m.scale.setScalar(r);
     m.userData.baseEmissive = mat.emissive.getHex();
     m.userData.baseIntensity = mat.emissiveIntensity;
     m.userData.baseScale = r;
-    if (isObstruction) { m.layers.enable(BLOOM_LAYER); m.userData.pulse = true; }
+    if (isObstruction && DECOR) { m.layers.enable(BLOOM_LAYER); m.userData.pulse = true; }
     G.atoms.add(m);
     pickables.push({ mesh: m, info: { type: "atom", atom, isObstruction } });
   }
@@ -842,40 +912,49 @@ function buildSeam() {
   if (!MODEL.cocycle.visible || !MODEL.cocycle.supportEdges.length) return;
   const arch = (pa, pb, tt) => {
     const v = new THREE.Vector3().lerpVectors(pa, pb, tt);
-    v.y += Math.sin(tt * Math.PI) * 14;                  // arch the seam up into the H¹ mid-band
+    if (DECOR) v.y += Math.sin(tt * Math.PI) * 14;       // arch is decoration; measured content = which edges
     return v;
   };
   for (const se of MODEL.cocycle.supportEdges) {
     const pa = CTXPOS.get(se.sourceContextRef), pb = CTXPOS.get(se.targetContextRef);
     if (!pa || !pb) continue;
-    // glowing dashed stitches between the two contexts
-    const segs = 11;
-    for (let i = 0; i < segs; i++) {
-      if (i % 2 === 1) continue;
-      const a = arch(pa, pb, i / segs), b = arch(pa, pb, (i + 1) / segs);
-      const m = tube(a, b, 1.9, new THREE.MeshStandardMaterial({
-        color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.6,
-        roughness: 0.3, metalness: 0.1,
-      }));
-      m.layers.enable(BLOOM_LAYER); m.userData.pulse = true;
+    if (DECOR) {
+      // glowing dashed stitches between the two contexts
+      const segs = 11;
+      for (let i = 0; i < segs; i++) {
+        if (i % 2 === 1) continue;
+        const a = arch(pa, pb, i / segs), b = arch(pa, pb, (i + 1) / segs);
+        const m = tube(a, b, 1.9, new THREE.MeshStandardMaterial({
+          color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.6,
+          roughness: 0.3, metalness: 0.1,
+        }));
+        m.layers.enable(BLOOM_LAYER); m.userData.pulse = true;
+        G.seam.add(m);
+      }
+      // stitch knots at the gap ends — the torn seam reads as discrete stitches
+      for (const tt of [0.06, 0.5, 0.94]) {
+        const knot = new THREE.Mesh(new THREE.SphereGeometry(2.6, 18, 14),
+          new THREE.MeshStandardMaterial({ color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.4, roughness: 0.25 }));
+        knot.position.copy(arch(pa, pb, tt)); knot.layers.enable(BLOOM_LAYER); knot.userData.pulse = true;
+        G.seam.add(knot);
+      }
+    } else {
+      // decoration off: the measured support edge as a plain straight tube, amber, no bloom
+      const m = tube(pa, pb, 1.6, new THREE.MeshStandardMaterial({
+        color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 0.6, roughness: 0.35, metalness: 0.1 }));
       G.seam.add(m);
-    }
-    // stitch knots at the gap ends — the torn seam reads as discrete stitches
-    for (const tt of [0.06, 0.5, 0.94]) {
-      const knot = new THREE.Mesh(new THREE.SphereGeometry(2.6, 18, 14),
-        new THREE.MeshStandardMaterial({ color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.4, roughness: 0.25 }));
-      knot.position.copy(arch(pa, pb, tt)); knot.layers.enable(BLOOM_LAYER); knot.userData.pulse = true;
-      G.seam.add(knot);
     }
     const mid = arch(pa, pb, 0.5);
     const proxy = pickProxy(mid, 5);
     pickables.push({ mesh: proxy, info: { type: "seam", edge: se } });
     G.seam.add(proxy);
-    const lab = makeLabel("H¹ cocycle · won't close", { color: "#ffd9a8", scale: 1.15, bg: "rgba(48,26,8,0.82)" });
+    const lab = makeLabel(T({ math: "H¹ cocycle · won't close", eng: "global mismatch · loop won't close" }),
+      { color: "#ffd9a8", scale: 1.15, bg: "rgba(48,26,8,0.82)" });
     lab.position.copy(mid).add(new THREE.Vector3(0, 11, 0)); G.seam.add(lab);
   }
   // section-probe: a teal section traverses the LAWFUL struts (calm) and recoils at the seam —
   // the global section visibly failing to close. Exploration of restriction paths, not a monodromy verdict.
+  if (!DECOR) return;                                     // the probe is theater; skip it in measured-only mode
   const se0 = MODEL.cocycle.supportEdges[0];
   const pSrc = CTXPOS.get(se0.sourceContextRef), pTgt = CTXPOS.get(se0.targetContextRef);
   if (pSrc && pTgt) {
@@ -1068,7 +1147,7 @@ function buildCages() {
         G.cages.add(rung);
       }
       // descending probe (shortest ladder only) that STOPS at the lower-bound floor, never landing
-      if (isShortest) {
+      if (isShortest && DECOR) {
         const probe = new THREE.Mesh(new THREE.SphereGeometry(2.0, 16, 12),
           new THREE.MeshStandardMaterial({ color: COL.zero, emissive: COL.zero, emissiveIntensity: 1.4, roughness: 0.3 }));
         probe.userData.descend = true; probe.userData.topY = top.y; probe.userData.floorY = lawfulY + 3;
@@ -1158,27 +1237,39 @@ function pickProxy(pos, r) {
  * ========================================================================== */
 const SCENES = {
   nerve: {
-    title: "Nerve & Cover", q: "What finite site and cover did ArchSig measure?",
+    title: { math: "Nerve & Cover", eng: "Modules & Overlaps" },
+    q: { math: "What finite site and cover did ArchSig measure?",
+         eng: "Which modules and shared boundaries did ArchSig observe?" },
     show: { cells: 1, atoms: 1, struts: 1, faces: 1, labels: 1, verdict: 0 },
   },
   gluing: {
-    title: "Gluing & H¹ obstruction", q: "Does local agreement glue to a global section? Where does it fail?",
+    title: { math: "Gluing & H¹ obstruction", eng: "Global consistency" },
+    q: { math: "Does local agreement glue to a global section? Where does it fail?",
+         eng: "Modules agree pairwise — do they stay consistent around every loop? Where does it break?" },
     show: { cells: 1, atoms: 1, struts: 1, faces: 1, seam: 1, labels: 1, verdict: 1 },
   },
   curvature: {
-    title: "Curvature / Hodge debt", q: "Where does curvature concentrate? (analytic reading, not a verdict)",
+    title: { math: "Curvature / Hodge debt", eng: "Stress concentration" },
+    q: { math: "Where does curvature concentrate? (analytic reading, not a verdict)",
+         eng: "Which parts of the structure carry the most tension? (advisory reading, not a verdict)" },
     show: { cells: 1, struts: 1, terrain: 1, labels: 1 },
   },
   periods: {
-    title: "Period / Stokes", q: "How do classes wind around cycles? (analytic reading)",
+    title: { math: "Period / Stokes", eng: "Cycle readings" },
+    q: { math: "How do classes wind around cycles? (analytic reading)",
+         eng: "What do the measured loop readings say? (advisory reading)" },
     show: { cells: 1, struts: 1, periods: 1, labels: 1 },
   },
   forbidden: {
-    title: "Forbidden support / flatness", q: "Which atom co-occurrences are forbidden, and how could a section repair?",
+    title: { math: "Forbidden support / flatness", eng: "Forbidden combinations" },
+    q: { math: "Which atom co-occurrences are forbidden, and how could a section repair?",
+         eng: "Which combinations are ruled out, and what are the smallest changes that could fix them?" },
     show: { cells: 1, atoms: 1, cages: 1, labels: 1 },
   },
   boundary: {
-    title: "Projection boundary", q: "What did the selected profile observe — and what stays silent?",
+    title: { math: "Projection boundary", eng: "What was measured" },
+    q: { math: "What did the selected profile observe — and what stays silent?",
+         eng: "What did this run actually measure — and what does it stay silent about?" },
     show: { cells: 1, atoms: 1, struts: 1, faces: 1, labels: 1, verdict: 1 },
   },
 };
@@ -1193,8 +1284,8 @@ function applyScene(id, opts = {}) {
   horizon.material.opacity = id === "boundary" ? 0.24 : 0.16;
   scene.fog.density = id === "boundary" ? BASE_FOG * 1.5 : BASE_FOG;
 
-  document.getElementById("q-title").textContent = s.title;
-  document.getElementById("q-question").textContent = s.q;
+  document.getElementById("q-title").textContent = T(s.title);
+  document.getElementById("q-question").textContent = T(s.q);
   for (const btn of document.querySelectorAll("#scene-buttons .scene-btn"))
     btn.classList.toggle("on", btn.dataset.scene === id);
 
@@ -1239,11 +1330,14 @@ function frameScene(id) {
  * source-anchored, navigable surface. It reads emitted fields; computes no verdict.
  * ========================================================================== */
 const KIND_LABEL = {
-  global_glue_mismatch: "H¹ glue mismatch", minimal_repair_candidate: "Minimal repair",
-  policy_conflict: "Policy conflict", measurement_boundary: "Measurement boundary",
-  analytic_debt_mass: "Hodge debt (analytic)", no_measured_obstruction: "No measured obstruction",
+  global_glue_mismatch: { math: "H¹ glue mismatch", eng: "Global consistency mismatch" },
+  minimal_repair_candidate: { math: "Minimal repair", eng: "Smallest candidate fix" },
+  policy_conflict: { math: "Policy conflict", eng: "Policy conflict" },
+  measurement_boundary: { math: "Measurement boundary", eng: "Measurement boundary" },
+  analytic_debt_mass: { math: "Hodge debt (analytic)", eng: "Structural stress (advisory)" },
+  no_measured_obstruction: { math: "No measured obstruction", eng: "No measured inconsistency" },
 };
-const kindLabel = (k) => KIND_LABEL[k] || (k || "insight").replace(/_/g, " ");
+const kindLabel = (k) => (KIND_LABEL[k] ? T(KIND_LABEL[k]) : (k || "insight").replace(/_/g, " "));
 // emitted ArchSig sceneId -> ArchView geometry scene
 const SCENE_MAP = {
   overview: "nerve", "site-cover": "nerve", "cech-gluing": "gluing", "cech-h1-mismatch": "gluing",
@@ -1323,7 +1417,7 @@ function showInsightDetail(ins) {
     `<div class="anchor"><span class="a-subj">${escapeHtml(a.subjectRef || ref)}</span>${
       a.predicate ? `<span class="a-pred"> ${escapeHtml(a.predicate)} </span>` : " "}${
       a.objectRef ? `<span class="a-obj">${escapeHtml(String(a.objectRef).slice(0, 60))}</span>` : ""}${
-      (a.sourceRefs || []).length ? `<div class="a-src">${a.sourceRefs.map(escapeHtml).join(" · ")}</div>` : ""}</div>`).join("");
+      sourceRows(a.sourceSamples, { max: 3 })}</div>`).join("");
   const lane = insightLane(ins);
   el.innerHTML = `
     <div class="kind" style="color:${hex(lane)}">${ins.isObstruction ? "measured obstruction" : ins.isMeasured ? "measured · zero" : "analytic / boundary"} · ${escapeHtml(ins.severity)}</div>
@@ -1335,6 +1429,7 @@ function showInsightDetail(ins) {
     ${MODEL.toursByInsight.has(ins.id) ? `<button class="bare ins-btn" id="tour-btn">▶ Walk me there</button>` : ""}
     <button class="bare ins-btn" id="copy-refs-btn">⧉ Copy source refs</button>
     ${(ins.nonClaims || []).length ? `<div class="ins-nonclaim">${ins.nonClaims.map((n) => "— " + escapeHtml(n)).join("<br>")}</div>` : ""}`;
+  wireCopyButtons(el);
   const tb = document.getElementById("tour-btn");
   if (tb) tb.addEventListener("click", () => startTour(ins));
   const cb = document.getElementById("copy-refs-btn");
@@ -1435,10 +1530,54 @@ function isUnderVisibleGroup(mesh) {
   return true;
 }
 
+/* ---- code landing: resolved source locations from the supplied ArchMap ---- */
+function codeLoc(sample) {
+  if (!sample || !sample.path) return null;
+  return sample.path + (sample.line != null ? `:${sample.line}` : "");
+}
+function sourceRows(samples, { max = 6 } = {}) {
+  const out = [];
+  for (const s of (samples || []).slice(0, max)) {
+    const loc = codeLoc(s);
+    if (loc) out.push(`<div class="src-row"><span class="src-loc" title="${escapeHtml(s.ref || "")}">${escapeHtml(loc)}</span>${
+      s.symbol ? `<span class="src-sym">${escapeHtml(s.symbol)}</span>` : ""}<button class="bare src-copy" data-loc="${escapeHtml(loc)}" title="Copy path:line">⧉</button></div>`);
+    else if (s.ref) out.push(`<div class="src-row"><span class="src-sem">${escapeHtml(s.ref)}${s.section ? " · " + escapeHtml(s.section) : ""}</span></div>`);
+  }
+  return out.join("");
+}
+function wireCopyButtons(rootEl) {
+  for (const b of rootEl.querySelectorAll(".src-copy")) b.addEventListener("click", (e) => {
+    e.stopPropagation();
+    navigator.clipboard?.writeText(b.dataset.loc);
+    const prev = b.textContent; b.textContent = "✓";
+    setTimeout(() => { b.textContent = prev === "✓" ? "⧉" : prev; }, 1200);
+  });
+}
+/* per-element fidelity declaration */
+function fidelityRows(type) {
+  const rows = FIDELITY[type]; if (!rows) return "";
+  return `<div class="sec-h">${T({ math: "Fidelity — what drives this shape", eng: "What is measured here" })}</div>` +
+    rows.map(([ch, st, note]) =>
+      `<div class="fid-row"><span class="fid-tag ${st}">${st}</span><span>${escapeHtml(ch)}${note ? " — " + escapeHtml(note) : ""}</span></div>`).join("");
+}
+/* the disagreeing section declarations behind a mismatch edge, with code landings */
+function conventionRows(atomRefs, heading) {
+  const cards = [];
+  for (const r of atomRefs || []) {
+    const a = MODEL.anchorByAtom.get(r); if (!a) continue;
+    cards.push(`<div class="anchor"><span class="a-subj">${escapeHtml(a.subjectRef || r)}</span>${
+      a.objectRef ? `<div class="a-obj">${escapeHtml(String(a.objectRef))}</div>` : ""}${
+      sourceRows(a.sourceSamples, { max: 3 })}</div>`);
+  }
+  return cards.length ? `<div class="sec-h">${heading}</div>${cards.join("")}` : "";
+}
+
+let LAST_DETAIL = null; // re-render the open selection when the term lane flips
 function showDetail(info) {
+  LAST_DETAIL = info;
   const el = document.getElementById("detail");
   el.classList.remove("empty");
-  let kind = info.type, title = "", rows = [], badge = "";
+  let kind = info.type, title = "", rows = [], badge = "", extra = "";
   if (info.type === "context") {
     title = info.ctx.id; kind = "context (nerve vertex)";
     rows = [["atoms", (info.ctx.atomIds || []).length], ["restricts to", (info.ctx.restrictsTo || []).join(", ") || "—"],
@@ -1450,23 +1589,32 @@ function showDetail(info) {
     rows = [["predicate", info.atom.predicate || "—"], ["valence", info.atom.valence],
       ["contexts", (info.atom.contexts || []).join(", ") || "—"], ["family", info.atom.family]];
     if (anc.objectRef) rows.push(["object", String(anc.objectRef).slice(0, 70)]);
-    if ((anc.sourceRefs || []).length) rows.push(["source refs", anc.sourceRefs.join(" · ")]);
-    badge = info.isObstruction ? `<span class="badge nonzero">on the H¹ cocycle support</span>` : "";
+    badge = info.isObstruction
+      ? `<span class="badge nonzero">${T({ math: "on the H¹ cocycle support", eng: "part of the measured global mismatch" })}</span>` : "";
+    const src = sourceRows(anc.sourceSamples);
+    if (src) extra = `<div class="sec-h">${T({ math: "Source landing", eng: "Where in the code" })}</div>${src}`;
   } else if (info.type === "strut") {
-    title = info.edge.id; kind = "cover restriction edge";
-    rows = [["shared atoms", info.edge.support.length], ["support", info.edge.support.join(", ") || "—"],
+    title = info.edge.id; kind = T({ math: "cover restriction edge", eng: "shared boundary between two modules" });
+    rows = [["shared atoms", info.edge.support.length],
       ["edge.value", `${info.edge.value} (parity = |support| mod 2)`]];
-    badge = `<span class="badge silent">overlap; value is a parity marker, not H¹ magnitude</span>`;
+    badge = `<span class="badge silent">${T({ math: "overlap; value is a parity marker, not H¹ magnitude",
+      eng: "overlap; the 0/1 value marks a disagreement, it is not a size" })}</span>`;
+    extra = conventionRows(info.edge.support,
+      T({ math: "Mismatch support values", eng: "The disagreeing declarations" }));
   } else if (info.type === "face") {
     title = info.tri.id.replace(/^nerve-face:/, ""); kind = "triple overlap (2-simplex)";
     rows = [["contexts", info.tri.ctx.join(", ")], ["shared atoms", info.tri.shared.join(", ") || "—"],
       ["H² coherence", "not visualized (silence)"]];
     badge = `<span class="badge silent">existence only — no coherence verdict</span>`;
   } else if (info.type === "seam") {
-    title = "H¹ cocycle representative"; kind = "measured obstruction";
-    rows = [["edge", info.edge.edgeId], ["support", (info.edge.supportAtomRefs || []).join(", ")],
-      ["reading", "finite F₂ Čech 1-cocycle, not a coboundary on the selected cover"]];
+    title = T({ math: "H¹ cocycle representative", eng: "The loop that will not close" });
+    kind = "measured obstruction";
+    rows = [["edge", info.edge.edgeId],
+      ["reading", T({ math: "finite F₂ Čech 1-cocycle, not a coboundary on the selected cover",
+        eng: "no assignment of per-module fixes reconciles the disagreements around this loop — the inconsistency is global, not local to any one module" })]];
     badge = `<span class="badge nonzero">measured_nonzero</span>`;
+    extra = conventionRows(info.edge.supportAtomRefs,
+      T({ math: "Cocycle support values", eng: "The disagreeing declarations" }));
   } else if (info.type === "curvature") {
     title = info.hotspot.cell; kind = "curvature hotspot";
     rows = [["weight", info.hotspot.hotspotWeight], ["lane", "analytic_reading"]];
@@ -1497,7 +1645,9 @@ function showDetail(info) {
     badge = `<span class="badge analytic">analytic relief — sign of local deviation</span>`;
   }
   el.innerHTML = `<div class="kind">${kind}</div><h3>${escapeHtml(title)}</h3>${badge}
-    <dl>${rows.map(([k, v]) => `<dt>${escapeHtml(String(k))}</dt><dd>${escapeHtml(String(v))}</dd>`).join("")}</dl>`;
+    <dl>${rows.map(([k, v]) => `<dt>${escapeHtml(String(k))}</dt><dd>${escapeHtml(String(v))}</dd>`).join("")}</dl>
+    ${extra}${fidelityRows(info.type)}`;
+  wireCopyButtons(el);
 }
 function escapeHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
@@ -1509,14 +1659,27 @@ function renderLegend() {
     `<span style="display:inline-flex;gap:4px;align-items:center;margin:2px 7px 2px 0"><span style="width:9px;height:9px;border-radius:2px;background:#${c.toString(16).padStart(6, "0")}"></span><span style="font-size:10.5px;color:var(--ink-dim)">${f}</span></span>`).join("");
   document.getElementById("legend").innerHTML = `
     <h4>How to read this</h4>
-    <div class="leg-row"><span class="leg-mark ring" style="border-color:#a9c4ef"></span><div><b>Glass cage</b> — a context (local window). Radius ∝ #atoms it observes.</div></div>
-    <div class="leg-row"><span class="leg-mark" style="background:#8294b4"></span><div><b>Grey strut</b> — cover restriction edge (no shared atoms).</div></div>
-    <div class="leg-row"><span class="leg-mark seam"></span><div><b>Amber strut / seam</b> — čech-mismatch marker &amp; the measured H¹ cocycle that won't close. Thickness ∝ #markers; edge value = |support| mod 2 (parity).</div></div>
-    <div class="leg-row"><span class="leg-mark frost"></span><div><b>Frosted face</b> — triple overlap. Existence only; H² stays silent.</div></div>
-    <div class="leg-row"><span class="leg-mark ring"></span><div><b>Teal ring</b> — the loop closes: NO measured obstruction.</div></div>
-    <div class="leg-row"><span class="leg-mark" style="background:#b69cff"></span><div><b>Lavender</b> — analytic reading (curvature / spectrum / period), never a verdict.</div></div>
+    <div class="leg-row"><span class="leg-mark ring" style="border-color:#a9c4ef"></span><div><b>Glass cage</b> — ${T({
+      math: "a context (local window). Radius ∝ #atoms it observes.",
+      eng: "a module boundary (what one part of the system can see). Radius ∝ #observed facts." })}</div></div>
+    <div class="leg-row"><span class="leg-mark" style="background:#8294b4"></span><div><b>Grey strut</b> — ${T({
+      math: "cover restriction edge (no shared atoms).",
+      eng: "a shared boundary between two modules (no disagreement observed)." })}</div></div>
+    <div class="leg-row"><span class="leg-mark seam"></span><div><b>Amber strut / seam</b> — ${T({
+      math: "čech-mismatch marker &amp; the measured H¹ cocycle that won't close. Thickness ∝ #markers; edge value = |support| mod 2 (parity).",
+      eng: "a measured disagreement between neighbors, and the loop of disagreements that no single-module fix can reconcile. Thickness ∝ #disagreements." })}</div></div>
+    <div class="leg-row"><span class="leg-mark frost"></span><div><b>Frosted face</b> — ${T({
+      math: "triple overlap. Existence only; H² stays silent.",
+      eng: "a three-way shared boundary. Drawn as existing only; nothing further is claimed." })}</div></div>
+    <div class="leg-row"><span class="leg-mark ring"></span><div><b>Teal ring</b> — ${T({
+      math: "the loop closes: NO measured obstruction.",
+      eng: "every loop closes: no inconsistency was measured." })}</div></div>
+    <div class="leg-row"><span class="leg-mark" style="background:#b69cff"></span><div><b>Lavender</b> — ${T({
+      math: "analytic reading (curvature / spectrum / period), never a verdict.",
+      eng: "advisory reading (stress / spectrum / cycles), never a pass/fail claim." })}</div></div>
     <div class="note"><b>Atom families</b> — distinct shape <i>and</i> hue (sphere = component, octahedron = relation, …):<br>${fams}</div>
-    <div class="note">Position is a layout of the measured nerve topology &amp; atom memberships — adjacency and membership are real; absolute coordinates carry no verdict. The viewer adds no new structural verdict.</div>`;
+    <div class="note"><b>Measured vs decoration</b> — sizes, thicknesses, amber marks and which edges exist are <i>measured</i>; absolute positions are a <i>layout</i> embedding of the measured adjacency; glow, pulse, arcs and probes are <i>decoration</i>. Turn "Decoration" off to draw measured geometry only; click any element for its per-channel breakdown.</div>
+    <div class="note">The viewer adds no new structural verdict.</div>`;
 }
 
 function updateStatus() {
@@ -1762,8 +1925,8 @@ function buildSceneButtons() {
     const b = document.createElement("div");
     b.className = "chip scene-btn" + (id === currentScene ? " on" : "");
     b.dataset.scene = id;
-    b.textContent = s.title;
-    b.title = s.q;
+    b.textContent = T(s.title);
+    b.title = T(s.q);
     b.addEventListener("click", () => applyScene(id));
     wrap.appendChild(b);
   }
@@ -1781,6 +1944,35 @@ function buildLayerToggles() {
     wrap.appendChild(l);
   }
 }
+/* terminology lane + decoration toggles */
+const termChip = document.getElementById("term-mode");
+function renderTermChip() {
+  termChip.textContent = TERM_MODE === "math" ? "Math terms" : "Engineer terms";
+  termChip.classList.toggle("on", TERM_MODE === "math");
+}
+termChip.addEventListener("click", () => {
+  TERM_MODE = TERM_MODE === "math" ? "engineer" : "math";
+  localStorage.setItem("archview.termMode", TERM_MODE);
+  renderTermChip(); buildSceneButtons(); renderLegend();
+  if (MODEL) {
+    highlighted = [];                             // meshes were rebuilt; drop stale highlight handles
+    buildAll();                                   // labels in the 3D scene carry lane wording too
+    applyScene(currentScene, { keepCamera: true });
+    renderInsightRail();
+    const act = (MODEL.insights || []).find((i) => i.id === activeInsightId);
+    if (act) showInsightDetail(act); else if (LAST_DETAIL) showDetail(LAST_DETAIL);
+  }
+});
+renderTermChip();
+
+const decorToggle = document.getElementById("decor-toggle");
+decorToggle.checked = DECOR;
+decorToggle.addEventListener("change", () => {
+  DECOR = decorToggle.checked;
+  localStorage.setItem("archview.decor", DECOR ? "on" : "off");
+  if (MODEL) { highlighted = []; buildAll(); applyScene(currentScene, { keepCamera: true }); }
+});
+
 document.getElementById("reset-cam").addEventListener("click", () => frameScene(currentScene));
 document.getElementById("report-toggle").addEventListener("click", () =>
   document.getElementById("report").classList.toggle("open"));
@@ -1829,6 +2021,7 @@ function animate() {
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
   controls.update();
+  if (!DECOR) { renderFrame(); return; }   // measured-only mode: static geometry, no theater
   // gentle life: obstruction pulse, calm-ring breathing, cell drift
   for (const g of [G.seam, G.atoms]) for (const o of g.children) {
     if (o.userData && o.userData.isProbe) { updateProbe(o, t); continue; }
@@ -1868,7 +2061,7 @@ window.__arch = {
       bsphere: sph ? { c: [+sph.center.x.toFixed(1), +sph.center.y.toFixed(1), +sph.center.z.toFixed(1)], r: +sph.radius.toFixed(1) } : null,
       cam: [+camera.position.x.toFixed(1), +camera.position.y.toFixed(1), +camera.position.z.toFixed(1)],
       target: [+controls.target.x.toFixed(1), +controls.target.y.toFixed(1), +controls.target.z.toFixed(1)],
-      bloomOk,
+      bloomOk, termMode: TERM_MODE, decor: DECOR,
     };
   },
   setScene: applyScene,
