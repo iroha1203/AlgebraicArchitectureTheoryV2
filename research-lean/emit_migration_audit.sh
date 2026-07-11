@@ -9,14 +9,20 @@ out="$3"
 legacy_prefix="Formal.AG.Resear""ch."
 case "$module" in "$legacy_prefix"*|ResearchLean.AG.*) ;; *) echo "E_MIGRATION_MODULE: $module" >&2; exit 1 ;; esac
 if [ -f "$package_root/$source" ]; then
-  source_abs="$package_root/$source"
+  source_candidate="$package_root/$source"
 elif [ -f "$package_root/../$source" ]; then
-  source_abs="$package_root/../$source"
+  source_candidate="$package_root/../$source"
 else
   echo "E_MIGRATION_SOURCE: $source" >&2; exit 1
 fi
-source_abs="$(cd "$(dirname "$source_abs")" && pwd)/$(basename "$source_abs")"
+source_abs="$(python3 - "$source_candidate" <<'PY'
+import pathlib
+import sys
+print(pathlib.Path(sys.argv[1]).resolve(strict=True))
+PY
+)"
 repo_root="$(git -C "$package_root" rev-parse --show-toplevel)"
+case "$source_abs" in "$repo_root"/*) ;; *) echo "E_MIGRATION_SOURCE_OUTSIDE_REPO: $source" >&2; exit 1 ;; esac
 commit="$(git -C "$repo_root" rev-parse HEAD)"
 source_rel="${source_abs#"$repo_root"/}"
 source_digest="$(python3 - "$source_abs" <<'PY'

@@ -153,4 +153,18 @@ if AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$quoted_inner_r
 fi
 grep -F E_MIGRATION_SOURCE_DIGEST "$tmp/stderr" >/dev/null
 
+outside_source="$tmp/outside.lean"
+printf '%s\n' 'def outside : Nat := 0' >"$outside_source"
+outside_relative="$(python3 - "$root/research-lean" "$outside_source" <<'PY'
+import os
+import sys
+print(os.path.relpath(sys.argv[2], sys.argv[1]))
+PY
+)"
+if "$root/research-lean/emit_migration_audit.sh" ResearchLean.AG.Smoke "$outside_relative" \
+    "$tmp/outside.audit.tsv" >"$tmp/stdout" 2>"$tmp/stderr"; then
+  echo "outside-repository migration source fixture unexpectedly passed" >&2; exit 1
+fi
+grep -F E_MIGRATION_SOURCE_OUTSIDE_REPO "$tmp/stderr" >/dev/null
+
 echo "Research migration manifest fixtures passed."
