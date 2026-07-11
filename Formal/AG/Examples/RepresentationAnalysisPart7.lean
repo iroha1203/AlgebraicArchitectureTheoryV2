@@ -1214,6 +1214,330 @@ theorem finiteSynthesisAATSynthesisPackage_eq_toPackage :
 def finiteSynthesis_algebraicGeometricAATSynthesis_fires :=
   algebraicGeometricAATSynthesis finiteSynthesisAATSynthesisAssumptions
 
+/-! ### Nondegenerate Part I--VII synthesis witness
+
+Implementation notes: this fixture keeps the already connected finite Part I--VI
+geometry, but replaces the previous all-`PUnit` law/reading evidence with a
+nonzero `Int` ideal, an ideal-derived selected obstruction class, and an actual
+two-valued distance-to-flatness firing.  A larger site was not chosen merely to
+manufacture cardinality; the Issue permits nontrivial obstruction or reading
+evidence, and those are the components exercised here.
+-/
+
+/--
+A two-valued distance-to-flatness reading for the selected margin states.
+
+Implementation notes: `Bool` is the smallest complete lattice distinguishing
+the safe state's cost from the flat state's cost.  A constant Nat-valued
+converter was rejected because it would reproduce the previous measured-zero
+fixture, while a larger cost lattice would add no acceptance evidence.
+-/
+def nondegenerateDistanceToFlatness :
+    DistanceToFlatnessProfile marginOperationDistance where
+  Cost := Bool
+  costDomain := CostInfimumDomain.completeLatticeInfimumDomain
+  costToDistanceValue cost :=
+    if cost then DistanceValue.measured 1 else DistanceValue.measured 0
+  FlatCandidate _ := Unit
+  flatState _ _ := MarginState.boundary
+  factorsThroughFlat _ _ := True
+  candidateDistance state _ :=
+    match state with
+    | MarginState.safe => true
+    | MarginState.boundary => false
+  candidateDistance_reads_d_op := by
+    intro state candidate
+    cases state <;> rfl
+  candidateFactorsThroughFlat _ _ := trivial
+
+/-- The existing margin operation distance equipped with the two-valued flatness reading. -/
+abbrev nondegenerateDistanceMassContext : DistanceFlatnessMassContext object where
+  operationDistance := marginOperationDistance
+  distanceToFlatness := nondegenerateDistanceToFlatness
+  obstructionMeasure := marginObstructionMeasure
+  obstructionMass := marginObstructionMass
+
+/--
+Reading parameter whose obstruction decoration is an actual ideal of `Int`.
+
+Implementation notes: the previous `PUnit` obstruction decoration could not
+connect a representation output to the synthesis ideal.  Equality is used as
+the selected compatibility law so identities and composites preserve the ideal.
+-/
+def nondegenerateSynthesisReadingParameter :
+    AATSchReadingParameter.{0, 0, 0, 0, 0} site PUnit where
+  SchemeMorphism _ _ := PUnit
+  id _ := PUnit.unit
+  comp _ _ := PUnit.unit
+  id_comp _ := rfl
+  comp_id _ := rfl
+  assoc _ _ _ := rfl
+  AtomLabelReading := PUnit
+  LawReading := PUnit
+  ObstructionIdealReading := Ideal Int
+  SignatureReading := PUnit
+  InterpretationMapReading := PUnit
+  atomLabelsCompatible _ _ _ := True
+  lawReadingCompatible _ _ _ := True
+  obstructionIdealCompatible _ I J := I = J
+  signatureReadingCompatible _ _ _ := True
+  interpretationMapCompatible _ _ _ := True
+  id_atomLabelsCompatible _ _ := trivial
+  id_lawReadingCompatible _ _ := trivial
+  id_obstructionIdealCompatible _ _ := rfl
+  id_signatureReadingCompatible _ _ := trivial
+  id_interpretationMapCompatible _ _ := trivial
+  comp_atomLabelsCompatible _ _ := trivial
+  comp_lawReadingCompatible _ _ := trivial
+  comp_obstructionIdealCompatible hIJ hJK := hIJ.trans hJK
+  comp_signatureReadingCompatible _ _ := trivial
+  comp_interpretationMapCompatible _ _ := trivial
+
+/-- Thin target category used to expose ideal-valued representation outputs. -/
+def idealTargetCategory : AnalyticTargetCategory (Ideal Int) where
+  Hom _ _ := PUnit
+  id _ := PUnit.unit
+  comp _ _ := PUnit.unit
+  id_comp _ := rfl
+  comp_id _ := rfl
+  assoc _ _ _ := rfl
+
+/-- The analytic representation reads the obstruction-ideal decoration itself. -/
+def idealAnalyticRepresentation :
+    AnalyticRepresentation nondegenerateSynthesisReadingParameter (Ideal Int) where
+  targetCategory := idealTargetCategory
+  obj X := X.obstructionIdealReading
+  map _ := PUnit.unit
+  map_id _ := rfl
+  map_comp _ := rfl
+
+/-- Two named reading indices sharing the ideal-valued representation API. -/
+def idealSynthesisRepresentationFamily :
+    RepresentationFamily nondegenerateSynthesisReadingParameter where
+  Index := ToyRepIndex
+  Target _ := Ideal Int
+  representation _ := idealAnalyticRepresentation
+
+/--
+Detecting family whose analytic-zero predicate is actual bottom-ideal equality.
+-/
+def idealSynthesisDetectingFamily :
+    UDetectingRepresentationFamily idealSynthesisRepresentationFamily where
+  ObstructionClass := Ideal Int
+  analyticZeroReading _ I := I = ⊥
+  WitnessZero_U I := I = ⊥
+  detects := by
+    intro _I hzero
+    exact hzero ToyRepIndex.graph
+  completenessLevel := CompletenessSpectrum.conservative
+
+/-- Decorated scheme whose representation output is the supplied ideal. -/
+noncomputable def nondegenerateDecoratedScheme (I : Ideal Int) :
+    AATSch nondegenerateSynthesisReadingParameter where
+  scheme := finiteSynthesisArchitectureScheme
+  atomLabels := PUnit.unit
+  lawReading := PUnit.unit
+  obstructionIdealReading := I
+  signatureReading := PUnit.unit
+  interpretationMapReading := PUnit.unit
+
+/--
+Selected analytic context constructed from the same ideal stored by synthesis.
+
+Implementation notes: `selectedWitness := I` makes ideal-to-reading provenance
+part of construction, while `idealAnalyticRepresentation.obj` reads the ideal
+decoration of an actual `AATSch`.  A post-hoc classifier into a toy enum was
+rejected because it could encode the desired answer without this dataflow.
+-/
+def nondegenerateSynthesisAnalyticReadingContext (I : Ideal Int) :
+    AnalyticReadingContext.{0, 0, 0, 0, 0, 0} object
+      nondegenerateSynthesisReadingParameter where
+  AtomVocabulary := FiniteAtom
+  atomVocabularyOf := id
+  lawUniverse := lawUniverse
+  CoverageTopology := Bool
+  selectedCoverage := true
+  coefficientSheaf := Bool
+  representationFamily := idealSynthesisRepresentationFamily
+  distanceMassContext := nondegenerateDistanceMassContext
+  selectedWitnessFamily := Ideal Int
+  selectedWitness := I
+  selectedSignatureAxes := toySignatureAxes
+  signatureProfile := SignatureReadingProfile.ofSignatureAxes toySignatureAxes
+  detectingFamily := idealSynthesisDetectingFamily
+  coverageAdequacy := True
+  witnessExactness := True
+  axisExactness := True
+  coefficientDiscipline := True
+  completenessLevel := CompletenessSpectrum.conservative
+
+/--
+Lawful-section data for the nonzero ideal generated by `2` in `Int`.
+
+Implementation notes: `Int` and `span {2}` provide a minimal familiar nonzero
+ideal.  The former `PUnit` bottom ideal cannot witness obstruction nontriviality.
+-/
+noncomputable def nondegenerateSynthesisLawfulSection :
+    LawAlgebra.LawfulLocus.LawfulSectionData.{0, 0} Int
+      (Ideal.span ({(2 : Int)} : Set Int)) where
+  SectionRing := Int
+  commRing := inferInstance
+  pullback := RingHom.id Int
+
+/--
+Construction input using the existing finite geometry and a nonzero law ideal
+together with the nondegenerate analytic context.
+
+Implementation notes: `AATSynthesisConstructionInput` omits separately supplied
+ringed-topos/lawful-locus values and their conclusion-shaped equalities.  Its
+constructor derives those package fields from the scheme and obstruction ideal.
+-/
+noncomputable def nondegenerateSynthesisInput :
+    AATSynthesisConstructionInput.{0, 0, 0, 0, 0, 0}
+      finiteSynthesisPartI PUnit where
+  architectureGeometry := finiteSynthesisGeometry
+  architectureScheme := finiteSynthesisArchitectureScheme
+  LawCoordinateAlgebra := Int
+  lawCoordinateCommRing := inferInstance
+  obstructionIdeal := Ideal.span ({(2 : Int)} : Set Int)
+  lawfulSection := nondegenerateSynthesisLawfulSection
+  cover := finiteSynthesisCover
+  obstructionSheaf := finiteSynthesisObstructionSheaf
+  obstructionCohomology := finiteSynthesisCechComplex
+  derivedLawGeometry := finiteSynthesisRepairProfile
+  stratumParameter := finiteSynthesisStratumParameter
+  singularityMonodromyStack := finiteSynthesisArchitectureStratum
+  readingParameter := nondegenerateSynthesisReadingParameter
+  representationPeriodMetricAnalysis :=
+    nondegenerateSynthesisAnalyticReadingContext (Ideal.span ({(2 : Int)} : Set Int))
+
+/-- The Part I--VII package constructed from the nondegenerate selected tower. -/
+noncomputable def nondegenerateSynthesisPackage :
+    AATSynthesisPackage.{0, 0, 0, 0, 0, 0} finiteSynthesisPartI PUnit :=
+  nondegenerateSynthesisInput.toPackage
+
+/-- The selected obstruction ideal contains the nonzero integer `2`. -/
+theorem nondegenerateObstructionIdeal_two_mem :
+    (2 : Int) ∈ nondegenerateSynthesisPackage.obstructionIdeal := by
+  show (2 : Int) ∈ Ideal.span ({(2 : Int)} : Set Int)
+  exact Ideal.subset_span (by simp)
+
+/-- The selected obstruction ideal is not the bottom ideal. -/
+theorem nondegenerateObstructionIdeal_ne_bot :
+    nondegenerateSynthesisPackage.obstructionIdeal ≠ (⊥ : Ideal Int) := by
+  show Ideal.span ({(2 : Int)} : Set Int) ≠ (⊥ : Ideal Int)
+  intro hbot
+  have hmem : (2 : Int) ∈ (⊥ : Ideal Int) := by
+    rw [← hbot]
+    exact Ideal.subset_span (by simp)
+  simp at hmem
+
+/-- The safe selected state has actual distance-to-flatness value one. -/
+theorem nondegenerateDistance_safe_eq_one :
+    nondegenerateDistanceToFlatness.dist_flat_value MarginState.safe =
+      DistanceValue.measured 1 := by
+  change (if (⨅ _ : Unit, true) then DistanceValue.measured 1
+    else DistanceValue.measured 0) = DistanceValue.measured 1
+  rw [iInf_const]
+  rfl
+
+/-- The selected flat state has actual distance-to-flatness value zero. -/
+theorem nondegenerateDistance_boundary_eq_zero :
+    nondegenerateDistanceToFlatness.dist_flat_value MarginState.boundary =
+      DistanceValue.measured 0 := by
+  change (if (⨅ _ : Unit, false) then DistanceValue.measured 1
+    else DistanceValue.measured 0) = DistanceValue.measured 0
+  rw [iInf_const]
+  rfl
+
+/-- The safe state's actual distance-to-flatness value is not measured zero. -/
+theorem nondegenerateDistance_safe_ne_zero :
+    nondegenerateDistanceToFlatness.dist_flat_value MarginState.safe ≠
+      DistanceValue.measured 0 := by
+  rw [nondegenerateDistance_safe_eq_one]
+  simp
+
+/-- The package's selected analytic obstruction is its own obstruction ideal. -/
+theorem nondegenerateSelectedObstruction_eq_ideal :
+    nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness =
+      nondegenerateSynthesisPackage.obstructionIdeal :=
+  rfl
+
+/-- The package representation outputs its selected obstruction ideal. -/
+theorem nondegenerateRepresentation_reads_selectedIdeal :
+    ((nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.representationFamily).representation
+        ToyRepIndex.graph).obj
+        (nondegenerateDecoratedScheme nondegenerateSynthesisPackage.obstructionIdeal) =
+      nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness :=
+  rfl
+
+/--
+The constructed package carries the selected site, scheme, lawful locus,
+cohomology, derived, stratum, and analytic data in one value.
+-/
+theorem nondegenerateSynthesis_package_chain :
+    nondegenerateSynthesisPackage.aatSite =
+        nondegenerateSynthesisPackage.architectureGeometry.site ∧
+      nondegenerateSynthesisPackage.ringedAATTopos =
+        nondegenerateSynthesisPackage.architectureScheme.ringedTopos ∧
+      nondegenerateSynthesisPackage.affineAATCharts =
+        nondegenerateSynthesisPackage.architectureScheme.chart ∧
+      nondegenerateSynthesisPackage.lawfulLocus =
+        LawAlgebra.LawfulLocus.lawfulLocus
+          nondegenerateSynthesisPackage.LawCoordinateAlgebra
+          nondegenerateSynthesisPackage.obstructionIdeal ∧
+      nondegenerateSynthesisPackage.obstructionCohomology =
+        nondegenerateSynthesisInput.obstructionCohomology ∧
+      nondegenerateSynthesisPackage.derivedLawGeometry =
+        nondegenerateSynthesisInput.derivedLawGeometry ∧
+      nondegenerateSynthesisPackage.singularityMonodromyStack =
+        nondegenerateSynthesisInput.singularityMonodromyStack ∧
+      nondegenerateSynthesisPackage.representationPeriodMetricAnalysis =
+        nondegenerateSynthesisAnalyticReadingContext
+          (Ideal.span ({(2 : Int)} : Set Int)) := by
+  rcases algebraicGeometricAATSynthesis_constructedPackage
+      nondegenerateSynthesisInput with
+    ⟨S, hS, hsite, htopos, hcharts, hlocus, hcohomology, hderived,
+      hstratum, _⟩
+  subst S
+  exact ⟨hsite, htopos, hcharts, hlocus, eq_of_heq hcohomology, hderived,
+    eq_of_heq hstratum, rfl⟩
+
+/--
+Finite evidence inside the constructed package: a nonzero ideal determines the
+selected obstruction, the graph reading detects it, and the selected distance
+profile fires at distinct measured values.
+-/
+theorem nondegenerateSynthesis_evidence :
+    finiteSynthesisPartI.architectureObject = object ∧
+      nondegenerateSynthesisPackage.obstructionIdeal ≠ (⊥ : Ideal Int) ∧
+      nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness =
+        nondegenerateSynthesisPackage.obstructionIdeal ∧
+      ((nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.representationFamily).representation
+          ToyRepIndex.graph).obj
+          (nondegenerateDecoratedScheme nondegenerateSynthesisPackage.obstructionIdeal) =
+        nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness ∧
+      (¬ (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.detectingFamily).analyticZeroReading
+        ToyRepIndex.graph
+          nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness) ∧
+      (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.distanceMassContext).distanceToFlatness.dist_flat_value
+          MarginState.safe =
+        DistanceValue.measured 1 ∧
+      (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.distanceMassContext).distanceToFlatness.dist_flat_value
+          MarginState.boundary =
+        DistanceValue.measured 0 ∧
+      (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.distanceMassContext).distanceToFlatness.dist_flat_value
+          MarginState.safe ≠
+        DistanceValue.measured 0 := by
+  exact ⟨rfl, nondegenerateObstructionIdeal_ne_bot,
+    nondegenerateSelectedObstruction_eq_ideal,
+    nondegenerateRepresentation_reads_selectedIdeal, by
+      simp [nondegenerateSynthesisPackage, nondegenerateSynthesisInput,
+        AATSynthesisConstructionInput.toPackage,
+        nondegenerateSynthesisAnalyticReadingContext, idealSynthesisDetectingFamily],
+    nondegenerateDistance_safe_eq_one, nondegenerateDistance_boundary_eq_zero,
+    nondegenerateDistance_safe_ne_zero⟩
+
 end RepresentationAnalysisPart7
 end FiniteModel
 end AAT.AG
