@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 3
+- latest reviewed cycle: 4
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: prove connecting class zero iff actual global lift
+- next obligation: prove class zero constructs an actual global lift
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -177,3 +177,53 @@ the corrected chart family is compatible on the generated presieve, glue it
 with the middle sheaf, and use quotient separatedness to fix its projection to
 the original base section. Prove the reverse implication from an actual global
 lift by constructing its chartwise kernel primitive.
+
+## Cycle 4 — actual global lift forces class zero
+
+- decision: approve
+- result type: proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalDescent.lean`
+- checkpoint spine:
+  - `LiftProblem.GlobalLift`
+  - `LiftProblem.globalRestrictionCochain`
+  - `LiftProblem.globalRestrictionCochain_cocycle`
+  - `LiftProblem.primitiveOfGlobal`
+  - `LiftProblem.localLiftDifferenceFor_eq_d_primitiveOfGlobal`
+  - `LiftProblem.connectingClassFor_eq_zero_of_globalLift`
+  - `LiftProblem.connectingClassFor_eq_zero_of_nonempty_globalLift`
+
+### Checkpoint delta
+
+An actual global lift now generates its chart-restriction cochain. That cochain
+is a zero-cocycle, and its literal difference from any explicit local-lift
+choice generates a kernel-valued degree-zero primitive. The primitive exhibits
+the section-specific connecting cocycle as a coboundary, so every actual global
+lift forces the repository H1 class to be zero.
+
+### Premise delta
+
+- checkpoint: `Nonempty GlobalLift -> connectingClassFor L = 0`.
+- remaining: the reverse implication from class zero to actual global lift,
+  generated-presieve gluing, lift-fiber torsor, law-generated coefficient
+  sequence and exactness, conormal instantiation, semantic representations,
+  finite zero/nonzero witness pair, package theorem, and `H^1 = 0` corollary.
+
+### Audits
+
+- focused elaboration: pass
+- module-wide standard-axiom assertion: pass (70 declarations)
+- placeholder / hidden Unicode / private-path scans: pass
+- statement classification: one direction of the primary equivalence as a
+  proof-checkpoint; not D0 discharge
+- certificate provenance: the primitive is generated from the literal
+  local-minus-global restriction difference
+- structure-field escape: global lift is the theorem antecedent; primitive,
+  coboundary equation, and class-zero conclusion are constructed
+
+### Next obligation
+
+From a zero-class witness, construct the corrected local family, prove its
+compatibility on the generated presieve through canonical pair overlaps, glue
+it using the middle sheaf, and use quotient separatedness to prove that the
+global middle section maps to the fixed base section.

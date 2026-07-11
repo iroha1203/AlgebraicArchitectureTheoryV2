@@ -13,9 +13,10 @@ criterion.
 
 The section-specific connecting cocycle and class are generated from explicit
 local lifts, and their independence of the local-lift choice is proved through
-the repository additive H1 relation.  Zero iff actual global lift and the
-lift-fiber torsor remain proof obligations.  No conclusion equivalent to those
-claims is accepted as an input field here.
+the repository additive H1 relation.  An actual global lift is proved to kill
+the class.  Constructing a global lift from class zero and the lift-fiber
+torsor remain proof obligations.  No conclusion equivalent to those claims is
+accepted as an input field here.
 -/
 
 noncomputable section
@@ -450,6 +451,134 @@ theorem connectingClass_choice_independent (left right : P.GeneratorLocalLiftFam
       (P.connectingCocycleFor right)
   apply ((complex (geometry := geometry) P.nOb).additiveH1Class_eq_iff_legacy_setoid _ _).2
   exact ⟨P.changePrimitive left right, P.localLiftDifferenceFor_sub left right⟩
+
+/-! ## Actual global lifts: the forward implication -/
+
+/-- Actual global lifts of the fixed quotient section. -/
+def GlobalLift : Type u :=
+  { lift : P.E.obj (op geometry.base) //
+    P.projection.app _ lift = P.baseSection }
+
+/-- Restrict an actual global middle section to every selected generator. -/
+def globalRestrictionCochain (lift : P.GlobalLift) :
+    (complex (geometry := geometry) P.eOb).Cn 0 :=
+  fun sigma => P.E.map
+    (homOfLE (geometry.cover.inclusion (sigma 0))).op lift.1
+
+/-- Restriction of a global middle section is a degree-zero cocycle. -/
+theorem globalRestrictionCochain_cocycle (lift : P.GlobalLift) :
+    (complex (geometry := geometry) P.eOb).d 0
+      (P.globalRestrictionCochain lift) = 0 := by
+  funext sigma
+  apply (AAT.AG.Cohomology.StandardFinitePosetCech.standardDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+      (((TupleGeometry (geometry := geometry)).toSimplicialFaceAction
+        P.eOb.carrier.toPresheaf).toFaceData) (P.globalRestrictionCochain lift) sigma).2
+  dsimp [globalRestrictionCochain, AAT.AG.Site.FinitePosetCechFaceRestriction,
+    AAT.AG.Site.FinitePosetCoverGeometry.toObstructionCoefficientRegime,
+    AAT.AG.Site.FinitePosetCoverGeometry.toRegime]
+  change (P.E ⋙ forget AddCommGrpCat).map _
+      ((P.E ⋙ forget AddCommGrpCat).map _ lift.1) =
+    (P.E ⋙ forget AddCommGrpCat).map _
+      ((P.E ⋙ forget AddCommGrpCat).map _ lift.1)
+  rw [← FunctorToTypes.map_comp_apply, ← FunctorToTypes.map_comp_apply]
+  congr 1
+
+/-- Projection of a restricted global lift is the fixed base restriction. -/
+theorem projection_globalRestrictionCochain (lift : P.GlobalLift)
+    (sigma : (Cover (geometry := geometry) P.eOb).simplex 0) :
+    P.projection.app _ (P.globalRestrictionCochain lift sigma) =
+      P.baseSectionCochain sigma := by
+  let f0 :
+      AAT.AG.Site.ContextCategoryObject.of S.contextPreorder
+          (geometry.cover.patch (sigma 0)) ⟶ geometry.base :=
+    homOfLE (geometry.cover.inclusion (sigma 0))
+  let f := f0.op
+  have hnat := P.projection.naturality_apply f lift.1
+  change P.projection.app _ (P.E.map f lift.1) =
+    P.Q.map f (P.projection.app _ lift.1) at hnat
+  rw [lift.2] at hnat
+  dsimp [f, f0, globalRestrictionCochain, baseSectionCochain, Cover, TupleGeometry,
+    AAT.AG.Cohomology.StandardFinitePosetCech.canonicalTupleStandardCoverRelativeCechCover,
+    AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+    AAT.AG.Site.FinitePosetCechOverlapObject,
+    AAT.AG.Site.FinitePosetCanonicalTupleCoverGeometry.toCoverGeometry,
+    AAT.AG.Site.FinitePosetCoverGeometry.toObstructionCoefficientRegime,
+    AAT.AG.Site.FinitePosetCoverGeometry.toRegime,
+    AAT.AG.Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
+    AAT.AG.Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap]
+  convert hnat using 1
+
+/-- Kernel primitive comparing chosen local lifts with an actual global lift. -/
+def primitiveOfGlobal (L : P.GeneratorLocalLiftFamily) (lift : P.GlobalLift) :
+    (complex (geometry := geometry) P.nOb).Cn 0 :=
+  fun sigma =>
+    (P.kernelEquiv _).symm
+      ⟨P.localLiftCochainFor L sigma - P.globalRestrictionCochain lift sigma, by
+        change P.projection.app _
+          (P.localLiftCochainFor L sigma - P.globalRestrictionCochain lift sigma) = 0
+        rw [map_sub, P.projection_localLiftCochainFor,
+          P.projection_globalRestrictionCochain, sub_self]⟩
+
+/-- Kernel inclusion recovers the local-minus-global correction. -/
+theorem kernel_primitiveOfGlobal (L : P.GeneratorLocalLiftFamily)
+    (lift : P.GlobalLift)
+    (sigma : (Cover (geometry := geometry) P.nOb).simplex 0) :
+    P.kernel.app _ (P.primitiveOfGlobal L lift sigma) =
+      P.localLiftCochainFor L sigma - P.globalRestrictionCochain lift sigma := by
+  rw [← P.kernelEquiv_apply]
+  change ((P.kernelEquiv _) ((P.kernelEquiv _).symm _)).1 = _
+  rw [AddEquiv.apply_symm_apply]
+
+/-- An actual global lift exhibits the connecting cocycle as a coboundary. -/
+theorem localLiftDifferenceFor_eq_d_primitiveOfGlobal
+    (L : P.GeneratorLocalLiftFamily) (lift : P.GlobalLift) :
+    P.localLiftDifferenceFor L =
+      (complex (geometry := geometry) P.nOb).d 0 (P.primitiveOfGlobal L lift) := by
+  funext sigma
+  apply (P.kernelEquiv _).injective
+  apply Subtype.ext
+  rw [P.kernelEquiv_apply]
+  rw [P.kernel_localLiftDifferenceFor, P.kernelEquiv_apply]
+  have hmap := congrFun
+    (map_differential (geometry := geometry)
+      P.nIsSheaf P.eIsSheaf P.kernel 0 (P.primitiveOfGlobal L lift)) sigma
+  calc
+    _ = (complex (geometry := geometry) P.eOb).d 0
+        (P.localLiftCochainFor L - P.globalRestrictionCochain lift) sigma := by
+      rw [congrFun (map_sub ((complex (geometry := geometry) P.eOb).d 0)
+        (P.localLiftCochainFor L) (P.globalRestrictionCochain lift)) sigma]
+      change (complex (geometry := geometry) P.eOb).d 0
+          (P.localLiftCochainFor L) sigma =
+        (complex (geometry := geometry) P.eOb).d 0
+          (P.localLiftCochainFor L) sigma -
+        (complex (geometry := geometry) P.eOb).d 0
+          (P.globalRestrictionCochain lift) sigma
+      have hz := congrFun (P.globalRestrictionCochain_cocycle lift) sigma
+      change (complex (geometry := geometry) P.eOb).d 0
+        (P.globalRestrictionCochain lift) sigma = 0 at hz
+      rw [hz, sub_zero]
+    _ = (complex (geometry := geometry) P.eOb).d 0
+        (fun tau => P.kernel.app _ (P.primitiveOfGlobal L lift tau)) sigma := by
+      exact congrArg
+        (fun z => (complex (geometry := geometry) P.eOb).d 0 z sigma)
+        (funext fun tau => (P.kernel_primitiveOfGlobal L lift tau).symm)
+    _ = _ := hmap.symm
+
+/-- Every actual global lift forces the section-specific connecting class to vanish. -/
+theorem connectingClassFor_eq_zero_of_globalLift
+    (L : P.GeneratorLocalLiftFamily) (lift : P.GlobalLift) :
+    P.connectingClassFor L = 0 := by
+  apply (additiveH1Class_eq_zero_iff (geometry := geometry) P.nOb
+    (P.connectingCocycleFor L)).2
+  exact ⟨P.primitiveOfGlobal L lift,
+    P.localLiftDifferenceFor_eq_d_primitiveOfGlobal L lift⟩
+
+/-- Forward half of effectivity: an actual global lift kills the connecting class. -/
+theorem connectingClassFor_eq_zero_of_nonempty_globalLift
+    (L : P.GeneratorLocalLiftFamily) :
+    Nonempty P.GlobalLift → P.connectingClassFor L = 0 := by
+  rintro ⟨lift⟩
+  exact P.connectingClassFor_eq_zero_of_globalLift L lift
 
 end LiftProblem
 
