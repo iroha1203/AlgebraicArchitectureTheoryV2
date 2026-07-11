@@ -2,18 +2,18 @@
 
 `.github/ISSUE_TEMPLATE/implementation_request.yml` と
 `.github/ISSUE_TEMPLATE/documentation_request.yml` を本文構造の正本とする。
-同じfieldをこのreferenceへ複製しない。Issue Formsから作成した本文に、
-次の不足fieldだけを追加する。
+同じfieldをこのreferenceへ複製しない。Issue Formsから作成した本文の`備考`に、
+次のうち該当する不足fieldだけを追加する。
 
-## 全Issue
+## 関係・status
 
 ```markdown
-タスク型: 新規実装 | 修正 | 移植(Research→本体) | docs
+親 Issue: #N
 
-親 Issue: #N | なし
-
-Lean status: <`docs/aat/guideline.md` の「Lean status discipline」にある現行語彙。非該当なら理由>
+Lean status: <`docs/aat/guideline.md` の「Lean status discipline」にある現行語彙>
 ```
+
+親Issueがない、またはLean statusが非該当の場合はfield自体を省略してよい。
 
 ## 是正Issue
 
@@ -41,8 +41,7 @@ Research下限原則:
 
 ## 親Issue
 
-Issue Formsを使わないtracking親Issueの独立template。新規親Issueを作る場合だけ
-使い、「全Issue」の補助fieldとは併用しない。
+Issue Formsを使わないtracking親Issueの独立template。新規親Issueを作る場合だけ使う。
 
 ```markdown
 目的: 関連するIssue群をまとめ、依存順と完了条件を明確にする。

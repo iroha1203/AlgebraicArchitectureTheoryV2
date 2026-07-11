@@ -5,7 +5,7 @@ description: GitHub PR番号を受け取り、Issue・CI・変更責務を確認
 
 # Review PR
 
-GitHub PR のマージゲート。紐づく Issue の完了条件・CI 状態の照合は本体で
+GitHub PR のマージゲート。紐づく Issue の受け入れ要件・CI 状態の照合は本体で
 行い、**内容レビューは分野別の敵対レビュー SKILL へ渡す**。
 
 ## 必須契約
@@ -40,8 +40,10 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
    - `closingIssuesReferences` と PR 本文の `Closes #N` を確認する。
    - 明示的な Issue がなければ「紐づく Issue 不明」としてレビュー上の
      リスクにする。
-   - Issue の `完了条件`、タスク型宣言、source of truth ポインタ
+   - Issue の `受け入れ要件`、タスク型宣言、source of truth ポインタ
      (PRD 節番号・本文ラベル・移植元 theorem 名)を抜き出す。
+     現行フォーム導入前のIssueでは`完了条件`を同じ契約として読む。
+     `[doc]` title prefixはタスク型`docs`の宣言として扱う。
      タスク型が「移植」の PR では、移植元 theorem 名を委譲先に渡す。
 
 3. **分野判定と委譲(このゲートの中心)。**
@@ -70,7 +72,7 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
    - 委譲結果の資格と起動不能時の処理は共有契約を適用する。
 
 4. 本体で照合する(委譲と並行してよい)。
-   - Issue 完了条件と diff の照合(条件文言と実体の対応)。
+   - Issue 受け入れ要件と diff の照合(条件文言と実体の対応)。
    - CI 状態(`gh pr checks`)。
    - checklist §6 の横断機械 scan(hidden/bidi、privacy / local-path、
      `git diff --check`)。
@@ -85,9 +87,9 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
      - `tool-review` / `website-review` / `docs-review`:
        合格 = `No major findings` のみ。`Needs changes` / `Blocked` は不合格。
    - **Mergeable**: 委譲した全分野レビューが上記の意味で合格
-     (Lean 系は math-lean-review の合格を含む)、Issue 完了条件を満たし、
+     (Lean 系は math-lean-review の合格を含む)、Issue受け入れ要件を満たし、
      CI / 必要なローカル検証が通り、重大な未対応がない。
-   - **Needs changes**: 委譲先の不合格、完了条件未達、テスト不足、
+   - **Needs changes**: 委譲先の不合格、受け入れ要件未達、テスト不足、
      docs drift、CI failure がある。
    - **Blocked / cannot determine**: PR head を取得できない、CI 未完了、
      紐づく Issue 不明、サブエージェント起動不能、分野別レビュー未実施、
@@ -101,7 +103,7 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
      これらを取得できない分野はレビュー未完了として扱い、`Mergeable`
      として統合しない。
    - 共有契約を満たす反証試行記録
-   - Issue 完了条件の照合結果(満たした / 未達)
+   - Issue 受け入れ要件の照合結果(満たした / 未達)
    - 実行した検証(コマンドと結果)、coverage / 残リスク
    共有契約の資格条件を満たさない監査コメントは、後続のフル
    レビューで「レビュー未実施」として扱われる。

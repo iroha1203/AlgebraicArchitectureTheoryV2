@@ -5,17 +5,17 @@ body:
   - type: markdown
     attributes:
       value: |
-        実装変更を依頼する Issue です。ドキュメント更新だけで閉じてよい Issue ではない場合、このテンプレートを使ってください。
+        実装変更を依頼する Issue です。何が問題で、何を実現し、どの条件を満たせば完了かを記載してください。
 
-  - type: textarea
-    id: background
+  - type: dropdown
+    id: task_type
     attributes:
-      label: 背景・課題
-      description: なぜこの変更が必要か、現状の問題や前提を短く書いてください。
-      placeholder: |
-        例:
-        - Issue #N の完了により、次の theorem を実装できる状態になった
-        - archsig report に theorem precondition status が出ておらず、PR review artifact として不十分
+      label: タスク型
+      description: この Issue の性質を選んでください。
+      options:
+        - 新規実装
+        - 修正
+        - 移植（Research→本体）
     validations:
       required: true
 
@@ -26,127 +26,67 @@ body:
       description: この Issue の中心となる領域を 1 つ選んでください。
       options:
         - "formal: Lean 形式化"
-        - "tool: Rust tooling / ArchSig"
-        - "website: Cloudflare Pages 公開面"
-        - "doc: docs / README"
+        - "tool: Rust tooling / ArchSig / ArchView / FieldSig"
+        - "website: 公開面"
     validations:
       required: true
 
-  - type: checkboxes
-    id: affected_areas
+  - type: textarea
+    id: current_problem
     attributes:
-      label: 影響範囲
-      description: 変更が必要、または確認が必要な領域をすべて選んでください。
-      options:
-        - label: "formal: `Formal.lean`, `Formal/**`, Lean theorem / definition / status"
-        - label: "tool: `tools/archsig/**`, schema, fixture, report, CLI"
-        - label: "website: `website/**`, Pages workflow, asset path"
-        - label: "doc: `docs/**`, `README.md`, `README.jp.md`, theorem index / proof obligations"
+      label: 現状の課題
+      description: 何が不足・不整合・未実装なのか、なぜ対応が必要なのかを書いてください。確認できる宣言名、出力、Issue、資料などがあれば含めてください。
+      placeholder: |
+        - 現在起きていること:
+        - 問題となる理由:
+        - 確認できる根拠:
+    validations:
+      required: true
 
-  - type: dropdown
-    id: expected_deliverable
+  - type: textarea
+    id: solution_direction
+    attributes:
+      label: 解決方針
+      description: 採用する設計または対応方針を書いてください。実装手段を過度に固定せず、避けてはならない本質的な要件を明記してください。
+      placeholder: |
+        - 採用する方針:
+        - 維持すべき性質:
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_deliverables
     attributes:
       label: 期待する成果物
-      description: この Issue を閉じるために必要な主成果物を選んでください。
-      options:
-        - コード実装が必須
-        - Lean theorem / definition 追加が必須
-        - Rust tooling 変更が必須
-        - website 表示・導線変更が必須
-        - docs 更新も必要だが、実装変更が主目的
-    validations:
-      required: true
-
-  - type: textarea
-    id: target_files
-    attributes:
-      label: 修正対象ファイル・候補
-      description: 変更してほしいファイル、または調査してほしい候補ファイルを列挙してください。未確定の場合は「候補」として書いてください。
+      description: この Issue で追加・変更するコード、theorem、test、schema、文書などを列挙してください。
       placeholder: |
-        - `Formal/Arch/Core/Layering.lean`
-        - `docs/aat/proof_obligations.md`
-        - `tools/archsig/src/...`
+        - Lean theorem `...`
+        - `tools/...` の実装
+        - regression test
+        - 関連する文書・台帳の更新
     validations:
       required: true
 
   - type: textarea
-    id: additions
+    id: acceptance_requirements
     attributes:
-      label: 追加するもの
-      description: 新しい theorem / definition / CLI option / schema field / page section / test などを列挙してください。
+      label: 受け入れ要件
+      description: 完了を第三者が客観的に判定できる条件を記載してください。成果物の存在やbuildの通過だけでなく、成立すべきstatement・振る舞い・接続・整合条件と、その確認方法を具体化してください。
       placeholder: |
-        - theorem `...`
-        - fixture `...`
-        - test case for `...`
+        - [ ] 成果物: `<具体的に追加・変更されるもの>`
+        - [ ] 成立条件: `<成立すべき statement または振る舞い>`
+        - [ ] 接続・整合: `<既存の実装・定理・schema・文書との関係>`
+        - [ ] 失敗ケース: `<検出または拒否すべき入力・退行>`
+        - [ ] 検証証拠: `<test、コマンド、宣言名、出力など>`
     validations:
       required: true
 
   - type: textarea
-    id: updates
+    id: notes
     attributes:
-      label: 更新するもの
-      description: 既存の仕様、実装、文書、テストのうち更新が必要なものを書いてください。なければ「なし」。
+      label: 備考
+      description: 関連 Issue、依存関係、source of truth、対象外、候補ファイル、参考資料などがあれば記載してください。
       placeholder: |
-        - `docs/aat/lean_theorem_index.md` の Lean status
-        - `tools/archsig/README.md` の CLI 説明
-    validations:
-      required: true
-
-  - type: textarea
-    id: removals
-    attributes:
-      label: 削除・置換するもの
-      description: 削除、移動、置換したいものを書いてください。なければ「なし」。
-      placeholder: |
-        - なし
-    validations:
-      required: true
-
-  - type: textarea
-    id: out_of_scope
-    attributes:
-      label: この Issue ではやらないこと
-      description: doc-only で閉じない、API 互換性を壊さない、website は触らない等、非対象を明示してください。
-      placeholder: |
-        - ドキュメント修正だけで完了扱いにしない
-        - empirical extractor の完全性は主張しない
-    validations:
-      required: true
-
-  - type: textarea
-    id: acceptance
-    attributes:
-      label: 完了条件
-      description: レビュー時に確認できる形で、必須条件をチェックリストにしてください。
-      value: |
-        - [ ] 指定した実装変更が入っている
-        - [ ] 必要なテストまたは build が通っている
-        - [ ] 必要な Lean status / docs / website copy が更新されている
-        - [ ] 対象外の主張や過剰な claim を追加していない
-    validations:
-      required: true
-
-  - type: textarea
-    id: verification
-    attributes:
-      label: 想定する検証コマンド
-      description: この Issue の PR で実行すべきコマンドを列挙してください。不要なものは削除してください。
-      value: |
-        - [ ] `lake build`
-        - [ ] `cargo test --manifest-path tools/archsig/Cargo.toml`
-        - [ ] `git diff --check`
-        - [ ] hidden / bidirectional Unicode scan
-        - [ ] `axiom` / `admit` / `sorry` / `unsafe` scan
-    validations:
-      required: true
-
-  - type: checkboxes
-    id: guardrails
-    attributes:
-      label: ガードレール
-      description: 該当するものを確認してください。
-      options:
-        - label: "この Issue は docs の修正だけでは完了しない"
-        - label: "`axiom`, `admit`, `sorry`, `unsafe` を明示的な相談なしに導入しない"
-        - label: "Architecture Signature を単一スコアとして扱わない"
-        - label: "Lean で証明済みの主張と empirical hypothesis を混同しない"
+        - 関連 Issue: #N
+        - source of truth: `...`
+        - 対象外: ...
