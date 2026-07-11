@@ -25,7 +25,7 @@ origin: G-04 Cycle 34
 tags: [target-theorem, target-support, finite-query, representation, post-invariance, current-shadow]
 created: 2026-06-25
 cycle: 34
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationPostInvariant.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationPostInvariant.lean
 ---
 
 # Representation Post-Invariance Exact Criterion

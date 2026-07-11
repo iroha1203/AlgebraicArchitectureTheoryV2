@@ -1,4 +1,6 @@
-# PRD: Research Lean を本体 Formal tree から分離する
+# Archived PRD: Research Lean を本体 Formal tree から分離する
+
+> 2026-07-12 archive。実行時の設計記録であり、現行の CI 要件ではない。
 
 - 作成: 2026-07-11
 - 親 Issue: #3199

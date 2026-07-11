@@ -20,7 +20,7 @@ origin: G-04-Cycle72
 tags: [target-theorem, finite-query, support-shadow, obstruction, support-control, current-shadow-factorization, faithfulness, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 72
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryObstruction.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryObstruction.lean
 ---
 
 # Support-Shadow Boundary Obstruction
@@ -96,8 +96,8 @@ Cycle71 の iff を contrapositive として使い、Bool complete support witne
 - `research/ideas/g-aat-quality-surface-04-support-boundary-square.md`
 - `research/ideas/g-aat-quality-surface-04-support-faithfulness-independence.md`
 - `research/ideas/g-aat-quality-surface-04-support-shadow-certificate-independence.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundarySquare.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessIndependence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundarySquare.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessIndependence.lean`
 
 ## 進捗ログ
 

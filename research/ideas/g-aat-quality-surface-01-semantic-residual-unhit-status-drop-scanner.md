@@ -70,7 +70,7 @@ ADL、static analyzer、dashboard、AI summary は status drop や repair touch 
 
 - `score_reason`: repair-hit obligation を直接 finite scanner exactness にし、some/none の両側を target obstruction / all-hit に接続した。
 - `dullness_risk`: scanner pattern の再利用に見える危険はある。unhit triple predicate、mapped target obstruction、all-hit exactness を一つの package にまとめて補強した。
-- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/SemanticResidualUnhitStatusDropScanner.lean` で source unhit scanner exactness と selected witness を証明する。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualUnhitStatusDropScanner.lean` で source unhit scanner exactness と selected witness を証明する。
 
 ## CS / SWE への帰結
 
@@ -79,7 +79,7 @@ repair が説明すべき old status drops を finite order で scan し、未 h
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualUnhitStatusDropScanner.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualUnhitStatusDropScanner.lean` に固定した。
 
 - `UnhitMappedOldStatusDropPair`
 - `firstUnhitMappedOldStatusDrop?`
@@ -103,7 +103,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualUnhitS
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualUnhitStatusDropScanner.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualUnhitStatusDropScanner.lean`: pass。
 - `lake build ResearchLean.AG.QualitySurface.SemanticResidualUnhitStatusDropScanner`: pass。
 - `lake build ResearchLean`: pass。
 - `#print axioms`: generic theorem family は標準 `propext` のみ。selected witness と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。

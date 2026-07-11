@@ -40,11 +40,11 @@ finite/small target boundary 内で、semantic repair site、semantic residual c
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairObstructionTower.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairAdequacyDischarge.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTowerFunctoriality.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTriple.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairObstructionTower.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairAdequacyDischarge.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTowerFunctoriality.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairNonabelianTriple.lean`
 - G6 checkpoint: true sheaf / quotient-style `H1` construction and exactness remains a blocker.
 
 ## 非自明性
@@ -84,7 +84,7 @@ local repair plan、component-level pass、visible no-mismatch reading が、sem
 
 ## 証明・根拠の見込み
 
-Lean では `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean` に置く。対象は finite/small boundary に限定し、arbitrary Grothendieck site、runtime extraction completeness、ArchMap correctness、repair synthesis completeness、whole-codebase quality は主張しない。
+Lean では `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean` に置く。対象は finite/small boundary に限定し、arbitrary Grothendieck site、runtime extraction completeness、ArchMap correctness、repair synthesis completeness、whole-codebase quality は主張しない。
 
 実装は、existing finite tower の `C0/C1/C2` surface と `LayeredRepairAdequacy` を参照しつつ、`SemanticRepairSite`、`SemanticResidualCoefficientSheaf`、`SemanticRepairSheafH1Envelope`、`SemanticRepairSheafH1ExactnessDischarge` を追加した。`H1SameClass` は explicit `cohomologous` relation として置き、`SemanticRepairH1Zero` / `SemanticRepairH1Nonzero` を selected residual の zero/nonzero class として定義する。
 

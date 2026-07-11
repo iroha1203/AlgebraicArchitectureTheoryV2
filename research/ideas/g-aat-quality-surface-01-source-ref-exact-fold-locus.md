@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle27
 tags: [quality-surface, source-ref, exact-visualization, fold-locus, repair]
 created: 2026-06-20
 cycle: 27
-lean: research/lean/ResearchLean/QualitySurface/SourceRefExactFoldLocus.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SourceRefExactFoldLocus.lean
 ---
 
 # Source-ref exact fold-locus propagation and repair exit
@@ -31,9 +31,9 @@ pair は source-ref exact になる。
 
 ## 依拠
 
-- Cycle 24: `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
-- Cycle 25: `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
-- Cycle 26: `research/lean/ResearchLean/QualitySurface/ComponentDefectPropagation.lean`
+- Cycle 24: `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 25: `research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean`
+- Cycle 26: `research/lean/ResearchLean/AG/QualitySurface/ComponentDefectPropagation.lean`
 
 ## 非自明性
 
@@ -68,7 +68,7 @@ source-ref exactness を drill-down する必要がある。
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/SourceRefExactFoldLocus.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactFoldLocus.lean`
 
 Declarations:
 
@@ -84,7 +84,7 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SourceRefExactFoldLocus.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SourceRefExactFoldLocus.lean`: pass
 - `lake build ResearchLean`: pass
 - `lake env lean .tmp/source_ref_exact_fold_locus_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`

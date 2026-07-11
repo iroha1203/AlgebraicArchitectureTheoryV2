@@ -70,7 +70,7 @@ viewer / dashboard / review tooling は component row だけでなく semantic r
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualAliasNonfaithfulness.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAliasNonfaithfulness.lean` に固定した。
 
 - `SameSemanticComponentProjection`
 - `ResidualAliasGap`
@@ -87,7 +87,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualAliasN
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualAliasNonfaithfulness.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAliasNonfaithfulness.lean`: pass。
 - `lake build ResearchLean`: pass。
 - axiom probe: generic alias-gap lemmas は axiom-free。selected refined repair-frontier witness / selected closure nonfaithfulness / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 

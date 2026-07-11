@@ -38,10 +38,10 @@ Cycle 12 は、`Obs(A)` の canonical finite shadow を通る factorization を 
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairUniversalShadow.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetCompletion.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetSurface.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetFactorization.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairUniversalShadow.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTargetCompletion.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTargetSurface.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTargetFactorization.lean`
 
 ## 非自明性
 

@@ -51,7 +51,7 @@ open_questions: true site/sheaf `H^1` への昇格、overlap family の明示列
 
 ### Result
 
-`research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean` は、有限 semantic repair-gluing complex を導入する。`C0` は local repair primitive family、`C1` は residual repair-gluing cochain carrier、`delta0` は overlap restriction difference、`B1` は `delta0` の像である。`delta0_exact` と `delta0_support_exact` は、`delta0` が各 overlap / atom 上で left / right restriction の symmetric difference として読めることを固定する。
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean` は、有限 semantic repair-gluing complex を導入する。`C0` は local repair primitive family、`C1` は residual repair-gluing cochain carrier、`delta0` は overlap restriction difference、`B1` は `delta0` の像である。`delta0_exact` と `delta0_support_exact` は、`delta0` が各 overlap / atom 上で left / right restriction の symmetric difference として読めることを固定する。
 
 Lean 証拠は三方向に分かれる。
 

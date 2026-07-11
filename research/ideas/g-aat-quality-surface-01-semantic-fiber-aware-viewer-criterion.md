@@ -73,7 +73,7 @@ semantic residual atom identity を保持する drill-down / fiber-aware reading
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticFiberAwareViewerCriterion.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticFiberAwareViewerCriterion.lean` に固定した。
 
 - `ComponentOnlySemanticReading`
 - `SemanticFiberAwareReading`
@@ -89,7 +89,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticFiberAwareView
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticFiberAwareViewerCriterion.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticFiberAwareViewerCriterion.lean`: pass。
 - `lake build ResearchLean`: pass。
 - axiom probe: generic reading/reflection lemmas は axiom-free。selected component-only no-go / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 

@@ -47,9 +47,9 @@ finite antichain calculus.
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/HandoffRepairTransversal.lean`
-- `research/lean/ResearchLean/QualitySurface/HandoffCechExactness.lean`
-- `research/lean/ResearchLean/QualitySurface/OverlapObstructionBasis.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/HandoffRepairTransversal.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/HandoffCechExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/OverlapObstructionBasis.lean`
 - Cycle 64 component-support repair transversal.
 - Cycle 66 finite overlap obstruction basis and repair-transversal duality.
 - Cycle 68 selected repair-basin exchange obstruction.
@@ -94,7 +94,7 @@ candidate makes that loss a Lean-checkable finite theorem.
 - `score_reason`: non-singleton branch incidence plus residual-branch and repair-transversal nonfaithfulness directly addresses the current frontier and gives a new repair-potential invariant, but remains a selected finite branch calculus rather than a global Cech theorem.
 - `dullness_risk`: If the result only defines a hypergraph and restates hitting, it is dull.  The Lean evidence must include exact branch generation, branch deletion failure, and same-visible-union / different-transversal witness.
 - `proof_or_evidence_plan`: Research-side Lean evidence now defines finite branch predicates grounded by a selected exact overlap component basis, residual branch semantics, `AntichainCechOverlapBasis`, branch transversal, branch-complete plans, selected two-singleton and one-pair bases, drop-branch failure, same union nonfaithfulness, and a theorem package.
-- `actual_evidence`: Implemented in `research/lean/ResearchLean/QualitySurface/AntichainOverlapBasisTransversal.lean` and imported by `research/lean/ResearchLean.lean`.
+- `actual_evidence`: Implemented in `research/lean/ResearchLean/AG/QualitySurface/AntichainOverlapBasisTransversal.lean` and imported by `research/lean/ResearchLean.lean`.
 
 ## CS / SWE への帰結
 
@@ -106,7 +106,7 @@ visible component set is insufficient as a repair dashboard.
 ## Lean evidence
 
 Lean evidence is fixed in
-`research/lean/ResearchLean/QualitySurface/AntichainOverlapBasisTransversal.lean`.
+`research/lean/ResearchLean/AG/QualitySurface/AntichainOverlapBasisTransversal.lean`.
 The main declarations are:
 
 - `BranchSupport`: a predicate on `BridgeComponent`.
@@ -141,7 +141,7 @@ Actual declaration names:
 
 Build evidence:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/AntichainOverlapBasisTransversal.lean`: pass.
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/AntichainOverlapBasisTransversal.lean`: pass.
 - `lake build ResearchLean`: pass.
 - `lake build`: pass, with only pre-existing linter warnings in `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 

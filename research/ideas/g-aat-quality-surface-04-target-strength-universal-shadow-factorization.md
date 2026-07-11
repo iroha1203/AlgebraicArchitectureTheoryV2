@@ -40,10 +40,10 @@ finite/small target boundary 内で、tower 全層を読む canonical finite sha
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairObstructionTower.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTorsor.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairStackyH2.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairObstructionTower.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairNonabelianTorsor.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairStackyH2.lean`
 - Cycle 7 G6 checkpoint: remaining blockers are concrete finite shadow adequacy and target-strength universality / factorization.
 
 ## 非自明性
@@ -84,7 +84,7 @@ G-04 の残り blocker である concrete finite shadow connection と target-st
 
 ## 証明・根拠
 
-`research/lean/ResearchLean/QualitySurface/SemanticRepairUniversalShadow.lean` を追加した。
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairUniversalShadow.lean` を追加した。
 
 主な Lean 証拠は次の通り。
 

@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle36
 tags: [quality-surface, repair, support, frontier, transport, commutator, source-ref]
 created: 2026-06-20
 cycle: 36
-lean: research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/FrontierLocalRepairTransportCommutator.lean
 ---
 
 # Frontier-local repair/transport commutator criterion
@@ -42,10 +42,10 @@ Cycle 35 の token-renaming witness により、この仮定は `SupportLocalSou
 
 ## 依拠
 
-- Cycle 30: `research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`
-- Cycle 31: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean`
-- Cycle 34: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean`
-- Cycle 35: `research/lean/ResearchLean/QualitySurface/FrontierLocalFormulaMinimality.lean`
+- Cycle 30: `research/lean/ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean`
+- Cycle 31: `research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairFrontier.lean`
+- Cycle 34: `research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairTransportCommutator.lean`
+- Cycle 35: `research/lean/ResearchLean/AG/QualitySurface/FrontierLocalFormulaMinimality.lean`
 
 ## 非自明性
 
@@ -86,7 +86,7 @@ Lean-backed に説明できる。
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/FrontierLocalRepairTransportCommutator.lean`
 
 Proved declarations:
 
@@ -115,10 +115,10 @@ or whole-codebase quality.
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass
 - `lake build ResearchLean`: pass
 - `lake env lean .tmp/frontier_local_repair_transport_commutator_axioms.lean`: pass; reported declarations depend on no axioms
-- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass; no hits in the Lean evidence file
+- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/AG/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass; no hits in the Lean evidence file
 
 G3 audit summary:
 

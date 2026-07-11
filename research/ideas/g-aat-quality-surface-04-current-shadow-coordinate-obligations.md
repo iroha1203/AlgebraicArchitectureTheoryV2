@@ -25,7 +25,7 @@ origin: G-04 Cycle 25
 tags: [target-theorem, target-support, finite-shadow, source-trace, coordinate-obligation]
 created: 2026-06-25
 cycle: 25
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairCurrentShadowCoordinateObligations.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCurrentShadowCoordinateObligations.lean
 ---
 
 # Current-Shadow Coordinate Obligations

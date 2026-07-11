@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle29
 tags: [quality-surface, source-ref, transport, token-identity, obstruction]
 created: 2026-06-20
 cycle: 29
-lean: research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SourceRefTableLawObstruction.lean
 ---
 
 # Source-ref table law as a sharp non-visible-only transport obstruction
@@ -31,10 +31,10 @@ visualization も失敗する。
 
 ## 依拠
 
-- Cycle 17: `research/lean/ResearchLean/QualitySurface/SourceRefPacketTransport.lean`
-- Cycle 23 / 24: `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`,
-  `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
-- Cycle 28: `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`
+- Cycle 17: `research/lean/ResearchLean/AG/QualitySurface/SourceRefPacketTransport.lean`
+- Cycle 23 / 24: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceHolonomyPacket.lean`,
+  `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 28: `research/lean/ResearchLean/AG/QualitySurface/VisibleRepairTransportCommutator.lean`
 
 ## 非自明性
 
@@ -70,7 +70,7 @@ commutator は非ゼロになる。
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefTableLawObstruction.lean`
 
 Declarations:
 
@@ -102,7 +102,7 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SourceRefTableLawObstruction.lean`: pass
 - `lake build ResearchLean`: pass
 - `lake env lean .tmp/source_ref_table_law_obstruction_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`

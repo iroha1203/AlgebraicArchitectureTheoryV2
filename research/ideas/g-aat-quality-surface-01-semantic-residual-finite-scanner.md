@@ -74,7 +74,7 @@ component-level green / red ではなく、missed residual atom または unsupp
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualFiniteScanner.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualFiniteScanner.lean` に固定した。
 
 - `ListedSourceSemanticResidualsComplete`
 - `ListedSourceSemanticResidualsClosed`
@@ -109,7 +109,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualFinite
 
 G3 初期実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualFiniteScanner.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualFiniteScanner.lean`: pass。
 - `lake build ResearchLean.AG.QualitySurface.SemanticResidualFiniteScanner`: pass。
 - `lake build ResearchLean`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。

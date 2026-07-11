@@ -85,7 +85,7 @@ refinement / viewer / diagnostic surface が first failure を表示するとき
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/ArbitraryBranchFamilyAdequacy.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/ArbitraryBranchFamilyAdequacy.lean` に固定した。
 
 - `TargetOrderEnumerates`
 - `ListedTargetCodesCovered`
@@ -110,7 +110,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/ArbitraryBranchFamilyA
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/ArbitraryBranchFamilyAdequacy.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/ArbitraryBranchFamilyAdequacy.lean`: pass。
 - `lake build ResearchLean`: pass。
 - `#print axioms`: definitions、`listedCoverage_gives_branchFamilyAdequacy`、`branchFamilyAdequacy_transportsTransversal`、`selectedTraceOnlyCoveredByCollapsed_iff_reflection` は axiom-free。`firstUncoveredTargetBranch?_some_*`、list / iff / selected-collapsed witness / package 系 theorem は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`Quot.sound`、`unsafe` は出ていない。
 - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b"` on changed files: no matches。

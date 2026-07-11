@@ -20,7 +20,7 @@ origin: G-04-Cycle61
 tags: [target-theorem, finite-query, current-shadow-factorization, semantic-reading-adequacy, recovery, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 61
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorSemanticIndependence.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorSemanticIndependence.lean
 ---
 
 # Raw Current-Shadow Factor / Semantic Adequacy Independence
@@ -98,8 +98,8 @@ Cycle53 の semantic adequacy witness と Cycle60 の raw factorization witness 
 
 - `research/ideas/g-aat-quality-surface-04-semantic-adequacy-independence.md`
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-independence.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyIndependence.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyIndependence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean`
 
 ## 進捗ログ
 

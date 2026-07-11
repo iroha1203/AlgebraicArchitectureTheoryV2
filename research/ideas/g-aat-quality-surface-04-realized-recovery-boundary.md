@@ -83,7 +83,7 @@ data.
 - Cycle 38 current-shadow coordinate obligations.
 - Cycle 39 recoverable readings boundary.
 - Lean file:
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
 
 ## Lean Surface
 
@@ -164,7 +164,7 @@ theorem-level.
 
 Verification already passed for this candidate:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
 - `lake build ResearchLean.AG.QualitySurface.SemanticRepairFiniteQueryRepresentationRealizedRecovery`
 - `lake env lean research/lean/ResearchLean.lean`
 - `lake build ResearchLean.AG`
@@ -198,7 +198,7 @@ Verification already passed for this candidate:
 ## Related
 
 - `research/ideas/g-aat-quality-surface-04-recoverable-readings-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean`
 
 ## Progress Log
 

@@ -12,7 +12,7 @@ origin: cycle-60
 tags: [quality-surface, source-ref, handoff, holonomy, obstruction, correspondence]
 created: 2026-06-21
 cycle: 60
-lean: research/lean/ResearchLean/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean
 ---
 
 # Source-ref handoff holonomy correspondence for finite route atlases
@@ -79,8 +79,8 @@ route dashboard の green / red や first failing loop は、source-ref handoff 
 
 ## 証明・根拠
 
-Lean file `research/lean/ResearchLean/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean` に固定した。
-`lake env lean research/lean/ResearchLean/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean`、
+Lean file `research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean` に固定した。
+`lake env lean research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean`、
 `lake env lean research/lean/ResearchLean.lean`、`lake build ResearchLean`、full `lake build` は通過した。
 full build の警告は既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter 警告のみである。
 

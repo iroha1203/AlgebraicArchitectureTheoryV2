@@ -27,10 +27,10 @@ visible tuple equivalence が固定された selected repair/transport commutato
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`
-- `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`
-- `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
-- `research/lean/ResearchLean/QualitySurface/InternalExcursionMinSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/VisibleRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/InternalExcursionMinSupport.lean`
 
 ## 非自明性
 
@@ -60,7 +60,7 @@ loss-aware quality view で route defect を表示するだけでなく、どの
 
 ## 証明・根拠の見込み
 
-Lean file: `research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean`
 
 Planned / proved declarations:
 
@@ -81,7 +81,7 @@ Planned / proved declarations:
 
 Verification:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean`: pass
 - `lake build ResearchLean`: pass
 - `#print axioms` for all listed declarations: all `does not depend on any axioms`
 - forbidden-token scan on the Lean file and candidate card: no matches
@@ -108,6 +108,6 @@ Boundary:
 
 ## 進捗ログ
 
-- 2026-06-21: Cycle 43 候補として作成。Lean 単体チェックは `lake env lean research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean` で pass。
+- 2026-06-21: Cycle 43 候補として作成。Lean 単体チェックは `lake env lean research/lean/ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean` で pass。
 - 2026-06-21: G2 厳密性 revise に対応し、selected branch minimality と packet-level correction semantics を Lean に追加。単体チェックは再度 pass。
 - 2026-06-21: G3 で `lake build ResearchLean`、網羅的 `#print axioms`、形式化品質監査が pass。

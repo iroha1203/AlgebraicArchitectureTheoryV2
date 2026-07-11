@@ -27,10 +27,10 @@ lean: proved-in-research
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/ExactVisualizationCriterionMinimality.lean`
-- `research/lean/ResearchLean/QualitySurface/LossAwareCommutatorAtlas.lean`
-- `research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`
-- `research/lean/ResearchLean/QualitySurface/SelectedRouteCorrectionExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ExactVisualizationCriterionMinimality.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/LossAwareCommutatorAtlas.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteCorrectionExactness.lean`
 
 ## 非自明性
 
@@ -60,7 +60,7 @@ route mismatch list を、family exactness criterion と localized branch agreem
 
 ## 証明・根拠の見込み
 
-Lean file: `research/lean/ResearchLean/QualitySurface/SelectedRouteFamilyExactness.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteFamilyExactness.lean`
 
 Proved declarations:
 
@@ -99,7 +99,7 @@ Boundary:
 
 ## Verification
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SelectedRouteFamilyExactness.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SelectedRouteFamilyExactness.lean`: pass
 - `lake build ResearchLean`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/selected_route_family_exactness_axioms.lean`: pass

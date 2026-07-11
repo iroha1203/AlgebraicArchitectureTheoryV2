@@ -27,8 +27,8 @@ lean: proved-in-research
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/FiniteRouteFamilyExactLocus.lean`
-- `research/lean/ResearchLean/QualitySurface/MultiRouteCorrectionSystem.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/FiniteRouteFamilyExactLocus.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/MultiRouteCorrectionSystem.lean`
 
 ## 非自明性
 
@@ -58,7 +58,7 @@ route family repair status が失敗したとき、その失敗は単なる bool
 
 ## 証明・根拠
 
-Lean file: `research/lean/ResearchLean/QualitySurface/FailingSlotCertificate.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/FailingSlotCertificate.lean`
 
 Proved declarations:
 
@@ -85,7 +85,7 @@ Boundary:
 
 ## Verification
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/FailingSlotCertificate.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/FailingSlotCertificate.lean`: pass
 - `lake build ResearchLean`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting in the Lean file: pass
 - `.tmp/failing_slot_certificate_axioms.lean`: pass

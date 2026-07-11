@@ -72,7 +72,7 @@ target theorem completion.
 - Cycle 37 support-shadow finite-query representation.
 - Cycle 40 realized recovery transport.
 - Lean file:
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
 
 ## Lean Surface
 
@@ -138,7 +138,7 @@ auditable.
 
 Verification already passed for this candidate:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
 - `lake build ResearchLean.AG.QualitySurface.SemanticRepairFiniteQueryRepresentationSupportRecovery`
 - `lake env lean research/lean/ResearchLean.lean`
 - `lake build ResearchLean.AG`
@@ -181,7 +181,7 @@ Verification already passed for this candidate:
 ## Related
 
 - `research/ideas/g-aat-quality-surface-04-realized-recovery-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
 
 ## Progress Log
 

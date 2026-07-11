@@ -42,8 +42,8 @@ traceability は結論しない。
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/TupleTransportExactness.lean`
-- `research/lean/ResearchLean/QualitySurface/ProfileTupleIntegration.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TupleTransportExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ProfileTupleIntegration.lean`
 - `tupleTransport_preserves_traceMissingLocus`
 - `tupleTransport_reflects_traceMissingLocus`
 - `tupleTransport_exactRepair_iff_of_bidirectional`
@@ -85,7 +85,7 @@ transport 内の数学的 obstruction であり、実コード全体や tooling 
 
 ## 証明・根拠の見込み
 
-Lean proof は `research/lean/ResearchLean/QualitySurface/TupleTransportComponentLaws.lean` に閉じる。
+Lean proof は `research/lean/ResearchLean/AG/QualitySurface/TupleTransportComponentLaws.lean` に閉じる。
 
 主要 theorem / declaration:
 
@@ -112,7 +112,7 @@ Lean proof は `research/lean/ResearchLean/QualitySurface/TupleTransportComponen
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/TupleTransportComponentLaws.lean` pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/TupleTransportComponentLaws.lean` pass。
 - `lake build ResearchLean` pass。
 - `lake env lean .tmp/tuple_transport_component_laws_axioms.lean` pass。
 - reported declaration はすべて `does not depend on any axioms`。

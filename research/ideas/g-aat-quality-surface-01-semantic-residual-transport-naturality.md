@@ -75,7 +75,7 @@ quality surface は transport success を component equality ではなく residu
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualTransportNaturality.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualTransportNaturality.lean` に固定した。
 
 - `TransportedSemanticSupportExact`
 - `TargetResidualLiftedBySourceResidual`
@@ -103,7 +103,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualTransp
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualTransportNaturality.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualTransportNaturality.lean`: pass。
 - `lake build ResearchLean.AG.QualitySurface.SemanticResidualTransportNaturality`: pass。
 - `lake build ResearchLean`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。

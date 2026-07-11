@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle25
 tags: [quality-surface, source-ref, repair, holonomy, exact-visualization]
 created: 2026-06-20
 cycle: 25
-lean: research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean
 ---
 
 # Finite source-ref repair holonomy annihilation restores exact visualization
@@ -36,9 +36,9 @@ visible flat だが source-ref exact ではない。
 
 ## 依拠
 
-- Cycle 21: `research/lean/ResearchLean/QualitySurface/CodebaseTraceRepairTrajectory.lean`
-- Cycle 23: `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`
-- Cycle 24: `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 21: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceRepairTrajectory.lean`
+- Cycle 23: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceHolonomyPacket.lean`
+- Cycle 24: `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`
 - `research/reports/G-aat-quality-surface-01.md` の Cycle 21, 23, 24 と Next Frontier。
 
 この候補は transport square までを主張しない。ここで固定するのは repair action が protected source-ref
@@ -84,7 +84,7 @@ source-ref exact visualization criterion を使い、repair 後に exact visuali
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean`
 
 Declarations:
 
@@ -99,7 +99,7 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean`: pass
 - `lake build ResearchLean`: pass
 - `lake env lean .tmp/source_ref_repair_holonomy_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`

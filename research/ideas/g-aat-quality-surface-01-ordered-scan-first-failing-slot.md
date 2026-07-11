@@ -12,7 +12,7 @@ origin: cycle-56
 tags: [quality-surface, finite-scan, failing-slot, computability]
 created: 2026-06-21
 cycle: 56
-lean: research/lean/ResearchLean/QualitySurface/OrderedScanFirstFailingSlot.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/OrderedScanFirstFailingSlot.lean
 ---
 
 # Ordered scan first-failing slot certificate
@@ -86,7 +86,7 @@ Lean file `OrderedScanFirstFailingSlot.lean` に置く。
 ## 関連
 
 - `research/ideas/g-aat-quality-surface-01-finite-route-scan.md`
-- `research/lean/ResearchLean/QualitySurface/FiniteRouteScan.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/FiniteRouteScan.lean`
 
 ## 進捗ログ
 

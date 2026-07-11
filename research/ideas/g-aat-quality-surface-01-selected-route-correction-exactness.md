@@ -27,10 +27,10 @@ Cycle 43 の selected protected-component correction を off-selected flatness �
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean`
-- `research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`
-- `research/lean/ResearchLean/QualitySurface/ExactVisualizationCriterionMinimality.lean`
-- `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ExactVisualizationCriterionMinimality.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/VisibleRepairTransportCommutator.lean`
 
 ## 非自明性
 
@@ -60,7 +60,7 @@ loss-aware quality view が route defect branch を表示するだけでなく�
 
 ## 証明・根拠の見込み
 
-Lean file: `research/lean/ResearchLean/QualitySurface/SelectedRouteCorrectionExactness.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteCorrectionExactness.lean`
 
 Planned / proved declarations:
 
@@ -78,7 +78,7 @@ Planned / proved declarations:
 
 Verification:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SelectedRouteCorrectionExactness.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SelectedRouteCorrectionExactness.lean`: pass
 - `lake build ResearchLean`: pass
 - `#print axioms` for all listed declarations: all `does not depend on any axioms`
 - forbidden-token scan on the Cycle 44 Lean/card files: no matches

@@ -38,9 +38,9 @@ ArchMap correctness、実コード全体の traceability は結論しない。
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/ProfileTupleIntegration.lean`
-- `research/lean/ResearchLean/QualitySurface/TupleProtectedDataSquareCriterion.lean`
-- `research/lean/ResearchLean/QualitySurface/TupleTransportExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ProfileTupleIntegration.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TupleProtectedDataSquareCriterion.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TupleTransportExactness.lean`
 - `ProfileTupleIntegration.SameTupleProtectedData`
 - `ProfileTupleIntegration.endpointTuple_visibleAgreement`
 - `ProfileTupleIntegration.endpointTuple_omega_diff`
@@ -95,7 +95,7 @@ traceability は主張しない。
 
 ## 証明・根拠
 
-Lean proof は `research/lean/ResearchLean/QualitySurface/TupleHolonomyDefect.lean` に閉じた。
+Lean proof は `research/lean/ResearchLean/AG/QualitySurface/TupleHolonomyDefect.lean` に閉じた。
 `research/lean/ResearchLean.lean` はこの Research evidence file を import する。
 
 主要 theorem / declaration:
@@ -133,7 +133,7 @@ Lean proof は `research/lean/ResearchLean/QualitySurface/TupleHolonomyDefect.le
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/TupleHolonomyDefect.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/TupleHolonomyDefect.lean`: pass。
 - `lake build ResearchLean`: pass。
 - `.tmp/tuple_holonomy_defect_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。

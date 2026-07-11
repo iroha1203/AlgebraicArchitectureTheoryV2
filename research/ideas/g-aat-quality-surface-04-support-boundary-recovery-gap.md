@@ -20,7 +20,7 @@ origin: G-04-Cycle73
 tags: [target-theorem, finite-query, support-shadow, self-recovery, support-boundary, current-shadow-factorization, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 73
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryRecoveryGap.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryRecoveryGap.lean
 ---
 
 # Support-Shadow Self-Recovery / Boundary Gap
@@ -94,8 +94,8 @@ certificate を満たしたことにはならない。diagnostic は recovery �
 
 - `research/ideas/g-aat-quality-surface-04-support-boundary-obstruction.md`
 - `research/ideas/g-aat-quality-surface-04-support-boundary-square.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryObstruction.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryObstruction.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
 
 ## 進捗ログ
 

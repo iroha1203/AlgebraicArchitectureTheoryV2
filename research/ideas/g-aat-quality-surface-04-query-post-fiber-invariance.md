@@ -25,7 +25,7 @@ origin: G-04 Cycle 28
 tags: [target-theorem, target-support, finite-query, current-shadow, fiber-invariance]
 created: 2026-06-25
 cycle: 28
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryPostFiberInvariance.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryPostFiberInvariance.lean
 ---
 
 # Query Post Fiber Invariance

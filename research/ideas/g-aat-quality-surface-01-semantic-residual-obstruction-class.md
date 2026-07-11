@@ -66,7 +66,7 @@ ADL、static analyzer、conformance dashboard、AI summary は raw edge diagnost
 
 - `score_reason`: Cycle 91 の preclass を、off-cut raw support noise を殺す finite class reading へ上げる。open genius target への support node だが、true H1 にはまだ到達していない。
 - `dullness_risk`: noisy representative の raw support difference がなければ wrapper になる。selected noisy representative、cut-locus predicates、equivalence preservation、canonical iff、scanner bridge、closure/data obstruction を揃えて wrapper risk を下げる。
-- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/SemanticResidualObstructionClass.lean` で raw cochain、cut-noise equivalence、canonical criteria、scanner bridge、selected noisy representative、theorem package を証明する。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObstructionClass.lean` で raw cochain、cut-noise equivalence、canonical criteria、scanner bridge、selected noisy representative、theorem package を証明する。
 
 ## CS / SWE への帰結
 
@@ -75,7 +75,7 @@ off-cut diagnostic noise を含む representation から residual cut-locus supp
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualObstructionClass.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObstructionClass.lean` に固定した。
 
 - `ResidualCutCochain`
 - `canonicalResidualCutCochain`
@@ -107,7 +107,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualObstru
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualObstructionClass.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObstructionClass.lean`: pass。
 - `lake build ResearchLean.AG.QualitySurface.SemanticResidualObstructionClass`: pass。
 - `lake build ResearchLean`: pass。
 - `#print axioms`: `cutNoiseEquivalent_preserves_cutVanishes`、`cutNoiseEquivalent_preserves_cutNonzero`、`canonicalResidualCutClass_vanishes_iff_no_cut`、`canonicalResidualCutClass_nonzero_iff_cut` は axiom-free。scanner bridge と selected noisy equivalence は標準 `propext`。selected noisy nonzero と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。

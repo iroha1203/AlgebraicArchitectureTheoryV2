@@ -44,11 +44,11 @@ lean: proved-in-research
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTorsor.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairStackyH2.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetCompletion.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetSurface.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairNonabelianTorsor.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairStackyH2.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTargetCompletion.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTargetSurface.lean`
 
 ## 非自明性
 

@@ -40,7 +40,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCover`
   - `SemanticRepairTrueSheafH1.toCoverNerve`
@@ -99,7 +99,7 @@ T3 audit:
 
 - decision: approve
 - build status: `lake env lean
-  research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean` and
+  research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
   `lake build ResearchLean` passed.
 - axiom audit: reported declarations do not depend on any axioms.
 - placeholder / hidden Unicode / local path scans: clean.
@@ -114,7 +114,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1ExactnessCertificate`
   - `SemanticRepairTrueSheafH1.coverEnvelope_sheafH1ExactnessDischarge_of_certificate`
@@ -166,7 +166,7 @@ T3 audit:
 
 - decision: approve
 - build status: `lake env lean
-  research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean` and
+  research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
   `lake build ResearchLean` passed.
 - axiom audit: reported Cycle 2 declarations do not depend on any axioms.
 - placeholder / hidden Unicode / local path scans: clean.
@@ -183,7 +183,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1EffectiveDescentCertificate`
   - `SemanticRepairTrueSheafH1.coverEnvelope_globalRepairCoherent_of_sheafH1Zero_effectiveDescent`
@@ -233,7 +233,7 @@ T3 audit:
 
 - decision: approve
 - build status: `lake env lean
-  research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean` and
+  research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
   `lake build ResearchLean` passed.
 - axiom audit: reported Cycle 3 declarations do not depend on any axioms.
 - placeholder / hidden Unicode / local path scans: clean.
@@ -250,7 +250,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1SheafConditionCertificate`
   - `SemanticRepairTrueSheafH1.coverEnvelope_sheafConditionFor_of_certificate`
@@ -294,7 +294,7 @@ T3 audit:
 
 - decision: approve
 - build status: `lake env lean
-  research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean` and
+  research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
   `lake build ResearchLean` passed.
 - axiom audit: reported Cycle 4 declarations depend only on standard
   `propext` through the AAT / Mathlib sheaf-descent interface.
@@ -312,7 +312,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairG02FiniteComparison`
   - `SemanticRepairTrueSheafH1.g02Boundary_of_coverBoundary`
@@ -357,7 +357,7 @@ T3 audit:
 
 - decision: approve
 - build status: `lake env lean
-  research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean` and
+  research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
   `lake build ResearchLean` passed.
 - axiom audit: reported Cycle 5 declarations depend only on standard
   `Quot.sound`.
@@ -375,7 +375,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.coverEnvelope_archSigFiniteShadow_of_sheafH1Zero`
   - `SemanticRepairTrueSheafH1.coverEnvelope_archSigFiniteShadow_of_g02ObstructionVanishes`
@@ -418,7 +418,7 @@ T3 audit:
 
 - decision: approve
 - build status: `lake env lean
-  research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean` and
+  research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
   `lake build ResearchLean` passed.
 - axiom audit: reported
   `coverEnvelope_archSigFiniteShadow_of_sheafH1Zero` has no axioms; the G-02
@@ -436,7 +436,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverRefinement`
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1RefinementComparison`
@@ -482,7 +482,7 @@ T3 audit:
 
 - decision: approve
 - build status: `lake env lean
-  research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean` and
+  research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean` and
   `lake build ResearchLean` passed.
 - axiom audit: reported
   `coverEnvelope_refinement_boundary_pullback`,
@@ -636,7 +636,7 @@ Axiom / dependency audit:
 
 Validation commands:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_final_axioms.lean`
 - placeholder scan for `axiom|admit|sorry|unsafe`, `by trivial`, and trivial
@@ -709,7 +709,7 @@ Historical second review lanes, superseded:
 
 Final validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_final_axioms.lean`
 - placeholder scan over direct target/support Lean files
@@ -725,7 +725,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1AbelianDescentData`
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1AbelianDescentData.toEnvelopeData`
@@ -793,7 +793,7 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - placeholder scan over direct target/support Lean files
@@ -814,7 +814,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryExactAbelianData`
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryExactAbelianData.toAbelianDescentData`
@@ -881,7 +881,7 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
@@ -904,7 +904,7 @@ completion candidate: no pending final `$math-lean-review`
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1TrueSheafConditionCertificate`
   - `SemanticRepairTrueSheafH1.coverEnvelope_sheafConditionCertificate_of_trueSheafCondition`
@@ -959,7 +959,7 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
@@ -1032,7 +1032,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationAbelianData`
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationAbelianData.toAbelianDescentData`
@@ -1097,7 +1097,7 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake build ResearchLean.AG.QualitySurface.SemanticRepairTrueSheafH1`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
@@ -1122,7 +1122,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate`
   - `SemanticRepairTrueSheafH1.coverEnvelope_sheafConditionCertificate_of_boundaryRelationTrueSheafCondition`
@@ -1177,7 +1177,7 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake build ResearchLean.AG.QualitySurface.SemanticRepairTrueSheafH1`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
@@ -1203,7 +1203,7 @@ completion candidate: yes
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.CechH1BoundarySameClass`
   - `SemanticRepairTrueSheafH1.CechH1BoundaryZeroClass`
@@ -1277,7 +1277,7 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
@@ -1338,7 +1338,7 @@ Material premise status after review:
 
 Validation available to reviewers:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
@@ -1361,7 +1361,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
 - declarations:
   - `SemanticRepairSheafH1.SemanticRepairAdditiveCechH1Data`
   - `SemanticRepairSheafH1.SemanticRepairAdditiveH1SameClass`
@@ -1435,8 +1435,8 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
@@ -1460,7 +1460,7 @@ completion candidate: no
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
 - declarations:
   - `SemanticRepairSheafH1.semanticRepairH1Zero_iff_additiveH1Zero`
   - `SemanticRepairSheafH1.globalRepairCoherent_of_additiveH1_zero`
@@ -1533,8 +1533,8 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
@@ -1558,7 +1558,7 @@ completion candidate: yes
 
 Lean artifacts:
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - declarations:
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationAdditiveData`
   - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveCechH1Data`
@@ -1629,7 +1629,7 @@ Structure-field escape audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`
@@ -1758,8 +1758,8 @@ Axiom audit:
 
 Validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake build ResearchLean`
 - `lake env lean .tmp/g05_cycle9_axioms.lean`
 - `git diff --check`

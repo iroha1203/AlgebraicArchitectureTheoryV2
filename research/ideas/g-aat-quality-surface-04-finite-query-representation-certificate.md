@@ -21,7 +21,7 @@ origin: G-04 Cycle 23
 tags: [target-theorem, target-support, finite-shadow, trace-support, representation-certificate]
 created: 2026-06-25
 cycle: 23
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentation.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentation.lean
 ---
 
 # Finite Query Representation Certificate

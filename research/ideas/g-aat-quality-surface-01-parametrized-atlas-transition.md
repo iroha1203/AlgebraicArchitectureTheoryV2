@@ -27,8 +27,8 @@ Cycle 49 の parametrized loss-aware atlas に stage transition を入れる。c
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
-- `research/lean/ResearchLean/QualitySurface/ParametrizedLossAwareAtlas.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ParametrizedLossAwareAtlas.lean`
 
 ## 非自明性
 
@@ -58,7 +58,7 @@ repair stage view では、現在の cell classification だけでなく、stage
 
 ## 証明・根拠
 
-Lean file: `research/lean/ResearchLean/QualitySurface/ParametrizedAtlasTransition.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/ParametrizedAtlasTransition.lean`
 
 Proved declarations:
 
@@ -90,7 +90,7 @@ Boundary:
 
 ## Verification
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/ParametrizedAtlasTransition.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/ParametrizedAtlasTransition.lean`: pass
 - `lake build ResearchLean`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/parametrized_atlas_transition_axioms.lean`: pass

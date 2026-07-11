@@ -25,7 +25,7 @@ origin: G-04 Cycle 33
 tags: [target-theorem, target-support, finite-query, semantic-reading, current-shadow, factorization]
 created: 2026-06-25
 cycle: 33
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryCurrentShadowReading.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryCurrentShadowReading.lean
 ---
 
 # Current-Shadow Semantic Reading Normalization

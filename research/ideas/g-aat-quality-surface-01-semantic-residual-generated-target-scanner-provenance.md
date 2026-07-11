@@ -62,7 +62,7 @@ ADL、static analyzer、dashboard、AI summary は target hit を表示できる
 
 - `score_reason`: generated target scanner hit に source-order preimage と target status-drop validity / canonical nonzero を付与した。
 - `dullness_risk`: `List.mem_map` と scanner soundness の合成に近いため score は抑える。
-- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/SemanticResidualGeneratedTargetScannerProvenance.lean` で provenance theorem を証明する。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualGeneratedTargetScannerProvenance.lean` で provenance theorem を証明する。
 
 ## CS / SWE への帰結
 
@@ -71,7 +71,7 @@ target-side alarm が source certificate geometry から切り離された孤立
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualGeneratedTargetScannerProvenance.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualGeneratedTargetScannerProvenance.lean` に固定した。
 
 - `generatedTargetScannerHit_has_sourceOrderPreimage`
 - `generatedTargetScannerHit_has_sourcePreimageAndStatusDrop`
@@ -82,7 +82,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualGenera
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualGeneratedTargetScannerProvenance.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualGeneratedTargetScannerProvenance.lean`: pass。
 - `lake build ResearchLean.AG.QualitySurface.SemanticResidualGeneratedTargetScannerProvenance`: pass。
 - `lake build ResearchLean`: pass。
 - `#print axioms`: theorem family は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。

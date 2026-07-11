@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle33
 tags: [quality-surface, repair, support, source-ref, obstruction, exactness]
 created: 2026-06-20
 cycle: 33
-lean: research/lean/ResearchLean/QualitySurface/SupportedTokenMismatchObstruction.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SupportedTokenMismatchObstruction.lean
 ---
 
 # Supported-token mismatch obstruction: frontier exact but source-ref non-exact
@@ -38,12 +38,12 @@ packet holonomy は nonzero であり、source-ref exact visualization は失敗
 
 ## 依拠
 
-- Cycle 23: `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`
-- Cycle 24: `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
-- Cycle 25: `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
-- Cycle 29: `research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean`
-- Cycle 31: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean`
-- Cycle 32: `research/lean/ResearchLean/QualitySurface/OutsideSupportMutationObstruction.lean`
+- Cycle 23: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceHolonomyPacket.lean`
+- Cycle 24: `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 25: `research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean`
+- Cycle 29: `research/lean/ResearchLean/AG/QualitySurface/SourceRefTableLawObstruction.lean`
+- Cycle 31: `research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairFrontier.lean`
+- Cycle 32: `research/lean/ResearchLean/AG/QualitySurface/OutsideSupportMutationObstruction.lean`
 
 ## 非自明性
 
@@ -77,7 +77,7 @@ loss-aware visualization には frontier state だけでなく source-ref token 
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/SupportedTokenMismatchObstruction.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SupportedTokenMismatchObstruction.lean`
 
 Planned declarations:
 
@@ -97,7 +97,7 @@ Planned declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SupportedTokenMismatchObstruction.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SupportedTokenMismatchObstruction.lean`: pass
 - `lake build ResearchLean`: pass
 - `lake env lean .tmp/supported_token_mismatch_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`

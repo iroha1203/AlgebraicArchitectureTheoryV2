@@ -81,7 +81,7 @@ source old status-drop hit を必要とすることは証明しない。
   Cycle 95 inducing-map bridge と selected Option-carrier exact status witness を固定した。
 - `dullness_risk`: Cycle 97 と Cycle 99 の単純合成に見える危険がある。exact reading bridge と
   selected extended status reading / no-hit no-go package により回避した。
-- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/SemanticResidualMappedStatusDropRepairHitting.lean`
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualMappedStatusDropRepairHitting.lean`
   で generic transport theorem、inducing-map bridge、selected-to-extended witness を証明する。
 
 ## CS / SWE への帰結
@@ -92,7 +92,7 @@ hit されたことを説明する必要がある。
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualMappedStatusDropRepairHitting.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualMappedStatusDropRepairHitting.lean` に固定した。
 
 - `ResidualStatusDropRepairTransportMap`
 - `AllMappedOldStatusDropsHit`
@@ -122,7 +122,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualMapped
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualMappedStatusDropRepairHitting.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualMappedStatusDropRepairHitting.lean`: pass。
 - `lake build ResearchLean.AG.QualitySurface.SemanticResidualMappedStatusDropRepairHitting`: pass。
 - `lake build ResearchLean`: pass。
 - `#print axioms`: generic theorem 群と inducing-map bridge は axiom-free。selected witness と package は標準

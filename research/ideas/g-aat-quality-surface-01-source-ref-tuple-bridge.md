@@ -13,7 +13,7 @@ source-ref missing locus, repair frontier, and exact repair regime.
 
 ## Evidence
 
-- `research/lean/ResearchLean/QualitySurface/SourceRefTupleBridge.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefTupleBridge.lean`
 - `packetToTuple`
 - `PacketTupleAligned`
 - `from_to_locusAtom`

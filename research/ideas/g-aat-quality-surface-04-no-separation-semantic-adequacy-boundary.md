@@ -20,7 +20,7 @@ origin: G-04-Cycle55
 tags: [target-theorem, finite-query, no-separation, semantic-reading, coordinate-certificate]
 created: 2026-06-25
 cycle: 55
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationSemanticAdequacyBoundary.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationSemanticAdequacyBoundary.lean
 ---
 
 # No-Separation / Semantic-Adequacy / Certificate Exact Triangle
@@ -101,8 +101,8 @@ existing semantic adequacy obstruction と coordinate certificate obstruction �
 
 - `research/ideas/g-aat-quality-surface-04-post-fiber-separation-coordinate-certificate-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-semantic-reading-adequacy-certificate-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean`
 
 ## 進捗ログ
 

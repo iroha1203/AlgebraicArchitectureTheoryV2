@@ -75,7 +75,7 @@ protected scan payload の意味も明確になる。
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SelectedResidualScanPrefixMinimality.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SelectedResidualScanPrefixMinimality.lean` に固定した。
 
 - `selectedPrefixBefore`
 - `firstMissedSelectedBranch?_some_prefixHit`
@@ -100,7 +100,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SelectedResidualScanPr
 
 ## G3 監査結果
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SelectedResidualScanPrefixMinimality.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SelectedResidualScanPrefixMinimality.lean`: pass。
 - `lake build ResearchLean.AG.QualitySurface.SelectedResidualScanPrefixMinimality`: pass。
 - `lake build ResearchLean`: pass。
 - `#print axioms`: `selectedPrefixBefore`, `dropSelectedScanBranch`, branch inequality lemmas、earlier deletion non-restoration、no-earlier-deletion theorem は axiom-free。`firstMissedSelectedBranch?_some_prefixHit`, `traceOnly_firstResidual_prefixExact`, `traceOnly_returnedDeletionRestoresSelectedTransversal`, `selectedResidualPrefix_visibleContrast`, `selectedResidualScanPrefixMinimality_package` は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`Quot.sound`、`unsafe` なし。

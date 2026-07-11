@@ -22,7 +22,7 @@ tags: [target-theorem, semantic-repair, gluing, descent, finite-complex, faithfu
 created: 2026-06-23
 lean: proved-in-research
 lean_files:
-  - research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean
+  - research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean
 lean_declarations:
   - FiniteSemanticRepairGluingComplex
   - B1
@@ -72,12 +72,12 @@ lean_declarations:
 
 - `research/goals/G-aat-quality-surface-02.md` の `G-aat-quality-surface-02`
 - `docs/note/aat_semantic_repair_gluing_complex.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCocycleWitness.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticSupportProjectionKernel.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticResidualComponentFaithfulness.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticResidualTransportNaturality.lean`
-- `research/lean/ResearchLean/QualitySurface/VisibleLocalSemanticGluingObstruction.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticResidualObstructionClass.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCocycleWitness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticSupportProjectionKernel.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualComponentFaithfulness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualTransportNaturality.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/VisibleLocalSemanticGluingObstruction.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObstructionClass.lean`
 
 ## 非自明性
 
@@ -99,7 +99,7 @@ ADL は component / connector / view / constraint を扱えるが、semantic res
 
 - `score_reason`: target theorem の本体方向である necessity / sufficiency package を弱めずに狙う。G2 A の厳密性 revise を反映し、base は 95 に調整する。
 - `dullness_risk`: `B1` を広く定義して全 residual を boundary にする、または primitive を semantic repair と無証明に同一視すると失格。faithfulness hypotheses と visible/local witness validation を分けて記録する必要がある。
-- `proof_or_evidence_plan`: `FiniteSemanticRepairGluingComplex`、restriction-difference `delta0` law、`B1`、`ObstructionClassNonzero`、`GlobalSemanticRepairCoherent`、`SemanticFaithfulnessHypotheses` を `research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean` に置き、既存の faithfulness / transport / visible-local obstruction theorem を package に接続した。`lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean` と対象 module build は通過済み。
+- `proof_or_evidence_plan`: `FiniteSemanticRepairGluingComplex`、restriction-difference `delta0` law、`B1`、`ObstructionClassNonzero`、`GlobalSemanticRepairCoherent`、`SemanticFaithfulnessHypotheses` を `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean` に置き、既存の faithfulness / transport / visible-local obstruction theorem を package に接続した。`lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean` と対象 module build は通過済み。
 
 ## Target Theorem 寄与
 

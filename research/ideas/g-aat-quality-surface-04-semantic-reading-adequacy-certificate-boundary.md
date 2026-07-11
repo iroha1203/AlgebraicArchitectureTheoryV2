@@ -20,7 +20,7 @@ origin: G-04-Cycle54
 tags: [target-theorem, finite-query, semantic-reading, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 54
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean
 ---
 
 # Semantic-Reading Adequacy Certificate Boundary
@@ -101,8 +101,8 @@ adequacy iff に渡す。no-certificate blocker は iff の contrapositive。
 
 - `research/ideas/g-aat-quality-surface-04-semantic-reading-adequacy-independence-target-surface-entry.md`
 - `research/ideas/g-aat-quality-surface-04-coordinate-certificate-target-surface-entry-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQuerySemanticReadingCertificateExtraction.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQuerySemanticReadingCertificateExtraction.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
 
 ## 進捗ログ
 

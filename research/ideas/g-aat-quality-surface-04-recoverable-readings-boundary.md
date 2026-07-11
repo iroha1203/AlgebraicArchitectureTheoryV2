@@ -20,7 +20,7 @@ anti_weakening_verdict: pass as target-refinement; reject if promoted to target 
 claim_boundary: not target completion; exact support-shadow adequacy and recoverability are completion-sensitive visible premises.
 math_lean_review_scope: not run this cycle
 lean_files:
-  - research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean
+  - research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean
 lean_declarations:
   - QueryReadingsRecoveringPost
   - queryTraceReadingsPost
@@ -53,7 +53,7 @@ faithfulness to query-coordinate extensionality for uniformly output-decodable
 post-maps.
 
 The new Lean file
-`research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean`
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean`
 defines `QueryReadingsRecoveringPost`, a visible decoder premise saying that the
 post-map output uniformly recovers the finite query readings.  Under this
 premise, current-shadow reading faithfulness forces the query trace vector to

@@ -11,7 +11,7 @@ origin: cycle-10
 tags: [quality-surface, profile-grid, holonomy, trace-curvature, repair-frontier]
 created: 2026-06-20
 cycle: 10
-lean: research/lean/ResearchLean/QualitySurface/ProfileGridHolonomy.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/ProfileGridHolonomy.lean
 ---
 
 # Finite 3x3 profile grid holonomy witness
@@ -33,10 +33,10 @@ exact repair frontier では分岐する。二つの path は 3x3 grid の中間
 ## 依拠
 
 - `research/reports/G-aat-quality-surface-01.md` cycle 3, 7, 8, 9
-- `research/lean/ResearchLean/QualitySurface/ProfileCurvature.lean`
-- `research/lean/ResearchLean/QualitySurface/TraceCurvature.lean`
-- `research/lean/ResearchLean/QualitySurface/TraceLocus.lean`
-- `research/lean/ResearchLean/QualitySurface/ReadingAdequacy.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ProfileCurvature.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TraceCurvature.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TraceLocus.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ReadingAdequacy.lean`
 - `research/goals/G-aat-quality-surface-01.md` の finite product poset `P_law x P_cover` 上の 3x3 profile grid frontier
 
 ## 非自明性
@@ -64,7 +64,7 @@ quality-surface、certificate-transport、ridge-fold、traceability の能力を
 
 - `score_reason`: 3x3 profile grid frontier に直接対応するが、cycle 7 の single-square result からの拡張なので revised base 65 を見込む。local curvature cell と surrounding preservation steps を明示できれば G2 を通す。
 - `dullness_risk`: 2x2 square を 3x3 に埋め直すだけなら dull。typed grid profile、length-4 paths、non-dummy intermediate vertices、localized curvature cell、surrounding preservation steps、endpoint holonomy discrepancy、nonfaithfulness theorem を主成果にする。
-- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/ProfileGridHolonomy.lean` を追加し、law level / cover level の 3x3 grid、named grid certificates、typed edge transports、二つの monotone path を定義する。endpoint visible agreement、trace availability / missing、exact repair frontier、endpoint-only reading nonfaithfulness を axiom-free で証明する。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/QualitySurface/ProfileGridHolonomy.lean` を追加し、law level / cover level の 3x3 grid、named grid certificates、typed edge transports、二つの monotone path を定義する。endpoint visible agreement、trace availability / missing、exact repair frontier、endpoint-only reading nonfaithfulness を axiom-free で証明する。
 
 ## CS / SWE への帰結
 
@@ -142,7 +142,7 @@ path holonomy として固定する。
 
 ## G3 監査
 
-- build: `lake env lean research/lean/ResearchLean/QualitySurface/ProfileGridHolonomy.lean` pass、`lake build ResearchLean` pass。
+- build: `lake env lean research/lean/ResearchLean/AG/QualitySurface/ProfileGridHolonomy.lean` pass、`lake build ResearchLean` pass。
 - axiom check: pass。主要 declaration はすべて `does not depend on any axioms`。
 - formalization quality audit: pass。typed 3x3 grid、length-4 paths、middle vertices、localized curvature cell、surrounding preservation steps、endpoint nonfaithfulness が Lean statement として分離されている。
 - theorem highlights: `lawFirst_uses_middle_grid_vertices`、`coverFirst_uses_middle_grid_vertices`、`surrounding_steps_preserve_trace_frontier`、`localized_curvature_cell`、`endpointSurface_not_faithful_to_gridRepairFrontier`、`same_grid_surface_but_path_ordered_frontier_diff`。

@@ -40,11 +40,11 @@ enumeration, global sheaf completeness, or whole-codebase quality.
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/HandoffCechExactness.lean`
-- `research/lean/ResearchLean/QualitySurface/OverlapObstructionBasis.lean`
-- `research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`
-- `research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean`
-- `research/lean/ResearchLean/QualitySurface/LossAwareCommutatorAtlas.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/HandoffCechExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/OverlapObstructionBasis.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/FrontierLocalRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/LossAwareCommutatorAtlas.lean`
 - Cycle 62 repair/transport handoff obstruction bridge
 - Cycle 65 Cech overlap exactness
 - Cycle 66 overlap obstruction basis / repair-transversal duality
@@ -104,8 +104,8 @@ geometry not reducible to a mismatch list or scalar dashboard.
 - `G2_after_revise`: A accepted base 84, genius no; B accepted base 88,
   genius no; C accepted base 90, genius no; D accepted base 90, genius no.
 - `G3_evidence`: Lean proof in
-  `research/lean/ResearchLean/QualitySurface/RepairTransportCechCommutatorCurvature.lean`.
-  `lake env lean research/lean/ResearchLean/QualitySurface/RepairTransportCechCommutatorCurvature.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/RepairTransportCechCommutatorCurvature.lean`.
+  `lake env lean research/lean/ResearchLean/AG/QualitySurface/RepairTransportCechCommutatorCurvature.lean`
   and `lake build ResearchLean` passed.  Full `lake build` also passed;
   the only warnings were pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.

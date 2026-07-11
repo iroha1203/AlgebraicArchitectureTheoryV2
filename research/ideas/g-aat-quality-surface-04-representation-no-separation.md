@@ -18,7 +18,7 @@ Cycle 35 connects the Cycle 34 representation boundary to the obstruction route
 from Cycle 31-33.
 
 The new Lean file
-`research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationNoSeparation.lean`
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationNoSeparation.lean`
 proves that, for a visible finite-query representation, a separated post-fiber
 blocks:
 

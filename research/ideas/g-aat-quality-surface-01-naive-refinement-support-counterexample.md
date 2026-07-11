@@ -12,7 +12,7 @@ origin: G1-cycle71
 tags: [quality-surface, refinement, cech, branch-transversal, counterexample]
 created: 2026-06-21
 cycle: 71
-lean: research/lean/ResearchLean/QualitySurface/NaiveRefinementSupportCounterexample.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/NaiveRefinementSupportCounterexample.lean
 genius_potential: no
 genius_target: none
 genius_support_role: none
@@ -52,8 +52,8 @@ naive visible-union-preserving reading.
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/AntichainOverlapBasisTransversal.lean`
-- `research/lean/ResearchLean/QualitySurface/CurvatureBasisExchange.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/AntichainOverlapBasisTransversal.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/CurvatureBasisExchange.lean`
 - Cycle 69 antichain branch-transversal nonfaithfulness.
 - Cycle 70 path-indexed curvature basis exchange.
 
@@ -97,7 +97,7 @@ that inference Lean-checkable.
 
 - `score_reason`: moderate orientation value because it prevents a too-weak refinement theorem and isolates branch reflection as the missing hypothesis, while reusing Cycle 70's selected finite setting.
 - `dullness_risk`: real.  If it only repeats Cycle 70 trace-only nonfaithfulness, the score should drop.  The Lean evidence must explicitly introduce a selected finite branch-reflection reading, a naive refined-pair reading, and deletion/restoration of the reflected repair-frontier singleton.
-- `proof_or_evidence_plan`: completed in `research/lean/ResearchLean/QualitySurface/NaiveRefinementSupportCounterexample.lean`.
+- `proof_or_evidence_plan`: completed in `research/lean/ResearchLean/AG/QualitySurface/NaiveRefinementSupportCounterexample.lean`.
 
 ## Lean evidence
 
@@ -118,7 +118,7 @@ Lean proves:
 
 Local checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/NaiveRefinementSupportCounterexample.lean`: pass.
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/NaiveRefinementSupportCounterexample.lean`: pass.
 - `lake build ResearchLean`: pass.
 - `lake build`: pass, with only existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warnings.
 - `#print axioms`: all reported declarations are axiom-free.  No `sorryAx`, custom axiom, `propext`, `Classical.choice`, `Quot.sound`, or `unsafe` appears in the reported declarations.

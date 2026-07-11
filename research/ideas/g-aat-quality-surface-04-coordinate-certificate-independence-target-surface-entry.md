@@ -20,7 +20,7 @@ origin: G-04-Cycle51
 tags: [target-theorem, finite-query, target-surface, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 51
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateIndependence.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateIndependence.lean
 ---
 
 # Coordinate Certificate Independence for Target-Surface Entry
@@ -101,8 +101,8 @@ Bool constant post-map は Cycle50 により assignment entry と target-surface
 
 - `research/ideas/g-aat-quality-surface-04-coordinate-certificate-target-surface-entry-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-recovery-independence-target-surface-entry.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRecoveryIndependence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRecoveryIndependence.lean`
 
 ## 進捗ログ
 

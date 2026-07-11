@@ -22,7 +22,7 @@ tags: [target-theorem, semantic-repair, gluing, descent, finite-complex, faithfu
 created: 2026-06-24
 lean: proved-in-research
 lean_files:
-  - research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean
+  - research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean
 lean_declarations:
   - CompleteRepairSupportBoundaryComplex
   - completeRepairSupportBoundary_semanticFaithfulnessHypotheses
@@ -51,10 +51,10 @@ lean_declarations:
 ## 依拠
 
 - `research/goals/G-aat-quality-surface-02.md` の `G-aat-quality-surface-02`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticResidualComponentFaithfulness.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticSupportProjectionKernel.lean`
-- `research/lean/ResearchLean/QualitySurface/VisibleLocalSemanticGluingObstruction.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualComponentFaithfulness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticSupportProjectionKernel.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/VisibleLocalSemanticGluingObstruction.lean`
 
 ## 非自明性
 

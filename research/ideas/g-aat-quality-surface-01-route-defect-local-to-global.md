@@ -28,7 +28,7 @@ selected finite route chain `left -> middle -> right` において、片側 boun
 
 ## Lean 証拠
 
-- `research/lean/ResearchLean/QualitySurface/RouteDefectExcursionSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/RouteDefectExcursionSupport.lean`
 - `research/lean/ResearchLean.lean`
 
 主要 declaration:
@@ -58,11 +58,11 @@ selected finite route chain `left -> middle -> right` において、片側 boun
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/ComponentDefectPropagation.lean`
-- `research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`
-- `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
-- `research/lean/ResearchLean/QualitySurface/TransportTableLawRouteLocalization.lean`
-- `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ComponentDefectPropagation.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TransportTableLawRouteLocalization.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/VisibleRepairTransportCommutator.lean`
 
 ## 非自明性
 
@@ -110,7 +110,7 @@ Lean では次の declaration を固定した。
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/RouteDefectExcursionSupport.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/RouteDefectExcursionSupport.lean`: pass
 - `lake build ResearchLean`: pass
 - `.tmp/route_defect_excursion_axioms.lean`: 全対象 declaration が axiom 依存なし
 - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean research/lean/ResearchLean.lean`: 新規差分に該当なし

@@ -12,7 +12,7 @@ origin: cycle-57
 tags: [quality-surface, heterogeneous-route, interaction, curvature]
 created: 2026-06-21
 cycle: 57
-lean: research/lean/ResearchLean/QualitySurface/HeterogeneousRouteInteraction.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/HeterogeneousRouteInteraction.lean
 ---
 
 # Heterogeneous route bridge obstruction
@@ -87,8 +87,8 @@ Lean file `HeterogeneousRouteInteraction.lean` に置く。
 
 ## 関連
 
-- `research/lean/ResearchLean/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
-- `research/lean/ResearchLean/QualitySurface/OrderedScanFirstFailingSlot.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/OrderedScanFirstFailingSlot.lean`
 
 ## 進捗ログ
 

@@ -20,7 +20,7 @@ origin: G-04-Cycle47
 tags: [target-theorem, finite-query, target-surface, admissibility-boundary, anti-weakening]
 created: 2026-06-25
 cycle: 47
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceAdmissibilityBoundary.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceAdmissibilityBoundary.lean
 ---
 
 # Recovery-Free Represented Finite-Query Target-Surface Admissibility Boundary
@@ -88,7 +88,7 @@ finite diagnostic output を target-surface finite shadow で読むために必�
 ## 関連
 
 - `research/ideas/g-aat-quality-surface-04-finite-query-recovery-target-surface-factorization.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceFactorization.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceFactorization.lean`
 
 ## 進捗ログ
 

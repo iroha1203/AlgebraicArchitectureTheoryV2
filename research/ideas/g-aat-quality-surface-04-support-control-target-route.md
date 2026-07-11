@@ -20,7 +20,7 @@ origin: G-04-Cycle66
 tags: [target-theorem, finite-query, support-shadow, support-control, recovery, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 66
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlRoute.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlRoute.lean
 ---
 
 # Support-Control Target Route
@@ -95,8 +95,8 @@ coordinate extensionality に変換し、Cycle63 route package を適用する�
 ## 関連
 
 - `research/ideas/g-aat-quality-surface-04-support-shadow-target-route.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQuerySupportedCurrentShadowFactorization.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQuerySupportedCurrentShadowFactorization.lean`
 
 ## 進捗ログ
 

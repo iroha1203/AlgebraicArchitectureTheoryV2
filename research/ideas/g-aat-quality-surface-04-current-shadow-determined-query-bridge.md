@@ -25,7 +25,7 @@ origin: G-04 Cycle 24
 tags: [target-theorem, target-support, finite-query, canonical-shadow, representation-certificate]
 created: 2026-06-25
 cycle: 24
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryCanonicalBridge.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryCanonicalBridge.lean
 ---
 
 # Current-Shadow-Determined Query Bridge

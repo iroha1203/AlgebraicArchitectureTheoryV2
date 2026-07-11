@@ -25,7 +25,7 @@ origin: G-04 Cycle 31
 tags: [target-theorem, target-obstruction, finite-query, current-shadow, post-fiber]
 created: 2026-06-25
 cycle: 31
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryPostFiberObstruction.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryPostFiberObstruction.lean
 ---
 
 # Query Post-Fiber Separation Obstruction

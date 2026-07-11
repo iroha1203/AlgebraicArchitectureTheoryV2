@@ -78,7 +78,7 @@ component row が green でも、actual residual obligation atom を alias atom 
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualComponentFaithfulness.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualComponentFaithfulness.lean` に固定した。
 
 - `ResidualAtomAwareReading`
 - `residualAtomAwareReading_reflects_semanticRepairClosed`
@@ -103,7 +103,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualCompon
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualComponentFaithfulness.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualComponentFaithfulness.lean`: pass。
 - `lake build ResearchLean`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
 - axiom probe: generic theorem 群は axiom-free。selected witness / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。

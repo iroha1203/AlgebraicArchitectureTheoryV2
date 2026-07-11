@@ -24,16 +24,16 @@ The correspondence and implementation history are tracked in Issue
 future canonical status updates for these results belong in
 `lean_theorem_index_ag_aat.md`, not in this research evidence index.
 
-File: `research/lean/ResearchLean/QualitySurface/SemanticRepairGluingComplex.lean`.
-Certificate surface: `research/lean/ResearchLean/QualitySurface/SemanticRepairAdequacyDischarge.lean`.
-Additional target theorem files: `research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`,
-`research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`,
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`,
-`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationRealization.lean`,
-`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`,
-`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`,
-`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`,
-`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`.
+File: `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean`.
+Certificate surface: `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairAdequacyDischarge.lean`.
+Additional target theorem files: `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`,
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`,
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`,
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean`,
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`,
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`,
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`,
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`.
 Tracking Issue: [#2476](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2476).
 Report: [`research/reports/G-aat-quality-surface-02.md`](../../research/reports/G-aat-quality-surface-02.md).
 Final review: `$math-lean-review` passed with four `No major findings` lanes for

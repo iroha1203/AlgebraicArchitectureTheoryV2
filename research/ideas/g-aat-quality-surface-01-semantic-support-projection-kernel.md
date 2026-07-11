@@ -83,7 +83,7 @@ viewer / dashboard / review surface は component support だけでなく semant
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticSupportProjectionKernel.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticSupportProjectionKernel.lean` に固定した。
 
 - `RefinedSemanticRepairAtom`
 - `refinedSemanticComponent`
@@ -118,7 +118,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticSupportProject
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticSupportProjectionKernel.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticSupportProjectionKernel.lean`: pass。
 - `lake build ResearchLean`: pass。
 - axiom probe: generic projection criterion と core support/projection declarations は axiom-free。selected counterexample / component-projected adequacy / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`Quot.sound`、`unsafe` はない。
 

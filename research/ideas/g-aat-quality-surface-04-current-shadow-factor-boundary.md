@@ -20,7 +20,7 @@ origin: G-04-Cycle58
 tags: [target-theorem, finite-query, current-shadow-factorization, target-surface-entry, anti-weakening]
 created: 2026-06-25
 cycle: 58
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean
 ---
 
 # Raw Current-Shadow Factor Exact Boundary
@@ -102,8 +102,8 @@ no-current-shadow-factor theorem と Cycle56 の blocker を束ねる。
 
 - `research/ideas/g-aat-quality-surface-04-entry-exactness-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-entry-factorization-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryExactnessBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationPostInvariant.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryExactnessBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationPostInvariant.lean`
 
 ## 進捗ログ
 

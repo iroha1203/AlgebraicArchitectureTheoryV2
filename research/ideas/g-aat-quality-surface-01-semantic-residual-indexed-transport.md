@@ -82,7 +82,7 @@ finite overlap family の全 index で target residual atom が supported source
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualIndexedTransport.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualIndexedTransport.lean` に固定した。
 
 - `IndexedSemanticRepairClosed`
 - `IndexedTransportedSemanticSupportExact`
@@ -118,7 +118,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualIndexe
 
 G3 初期実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualIndexedTransport.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualIndexedTransport.lean`: pass。
 - `lake build ResearchLean.AG.QualitySurface.SemanticResidualIndexedTransport`: pass。
 - `lake build ResearchLean.AG`: pass。
 - `lake env lean research/lean/ResearchLean.lean`: pass。

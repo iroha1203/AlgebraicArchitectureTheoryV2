@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle37
 tags: [quality-surface, repair, transport, table-law, commutator, obstruction, source-ref]
 created: 2026-06-20
 cycle: 37
-lean: research/lean/ResearchLean/QualitySurface/TransportTableLawRouteLocalization.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/TransportTableLawRouteLocalization.lean
 ---
 
 # Transport table-law deletion localizes the selected route defect
@@ -37,10 +37,10 @@ naturality が保たれても selected route source-ref table defect が残る�
 
 ## 依拠
 
-- Cycle 29: `research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean`
-- Cycle 30: `research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`
-- Cycle 34: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean`
-- Cycle 36: `research/lean/ResearchLean/QualitySurface/FrontierLocalRepairTransportCommutator.lean`
+- Cycle 29: `research/lean/ResearchLean/AG/QualitySurface/SourceRefTableLawObstruction.lean`
+- Cycle 30: `research/lean/ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean`
+- Cycle 34: `research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairTransportCommutator.lean`
+- Cycle 36: `research/lean/ResearchLean/AG/QualitySurface/FrontierLocalRepairTransportCommutator.lean`
 
 ## 非自明性
 
@@ -78,7 +78,7 @@ report/tooling surface では、transport table law failure を selected source-
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/TransportTableLawRouteLocalization.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TransportTableLawRouteLocalization.lean`
 
 Planned declarations:
 
@@ -112,10 +112,10 @@ or whole-codebase quality.
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/TransportTableLawRouteLocalization.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/TransportTableLawRouteLocalization.lean`: pass
 - `lake build ResearchLean`: pass
 - `lake env lean .tmp/transport_table_law_route_localization_axioms.lean`: pass; reported declarations depend on no axioms
-- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/QualitySurface/TransportTableLawRouteLocalization.lean`: pass; no hits in the Lean evidence file
+- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/AG/QualitySurface/TransportTableLawRouteLocalization.lean`: pass; no hits in the Lean evidence file
 
 G3 audit summary:
 

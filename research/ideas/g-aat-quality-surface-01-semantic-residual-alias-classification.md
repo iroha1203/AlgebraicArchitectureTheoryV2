@@ -71,7 +71,7 @@ viewer / review surface は、その alias coverage と actual residual obligati
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualAliasClassification.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAliasClassification.lean` に固定した。
 
 - `MissedSemanticResidual`
 - `missedSemanticResidual_of_residualAliasGap`
@@ -90,7 +90,7 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualAliasC
 
 G3 実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualAliasClassification.lean`: pass。
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAliasClassification.lean`: pass。
 - `lake build ResearchLean.AG.QualitySurface.SemanticResidualAliasClassification`: pass。
 - `lake build ResearchLean`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。

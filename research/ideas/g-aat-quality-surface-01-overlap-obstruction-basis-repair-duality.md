@@ -41,9 +41,9 @@ completeness, or whole-codebase quality.
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/HandoffCechExactness.lean`
-- `research/lean/ResearchLean/QualitySurface/HandoffRepairTransversal.lean`
-- `research/lean/ResearchLean/QualitySurface/SourceRefHandoffComponentSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/HandoffCechExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/HandoffRepairTransversal.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffComponentSupport.lean`
 - Cycle 63-65 の component support、repair transversal、Cech overlap exactness。
 
 ## 非自明性
@@ -129,12 +129,12 @@ Lean declarations:
 - `overlapObstructionBasisRepairDuality_package`
 
 Lean evidence stage: `proved-in-research` in
-`research/lean/ResearchLean/QualitySurface/OverlapObstructionBasis.lean`, imported by
+`research/lean/ResearchLean/AG/QualitySurface/OverlapObstructionBasis.lean`, imported by
 `research/lean/ResearchLean.lean`.
 
 G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/OverlapObstructionBasis.lean`: pass.
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/OverlapObstructionBasis.lean`: pass.
 - `lake build ResearchLean.AG.QualitySurface.OverlapObstructionBasis`: pass.
 - `lake build ResearchLean`: pass.
 - `lake build`: pass; existing unrelated linter warnings remain in

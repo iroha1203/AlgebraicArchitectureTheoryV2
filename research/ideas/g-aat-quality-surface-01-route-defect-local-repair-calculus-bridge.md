@@ -27,10 +27,10 @@ Cycle 43 / 44 の selected route-defect correction は、Cycle 1 の `LocalRepai
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SupportHitting.lean`
-- `research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean`
-- `research/lean/ResearchLean/QualitySurface/SelectedRouteCorrectionExactness.lean`
-- `research/lean/ResearchLean/QualitySurface/ExactVisualizationCriterionMinimality.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SupportHitting.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteCorrectionExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ExactVisualizationCriterionMinimality.lean`
 
 ## 非自明性
 
@@ -60,7 +60,7 @@ route mismatch を「違反の有無」だけでなく、local support family �
 
 ## 証明・根拠の見込み
 
-Lean file: `research/lean/ResearchLean/QualitySurface/RouteDefectLocalRepairCalculusBridge.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/RouteDefectLocalRepairCalculusBridge.lean`
 
 Planned / proved declarations:
 
@@ -77,7 +77,7 @@ Planned / proved declarations:
 
 Verification:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/RouteDefectLocalRepairCalculusBridge.lean`: pass
+- `lake env lean research/lean/ResearchLean/AG/QualitySurface/RouteDefectLocalRepairCalculusBridge.lean`: pass
 - `lake build ResearchLean`: pass
 - `#print axioms` for reported declarations: first support/adapter declarations have no 公理依存; theorem declarations using the `Set`-based local repair calculus depend only on standard `propext`, `Classical.choice`, and `Quot.sound`.
 - Forbidden-token scan over the Cycle 46 Lean/card files: no matches.
