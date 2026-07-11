@@ -14,7 +14,7 @@ Research Leanの受理statementを本体へ昇格するとき、本体側stateme
 ## 適用対象
 
 - `docs/aat/research_evidence_index.md`で`ported`と判定するResearch成果
-- evidence indexが未整備の場合に、`Formal/AG/Research/**`、reports、本体側対応記述から
+- evidence indexが未整備の場合に、Research Lean source、reports、本体側対応記述から
   本体対応候補として抽出したResearch成果
 - Research元statementを本体へ新規に昇格するPR
 - 既存`ported`行を再監査するbackfill
