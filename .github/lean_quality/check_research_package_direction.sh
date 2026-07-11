@@ -4,7 +4,7 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 fixture="$repo_root/.github/lean_quality/fixtures/research_package_direction/root_imports_research.lean"
 root_lakefile="${AAT_ROOT_LAKEFILE:-$repo_root/lakefile.toml}"
-research_lakefile="${AAT_RESEARCH_LAKEFILE:-$repo_root/research-lean/lakefile.toml}"
+research_lakefile="${AAT_RESEARCH_LAKEFILE:-$repo_root/research/lean/lakefile.toml}"
 
 python3 - "$root_lakefile" "$research_lakefile" <<'PY'
 import pathlib
@@ -22,12 +22,12 @@ def normalized_path(require):
 
 for require in root.get("require", []):
     path = normalized_path(require)
-    if require.get("name") == "ResearchLean" or path == "research-lean" or (path and path.startswith("research-lean/")):
+    if require.get("name") == "ResearchLean" or path == "research/lean" or (path and path.startswith("research/lean/")):
         print("E_ROOT_REQUIRES_RESEARCH: root lakefile references the Research package", file=sys.stderr)
         raise SystemExit(1)
 
 if not any(
-    require.get("name") == "AlgebraicArchitectureTheoryV2" and normalized_path(require) == ".."
+    require.get("name") == "AlgebraicArchitectureTheoryV2" and normalized_path(require) == "../.."
     for require in research.get("require", [])
 ):
     print("E_RESEARCH_ROOT_DEPENDENCY: Research package does not depend on root", file=sys.stderr)

@@ -35,11 +35,11 @@ mutual
         s!"c({normalizeName name};{String.intercalate "," (levels.map serializeLevel)})"
     | .app function argument => s!"a({serializeExpr function},{serializeExpr argument})"
     | .lam name type body binderInfo =>
-        s!"l({name};{reprStr binderInfo};{serializeExpr type};{serializeExpr body})"
+        s!"l({normalizeName name};{reprStr binderInfo};{serializeExpr type};{serializeExpr body})"
     | .forallE name type body binderInfo =>
-        s!"P({name};{reprStr binderInfo};{serializeExpr type};{serializeExpr body})"
+        s!"P({normalizeName name};{reprStr binderInfo};{serializeExpr type};{serializeExpr body})"
     | .letE name type value body nondep =>
-        s!"L({name};{nondep};{serializeExpr type};{serializeExpr value};{serializeExpr body})"
+        s!"L({normalizeName name};{nondep};{serializeExpr type};{serializeExpr value};{serializeExpr body})"
     | .lit literal => s!"v({reprStr literal})"
     | .mdata _ expression => serializeExpr expression
     | .proj typeName index structureExpr =>

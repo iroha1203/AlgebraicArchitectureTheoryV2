@@ -90,7 +90,7 @@ grep -F E_MIGRATION_DECLARATION_SET "$tmp/stderr" >/dev/null
 component_root="$tmp/component-root"
 cp -R "$fixture" "$component_root"
 printf '%s\n' 'def dependencyName := "XFixtureOld.AG.Helper"' >>"$component_root/old/Smoke.lean"
-printf '%s\n' 'def dependencyName := "XFixtureNew.AG.Helper"' >>"$component_root/research-lean/ResearchLean/AG/Smoke.lean"
+printf '%s\n' 'def dependencyName := "XFixtureNew.AG.Helper"' >>"$component_root/research/lean/ResearchLean/AG/Smoke.lean"
 if AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$component_root" "$checker" \
     ignored-base ignored-head "$component_root/manifest.tsv" "$component_root/old.audit.tsv" "$component_root/new.audit.tsv" \
     R3 "$tmp/component-out" >"$tmp/stdout" 2>"$tmp/stderr"; then
@@ -101,7 +101,7 @@ grep -F E_MIGRATION_SOURCE_DIGEST "$tmp/stderr" >/dev/null
 nested_root="$tmp/nested-root"
 cp -R "$fixture" "$nested_root"
 printf '%s\n' 'def dependencyName := "X.FixtureOld.AG.Helper"' >>"$nested_root/old/Smoke.lean"
-printf '%s\n' 'def dependencyName := "X.FixtureNew.AG.Helper"' >>"$nested_root/research-lean/ResearchLean/AG/Smoke.lean"
+printf '%s\n' 'def dependencyName := "X.FixtureNew.AG.Helper"' >>"$nested_root/research/lean/ResearchLean/AG/Smoke.lean"
 if AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$nested_root" "$checker" \
     ignored-base ignored-head "$nested_root/manifest.tsv" "$nested_root/old.audit.tsv" "$nested_root/new.audit.tsv" \
     R3 "$tmp/nested-out" >"$tmp/stdout" 2>"$tmp/stderr"; then
@@ -112,7 +112,7 @@ grep -F E_MIGRATION_SOURCE_DIGEST "$tmp/stderr" >/dev/null
 unicode_root="$tmp/unicode-root"
 cp -R "$fixture" "$unicode_root"
 printf '%s\n' 'def dependencyName := "αFixtureOld.AG.Helper"' >>"$unicode_root/old/Smoke.lean"
-printf '%s\n' 'def dependencyName := "αFixtureNew.AG.Helper"' >>"$unicode_root/research-lean/ResearchLean/AG/Smoke.lean"
+printf '%s\n' 'def dependencyName := "αFixtureNew.AG.Helper"' >>"$unicode_root/research/lean/ResearchLean/AG/Smoke.lean"
 if AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$unicode_root" "$checker" \
     ignored-base ignored-head "$unicode_root/manifest.tsv" "$unicode_root/old.audit.tsv" "$unicode_root/new.audit.tsv" \
     R3 "$tmp/unicode-out" >"$tmp/stdout" 2>"$tmp/stderr"; then
@@ -125,10 +125,10 @@ while IFS=$'\t' read -r label suffix; do
   cp -R "$fixture" "$adjacent_root"
   if [ "$suffix" = '»' ]; then
     printf '%s\n' 'def dependencyName := "«FixtureOld.AG»"' >>"$adjacent_root/old/Smoke.lean"
-    printf '%s\n' 'def dependencyName := "«FixtureNew.AG»"' >>"$adjacent_root/research-lean/ResearchLean/AG/Smoke.lean"
+    printf '%s\n' 'def dependencyName := "«FixtureNew.AG»"' >>"$adjacent_root/research/lean/ResearchLean/AG/Smoke.lean"
   else
     printf 'def dependencyName := "FixtureOld.AG%s"\n' "$suffix" >>"$adjacent_root/old/Smoke.lean"
-    printf 'def dependencyName := "FixtureNew.AG%s"\n' "$suffix" >>"$adjacent_root/research-lean/ResearchLean/AG/Smoke.lean"
+    printf 'def dependencyName := "FixtureNew.AG%s"\n' "$suffix" >>"$adjacent_root/research/lean/ResearchLean/AG/Smoke.lean"
   fi
   if AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$adjacent_root" "$checker" \
       ignored-base ignored-head "$adjacent_root/manifest.tsv" "$adjacent_root/old.audit.tsv" "$adjacent_root/new.audit.tsv" \
@@ -145,7 +145,7 @@ EOF
 quoted_inner_root="$tmp/quoted-inner-root"
 cp -R "$fixture" "$quoted_inner_root"
 printf '%s\n' 'def dependencyName := "«X-FixtureOld.AG-Y»"' >>"$quoted_inner_root/old/Smoke.lean"
-printf '%s\n' 'def dependencyName := "«X-FixtureNew.AG-Y»"' >>"$quoted_inner_root/research-lean/ResearchLean/AG/Smoke.lean"
+printf '%s\n' 'def dependencyName := "«X-FixtureNew.AG-Y»"' >>"$quoted_inner_root/research/lean/ResearchLean/AG/Smoke.lean"
 if AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$quoted_inner_root" "$checker" \
     ignored-base ignored-head "$quoted_inner_root/manifest.tsv" "$quoted_inner_root/old.audit.tsv" \
     "$quoted_inner_root/new.audit.tsv" R3 "$tmp/quoted-inner-out" >"$tmp/stdout" 2>"$tmp/stderr"; then
@@ -155,13 +155,13 @@ grep -F E_MIGRATION_SOURCE_DIGEST "$tmp/stderr" >/dev/null
 
 outside_source="$tmp/outside.lean"
 printf '%s\n' 'def outside : Nat := 0' >"$outside_source"
-outside_relative="$(python3 - "$root/research-lean" "$outside_source" <<'PY'
+outside_relative="$(python3 - "$root/research/lean" "$outside_source" <<'PY'
 import os
 import sys
 print(os.path.relpath(sys.argv[2], sys.argv[1]))
 PY
 )"
-if "$root/research-lean/emit_migration_audit.sh" ResearchLean.AG.Smoke "$outside_relative" \
+if "$root/research/lean/emit_migration_audit.sh" ResearchLean.AG.Smoke "$outside_relative" \
     "$tmp/outside.audit.tsv" >"$tmp/stdout" 2>"$tmp/stderr"; then
   echo "outside-repository migration source fixture unexpectedly passed" >&2; exit 1
 fi
