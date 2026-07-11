@@ -1,6 +1,6 @@
 ---
 name: docs-review
-description: 実装完了後のdocs-only差分やPR packetを対象に、docs/sft、非数学docs/note、PRD、README、.codex/skills、Lean差分を含まないdocs/aat台帳のclaim・整合・情報密度・冗長記述を4観点で非編集レビューする。"$docs-review"単独で明示されたdrift点検では保守を行う。実装中の文面相談・局所確認・修正依頼には使わず、数学本文・GOAL・数学claimはmath-lean-reviewを使う。
+description: 実装完了後のdocs-only差分やPR packetを対象に、docs/sft、非数学docs/note、PRD、README、.codex/skills、Lean差分を含まないdocs/aat台帳のclaim・整合・情報密度・冗長記述を4観点で非編集レビューする。"$docs-review"単独で明示されたdrift点検では保守を行う。数学本文・GOAL・数学claimはmath-lean-reviewを使う。
 ---
 
 # Docs Review

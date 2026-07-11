@@ -1,6 +1,6 @@
 ---
 name: website-review
-description: 実装完了後のwebsite/ と docs/website の最終差分を4観点で敵対レビューし、編集せず合否を返す。"$website-review"、review-prの最終ゲート、公開前のweb品質監査で使う。実装中の差分確認、局所デバッグ、websiteの実装・修正依頼には使わない。
+description: website/ と docs/website の実装完了後の最終差分を4観点で敵対レビューし、編集せず合否を返す。"$website-review"、review-prの最終ゲート、公開前のweb品質監査で使う。
 ---
 
 # Website Review

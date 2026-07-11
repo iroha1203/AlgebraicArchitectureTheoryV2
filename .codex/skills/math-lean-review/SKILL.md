@@ -1,6 +1,6 @@
 ---
 name: math-lean-review
-description: 実装完了後の最終スナップショットに対して、AATの数学本文・GOAL・固定statementとLean実装を、仮定放電、certificate provenance、proof-use、依存、台帳まで4本の独立査読で判定する。"$math-lean-review"、review-prの最終ゲート、大定理のcompletion candidateで使う。実装中の差分確認、設計相談、デバッグ、修正依頼には使わない。
+description: 実装完了後の最終スナップショットに対するAATの数学本文・GOAL・固定statementとLean実装を、仮定放電、certificate provenance、proof-use、依存、台帳まで4本の独立査読で判定する。"$math-lean-review"、review-prの最終ゲート、大定理のcompletion candidateで使う。
 ---
 
 # Math Lean Review
