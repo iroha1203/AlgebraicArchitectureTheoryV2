@@ -3,4 +3,4 @@ version = "0.1.0"
 
 [[require]]
 name = "RenamedResearch"
-path="./research-lean"
+path="./research/lean"

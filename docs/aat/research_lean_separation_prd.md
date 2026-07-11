@@ -94,15 +94,15 @@ conclusion、proof term、axiom依存を維持し、旧Research prefixから新R
 
 ### R2: Research専用Lake packageを作る
 
-- package directoryは `research-lean/` とする。
-- Lean source rootは `research-lean/ResearchLean/`、module prefixは
+- package directoryは `research/lean/` とする。
+- Lean source rootは `research/lean/ResearchLean/`、module prefixは
   `ResearchLean.AG` とする。
 - Research packageはroot packageをpath dependencyとしてrequireする。
 - root packageはResearch packageをrequireせず、rootの`lake build`環境から
   `ResearchLean.AG.*`を解決できない。
-- Research full build commandは `cd research-lean && lake build` とする。
-- packageは`packagesDir = "../.lake/packages"`でroot workspaceの取得済みdependency sourceを
-  再利用し、root package自体は`path = ".."`でrequireする。
+- Research full build commandは `cd research/lean && lake build` とする。
+- packageは`packagesDir = "../../.lake/packages"`でroot workspaceの取得済みdependency sourceを
+  再利用し、root package自体は`path = "../.."`でrequireする。
 - root default buildはResearch全件buildを含めない。
 - 移動PRで使う`check_research_migration_manifest`を追加する。各移動PRのbase commitから
   旧fileを読み、headの新fileと比較して、canonicalized source digest、declaration数、
@@ -189,7 +189,7 @@ conclusion、proof term、axiom依存を維持し、旧Research prefixから新R
   Research packageから`Formal.AG.*`をimportするpositive fixtureが通る。
 - [ ] **AC2**: 本体→Researchのdirect / public / indirect importを現在木全体で検出し、
   違反fixtureがすべてhard failする。
-- [ ] **AC3**: Research required CI checkの`cd research-lean && lake build`が239 file全件を
+- [ ] **AC3**: Research required CI checkの`cd research/lean && lake build`が239 file全件を
   elaborateして通る。
 - [ ] **AC4**: root required CI checkの`lake build`がResearch full buildを含まずに通る。
 - [ ] **AC5**: 239 file全件が`ResearchLean.AG`へ移り、39 fileと200 fileの各移動PRで
@@ -243,19 +243,20 @@ conclusion、proof term、axiom依存を維持し、旧Research prefixから新R
 ## Implementation Plan
 
 1. #3200: 現行0件を全体scanで固定する。
-2. #3206: `research-lean/` packageとsmoke fixtureを作る。
-3. #3202: SFT / SFTDynamicsを移動する。
-4. #3203: Basic / QualitySurface / aggregateを移動する。
-5. #3201: 移動済み全Research corpusから非空manifestを作り、audit declarationと
-   signature / dependency検査を実装する。
-6. #3207: docs、skills、CI、台帳を新配置へ同期する。
-7. #3205: 旧path・target・参照を撤去し、最終reviewとcompletion reviewを行う。
+2. #3206: Research専用packageとsmoke fixtureを作る。
+3. #3232: package rootを`research/lean/`へ集約し、Research programの他成果物と配置を統一する。
+4. #3202: SFT / SFTDynamicsを移動する。
+5. #3203: Basic / QualitySurface / aggregateを移動する。
+6. #3201: 移動済み全Research corpusから非空manifestを作り、audit declarationと
+  signature / dependency検査を実装する。
+7. #3207: docs、skills、CI、台帳を新配置へ同期する。
+8. #3205: 旧path・target・参照を撤去し、最終reviewとcompletion reviewを行う。
 
 各周回は1 Issue = 1 PRとする。複数PRを同時にopenしない。Lean fileを触るPRは
 規模を問わず`math-lean-review` 4本を通す。
 
 `lake build`と同等の全体elaborationは、Lean / package差分がある場合だけ統括エージェントが
-PR前に最大1回実行し、docs-onlyでは0回とする。差分が`research-lean/**`を含む場合は
+PR前に最大1回実行し、docs-onlyでは0回とする。差分が`research/lean/**`を含む場合は
 Research package build、それ以外のLean / package差分はroot buildをローカルの1回に選ぶ。
 選ばなかった独立package側はrequired CI checkの結果を証拠にする。
 review subagentは実行せず、統括エージェントまたはCIから渡された結果を独立査読の証拠として使う。
@@ -313,8 +314,8 @@ AC3の最終達成はR6後のrequired CI発火で判定する。
 
 ```bash
 # local: Lean/package差分がある場合だけ、統括エージェントが最大1回build
-if ! git diff --quiet origin/main...HEAD -- research-lean; then
-  (cd research-lean && lake build)
+if ! git diff --quiet origin/main...HEAD -- research/lean; then
+  (cd research/lean && lake build)
 elif ! git diff --quiet origin/main...HEAD -- \
   ':(glob)**/*.lean' lakefile.toml lean-toolchain; then
   lake build

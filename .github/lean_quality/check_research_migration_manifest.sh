@@ -68,7 +68,7 @@ for number, raw in enumerate(pathlib.Path(manifest_path).read_text().splitlines(
     old_suffix = old_module[len(old_prefix) + 1:].replace(".", "/") + ".lean"
     new_suffix = new_module[len(new_prefix) + 1:].replace(".", "/") + ".lean"
     expected_old = ("old/" if test_mode else "Formal/AG/" + "Research/") + old_suffix
-    expected_new = "research-lean/ResearchLean/AG/" + new_suffix
+    expected_new = "research/lean/ResearchLean/AG/" + new_suffix
     if old_source != expected_old or new_source != expected_new:
         print(f"E_MIGRATION_SOURCE_MODULE_PROVENANCE: line {number}", file=sys.stderr); raise SystemExit(1)
     rows.append((old_source, new_source, old_module, new_module))
@@ -137,13 +137,13 @@ for old_source, new_source, old_module, new_module in rows:
                 )
             text = "".join(parts)
         text = re.sub(r"(?<![\w/.-])Formal/AG/" + "Research/", "$RESEARCH_PATH/", text)
-        text = re.sub(r"(?<![\w/.-])research-lean/ResearchLean/AG/", "$RESEARCH_PATH/", text)
+        text = re.sub(r"(?<![\w/.-])research/lean/ResearchLean/AG/", "$RESEARCH_PATH/", text)
         return text
     old_source_digest = sha(canonical_source(old_text))
     new_source_digest = sha(canonical_source(new_text))
     if old_source_digest != new_source_digest:
         print(f"E_MIGRATION_SOURCE_DIGEST: {new_source}", file=sys.stderr); raise SystemExit(1)
-    prefix = "research-lean/ResearchLean/AG/"
+    prefix = "research/lean/ResearchLean/AG/"
     if not new_source.startswith(prefix):
         print(f"E_MIGRATION_NEW_SOURCE_PATH: {new_source}", file=sys.stderr); raise SystemExit(1)
     relative = new_source[len(prefix):]

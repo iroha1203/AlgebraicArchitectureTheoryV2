@@ -1,2 +1,2 @@
 # old_source	new_source	old_module	new_module
-old/Smoke.lean	research-lean/ResearchLean/AG/Smoke.lean	FixtureOld.AG.Smoke	FixtureNew.AG.Smoke
+old/Smoke.lean	research/lean/ResearchLean/AG/Smoke.lean	FixtureOld.AG.Smoke	FixtureNew.AG.Smoke

@@ -95,7 +95,7 @@ jobs:
             base="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
           fi
           if git diff --name-only "$base...$HEAD_SHA" | grep -Eq \
-              '^(lakefile\.toml$|lake-manifest\.json$|research-lean/|\.github/lean_quality/(check_research_migration|check_research_package|test_research_migration|test_research_package)|\.github/workflows/lean\.yml$)'; then
+              '^(lakefile\.toml$|lake-manifest\.json$|research/lean/|\.github/lean_quality/(check_research_migration|check_research_package|test_research_migration|test_research_package)|\.github/workflows/lean\.yml$)'; then
             echo "run=true" >>"$GITHUB_OUTPUT"
           else
             echo "run=false" >>"$GITHUB_OUTPUT"
@@ -107,13 +107,13 @@ jobs:
 
       - name: Research package full build
         if: steps.research-changes.outputs.run == 'true'
-        run: cd research-lean && lake build
+        run: cd research/lean && lake build
 
       - name: Focused modules and axiom audits
         if: steps.research-changes.outputs.run == 'true'
         env:
           AAT_CI_FULL_AUDIT: "1"
-        run: research-lean/check_research_modules.sh --all-axioms
+        run: research/lean/check_research_modules.sh --all-axioms
 
       - name: Package dependency direction
         if: steps.research-changes.outputs.run == 'true'
@@ -123,7 +123,7 @@ jobs:
         if: steps.research-changes.outputs.run == 'true'
         run: |
           mkdir -p .tmp/research-migration
-          research-lean/emit_migration_audit.sh \
+          research/lean/emit_migration_audit.sh \
             ResearchLean.AG.Smoke \
             ResearchLean/AG/Smoke.lean \
             .tmp/research-migration/smoke.audit.tsv

@@ -1,11 +1,11 @@
 name = "ResearchLean"
 version = "0.1.0"
-packagesDir = "../.lake/packages"
+packagesDir = "../../.lake/packages"
 defaultTargets = ["ResearchLean"]
 
 [[require]]
 name = "AlgebraicArchitectureTheoryV2"
-path = ".."
+path = "../.."
 
 [[lean_lib]]
 name = "ResearchLean"
