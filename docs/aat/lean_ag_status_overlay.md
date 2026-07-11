@@ -27,7 +27,6 @@
 | --- | --- | --- |
 | I-4 | `packaged (assumption-relative)` | `LawUniverse.coverageAssumptions` / `exactnessAssumptions` はselected assumption slotであり、concrete three-reading theoremの完了根拠には数えない。 |
 | IV-8 | `defined only` / `packaged (assumption-relative)` | Type値obstruction sheaf / module sheafはcarrierまたは明示仮定相対のsurfaceであり、無条件なadditive/module soundnessとして数えない。 |
-| V.R11 | `未達・降格記録` | repair synthesis fixtureには `emitsOnlySoundStepsOrNoSolutionCertificate := True` / `_holds := trivial` が残るため、定理13.4のtheorem-grade sound-step emission evidenceに数えない。 |
 | VI-5 | `packaged (assumption-relative)` | decomposition gerbe / non-abelian soundnessはsupplied dataに相対化され、banded abelian bridgeもconditionalである。 |
 | VII-1 | `未達・降格記録` | `AATSynthesisPackage`はfinite singleton/PUnit-style fixtureでのみ発火し、`costToDistanceValue _ := measured 0`も残るためtheorem-grade synthesis evidenceに数えない。 |
 | VII-3 / VII-4 / VII-6 | `部分昇格` | coboundary invariance、adequacy、actual GLB、length-one edge-fiberは実装済みだが、一般length-n cardinality theoremは未証明であり、束ねた全体を完了扱いしない。 |

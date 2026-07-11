@@ -1,5 +1,6 @@
 import Formal.AG.Site.Geometry
 import Formal.AG.Site.MinimalContextProfile
+import Formal.AG.Derived.WellFoundedRepair
 
 /-!
 Statement contracts for fixed Lean statements.
@@ -147,5 +148,30 @@ example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (hW : W ≤ W' ∧ W' ≤ W) (hV : V ≤ V' ∧ V' ≤ V) :
     W ⊓ V = W' ⊓ V' :=
   Site.MinimalContextProfile.inf_eq_inf_of_mutual_readability hW hV
+
+/-- Fixed constructor equation for Part V theorem 13.4 synthesis. -/
+example (P : Derived.WellFoundedRepair.RepairComparisonProfile.{u})
+    (rule : (state : P.State) ->
+      Derived.WellFoundedRepair.SynthesisDecision P state)
+    (start : P.State) :
+    Derived.WellFoundedRepair.synthesize P rule start =
+      match rule start with
+      | .step next hstep =>
+          .step hstep (Derived.WellFoundedRepair.synthesize P rule next)
+      | .cleared hcleared => .cleared hcleared
+      | .noSolution hcertificate => .noSolution hcertificate :=
+  Derived.WellFoundedRepair.synthesize_eq P rule start
+
+/-- Fixed sound finite synthesis statement for Part V theorem 13.4. -/
+example (P : Derived.WellFoundedRepair.RepairComparisonProfile.{u})
+    (rule : (state : P.State) ->
+      Derived.WellFoundedRepair.SynthesisDecision P state)
+    (start : P.State) :
+    let run := Derived.WellFoundedRepair.synthesize P rule start
+    Derived.WellFoundedRepair.SynthesisRun.TraceEmitsOnlySoundSteps P run.trace ∧
+      run.trace.length = run.depth + 1 ∧
+        (P.targetCleared run.outputState ∨
+          P.noSolutionCertificate run.outputState) :=
+  Derived.WellFoundedRepair.soundRepairSynthesis P rule start
 
 end AAT.AG

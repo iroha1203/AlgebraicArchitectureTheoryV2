@@ -725,10 +725,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check AAT.AG.Derived.WellFoundedRepair.RepairComparisonProfile.step /- definition missing documentation string -/
 #check AAT.AG.Derived.WellFoundedRepair.RepairComparisonProfile.targetCleared /- definition missing documentation string -/
 #check AAT.AG.Derived.WellFoundedRepair.RepairComparisonProfile.noSolutionCertificate /- definition missing documentation string -/
-#check @AAT.AG.Derived.WellFoundedRepair.SoundRepairSynthesisPackage.trace /- definition missing documentation string -/
-#check @AAT.AG.Derived.WellFoundedRepair.SoundRepairSynthesisPackage.outputState /- definition missing documentation string -/
-#check @AAT.AG.Derived.WellFoundedRepair.SoundRepairSynthesisPackage.output /- definition missing documentation string -/
-#check @AAT.AG.Derived.WellFoundedRepair.SoundRepairSynthesisPackage.emitsOnlySoundStepsOrNoSolutionCertificate /- definition missing documentation string -/
 
 -- Formal.AG.Evolution.Bootstrap
 #check AAT.AG.Evolution.PartIXDependencyStatus.site /- definition missing documentation string -/
