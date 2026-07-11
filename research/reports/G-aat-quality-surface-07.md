@@ -1,0 +1,80 @@
+# G-aat-quality-surface-07 report
+
+This report records proof-obligation evidence for the target theorem
+`Law-Generated Conormal First-Order Descent Theorem`.
+
+The fixed theorem statement and completion criteria live in
+`research/goals/G-aat-quality-surface-07.md`. Runtime state lives in tracking
+Issue #3246.
+
+## Target Proof State
+
+- status: target-proof-checkpoint
+- latest reviewed cycle: 1
+- completion candidate: no
+- tracking Issue: #3246
+- next obligation: construct the section-specific connecting cocycle on the
+  generated small complex
+
+## Cycle 1 — small generated cover and repository H1 checkpoint
+
+- decision: approve
+- result type: proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalDescent.lean`
+- checkpoint spine:
+  - `SmallCanonicalTupleCover.TupleGeometry`
+  - `SmallCanonicalTupleCover.FiniteComplex`
+  - `SmallCanonicalTupleCover.Cover`
+  - `SmallCanonicalTupleCover.complex`
+  - `SmallCanonicalTupleCover.H1`
+  - `SmallCanonicalTupleCover.additiveH1Class_eq_zero_iff`
+
+### Checkpoint delta
+
+The failed all-sieve presentation has been removed. A selected finite-poset
+cover now generates its canonical tuple nerve and standard face-restriction
+differential. That differential is bundled as the repository
+`CoverRelativeCechComplex`, and the checkpoint exposes the repository
+`AdditiveCechH1` and its zero-class iff degree-zero-coboundary theorem.
+
+No section-specific cocycle or lift-effectivity theorem is present yet. This
+cycle therefore establishes the small Čech target required by D0 but does not
+discharge D0.
+
+### Premise delta
+
+- checkpoint: selected small generated cover realization, standard
+  face-restriction differential, repository `AdditiveCechH1`, and its
+  zero-class criterion.
+- remaining: local-lift connecting cocycle, choice independence, zero iff
+  actual global lift, lift-fiber torsor, law-generated `N / E / Q`, kernel
+  comparison, objectwise exactness, generated-cover provenance, sheaf
+  conditions, conormal
+  instantiation, semantic representations, finite zero/nonzero witness pair,
+  package theorem, and `H^1 = 0` corollary.
+
+### Audits
+
+- focused elaboration: pass
+- module-wide standard-axiom assertion: pass
+- placeholder / hidden Unicode / private-path scans: pass
+- statement classification: proof-checkpoint; not D0 discharge
+- certificate provenance: tuple geometry, faces, differential, and H1 are
+  generated from the selected finite-poset geometry and obstruction sheaf
+- proof use: the standard differential uses actual face restrictions and its
+  square-zero theorem; no lift data are introduced in this checkpoint
+- structure-field escape: none found
+- route integrity: pass
+- target-fitting / vacuity / one-way-as-equivalence / GOAL reinterpretation:
+  none found
+
+### Next obligation
+
+Construct the local-lift difference as a cocycle of the generated repository
+complex, prove choice independence, and prove that its `AdditiveCechH1` class
+is zero exactly when an actual global lift exists. The reverse direction must
+derive gluing from the generated-presieve sheaf API. Then construct from
+law-witness input the ideal-power coefficient sequence supplying `N = I/I^2`,
+`E = O/I^2`, `Q = O/I`, the projection and kernel comparison, objectwise
+exactness, restriction naturality, and the required sheaf conditions.
