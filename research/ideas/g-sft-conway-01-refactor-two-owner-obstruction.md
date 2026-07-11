@@ -25,7 +25,7 @@ support assignment, and preserves an actual selected Conway obstruction.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayRefactorTwoOwnerObstruction.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayRefactorTwoOwnerObstruction.lean`
 - `RefactorTwoOwnerFailureEdit`
 - `refactorKeepsSplitOwnership`
 - `refactorKeepsSplitOwnership_postAtlas_eq_mismatchedAtlas`

@@ -43,21 +43,21 @@ to the selected Conway class.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayOwnerUniformIncidenceReceiver.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceVertex`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceEdge`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceIncident`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceGlobalSection`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceLocallySupported`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceLocalGlobalGap`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformIncidenceGlobalSection_nonempty_iff_support`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformConwayClass_eq_zero_iff_incidenceGlobalSection`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_incidenceGlobalSection`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_incidenceLocallySupported`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_no_incidenceGlobalSection`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_incidenceLocalGlobalGap`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_conwayClass_nonzero_iff_no_incidenceGlobalSection`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerUniformIncidenceReceiverPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformIncidenceReceiver.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformIncidenceVertex`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformIncidenceEdge`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformIncidenceIncident`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformIncidenceGlobalSection`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformIncidenceLocallySupported`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerUniformIncidenceLocalGlobalGap`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerUniformIncidenceGlobalSection_nonempty_iff_support`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerUniformConwayClass_eq_zero_iff_incidenceGlobalSection`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_incidenceGlobalSection`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.restrictedTwoForkFamily_incidenceLocallySupported`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.restrictedTwoForkFamily_no_incidenceGlobalSection`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.restrictedTwoForkFamily_incidenceLocalGlobalGap`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.restrictedTwoForkFamily_conwayClass_nonzero_iff_no_incidenceGlobalSection`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedOwnerUniformIncidenceReceiverPackage`
 
 ## Claim boundary
 

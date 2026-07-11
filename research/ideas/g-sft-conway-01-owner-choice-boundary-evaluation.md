@@ -14,7 +14,7 @@ score_reason: Cycle 5 の selected boundary map が zero-cochain value を使わ
 mathematical_interest: 任意 owner choice を degree-zero data とし、その選択 owner が fork の communication block を support する場合だけ selected defect を吸収する finite boundary evaluation を置く。
 goal_advancement: global zero-cochain exactness と support receiver の間に、degree-zero value を実際に使う boundary evaluation layer を固定する。
 dullness_risk: `SupportForkDefect` は still selected constant defect であり、owner-choice boundary absorption は `ForkHasSingleOwnerSupport` と同値。Cycle 2 receiver の再包装に近い面がある。
-proof_or_evidence_plan: `Formal/AG/Research/SFT/ConwayOwnerChoiceBoundary.lean` に owner choice, owner-choice boundary evaluation, absorption iff chosen-owner support, vanishing iff single-owner support, receiver equivalence, finite example package を置く。
+proof_or_evidence_plan: `research/lean/ResearchLean/AG/SFT/ConwayOwnerChoiceBoundary.lean` に owner choice, owner-choice boundary evaluation, absorption iff chosen-owner support, vanishing iff single-owner support, receiver equivalence, finite example package を置く。
 planned_theorem_names: CommunicationOwnerChoice, OwnerChoiceSupportsFork, SupportForkOwnerChoiceBoundary, SupportForkDefectVanishesModuloOwnerChoiceBoundary, ownerChoiceBoundary_absorbs_iff_supportsFork, ownerChoiceBoundary_vanishes_iff_singleOwnerSupport, zeroCochain_ownerChoiceBoundary_absorbs, OwnerChoiceBoundaryReceiver, ownerChoiceBoundaryReceiver_iff_supportReceiver, compatible_no_ownerChoiceBoundaryReceiver, mismatchedSupportFork_notOwnerChoiceBoundaryVanishes, mismatchedAtlas_ownerChoiceBoundaryReceiver, selectedOwnerChoiceBoundaryPackage
 rival_advantage: owner mismatch dashboard can show the mismatch. This candidate records whether a selected owner choice actually absorbs the support-fork defect, preserving the degree-zero value used in the boundary computation.
 visible_projection: selected owner choice, support fork, chosen-owner support predicate, owner-choice boundary value.
@@ -60,21 +60,21 @@ Conway 対応の obstruction receiver を、少なくとも degree-zero owner ch
 
 - `score_reason`: Cycle 5 の直接弱点を改善するが、single-owner support との同値に留まるため base 60。
 - `dullness_risk`: single-owner support との同値なので、過大評価しない。
-- `proof_or_evidence_plan`: `lake env lean Formal/AG/Research/SFT/ConwayOwnerChoiceBoundary.lean`、
-  `lake build FormalAGResearch`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayOwnerChoiceBoundary.lean`、
+  `旧Research aggregate build`、`#print axioms` で検証する。
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayOwnerChoiceBoundary.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationOwnerChoice`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerChoiceSupportsFork`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkOwnerChoiceBoundary`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerChoiceBoundary_absorbs_iff_supportsFork`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerChoiceBoundary_vanishes_iff_singleOwnerSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.zeroCochain_ownerChoiceBoundary_absorbs`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerChoiceBoundaryReceiver_iff_supportReceiver`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notOwnerChoiceBoundaryVanishes`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerChoiceBoundaryPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerChoiceBoundary.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.CommunicationOwnerChoice`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.OwnerChoiceSupportsFork`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.SupportForkOwnerChoiceBoundary`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerChoiceBoundary_absorbs_iff_supportsFork`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerChoiceBoundary_vanishes_iff_singleOwnerSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.zeroCochain_ownerChoiceBoundary_absorbs`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ownerChoiceBoundaryReceiver_iff_supportReceiver`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.mismatchedSupportFork_notOwnerChoiceBoundaryVanishes`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedOwnerChoiceBoundaryPackage`
 
 ## 審判メモ
 
@@ -85,6 +85,6 @@ Conway 対応の obstruction receiver を、少なくとも degree-zero owner ch
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean Formal/AG/Research/SFT/ConwayOwnerChoiceBoundary.lean`、
-  `lake build Formal.AG.Research.SFT.ConwayOwnerChoiceBoundary`、`lake build FormalAGResearch`、full `lake build` が通過。
+- 2026-07-04: 作成。`cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayOwnerChoiceBoundary.lean`、
+  `cd research/lean && lake build ResearchLean.AG.SFT.ConwayOwnerChoiceBoundary`、`旧Research aggregate build`、full `lake build` が通過。
   G2/G3 後、score を base 60 / final 120 に修正。

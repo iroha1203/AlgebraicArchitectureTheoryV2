@@ -23,7 +23,7 @@ absence of any selected miss, and selected repair-transition existence coincide.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayNoMissRepairCriterion.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayNoMissRepairCriterion.lean`
 - `reorgNoFirstSelectedMiss_iff_repairTransition`
 - `refactorNoFirstSelectedMiss_iff_repairTransition`
 - `reorgNoSelectedMiss_iff_repairTransition`

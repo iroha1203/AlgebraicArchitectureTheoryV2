@@ -14,7 +14,7 @@ score_reason: fork ごとの singleton support ではなく、one shared `Common
 mathematical_interest: global zero-cochain が communication-indexed shared refinement span を作り、任意の selected fork family に coherent common-refinement support を供給する。
 goal_advancement: common-refinement provenance を single fork から family-level coherence へ上げる。
 dullness_risk: vanishing criterion は communication compatibility と同値であり、新 obstruction ではない。
-proof_or_evidence_plan: `Formal/AG/Research/SFT/ConwayCoherentCommonRefinementFamily.lean` に `SupportForkFamily`, `CoherentCommonRefinementSupport`, zero-cochain-to-family support, family vanishing iff compatibility, finite package を置く。
+proof_or_evidence_plan: `research/lean/ResearchLean/AG/SFT/ConwayCoherentCommonRefinementFamily.lean` に `SupportForkFamily`, `CoherentCommonRefinementSupport`, zero-cochain-to-family support, family vanishing iff compatibility, finite package を置く。
 planned_theorem_names: SupportForkFamily, CoherentCommonRefinementSupport, coherentCommonRefinementSupport_implies_eachForkSupport, CommunicationZeroCochain.toCoherentCommonRefinementSupport, communicationZeroCochain_coherentCommonRefinementSupport, familyCoherentGlobalCommonRefinement_vanishes_iff_compatible, selectedCoherentCommonRefinementFamilyPackage
 rival_advantage: owner mismatch dashboard can show mismatch, but this candidate records coherent family-level provenance from a shared refinement span.
 visible_projection: fork family, shared common-refinement span, global zero-cochain, coherent support.
@@ -58,19 +58,19 @@ Conway 対応の receiver chain で、common-refinement support を fork family 
 
 - `score_reason`: 新しい family-level structure と zero-cochain construction により base 50。
 - `dullness_risk`: family vanishing は compatibility と同値であり、新 obstruction ではない。
-- `proof_or_evidence_plan`: `lake env lean Formal/AG/Research/SFT/ConwayCoherentCommonRefinementFamily.lean`、
-  `lake build FormalAGResearch`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayCoherentCommonRefinementFamily.lean`、
+  `旧Research aggregate build`、`#print axioms` で検証する。
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayCoherentCommonRefinementFamily.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamily`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.CoherentCommonRefinementSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.coherentCommonRefinementSupport_implies_eachForkSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationZeroCochain.toCoherentCommonRefinementSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.communicationZeroCochain_coherentCommonRefinementSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.familyCoherentGlobalCommonRefinement_vanishes_iff_compatible`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedCoherentCommonRefinementFamilyPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayCoherentCommonRefinementFamily.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.SupportForkFamily`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.CoherentCommonRefinementSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.coherentCommonRefinementSupport_implies_eachForkSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.CommunicationZeroCochain.toCoherentCommonRefinementSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.communicationZeroCochain_coherentCommonRefinementSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.familyCoherentGlobalCommonRefinement_vanishes_iff_compatible`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedCoherentCommonRefinementFamilyPackage`
 
 ## 審判メモ
 
@@ -81,5 +81,5 @@ Conway 対応の receiver chain で、common-refinement support を fork family 
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean Formal/AG/Research/SFT/ConwayCoherentCommonRefinementFamily.lean`、
-  module build、`lake build FormalAGResearch`、full `lake build` が通過。G2 二審判 pass、final score +100。
+- 2026-07-04: 作成。`cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayCoherentCommonRefinementFamily.lean`、
+  module build、`旧Research aggregate build`、full `lake build` が通過。G2 二審判 pass、final score +100。

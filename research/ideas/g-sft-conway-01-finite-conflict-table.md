@@ -29,7 +29,7 @@ tables.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayFiniteConflictTable.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayFiniteConflictTable.lean`
 - `ReorgCoverEditFiniteConflictTable`
 - `reorgCoverEditHitsEveryConflict_iff_finiteConflictTable`
 - `ReorgCoverEdit.supportAssignment_nonempty_iff_finiteConflictTable`

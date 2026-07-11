@@ -27,7 +27,7 @@ partial refactor edit misses exactly `db`.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwaySelectedConflictMembership.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwaySelectedConflictMembership.lean`
 - `ReorgCoverEditActivatesSelectedConflict`
 - `ReorgCoverEditMissesSelectedConflict`
 - `reorgHitsSelectedConflictSet_iff_noSelectedMiss`

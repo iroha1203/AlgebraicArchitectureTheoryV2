@@ -31,7 +31,7 @@ the single-owner refactor shape.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayRepairTransition.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayRepairTransition.lean`
 - `ConwayRepairTransition`
 - `ConwayAssignmentFailedTransition`
 - `ConwayObstructionPreservingTransition`

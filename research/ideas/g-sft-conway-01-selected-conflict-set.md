@@ -28,7 +28,7 @@ obligation sets; selected missed-conflict edits do not.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwaySelectedConflictSet.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwaySelectedConflictSet.lean`
 - `ReorgSelectedConflict`
 - `ReorgCoverEditHitsSelectedConflictSet`
 - `reorgHitsSelectedConflictSet_iff_finiteConflictTable`

@@ -39,11 +39,11 @@ defect が非零に残る。
 
 ## 依拠
 
-- `Formal/AG/Research/SFT/ConwayBoundaryQuotient.lean`
-- `Formal/AG/Research/SFT/ConwayBoundaryGenerator.lean`
-- `Formal/AG/Research/SFT/ConwayRestrictedCoherentFamily.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSubfamilyDescent.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformFamilyQuotient.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayBoundaryQuotient.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayBoundaryGenerator.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayRestrictedCoherentFamily.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSubfamilyDescent.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformFamilyQuotient.lean`
 
 ## 非自明性
 
@@ -107,7 +107,7 @@ Lean で次を証明した。
 
 ## 審判メモ
 
-- 厳密性: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- 厳密性: pass。`lake env lean`、module build、`旧Research aggregate`、full `lake build` が通過。
 - 研究価値: revise accept。G2 は base 55 / final 110 を保守採点として推奨。
 - repo 全体価値: pass。owner-uniform local/global gap を finite quotient-style receiver に統合した。
 - ライバル比較: pass。local mismatch visualization ではなく、same receiver 上の singleton zero / full nonzero theorem を返す。
@@ -120,4 +120,4 @@ Lean で次を証明した。
 ## 進捗ログ
 
 - 2026-07-04: Cycle 17 候補として作成。
-- 2026-07-04: `Formal/AG/Research/SFT/ConwayOwnerUniformFamilyQuotient.lean` で Lean 証明を追加し、+110 として採点。
+- 2026-07-04: `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformFamilyQuotient.lean` で Lean 証明を追加し、+110 として採点。

@@ -14,7 +14,7 @@ score_reason: Cycle 12/13 の frontier だった local support はあるが shar
 mathematical_interest: 現 interface の柔軟性が、local fork supports を常に coherent shared span へ assemble できることを明示する。
 goal_advancement: coherent family interface の exactness boundary を固定し、次に必要な non-selected refinement / restricted span vocabulary を明確化する。
 dullness_risk: 新 obstruction ではなく、現 vocabulary では obstruction が潰れるという negative bridge。
-proof_or_evidence_plan: `Formal/AG/Research/SFT/ConwayCoherentFamilyExactness.lean` に local support predicate、Sigma assembly、coherent iff local、local-but-not-coherent blocker、vanishing interaction を置く。
+proof_or_evidence_plan: `research/lean/ResearchLean/AG/SFT/ConwayCoherentFamilyExactness.lean` に local support predicate、Sigma assembly、coherent iff local、local-but-not-coherent blocker、vanishing interaction を置く。
 planned_theorem_names: ForkFamilyHasLocalCommonRefinementSupport, CoherentCommonRefinementSupport.ofEachForkSupport, coherentCommonRefinementSupport_iff_eachForkSupport, ForkFamilyLocalButNotCoherent, no_forkFamilyLocalButNotCoherent, coherentGlobalCommonRefinementVanishes_implies_localSupport, localSupport_and_globalZeroCochain_implies_coherentVanishes, selectedCoherentFamilyExactnessPackage
 rival_advantage: owner mismatch dashboard can show mismatch, but this theorem records a precise boundary of the current common-refinement interface: local support cannot witness a shared-span obstruction without restricting span vocabulary.
 visible_projection: forkwise local support, Sigma shared span, coherent support equivalence, local/shared blocker.
@@ -60,20 +60,20 @@ naturality blocker が必要であることを示す。
 
 - `score_reason`: coherent iff local support の Sigma assembly theorem と blocker theorem により base 50。
 - `dullness_risk`: obstruction を増やすのではなく、現 vocabulary では obstruction が潰れることを示す negative bridge。
-- `proof_or_evidence_plan`: `lake env lean Formal/AG/Research/SFT/ConwayCoherentFamilyExactness.lean`、
-  `lake build FormalAGResearch`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayCoherentFamilyExactness.lean`、
+  `旧Research aggregate build`、`#print axioms` で検証する。
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayCoherentFamilyExactness.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ForkFamilyHasLocalCommonRefinementSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.CoherentCommonRefinementSupport.ofEachForkSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.coherentCommonRefinementSupport_iff_eachForkSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.ForkFamilyLocalButNotCoherent`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.no_forkFamilyLocalButNotCoherent`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.coherentGlobalCommonRefinementVanishes_implies_localSupport`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.localSupport_and_globalZeroCochain_implies_coherentVanishes`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedCoherentFamilyExactnessPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayCoherentFamilyExactness.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ForkFamilyHasLocalCommonRefinementSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.CoherentCommonRefinementSupport.ofEachForkSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.coherentCommonRefinementSupport_iff_eachForkSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.ForkFamilyLocalButNotCoherent`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.no_forkFamilyLocalButNotCoherent`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.coherentGlobalCommonRefinementVanishes_implies_localSupport`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.localSupport_and_globalZeroCochain_implies_coherentVanishes`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedCoherentFamilyExactnessPackage`
 
 ## 審判メモ
 
@@ -84,6 +84,6 @@ naturality blocker が必要であることを示す。
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean Formal/AG/Research/SFT/ConwayCoherentFamilyExactness.lean`、
-  module build、`lake build FormalAGResearch`、full `lake build` が通過。G2 二審判 pass、final score +100。
+- 2026-07-04: 作成。`cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayCoherentFamilyExactness.lean`、
+  module build、`旧Research aggregate build`、full `lake build` が通過。G2 二審判 pass、final score +100。
   `#print axioms` は `Classical.choice` のみ。

@@ -38,10 +38,10 @@ arbitrary-cover naturality、true sheaf `H^1` は主張しない。
 
 ## 依拠
 
-- `Formal/AG/Research/SFT/ConwayCoherentFamilyExactness.lean`
-- `Formal/AG/Research/SFT/ConwayRestrictedCoherentFamily.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSubfamilyDescent.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSpanSelector.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayCoherentFamilyExactness.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayRestrictedCoherentFamily.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSubfamilyDescent.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSpanSelector.lean`
 
 ## 非自明性
 
@@ -89,7 +89,7 @@ Lean で次を証明した。
 
 ## 審判メモ
 
-- 厳密性: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- 厳密性: pass。`lake env lean`、module build、`旧Research aggregate`、full `lake build` が通過。
 - 研究価値: revise accept。G2 は base 55/60/60 を推奨し、保守的に base 60 へ丸める。
 - repo 全体価値: pass。restricted local span selection と owner-uniform global selector failure を分離した。
 - ライバル比較: pass。local owner listing ではなく、explicit forkwise selector が global owner-uniform selector に glue しない theorem を返す。

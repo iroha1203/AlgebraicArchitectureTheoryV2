@@ -43,15 +43,15 @@ criteria.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayReorgRefactorNegativeWitness.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_not_hitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_not_compatible`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_nonzeroConwayObstruction`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_not_hitsEveryConflict`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_not_compatible`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedReorgRefactorNegativeWitnessPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayReorgRefactorNegativeWitness.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.partialReorgMissesDbConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_not_hitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_not_compatible`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_nonzeroConwayObstruction`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_not_hitsEveryConflict`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_not_compatible`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedReorgRefactorNegativeWitnessPackage`
 
 ## Claim boundary
 

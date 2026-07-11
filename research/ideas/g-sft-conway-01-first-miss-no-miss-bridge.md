@@ -23,7 +23,7 @@ equivalent to pointwise absence of selected misses.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayFirstMissNoMissBridge.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayFirstMissNoMissBridge.lean`
 - `reorgNoFirstSelectedMiss_iff_noSelectedMiss`
 - `refactorNoFirstSelectedMiss_iff_noSelectedMiss`
 - `selectedFirstMissNoMissBridgePackage`

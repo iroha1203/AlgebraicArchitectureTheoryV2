@@ -39,9 +39,9 @@ arbitrary-cover naturality、true sheaf `H^1` は主張しない。
 
 ## 依拠
 
-- `Formal/AG/Research/SFT/ConwayOwnerUniformFamilyQuotient.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSpanSelector.lean`
-- `Formal/AG/Research/SFT/ConwayOwnerUniformSelectorQuotientBridge.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformFamilyQuotient.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSpanSelector.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwayOwnerUniformSelectorQuotientBridge.lean`
 
 ## 非自明性
 
@@ -101,4 +101,4 @@ Lean で次を証明した。
 ## 進捗ログ
 
 - 2026-07-04: Cycle 19 候補として作成し、Lean bridge を追加。
-- 2026-07-04: G2 A/B/C/D は全員 accept、base 30 / final 60。対象 Lean、module build、`FormalAGResearch`、full `lake build`、axiom audit は pass。
+- 2026-07-04: G2 A/B/C/D は全員 accept、base 30 / final 60。対象 Lean、module build、`旧Research aggregate`、full `lake build`、axiom audit は pass。

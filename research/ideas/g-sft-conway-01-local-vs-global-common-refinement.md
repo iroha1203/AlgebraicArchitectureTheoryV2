@@ -14,7 +14,7 @@ score_reason: Cycle 7 の local owner-potential absorption と Cycle 10 の glob
 mathematical_interest: local additive exactness が global compatibility plus common-refinement provenance を含意しないことを canonical mismatch で固定する。
 goal_advancement: Conway receiver chain の中で local additive boundary の弱さと global/common constraints の必要性を接続する。
 dullness_risk: canonical mismatched fork の既存事実を比較 package として組み合わせるため、過大評価しない。
-proof_or_evidence_plan: `Formal/AG/Research/SFT/ConwayLocalVsGlobalCommonRefinement.lean` に local-vs-global/common separation, support/common/global receivers, compatible zero package を置く。
+proof_or_evidence_plan: `research/lean/ResearchLean/AG/SFT/ConwayLocalVsGlobalCommonRefinement.lean` に local-vs-global/common separation, support/common/global receivers, compatible zero package を置く。
 planned_theorem_names: localOwnerPotential_absorbs_but_globalCommonRefinement_detects, localOwnerPotential_absorbs_but_commonRefinementOwnerPotential_detects, mismatchedLocalPotential_separatedBySupportAndGlobalCommonReceivers, compatibleAtlas_noLocalGlobalCommonSeparationReceivers, selectedLocalVsGlobalCommonRefinementPackage
 rival_advantage: owner mismatch dashboard can show mismatch, but this candidate separates local additive absorption from global/common-refinement compatibility as a Lean theorem package.
 visible_projection: owner potential, global/common-refinement receiver, common-refinement owner-potential receiver, canonical mismatch.
@@ -59,17 +59,17 @@ global compatibility の階層を明確にする。次 frontier は selected fin
 
 - `score_reason`: 既存 receiver の分離 bridge として base 40。
 - `dullness_risk`: canonical mismatch の既存定理を接続する package なので、新 obstruction として扱わない。
-- `proof_or_evidence_plan`: `lake env lean Formal/AG/Research/SFT/ConwayLocalVsGlobalCommonRefinement.lean`、
-  `lake build FormalAGResearch`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayLocalVsGlobalCommonRefinement.lean`、
+  `旧Research aggregate build`、`#print axioms` で検証する。
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwayLocalVsGlobalCommonRefinement.lean`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_globalCommonRefinement_detects`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_commonRefinementOwnerPotential_detects`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedLocalPotential_separatedBySupportAndGlobalCommonReceivers`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_noLocalGlobalCommonSeparationReceivers`
-- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedLocalVsGlobalCommonRefinementPackage`
+- `research/lean/ResearchLean/AG/SFT/ConwayLocalVsGlobalCommonRefinement.lean`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_globalCommonRefinement_detects`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_commonRefinementOwnerPotential_detects`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.mismatchedLocalPotential_separatedBySupportAndGlobalCommonReceivers`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.compatibleAtlas_noLocalGlobalCommonSeparationReceivers`
+- `ResearchLean.AG.SFT.ConwayTwoTopology.selectedLocalVsGlobalCommonRefinementPackage`
 
 ## 審判メモ
 
@@ -80,5 +80,5 @@ global compatibility の階層を明確にする。次 frontier は selected fin
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`lake env lean Formal/AG/Research/SFT/ConwayLocalVsGlobalCommonRefinement.lean`、
-  module build、`lake build FormalAGResearch`、full `lake build` が通過。G2 二審判 pass、final score +80。
+- 2026-07-04: 作成。`cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayLocalVsGlobalCommonRefinement.lean`、
+  module build、`旧Research aggregate build`、full `lake build` が通過。G2 二審判 pass、final score +80。

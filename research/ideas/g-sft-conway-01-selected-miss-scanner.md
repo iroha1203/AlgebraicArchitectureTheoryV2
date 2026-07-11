@@ -27,7 +27,7 @@ refactor edit has exactly `db` as first miss.
 
 ## Lean evidence
 
-- `Formal/AG/Research/SFT/ConwaySelectedMissScanner.lean`
+- `research/lean/ResearchLean/AG/SFT/ConwaySelectedMissScanner.lean`
 - `ReorgCoverEditFirstSelectedMiss`
 - `reorgFirstSelectedMiss_sound`
 - `reorgFirstSelectedMiss_exists_iff_hasSelectedMiss`
