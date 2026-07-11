@@ -20,7 +20,7 @@ origin: G-04 Cycle 15
 tags: [target-theorem, target-support, finite-shadow, trace-probe, representation-adequacy]
 created: 2026-06-25
 cycle: 15
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairTraceProbeShadow.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTraceProbeShadow.lean
 ---
 
 # Finite Trace-Probe Shadow

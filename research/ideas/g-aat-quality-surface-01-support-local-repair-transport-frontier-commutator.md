@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle34
 tags: [quality-surface, repair, support, transport, source-ref, frontier]
 created: 2026-06-20
 cycle: 34
-lean: research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairTransportCommutator.lean
 ---
 
 # Support-local repair/transport frontier commutator criterion
@@ -36,10 +36,10 @@ transportThenRepairPacket τ transportedAction packet
 
 ## 依拠
 
-- Cycle 30: `research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`
-- Cycle 31: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean`
-- Cycle 32: `research/lean/ResearchLean/QualitySurface/OutsideSupportMutationObstruction.lean`
-- Cycle 33: `research/lean/ResearchLean/QualitySurface/SupportedTokenMismatchObstruction.lean`
+- Cycle 30: `research/lean/ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean`
+- Cycle 31: `research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairFrontier.lean`
+- Cycle 32: `research/lean/ResearchLean/AG/QualitySurface/OutsideSupportMutationObstruction.lean`
+- Cycle 33: `research/lean/ResearchLean/AG/QualitySurface/SupportedTokenMismatchObstruction.lean`
 
 ## 非自明性
 
@@ -76,7 +76,7 @@ bounded correctness criterion になる。ただし canonical repair planning、
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairTransportCommutator.lean`
 
 Proved declarations:
 
@@ -90,8 +90,8 @@ Proved declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SupportLocalRepairTransportCommutator.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/SupportLocalRepairTransportCommutator.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/support_local_repair_transport_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; transported exact pre-frontier, transported support-locality, left/right route frontier formula, route frontier agreement, and source-ref exact visualization are all in the theorem package

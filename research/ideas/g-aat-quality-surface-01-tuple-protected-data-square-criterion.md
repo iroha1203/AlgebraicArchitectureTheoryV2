@@ -39,8 +39,8 @@ traceability、全 repair semantics は結論しない。
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/ProfileTupleIntegration.lean`
-- `research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ProfileTupleIntegration.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean`
 - `endpointTuple_visibleAgreement`
 - `endpointTuple_protectedData_diff`
 - `same_surface_but_profile_tuple_diff`
@@ -85,7 +85,7 @@ tuple witness に相対化され、tooling completeness や global code quality 
 
 ## 証明・根拠の見込み
 
-Lean proof は `research/lean/ResearchLean/QualitySurface/TupleProtectedDataSquareCriterion.lean` に閉じる。
+Lean proof は `research/lean/ResearchLean/AG/QualitySurface/TupleProtectedDataSquareCriterion.lean` に閉じる。
 
 主要 theorem / declaration:
 
@@ -114,8 +114,8 @@ Lean proof は `research/lean/ResearchLean/QualitySurface/TupleProtectedDataSqua
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/TupleProtectedDataSquareCriterion.lean` pass。
-- `lake build ResearchLean` pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/TupleProtectedDataSquareCriterion.lean` pass。
+- `Research package build` pass。
 - `lake env lean .tmp/tuple_protected_data_square_axioms.lean` pass。
 - reported declaration はすべて `does not depend on any axioms`。
 - changed-file scan で hidden / bidirectional Unicode と local path は no matches。

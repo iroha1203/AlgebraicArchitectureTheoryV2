@@ -67,7 +67,7 @@ component row の pass/fail だけでなく、residual presence / absence の ed
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean` に固定した。
 
 - `IndexedResidualFreeAt`
 - `IndexedResidualPresentAt`
@@ -79,9 +79,9 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualEdgeTr
 
 G3 初期実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualEdgeTransitionObstruction`: pass。
-- `lake build ResearchLean.AG`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualEdgeTransitionObstruction`: pass。
+- `Research module build: ResearchLean.AG`: pass。
 - axiom probe: generic edge criterion は axiom-free。selected residual-present / residual-free / no-go / package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 
 ## 審判メモ

@@ -20,7 +20,7 @@ origin: G-04-Cycle71
 tags: [target-theorem, finite-query, support-shadow, support-control, current-shadow-factorization, faithfulness, coordinate-certificate, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 71
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundarySquare.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundarySquare.lean
 ---
 
 # Support-Shadow Boundary Square
@@ -99,8 +99,8 @@ coordinate certificate として監査できる。support recovery だけとは�
 - `research/ideas/g-aat-quality-surface-04-support-faithfulness-certificate-route.md`
 - `research/ideas/g-aat-quality-surface-04-support-control-target-route.md`
 - `research/ideas/g-aat-quality-surface-04-supported-current-shadow-factorization-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessCertificateRoute.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQuerySupportedCurrentShadowFactorization.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessCertificateRoute.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQuerySupportedCurrentShadowFactorization.lean`
 
 ## 進捗ログ
 

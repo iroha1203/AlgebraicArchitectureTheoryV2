@@ -20,7 +20,7 @@ origin: G-04-Cycle56
 tags: [target-theorem, finite-query, target-surface-entry, no-separation, coordinate-certificate]
 created: 2026-06-25
 cycle: 56
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryExactnessBoundary.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryExactnessBoundary.lean
 ---
 
 # Represented Finite-Query Entry Exact Boundary
@@ -105,8 +105,8 @@ obstruction theorem を組み合わせる。
 
 - `research/ideas/g-aat-quality-surface-04-no-separation-semantic-adequacy-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-semantic-reading-adequacy-certificate-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationSemanticAdequacyBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationSemanticAdequacyBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyCertificateBoundary.lean`
 
 ## 進捗ログ
 

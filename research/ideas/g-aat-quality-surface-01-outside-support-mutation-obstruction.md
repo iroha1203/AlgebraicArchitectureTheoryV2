@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle32
 tags: [quality-surface, repair, support, source-ref, obstruction]
 created: 2026-06-20
 cycle: 32
-lean: research/lean/ResearchLean/QualitySurface/OutsideSupportMutationObstruction.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/OutsideSupportMutationObstruction.lean
 ---
 
 # Outside-support mutation obstruction for support-local frontier restriction
@@ -41,10 +41,10 @@ lossy packet-to-tuple visualization として証明する。
 
 ## 依拠
 
-- Cycle 23: `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`
-- Cycle 24: `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
-- Cycle 25: `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
-- Cycle 31: `research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean`
+- Cycle 23: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceHolonomyPacket.lean`
+- Cycle 24: `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 25: `research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean`
+- Cycle 31: `research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairFrontier.lean`
 
 ## 非自明性
 
@@ -78,7 +78,7 @@ repair action が declared support 上では成功して見えても、support �
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/OutsideSupportMutationObstruction.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/OutsideSupportMutationObstruction.lean`
 
 Declarations:
 
@@ -100,8 +100,8 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/OutsideSupportMutationObstruction.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/OutsideSupportMutationObstruction.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/outside_support_mutation_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; exactness failure is not weakened to visible mismatch because the same witness has visible packet / tuple equivalence and lossy visualization

@@ -20,7 +20,7 @@ origin: T1-cycle46
 tags: [target-theorem-loop, G-04, finite-query-representation, target-surface, finite-shadow, anti-weakening]
 created: 2026-06-25
 cycle: 46
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceFactorization.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceFactorization.lean
 ---
 
 # Finite Query Recovery Target-Surface Factorization

@@ -20,7 +20,7 @@ origin: G-04-Cycle68
 tags: [target-theorem, finite-query, support-shadow, current-shadow-reading, faithfulness, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 68
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean
 ---
 
 # Support-Shadow Current-Reading Faithfulness Target Route
@@ -96,8 +96,8 @@ faithfulness premise を support-control に変換し、Cycle66 route package �
 
 - `research/ideas/g-aat-quality-surface-04-support-control-target-route.md`
 - `research/ideas/g-aat-quality-surface-04-support-control-independence.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlRoute.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportControl.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlRoute.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportControl.lean`
 
 ## 進捗ログ
 

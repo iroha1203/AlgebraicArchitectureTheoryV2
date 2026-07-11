@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle38
 tags: [quality-surface, route-defect, holonomy, support, repair-transport, source-ref]
 created: 2026-06-20
 cycle: 38
-lean: research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/RouteDefectSupport.lean
 ---
 
 # Route defect support calculus for selected repair/transport endpoints
@@ -41,10 +41,10 @@ off-coordinate nonmembership を Lean statement に含める。
 
 ## 依拠
 
-- Cycle 23: `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`
-- Cycle 26: `research/lean/ResearchLean/QualitySurface/ComponentDefectPropagation.lean`
-- Cycle 28: `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`
-- Cycle 37: `research/lean/ResearchLean/QualitySurface/TransportTableLawRouteLocalization.lean`
+- Cycle 23: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceHolonomyPacket.lean`
+- Cycle 26: `research/lean/ResearchLean/AG/QualitySurface/ComponentDefectPropagation.lean`
+- Cycle 28: `research/lean/ResearchLean/AG/QualitySurface/VisibleRepairTransportCommutator.lean`
+- Cycle 37: `research/lean/ResearchLean/AG/QualitySurface/TransportTableLawRouteLocalization.lean`
 
 ## 非自明性
 
@@ -82,7 +82,7 @@ Lean witness であり、source extraction completeness、ArchMap correctness、
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`
 
 Lean declarations:
 
@@ -118,10 +118,10 @@ Claim boundary:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/route_defect_support_axioms.lean`: pass; reported declarations depend on no axioms
-- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`: pass; no hits in the Lean evidence file
+- `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`: pass; no hits in the Lean evidence file
 
 ## 審判メモ
 

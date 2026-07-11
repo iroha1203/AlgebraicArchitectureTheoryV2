@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle31
 tags: [quality-surface, repair, support, source-ref, frontier]
 created: 2026-06-20
 cycle: 31
-lean: research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairFrontier.lean
 ---
 
 # Support-local repair action frontier restriction theorem
@@ -43,9 +43,9 @@ pre-repair frontier から declared repair support を引いたものとして�
 
 ## 依拠
 
-- Cycle 21: `research/lean/ResearchLean/QualitySurface/CodebaseTraceRepairTrajectory.lean`
-- Cycle 25: `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
-- Cycle 30: `research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`
+- Cycle 21: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceRepairTrajectory.lean`
+- Cycle 25: `research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean`
+- Cycle 30: `research/lean/ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean`
 
 ## 非自明性
 
@@ -81,7 +81,7 @@ repair action が「どこを直す」と宣言するだけではなく、その
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SupportLocalRepairFrontier.lean`
 
 Declarations:
 
@@ -97,8 +97,8 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SupportLocalRepairFrontier.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/SupportLocalRepairFrontier.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/support_local_repair_frontier_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; `SupportLocalSourceRefRepair` is non-circular and proves the frontier restriction for arbitrary packet/action under table-level support laws and pre-frontier exactness

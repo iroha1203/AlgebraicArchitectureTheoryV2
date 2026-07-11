@@ -78,7 +78,7 @@ G6 残 blocker の `richer nonabelian torsor transition law` と `higher triple-
 
 ## 証明・根拠
 
-Lean file: `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTriple.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairNonabelianTriple.lean`
 
 `RepairChoiceToken` は `left`, `right`, `leftRight`, `rightLeft` を持ち、`left ∘ right = leftRight` かつ `right ∘ left = rightLeft` となる有限 composition table を持つ。selected layer は `g01 = left`, `g12 = right`, `g02 = rightLeft` とし、pair noncommuting と triple-overlap defect を同時に持つ。
 

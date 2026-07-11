@@ -20,7 +20,7 @@ origin: T1-cycle45
 tags: [target-theorem-loop, G-04, finite-query-representation, semantic-reading, anti-weakening]
 created: 2026-06-25
 cycle: 45
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQuerySemanticReadingCertificateExtraction.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQuerySemanticReadingCertificateExtraction.lean
 ---
 
 # Semantic Reading Recovery Certificate Extraction

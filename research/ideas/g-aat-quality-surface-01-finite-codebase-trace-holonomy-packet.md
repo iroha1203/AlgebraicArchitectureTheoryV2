@@ -34,10 +34,10 @@ packet extractor、任意 codebase traceability、実コード全体の品質判
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/CodebaseTracePacket.lean`
-- `research/lean/ResearchLean/QualitySurface/SourceRefTupleBridge.lean`
-- `research/lean/ResearchLean/QualitySurface/SourceRefTokenIdentityReflection.lean`
-- `research/lean/ResearchLean/QualitySurface/TupleHolonomyDefect.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/CodebaseTracePacket.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefTupleBridge.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefTokenIdentityReflection.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TupleHolonomyDefect.lean`
 - `CodebaseTracePacket.fullPacket`
 - `CodebaseTracePacket.partialPacket`
 - `CodebaseTracePacket.full_partial_supportSurface_equivalent`
@@ -90,7 +90,7 @@ loss-aware visualization / drill-down report では code atom level の source-r
 
 ## 証明・根拠
 
-Lean proof は `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean` に閉じた。
+Lean proof は `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceHolonomyPacket.lean` に閉じた。
 `research/lean/ResearchLean.lean` はこの Research evidence file を import する。
 
 主要 theorem / declaration:
@@ -132,8 +132,8 @@ Lean proof は `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyP
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`: pass。
-- `lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/CodebaseTraceHolonomyPacket.lean`: pass。
+- `Research package build`: pass。
 - `.tmp/codebase_trace_holonomy_packet_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - 対象 Lean file の `axiom` / `admit` / `sorry` / `unsafe` / `Classical` / `choice` / `propext` /

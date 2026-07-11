@@ -40,9 +40,9 @@ source extraction completeness、ArchMap correctness、実コード全体の tra
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/ProfileGridHolonomy.lean`
-- `research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean`
-- `research/lean/ResearchLean/QualitySurface/TupleProtectedDataSquareCriterion.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ProfileGridHolonomy.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TupleProtectedDataSquareCriterion.lean`
 - `gridHolonomy_visibleAgreement`
 - `localized_curvature_cell`
 - `same_grid_surface_but_path_ordered_frontier_diff`
@@ -82,7 +82,7 @@ grid endpoint の quality reading が同じでも protected data が違う場合
 
 ## 証明・根拠
 
-Lean proof は `research/lean/ResearchLean/QualitySurface/GridHolonomyLocalization.lean` に閉じた。
+Lean proof は `research/lean/ResearchLean/AG/QualitySurface/GridHolonomyLocalization.lean` に閉じた。
 `research/lean/ResearchLean.lean` はこの Research evidence file を import する。
 
 主要 theorem / declaration:
@@ -124,8 +124,8 @@ Lean proof は `research/lean/ResearchLean/QualitySurface/GridHolonomyLocalizati
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/GridHolonomyLocalization.lean`: pass。
-- `lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/GridHolonomyLocalization.lean`: pass。
+- `Research package build`: pass。
 - `.tmp/grid_holonomy_localization_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - G3 公理検査: pass。

@@ -11,7 +11,7 @@ origin: G1-quality-surface-cycle-7
 tags: [quality-surface, trace-curvature, trace-locus, profile-square, repair-frontier]
 created: 2026-06-20
 cycle: 7
-lean: research/lean/ResearchLean/QualitySurface/TraceCurvature.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/TraceCurvature.lean
 ---
 
 # Trace-curvature detector
@@ -33,9 +33,9 @@ profile change に沿う path-ordered trace locus / repair frontier の coherenc
 ## 依拠
 
 - `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
-- cycle 3 の `research/lean/ResearchLean/QualitySurface/ProfileCurvature.lean`
-- cycle 4 の `research/lean/ResearchLean/QualitySurface/TraceTransport.lean`
-- cycle 6 の `research/lean/ResearchLean/QualitySurface/TraceLocus.lean`
+- cycle 3 の `research/lean/ResearchLean/AG/QualitySurface/ProfileCurvature.lean`
+- cycle 4 の `research/lean/ResearchLean/AG/QualitySurface/TraceTransport.lean`
+- cycle 6 の `research/lean/ResearchLean/AG/QualitySurface/TraceLocus.lean`
 
 ## 非自明性
 
@@ -95,7 +95,7 @@ Lean では `TraceSquareCertificate`、typed `EdgeTransport`、`lawThenCover`、
 ## 進捗ログ
 
 - 2026-06-20: cycle 7 の G1 候補として作成。
-- 2026-06-20: `TraceCurvature.lean` を追加し、`lake env lean research/lean/ResearchLean/QualitySurface/TraceCurvature.lean` と
-  `lake build ResearchLean` の通過を確認。
+- 2026-06-20: `TraceCurvature.lean` を追加し、`focused Lean check: ResearchLean/AG/QualitySurface/TraceCurvature.lean` と
+  `Research package build` の通過を確認。
 - 2026-06-20: G2-A の補強提案を受け、repair frontier 側の faithfulness 否定も追加し、
   主要 theorem の axiom 依存がないことを確認。

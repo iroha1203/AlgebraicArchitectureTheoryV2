@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle-12
 tags: [profile-curvature, finite-square, reading, protected-invariant]
 created: 2026-06-20
 cycle: 12
-lean: research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean
 ---
 
 # Arbitrary finite square protected-invariant curvature criterion
@@ -59,7 +59,7 @@ tuple protected data を同じ criterion で扱える。
 
 - `score_reason`: witness から criterion への移行で profile-curvature / certificate-transport / ridge-fold / invariance を統合するため。ただし G2 A/C は定義展開 risk を指摘したため、expected base は 70 に下げる。
 - `dullness_risk`: `Curved := discrepancy` と定義して即証明するだけなら低 SCORE。typed path composite framework、faithful reading では discrepancy が起きない方向、cycle 7 trace-curvature witness が criterion を満たす instance theorem が必要。
-- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean` に generic finite square endpoint pair、reading、protected invariant、faithfulness、curvature criterion を置く。cycle 7 の trace-curvature endpoint pair を instance として証明する。可能なら repair frontier instance も入れる。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean` に generic finite square endpoint pair、reading、protected invariant、faithfulness、curvature criterion を置く。cycle 7 の trace-curvature endpoint pair を instance として証明する。可能なら repair frontier instance も入れる。
 
 ## CS / SWE への帰結
 
@@ -110,9 +110,9 @@ previous_cycle_delta: cycle 11 の tuple endpoint witness から、再び finite
 
 ## 証拠
 
-- Lean file: `research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean`
+- Lean file: `research/lean/ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean`
 - Evidence stage: `proved-in-research`
-- Build target: `lake env lean research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean`
+- Build target: `focused Lean check: ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean`
 - Main theorem: `FiniteSquareCriterion.same_trace_surface_but_finiteSquareCriterion_curved`
 - Axiom summary: `finiteSquare_curvature_of_visible_agreement_protected_discrepancy`、`finiteSquare_no_holonomy_of_faithful_reading`、`finiteSquare_not_faithful_of_curvature`、`finiteSquare_curvature_of_square_visible_protected_discrepancy`、`finiteSquare_no_holonomy_of_square_faithful_reading`、`traceCurvature_endpointPairOfSquare`、`traceCurvature_instantiates_traceMissingCriterion`、`traceCurvature_instantiates_repairFrontierCriterion`、`same_trace_surface_but_finiteSquareCriterion_curved` は `#print axioms` でいずれも axiom-free。
 - Formalization summary: `SquareEdgeTransport`、`FiniteSquare`、`endpointPairOfSquare` が四頂点、四つの typed edge transport、seed、二つの path composite endpoint を generic square data として保持する。`traceCurvatureSquare` と `traceCurvature_endpointPairOfSquare` により cycle 7 witness は generic square framework の instance として読める。
@@ -128,7 +128,7 @@ previous_cycle_delta: cycle 11 の tuple endpoint witness から、再び finite
 
 - 2026-06-20: Cycle 12 G1 候補として作成。
 - 2026-06-20: G2 A/C の `revise` を受け、expected score を 70 x 2.0 = 140 に下げ、typed endpoint/path-composite framework、faithful no-holonomy theorem、cycle 7 trace-curvature instance を必要証拠として明確化。
-- 2026-06-20: `research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean` で generic endpoint pair、selected reading / protected invariant、faithful no-holonomy theorem、cycle 7 trace missing / repair frontier instance を追加。
+- 2026-06-20: `research/lean/ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean` で generic endpoint pair、selected reading / protected invariant、faithful no-holonomy theorem、cycle 7 trace missing / repair frontier instance を追加。
 - 2026-06-20: G3 形式化監査の `revise` を受け、generic `FiniteSquare`、`SquareEdgeTransport`、`endpointPairOfSquare`、square-level curvature / no-holonomy theorem、cycle 7 trace square の generic square instance を追加。
 - 2026-06-20: G3 再監査で axiom audit / formalization quality audit がいずれも pass。
 - 2026-06-20: G4 SCORE 監査で base 70、evidence multiplier 2.0、final SCORE 140 に確定。

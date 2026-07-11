@@ -58,7 +58,7 @@ support を global zero-cochain や comparison functor failure と比較する t
 
 - `score_reason`: support receiver の common-refinement 表現として base 55。
 - `dullness_risk`: single-owner support との同値なので、過大評価しない。
-- `proof_or_evidence_plan`: `cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayCommonRefinementBoundary.lean`、
+- `proof_or_evidence_plan`: `focused Lean check: ResearchLean/AG/SFT/ConwayCommonRefinementBoundary.lean`、
   `旧Research aggregate build`、`#print axioms` で検証する。
 
 ## Lean evidence
@@ -81,5 +81,5 @@ support を global zero-cochain や comparison functor failure と比較する t
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayCommonRefinementBoundary.lean`、
+- 2026-07-04: 作成。`focused Lean check: ResearchLean/AG/SFT/ConwayCommonRefinementBoundary.lean`、
   `旧Research aggregate build`、full `lake build` が通過。G2 二審判 pass、final score +110。

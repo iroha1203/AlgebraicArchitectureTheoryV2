@@ -20,7 +20,7 @@ origin: G-04-Cycle67
 tags: [target-theorem, finite-query, support-shadow, support-control, recovery, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 67
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlIndependence.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlIndependence.lean
 ---
 
 # Support-Control Premise Independence
@@ -96,8 +96,8 @@ tooling が support-shadow recovery を持っていても、support-control cert
 
 - `research/ideas/g-aat-quality-surface-04-support-control-target-route.md`
 - `research/ideas/g-aat-quality-surface-04-support-shadow-certificate-independence.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlRoute.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateIndependence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlRoute.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateIndependence.lean`
 
 ## 進捗ログ
 

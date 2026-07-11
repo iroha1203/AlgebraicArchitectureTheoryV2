@@ -20,7 +20,7 @@ origin: G-04-Cycle60
 tags: [target-theorem, finite-query, current-shadow-factorization, recovery, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 60
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean
 ---
 
 # Raw Current-Shadow Factor Recovery / Certificate Independence
@@ -95,8 +95,8 @@ recovery の否定は Cycle50/51 の witness を再利用する。target-surface
 
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-factorization-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateIndependence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateIndependence.lean`
 
 ## 進捗ログ
 

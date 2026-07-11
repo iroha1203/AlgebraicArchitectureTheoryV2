@@ -70,7 +70,7 @@ ADL、static analyzer、dashboard、AI summary は target status surface を sca
 
 - `score_reason`: Cycle 95/100/101 を direct bridge として圧縮し、target scanner result から source hit obligation へ戻した。
 - `dullness_risk`: Cycle 100/101 の合成に見える危険がある。selected complete target scan order と `none` requires source hit witness を加えて補強した。
-- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/SemanticResidualInducedStatusDropScannerHitting.lean` で induced scanner-hit theorem と selected witness を証明する。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualInducedStatusDropScannerHitting.lean` で induced scanner-hit theorem と selected witness を証明する。
 
 ## CS / SWE への帰結
 
@@ -80,7 +80,7 @@ target-side green scan を source repair frontier の説明責務へ戻せる。
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualInducedStatusDropScannerHitting.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualInducedStatusDropScannerHitting.lean` に固定した。
 
 - `residualCutInducingAtlasMap_targetScannerNone_forces_oldStatusDropsHit`
 - `residualCutInducingAtlasMap_targetScannerNone_forces_oldStatusDropHit`
@@ -96,9 +96,9 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualInduce
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualInducedStatusDropScannerHitting.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualInducedStatusDropScannerHitting`: pass。
-- `lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualInducedStatusDropScannerHitting.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualInducedStatusDropScannerHitting`: pass。
+- `Research package build`: pass。
 - `#print axioms`: generic / complete-order theorem 群は標準 `propext` のみ。selected witness と package は標準
   `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
@@ -138,4 +138,4 @@ runtime/UI correctness、whole-codebase quality、arbitrary atlas category/funct
 
 - 2026-06-23: Cycle 102 G1/G2 で induced target status-drop scanner hit obligations を採択。
 - 2026-06-23: Lean 証拠を `SemanticResidualInducedStatusDropScannerHitting.lean` に固定し、単体
-  `lake env lean`、module build、`lake build ResearchLean`、axiom 監査が通った。
+  `lake env lean`、module build、`Research package build`、axiom 監査が通った。

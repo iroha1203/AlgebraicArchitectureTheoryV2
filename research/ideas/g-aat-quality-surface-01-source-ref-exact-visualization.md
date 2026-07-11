@@ -34,10 +34,10 @@ packet extractor、任意 codebase traceability、実コード全体の品質判
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SourceRefTupleBridge.lean`
-- `research/lean/ResearchLean/QualitySurface/SourceRefTokenIdentityReflection.lean`
-- `research/lean/ResearchLean/QualitySurface/TupleHolonomyDefect.lean`
-- `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefTupleBridge.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefTokenIdentityReflection.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/TupleHolonomyDefect.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceHolonomyPacket.lean`
 - `CodebaseTraceHolonomyPacket.NoSourceRefPacketHolonomyDefect`
 - `CodebaseTraceHolonomyPacket.SourceRefPacketHolonomyDefect`
 - `CodebaseTraceHolonomyPacket.noPacketHolonomy_projects_to_noTupleHolonomy`
@@ -86,7 +86,7 @@ tuple protected data の defect として検出できる。
 
 ## 証明・根拠
 
-Lean proof は `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean` に閉じた。
+Lean proof は `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean` に閉じた。
 `research/lean/ResearchLean.lean` はこの Research evidence file を import する。
 
 主要 theorem / declaration:
@@ -122,8 +122,8 @@ Lean proof は `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualiz
 
 検証:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`: pass。
-- `lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`: pass。
+- `Research package build`: pass。
 - `.tmp/source_ref_exact_visualization_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - 対象 Lean file の `axiom` / `admit` / `sorry` / `unsafe` / `Classical` / `choice` / `propext` /

@@ -20,7 +20,7 @@ origin: G-04-Cycle64
 tags: [target-theorem, finite-query, support-shadow, coordinate-certificate, recovery, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 64
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateRoute.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateRoute.lean
 ---
 
 # Support-Shadow Coordinate Certificate Target Route
@@ -92,8 +92,8 @@ tooling が coordinate certificate を生成できる場合、support-shadow rec
 ## 関連
 
 - `research/ideas/g-aat-quality-surface-04-support-shadow-target-route.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean`
 
 ## 進捗ログ
 

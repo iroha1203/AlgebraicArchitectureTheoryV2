@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle30
 tags: [quality-surface, repair, transport, commutator, source-ref, exactness]
 created: 2026-06-20
 cycle: 30
-lean: research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean
 ---
 
 # Lawful repair/transport commutator criterion
@@ -32,12 +32,12 @@ source-ref exact visualization になる。
 
 ## 依拠
 
-- Cycle 17: `research/lean/ResearchLean/QualitySurface/SourceRefPacketTransport.lean`
-- Cycle 21 / 25: `research/lean/ResearchLean/QualitySurface/CodebaseTraceRepairTrajectory.lean`,
-  `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
-- Cycle 24: `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
-- Cycle 28 / 29: `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`,
-  `research/lean/ResearchLean/QualitySurface/SourceRefTableLawObstruction.lean`
+- Cycle 17: `research/lean/ResearchLean/AG/QualitySurface/SourceRefPacketTransport.lean`
+- Cycle 21 / 25: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceRepairTrajectory.lean`,
+  `research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean`
+- Cycle 24: `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 28 / 29: `research/lean/ResearchLean/AG/QualitySurface/VisibleRepairTransportCommutator.lean`,
+  `research/lean/ResearchLean/AG/QualitySurface/SourceRefTableLawObstruction.lean`
 
 ## 非自明性
 
@@ -73,7 +73,7 @@ component laws が揃えば protected commutator は zero になる。
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean`
 
 Declarations:
 
@@ -92,8 +92,8 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/LawfulRepairTransportCommutator.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/LawfulRepairTransportCommutator.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/lawful_repair_transport_commutator_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; `LawfulRepairTransportSquare` is non-circular and does not assume endpoint equality, packet zero holonomy, tuple zero holonomy, or source-ref exact visualization

@@ -40,9 +40,9 @@ finite/small target boundary 内で、repair-choice の非可換 twisting を fi
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTriple.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairObstructionTower.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairNonabelianTriple.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairObstructionTower.lean`
 - Cycle 5 G6 checkpoint: next largest blocker is finite/small nonabelian `H1` / torsor descent adequacy.
 
 ## 非自明性
@@ -83,7 +83,7 @@ G-04 の open support node である full nonabelian `H^1` / torsor descent adeq
 
 ## 証明・根拠
 
-`research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTorsor.lean` を追加した。
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairNonabelianTorsor.lean` を追加した。
 
 主な Lean 証拠は次の通り。
 

@@ -40,11 +40,11 @@ lean: proved-in-research
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairNonabelianTorsor.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairStackyH2.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairUniversalShadow.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairTargetCompletion.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairNonabelianTorsor.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairStackyH2.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairUniversalShadow.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairTargetCompletion.lean`
 - tracking Issue `#2482` latest `$math-lean-review` blocker
 
 ## 非自明性

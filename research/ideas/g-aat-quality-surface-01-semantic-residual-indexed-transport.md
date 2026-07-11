@@ -82,7 +82,7 @@ finite overlap family の全 index で target residual atom が supported source
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualIndexedTransport.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualIndexedTransport.lean` に固定した。
 
 - `IndexedSemanticRepairClosed`
 - `IndexedTransportedSemanticSupportExact`
@@ -118,10 +118,10 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualIndexe
 
 G3 初期実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualIndexedTransport.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualIndexedTransport`: pass。
-- `lake build ResearchLean.AG`: pass。
-- `lake env lean research/lean/ResearchLean.lean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualIndexedTransport.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualIndexedTransport`: pass。
+- `Research module build: ResearchLean.AG`: pass。
+- `focused Lean check: ResearchLean.lean`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
 - axiom probe: indexed closure iff、transition-coherent closure iff、exact support / supported-lift iff は axiom-free。selected frontier-to-flat no-go、transition-coherent no-go、package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 

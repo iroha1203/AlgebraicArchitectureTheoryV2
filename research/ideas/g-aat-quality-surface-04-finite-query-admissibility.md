@@ -20,7 +20,7 @@ origin: G-04 Cycle 20
 tags: [target-theorem, target-support, finite-shadow, trace-support, admissible-query]
 created: 2026-06-25
 cycle: 20
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryAdmissibility.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryAdmissibility.lean
 ---
 
 # Finite Query Admissibility

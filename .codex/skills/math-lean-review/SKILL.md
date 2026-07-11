@@ -106,7 +106,8 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
   `lake env lean <target-file>`だけとする。aggregate root、module群、全file loopは禁止する。
 - package / module check: 統括エージェントだけがPR前に
   `lake build <module>`または`lake build`のどちらか1回を実行し、結果を各review laneへ渡す。
-  独立package側の残るfull buildはCI required checkを証拠にする。subagentは実行しない。
+  Research packageのfull buildはCIで実行しない。必要な場合だけ統括エージェントが
+  `cd research/lean && lake build`をローカルで1回実行し、subagentは実行しない。
 - theorem dependency audit: 対象 Lean declaration ごとに `#print axioms <DeclarationName>` を一時確認する。複数 declaration が対象なら全件必須とし、未実行の declaration 名は最終報告の coverage に列挙する。確認用 scratch は `.tmp/` に置き、成果物に混ぜない。
 - placeholder scan: `rg -n "\b(axiom|admit|sorry|unsafe)\b|by\\s+trivial|by\\s+simp\\s*$" Formal`
 - hidden / bidi scan when reporting changed artifacts: `rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-or-reviewed-files>`
@@ -119,9 +120,8 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 
 ```bash
 # 本体(Formal/AG 本線)から Research への import は禁止。
-# Research 集約ルート Formal/AG/Research.lean 自身の内部 import は正当なので除外
-rg -n "import Formal\.AG\.Research" Formal Formal.lean \
-  --glob '!Formal/AG/Research/**' --glob '!Formal/AG/Research.lean'
+# Research packageの内部importは正当なので、本体だけを検査する
+rg -n "import ResearchLean\.AG" Formal Formal.lean
 ```
 
 - ヒットのうち**差分が新規に追加した行**が1件でもあれば、他のすべての
@@ -136,7 +136,7 @@ rg -n "import Formal\.AG\.Research" Formal Formal.lean \
   対象の status は `unported (Research-proved)` のまま。台帳・PR 本文が
   これを「移植済み」と表示していれば、監査表示の過大化として finding に
   する。
-- import の方向規律: `Formal/AG/Research/` 側が本体を import するのは可。
+- import の方向規律: `research/lean/ResearchLean/` 側が本体を import するのは可。
   逆方向は常に禁止(研究 sandbox と正本の疎結合。PRD-R AC18 不変条件)。
 - `Formal.lean` / `Formal/AG.lean` 等の配線変更が Research module を
   default build の依存へ引き込んでいないかも同時に検査する。

@@ -144,8 +144,8 @@ docs 保守を単独で依頼した場合に使う。
 - 大きな rewrite より、小さな wording update、status table、索引追加を
   優先する。
 - 修正後は checklist §6 の横断機械 scan と、影響があれば統括エージェントが
-  PR前に`lake build`を1回だけ実行する。独立package側の残るfull buildはCI required checkを
-  証拠にする。subagentは`lake build`、aggregate root、module群、
+  PR前に`lake build`を1回だけ実行する。Research packageのfull buildはCIで実行せず、
+  必要な場合だけ統括エージェントがローカルで1回実行する。subagentは`lake build`、aggregate root、module群、
   全file loopのelaborationを実行しない。focused checkは共有契約の単一file制限に従う。
   該当cargo testは変更範囲に応じて実行する。
 

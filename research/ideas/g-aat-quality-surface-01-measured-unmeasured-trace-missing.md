@@ -11,7 +11,7 @@ origin: G1-quality-surface-cycle-5
 tags: [quality-surface, measured-zero, unmeasured, trace-missing, scalar-collapse]
 created: 2026-06-20
 cycle: 5
-lean: research/lean/ResearchLean/QualitySurface/StateSeparation.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/StateSeparation.lean
 ---
 
 # Measured-zero / unmeasured / trace-missing separation
@@ -38,8 +38,8 @@ verdict projection は certificate state に faithful ではない。
 
 - `research/goals/G-aat-quality-surface-01.md` の `G-aat-quality-surface-01`
 - `docs/note/aat_quality_surface.md` の measured zero / unmeasured 区別、trace field、reading fold
-- cycle 2 の `research/lean/ResearchLean/QualitySurface/ScalarCollapse.lean`
-- cycle 4 の `research/lean/ResearchLean/QualitySurface/TraceTransport.lean`
+- cycle 2 の `research/lean/ResearchLean/AG/QualitySurface/ScalarCollapse.lean`
+- cycle 4 の `research/lean/ResearchLean/AG/QualitySurface/TraceTransport.lean`
 
 ## 非自明性
 

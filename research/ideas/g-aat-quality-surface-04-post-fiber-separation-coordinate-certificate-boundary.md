@@ -20,7 +20,7 @@ origin: G-04-Cycle49
 tags: [target-theorem, finite-query, post-fiber-separation, coordinate-certificate, anti-weakening]
 created: 2026-06-25
 cycle: 49
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean
 ---
 
 # Post-Fiber Separation Coordinate-Certificate Boundary
@@ -87,8 +87,8 @@ certificate から current-shadow factorization を得て、separated post-fiber
 ## 関連
 
 - `research/ideas/g-aat-quality-surface-04-coordinate-certificate-target-surface-entry-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationNoSeparation.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationNoSeparation.lean`
 
 ## 進捗ログ
 

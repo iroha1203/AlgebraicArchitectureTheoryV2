@@ -27,8 +27,8 @@ selected branch localization が protected route defects を cover するなら�
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SelectedRouteFamilyExactness.lean`
-- `research/lean/ResearchLean/QualitySurface/ParametrizedAtlasTransition.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteFamilyExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ParametrizedAtlasTransition.lean`
 
 ## 非自明性
 
@@ -58,7 +58,7 @@ diagnostic report の component mismatch は、selected branch localization cert
 
 ## 証明・根拠
 
-Lean file: `research/lean/ResearchLean/QualitySurface/SelectedSupportDefectLocalization.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/SelectedSupportDefectLocalization.lean`
 
 Proved declarations:
 
@@ -93,8 +93,8 @@ Boundary:
 
 ## Verification
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SelectedSupportDefectLocalization.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/SelectedSupportDefectLocalization.lean`: pass
+- `Research package build`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/selected_support_defect_localization_axioms.lean`: pass
   - axiom-free: `localizedBranchDefect_obstructs_sourceRefExact`, `visibleRoute_obligation_localizedDefect`, `visibleRoute_obligationDefect_obstructs_sourceRefExact`, `allRouteDefectCorrection_localizedBranchesAgree`, `obligationOnlyCorrection_storageRepair_localizedDefect`, `obligationOnlyCorrection_localizedDefect_obstructs_sourceRefExact`

@@ -20,7 +20,7 @@ origin: G-04-Cycle62
 tags: [target-theorem, finite-query, current-shadow-factorization, semantic-reading-adequacy, recovery, implication-obstruction, anti-weakening]
 created: 2026-06-25
 cycle: 62
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCombinedRecoveryImplicationObstruction.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCombinedRecoveryImplicationObstruction.lean
 ---
 
 # Combined Recovery-Free Face Implication Obstruction
@@ -92,7 +92,7 @@ Cycle61 の Bool constant witness を premise として implication に渡し、
 ## 関連
 
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-semantic-independence.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorSemanticIndependence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorSemanticIndependence.lean`
 
 ## 進捗ログ
 

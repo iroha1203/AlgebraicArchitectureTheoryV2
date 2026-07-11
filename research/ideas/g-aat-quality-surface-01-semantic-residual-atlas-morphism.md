@@ -71,7 +71,7 @@ AAT 側では、cut-preserving / cut-surjective finite maps の下で obstructio
 
 - `score_reason`: Cycle 93 の same-carrier invariance を cross-carrier cut-locus transport へ上げる。open genius target への強い support node だが、arbitrary atlas morphism や H1 本体ではない。
 - `dullness_risk`: `cut_preserving` だけなら仮定を言い換えるだけになる。push cochain、canonical iff、selected extended carrier witness、`none` isolation、target obstruction を揃える。
-- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/SemanticResidualAtlasMorphism.lean` で embedding/equivalence、pushforward、canonical transport、selected extended carrier witness、theorem package を証明する。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAtlasMorphism.lean` で embedding/equivalence、pushforward、canonical transport、selected extended carrier witness、theorem package を証明する。
 
 ## CS / SWE への帰結
 
@@ -80,7 +80,7 @@ source diagnostic が residual cut nonzero を持ち、その cut locus が targ
 
 ## 証明・根拠
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualAtlasMorphism.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAtlasMorphism.lean` に固定した。
 
 - `mapResidualPair`
 - `ResidualCutLocusEmbedding`
@@ -116,9 +116,9 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualAtlasM
 
 検証実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualAtlasMorphism.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualAtlasMorphism`: pass。
-- `lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualAtlasMorphism.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualAtlasMorphism`: pass。
+- `Research package build`: pass。
 - `#print axioms`: generic push/transport/canonical theorem は axiom-free。selected cut-surjectivity は標準 `propext`。selected nonzero と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
 claim boundary は、finite semantic repair atlas skeleton 間の supplied residual cut-locus embedding/equivalence、pushforward cochains、canonical vanishing/nonzero transport、selected extended carrier witness に限定する。
@@ -155,4 +155,4 @@ unchecked: arbitrary atlas morphism category、atom-map semantic completeness、
 ## 進捗ログ
 
 - 2026-06-23: Cycle 94 G1/G2 で beyond-same-carrier residual cut-locus transport を採択。
-- 2026-06-23: Lean 証拠を `SemanticResidualAtlasMorphism.lean` に固定し、単体 `lake env lean`、module build、`lake build ResearchLean`、axiom 監査が通った。
+- 2026-06-23: Lean 証拠を `SemanticResidualAtlasMorphism.lean` に固定し、単体 `lake env lean`、module build、`Research package build`、axiom 監査が通った。

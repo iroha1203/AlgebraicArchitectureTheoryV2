@@ -11,7 +11,7 @@ origin: G-aat-quality-surface-01-cycle28
 tags: [quality-surface, repair, transport, commutator, source-ref, fold-locus]
 created: 2026-06-20
 cycle: 28
-lean: research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/VisibleRepairTransportCommutator.lean
 ---
 
 # Visible repair/transport commutator counterexample
@@ -30,12 +30,12 @@ protected commutator は非ゼロであり、source-ref exact visualization は�
 
 ## 依拠
 
-- Cycle 17: `research/lean/ResearchLean/QualitySurface/SourceRefPacketTransport.lean`
-- Cycle 21 / 25: `research/lean/ResearchLean/QualitySurface/CodebaseTraceRepairTrajectory.lean`,
-  `research/lean/ResearchLean/QualitySurface/SourceRefRepairHolonomy.lean`
-- Cycle 23 / 24: `research/lean/ResearchLean/QualitySurface/CodebaseTraceHolonomyPacket.lean`,
-  `research/lean/ResearchLean/QualitySurface/SourceRefExactVisualization.lean`
-- Cycle 27: `research/lean/ResearchLean/QualitySurface/SourceRefExactFoldLocus.lean`
+- Cycle 17: `research/lean/ResearchLean/AG/QualitySurface/SourceRefPacketTransport.lean`
+- Cycle 21 / 25: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceRepairTrajectory.lean`,
+  `research/lean/ResearchLean/AG/QualitySurface/SourceRefRepairHolonomy.lean`
+- Cycle 23 / 24: `research/lean/ResearchLean/AG/QualitySurface/CodebaseTraceHolonomyPacket.lean`,
+  `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`
+- Cycle 27: `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactFoldLocus.lean`
 
 ## 非自明性
 
@@ -71,7 +71,7 @@ source-reference data が同じとは限らない。したがって report / UI 
 
 Lean file:
 
-- `research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/VisibleRepairTransportCommutator.lean`
 
 Declarations:
 
@@ -97,8 +97,8 @@ Declarations:
 
 Local G3 checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/VisibleRepairTransportCommutator.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/VisibleRepairTransportCommutator.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/visible_repair_transport_commutator_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; the file states a visible-only bounded counterexample and explicitly proves it is not a lawful bidirectional source-ref packet transport

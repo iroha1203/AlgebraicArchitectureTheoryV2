@@ -110,8 +110,8 @@ Outside scope:
 
 Before creating the GOAL, the following focused checks passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairSheafH1.lean`
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairSheafH1.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairTrueSheafH1.lean`
 - `lake env lean Formal/AG/Site/Sheaf.lean`
 - `lake env lean Formal/AG/Cohomology/CechComplex.lean`
 
@@ -241,7 +241,7 @@ ways.
 ### Lean Artifacts
 
 New file
-`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`
 (imported by `research/lean/ResearchLean.lean`):
 
 - `circleNerveCover`, `circleNerveComplex`: the selected circle nerve over the
@@ -294,8 +294,8 @@ witness).
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairLawEquationNonzeroClassInstance`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairLawEquationNonzeroClassInstance`
 - `lake build`
 - `lake env lean .tmp/G06LawEquationNonzeroClassAxiomAudit.lean`
 - `git diff --check`
@@ -331,7 +331,7 @@ Cycle 350:
 ### Lean Artifacts
 
 New file
-`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`
 (imported by `research/lean/ResearchLean.lean`):
 
 - `displayedRequiredLawsHoldOn_constructs_sourceC0_pointwise_zero`
@@ -380,8 +380,8 @@ on non-boundary content.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairLawEquationEndToEndInstance`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairLawEquationEndToEndInstance`
 - `lake build`
 - `lake env lean .tmp/G06LawEquationEndToEndAxiomAudit.lean`
 - `git diff --check`
@@ -505,7 +505,7 @@ and displayed required-law fulfillment alone.
 ### Lean Artifacts
 
 New file
-`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`
 (imported by `research/lean/ResearchLean.lean`):
 
 - `lawEquationCoverBridge`: the semantic cover bridge landing exactly on the
@@ -568,8 +568,8 @@ condition and descent of the underlying surface proved rather than supplied.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairLawEquationGroundedPacket`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairLawEquationGroundedPacket`
 - `lake build`
 - `lake env lean .tmp/G06LawEquationGroundedPacketAxiomAudit.lean`
 - `git diff --check`
@@ -603,7 +603,7 @@ Discharge the two obligations recorded by Cycle 348's remaining work:
 ### Lean Artifacts
 
 New file
-`research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`
 (imported by `research/lean/ResearchLean.lean`), built on the Part I/II finite model
 (`Formal/AG/Examples/FiniteModel.lean`):
 
@@ -653,8 +653,8 @@ non-lawful readings on a concrete finite instance.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairLawEquationWitnessInstance`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairLawEquationWitnessInstance`
 - `lake build`
 - `lake env lean .tmp/G06LawEquationWitnessAxiomAudit.lean`
 - `git diff --check`
@@ -723,7 +723,7 @@ Construct the positive lower layer left open by Cycle 346/347:
 
 ### Lean Artifacts
 
-New file `research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationRealization.lean`
+New file `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean`
 (imported by `research/lean/ResearchLean.lean`), inside the existing
 `SemanticRepairCechGrounding` namespaces:
 
@@ -787,8 +787,8 @@ for arbitrary support-only sources is claimed.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairLawEquationRealization.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairLawEquationRealization`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairLawEquationRealization`
 - `lake build`
 - `lake env lean .tmp/G06LawEquationAxiomAudit.lean`
 - `git diff --check`
@@ -843,7 +843,7 @@ base-restriction source from atom/law geometry.
 ### Lean Artifact
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `...PointwiseAtomLawInputBoundaryBasis.no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_baseRestrictionSource_constructor_without_displayedRequiredLawRestrictionEvaluator`
 
@@ -874,8 +874,8 @@ data alone while the evaluator is absent.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle347AxiomAudit.lean`
 - `lake build`
 - `git diff --check`
@@ -932,7 +932,7 @@ T1 selected the evaluator layer exposed by Cycle 345:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `...SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.commonRestrictionRealization_constructs_displayedRequiredLawRestrictionEvaluator`
 - `...SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.baseRestrictionSource_preservingDisplayedInterpretation_constructs_displayedRequiredLawRestrictionEvaluator`
@@ -969,8 +969,8 @@ Cech complex rather than being recorded as a standalone certificate.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake build`
 - `lake env lean .tmp/G06Cycle346AxiomAudit.lean`
 - `git diff --check`
@@ -1032,7 +1032,7 @@ cycle does not claim that the evaluator is generated from bare
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_displayedRequiredLawRestrictionEvaluator_constructs_sourceC0CechZero_of_atomLawOverlapGeometry`
   takes the current-law boundary and a displayed required-law restriction
@@ -1076,12 +1076,12 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle345AxiomAudit.lean`
   - both new declarations depend on `[propext, Classical.choice, Quot.sound]`;
   - no `sorryAx`.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - success; only pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -1125,7 +1125,7 @@ Its `law_reads_overlap` field remains visible lower provenance.
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `...CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_canonicalFreeOverlapReading_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutPresieveFreeSourceArgument`
   takes an order-free skeleton, a same-source support-only semantic atom/law
@@ -1167,12 +1167,12 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle344AxiomAudit.lean`
   - new theorem depends on `[propext, Classical.choice, Quot.sound]`;
   - no `sorryAx`.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - success; only pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -1213,7 +1213,7 @@ discharge the source's arrow-level `compatible` field.
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_presieveFreeSemanticAtomLawInputBoundarySource_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutPresieveLawArgument`
   takes a presieve-free semantic atom/law source for the generated older
@@ -1250,12 +1250,12 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle343AxiomAudit.lean`
   - new theorem depends on `[propext, Classical.choice, Quot.sound]`;
   - no `sorryAx`.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - success; only pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -1296,7 +1296,7 @@ atom/law geometry.
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_presieveLaw_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutGeneratedArrowLawArgument`
   takes the order-free skeleton and a
@@ -1336,12 +1336,12 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle342AxiomAudit.lean`
   - new theorem depends on `[propext, Classical.choice, Quot.sound]`;
   - no `sorryAx`.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - success; only pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -1379,7 +1379,7 @@ overlap law.  That law remains the visible lower material premise.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `...PointwiseAtomLawInputBoundaryBasis.SourceSectionFreeOrderFreeSkeleton`
   records only pointwise trace-visible atom choices and required-law choices
@@ -1428,15 +1428,15 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `#print axioms` on the four new declarations:
   - helper declarations depend on `[propext, Quot.sound]`;
   - the main theorem depends on `[propext, Classical.choice, Quot.sound]`;
   - no `sorryAx`.
 - `git diff --check`
 - hidden/bidirectional Unicode scan on
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
 - T3 read-only audit: no major findings; no protected docs or `research/goals/G-aat-quality-surface-06.md`
   edits; no completion claim.
 
@@ -1469,7 +1469,7 @@ source-section provenance, descent, or final G-06 completion.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticEnvelope.constructs_generatedSemanticCoefficientLayer_identityC0Carrier_and_identitySourceContinuation`
   packages the generated semantic coefficient layer with
@@ -1532,14 +1532,14 @@ T3 approved the cycle as `proof-obligation-discharged`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle340AxiomAudit.lean`
   - generated-layer/order-free conversion/support declarations:
     `[propext, Quot.sound]`
   - route proposition and order-free route theorem:
     `[propext, Classical.choice, Quot.sound]`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder / hidden Unicode / private path scans
@@ -1582,7 +1582,7 @@ selected `K` therefore requires the already named
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.orderFreeChartIndexedGeneratedKPromotion_constructs_selectedFinitePosetCoverComplexBridge`
   records that the promotion data is exactly the explicit cover equality,
@@ -1637,14 +1637,14 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle339AxiomAudit.lean` passed.
 - Axiom audit for both new declarations reported only expected standard axioms:
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -1682,7 +1682,7 @@ already generated by the selected `K`.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundaryBasis`
   is the Cycle 337 pointwise basis with `c0Order` / `c1Order` removed.  It
@@ -1744,11 +1744,11 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle338AxiomAudit.lean`
   reported `[propext, Quot.sound]` for both new theorem declarations.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -1790,7 +1790,7 @@ gluing lower route.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis`
   is the chart-indexed pointwise atom/law basis below the Cycle 239
@@ -1863,14 +1863,14 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle337AxiomAudit.lean`
   reported `[propext, Quot.sound]` for
   `constructs_source_and_exposes_singleton_pointwise_support` and
   `[propext, Classical.choice, Quot.sound]` for the new finite-poset route
   declaration.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -1908,7 +1908,7 @@ Cycle 335:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.finitePosetGeneratedCoverGeometry_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
   specializes the Cycle 335 atom/law selected route to the cover geometry
@@ -1975,11 +1975,11 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle336AxiomAudit.lean`
   reported `[propext, Classical.choice, Quot.sound]` for the new declaration.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -2014,7 +2014,7 @@ T1 selected the next proof-DAG propagation step after Cycle 334:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.atomLawSelectedChartGeometry_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
   composes the Cycle 334 chart-indexed identity route with the atom/law
@@ -2080,11 +2080,11 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle335AxiomAudit.lean`
   reported `[propext, Classical.choice, Quot.sound]` for the new declaration.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -2117,7 +2117,7 @@ T1 selected the next successor propagation step after Cycle 333:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartIndexedZeroBaseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
   composes the Cycle 333 chart/base identity route with
@@ -2179,11 +2179,11 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle334AxiomAudit.lean`
   reported `[propext, Classical.choice, Quot.sound]` for the new declaration.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -2216,7 +2216,7 @@ T1 selected the next successor propagation step after Cycle 332:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartBaseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
   composes the Cycle 332 base-restriction identity route with
@@ -2276,11 +2276,11 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle333AxiomAudit.lean`
   reported `[propext, Classical.choice, Quot.sound]` for the new declaration.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -2311,7 +2311,7 @@ T1 selected the next successor propagation step after Cycle 331:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.baseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
   composes the Cycle 331 restriction-realized identity route with
@@ -2371,11 +2371,11 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle332AxiomAudit.lean`
   reported `[propext, Classical.choice, Quot.sound]` for the new declaration.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -2407,7 +2407,7 @@ T1 selected the first lower successor propagation step after Cycle 330:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.restrictionRealized_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
   composes the Cycle 330 canonical/free identity-`C0` route with
@@ -2464,11 +2464,11 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle331AxiomAudit.lean`
   reported `[propext, Classical.choice, Quot.sound]` for the new declaration.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -2500,7 +2500,7 @@ T1 selected the canonical identity-`C0` replacement route:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticEnvelope.constructs_identityC0ReplacementRoute_without_sourceWithoutC0`
   packages the generated envelope's identity `C0` continuation, full
@@ -2564,12 +2564,12 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle330AxiomAudit.lean`
   reported `[propext, Classical.choice, Quot.sound]` for all three new
   declarations.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -2602,7 +2602,7 @@ T1 selected the identity-`C0` specialization of the old
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticEnvelope.constructs_identityC0SpecializedFaceLawContinuation`
   constructs the four old face-law continuation equations for the generated
@@ -2657,11 +2657,11 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle329AxiomAudit.lean`
   reported only `[propext, Quot.sound]` for both new declarations.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`
@@ -2696,7 +2696,7 @@ T1 selected the exact boundary around the remaining evaluator:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_displayedRequiredLawRestrictionEvaluator_constructs_canonicalFreeOverlapReading`
   constructs the full canonical/free overlap-reading layer from the current
@@ -2759,12 +2759,12 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle328AxiomAudit.lean`
   reported only `[propext, Classical.choice, Quot.sound]` for all four new
   declarations.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 
@@ -2794,7 +2794,7 @@ T1 selected the Cycle 326 residual premise itself:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_constructs_arrowCompatibilityLaw`
   shows that any constructor from the current law-universe boundary plus
@@ -2848,12 +2848,12 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle327AxiomAudit.lean`
   reported only `[propext, Classical.choice, Quot.sound]` for both new
   declarations.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 
@@ -2887,7 +2887,7 @@ T1 selected the next lower provenance step after Cycle 325:
 ### Lean Artifact
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_displayedRequiredLawRestrictionEvaluator`
   constructs `source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput`
@@ -2941,12 +2941,12 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle326AxiomAudit.lean`
   reported only `[propext, Classical.choice, Quot.sound]` for the new
   declaration.
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build` succeeded; the only emitted warnings were pre-existing linter
   warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 
@@ -2978,7 +2978,7 @@ T1 selected the constructive bridge left after Cycle 324:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient_constructs_identityRoute_and_residualZeroBoundary`
   fixes the route-integrity view of the source-`C0` generated coefficient:
@@ -3029,8 +3029,8 @@ T3 approved the cycle as checkpoint-only:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `.tmp/G06Cycle325AxiomAudit.lean`
   reported only `[propext, Classical.choice, Quot.sound]` for the two new
   declarations.
@@ -3062,7 +3062,7 @@ T1 selected the direct bypass left open after Cycle 323:
 ### Lean Artifacts
 
 New source-level declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_currentLawUniverseHoldsInputBoundary_constructor_to_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw`
   proves that any constructor from the current law boundary to bare overlap
@@ -3140,10 +3140,10 @@ T3 approved Cycle 324 as `blocker-fixed`, with completion candidate `no`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle324AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder / hidden Unicode / private path scans over the changed Lean diff
@@ -3191,7 +3191,7 @@ T1 selected the obstruction left by Cycle 322:
 ### Lean Artifacts
 
 New source-level declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.currentLawUniverseHoldsInputBoundary`
   names the current law-side input boundary: `LawUniverse.coverageAssumptions`,
@@ -3258,10 +3258,10 @@ T3 approved Cycle 323 as `blocker-fixed`, with completion candidate `no`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle323AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder / hidden Unicode / private path scans over the changed Lean diff
@@ -3308,7 +3308,7 @@ Cycle 321:
 ### Lean Artifacts
 
 New source-level declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawRestrictionEvaluator`
   names the required non-field restriction semantic evaluator.  It takes
@@ -3393,10 +3393,10 @@ T3 approved Cycle 322 as `positive-checkpoint`, with completion candidate
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle322AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder / direct axiom / hidden Unicode / private path scans over the
@@ -3448,7 +3448,7 @@ same isolated `source.arrowCompatibilityLaw`.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_overlapEquality_evaluator_constructs_arrowCompatibilityLaw`
   proves that a direct evaluator from displayed required-law support, local
@@ -3512,10 +3512,10 @@ T3 approved Cycle 321 as `blocker-fixed`, with completion candidate `no`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle321AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder / direct axiom / trivial escape / hidden Unicode / private path
@@ -3567,7 +3567,7 @@ restrictions on common refinements.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn`
   names the proposition that every law index displayed by the support-only
@@ -3637,10 +3637,10 @@ T3 approved Cycle 320 as `blocker-fixed`, with completion candidate `no`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle320AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder / direct axiom / trivial escape / hidden Unicode / private path scans
@@ -3688,7 +3688,7 @@ T1 selected the rock face immediately below Cycle 318:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawSupport`
   names the support-only fact that each displayed local input has a selected
@@ -3752,8 +3752,8 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle319AxiomAudit.lean`
 - `lake build`
 
@@ -3801,7 +3801,7 @@ residual-zero is exactly constructing the isolated support-only
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry`
   composes the Cycle 317 residual-zero / `sourceC0CechZero` boundary with the
@@ -3879,10 +3879,10 @@ T3 findings:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle318AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean/audit files was clean for `admit`,
@@ -3942,7 +3942,7 @@ and residual-zero is equivalent to Cycle 316's `sourceC0CechZero`.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0BoundaryGeneratedSemanticCoefficient`
   constructs a boundary-generated coefficient from the same support-only
@@ -4017,10 +4017,10 @@ T3 noted:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle317AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean/audit files was clean for `admit`,
@@ -4087,7 +4087,7 @@ for the canonical `sourceC0`.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0CechZero_constructs_canonicalFreeOverlapReading_of_atomLawOverlapGeometry`
   constructs full `AtomLawOverlapCanonicalFreeOverlapReading` from
@@ -4147,10 +4147,10 @@ Still remaining:
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle316AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file and Cycle 316 axiom-audit scratch
@@ -4209,7 +4209,7 @@ law-reading layer is equivalent to supplying the same isolated
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_arrowCompatibilityLaw`
   rewrites the Cycle 306 decomposition from
@@ -4271,10 +4271,10 @@ Still remaining:
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle315AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file and Cycle 315 axiom-audit scratch
@@ -4332,7 +4332,7 @@ law-reading content from genuine semantic atom/law input-boundary geometry.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_exists_baseRestrictionSource_preservingDisplayedInterpretation`
   constructs same-source display-preserving base-restriction provenance from a
@@ -4387,10 +4387,10 @@ Still remaining:
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle314AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file and Cycle 314 axiom-audit scratch
@@ -4447,7 +4447,7 @@ base-restriction/law-reading layer.
 ### Lean Artifact
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_baseRestrictionSource_constructor_without_arrowCompatibilityLaw`
   proves that, for the same support-only source, a hypothetical constructor
@@ -4514,10 +4514,10 @@ Still remaining:
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle313AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file and Cycle 313 axiom-audit scratch
@@ -4572,7 +4572,7 @@ future theorem constructs them from lower semantic atom/law geometry.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_baseRestrictionSource_preservingDisplayedInterpretation_constructs_sourceC0CechZero`
   proves the positive route from a display-preserving base-restriction source
@@ -4645,10 +4645,10 @@ Still remaining:
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle312AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file and Cycle 312 axiom-audit scratch
@@ -4703,7 +4703,7 @@ generated `sourceC0CechZero` and the already-isolated
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_arrowCompatibilityLaw_constructs_sourceC0CechZero`
   proves the reverse bridge: the isolated arrow-compatibility law gives
@@ -4766,10 +4766,10 @@ Still remaining:
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle311AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file and Cycle 311 axiom-audit scratch
@@ -4818,7 +4818,7 @@ T1 selected the remaining half of the Cycle 308 / Cycle 309 bridge:
 ### Lean Artifacts
 
 Implemented in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces_of_atomLawOverlapGeometry`
   constructs the arbitrary common-refinement factorization through selected
@@ -4879,10 +4879,10 @@ T3 returned `approve / proof-obligation-discharged / completion_candidate: no`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle310AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - Existing linter warnings replayed in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`; they are outside
@@ -4919,7 +4919,7 @@ T1 selected the first half of the Cycle 308 bridge:
 ### Lean Artifacts
 
 Implemented in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `standardAlternatingFaceCombination_degreeZero_eq_zero_iff`
   proves that the generated standard degree-`0` alternating combination is
@@ -5002,14 +5002,14 @@ No `$math-lean-review` completion gate is claimed.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle309AxiomAudit.lean` passed.
 - Axiom audit for the new declarations reported only expected standard axioms:
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -5057,7 +5057,7 @@ T1 selected the exact bridge left open by Cycle 307:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquality`
 - `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces`
@@ -5110,8 +5110,8 @@ Remaining:
 
 ### Validation
 
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake env lean .tmp/G06Cycle308AxiomAudit.lean`
 - `git diff --check`
 - hidden / bidirectional Unicode scan on the changed Lean file
@@ -5147,7 +5147,7 @@ T1 selected the next rock face below Cycle 306:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0`
 - `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0ReadsDisplayedInterpretations`
@@ -5248,7 +5248,7 @@ completion candidate:
 
 ### Validation
 
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -5301,7 +5301,7 @@ obstruction-sheaf restrictions.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.AtomLawOverlapCanonicalFreeSupportReading`
 - `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_to_supportReading`
@@ -5366,14 +5366,14 @@ Key audit points:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle306AxiomAudit.lean` passed.
 - Axiom audit for the new declarations reported only expected standard axioms:
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - Placeholder scan over the changed Lean file was clean.
@@ -5416,7 +5416,7 @@ in the lower law-reading provenance.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.AtomLawOverlapCanonicalFreeOverlapReading`
 - `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_exposes_support`
@@ -5493,14 +5493,14 @@ Key audit points:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle305AxiomAudit.lean` passed.
 - Axiom audit for the new declarations reported only expected standard axioms:
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -5557,7 +5557,7 @@ overlap equality from genuinely lower semantic atom/law provenance.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage`
 - `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_iff_supportOnlyOverlapEquality`
@@ -5623,14 +5623,14 @@ T3 verdict: PASS / exact-boundary / completion candidate: no.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle304AxiomAudit.lean` passed.
 - Axiom audit for the three new declarations reported only
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -5668,7 +5668,7 @@ material premise.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.AtomLawOverlapSourceSectionFreeSkeletonGeneratedSelectedKIdentityRouteResult`
 - `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_supportOnlyOverlapEquality_constructs_baseRestrictionSource_and_identityRoute_with_generatedSelectedK_withoutBaseSourceArgument`
@@ -5738,14 +5738,14 @@ T3 verdict: PASS / proof-obligation-discharged / completion candidate: no.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle303AxiomAudit.lean` passed.
 - Axiom audit for the new theorem reported only
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -5780,7 +5780,7 @@ source.  It does not construct the base-restriction source itself.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource.toSupportOnly_selfPreservesDisplayedInterpretation`
 - `GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource.toSupportOnly_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`
@@ -5841,9 +5841,9 @@ T3 verdict: PASS / proof-checkpoint / completion candidate: no.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -5883,7 +5883,7 @@ the equality by themselves.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.baseRestrictionSource_preservingDisplayedInterpretation_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlyOverlapRestrictionEquality_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation`
@@ -5940,9 +5940,9 @@ T3 verdict: PASS / proof-checkpoint / completion candidate: no.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -5985,7 +5985,7 @@ renamed source is circular.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlyOverlapRestrictionEquality`
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw`
@@ -6048,10 +6048,10 @@ T3 verdict: approve / proof-checkpoint / completion candidate: no.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean` on a temporary axiom-audit scratch file
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - hidden/bidirectional Unicode scan on changed Lean file
@@ -6089,7 +6089,7 @@ T1 selected the exact pointwise lower interface below the remaining
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlySemanticAtomLawOverlapLaw`
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw`
@@ -6145,10 +6145,10 @@ T3 verdict: approve / proof-checkpoint / no major or minor findings.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean` on a temporary axiom-audit scratch file
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - hidden/bidirectional Unicode scan on changed Lean file
@@ -6184,7 +6184,7 @@ T1 selected the display-preserving base-restriction boundary:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.baseRestrictionSourcePreservesDisplayedInterpretation`
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw_constructs_baseRestrictionSource_preservingDisplayedInterpretation`
@@ -6239,10 +6239,10 @@ T3 verdict: approve / no major findings.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean` on a temporary axiom-audit scratch file
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - hidden/bidirectional Unicode scan on changed Lean file
@@ -6277,7 +6277,7 @@ T1 selected the remaining Cycle 296 material premise:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_presieveFamilyCompatible_preservingDisplayedInterpretation_without_arrowCompatibilityLaw`
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.presieveFreeSourcePreservesDisplayedInterpretation`
@@ -6384,9 +6384,9 @@ proof-use checkpoint:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build` (existing `Formal/Arch/Extension/FeatureExtensionExamples.lean`
   linter warning only)
 - `#print axioms` for the new Cycle 297 declarations:
@@ -6418,7 +6418,7 @@ effective-gluing output as an input.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw_constructs_commonRestrictionRealization`
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw_iff_commonRestrictionRealization`
@@ -6504,9 +6504,9 @@ Unresolved:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build` (existing `Formal/Arch/Extension/FeatureExtensionExamples.lean`
   linter warning only)
 - `#print axioms` for the three Cycle 296 declarations:
@@ -6556,7 +6556,7 @@ residual-boundary reading were already fixed by earlier cycles.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource`
 - `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw`
@@ -6657,11 +6657,11 @@ Next obligation:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `git diff --check` passed.
 - placeholder scan over the target Lean file was clean for `axiom`, `admit`,
   `sorry`, and `unsafe`.
@@ -6702,7 +6702,7 @@ Cycle 293.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource.toSourceSectionFreeChoices`
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.presieveFreeSemanticAtomLawInputBoundarySource_constructs_sourceSectionFreeChoices_and_presieveLaw`
@@ -6785,11 +6785,11 @@ Independent T3 audit approved Cycle 294 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -6841,7 +6841,7 @@ T1 selected the remaining material `sourceSection` from Cycle 292:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis`
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis.withSourceSection`
@@ -6927,11 +6927,11 @@ Independent T3 audit approved Cycle 293 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -6981,7 +6981,7 @@ section.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis`
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis.localInput`
@@ -7068,7 +7068,7 @@ Independent T3 audit approved Cycle 292 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -7119,7 +7119,7 @@ old arbitrary `sourceWithoutC0` / external `c0Equiv` path:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawLocalInput`
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis`
@@ -7198,9 +7198,9 @@ T3 retry approved Cycle 291 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle291AxiomAudit.lean` passed.
 - Axiom audit for the two new theorem declarations reported only expected
@@ -7242,7 +7242,7 @@ inverse or surjectivity theorem from cover arrows back to degree-`0` simplices.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource`
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource.toPresieveFamily`
@@ -7324,14 +7324,14 @@ Independent T3 audit approved Cycle 290 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle290AxiomAudit.lean` passed.
 - Axiom audit for four new theorem declarations reported only expected
   standard axioms: `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -7379,7 +7379,7 @@ gap.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw`
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw`
@@ -7481,14 +7481,14 @@ Independent T3 audit approved Cycle 289 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle289AxiomAudit.lean` passed.
 - Axiom audit for the three new theorem declarations reported only expected
   standard axioms: `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -7536,7 +7536,7 @@ T1 selected the next provenance gap below Cycle 287:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.generatedArrowSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis`
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_generatedArrowLaw_constructs_identityRoute_with_generatedSelectedK_withoutBasisArgument`
@@ -7652,14 +7652,14 @@ Independent T3 audit approved Cycle 288 as
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle288AxiomAudit.lean` passed.
 - Axiom audit for both new declarations reported only expected standard axioms:
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -7710,7 +7710,7 @@ arbitrary visible `K` leaves a more direct target-fitting risk.
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityRoute_with_generatedSelectedK_withoutCanonicalArgument`
 
@@ -7766,10 +7766,10 @@ T3 approved this cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle287AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file and axiom-audit scratch file
@@ -7796,7 +7796,7 @@ result_type: proof-obligation-discharged
 proof_obligation: remove visible selected K by proof-using the atom/law overlap generated cover-relative Cech complex
 proof_obligation_delta: selected K is generated as atomLawOverlapCoverRelativeCechComplex coverGeometry Ob, with delta0/delta1 and identity cochain route proof-used through that K
 lean_artifacts:
-  - file: research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean
+  - file: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean
     declarations:
       - ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityRoute_with_generatedSelectedK_withoutCanonicalArgument
 premise_delta:
@@ -7873,7 +7873,7 @@ T1 selected a narrow generated-coefficient obligation:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticEnvelope.generatedSemanticCoefficient_constructs_identityC0Carrier_and_c0Equiv`
 - `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.atomLawSelectedChartGeometry_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
@@ -7932,10 +7932,10 @@ T3 approved this cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle286AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file and axiom-audit scratch file
@@ -7963,7 +7963,7 @@ result_type: proof-obligation-discharged
 proof_obligation: generated semantic coefficient layer constructs identity degree-0 carrier comparison and c0Equiv
 proof_obligation_delta: identity C0 carrier/c0Equiv is generated from the Cech-native coefficient layer; atom/law charted cover geometry is composed with the Cycle 285 route
 lean_artifacts:
-  - file: research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean
+  - file: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean
     declarations:
       - ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticEnvelope.generatedSemanticCoefficient_constructs_identityC0Carrier_and_c0Equiv
       - ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.atomLawSelectedChartGeometry_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
@@ -8046,7 +8046,7 @@ zero-simplex incidence layer with existing Lean constructors.
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization`:
 
 - `CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartIndexedZeroBaseRestriction_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
@@ -8104,10 +8104,10 @@ T3 approved this cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle285AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file and axiom-audit scratch file
@@ -8155,7 +8155,7 @@ T1 selected the arbitrary overlap-to-base map input left by Cycle 283:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization`:
 
 - `CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartBaseRestriction_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
@@ -8214,10 +8214,10 @@ T3 approved this cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle284AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file
@@ -8263,7 +8263,7 @@ T1 selected the remaining arbitrary source-object input left by Cycle 282:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization`:
 
 - `CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.baseRestriction_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
@@ -8322,10 +8322,10 @@ T3 approved this cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle283AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file
@@ -8369,7 +8369,7 @@ T1 selected the remaining bare primitive input left by Cycle 281:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization`:
 
 - `CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.restrictionRealized_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
@@ -8419,10 +8419,10 @@ T3 approved this cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle282AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the changed Lean file
@@ -8462,7 +8462,7 @@ T1 selected the remaining `canonical` theorem argument left by Cycle 280:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization`:
 
 - `CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope`
@@ -8518,10 +8518,10 @@ T3 approved this cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle281AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over changed Lean audit surface
@@ -8563,7 +8563,7 @@ T1 selected the lower-provenance wrapper for Cycle 279:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization`:
 
 - `CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute`
@@ -8621,10 +8621,10 @@ T3 approved this cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle280AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over changed Lean audit surface
@@ -8661,7 +8661,7 @@ T1 selected the composition of two previously separate routes:
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization`:
 
 - `CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute`
@@ -8709,10 +8709,10 @@ T3 approved this cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle279AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over changed Lean audit surface
@@ -8750,7 +8750,7 @@ T1 selected the narrow composition obligation created by Cycle 277:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization`:
 
 - `CoverRelativeCechBoundaryGeneratedSemanticCoefficient.constructs_additiveCechCocycleInputLayer_and_residualBoundary`
@@ -8799,10 +8799,10 @@ T3 approved the cycle:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle278AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - hidden Unicode scan over changed report / Lean audit surface
@@ -8839,7 +8839,7 @@ obligation:
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization`:
 
 - `CoverRelativeCechGeneratedSemanticCoefficient.constructs_additiveCechCocycleInputLayer`
@@ -8888,10 +8888,10 @@ T3 approved this as a proof checkpoint, not completion:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle277AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder / hidden Unicode / local path scans
@@ -8936,7 +8936,7 @@ generated-sieve local-section extension plus overlap compatibility.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton`:
 
 - `GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw`
@@ -9044,12 +9044,12 @@ Next obligation recommended by T3:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle276AxiomAudit.lean` passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -9106,7 +9106,7 @@ through a displayed cover inclusion and is therefore in the generated sieve.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton`:
 
 - `generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem`
@@ -9214,14 +9214,14 @@ T3 approved Cycle 275 as `proof-obligation-discharged`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle275AxiomAudit.lean` passed.
 - Axiom audit for both new declarations:
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -9266,7 +9266,7 @@ coefficient provenance directly entered it.
 ### Lean Artifact
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`,
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`,
 namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticEnvelope`:
 
@@ -9409,9 +9409,9 @@ T3 approved Cycle 274 as `proof-obligation-discharged`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle274AxiomAudit.lean` passed.
 - Axiom audit:
@@ -9421,7 +9421,7 @@ T3 approved Cycle 274 as `proof-obligation-discharged`:
     `[propext, Quot.sound]`;
   - selected-layer source theorem:
     `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -9459,7 +9459,7 @@ finite-poset arrow membership visible.
 ### Lean Artifact
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton`:
 
 - `SourceSectionFreeSkeleton`
@@ -9569,10 +9569,10 @@ cover geometry before final completion can be considered.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle273AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - Lean placeholder scan over the target Lean file
@@ -9616,7 +9616,7 @@ generated Cech-H1 core.
 ### Lean Artifact
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedCanonicalH1Envelope`:
 
 - `generatedCechH1Core_independent_of_observationFields`
@@ -9718,10 +9718,10 @@ Lean blocker showing which descent/effective-gluing law is required.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle272AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - Lean placeholder scan over the target Lean file
@@ -9767,7 +9767,7 @@ cochain realization and explicit primitive together.
 ### Lean Artifact
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis`:
 
 - `atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityCochainRealization_explicitPrimitive_and_h1Zero`
@@ -9894,10 +9894,10 @@ package, residual-boundary, or H1-zero certificates.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle271AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - Lean placeholder scan over the target Lean file
@@ -9940,7 +9940,7 @@ residual-boundary, `H1` zero, an external `K`, an external source,
 ### Lean Artifact
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis`:
 
 - `atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_explicitResidualBoundary_and_h1Zero`
@@ -10064,10 +10064,10 @@ or `H1` zero premise.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle270AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - Lean placeholder scan over the target Lean file
@@ -10107,7 +10107,7 @@ outputs must be obtained by proof-using the selected Cycle 267 route.
 ### Lean Artifact
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis`:
 
 - `atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_generatedCoefficientRoute_and_h1Zero`
@@ -10226,10 +10226,10 @@ conclusion.  T3 found no new external `c0Equiv`, `sourceWithoutC0`, external
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle269AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - hidden / bidirectional Unicode scan over changed tracked files
@@ -10268,7 +10268,7 @@ canonical/free source construction, not as a supplied equivalence.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis`:
 
 - `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis`
@@ -10403,10 +10403,10 @@ failure in the Cycle 268 declarations.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle268AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - axiom audit over the new Cycle 268 declarations
 - `git diff --check`
@@ -10455,7 +10455,7 @@ route, this is the `Fin 1 -> cover.Index` to `cover.Index` reindex.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`:
 
 - `CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`
@@ -10591,10 +10591,10 @@ proof path.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle267AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - axiom audit over the new Cycle 267 declarations
 - `git diff --check`
@@ -10636,7 +10636,7 @@ chart-indexed complex.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry`:
 
 - `AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge`
@@ -10756,10 +10756,10 @@ transport/equivalence rather than literal cover equality.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle266AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - axiom audit over the new Cycle 266 declarations
 - `git diff --check`
@@ -10794,7 +10794,7 @@ generic `surface.K` chart/base route as the selected result.
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`:
 
 - `atomLawOverlap_chartBaseRestriction_constructs_boundaryGeneratedRoute_and_h1Zero`
@@ -10917,9 +10917,9 @@ theorem is not a completion candidate.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - axiom audit over the new Cycle 265 declaration
 - `git diff --check`
@@ -10954,7 +10954,7 @@ along the displayed map `source.zeroSimplexToBase sigma`.
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`:
 
 - `atomLawOverlap_baseRestriction_constructs_boundaryGeneratedRoute_and_h1Zero`
@@ -11077,9 +11077,9 @@ completion candidate.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - axiom audit over the new Cycle 264 declaration
 - `git diff --check`
@@ -11115,7 +11115,7 @@ lower `sourceSection` along the displayed `sectionToLocal` maps.
 ### Lean Artifacts
 
 New declaration in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`:
 
 - `atomLawOverlap_restrictionRealized_constructs_boundaryGeneratedRoute_and_h1Zero`
@@ -11236,9 +11236,9 @@ this section and the tracking Issue comment close that synchronization gap.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - axiom audit over the new Cycle 263 declaration
 - `git diff --check`
@@ -11273,7 +11273,7 @@ atom/law-overlap-generated cover-relative Cech complex.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechBoundaryGeneratedSemanticCoefficient`:
 
 - `ofAtomLawOverlapBoundaryCechComplex`
@@ -11391,9 +11391,9 @@ Cycle 262 boundary-generated route when discharging residual provenance.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - axiom audit over the new Cycle 262 declarations
 - `git diff --check`
@@ -11429,7 +11429,7 @@ or the old `sourceWithoutC0` route.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`, namespace
 `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticCoefficient`:
 
 - `atomLawOverlapStandardCechDifferentialCompLaw`
@@ -11554,9 +11554,9 @@ global-coherence obligations are not discharged by this bridge.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - axiom audit over the new Cycle 261 declarations
 - `git diff --check`
@@ -11591,7 +11591,7 @@ through `toStandardCechDifferentialCompLaw`.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `finiteCechRectangleSum`
 - `finiteCechTriangularPairSum`
@@ -11701,9 +11701,9 @@ actually proof-used through `toStandardCechDifferentialCompLaw`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - axiom audit over the new Cycle 260 declarations
 - `git diff --check`
@@ -11736,7 +11736,7 @@ action, cancellation law, or selected `K`.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `FinitePosetAtomLawCanonicalTupleOverlapBasis`
 - `FinitePosetAtomLawCanonicalTupleOverlapBasis.toCanonicalTupleOverlapGeometry`
@@ -11845,9 +11845,9 @@ geometry in `standardCechSignedDoubleFaceTerm_pair_cancel_of_atomLawOverlap`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - `.tmp/G06Cycle259AxiomAudit.lean`
 - `git diff --check`
@@ -11882,7 +11882,7 @@ certificate.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `FinitePosetCechCanonicalTupleSimplex`
 - `FinitePosetCechCanonicalTupleSimplex.simplexMap`
@@ -12000,9 +12000,9 @@ tuple-overlap construction, finite double-sum cancellation, and standard
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - `.tmp/G06Cycle258AxiomAudit.lean`
 
@@ -12031,7 +12031,7 @@ for the identity.
 ### Lean Artifacts
 
 New / updated declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `FinitePosetCechSimplicialFaceAction`
 - `FinitePosetCechSimplicialFaceAction.toFaceData`
@@ -12134,9 +12134,9 @@ term-equality and signed-pair routes, and that full double-sum cancellation,
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - `lake env lean .tmp/G06Cycle257AxiomAudit.lean`
 - placeholder scan over the changed Lean file and Cycle 257 scratch files
@@ -12188,7 +12188,7 @@ identity, followed by a law-level bridge that consumes only
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `standardCechCompositeRestrictionMap_apply_eq_of_lowSimplex_eq`
 - `standardCechDoubleFaceRestrictionMap_apply_transport`
@@ -12284,9 +12284,9 @@ claimed.
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - `lake env lean .tmp/G06Cycle256AxiomAudit.lean`
 - placeholder scan over the changed Lean file and Cycle 256 scratch files
@@ -12330,7 +12330,7 @@ bridge or full double-sum reindexing before this field escape was discharged.
 ### Lean Artifacts
 
 Updated / new declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `standardCechDoubleFaceRestrictionMap`
 - `standardCechDoubleFaceRestriction_eq_restrictionMap_apply`
@@ -12418,9 +12418,9 @@ conclusion is introduced.
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - `lake env lean .tmp/G06Cycle255AxiomAudit.lean`
 - placeholder scan over the changed Lean file and Cycle 255 scratch files
@@ -12465,7 +12465,7 @@ provenance is generated.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `standardCechDoubleFaceRestrictionMap`
 - `standardCechDoubleFaceRestriction_eq_restrictionMap_apply`
@@ -12539,9 +12539,9 @@ justify the index domain before treating this as canonical.
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
-- `lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research package build`
 - `lake build`
 - `lake env lean .tmp/G06Cycle254AxiomAudit.lean`
 - `git diff --check`
@@ -12582,7 +12582,7 @@ rejected routes that wrap `doubleFace_cancellation`, reuse old
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `standardCechSignedDoubleFaceTerm`
 - `FinitePosetAtomLawCechTwoFaceTermEquality`
@@ -12667,11 +12667,11 @@ paired local cancellation to the full finite double sum.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle253AxiomAudit.lean` passed.
@@ -12719,7 +12719,7 @@ as an input remains a field escape and is not a completion route.
 ### Lean Artifacts
 
 New declarations in
-`research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`:
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`:
 
 - `obstructionSheafStandardAlternatingCombination`
 - `obstructionSheafStandardAlternatingCombination_map`
@@ -12823,11 +12823,11 @@ pairing before G-06 can be considered complete.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle252AxiomAudit.lean` passed.
@@ -12954,10 +12954,10 @@ cosimplicial face identity provenance for `d ∘ d = 0`.
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle251AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -13067,10 +13067,10 @@ selection boundary, and the selected finite-poset Cech complex fields
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle250AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -13162,10 +13162,10 @@ sheaf restriction law.  The audit rejected a stronger discharge reading because
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle249AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -13265,10 +13265,10 @@ that additive differential law is still a visible material premise.
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle248AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -13353,11 +13353,11 @@ rather than a construction of the coefficient groups themselves.
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle247AxiomAudit.lean`
 - `lake env lean .tmp/G06Cycle247AddCommGrpProbe.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -13442,10 +13442,10 @@ lower semantic atom/law geometry.
 
 Passed:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle246AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - placeholder scan over the changed Lean file and Cycle 246 axiom-audit file
 - hidden/bidirectional Unicode scan over changed files and Cycle 246 axiom-audit
@@ -13554,10 +13554,10 @@ The audit found:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle245AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -13674,10 +13674,10 @@ The audit found:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle244AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -13777,10 +13777,10 @@ finite-poset AAT / semantic atom-law data.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle243AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -13894,15 +13894,15 @@ T3 also fixed the boundary:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle242AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
 - `git diff --check`
-- `rg -n "\b(axiom|admit|sorry|unsafe)\b" research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean .tmp/G06Cycle242AxiomAudit.lean`
+- `rg -n "\b(axiom|admit|sorry|unsafe)\b" research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean .tmp/G06Cycle242AxiomAudit.lean`
 - hidden/bidirectional Unicode scan over changed files and the axiom-audit
   scratch file
 - private/local path scan over changed files and the axiom-audit scratch file
@@ -14009,15 +14009,15 @@ that finite-poset regime/complex remains a next obligation.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle241AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
 - `git diff --check`
-- `rg -n "\b(axiom|admit|sorry|unsafe)\b" research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean .tmp/G06Cycle241AxiomAudit.lean`
+- `rg -n "\b(axiom|admit|sorry|unsafe)\b" research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean .tmp/G06Cycle241AxiomAudit.lean`
 - hidden/bidirectional Unicode scan over changed files and the axiom-audit
   scratch file
 - private/local path scan over changed files and the axiom-audit scratch file
@@ -14111,15 +14111,15 @@ geometry, so this is a route-integrity checkpoint rather than G-06 completion.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle240AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - only existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
 - `git diff --check`
-- `rg -n "\b(axiom|admit|sorry|unsafe)\b" research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean .tmp/G06Cycle240AxiomAudit.lean`
+- `rg -n "\b(axiom|admit|sorry|unsafe)\b" research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean .tmp/G06Cycle240AxiomAudit.lean`
 - hidden/bidirectional Unicode scan over changed files and the axiom-audit
   scratch file
 - private/local path scan over changed files and the axiom-audit scratch file
@@ -14236,12 +14236,12 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle239AxiomAudit.lean` passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed.  The only emitted warnings were pre-existing linter
   warnings in `Formal/Arch/Extension/FeatureExtensionExamples.lean`, outside
   the G-06 target file.
@@ -14377,12 +14377,12 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle238AxiomAudit.lean` passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed.  The only emitted warnings were pre-existing linter
   warnings in `Formal/Arch/Extension/FeatureExtensionExamples.lean`, outside
   the G-06 target file.
@@ -14532,12 +14532,12 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle237AxiomAudit.lean` passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed.  The only emitted warnings were pre-existing linter
   warnings in `Formal/Arch/Extension/FeatureExtensionExamples.lean`, outside
   the G-06 target file.
@@ -14686,16 +14686,16 @@ than independently rerun.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle236AxiomAudit.lean` passed.
   - base source / primitive / basic constructor declarations report
     `[propext, Quot.sound]`;
   - explicit lower-package constructor and route declarations report
     `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with the pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -14808,12 +14808,12 @@ T3 approved Cycle 235 as `proof-checkpoint`, not completion:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle235AxiomAudit.lean`
   - constructor / audit declarations report `[propext, Quot.sound]`
   - route declaration reports `[propext, Classical.choice, Quot.sound]`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - passed with the pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -14932,13 +14932,13 @@ T3 approved Cycle 234 as `proof-checkpoint`, not completion:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle234AxiomAudit.lean`
   - non-choice constructors report `[propext, Quot.sound]`
   - selector / route declarations report `[propext, Classical.choice,
     Quot.sound]`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - passed with the pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -15046,11 +15046,11 @@ T3 approved Cycle 233 as `proof-checkpoint`, not completion:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle233AxiomAudit.lean`
   - Cycle 233 declarations report `[propext, Classical.choice, Quot.sound]`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - passed with the pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -15167,14 +15167,14 @@ T3 approved Cycle 232 as `proof-checkpoint`, not completion:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle232AxiomAudit.lean`
   - boundary-primitive basis constructor declarations report
     `[propext, Quot.sound]`
   - boundary-primitive generated-route theorem reports
     `[propext, Classical.choice, Quot.sound]`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - passed with the pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -15285,14 +15285,14 @@ T3 approved Cycle 231 as `proof-checkpoint`, not completion:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle231AxiomAudit.lean`
   - restriction-realized basis constructor declarations report
     `[propext, Quot.sound]`
   - restriction-realized generated-route theorem reports
     `[propext, Classical.choice, Quot.sound]`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - passed with the pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -15398,14 +15398,14 @@ T3 approved Cycle 230 as `proof-checkpoint`, not completion:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean`
   - pointwise local input / basis / source-construction declarations report
     `[propext, Quot.sound]`
   - pointwise route theorem reports
     `[propext, Classical.choice, Quot.sound]`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - passed with the pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -15492,11 +15492,11 @@ T3 approved Cycle 229 as `blocker-fixed`, not completion:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean`
   - the Cycle 229 declarations report only `[propext, Quot.sound]`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
   - passed with the pre-existing linter warnings in
     `Formal/Arch/Extension/FeatureExtensionExamples.lean`
@@ -15615,9 +15615,9 @@ T3 approves Cycle 228 as `blocker-fixed`, not completion.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed with the Cycle 228
   declarations included.
@@ -15627,7 +15627,7 @@ T3 approves Cycle 228 as `blocker-fixed`, not completion.
     `[propext, Quot.sound]`.
   - `no_atomSupportedSourceWithoutDegreeZeroEquiv_of_degreeZeroFaceLawObstruction`:
     `[propext, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`, placeholder / unsafe scan over the changed Lean file,
@@ -15752,16 +15752,16 @@ T3 approves Cycle 227 as `proof-checkpoint`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed with the Cycle 227
   declaration included.
 - Axiom audit:
   - `CoverRelativeCechGeneratedCanonicalH1Envelope.constructs_identityDegreeZeroCarrierComparisonData_and_atomSupportedSource`:
     `[propext, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`, placeholder / unsafe scan over the changed Lean file,
@@ -15884,9 +15884,9 @@ T3 approves Cycle 226 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed with Cycle 226
   declarations included.
@@ -15895,7 +15895,7 @@ T3 approves Cycle 226 as `proof-checkpoint`:
     `[propext, Quot.sound]`.
   - free-source generated canonical route:
     `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - placeholder / unsafe scan over the changed Lean file, hidden/bidirectional
@@ -16002,15 +16002,15 @@ T3 approves Cycle 225 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed with Cycle 225
   declaration included.
 - Axiom audit for Cycle 225 declaration:
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`, placeholder / unsafe scan over the changed Lean file,
@@ -16122,9 +16122,9 @@ T3 approves Cycle 224 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed with Cycle 224
   declarations included.
@@ -16235,15 +16235,15 @@ T3 approved Cycle 223 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed with Cycle 223
   declarations included.
 - Axiom audit for Cycle 223 declarations:
   `[propext, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`, placeholder scan over the changed Lean file,
@@ -16344,15 +16344,15 @@ T3 approved Cycle 222 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed with Cycle 222
   declarations included.
 - Axiom audit for Cycle 222 declarations:
   `[propext, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`, placeholder scan over the changed Lean file,
@@ -16455,15 +16455,15 @@ T3 approved Cycle 221 as `proof-obligation-discharged`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed with Cycle 221
   declarations included.
 - Axiom audit for Cycle 221 declarations:
   `[propext, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`, placeholder scan over the changed Lean file,
@@ -16584,9 +16584,9 @@ T3 approved Cycle 220 as `proof-obligation-discharged`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed with Cycle 220
   declarations included.
@@ -16595,7 +16595,7 @@ T3 approved Cycle 220 as `proof-obligation-discharged`:
     `[propext, Quot.sound]`;
   - grounded package theorem:
     `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check`, placeholder scan over the changed Lean file,
@@ -16720,9 +16720,9 @@ review gate.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle219AxiomAudit.lean` passed.
 - Axiom audit:
@@ -16730,7 +16730,7 @@ review gate.
     `[propext, Quot.sound]`;
   - grounded package theorem:
     `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 
@@ -16841,15 +16841,15 @@ T3 approved Cycle 218 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle217AxiomAudit.lean` passed with the Cycle 218
   declaration included.
 - Axiom audit for the Cycle 218 blocker reported only expected standard axioms:
   `[propext, Classical.choice, Quot.sound]`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 
@@ -16968,16 +16968,16 @@ T3 approved Cycle 217 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - `lake env lean .tmp/G06Cycle217AxiomAudit.lean` passed.
 - Axiom audit reported only expected standard axioms:
   `[propext, Quot.sound]` for the carrier-comparison source theorem and
   `[propext, Classical.choice, Quot.sound]` for the grounded-route and blocker
   theorems.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` passed.
@@ -17106,11 +17106,11 @@ T3 audit approved Cycle 216 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle216AxiomAudit.lean` passed.
@@ -17242,10 +17242,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle215AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan on target Lean file and `.tmp/G06Cycle215AxiomAudit.lean`
@@ -17373,10 +17373,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle214AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan on target Lean file and `.tmp/G06Cycle214AxiomAudit.lean`
@@ -17516,10 +17516,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle213AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan on target Lean file and `.tmp/G06Cycle213AxiomAudit.lean`
@@ -17656,10 +17656,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle212AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan on target Lean file and `.tmp/G06Cycle212AxiomAudit.lean`
@@ -17795,10 +17795,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle211AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan on target Lean file and `.tmp/G06Cycle211AxiomAudit.lean`
@@ -17931,10 +17931,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle210AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the target Lean file and axiom-audit file
@@ -18067,10 +18067,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle209AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the target Lean file and axiom-audit file
@@ -18193,10 +18193,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle208AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the target Lean file and axiom-audit file
@@ -18326,10 +18326,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle207AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the target Lean file and axiom-audit file
@@ -18458,10 +18458,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle206AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the target Lean file and axiom-audit file
@@ -18573,10 +18573,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle205AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the target Lean file and axiom-audit file
@@ -18683,10 +18683,10 @@ Remaining:
 
 Local validation:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
 - `lake env lean .tmp/G06Cycle204AxiomAudit.lean`
-- `lake build ResearchLean`
+- `Research package build`
 - `lake build`
 - `git diff --check`
 - placeholder scan over the target Lean file and axiom-audit file
@@ -18819,11 +18819,11 @@ T3 audit approved Cycle 203 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle203AxiomAudit.lean` passed.
@@ -18968,11 +18968,11 @@ T3 audit approved Cycle 202 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle202AxiomAudit.lean` passed.
@@ -19122,11 +19122,11 @@ T3 audit approved Cycle 201 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle201AxiomAudit.lean` passed.
@@ -19277,11 +19277,11 @@ for carrier equivalences, degree-`2` zero laws, or face equations.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle197AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -19420,11 +19420,11 @@ T3 audit approved Cycle 200 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle200AxiomAudit.lean` passed.
@@ -19550,11 +19550,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle199AxiomAudit.lean` passed.
@@ -19697,11 +19697,11 @@ T3 audit approved Cycle 198 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle198AxiomAudit.lean` passed.
@@ -19862,11 +19862,11 @@ remain the unresolved lower provenance.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle196AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -20038,11 +20038,11 @@ face-restriction equations.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle195AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -20207,11 +20207,11 @@ provenance requirements.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle194AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -20371,11 +20371,11 @@ theorem must not be read as final lower-provenance construction.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle193AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -20533,11 +20533,11 @@ promoted to lower provenance.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle192AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -20708,11 +20708,11 @@ conclusion-side gluing / sheaf / descent / effective-gluing, and semantic
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle191AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -20867,11 +20867,11 @@ to lower provenance.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle190AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -21023,11 +21023,11 @@ ad hoc selected realization is used as lower provenance.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle189AxiomAudit.lean` passed.
 - Axiom audit for the new declarations reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -21181,11 +21181,11 @@ wrapper theorem, or completion candidate.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle188AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -21218,7 +21218,7 @@ realization / direct lower provenance without claiming completion.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `atomGeneratedCoverage_generates_AATGrothendieckTopology`
   - `selectedAATSiteTopology_eq_atomGeneratedGrothendieckTopology`
   - `SemanticRepairCoverRelativeCoverBridge`
@@ -21382,9 +21382,9 @@ refinement-boundary declarations.  No `sorryAx`, non-consulted repo axiom,
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06AxiomAudit.lean` — passed after rebuilding the new
@@ -21418,7 +21418,7 @@ conclusion-equivalent fields.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeH1Comparison.coverRelative_to_semanticRepairAdditiveH1Class_left_inverse`
   - `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Class_to_coverRelative_right_inverse`
   - `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_equiv_coverRelativeH1`
@@ -21502,9 +21502,9 @@ axiom, `admit`, or `unsafe` dependency was reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake env lean .tmp/G06Cycle2AxiomAudit.lean` — passed.
 - `git diff --check` — passed.
 - placeholder scan over changed report / Lean files:
@@ -21533,7 +21533,7 @@ semantic repair cover / residual coefficient / AAT cover-relative complex.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `trueSheafH1_grounding_requires_explicit_comparison_provenance`
 
 ### Proof-Obligation Result
@@ -21606,9 +21606,9 @@ reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle2AxiomAudit.lean` — passed.
@@ -21637,7 +21637,7 @@ cover-relative Cech complex.  Without that layer, the mandatory
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization`
   - `SemanticRepairCoverRelativeCochainRealization.toH1Comparison`
   - `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_cochain_realization`
@@ -21711,9 +21711,9 @@ dependency was reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle4AxiomAudit.lean` — passed.
@@ -21740,7 +21740,7 @@ made inside the current `CoverRelativeCechComplex` surface.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `trueSheafH1_grounding_requires_explicit_cochain_realization_provenance`
 
 ### Proof-Obligation Result
@@ -21808,9 +21808,9 @@ reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle5AxiomAudit.lean` — passed.
@@ -21836,7 +21836,7 @@ target cannot be completed from cover bridge data alone.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeSectionRealizationBridge`
   - `SemanticRepairCoverRelativeSectionRealizationBridge.toCochainRealization`
   - `SemanticRepairCoverRelativeSectionRealizationBridge.grounded_package_of_section_realization_bridge`
@@ -21910,9 +21910,9 @@ non-consulted repo axiom, `admit`, or `unsafe` dependency was reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle6AxiomAudit.lean` — passed.
@@ -21942,7 +21942,7 @@ cover / coefficient / presheaf data.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeFaceRestrictionRealization`
   - `SemanticRepairCoverRelativeFaceRestrictionRealization.toSectionRealizationBridge`
   - `SemanticRepairCoverRelativeFaceRestrictionRealization.toCochainRealization`
@@ -22022,9 +22022,9 @@ non-consulted repo axiom, `admit`, or `unsafe` dependency was reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle7AxiomAudit.lean` — passed.
@@ -22053,7 +22053,7 @@ comparison witnesses while keeping completion blocked on final review.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeSectionFamilyWitness`
   - `SemanticRepairCoverRelativeFaceRestrictionCompatibility`
   - `SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness`
@@ -22135,9 +22135,9 @@ reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle8AxiomAudit.lean` — passed.
@@ -22167,7 +22167,7 @@ ambient selected comparison input rather than discharge-required premises.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeFaceRestrictionRealization.sectionFamilyWitness_requires_degreeEquivalences`
   - `SemanticRepairCoverRelativeFaceRestrictionRealization.faceRestrictionCompatibility_requires_equations`
   - `SemanticRepairCoverRelativeFaceRestrictionRealization.faceRestrictionRealization_requires_finiteWitnessBoundary`
@@ -22253,9 +22253,9 @@ reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle9AxiomAudit.lean` — passed.
@@ -22286,7 +22286,7 @@ comparison input rather than discharge-required completion premises.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data`
 
 ### Proof-Obligation Delta
@@ -22365,12 +22365,12 @@ dependency was reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake env lean .tmp/G06Cycle10AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -22398,7 +22398,7 @@ must be accepted as ambient selected comparison input.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCarrierSpecificComparisonProvenance`
   - `SemanticRepairCarrierSpecificComparisonProvenance.c0SectionEquiv`
   - `SemanticRepairCarrierSpecificComparisonProvenance.c1SectionEquiv`
@@ -22513,13 +22513,13 @@ dependency was reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake env lean .tmp/G06Cycle11AxiomAudit.lean` — passed.
 
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -22545,7 +22545,7 @@ to close the discharge-required premise.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `CarrierSpecificAdditiveComparisonData`
   - `CarrierSpecificAdditiveComparisonData.toAddEquiv`
   - `no_uniform_carrier_specific_additive_comparison_from_bare_groups`
@@ -22643,12 +22643,12 @@ reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake env lean .tmp/G06Cycle12AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -22675,7 +22675,7 @@ that selected comparison an explicit `ambient-boundary` input.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_requires_explicit_selected_carrier_comparison_source`
 
 ### Proof-Obligation Delta
@@ -22772,13 +22772,13 @@ dependency was reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake env lean .tmp/G06Cycle13AxiomAudit.lean` — passed.
 
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -22804,7 +22804,7 @@ new concrete provenance constructor or an explicit GOAL boundary revision.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface`
   - `SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_current_g06_inputs_without_selected_carrier_source`
 
@@ -22885,12 +22885,12 @@ dependency was reported.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake env lean .tmp/G06Cycle14AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -23067,7 +23067,7 @@ T3 audit next obligation:
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
 - `SemanticRepairCoverRelativeCochainRealization.toCarrierSpecificComparisonProvenance`
 - `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_cochain_realization_via_carrier_specific_provenance`
 
@@ -23158,8 +23158,8 @@ remaining source gap:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean` — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` — passed.
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean` — passed.
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` — passed.
 - `.tmp/G06Cycle16AxiomAudit.lean` — passed after rebuilding the target module.
 - `git diff --check` — passed.
 - hidden / bidirectional Unicode scan over changed files — clean.
@@ -23194,7 +23194,7 @@ T3 audit next obligation:
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
 - `SemanticRepairCoverRelativeCochainRealization.cochainRealization_requires_degreeEquivalences_and_differentials`
 - `SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_current_g06_inputs_without_cochain_realization_source`
 
@@ -23273,8 +23273,8 @@ selected cochain realization
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean` — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` — passed.
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean` — passed.
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` — passed.
 - `.tmp/G06Cycle17AxiomAudit.lean` — passed.
 - `git diff --check` — passed.
 - hidden / bidirectional Unicode scan over changed files — clean.
@@ -23524,11 +23524,11 @@ candidate.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle187AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -23683,11 +23683,11 @@ remaining selected `K.d` laws.  Therefore Cycle 186 can only be recorded as
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle186AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -23859,11 +23859,11 @@ on this cycle.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle185AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -24016,11 +24016,11 @@ no`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle184AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -24171,11 +24171,11 @@ no`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle183AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -24323,11 +24323,11 @@ no`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle182AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -24460,11 +24460,11 @@ T3 approved the cycle as `blocker-fixed`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle181AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -24604,11 +24604,11 @@ T3 approved the cycle as `blocker-fixed`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle180AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -24749,11 +24749,11 @@ T3 approved the cycle as `blocker-fixed`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle179AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -24892,11 +24892,11 @@ T3 approved the cycle as `blocker-fixed`.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle178AxiomAudit.lean` passed.
 - Axiom audit for the new declaration reported expected standard axioms:
   - `[propext, Classical.choice, Quot.sound]`.
@@ -25017,11 +25017,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle177AxiomAudit.lean` passed.
 - Axiom audit reported expected standard axioms:
   - `[propext, Quot.sound]` for
@@ -25149,11 +25149,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle176AxiomAudit.lean` passed.
 - Axiom audit reported expected standard axioms:
   - `[propext, Quot.sound]` for
@@ -25259,11 +25259,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle175AxiomAudit.lean` passed.
 - Axiom audit reported expected standard axioms:
   - `[propext, Quot.sound]` for
@@ -25392,11 +25392,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle174AxiomAudit.lean` passed.
 - Axiom audit reported expected standard axioms:
   - `[propext, Quot.sound]` for
@@ -25531,11 +25531,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle173AxiomAudit.lean` passed.
 - Axiom audit reported expected standard axioms:
   - `[propext, Quot.sound]` for
@@ -25696,11 +25696,11 @@ T3 audit approved Cycle 171 as `proof-checkpoint`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings replayed in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle171AxiomAudit.lean` passed.
@@ -25849,11 +25849,11 @@ T3 audit approved Cycle 172 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings replayed in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle172AxiomAudit.lean` passed.
@@ -25981,11 +25981,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle170AxiomAudit.lean` passed.
@@ -26014,7 +26014,7 @@ indexed semantic atom/law provenance, not from conclusion-side repair facts.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.of_sectionFamilyWitness_and_faceRestrictionCompatibility`
   - `SemanticRepairCoverRelativeCochainRealization.cochainRealization_iff_sectionFamilyWitness_and_faceRestrictionCompatibility`
   - `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_sectionFamilyWitness_and_faceRestrictionCompatibility`
@@ -26096,9 +26096,9 @@ new Cycle 19 theorem path:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -26136,7 +26136,7 @@ Minimum next obligations:
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SelectedSectionFamilyCarrierModel`
   - `SelectedSectionFamilyCarrierModel.c0SectionEquiv`
   - `SelectedSectionFamilyCarrierModel.c1SectionEquiv`
@@ -26232,9 +26232,9 @@ new Cycle 20 theorem path:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -26271,7 +26271,7 @@ Minimum next obligations:
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SelectedSectionFamilyCarrierModel.requires_degreewise_carrier_data_and_c2_zero_equivalence`
   - `SelectedSectionFamilyCarrierModel.requires_explicit_selected_carrier_source`
   - `SelectedSectionFamilyCarrierModel.of_carrierSpecificComparisonProvenance`
@@ -26361,9 +26361,9 @@ current downstream path:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -26413,7 +26413,7 @@ Minimum next obligations:
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeDirectDifferentialCompatibility`
   - `SemanticRepairCoverRelativeDirectDifferentialCompatibility.toFaceRestrictionCompatibility`
   - `SemanticRepairCoverRelativeFaceRestrictionCompatibility.toDirectDifferentialCompatibility`
@@ -26500,9 +26500,9 @@ current downstream path:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -26552,7 +26552,7 @@ Minimum next obligations:
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeSectionRealizationBridge.toSectionFamilyWitness`
   - `SemanticRepairCoverRelativeSectionRealizationBridge.toSelectedSectionFamilyCarrierModel`
   - `SemanticRepairCoverRelativeSectionRealizationBridge.toDirectDifferentialCompatibility`
@@ -26647,9 +26647,9 @@ remaining lower source:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -26698,7 +26698,7 @@ Minimum next obligations:
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCarrierSpecificComparisonProvenance.toSectionRealizationBridge`
   - `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_constructs_sectionRealizationBridge`
   - `SemanticRepairCarrierSpecificComparisonProvenance.sectionRealizationBridge_iff_carrierSpecificComparisonProvenance`
@@ -26801,9 +26801,9 @@ remaining lower source:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -26851,7 +26851,7 @@ target-boundary revision outside the loop.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairSelectedCarrierGeometry`
   - `SemanticRepairSelectedCechFaceLawSource`
   - `SemanticRepairCarrierSpecificComparisonProvenance.toSelectedCarrierGeometry`
@@ -26951,9 +26951,9 @@ remaining lower source:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -27001,7 +27001,7 @@ actual presheaf restriction / selected Cech face laws for that carrier geometry.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel`
   - `SemanticRepairSelectedCarrierGeometry.toSelectedSectionFamilyCarrierModel`
   - `SemanticRepairSelectedCarrierGeometry.selectedCarrierGeometry_iff_selectedSectionFamilyCarrierModel`
@@ -27101,9 +27101,9 @@ remaining lower sources:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -27153,7 +27153,7 @@ residual coefficient / cover-relative carrier data.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility`
   - `SemanticRepairSelectedCechFaceLawSource.selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_constructs_selectedCechFaceLawSource`
   - `SemanticRepairCarrierSpecificComparisonProvenance.grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_via_selectedCechFaceLaws`
@@ -27248,9 +27248,9 @@ remaining lower sources:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -27304,7 +27304,7 @@ residual coefficient / cover-relative carrier data.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
   - `SemanticRepairSelectedCechFaceLawSource.selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility_constructs_selectedCechFaceLawSource`
   - `SemanticRepairCarrierSpecificComparisonProvenance.grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility_via_selectedCechFaceLaws`
@@ -27407,9 +27407,9 @@ remaining lower sources:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -27464,7 +27464,7 @@ residual coefficient / cover-relative carrier data.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeDirectDifferentialCompatibility.requires_explicit_selected_differential_law_source`
 
 ### Result
@@ -27548,9 +27548,9 @@ remaining lower sources:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -27602,7 +27602,7 @@ selected semantic residual coefficient / cover-relative carrier data.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCarrierSpecificComparisonProvenance.current_g06_presheaf_laws_stop_before_selected_differential_source`
 
 ### Result
@@ -27684,9 +27684,9 @@ remaining lower sources:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -27740,7 +27740,7 @@ semantic residual coefficient / cover-relative carrier data.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.selectedSemanticDeltaPresheafRestriction_constructs_directDifferentialCompatibility`
 
 ### Result
@@ -27818,9 +27818,9 @@ remaining lower source:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -27873,7 +27873,7 @@ between cover-relative Cech `H1` and full sheaf cohomology.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
   - `SemanticRepairCoverRelativeCochainRealization.cochainRealization_iff_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
 
@@ -27964,9 +27964,9 @@ remaining lower sources:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -28017,7 +28017,7 @@ boundary between cover-relative Cech `H1` and full sheaf cohomology.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package`
 
 ### Result
@@ -28101,9 +28101,9 @@ combined:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -28162,7 +28162,7 @@ explicit boundary between cover-relative Cech `H1` and full sheaf cohomology.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
 
 ### Result
@@ -28240,9 +28240,9 @@ SemanticRepairCoverRelativeH1Comparison
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -28294,7 +28294,7 @@ full sheaf cohomology also remain explicit non-completion boundaries.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_carrierSpecificComparisonProvenance`
 
 ### Result
@@ -28370,9 +28370,9 @@ remaining lower split:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -28427,7 +28427,7 @@ General refinement/naturality and the boundary between cover-relative Cech
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_faceLaws`
 
 ### Result
@@ -28507,9 +28507,9 @@ remaining lower split:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -28561,7 +28561,7 @@ cohomology comparison remain outside the unconditional claim boundary.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility`
 
 ### Result
@@ -28653,9 +28653,9 @@ SelectedSectionFamilyCarrierModel
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -28709,7 +28709,7 @@ unconditional claim boundary.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence`
   - `SelectedSectionFamilyCarrierModel.degreewise_carrier_data_and_c2_zero_equivalence_constructs_selectedSectionFamilyCarrierModel`
   - `SelectedSectionFamilyCarrierModel.selectedSectionFamilyCarrierModel_iff_degreewise_carrier_data_and_c2_zero_equivalence`
@@ -28814,9 +28814,9 @@ finite carrier witness data
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -28873,7 +28873,7 @@ comparison remain outside the unconditional claim boundary.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations`
   - `SemanticRepairCoverRelativeFaceRestrictionCompatibility.faceRestrictionCompatibility_iff_explicit_face_restriction_equations`
   - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
@@ -28971,9 +28971,9 @@ finite carrier witness data
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -29030,7 +29030,7 @@ sheaf cohomology comparison remain outside the unconditional claim boundary.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_carrierSpecificComparisonProvenance_via_explicitFaceRestrictionEquations`
 
 ### T1 Selection
@@ -29111,9 +29111,9 @@ SemanticRepairCarrierSpecificComparisonProvenance
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -29170,7 +29170,7 @@ boundary.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCarrierSpecificComparisonProvenance.of_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
   - `SemanticRepairCarrierSpecificComparisonProvenance.degreewiseCarrierData_and_explicitFaceRestrictionEquations_constructs_carrierSpecificComparisonProvenance`
   - `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
@@ -29264,7 +29264,7 @@ finite carrier witness data
 
 ### Validation
 
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -29319,7 +29319,7 @@ cohomology comparison remain outside the unconditional claim boundary.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
   - `SemanticRepairCoverRelativeCochainRealization.cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
   - `SemanticRepairCoverRelativeCochainRealization.constructs_carrierSpecificComparisonProvenance_via_explicitLowerData`
@@ -29423,9 +29423,9 @@ cochain realization
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -29483,7 +29483,7 @@ outside the unconditional claim boundary.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_reduces_cochainRealization_to_explicitLowerData`
 
 ### T1 Selection
@@ -29600,9 +29600,9 @@ explicit lower data
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -29661,7 +29661,7 @@ inside the current G-06 input vocabulary.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_cochainRealization_iff_selectedCarrierGeometry_and_faceLawSource`
 
 ### T1 Selection
@@ -29777,9 +29777,9 @@ selected carrier geometry + selected Cech face laws
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -29832,7 +29832,7 @@ presheaf-restriction source, or to fix a sharper non-derivability boundary.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairSelectedCechFaceLawSource.requires_explicit_selected_face_restriction_equations`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCarrierGeometry_and_faceLawSource_requires_explicit_lower_sources`
 
@@ -29962,9 +29962,9 @@ current surface + selected carrier geometry + selected face laws
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -30019,7 +30019,7 @@ checkpoint as completion.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource`
 
 ### T1 Selection
@@ -30149,9 +30149,9 @@ current surface + explicit finite witness
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -30206,7 +30206,7 @@ non-derivability boundary explicitly.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources`
 
 ### T1 Selection
@@ -30326,9 +30326,9 @@ current surface + explicit finite witness
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -30389,7 +30389,7 @@ completion.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
 
 ### T1 Selection
@@ -30495,9 +30495,9 @@ selected K.Cn 0 ≃+ ZMod 2
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -30553,7 +30553,7 @@ current-surface-only theorem.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCochainRealization_constructs_degreewiseCarrierData_and_selectedCarrierGeometry_and_faceLawSource`
 
 ### T1 Selection
@@ -30659,9 +30659,9 @@ CurrentG06InputSurface + DegreewiseCarrierDataAndExplicitFaceRestrictionEquation
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -30717,7 +30717,7 @@ target proof packet.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCarrierModel_and_directDifferentialCompatibility_constructs_selectedCochainRealization_and_groundingSources`
 
 ### T1 Selection
@@ -30828,9 +30828,9 @@ constructed SemanticRepairCoverRelativeCochainRealization
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -30887,7 +30887,7 @@ presheaf-restriction sources.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_degreewiseCarrierData_and_directDifferentialLaws_constructs_pairedLowerSource_and_groundingSources`
 
 ### T1 Selection
@@ -31000,9 +31000,9 @@ constructed SemanticRepairCoverRelativeCochainRealization
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -31157,9 +31157,9 @@ extracted carrier data + extracted direct laws
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -31308,9 +31308,9 @@ constructed SemanticRepairCarrierSpecificComparisonProvenance
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -31460,9 +31460,9 @@ constructed SemanticRepairCoverRelativeCochainRealization
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -31606,9 +31606,9 @@ displayed degreewise carrier data
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -31771,9 +31771,9 @@ DegreewiseCarrierDataAndDirectDifferentialLaws
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -31917,9 +31917,9 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -32047,9 +32047,9 @@ surface-only constructor:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -32191,9 +32191,9 @@ surface-only carrier-model constructor
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -32322,9 +32322,9 @@ surface-only explicit carrier-source constructor
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -32466,9 +32466,9 @@ surface-only selected-carrier-geometry constructor
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -32786,9 +32786,9 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before report update; rerun after final diff
@@ -32943,9 +32943,9 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before report update and will be rerun after the
@@ -33112,11 +33112,11 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed after the final report edit.
@@ -33257,11 +33257,11 @@ SelectedSectionFamilyCarrierModel
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed after the final report edit.
@@ -33408,11 +33408,11 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed after the final report edit.
@@ -33556,11 +33556,11 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before and after report edit.
@@ -33695,11 +33695,11 @@ CurrentG06InputSurface -> Nonempty selected cochain realization
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before report edit.
@@ -33833,11 +33833,11 @@ SemanticRepairCarrierSpecificComparisonProvenance
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before report edit.
@@ -33975,11 +33975,11 @@ four direct selected K.d laws
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before report edit.
@@ -34114,11 +34114,11 @@ SemanticRepairCarrierSpecificComparisonProvenance
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before report edit.
@@ -34259,11 +34259,11 @@ DegreewiseCarrierDataAndDirectDifferentialLaws
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before report edit.
@@ -34397,9 +34397,9 @@ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed after report edit.
@@ -34539,9 +34539,9 @@ SemanticRepairSelectedCarrierGeometry
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed after report edit.
@@ -34693,9 +34693,9 @@ SelectedSectionFamilyCarrierModel
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed after report edit.
@@ -34845,9 +34845,9 @@ SelectedSectionFamilyCarrierModel
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before report edit.
@@ -35023,9 +35023,9 @@ SelectedSectionFamilyCarrierModel
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed for the current Lean/report diff.
@@ -35176,9 +35176,9 @@ degree-wise additive equivalences + degree-2 zero laws
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before report edit.
@@ -35348,9 +35348,9 @@ selected carrier geometry
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -35546,9 +35546,9 @@ selected carrier geometry
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -35745,9 +35745,9 @@ face-restriction realization
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -35948,11 +35948,11 @@ selected Cech face-law source
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -36130,11 +36130,11 @@ Cycle 83 package
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -36311,11 +36311,11 @@ Cycle 84 package
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed.
@@ -36496,11 +36496,11 @@ Cycle 85 package
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed before T3 audit.
@@ -36673,11 +36673,11 @@ Cycle 86 package
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — passed during T3 audit.
@@ -36858,11 +36858,11 @@ Cycle 87 package
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — pending final pre-PR run.
@@ -37054,12 +37054,12 @@ Cycle 88 package
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - `lake env lean .tmp/G06Cycle89AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — clean.
@@ -37246,12 +37246,12 @@ Cycle 89 package
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - `lake env lean .tmp/G06Cycle90AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — clean.
@@ -37452,12 +37452,12 @@ Cycle 89 package
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - `lake env lean .tmp/G06Cycle91AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — clean.
@@ -37658,12 +37658,12 @@ Cycle 89 package
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - `lake env lean .tmp/G06Cycle92AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — clean.
@@ -37847,12 +37847,12 @@ cover membership + AATSheafCondition
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - `lake env lean .tmp/G06Cycle93AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — clean.
@@ -38044,12 +38044,12 @@ cover membership + AATSheafCondition
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - `lake env lean .tmp/G06Cycle94AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — clean.
@@ -38238,12 +38238,12 @@ cover membership + AATSheafCondition
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - `lake env lean .tmp/G06Cycle95AxiomAudit.lean` — passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `git diff --check` — clean.
@@ -38414,11 +38414,11 @@ cover membership + AATSheafCondition
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
-- `lake build ResearchLean` — passed.
+- `Research package build` — passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle96AxiomAudit.lean` — passed.
@@ -38588,9 +38588,9 @@ cover membership + AATSheafCondition
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -38751,9 +38751,9 @@ cover membership + AATSheafCondition
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -38902,9 +38902,9 @@ finite boundary: semantic C0 ~= PUnit and selected Cech C0 ~= ZMod 2
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -39058,9 +39058,9 @@ coarse residual = coarse zero
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -39215,9 +39215,9 @@ SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -39368,9 +39368,9 @@ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -39528,9 +39528,9 @@ SemanticRepairCoverRelativeFaceRestrictionRealization
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -39688,9 +39688,9 @@ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -39839,9 +39839,9 @@ gluingData
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -39975,9 +39975,9 @@ gluingData
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -40133,9 +40133,9 @@ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -40284,9 +40284,9 @@ gluingData
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -40440,9 +40440,9 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -40585,9 +40585,9 @@ CurrentG06InputSurface + supplied AATGluingData
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding` —
   passed.
 - full `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -40827,7 +40827,7 @@ G-06 can be completed.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_constructs_faceRestrictionRealization_boundary_packet`
 
 ### Proof-Obligation Delta
@@ -40895,9 +40895,9 @@ no_uniform_carrier_specific_additive_comparison_from_bare_groups
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -40989,7 +40989,7 @@ surface data.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_currentG06InputSurface_and_presheafRestriction_and_selectedCechFaceIdentity_without_carrierSpecificComparisonProvenance`
 
 ### Proof-Obligation Delta
@@ -41055,9 +41055,9 @@ PUnit / ZMod 2 finite carrier test
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -41154,7 +41154,7 @@ such carrier comparison and face-law data as ambient selected input.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_carrierSpecificComparisonProvenance_iff_selectedCarrierModel_and_faceRestrictionCompatibility`
   - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCarrierModel_and_faceRestrictionCompatibility_iff_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
 
@@ -41225,9 +41225,9 @@ exact remaining source =
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -41387,9 +41387,9 @@ Finite witness boundary:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -41531,9 +41531,9 @@ this would force PUnit ≃+ ZMod 2 and hence (0 : ZMod 2) = 1.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -41681,9 +41681,9 @@ degree-2 zero laws, and four selected face equations.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   — passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   — passed.
 - `lake build` — passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -41828,9 +41828,9 @@ No-uniform carrier/equivalence blockers remain visible.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build` - passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -41972,9 +41972,9 @@ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build` - passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -42118,9 +42118,9 @@ AATCoverageFamily
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build` - passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -42272,9 +42272,9 @@ AATCoverageFamily
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build` - passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -42423,9 +42423,9 @@ AATCoverageFamily
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build` - passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -42566,9 +42566,9 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build` - passed, with pre-existing replayed linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
@@ -42717,9 +42717,9 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle124AxiomAudit.lean` - passed.
 - `lake build` - passed, with pre-existing replayed linter warnings in
@@ -42866,9 +42866,9 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle125AxiomAudit.lean` - passed.
 - `lake build` - passed, with pre-existing replayed linter warnings in
@@ -43019,9 +43019,9 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle126AxiomAudit.lean` - passed.
 - `lake build` - passed, with pre-existing replayed linter warnings in
@@ -43160,9 +43160,9 @@ facts, or from a certificate field.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle127AxiomAudit.lean` - passed.
 - target declaration axiom audit:
@@ -43317,9 +43317,9 @@ semantic repair facts, or from a certificate field.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle128AxiomAudit.lean` - passed.
 - target declaration axiom audit:
@@ -43469,9 +43469,9 @@ conclusion-side semantic repair facts, or from a certificate field.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle129AxiomAudit.lean` - passed.
 - target declaration axiom audit:
@@ -43623,9 +43623,9 @@ certificate field.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle130AxiomAudit.lean` - passed.
 - target declaration axiom audit:
@@ -43769,9 +43769,9 @@ certificate field.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle131AxiomAudit.lean` - passed.
 - target declaration axiom audit:
@@ -43914,9 +43914,9 @@ certificate field.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle132AxiomAudit.lean` - passed.
 - target declaration axiom audit:
@@ -44057,9 +44057,9 @@ certificate field.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake env lean .tmp/G06Cycle133AxiomAudit.lean` - passed.
 - target declaration axiom audit:
@@ -44308,9 +44308,9 @@ accepted current/conclusion-side boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed an unrelated existing linter warning in
@@ -44324,7 +44324,7 @@ accepted current/conclusion-side boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -44422,9 +44422,9 @@ accepted current/conclusion-side boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed an unrelated existing linter warning in
@@ -44438,7 +44438,7 @@ accepted current/conclusion-side boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -44547,9 +44547,9 @@ accepted current/conclusion-side boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed an unrelated existing linter warning in
@@ -44563,7 +44563,7 @@ accepted current/conclusion-side boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -44672,9 +44672,9 @@ accepted current/conclusion-side boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - target declaration axiom audit:
   - `#print axioms ...no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_faceRestrictionRealization`
@@ -44688,7 +44688,7 @@ accepted current/conclusion-side boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -44802,9 +44802,9 @@ accepted current/conclusion-side boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -44818,7 +44818,7 @@ accepted current/conclusion-side boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -44929,9 +44929,9 @@ accepted current/conclusion-side boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -44945,7 +44945,7 @@ accepted current/conclusion-side boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -45058,9 +45058,9 @@ accepted current/conclusion-side boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -45074,7 +45074,7 @@ accepted current/conclusion-side boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -45187,9 +45187,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -45203,7 +45203,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -45312,9 +45312,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -45328,7 +45328,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -45439,9 +45439,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -45455,7 +45455,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -45561,9 +45561,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -45577,7 +45577,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -45678,9 +45678,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -45694,7 +45694,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -45798,9 +45798,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -45814,7 +45814,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -45916,9 +45916,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -45932,7 +45932,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -46036,9 +46036,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -46052,7 +46052,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -46156,9 +46156,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -46172,7 +46172,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -46276,9 +46276,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -46292,7 +46292,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -46396,9 +46396,9 @@ accepted atom-supported current boundary
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -46412,7 +46412,7 @@ accepted atom-supported current boundary
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -46529,9 +46529,9 @@ therefore:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -46545,7 +46545,7 @@ therefore:
 - hidden / bidirectional Unicode scan over the changed Lean/report targets
   - clean.
 - placeholder scan over
-  `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+  `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - clean for `axiom`, `admit`, `sorry`, `unsafe`.
 
 ### Anti-Weakening Audit
@@ -46653,9 +46653,9 @@ CurrentG06InputSurface
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -46774,9 +46774,9 @@ therefore:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -46897,9 +46897,9 @@ hypothetical conclusion-side bare comparison package constructor
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   - passed.
 - `lake build`
   - passed.  Lake replayed unrelated existing linter warnings in
@@ -47403,7 +47403,7 @@ as `target-theorem-proved`.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `SelectedSemanticCoefficientDirectRealizationLayer`
   - `selectedSemanticCoefficientDirectRealizationLayer_to_atomSupportedDirectSource`
   - `selectedSemanticCoefficientDirectRealizationLayer_constructs_groundedRoute`
@@ -47452,7 +47452,7 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed locally.
 
 ## Cycle 158 — selected semantic coefficient layer current-boundary no-go
@@ -47478,7 +47478,7 @@ cannot uniformly construct that layer.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `AtomSupportedCurrentBoundarySelectedSemanticCoefficientLayerConstructor`
   - `no_constructor_from_atomSupportedCurrentG06Boundary_without_selectedSemanticCoefficientDirectRealizationLayer`
 
@@ -47567,11 +47567,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed; Lake replayed existing unrelated linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle158AxiomAudit.lean` passed.
@@ -47619,7 +47619,7 @@ equivalent to constructing the atom-supported direct lower source.
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   - `selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirectSource`
 
 ### Proof-Obligation Delta
@@ -47690,11 +47690,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed; Lake replayed existing unrelated linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle159AxiomAudit.lean` passed.
@@ -47865,7 +47865,7 @@ fixes two Lean-level route facts around the blocker:
 
 ### Lean Artifacts
 
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
 - `SemanticRepairCoverRelativeCochainRealization.atomSupportedSelectedCochainRealization_constructs_selectedSemanticCoefficientDirectRealizationLayer`
 - `SemanticRepairCoverRelativeCochainRealization.atomSupportedCurrentBoundary_selectedSemanticCoefficientLayer_checkpoint`
 
@@ -47941,11 +47941,11 @@ Remaining:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake env lean .tmp/G06Cycle161AxiomAudit.lean` passed.
   - `atomSupportedSelectedCochainRealization_constructs_selectedSemanticCoefficientDirectRealizationLayer`:
     `[propext, Classical.choice, Quot.sound]`
@@ -48266,7 +48266,7 @@ T3 audit approved Cycle 163 as `blocker-fixed`:
 ### Validation
 
 - No Lean files changed in Cycle 163.
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed in T3 audit.
 - T3 axiom audit for referenced declarations reported only expected standard
   axioms:
@@ -48446,15 +48446,15 @@ T3 audit approved Cycle 164 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
 - Axiom audit for the new declaration reported only expected standard axioms:
   `[propext, Classical.choice, Quot.sound]`.
 - placeholder scan over the target Lean file was clean for `axiom`, `admit`,
   `sorry`, `unsafe`, and `sorryAx`.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - Hidden / bidirectional Unicode scan over changed Lean/report files was clean.
 - Absolute local path / private machine identifier scan over changed Lean/report
   files was clean.
@@ -48629,11 +48629,11 @@ T3 audit approved Cycle 165 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - Axiom audit for the new declaration reported only expected standard axioms:
@@ -48813,11 +48813,11 @@ T3 audit approved Cycle 166 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - Axiom audit for the new declaration reported only expected standard axioms:
@@ -48979,11 +48979,11 @@ T3 audit approved Cycle 167 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle167AxiomAudit.lean` passed.
@@ -49168,11 +49168,11 @@ T3 audit approved Cycle 168 as `blocker-fixed`:
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle168AxiomAudit.lean` passed.
@@ -49315,11 +49315,11 @@ from indexed semantic atom/law provenance.
 
 ### Validation
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticRepairCechGrounding.lean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`
   passed.
-- `lake build ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairCechGrounding`
   passed.
-- `lake build ResearchLean` passed.
+- `Research package build` passed.
 - `lake build` passed with pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/G06Cycle169AxiomAudit.lean` passed.

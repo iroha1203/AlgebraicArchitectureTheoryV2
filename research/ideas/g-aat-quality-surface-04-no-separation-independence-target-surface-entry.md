@@ -20,7 +20,7 @@ origin: G-04-Cycle52
 tags: [target-theorem, finite-query, no-separation, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 52
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationIndependence.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationIndependence.lean
 ---
 
 # No-Separation Independence for Target-Surface Entry
@@ -101,8 +101,8 @@ Bool constant post-map はどの realized readings でも output が同じなの
 
 - `research/ideas/g-aat-quality-surface-04-post-fiber-separation-coordinate-certificate-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-coordinate-certificate-independence-target-surface-entry.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateIndependence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateIndependence.lean`
 
 ## 進捗ログ
 

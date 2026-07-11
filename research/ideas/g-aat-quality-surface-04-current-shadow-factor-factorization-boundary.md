@@ -20,7 +20,7 @@ origin: G-04-Cycle59
 tags: [target-theorem, finite-query, current-shadow-factorization, target-surface, universal-factorization]
 created: 2026-06-25
 cycle: 59
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorFactorizationBoundary.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorFactorizationBoundary.lean
 ---
 
 # Raw Current-Shadow Factor Target-Surface Route
@@ -99,8 +99,8 @@ route package は Cycle58 の exact boundary と、各 face から target-surfac
 
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-entry-factorization-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryFactorizationBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryFactorizationBoundary.lean`
 
 ## 進捗ログ
 

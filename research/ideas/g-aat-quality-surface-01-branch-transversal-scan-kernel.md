@@ -12,7 +12,7 @@ origin: G1-cycle72
 tags: [quality-surface, computability, branch-transversal, residual, repair]
 created: 2026-06-21
 cycle: 72
-lean: research/lean/ResearchLean/QualitySurface/BranchTransversalScanKernel.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/BranchTransversalScanKernel.lean
 genius_potential: no
 genius_target: none
 genius_support_role: none
@@ -50,8 +50,8 @@ global sheaf completeness, or whole-codebase quality.
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/CurvatureBasisExchange.lean`
-- `research/lean/ResearchLean/QualitySurface/NaiveRefinementSupportCounterexample.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/CurvatureBasisExchange.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/NaiveRefinementSupportCounterexample.lean`
 - Cycle 70 path-indexed curvature basis exchange.
 - Cycle 71 selected branch-reflection failure for naive refinement readings.
 
@@ -99,7 +99,7 @@ Lean-checkable.
 
 - `score_reason`: computability result that converts Cycle 70/71 projection-loss and branch-reflection failures into a residual-producing finite kernel.  G2 strictness reduced the base from 88 to 80 because the repo already has generic ordered scan machinery; the score is carried by the branch-specific selector enumeration, concrete residual, deletion/restoration, and visible-equivalent kernel pair.
 - `dullness_risk`: real.  If the evidence only restates `ExchangeBranchRepairTransversal` or merely ports the earlier route-slot scan API, the score should drop.  The Lean proof must include selector-code enumeration, an `Option` first-missed selector, a concrete trace-only residual, deletion/restoration, and a visible-equivalent kernel pair whose residual behavior differs.
-- `proof_or_evidence_plan`: completed in `research/lean/ResearchLean/QualitySurface/BranchTransversalScanKernel.lean`.
+- `proof_or_evidence_plan`: completed in `research/lean/ResearchLean/AG/QualitySurface/BranchTransversalScanKernel.lean`.
 
 ## CS / SWE への帰結
 
@@ -151,8 +151,8 @@ Lean proves:
 
 Local checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/BranchTransversalScanKernel.lean`: pass.
-- `lake build ResearchLean`: pass.
+- `focused Lean check: ResearchLean/AG/QualitySurface/BranchTransversalScanKernel.lean`: pass.
+- `Research package build`: pass.
 - `lake build`: pass, with only the pre-existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warnings.
 - `#print axioms`: selector type, branch interpretation, selected order, hit predicates, both scan functions, and concrete residual predicate are axiom-free.  Selector enumeration, list membership / none-iff proofs, trace-only concrete scan result, deletion/restoration, visible-equivalent kernel pair, nonfaithfulness, and the package use only standard `propext`.  No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported.
 

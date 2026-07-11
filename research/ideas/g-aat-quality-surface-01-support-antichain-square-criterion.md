@@ -37,8 +37,8 @@ source extraction completeness、ArchMap correctness、全 repair semantics は�
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/ProfileCurvature.lean`
-- `research/lean/ResearchLean/QualitySurface/FiniteSquareCriterion.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ProfileCurvature.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean`
 - `supportFamily_path_ne`
 - `repairHittingNumber_path_ne`
 - `finiteSquare_curvature_of_visible_agreement_protected_discrepancy`
@@ -74,7 +74,7 @@ requirement を復元できないことを、trace-missing とは別の repair-p
 
 ## 証明・根拠の見込み
 
-Lean proof は `research/lean/ResearchLean/QualitySurface/SupportAntichainSquareCriterion.lean` に閉じる。
+Lean proof は `research/lean/ResearchLean/AG/QualitySurface/SupportAntichainSquareCriterion.lean` に閉じる。
 
 主要 theorem:
 
@@ -113,6 +113,6 @@ Lean proof は `research/lean/ResearchLean/QualitySurface/SupportAntichainSquare
 
 - 2026-06-20: Cycle 15 candidate picked.
 - 2026-06-20: `SupportAntichainSquareCriterion.lean` added.
-- 2026-06-20: `lake env lean research/lean/ResearchLean/QualitySurface/SupportAntichainSquareCriterion.lean` pass.
-- 2026-06-20: `lake build ResearchLean` pass.
+- 2026-06-20: `focused Lean check: ResearchLean/AG/QualitySurface/SupportAntichainSquareCriterion.lean` pass.
+- 2026-06-20: `Research package build` pass.
 - 2026-06-20: `lake env lean .tmp/support_antichain_square_axioms.lean` pass; reported theorem package is axiom-free.

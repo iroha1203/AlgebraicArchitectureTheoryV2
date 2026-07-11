@@ -20,7 +20,7 @@ origin: T1-cycle44
 tags: [target-theorem-loop, G-04, finite-query-representation, anti-weakening]
 created: 2026-06-25
 cycle: 44
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean
 ---
 
 # Explicit Current-Shadow Coordinate Certificates

@@ -43,10 +43,10 @@ quality.
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean`
-- `research/lean/ResearchLean/QualitySurface/SourceRefHandoffObstructionLocus.lean`
-- `research/lean/ResearchLean/QualitySurface/SourceRefHandoffComponentSupport.lean`
-- `research/lean/ResearchLean/QualitySurface/HandoffRepairTransversal.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffHolonomyCorrespondence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffObstructionLocus.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffComponentSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/HandoffRepairTransversal.lean`
 - Cycle 60-64 の handoff atlas、obstruction locus、component support、repair transversal 系列。
 
 ## 非自明性
@@ -133,7 +133,7 @@ Actual Lean evidence stage: `proved-in-research`.
 
 Implemented in:
 
-- `research/lean/ResearchLean/QualitySurface/HandoffCechExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/HandoffCechExactness.lean`
 - aggregate import: `research/lean/ResearchLean.lean`
 
 Implemented Lean declarations:
@@ -161,9 +161,9 @@ Implemented Lean declarations:
 
 Build evidence:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/HandoffCechExactness.lean`: pass
-- `lake env lean research/lean/ResearchLean.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/HandoffCechExactness.lean`: pass
+- `focused Lean check: ResearchLean.lean`: pass
+- `Research package build`: pass
 - target scan for `axiom|admit|sorry|unsafe`: no matches
 - `#print axioms`: core definitions, overlap support definitions, repair
   obligation definitions, repair equivalence, and `locallyExactOverlapObstructedCover`

@@ -12,7 +12,7 @@ origin: G1-cycle70
 tags: [quality-surface, cech, basis-exchange, repair-refinement, branch-transversal]
 created: 2026-06-21
 cycle: 70
-lean: research/lean/ResearchLean/QualitySurface/CurvatureBasisExchange.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/CurvatureBasisExchange.lean
 genius_potential: no
 genius_target: none
 genius_support_role: none
@@ -51,9 +51,9 @@ one path-indexed basis-exchange calculus.
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/RepairTransportCechCommutatorCurvature.lean`
-- `research/lean/ResearchLean/QualitySurface/RepairBasinExchangeObstruction.lean`
-- `research/lean/ResearchLean/QualitySurface/AntichainOverlapBasisTransversal.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/RepairTransportCechCommutatorCurvature.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/RepairBasinExchangeObstruction.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/AntichainOverlapBasisTransversal.lean`
 - Cycle 67 selected repair/transport Cech commutator curvature.
 - Cycle 68 selected repair-basin exchange obstruction.
 - Cycle 69 antichain Cech overlap basis and transversal exactness.
@@ -95,7 +95,7 @@ Lean-checkable.
 
 - `score_reason`: the Lean theorem package unifies the last three Cech/repair cycles and directly addresses curvature basis exchange, while staying inside the selected finite boundary.
 - `dullness_risk`: controlled.  The Lean statements keep `ExchangeSide × BridgeComponent` in the protected branch type, prove common clearance iff exchange-branch hitting, and prove visible-union nonfaithfulness.
-- `proof_or_evidence_plan`: completed in `research/lean/ResearchLean/QualitySurface/CurvatureBasisExchange.lean`.
+- `proof_or_evidence_plan`: completed in `research/lean/ResearchLean/AG/QualitySurface/CurvatureBasisExchange.lean`.
 
 ## Lean evidence
 
@@ -121,8 +121,8 @@ Lean proves:
 
 Local checks:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/CurvatureBasisExchange.lean`: pass.
-- `lake build ResearchLean`: pass.
+- `focused Lean check: ResearchLean/AG/QualitySurface/CurvatureBasisExchange.lean`: pass.
+- `Research package build`: pass.
 - `#print axioms`: `selectedBasisExchangeFamily_sideGrounded`, `selected_collapsed_same_visibleUnion`, `traceOnly_hits_collapsedVisibleExchange`, `traceOnly_misses_refinedRepairFrontierExchangeBranch`, `traceOnly_refinedRepairFrontierExchange_residual`, `traceOnly_not_hits_selectedBasisExchange`, and `sameVisibleUnion_not_faithful_to_basisExchange` are axiom-free.  Cech grounding, common-clearance, trace-only common-clearance failure, and the package use only standard `propext` inherited from existing Cech predicate-equality evidence.  No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported in the new core evidence.
 
 ## 可視 projection

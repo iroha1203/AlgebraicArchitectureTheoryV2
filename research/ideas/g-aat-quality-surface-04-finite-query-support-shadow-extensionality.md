@@ -20,7 +20,7 @@ origin: G-04 Cycle 21
 tags: [target-theorem, target-support, finite-shadow, trace-support, extensionality]
 created: 2026-06-25
 cycle: 21
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryExtensionality.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryExtensionality.lean
 ---
 
 # Finite Query Support-Shadow Extensionality

@@ -12,7 +12,7 @@ origin: cycle-62
 tags: [quality-surface, repair, transport, source-ref, handoff, obstruction]
 created: 2026-06-21
 cycle: 62
-lean: research/lean/ResearchLean/QualitySurface/RepairTransportHandoffObstructionBridge.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/RepairTransportHandoffObstructionBridge.lean
 ---
 
 # Repair/transport commutator bridge for handoff obstruction loci
@@ -92,7 +92,7 @@ visible mismatch だけでなく protected handoff obstruction を保持すべ�
 
 ## 証明・根拠計画
 
-Lean file: `research/lean/ResearchLean/QualitySurface/RepairTransportHandoffObstructionBridge.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/RepairTransportHandoffObstructionBridge.lean`
 
 証明済み declaration:
 

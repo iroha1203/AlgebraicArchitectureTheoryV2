@@ -51,10 +51,8 @@ rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal docs
 # privacy / local-path(public / release surface と changed files。
 # スキル・設計 docs 自身が定義・引用する検査パターン文字列は文脈で除外してよい)
 rg -n "(\/Users\/|\/home\/|C:\\\\Users\\\\|Documents\/|HelloLean|private\/internal|\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>
-# Research import方向(本体から Formal.AG.Research への import 禁止。
-# Research 集約ルート Formal/AG/Research.lean 自身の内部 import は正当なので除外)
-rg -n "import Formal\.AG\.Research" Formal Formal.lean \
-  --glob '!Formal/AG/Research/**' --glob '!Formal/AG/Research.lean'
+# Research import方向(本体から ResearchLean.AG への import 禁止。)
+rg -n "import ResearchLean\.AG" Formal Formal.lean
 ```
 
 Research import方向scanの判定規則: ヒットが**差分で新規に追加された行**なら

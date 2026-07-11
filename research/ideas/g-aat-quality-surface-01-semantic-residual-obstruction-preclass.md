@@ -65,7 +65,7 @@ dashboard や AI summary は suspected failure を説明できる。
 
 - `score_reason`: Cycle 89/90 の cut/scanner artifacts を、order-independent residual obstruction support predicate と vanishing/nonzero criterion へ上げる。open genius target への support node だが、cohomology class までは未到達。
 - `dullness_risk`: support exactness だけなら name change になる。vanishing iff no cut、nonzero iff cut、nonzero obstruction、scanner measurement、selected nonzero witness を揃えて thin wrapper ではない形にする。
-- `proof_or_evidence_plan`: `research/lean/ResearchLean/QualitySurface/SemanticResidualObstructionPreclass.lean` で preclass structure、canonical preclass、vanishing/nonzero criteria、scanner measurement、selected nonzero package を証明する。
+- `proof_or_evidence_plan`: `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObstructionPreclass.lean` で preclass structure、canonical preclass、vanishing/nonzero criteria、scanner measurement、selected nonzero package を証明する。
 
 ## CS / SWE への帰結
 
@@ -74,7 +74,7 @@ nonzero support は transition closure / transition-coherent data の no-go cert
 
 ## 証明・根拠の見込み
 
-Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualObstructionPreclass.lean` に固定した。
+Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualObstructionPreclass.lean` に固定した。
 
 - `ResidualObstructionOnePreclass`
 - `residualObstructionOnePreclass`
@@ -100,9 +100,9 @@ Lean 証拠は `research/lean/ResearchLean/QualitySurface/SemanticResidualObstru
 
 G3 初期実績:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/SemanticResidualObstructionPreclass.lean`: pass。
-- `lake build ResearchLean.AG.QualitySurface.SemanticResidualObstructionPreclass`: pass。
-- `lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualObstructionPreclass.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualObstructionPreclass`: pass。
+- `Research package build`: pass。
 - `#print axioms`: `residualObstructionOnePreclass_vanishes_iff_no_cut`、`residualObstructionOnePreclass_nonzero_iff_cut`、`sameResidualObstructionSupport_preserves_vanishes`、`sameResidualObstructionSupport_preserves_nonzero` は axiom-free。scanner bridge は標準 `propext` のみ。selected nonzero witness と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 - G3 形式化品質監査: pass。preclass は H^1/cohomology/coboundary ではなく support predicate criterion に留まり、`vanishing -> closure` は主張しない。support exactness、same-support preservation、scanner measurement、selected concrete support witness は Lean とカードで一致している。
 - G3.5 初回 revise 解決: candidate card に Lean 形式化品質監査要約と unresolved/unchecked boundary を追記した。aggregate import、declaration list、axiom summary は同期済み。

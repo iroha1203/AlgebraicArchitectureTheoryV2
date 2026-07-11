@@ -20,7 +20,7 @@ origin: G-04-Cycle57
 tags: [target-theorem, finite-query, target-surface-entry, universal-factorization, anti-weakening]
 created: 2026-06-25
 cycle: 57
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryFactorizationBoundary.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryFactorizationBoundary.lean
 ---
 
 # Represented Entry Target-Surface Factorization Boundary
@@ -102,8 +102,8 @@ certificate それぞれの既存 factorization theorem を束ねる。
 
 - `research/ideas/g-aat-quality-surface-04-entry-exactness-boundary.md`
 - `research/ideas/g-aat-quality-surface-04-coordinate-certificate-target-surface-entry-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryExactnessBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceAdmissibilityBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceEntryExactnessBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceAdmissibilityBoundary.lean`
 
 ## 進捗ログ
 

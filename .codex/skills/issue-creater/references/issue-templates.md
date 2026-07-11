@@ -28,7 +28,7 @@ source of truth:
 
 ```markdown
 移植元 theorem:
-- <declaration名> (`Formal/AG/Research/...`)
+- <declaration名> (`research/lean/ResearchLean/...`)
 
 移植元 conjuncts:
 - <移植元statementの結論一覧>

@@ -27,8 +27,8 @@ lean: proved-in-research
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/MultiRouteCorrectionSystem.lean`
-- `research/lean/ResearchLean/QualitySurface/SelectedRouteFamilyExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/MultiRouteCorrectionSystem.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteFamilyExactness.lean`
 
 ## 非自明性
 
@@ -58,7 +58,7 @@ route family repair status は、per-route green check の一覧ではなく、�
 
 ## 証明・根拠
 
-Lean file: `research/lean/ResearchLean/QualitySurface/FiniteRouteFamilyExactLocus.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/FiniteRouteFamilyExactLocus.lean`
 
 Proved declarations:
 
@@ -91,8 +91,8 @@ Boundary:
 
 ## Verification
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/FiniteRouteFamilyExactLocus.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/FiniteRouteFamilyExactLocus.lean`: pass
+- `Research package build`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/finite_route_family_exact_locus_axioms.lean`: pass
   - axiom-free: `mixedRouteSlotAssignment_secondary_fails`

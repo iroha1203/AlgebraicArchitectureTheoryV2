@@ -27,8 +27,8 @@ lean: proved-in-research
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/FailingSlotCertificate.lean`
-- `research/lean/ResearchLean/QualitySurface/FiniteRouteFamilyExactLocus.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/FailingSlotCertificate.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/FiniteRouteFamilyExactLocus.lean`
 
 ## 非自明性
 
@@ -58,7 +58,7 @@ route family repair status は、ArchMap / observation layer などが supplied 
 
 ## 証明・根拠
 
-Lean file: `research/lean/ResearchLean/QualitySurface/FiniteRouteScan.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/FiniteRouteScan.lean`
 
 Proved declarations:
 
@@ -90,8 +90,8 @@ Boundary:
 
 ## Verification
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/FiniteRouteScan.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/FiniteRouteScan.lean`: pass
+- `Research package build`: pass
 - `lake build`: pass, with the pre-existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning only
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting in the Lean file: pass
 - hidden / bidirectional Unicode scan and private/local path scan: pass

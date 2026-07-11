@@ -20,7 +20,7 @@ origin: G-04-Cycle70
 tags: [target-theorem, finite-query, support-shadow, current-shadow-reading, faithfulness, coordinate-certificate, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 70
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessCertificateRoute.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessCertificateRoute.lean
 ---
 
 # Support-Shadow Faithfulness / Coordinate Certificate Target Route
@@ -98,8 +98,8 @@ tooling は current-shadow reading faithfulness claim を coordinate certificate
 - `research/ideas/g-aat-quality-surface-04-support-faithfulness-target-route.md`
 - `research/ideas/g-aat-quality-surface-04-support-faithfulness-independence.md`
 - `research/ideas/g-aat-quality-surface-04-support-shadow-certificate-route.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateRoute.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateRoute.lean`
 
 ## 進捗ログ
 

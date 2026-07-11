@@ -20,7 +20,7 @@ origin: G-04-Cycle63
 tags: [target-theorem, finite-query, support-shadow, recovery, current-shadow-factorization, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 63
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute.lean
 ---
 
 # Support-Shadow Recovery Target-Surface Route
@@ -95,8 +95,8 @@ current factorization route theorem で target-surface universal factorization �
 
 - `research/ideas/g-aat-quality-surface-04-support-shadow-recovery.md`
 - `research/ideas/g-aat-quality-surface-04-current-shadow-factor-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoveredFactorization.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoveredFactorization.lean`
 
 ## 進捗ログ
 

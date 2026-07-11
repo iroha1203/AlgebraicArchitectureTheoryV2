@@ -27,11 +27,11 @@ selected repair/transport commutator witnesses を loss-aware atlas としてま
 
 ## 依拠
 
-- `research/lean/ResearchLean/QualitySurface/ExactVisualizationCriterionMinimality.lean`
-- `research/lean/ResearchLean/QualitySurface/VisibleLawDeletionProtectedZero.lean`
-- `research/lean/ResearchLean/QualitySurface/SelectedRouteDefectSupportHitting.lean`
-- `research/lean/ResearchLean/QualitySurface/SelectedRouteCorrectionExactness.lean`
-- `research/lean/ResearchLean/QualitySurface/RouteDefectSupport.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/ExactVisualizationCriterionMinimality.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/VisibleLawDeletionProtectedZero.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteDefectSupportHitting.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SelectedRouteCorrectionExactness.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`
 
 ## 非自明性
 
@@ -61,7 +61,7 @@ loss-aware view は mismatch を一つの赤信号として表示するだけで
 
 ## 証明・根拠の見込み
 
-Lean file: `research/lean/ResearchLean/QualitySurface/LossAwareCommutatorAtlas.lean`
+Lean file: `research/lean/ResearchLean/AG/QualitySurface/LossAwareCommutatorAtlas.lean`
 
 Planned / proved declarations:
 
@@ -82,8 +82,8 @@ Planned / proved declarations:
 
 Verification:
 
-- `lake env lean research/lean/ResearchLean/QualitySurface/LossAwareCommutatorAtlas.lean`: pass
-- `lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/LossAwareCommutatorAtlas.lean`: pass
+- `Research package build`: pass
 - `#print axioms` for the reported theorem declarations: all reported theorem declarations have no 公理依存.
 - Forbidden-token scan over the Cycle 45 Lean/card files: no matches.
 - G3 公理監査: pass。reported declarations は clean で、`Formal/AG` 本体は参照のみ。
@@ -112,5 +112,5 @@ Boundary:
 
 ## 進捗ログ
 
-- 2026-06-21: Cycle 45 候補として作成。Lean 単体チェックと `lake build ResearchLean` は pass。
+- 2026-06-21: Cycle 45 候補として作成。Lean 単体チェックと `Research package build` は pass。
 - 2026-06-21: G2 で base 70 / multiplier 2.0 に修正。G3 公理監査と Lean 形式化品質監査は pass。

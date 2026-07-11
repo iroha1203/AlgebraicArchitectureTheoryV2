@@ -20,7 +20,7 @@ anti_weakening_verdict: pass as target-refinement; reject if promoted to target 
 claim_boundary: not target completion; coordinate premise is completion-sensitive and support-shadow faithfulness-equivalent.
 math_lean_review_scope: not run this cycle
 lean_files:
-  - research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationCoordinateExtraction.lean
+  - research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationCoordinateExtraction.lean
 lean_declarations:
   - currentShadowDeterminesTraceQuery_of_queryCoordinateCurrentShadowExtensional
   - currentShadowDeterminesTraceQuery_iff_queryCoordinateCurrentShadowExtensional
@@ -42,7 +42,7 @@ Cycle 38 connects the Cycle 26 query-coordinate obligation to the Cycle 37
 faithfulness extraction theorem.
 
 The new Lean file
-`research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryRepresentationCoordinateExtraction.lean`
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationCoordinateExtraction.lean`
 proves that `QueryTraceCoordinatesCurrentShadowExtensional query` supplies
 `CurrentShadowDeterminesTraceQuery query`, hence post-fiber invariance,
 canonical current-shadow reading faithfulness, represented current-shadow

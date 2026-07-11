@@ -30,7 +30,15 @@ GOAL(研究で成し遂げたいこと)
 | `ideas/` | 候補を一件ずつ書いたカード。選にもれたものや保留は `ideas/archived/` へ移す |
 | `reports/` | GOAL の能力がどう増えたかを書くレポート。GOAL ひとつにつき一つ |
 | `DESIGN.md` | この仕組みをいまの形にした理由の記録 |
-| `research/lean/ResearchLean/` | Lean による検証の作業場。`research/` には入れず、リポジトリ内の別ディレクトリに置く。`Formal/AG` 本体は参照のみ可 |
+| `research/lean/ResearchLean/` | Lean による検証の作業場。`Formal/AG` には入れず、`research/lean` の独立 package に置く。`Formal/AG` 本体は参照のみ可 |
+
+2026-07-12 の Research Lean package 移動に伴い、それ以前の ideas / reports にある
+filesystem path と検証 command は、移動後に再利用できる同等手順へ正規化している。
+移動前の日付に付いた `pass` は当時の実行結果を表し、正規化後の command を再実行したという
+意味ではない。現行の focused check は
+`cd research/lean && lake env lean ResearchLean/AG/<file>.lean` とする。
+Research Lean の配置と検証手順は、この README、`lean/README.md`、両 package の
+`lakefile.toml`、`.github/workflows/lean.yml` を現行 source of truth とする。
 
 ## 状態の正本
 

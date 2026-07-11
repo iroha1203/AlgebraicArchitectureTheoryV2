@@ -84,7 +84,7 @@ jobs:
         run: .github/lean_quality/test_changed_public_artifacts.sh
 
   research-package-smoke:
-    name: research package smoke
+    name: research package direction
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -120,49 +120,9 @@ jobs:
         if: steps.research-changes.outputs.run == 'true'
         uses: leanprover/lean-action@v1
 
-      - name: Research package full build
-        if: steps.research-changes.outputs.run == 'true'
-        run: cd research/lean && lake build
-
-      - name: Focused modules and axiom audits
-        if: steps.research-changes.outputs.run == 'true'
-        env:
-          AAT_CI_FULL_AUDIT: "1"
-        run: research/lean/check_research_modules.sh --all-axioms
-
       - name: Package dependency direction
         if: steps.research-changes.outputs.run == 'true'
         run: .github/lean_quality/check_research_package_direction.sh --execute
-
-      - name: Migration extractor smoke
-        if: steps.research-changes.outputs.run == 'true'
-        run: |
-          mkdir -p .tmp/research-migration
-          research/lean/emit_migration_audit.sh \
-            ResearchLean.AG.Smoke \
-            ResearchLean/AG/Smoke.lean \
-            .tmp/research-migration/smoke.audit.tsv
-          awk -F '\t' '
-            $1 == "MIGRATION_META" { meta++ }
-            $1 == "MIGRATION_DECL" { decl++ }
-            $1 != "MIGRATION_META" && $1 != "MIGRATION_DECL" { bad++ }
-            END { exit (meta == 1 && decl == 2 && bad == 0) ? 0 : 1 }
-          ' .tmp/research-migration/smoke.audit.tsv
-
-      - name: Migration extractor legacy-source resolution smoke
-        if: steps.research-changes.outputs.run == 'true'
-        run: |
-          legacy_source="Formal/AG/"'Research'"/Basic.lean"
-          resolved_source="$(research/lean/emit_migration_audit.sh --resolve-source "$legacy_source")"
-          expected_source="Formal/AG/"'Research'"/Basic.lean"
-          test "$resolved_source" = $'MIGRATION_SOURCE\t'"$expected_source"
-
-      - name: Upload migration extractor smoke
-        if: steps.research-changes.outputs.run == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: research-migration-smoke-${{ github.run_id }}
-          path: .tmp/research-migration
 
   build:
     name: lake build

@@ -25,7 +25,7 @@ origin: G-04 Cycle 27
 tags: [target-theorem, target-support, finite-query, current-shadow, anti-weakening]
 created: 2026-06-25
 cycle: 27
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryReadingInsensitive.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryReadingInsensitive.lean
 ---
 
 # Query Reading-Insensitive Boundary

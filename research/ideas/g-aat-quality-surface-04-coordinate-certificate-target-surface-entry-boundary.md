@@ -20,7 +20,7 @@ origin: G-04-Cycle48
 tags: [target-theorem, finite-query, coordinate-certificate, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 48
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCoordinateCertificateBoundary.lean
 ---
 
 # Coordinate Certificate Target-Surface Entry Boundary
@@ -87,8 +87,8 @@ finite diagnostic output を target-surface finite shadow で読むには、単�
 ## 関連
 
 - `research/ideas/g-aat-quality-surface-04-recovery-free-target-surface-admissibility-boundary.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceAdmissibilityBoundary.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceAdmissibilityBoundary.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean`
 
 ## 進捗ログ
 

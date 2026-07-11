@@ -20,7 +20,7 @@ origin: G-04-Cycle53
 tags: [target-theorem, finite-query, semantic-reading, target-surface, anti-weakening]
 created: 2026-06-25
 cycle: 53
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyIndependence.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSemanticAdequacyIndependence.lean
 ---
 
 # Semantic-Reading Adequacy Independence for Target-Surface Entry
@@ -101,8 +101,8 @@ certificate obstruction により、adequacy から recovery / certificate は�
 
 - `research/ideas/g-aat-quality-surface-04-no-separation-independence-target-surface-entry.md`
 - `research/ideas/g-aat-quality-surface-04-coordinate-certificate-independence-target-surface-entry.md`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryCurrentShadowReading.lean`
-- `research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationIndependence.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryCurrentShadowReading.lean`
+- `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceNoSeparationIndependence.lean`
 
 ## 進捗ログ
 

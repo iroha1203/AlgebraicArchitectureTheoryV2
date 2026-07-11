@@ -20,7 +20,7 @@ origin: T1-cycle43
 tags: [target-theorem-loop, G-04, finite-query-representation, anti-weakening]
 created: 2026-06-25
 cycle: 43
-lean: research/lean/ResearchLean/QualitySurface/SemanticRepairFiniteQuerySupportedCurrentShadowFactorization.lean
+lean: research/lean/ResearchLean/AG/QualitySurface/SemanticRepairFiniteQuerySupportedCurrentShadowFactorization.lean
 ---
 
 # Supported Current-Shadow Factorization Boundary
