@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: GitHub PR番号を受け取り、Issue・CI・変更責務を確認し、対応する敵対レビューSKILLへ委譲してマージ可否を統合し、監査コメントを投稿する。"$review-pr PR-number"、PRレビュー、マージ可否判定で使う。実装・修正やPR作成には使わない。
+description: 実装完了後の最終スナップショットを対象に、GitHub PR番号を受け取り、Issue・CI・変更責務を確認し、対応する敵対レビューSKILLへ委譲してマージ可否を統合し、監査コメントを投稿する。"$review-pr PR-number"、最終PRレビュー、マージ可否判定で使う。
 ---
 
 # Review PR

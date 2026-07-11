@@ -1,6 +1,6 @@
 ---
 name: tool-review
-description: ArchSig / FieldSig tooling、docs/tool、schema catalogの差分を4観点で敵対レビューし、編集せず合否を返す。"$tool-review"、tooling差分レビュー、リリース前監査で使う。toolingの実装・修正依頼には使わない。
+description: ArchSig / FieldSig tooling、docs/tool、schema catalogの実装完了後の最終差分を4観点で敵対レビューし、編集せず合否を返す。"$tool-review"、review-prの最終ゲート、リリース前監査で使う。
 ---
 
 # Tool Review

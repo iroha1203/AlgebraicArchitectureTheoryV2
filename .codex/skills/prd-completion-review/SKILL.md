@@ -1,6 +1,6 @@
 ---
 name: prd-completion-review
-description: PRD全文から達成条件・拘束条件・must-not-remainを抽出し、一次証拠と独立査読で現状の完了可否を判定する。"$prd-completion-review path/to/prd.md"、PRD達成条件レビュー、prd-loopの最終確認で使う。実装・Issue作成・PR作成は行わない。完了まで実装する依頼にはprd-loopを使う。
+description: すべての実装PRが完了した後に、PRD全文から達成条件・拘束条件・must-not-remainを抽出し、一次証拠と独立査読で最終完了可否を判定する。"$prd-completion-review path/to/prd.md"、prd-loopの最終確認で使う。完了まで実装する依頼にはprd-loopを使う。
 ---
 
 # PRD Completion Review
