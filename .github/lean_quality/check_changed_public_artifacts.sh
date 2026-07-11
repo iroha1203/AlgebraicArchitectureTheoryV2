@@ -15,6 +15,7 @@ else
 fi
 
 python3 - "$diff_file" <<'PY'
+import ast
 import re
 import sys
 
@@ -30,9 +31,27 @@ primitive = re.compile(r"(?<![A-Za-z0-9_'])(axiom|admit|sorry|unsafe)(?![A-Za-z0
 path = ""
 new_line = 0
 violations = []
+
+def decode_git_path(spec):
+    if not spec.startswith('"'):
+        return spec
+    try:
+        quoted = ast.literal_eval(spec)
+        return quoted.encode("latin-1").decode("utf-8")
+    except (SyntaxError, ValueError, UnicodeError):
+        print("E_DIFF_FORMAT: malformed quoted path", file=sys.stderr)
+        raise SystemExit(2)
+
 for raw in open(sys.argv[1], encoding="utf-8", errors="replace"):
-    if raw.startswith("+++ b/"):
-        path = raw[6:].rstrip("\n")
+    if raw.startswith("+++ "):
+        decoded = decode_git_path(raw[4:].rstrip("\n"))
+        if decoded == "/dev/null":
+            path = ""
+        elif decoded.startswith("b/"):
+            path = decoded[2:]
+        else:
+            print("E_DIFF_FORMAT: unexpected new path", file=sys.stderr)
+            raise SystemExit(2)
         continue
     if raw.startswith("@@"):
         match = re.search(r"\+(\d+)(?:,(\d+))?", raw)

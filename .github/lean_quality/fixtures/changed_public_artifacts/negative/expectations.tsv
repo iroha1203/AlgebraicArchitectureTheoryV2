@@ -6,3 +6,4 @@ checker-private	checker-private.diff	E_PRIVATE_LOCAL_PATH
 windows-path	windows-path.diff	E_PRIVATE_LOCAL_PATH
 machine	machine.diff	E_MACHINE_IDENTIFIER
 primitive	primitive.diff	E_FORBIDDEN_LEAN_PRIMITIVE
+quoted-unicode-primitive	quoted-unicode-primitive.diff	E_FORBIDDEN_LEAN_PRIMITIVE

@@ -42,7 +42,7 @@ jobs:
         run: .github/lean_quality/test_research_separation_gates.sh
 
       - name: Research package direction (static)
-        run: .github/lean_quality/check_research_package_direction.sh
+        run: .github/lean_quality/test_research_package_direction.sh
 
       - name: Research migration fixture suite
         run: .github/lean_quality/test_research_migration_manifest.sh
@@ -95,7 +95,7 @@ jobs:
             base="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
           fi
           if git diff --name-only "$base...$HEAD_SHA" | grep -Eq \
-              '^(research-lean/|\.github/lean_quality/(check_research_migration|check_research_package|test_research_migration)|\.github/workflows/lean\.yml$)'; then
+              '^(lakefile\.toml$|lake-manifest\.json$|research-lean/|\.github/lean_quality/(check_research_migration|check_research_package|test_research_migration|test_research_package)|\.github/workflows/lean\.yml$)'; then
             echo "run=true" >>"$GITHUB_OUTPUT"
           else
             echo "run=false" >>"$GITHUB_OUTPUT"

@@ -116,4 +116,26 @@ if AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$unicode_root" 
 fi
 grep -F E_MIGRATION_SOURCE_DIGEST "$tmp/stderr" >/dev/null
 
+while IFS=$'\t' read -r label suffix; do
+  adjacent_root="$tmp/adjacent-$label"
+  cp -R "$fixture" "$adjacent_root"
+  if [ "$suffix" = '»' ]; then
+    printf '%s\n' 'def dependencyName := "«FixtureOld.AG»"' >>"$adjacent_root/old/Smoke.lean"
+    printf '%s\n' 'def dependencyName := "«FixtureNew.AG»"' >>"$adjacent_root/research-lean/ResearchLean/AG/Smoke.lean"
+  else
+    printf 'def dependencyName := "FixtureOld.AG%s"\n' "$suffix" >>"$adjacent_root/old/Smoke.lean"
+    printf 'def dependencyName := "FixtureNew.AG%s"\n' "$suffix" >>"$adjacent_root/research-lean/ResearchLean/AG/Smoke.lean"
+  fi
+  if AAT_MIGRATION_TEST_PREFIXES=1 AAT_MIGRATION_TEST_SOURCE_ROOT="$adjacent_root" "$checker" \
+      ignored-base ignored-head "$adjacent_root/manifest.tsv" "$adjacent_root/old.audit.tsv" "$adjacent_root/new.audit.tsv" \
+      R3 "$tmp/adjacent-out" >"$tmp/stdout" 2>"$tmp/stderr"; then
+    echo "Lean identifier adjacency drift fixture unexpectedly passed: $suffix" >&2; exit 1
+  fi
+  grep -F E_MIGRATION_SOURCE_DIGEST "$tmp/stderr" >/dev/null
+done <<'EOF'
+qmark	?
+bang	!
+quoted	»
+EOF
+
 echo "Research migration manifest fixtures passed."

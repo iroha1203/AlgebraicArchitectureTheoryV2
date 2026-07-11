@@ -3,16 +3,36 @@ set -euo pipefail
 
 repo_root="$(git rev-parse --show-toplevel)"
 fixture="$repo_root/.github/lean_quality/fixtures/research_package_direction/root_imports_research.lean"
+root_lakefile="${AAT_ROOT_LAKEFILE:-$repo_root/lakefile.toml}"
+research_lakefile="${AAT_RESEARCH_LAKEFILE:-$repo_root/research-lean/lakefile.toml}"
 
-if grep -En '^name = "ResearchLean"$|^path = "research-lean"$' "$repo_root/lakefile.toml" >/dev/null; then
-  echo "E_ROOT_REQUIRES_RESEARCH: root lakefile references the Research package" >&2
-  exit 1
-fi
+python3 - "$root_lakefile" "$research_lakefile" <<'PY'
+import pathlib
+import posixpath
+import sys
+import tomllib
 
-grep -F 'path = ".."' "$repo_root/research-lean/lakefile.toml" >/dev/null || {
-  echo "E_RESEARCH_ROOT_DEPENDENCY: Research package does not depend on root" >&2
-  exit 1
-}
+root_path, research_path = map(pathlib.Path, sys.argv[1:])
+root = tomllib.loads(root_path.read_text(encoding="utf-8"))
+research = tomllib.loads(research_path.read_text(encoding="utf-8"))
+
+def normalized_path(require):
+    path = require.get("path")
+    return None if not isinstance(path, str) else posixpath.normpath(path.replace("\\", "/"))
+
+for require in root.get("require", []):
+    path = normalized_path(require)
+    if require.get("name") == "ResearchLean" or path == "research-lean" or (path and path.startswith("research-lean/")):
+        print("E_ROOT_REQUIRES_RESEARCH: root lakefile references the Research package", file=sys.stderr)
+        raise SystemExit(1)
+
+if not any(
+    require.get("name") == "AlgebraicArchitectureTheoryV2" and normalized_path(require) == ".."
+    for require in research.get("require", [])
+):
+    print("E_RESEARCH_ROOT_DEPENDENCY: Research package does not depend on root", file=sys.stderr)
+    raise SystemExit(1)
+PY
 
 if [ "${1:-}" = "--execute" ]; then
   output="$(mktemp)"
