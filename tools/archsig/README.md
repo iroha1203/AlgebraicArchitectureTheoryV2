@@ -144,15 +144,17 @@ ArchView also supports file picker / drag-and-drop and sequence mode through
 `archview-sequence/v0.5.0`. It uses CDN Three.js and projects measured AAT geometry
 without creating new structural verdicts.
 
-For a larger sample fixture or release-mode smoke test, prefer the optimized binary:
+For a production-shaped, end-to-end demonstration — a realistic Rust service
+whose PR passes every unit test in every build state yet introduces a
+measured H1 gluing obstruction, gets blocked by `gate`, and passes again
+after repair — run the one-cent drift example:
 
 ```bash
-cargo run --release --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/examples/practical-rust-service/archmap/archmap.json \
-  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
-  --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
-  --out-dir .tmp/archsig-practical-service-analyze
+tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh
 ```
+
+See `tools/archsig/examples/practical-rust-service/README.md` for the story,
+the three build states, and the mismatch support to inspect.
 
 Calling `archsig` without a subcommand intentionally fails. The old implicit
 scan-first path is no longer an ArchSig workflow.

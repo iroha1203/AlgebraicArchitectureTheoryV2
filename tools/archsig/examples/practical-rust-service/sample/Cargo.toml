@@ -5,4 +5,8 @@ edition = "2024"
 license = "MIT"
 publish = false
 
+[features]
+psp-compliance = []
+settlement-authority = ["psp-compliance"]
+
 [dependencies]

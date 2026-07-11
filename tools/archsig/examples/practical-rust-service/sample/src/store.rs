@@ -69,6 +69,73 @@ impl InMemoryCommercePlatform {
         self.next_payment += 1;
         Ok(id)
     }
+
+    #[cfg(feature = "psp-compliance")]
+    fn loyalty_bps_for(&self, order: &Order) -> i64 {
+        if self
+            .customers
+            .get(order.customer_id())
+            .map(CustomerProfile::is_vip)
+            .unwrap_or(false)
+        {
+            crate::domain::VIP_LOYALTY_DISCOUNT_BPS
+        } else {
+            0
+        }
+    }
+
+    #[cfg(not(feature = "psp-compliance"))]
+    fn capture_amount(&self, _order: &Order, amount: Money) -> Result<(Money, &'static str), AppError> {
+        Ok((amount, "authorized"))
+    }
+
+    /// PSP line-item compliance: the processor validates per-line amounts,
+    /// so the adapter re-derives the discount allocation line by line and
+    /// rounds half-to-even per line as the processor specification requires.
+    #[cfg(all(feature = "psp-compliance", not(feature = "settlement-authority")))]
+    fn capture_amount(&self, order: &Order, _amount: Money) -> Result<(Money, &'static str), AppError> {
+        let bps = self.loyalty_bps_for(order);
+        let subtotal = order.subtotal()?;
+        let mut line_discounts = 0i64;
+        for line in order.lines() {
+            line_discounts += round_half_even_bps(line.line_total()?.cents(), bps);
+        }
+        let capture = Money::new(subtotal.cents() - line_discounts, subtotal.currency())?;
+        Ok((capture, "authorized per psp line-item specification"))
+    }
+
+    /// Settlement-authority repair: line items are still submitted per the
+    /// PSP specification, but the checkout total stays authoritative; the
+    /// per-line rounding residue goes out as an explicit adjustment line.
+    #[cfg(feature = "settlement-authority")]
+    fn capture_amount(&self, order: &Order, amount: Money) -> Result<(Money, &'static str), AppError> {
+        let bps = self.loyalty_bps_for(order);
+        let subtotal = order.subtotal()?;
+        let mut line_discounts = 0i64;
+        for line in order.lines() {
+            line_discounts += round_half_even_bps(line.line_total()?.cents(), bps);
+        }
+        let line_item_total = subtotal.cents() - line_discounts;
+        let adjustment = amount.cents() - line_item_total;
+        let message = if adjustment == 0 {
+            "authorized per psp line-item specification"
+        } else {
+            "authorized with explicit rounding adjustment line"
+        };
+        Ok((amount, message))
+    }
+}
+
+#[cfg(feature = "psp-compliance")]
+fn round_half_even_bps(cents: i64, bps: i64) -> i64 {
+    let numerator = cents * bps;
+    let quotient = numerator / 10_000;
+    let remainder = numerator % 10_000;
+    match remainder.cmp(&5_000) {
+        std::cmp::Ordering::Less => quotient,
+        std::cmp::Ordering::Greater => quotient + 1,
+        std::cmp::Ordering::Equal => quotient + (quotient & 1),
+    }
 }
 
 impl Default for InMemoryCommercePlatform {
@@ -148,6 +215,7 @@ impl PaymentPort for InMemoryCommercePlatform {
         if let Some(existing) = self.payment_authorizations.get(order.id()) {
             return Ok(existing.clone());
         }
+        let (capture, capture_message) = self.capture_amount(order, amount)?;
         let status = if risk.score > 85 {
             PaymentStatus::RequiresReview
         } else {
@@ -156,10 +224,10 @@ impl PaymentPort for InMemoryCommercePlatform {
         let payment = PaymentAuthorization::new(
             self.payment_id()?,
             order.id().clone(),
-            amount,
+            capture,
             status,
             if status == PaymentStatus::Authorized {
-                "authorized"
+                capture_message
             } else {
                 "manual review"
             },
@@ -284,6 +352,78 @@ mod tests {
                 ..
             })
         ));
+        Ok(())
+    }
+
+    #[cfg(feature = "psp-compliance")]
+    fn vip_demo_platform_and_order() -> Result<(InMemoryCommercePlatform, Order), AppError> {
+        use crate::domain::OrderLine;
+
+        let mut platform = InMemoryCommercePlatform::new();
+        platform.add_customer(CustomerProfile::new(
+            CustomerId::new("customer-1")?,
+            "ops@example.com",
+            sample_address()?,
+            true,
+            400,
+        )?);
+        let kit = CatalogItem::new(
+            Sku::new("KIT-RED")?,
+            "Red field repair kit",
+            Money::new(12_490, Currency::Usd)?,
+            1_800,
+            true,
+        )?;
+        let cable = CatalogItem::new(
+            Sku::new("CBL-2M")?,
+            "Two meter shielded cable",
+            Money::new(4_505, Currency::Usd)?,
+            400,
+            false,
+        )?;
+        let order = Order::new(
+            OrderId::new("order-1")?,
+            CustomerId::new("customer-1")?,
+            vec![
+                OrderLine::from_catalog(&kit, Quantity::new(2)?),
+                OrderLine::from_catalog(&cable, Quantity::new(2)?),
+            ],
+            ServiceLevel::Standard,
+            sample_address()?,
+        )?;
+        Ok((platform, order))
+    }
+
+    #[cfg(all(feature = "psp-compliance", not(feature = "settlement-authority")))]
+    #[test]
+    fn psp_capture_allocates_discount_per_line_with_half_even_rounding() -> Result<(), AppError> {
+        let (mut platform, order) = vip_demo_platform_and_order()?;
+        let checkout_total = Money::new(33_140, Currency::Usd)?;
+
+        let payment = platform.authorize(&order, checkout_total, &RiskAssessment::accept(10))?;
+
+        // per-line discounts: half-even(624.5) = 624, half-even(225.25) = 225
+        assert_eq!(payment.amount().cents(), 33_990 - 624 - 225);
+        assert_eq!(
+            payment.processor_message(),
+            "authorized per psp line-item specification"
+        );
+        Ok(())
+    }
+
+    #[cfg(feature = "settlement-authority")]
+    #[test]
+    fn settlement_authority_capture_keeps_checkout_total_authoritative() -> Result<(), AppError> {
+        let (mut platform, order) = vip_demo_platform_and_order()?;
+        let checkout_total = Money::new(33_140, Currency::Usd)?;
+
+        let payment = platform.authorize(&order, checkout_total, &RiskAssessment::accept(10))?;
+
+        assert_eq!(payment.amount().cents(), 33_140);
+        assert_eq!(
+            payment.processor_message(),
+            "authorized with explicit rounding adjustment line"
+        );
         Ok(())
     }
 

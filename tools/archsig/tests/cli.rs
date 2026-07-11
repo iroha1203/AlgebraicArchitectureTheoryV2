@@ -8390,14 +8390,14 @@ fn practical_rust_service_example_runs_current_analyze() {
         String::from_utf8_lossy(&output.stderr)
     );
     let archmap_validation = read_json(&out_dir.join("archmap-validation.json"));
-    assert_eq!(archmap_validation["summary"]["atomCount"], 60);
+    assert_eq!(archmap_validation["summary"]["atomCount"], 67);
     assert_eq!(archmap_validation["summary"]["contextCount"], 7);
     assert_eq!(archmap_validation["summary"]["coverCount"], 1);
     assert_eq!(archmap_validation["summary"]["result"], "pass");
 
     let normalized = read_json(&out_dir.join("normalized-archmap.json"));
     assert_eq!(normalized["schema"], "normalized-archmap/v0.5.0");
-    assert_eq!(normalized["summary"]["normalizedAtomCount"], 60);
+    assert_eq!(normalized["summary"]["normalizedAtomCount"], 67);
     assert_eq!(normalized["summary"]["contextCount"], 7);
     assert_eq!(normalized["summary"]["coverCount"], 1);
 
@@ -8421,7 +8421,7 @@ fn practical_rust_service_example_runs_current_analyze() {
     assert!(
         measurement_packet["computedInvariants"]
             .as_array()
-            .is_some_and(|rows| rows.iter().any(|row| row["atomCount"] == 60
+            .is_some_and(|rows| rows.iter().any(|row| row["atomCount"] == 67
                 && row["contextCount"] == 7
                 && row["coverCount"] == 1)),
         "measurement packet must preserve the finite-poset-site shape counts"
@@ -8439,9 +8439,9 @@ fn practical_rust_service_example_runs_current_analyze() {
     assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 0);
 
     assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.0");
-    assert_eq!(viewer["atomNodes"].as_array().map(Vec::len), Some(60));
+    assert_eq!(viewer["atomNodes"].as_array().map(Vec::len), Some(67));
     assert_eq!(viewer["moleculeGroups"].as_array().map(Vec::len), Some(7));
-    assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(78));
+    assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(85));
     assert_eq!(
         viewer["viewerVisualScenes"].as_array().map(Vec::len),
         Some(12)
@@ -8607,10 +8607,10 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.0");
-    assert_eq!(manifest["runId"], "run:8317379dd910");
+    assert_eq!(manifest["runId"], "run:302ac792f7ec");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
-        "8f56bab376a4ac8a02de99ff07a8f1b00dd027ea08a0912d443f5a0bc4adcd09"
+        "10a5ab2829fc8377227d836a75f5e850b128f7c27823fbaa2ce713415c1f86c0"
     );
     assert_eq!(
         manifest["inputDigests"]["lawPolicy"]["sha256"],
@@ -8626,7 +8626,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     );
     assert_eq!(
         manifest["inputDigests"]["siteCoverDigest"]["sha256"],
-        "63fae16bdbb459237439f6ebea1dcddb70e1e8eeb9025ef3ba91716833ca1c9a"
+        "e86dfe155bb6f367d5b682d5551ee8067a3df271fdaad4eae00d928cc178e9af"
     );
     assert_eq!(
         manifest["inputDigests"]["siteCoverDigest"]["basis"],
@@ -8758,7 +8758,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:8317379dd910-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:302ac792f7ec-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }

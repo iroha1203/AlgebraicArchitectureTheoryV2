@@ -520,6 +520,48 @@ impl Order {
     pub fn contains_hazardous_material(&self) -> bool {
         self.lines.iter().any(OrderLine::hazardous)
     }
+
+    /// Customer-facing pricing convention: the loyalty discount is computed
+    /// once on the order grand total and rounded half-up to whole cents.
+    pub fn pricing(&self, discount_bps: i64) -> Result<OrderPricing, DomainError> {
+        let subtotal = self.subtotal()?;
+        let discount_cents = round_half_up_bps(subtotal.cents(), discount_bps);
+        let discount = Money::new(discount_cents, subtotal.currency())?;
+        let total_due = Money::new(subtotal.cents() - discount_cents, subtotal.currency())?;
+        Ok(OrderPricing {
+            subtotal,
+            discount,
+            total_due,
+        })
+    }
+}
+
+/// Loyalty discount granted to VIP customers, in basis points of the order total.
+pub const VIP_LOYALTY_DISCOUNT_BPS: i64 = 250;
+
+fn round_half_up_bps(cents: i64, bps: i64) -> i64 {
+    (cents * bps + 5_000) / 10_000
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OrderPricing {
+    subtotal: Money,
+    discount: Money,
+    total_due: Money,
+}
+
+impl OrderPricing {
+    pub fn subtotal(&self) -> Money {
+        self.subtotal
+    }
+
+    pub fn discount(&self) -> Money {
+        self.discount
+    }
+
+    pub fn total_due(&self) -> Money {
+        self.total_due
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -994,6 +1036,66 @@ mod tests {
     fn reservation_rejects_empty_lines() -> Result<(), DomainError> {
         let result = InventoryReservation::new(OrderId::new("order-1")?, Vec::new());
         assert!(matches!(result, Err(DomainError::EmptyReservation)));
+        Ok(())
+    }
+
+    #[test]
+    fn vip_pricing_rounds_discount_half_up_on_grand_total() -> Result<(), DomainError> {
+        let kit = CatalogItem::new(
+            Sku::new("KIT-RED")?,
+            "Red field repair kit",
+            Money::new(12_490, Currency::Usd)?,
+            1_800,
+            true,
+        )?;
+        let cable = CatalogItem::new(
+            Sku::new("CBL-2M")?,
+            "Two meter shielded cable",
+            Money::new(4_505, Currency::Usd)?,
+            400,
+            false,
+        )?;
+        let order = Order::new(
+            OrderId::new("order-1")?,
+            CustomerId::new("customer-1")?,
+            vec![
+                OrderLine::from_catalog(&kit, Quantity::new(2)?),
+                OrderLine::from_catalog(&cable, Quantity::new(2)?),
+            ],
+            ServiceLevel::Standard,
+            address(),
+        )?;
+
+        let pricing = order.pricing(VIP_LOYALTY_DISCOUNT_BPS)?;
+
+        // exact discount is 849.75 cents; grand-total half-up rounds to 850
+        assert_eq!(pricing.subtotal().cents(), 33_990);
+        assert_eq!(pricing.discount().cents(), 850);
+        assert_eq!(pricing.total_due().cents(), 33_140);
+        Ok(())
+    }
+
+    #[test]
+    fn zero_bps_pricing_keeps_total_due_equal_to_subtotal() -> Result<(), DomainError> {
+        let item = CatalogItem::new(
+            Sku::new("KIT-1")?,
+            "starter kit",
+            Money::new(2_500, Currency::Usd)?,
+            1200,
+            false,
+        )?;
+        let order = Order::new(
+            OrderId::new("order-1")?,
+            CustomerId::new("customer-1")?,
+            vec![OrderLine::from_catalog(&item, Quantity::new(2)?)],
+            ServiceLevel::Standard,
+            address(),
+        )?;
+
+        let pricing = order.pricing(0)?;
+
+        assert_eq!(pricing.discount().cents(), 0);
+        assert_eq!(pricing.total_due().cents(), pricing.subtotal().cents());
         Ok(())
     }
 }

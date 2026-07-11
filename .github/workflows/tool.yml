@@ -28,6 +28,32 @@ jobs:
       - name: Test FieldSig
         run: cargo test --manifest-path tools/fieldsig/Cargo.toml
 
+  archsig-example-one-cent-drift:
+    name: ArchSig one-cent drift example demo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run demo script and assert the story conclusions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh
+
+          out=".tmp/archsig-practical-rust-service"
+          jq -e '.conclusion == "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"' \
+            "$out/base/archsig-analysis-summary.json"
+          jq -e '.conclusion == "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"' \
+            "$out/head/archsig-analysis-summary.json"
+          jq -e '.decision == "BLOCKED_BY_GATE_POLICY"' "$out/gate-head.json"
+          jq -e '.conclusion == "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"' \
+            "$out/repaired/archsig-analysis-summary.json"
+          jq -e '.conclusionCode == "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE"' \
+            "$out/compare-repaired/archsig-comparison-report.json"
+          jq -e '.decision == "PASS_WITHIN_GATE_POLICY"' "$out/gate-repaired.json"
+
   archsig-analyze-e2e:
     name: ArchSig analyze / FieldSig handoff e2e
     runs-on: ubuntu-latest

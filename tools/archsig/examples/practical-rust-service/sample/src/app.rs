@@ -3,9 +3,9 @@ use std::fmt;
 
 use crate::domain::{
     Address, CatalogItem, CustomerId, CustomerProfile, DomainError, DomainEvent,
-    FulfillmentDecision, InventoryReservation, Money, Order, OrderId, OrderLine,
+    FulfillmentDecision, InventoryReservation, Money, Order, OrderId, OrderLine, OrderPricing,
     PaymentAuthorization, PaymentStatus, Quantity, ReservationLine, RiskAssessment, RiskDecision,
-    ServiceLevel, ShipmentPlan, Sku, WarehouseId,
+    ServiceLevel, ShipmentPlan, Sku, WarehouseId, VIP_LOYALTY_DISCOUNT_BPS,
 };
 use crate::policy::{PolicyContext, PolicyEngine, PolicyEvaluation, PolicyVerdict};
 use crate::telemetry::{TraceEvent, TraceRecorder};
@@ -87,6 +87,7 @@ pub struct CheckoutCommand {
 #[derive(Debug, Clone)]
 pub struct CheckoutOutcome {
     pub decision: FulfillmentDecision,
+    pub pricing: OrderPricing,
     pub policy_evaluations: Vec<PolicyEvaluation>,
     pub trace_events: Vec<TraceEvent>,
 }
@@ -136,14 +137,23 @@ where
             command.service_level,
             ship_to,
         )?;
-        let subtotal = order.subtotal()?;
+        let discount_bps = if customer.is_vip() {
+            VIP_LOYALTY_DISCOUNT_BPS
+        } else {
+            0
+        };
+        let pricing = order.pricing(discount_bps)?;
         self.trace.record(
             "order.priced",
-            format!("{} {}", subtotal.cents(), subtotal.currency().code()),
+            format!(
+                "{} {}",
+                pricing.total_due().cents(),
+                pricing.total_due().currency().code()
+            ),
         );
         self.platform.publish(DomainEvent::OrderPriced {
             order_id: order.id().as_str().to_string(),
-            amount_cents: subtotal.cents(),
+            amount_cents: pricing.total_due().cents(),
         })?;
 
         let risk = self.platform.assess(&customer, &order)?;
@@ -182,7 +192,7 @@ where
             format!("{} lines", reservation.lines().len()),
         );
 
-        let payment = self.platform.authorize(&order, subtotal, &risk)?;
+        let payment = self.platform.authorize(&order, pricing.total_due(), &risk)?;
         if payment.status() != PaymentStatus::Authorized {
             return Err(AppError::PaymentDeclined {
                 order_id: order.id().as_str().to_string(),
@@ -222,6 +232,7 @@ where
         };
         Ok(CheckoutOutcome {
             decision,
+            pricing,
             policy_evaluations,
             trace_events: self.trace.events().to_vec(),
         })

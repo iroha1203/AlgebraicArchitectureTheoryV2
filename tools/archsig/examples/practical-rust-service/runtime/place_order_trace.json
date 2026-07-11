@@ -1,7 +1,7 @@
 {
   "schema": "archsig-example-runtime-trace/v0.5.0",
   "traceId": "runtime-trace:place-order-demo",
-  "scenario": "sample main reserves one order through OrderService and InMemoryInventoryStore",
+  "scenario": "run_demo executes one VIP checkout through CheckoutService and InMemoryCommercePlatform",
   "sourceRefs": [
     {
       "artifactId": "sample-main-smoke",
@@ -9,72 +9,88 @@
       "symbol": "main"
     },
     {
-      "artifactId": "sample-app-place-order",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
-      "symbol": "place_order"
+      "artifactId": "sample-scenario-run-demo",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/scenario.rs",
+      "symbol": "run_demo"
     },
     {
-      "artifactId": "sample-store-reserve",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
-      "symbol": "reserve"
+      "artifactId": "sample-app-execute",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
+      "symbol": "CheckoutService::execute"
     }
   ],
   "events": [
     {
       "step": 1,
-      "event": "stock-added",
-      "componentRef": "store.InMemoryInventoryStore",
-      "subjectRef": "sku-rust-book",
-      "quantity": 4
+      "event": "command.accepted",
+      "componentRef": "app.CheckoutService",
+      "orderRef": "order-demo-100"
     },
     {
       "step": 2,
-      "event": "stock-added",
-      "componentRef": "store.InMemoryInventoryStore",
-      "subjectRef": "sku-archsig-notes",
-      "quantity": 2
+      "event": "customer.loaded",
+      "componentRef": "app.CheckoutService",
+      "subjectRef": "customer-1",
+      "vip": true
     },
     {
       "step": 3,
-      "event": "place-order-called",
-      "componentRef": "app.OrderService",
-      "operationRef": "operation.placeOrder",
-      "orderRef": "order-demo-1"
+      "event": "order.priced",
+      "componentRef": "app.CheckoutService",
+      "subtotalCents": 33990,
+      "loyaltyDiscountCents": 850,
+      "totalDueCents": 33140,
+      "currency": "USD"
     },
     {
       "step": 4,
-      "event": "availability-checked",
-      "componentRef": "app.InventoryStore",
-      "operationRef": "operation:app-check-availability",
-      "result": "sufficient"
+      "event": "risk.assessed",
+      "componentRef": "store.RiskPortImpl",
+      "score": 15,
+      "decision": "Accept"
     },
     {
       "step": 5,
-      "event": "reservation-written",
-      "componentRef": "store.InMemoryInventoryStore",
-      "operationRef": "operation:store-reserve",
-      "reservedUnitCount": 3
+      "event": "policy.evaluated",
+      "componentRef": "policy.PolicyEngine",
+      "ruleCount": 140,
+      "blockedCount": 0
     },
     {
       "step": 6,
-      "event": "receipt-returned",
-      "componentRef": "app.OrderService",
-      "orderRef": "order-demo-1",
+      "event": "inventory.reserved",
+      "componentRef": "store.InventoryPortImpl",
       "reservedLineCount": 2,
-      "reservedUnitCount": 3
+      "warehouseRef": "west-1"
+    },
+    {
+      "step": 7,
+      "event": "payment.authorized",
+      "componentRef": "store.PaymentPortImpl",
+      "paymentRef": "pay-1",
+      "authorizedCents": 33140
+    },
+    {
+      "step": 8,
+      "event": "shipment.planned",
+      "componentRef": "store.ShippingPortImpl",
+      "shipmentRef": "ship-for-order-demo-100"
+    },
+    {
+      "step": 9,
+      "event": "fulfillment.released",
+      "componentRef": "app.CheckoutService",
+      "orderRef": "order-demo-100"
     }
   ],
   "observedOutput": {
-    "reservedOrder": "order-demo-1",
-    "reservedLineCount": 2,
-    "reservedUnitCount": 3,
-    "reservationCount": 1,
-    "remainingStock": {
-      "sku-archsig-notes": 0,
-      "sku-rust-book": 3
-    }
+    "releasedOrder": "order-demo-100",
+    "reservationLineCount": 2,
+    "displayedTotalCents": 33140,
+    "authorizedCents": 33140,
+    "traceEventCount": 9
   },
-  "evidenceBoundary": "synthetic trace captured from the checked-in sample smoke scenario; it is not production telemetry",
+  "evidenceBoundary": "synthetic trace captured from the checked-in sample smoke scenario in the base feature state; it is not production telemetry",
   "nonConclusions": [
     "runtime trace does not prove production correctness",
     "runtime trace is bounded to the sample scenario"

@@ -1,0 +1,32 @@
+{
+  "schema": "archsig-gate-policy/v0.5.0",
+  "policyId": "gate-policy:commerce-fulfillment-ci@1",
+  "rules": [
+    {
+      "ruleId": "absolute-verdict-discipline",
+      "scope": "absolute",
+      "verdictMapping": {
+        "measured_zero": "pass",
+        "measured_nonzero": "block",
+        "unmeasured": "pass_with_boundary",
+        "unknown": "pass_with_boundary",
+        "not_computed": "pass_with_boundary",
+        "violated_assumption_dependency": "block"
+      },
+      "boundaryKindOverrides": {
+        "silence_by_design": "pass_with_boundary"
+      }
+    },
+    {
+      "ruleId": "introduced-by-change-discipline",
+      "scope": "introduced-by-change",
+      "introducedByChangeMapping": {
+        "new": "block",
+        "cleared": "pass",
+        "preexisting": "pass_with_boundary",
+        "removed": "pass_with_boundary",
+        "other": "pass_with_boundary"
+      }
+    }
+  ]
+}

@@ -27,6 +27,7 @@ Current source-of-truth boundaries:
 Current entry points:
 
 - [Tooling Editing Guideline](guideline.md)
+- [One-cent drift demo](../../tools/archsig/examples/practical-rust-service/README.md): 実行可能なend-to-endデモ(H1障害の実測→gate BLOCK→修復→PASS)。
 - [Atom Handoff Checklist](atom_handoff.md)
 - [LawPolicy](law_policy.md)
 - [ArchSig Analyze E2E Workflow](llm_native_e2e_workflow.md)
