@@ -29,6 +29,9 @@ Issue #3246.
   - `ShortExactLiftProblem.connectingClass_eq_zero_iff`
   - `ShortExactLiftProblem.correctedLocalLifts_compatible_iff`
   - `ShortExactLiftProblem.connectingClass_zero_iff_exists_globalLift`
+  - `ShortExactLiftProblem.coverRelativeConnectingClass_choice_independent`
+  - `ShortExactLiftProblem.coverRelativeConnectingClass_eq_zero_iff`
+  - `ShortExactLiftProblem.coverRelativeConnectingClass_zero_iff_exists_globalLift`
   - `ShortExactLiftProblem.instAddTorsorGlobalLift`
   - `ShortExactLiftProblem.globalLiftFiber_addTorsor`
 
@@ -41,6 +44,13 @@ cocycle equation, change-of-choice coboundary, choice independence, correction
 compatibility, class-zero iff actual global lift, and the kernel-section
 `AddTorsor` on every nonempty lift fiber.
 
+The same sieve-native data construct the repository's
+`CoverRelativeCechCover`, kernel `ObstructionSheaf`, and
+`CoverRelativeCechComplex`. The accepted primary theorem places the connecting
+class in `CoverRelativeCechComplex.AdditiveCechH1`; the cochain-level
+realization proves choice independence and transports the zero-iff-lift result
+to that existing API.
+
 The reverse implication corrects the local lifts and calls
 `AATDescent.exists_global`. It then uses uniqueness for the quotient sheaf to
 prove that the glued middle-sheaf section maps to the fixed base section.
@@ -50,7 +60,7 @@ prove that the glued middle-sheaf section maps to the fixed base section.
 - discharged: D0 generic additive lift-descent engine, connecting-class
   provenance, choice independence, actual gluing, and lift-fiber torsor.
 - remaining: law-generated `N / E / Q`, kernel comparison, objectwise
-  exactness, generated-cover provenance, `E / Q` sheaf conditions, conormal
+  exactness, generated-cover provenance, `N / E / Q` sheaf conditions, conormal
   instantiation, semantic representations, finite zero/nonzero witness pair,
   package theorem, and `H^1 = 0` corollary.
 
@@ -63,7 +73,8 @@ prove that the glued middle-sheaf section maps to the fixed base section.
 - certificate provenance: D0 constructions are generated from the generic
   input; law-generated provenance remains unresolved and is not counted here
 - proof use: kernel exactness, local lift projection, kernel naturality,
-  cover membership, and both sheaf conditions are used
+  cover membership, and all three sheaf conditions are used either in the
+  cover-relative coefficient construction or the lift equivalence
 - structure-field escape: none found
 - route integrity: pass
 - target-fitting / vacuity / one-way-as-equivalence / GOAL reinterpretation:
@@ -74,4 +85,6 @@ prove that the glued middle-sheaf section maps to the fixed base section.
 Construct from law-witness input the ideal-power coefficient sequence supplying
 the D0 fields: `N = I/I^2`, `E = O/I^2`, `Q = O/I`, the projection and kernel
 comparison, objectwise exactness, restriction naturality, and the required
-sheaf conditions.
+sheaf conditions. The D0 theorem now already uses the repository's
+`CoverRelativeCechComplex.AdditiveCechH1`; D1 supplies its law-generated
+coefficient instance rather than a later comparison to a private quotient.

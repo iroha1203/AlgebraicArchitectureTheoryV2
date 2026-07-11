@@ -41,7 +41,7 @@ Research 側(`research/lean/ResearchLean/`)で受理された成果の1行台帳
 
 | theorem | file | 本文ラベル | conjuncts 要旨 | 未放電仮定 | 受理 | 移植状況 | 本体対応 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `ShortExactLiftProblem.connectingClass_zero_iff_exists_globalLift` | `AG/QualitySurface/LawGeneratedConormalDescent.lean` | - | selected sieveから二重・三重refinement complexとlocal-lift cocycleを構成し、choice-independentなconnecting classの零とactual global liftの存在を同値化。非空lift fiberにはkernel-section `AddTorsor`を構成 | law-generated `N/E/Q`、kernel comparison、objectwise exactness、cover provenance、`E/Q` sheaf conditions | G-07 Cycle 1 / Issue #3246 | unported | Issue #3246 |
+| `ShortExactLiftProblem.coverRelativeConnectingClass_zero_iff_exists_globalLift` | `AG/QualitySurface/LawGeneratedConormalDescent.lean` | - | selected sieveからrepository `CoverRelativeCechComplex`とlocal-lift cocycleを構成し、`AdditiveCechH1`のchoice-independentなconnecting classの零とactual global liftの存在を同値化。非空lift fiberにはkernel-section `AddTorsor`を構成 | law-generated `N/E/Q`、kernel comparison、objectwise exactness、cover provenance、`N/E/Q` sheaf conditions | G-07 Cycle 1 / Issue #3246 | unported | Issue #3246 |
 
 <!--
 既存の受理成果の遡及登録(初期整備)は別 PRD で実施する

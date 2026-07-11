@@ -1,5 +1,7 @@
+import Formal.AG.Cohomology.CochainComparison
 import Formal.AG.Site.Descent
 import Formal.Util.AssertStandardAxioms
+import Mathlib.Algebra.Category.Grp.Basic
 import Mathlib.Algebra.AddTorsor.Defs
 import Mathlib.Tactic
 
@@ -11,6 +13,22 @@ twofold and threefold common refinements of the selected sieve.  The overlap
 difference, its cocycle equation, the correction equation, and change of local
 lift are theorems derived from restriction functoriality and objectwise kernel
 exactness; none is a field of the input structure.
+
+## Implementation notes
+
+The sieve-native presentation is used because `AATDescent` quantifies over all
+arrows in a covering sieve.  The module then constructs the repository's
+`CoverRelativeCechCover`, `ObstructionSheaf`, and `CoverRelativeCechComplex`
+from that same data and states the primary equivalence in
+`CoverRelativeCechComplex.AdditiveCechH1`.  This avoids a private analogue of
+the existing Čech API while keeping the explicit common-refinement calculation
+available for the descent proof.
+
+`ShortExactLiftProblem` deliberately does not assume objectwise surjectivity of
+`E ⟶ Q`: that would already give every base section a global lift and erase the
+obstruction.  The sheaf-level epimorphism is represented at the section under
+study by the explicit local-lift family, while `kernelEquiv` supplies exactness
+at `E`.
 -/
 
 noncomputable section
@@ -46,6 +64,7 @@ structure ShortExactLiftProblem
       projection.app (op Y) (localLifts f hf) = Q.map f.op baseSection
   eIsSheaf : AAT.AG.Site.AATSheafCondition S (E ⋙ forget AddCommGrpCat)
   qIsSheaf : AAT.AG.Site.AATSheafCondition S (Q ⋙ forget AddCommGrpCat)
+  nIsSheaf : AAT.AG.Site.AATSheafCondition S (N ⋙ forget AddCommGrpCat)
 
 namespace ShortExactLiftProblem
 
@@ -143,6 +162,100 @@ def overlap12 {P : ShortExactLiftProblem S} (t : P.TripleIndex) : P.OverlapIndex
 
 end TripleIndex
 
+/-! ## Existing cover-relative Čech API realization -/
+
+/-- A selected arrow of the sieve, packaged as a degree-zero simplex. -/
+structure LocalIndex (P : ShortExactLiftProblem S) where
+  obj : S.category
+  arrow : obj ⟶ P.base
+  mem : P.cover arrow
+
+/-- Simplices used by the sieve-native three-term realization. -/
+def coverSimplex (P : ShortExactLiftProblem S) : Nat → Type u
+  | 0 => P.LocalIndex
+  | 1 => P.OverlapIndex
+  | 2 => P.TripleIndex
+  | _ + 3 => Empty
+
+/-- Object supporting each simplex of the sieve-native realization. -/
+def coverOverlap (P : ShortExactLiftProblem S) :
+    ∀ n, P.coverSimplex n → S.category
+  | 0, i => i.obj
+  | 1, o => o.common
+  | 2, t => t.common
+  | _ + 3, e => nomatch e
+
+/-- Face maps of the sieve-native three-term realization. -/
+def coverFace (P : ShortExactLiftProblem S) :
+    ∀ n, Fin (n + 2) → P.coverSimplex (n + 1) → P.coverSimplex n
+  | 0, i, o =>
+      if i = 0 then
+        ⟨o.rightObj, o.rightArrow, o.right_mem⟩
+      else
+        ⟨o.leftObj, o.leftArrow, o.left_mem⟩
+  | 1, i, t =>
+      if i = 0 then t.overlap12
+      else if i = 1 then t.overlap02
+      else t.overlap01
+  | _ + 2, _i, e => nomatch e
+
+/-- Face restrictions of the sieve-native three-term realization. -/
+def coverFaceRestriction (P : ShortExactLiftProblem S) :
+    ∀ (n : Nat) (i : Fin (n + 2)) (σ : P.coverSimplex (n + 1)),
+      P.coverOverlap (n + 1) σ ⟶ P.coverOverlap n (P.coverFace n i σ)
+  | 0, i, o =>
+      if h : i = 0 then by
+        subst i
+        exact o.toRight
+      else o.toLeft
+  | 1, _i, _t => 𝟙 _
+  | _ + 2, _i, e => nomatch e
+
+/-- The selected sieve as the repository's general cover-relative Čech cover. -/
+def coverRelativeCover (P : ShortExactLiftProblem S) :
+    AAT.AG.Cohomology.CoverRelativeCechCover S where
+  base := P.base
+  Index := P.LocalIndex
+  chart := LocalIndex.obj
+  inclusion := LocalIndex.arrow
+  simplex := P.coverSimplex
+  overlap := P.coverOverlap
+  face := P.coverFace
+  faceRestriction := P.coverFaceRestriction
+
+/-- The kernel coefficient as an actual AAT obstruction sheaf. -/
+def kernelObstructionSheaf (P : ShortExactLiftProblem S) :
+    AAT.AG.Cohomology.ObstructionSheaf S :=
+  AAT.AG.Cohomology.ObstructionSheaf.ofAddCommGrpValued P.N P.nIsSheaf
+
+/-- Degree-zero cover-relative cochains and kernel section families are additively equivalent. -/
+def c0CoverEquiv (P : ShortExactLiftProblem S) :
+    P.C0 ≃+ AAT.AG.Cohomology.CoverRelativeCechCochain
+      P.coverRelativeCover P.kernelObstructionSheaf 0 where
+  toFun a i := a i.arrow i.mem
+  invFun c {Y} f hf := c ⟨Y, f, hf⟩
+  left_inv a := by
+    funext Y f hf
+    rfl
+  right_inv c := by
+    funext i
+    rfl
+  map_add' a b := by
+    funext i
+    rfl
+
+/-- Degree-one cover-relative cochains are the constructed overlap cochains. -/
+def c1CoverEquiv (P : ShortExactLiftProblem S) :
+    P.C1 ≃+ AAT.AG.Cohomology.CoverRelativeCechCochain
+      P.coverRelativeCover P.kernelObstructionSheaf 1 :=
+  AddEquiv.refl P.C1
+
+/-- Degree-two cover-relative cochains are the constructed triple cochains. -/
+def c2CoverEquiv (P : ShortExactLiftProblem S) :
+    P.C2 ≃+ AAT.AG.Cohomology.CoverRelativeCechCochain
+      P.coverRelativeCover P.kernelObstructionSheaf 2 :=
+  AddEquiv.refl P.C2
+
 /-- Degree-two kernel cochains on all triple common refinements. -/
 def C2 (P : ShortExactLiftProblem S) : Type u :=
   (t : P.TripleIndex) → P.N.obj (op t.common)
@@ -182,6 +295,84 @@ theorem d1_d0 (P : ShortExactLiftProblem S) (a : P.C0) :
   dsimp [d0, d1, TripleIndex.overlap01, TripleIndex.overlap02,
     TripleIndex.overlap12]
   abel
+
+/-- Alternating face combination for the repository cover-relative complex. -/
+def coverAlternatingFaceCombination (P : ShortExactLiftProblem S) :
+    ∀ n,
+      ((σ : P.coverRelativeCover.simplex (n + 1)) → Fin (n + 2) →
+        P.kernelObstructionSheaf.carrier.toPresheaf.obj
+          (op (P.coverRelativeCover.overlap (n + 1) σ))) →
+      AAT.AG.Cohomology.CoverRelativeCechCochain
+        P.coverRelativeCover P.kernelObstructionSheaf (n + 1)
+  | 0, terms => fun o => terms o 0 - terms o 1
+  | 1, terms => fun t => terms t 0 - terms t 1 + terms t 2
+  | _ + 2, _terms => 0
+
+/-- Differential of the repository cover-relative complex. -/
+def coverDifferential (P : ShortExactLiftProblem S) :
+    ∀ n,
+      AAT.AG.Cohomology.CoverRelativeCechCochain
+          P.coverRelativeCover P.kernelObstructionSheaf n →+
+        AAT.AG.Cohomology.CoverRelativeCechCochain
+          P.coverRelativeCover P.kernelObstructionSheaf (n + 1)
+  | 0 => P.c1CoverEquiv.toAddMonoidHom.comp
+      (P.d0.comp P.c0CoverEquiv.symm.toAddMonoidHom)
+  | 1 => P.c2CoverEquiv.toAddMonoidHom.comp
+      (P.d1.comp P.c1CoverEquiv.symm.toAddMonoidHom)
+  | _ + 2 => 0
+
+/-- The constructed differential is the alternating sum of actual face restrictions. -/
+theorem coverDifferential_eq_alternatingFaceCombination
+    (P : ShortExactLiftProblem S) (n : Nat)
+    (c : AAT.AG.Cohomology.CoverRelativeCechCochain
+      P.coverRelativeCover P.kernelObstructionSheaf n) :
+    P.coverDifferential n c =
+      P.coverAlternatingFaceCombination n
+        (fun σ i =>
+          P.kernelObstructionSheaf.carrier.toPresheaf.map
+            (P.coverRelativeCover.faceRestriction n i σ).op
+            (c (P.coverRelativeCover.face n i σ))) := by
+  cases n with
+  | zero =>
+      funext o
+      change
+        P.N.map o.toRight.op (c ⟨o.rightObj, o.rightArrow, o.right_mem⟩) -
+            P.N.map o.toLeft.op (c ⟨o.leftObj, o.leftArrow, o.left_mem⟩) = _
+      simp [coverAlternatingFaceCombination, coverRelativeCover, coverFace,
+        coverFaceRestriction, kernelObstructionSheaf]
+  | succ n =>
+      cases n with
+      | zero =>
+          funext t
+          change c t.overlap12 - c t.overlap02 + c t.overlap01 = _
+          simp [coverAlternatingFaceCombination, coverRelativeCover, coverFace,
+            coverFaceRestriction, kernelObstructionSheaf]
+      | succ n =>
+          rfl
+
+/-- The repository cover-relative differential squares to zero. -/
+theorem coverDifferential_comp (P : ShortExactLiftProblem S)
+    (n : Nat)
+    (c : AAT.AG.Cohomology.CoverRelativeCechCochain
+      P.coverRelativeCover P.kernelObstructionSheaf n) :
+    P.coverDifferential (n + 1) (P.coverDifferential n c) = 0 := by
+  cases n with
+  | zero =>
+      change P.d1 (P.d0 (P.c0CoverEquiv.symm c)) = 0
+      exact P.d1_d0 _
+  | succ n =>
+      cases n <;> rfl
+
+/-- The all-common-refinement presentation as the repository's cover-relative Čech complex. -/
+def coverRelativeComplex (P : ShortExactLiftProblem S) :
+    AAT.AG.Cohomology.CoverRelativeCechComplex
+      P.coverRelativeCover P.kernelObstructionSheaf where
+  cochainAddCommGroup n := inferInstance
+  alternatingFaceCombination := P.coverAlternatingFaceCombination
+  differential := P.coverDifferential
+  differential_eq_alternatingFaceCombination :=
+    P.coverDifferential_eq_alternatingFaceCombination
+  differential_comp := P.coverDifferential_comp
 
 /-- Local lift families to the fixed base section. -/
 def LocalLiftFamily (P : ShortExactLiftProblem S) : Type u :=
@@ -281,6 +472,44 @@ theorem localLiftDifference_cocycle (P : ShortExactLiftProblem S)
   rw [P.kernel_localLiftDifferenceAt, P.kernel_localLiftDifferenceAt,
     P.kernel_localLiftDifferenceAt]
   abel
+
+/-- The selected overlap cocycle as a cocycle of the repository complex. -/
+def coverRelativeConnectingCocycle (P : ShortExactLiftProblem S) :
+    P.coverRelativeComplex.CechCocycle 1 :=
+  ⟨P.c1CoverEquiv (P.localLiftDifference P.chosenLocalLiftFamily), by
+    change P.d1 (P.localLiftDifference P.chosenLocalLiftFamily) = 0
+    exact P.localLiftDifference_cocycle P.chosenLocalLiftFamily⟩
+
+/-- The connecting class in the repository's additive cover-relative `H¹`. -/
+def coverRelativeConnectingClass (P : ShortExactLiftProblem S) :
+    P.coverRelativeComplex.AdditiveCechH1 :=
+  P.coverRelativeComplex.additiveH1Class P.coverRelativeConnectingCocycle
+
+/-- Cover-relative connecting cocycle for any explicit local-lift choice. -/
+def coverRelativeConnectingCocycleFor (P : ShortExactLiftProblem S)
+    (L : P.LocalLiftFamily) : P.coverRelativeComplex.CechCocycle 1 :=
+  ⟨P.c1CoverEquiv (P.localLiftDifference L), by
+    change P.d1 (P.localLiftDifference L) = 0
+    exact P.localLiftDifference_cocycle L⟩
+
+/-- Cover-relative connecting class for any explicit local-lift choice. -/
+def coverRelativeConnectingClassFor (P : ShortExactLiftProblem S)
+    (L : P.LocalLiftFamily) : P.coverRelativeComplex.AdditiveCechH1 :=
+  P.coverRelativeComplex.additiveH1Class (P.coverRelativeConnectingCocycleFor L)
+
+/-- Choice independence in the repository's additive cover-relative `H¹`. -/
+theorem coverRelativeConnectingClass_choice_independent
+    (P : ShortExactLiftProblem S) (left right : P.LocalLiftFamily) :
+    P.coverRelativeConnectingClassFor left =
+      P.coverRelativeConnectingClassFor right := by
+  apply (P.coverRelativeComplex.additiveH1Class_eq_iff_legacy_setoid _ _).2
+  refine ⟨P.c0CoverEquiv (-(P.changePrimitive left right)), ?_⟩
+  change P.c1CoverEquiv
+      (P.localLiftDifference left - P.localLiftDifference right) =
+    P.c1CoverEquiv (P.d0 (-(P.changePrimitive left right)))
+  apply P.c1CoverEquiv.injective
+  rw [map_neg, ← P.localLiftDifference_change left right]
+  simp
 
 /-- Degree-one cocycles in the constructed complex. -/
 def cocycleSubgroup (P : ShortExactLiftProblem S) : AddSubgroup P.C1 :=
@@ -499,6 +728,38 @@ theorem connectingClass_zero_iff_exists_globalLift (P : ShortExactLiftProblem S)
   · exact P.exists_global_of_connectingClass_eq_zero
   · rintro ⟨lift⟩
     exact P.connectingClass_eq_zero_of_globalLift lift
+
+/--
+The connecting class in the repository's `CoverRelativeCechComplex.AdditiveCechH1`
+vanishes exactly when the sieve-native class vanishes.
+-/
+theorem coverRelativeConnectingClass_eq_zero_iff
+    (P : ShortExactLiftProblem S) :
+    P.coverRelativeConnectingClass = 0 ↔ P.connectingClass = 0 := by
+  rw [P.coverRelativeComplex.additiveH1Class_eq_zero_iff]
+  constructor
+  · rintro ⟨b, hb⟩
+    apply P.connectingClass_eq_zero_iff.2
+    refine ⟨P.c0CoverEquiv.symm b, ?_⟩
+    apply P.c1CoverEquiv.injective
+    exact hb
+  · intro hzero
+    rcases P.connectingClass_eq_zero_iff.1 hzero with ⟨a, ha⟩
+    refine ⟨P.c0CoverEquiv a, ?_⟩
+    change P.c1CoverEquiv
+      (P.localLiftDifference P.chosenLocalLiftFamily) =
+        P.c1CoverEquiv (P.d0 a)
+    exact congrArg P.c1CoverEquiv ha
+
+/--
+D0 in the repository's cover-relative Čech API: the actual additive `H¹`
+connecting class vanishes exactly when an actual global lift exists.
+-/
+theorem coverRelativeConnectingClass_zero_iff_exists_globalLift
+    (P : ShortExactLiftProblem S) :
+    P.coverRelativeConnectingClass = 0 ↔ Nonempty P.GlobalLift :=
+  P.coverRelativeConnectingClass_eq_zero_iff.trans
+    P.connectingClass_zero_iff_exists_globalLift
 
 /-- Kernel sections act on the actual global-lift fiber. -/
 def kernelAction (P : ShortExactLiftProblem S)
