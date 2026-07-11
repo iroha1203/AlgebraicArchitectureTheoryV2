@@ -1,0 +1,18 @@
+# case_id	fixture_path	command	subject	expected_code
+aggregate-root	aggregate/Formal.lean	import-gate	aggregate	E_RESEARCH_REACHABILITY
+aggregate-module	aggregate/Formal/AG.lean	support	aggregate	-
+aggregate-target	aggregate/Formal/AG/Research/Basic.lean	support	aggregate	-
+direct-source	direct/Formal/AG/Main.lean	import-gate	direct	E_RESEARCH_REACHABILITY
+direct-target	direct/Formal/AG/Research/Basic.lean	support	direct	-
+indirect-bridge	indirect/Formal/AG/Bridge.lean	support	indirect	-
+indirect-source	indirect/Formal/AG/Main.lean	import-gate	indirect	E_RESEARCH_REACHABILITY
+indirect-target	indirect/Formal/AG/Research/Basic.lean	support	indirect	-
+public-source	public/Formal/AG/Main.lean	import-gate	public	E_RESEARCH_REACHABILITY
+public-target	public/Formal/AG/Research/Basic.lean	support	public	-
+legacy-final-lean	legacy/final-production-lean.fixture	legacy-final	Formal/AG/Production.lean	E_LEGACY_CONTENT
+legacy-final-doc	legacy/final-current-doc.fixture	legacy-final	docs/aat/current.md	E_LEGACY_CONTENT
+legacy-final-skill	legacy/final-skill.fixture	legacy-final	.codex/skills/test/SKILL.md	E_LEGACY_CONTENT
+legacy-final-workflow	legacy/final-workflow.fixture	legacy-final	.github/workflows/test.yml	E_LEGACY_CONTENT
+legacy-final-lookalike	legacy/final-checker-lookalike.fixture	legacy-final	.github/lean_quality/check_research_legacy_refs_copy.sh	E_LEGACY_CONTENT
+legacy-no-new-content	legacy/no-new-content.fixture	legacy-no-new-content	-	E_LEGACY_CONTENT
+legacy-no-new-path	legacy/no-new-path.fixture	legacy-no-new-path	-	E_LEGACY_PATH

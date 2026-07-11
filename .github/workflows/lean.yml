@@ -7,6 +7,39 @@ on:
       - main
 
 jobs:
+  research-separation-gates:
+    name: research separation gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Current-tree import graph
+        run: .github/lean_quality/check_research_import_direction.sh
+
+      - name: Legacy reference no-new gate
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: .github/lean_quality/check_research_legacy_refs.sh no-new "$BASE_SHA" "$HEAD_SHA"
+
+      - name: Legacy reference no-new gate (main push)
+        if: github.event_name == 'push'
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if printf '%s' "$BASE_SHA" | grep -Eq '^0+$'; then
+            BASE_SHA="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
+          fi
+          .github/lean_quality/check_research_legacy_refs.sh no-new "$BASE_SHA" "$HEAD_SHA"
+
+      - name: Research separation fixture suite
+        run: .github/lean_quality/test_research_separation_gates.sh
+
   build:
     name: lake build
     runs-on: ubuntu-latest
@@ -30,9 +63,6 @@ jobs:
 
       - name: Statement contracts
         run: lake env lean Formal/AG/StatementContracts.lean
-
-      - name: Research import direction scan
-        run: .github/lean_quality/check_research_import_direction.sh
 
       - name: Premise diff report
         run: .github/lean_quality/list_premise_diff.sh
