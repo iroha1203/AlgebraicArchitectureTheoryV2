@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 8
+- latest reviewed cycle: 9
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: construct the true ideal subsheaf, unconditional additive sheafification, and D1-to-D0 connection
+- next obligation: connect the large-coefficient sheaf sequence to D0 and construct the true ideal subsheaf
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -510,3 +510,70 @@ D1.  Provide the selected topology's canonical
 `HasSheafify S.topology AddCommGrpCat` construction, combine Cycle 7's
 sheafified short exact sequence with Cycle 8's inclusion provenance, and
 instantiate the generic D0 lift problem.
+
+## Cycle 9 — unconditional large-universe additive sheafification
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedIdealPowerLiftedSheafification.lean`
+- checkpoint spine:
+  - `liftPresheafFunctor`
+  - `liftPresheafFunctor_additive`
+  - `liftedShortComplex`
+  - `liftedShortComplex_shortExact`
+  - `sheafifiedShortComplex`
+  - `sheafifiedShortComplex_shortExact`
+
+### Checkpoint delta
+
+The Cycle 7 raw short exact sequence is lifted objectwise from
+`AddCommGrpCat.{u}` to `AddCommGrpCat.{u + 1}` using Mathlib's fully faithful
+additive `uliftFunctor`.  Whiskering by that functor preserves finite limits
+and finite colimits, so the lifted presheaf sequence remains short exact.
+
+At coefficient universe `u + 1`, Mathlib's concrete sheafification instance is
+available for every selected AAT site.  The lifted sequence is therefore sent
+through `presheafToSheaf` without a `HasSheafify` theorem premise, and
+`sheafifiedShortComplex_shortExact` proves that the resulting canonical
+additive sheaf sequence is short exact.  No selected sheaf, sheaf condition,
+kernel comparison, or exactness certificate is accepted.
+
+### Premise delta
+
+- discharged: objectwise coefficient universe lift; preservation of the raw
+  short exact sequence by that lift; canonical
+  `AddCommGrpCat.{u + 1}`-valued sheafification for arbitrary AAT sites; and
+  short exactness of the resulting additive sheaf sequence.
+- remaining: a large-coefficient adapter from the sheafified sequence to the
+  generic D0 lift problem and its finite-cover cohomology surface; sheafified
+  ambient ring action and stability of the additive ideal object; a true ideal
+  subsheaf; semantic representations; finite zero/nonzero witness pair;
+  package theorem; and the `H¹ = 0` corollary.
+
+The sequence remains at coefficient universe `u + 1`; this cycle does not
+assert a descent to `AddCommGrpCat.{u}`.  It also does not identify additive
+sheafification with an ideal sheaf.  The true ideal-subsheaf structure and the
+large-coefficient D0 comparison remain separate proof obligations.
+
+### Audits
+
+- focused Cycle 9 elaboration: pass
+- module-wide standard-axiom assertion: pass (8 declarations)
+- exactness provenance: the lifted complex is the image of Cycle 7's generated
+  raw complex, and both short-exactness proofs use
+  `ShortComplex.ShortExact.map_of_exact`
+- sheafification availability: the `u + 1` concrete instance is inferred by
+  Mathlib; no `HasSheafify` argument appears in the declarations
+- supplied-field audit: no universe-lifted sequence, sheaf, sheaf condition,
+  kernel comparison, exactness, ring-action, or ideal-subsheaf field was added
+- target classification: unconditional additive D1 sheafification is proved;
+  the D0 adapter and true ideal subsheaf remain unproved
+
+### Next obligation
+
+Generalize the generic D0 lift problem and its finite canonical-tuple
+cohomology surface to a coefficient universe independent of the AAT site
+universe, then instantiate it with the Cycle 9 sheafified short exact sequence.
+Separately construct the sheafified ambient ring action and prove stability of
+the additive ideal object before claiming a true ideal subsheaf.
