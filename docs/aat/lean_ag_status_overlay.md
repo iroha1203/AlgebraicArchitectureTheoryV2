@@ -26,7 +26,6 @@
 | Item | 現行判定 | 理由 |
 | --- | --- | --- |
 | I-4 | `packaged (assumption-relative)` | `LawUniverse.coverageAssumptions` / `exactnessAssumptions` はselected assumption slotであり、concrete three-reading theoremの完了根拠には数えない。 |
-| II-2 | `未達・降格記録` | quotient finite-meet poset constructionは存在するが、旧命題4.2のempty-theorem / over-promotion懸念を閉じるtheorem-grade evidenceではない。 |
 | IV-8 | `defined only` / `packaged (assumption-relative)` | Type値obstruction sheaf / module sheafはcarrierまたは明示仮定相対のsurfaceであり、無条件なadditive/module soundnessとして数えない。 |
 | V.R11 | `未達・降格記録` | repair synthesis fixtureには `emitsOnlySoundStepsOrNoSolutionCertificate := True` / `_holds := trivial` が残るため、定理13.4のtheorem-grade sound-step emission evidenceに数えない。 |
 | VI-5 | `packaged (assumption-relative)` | decomposition gerbe / non-abelian soundnessはsupplied dataに相対化され、banded abelian bridgeもconditionalである。 |
