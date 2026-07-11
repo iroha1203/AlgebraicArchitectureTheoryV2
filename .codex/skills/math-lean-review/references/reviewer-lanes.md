@@ -15,7 +15,8 @@
 ### Lean査読 A / B
 
 - Lean declaration、statement、定義、型、universe、instance、仮定、proof term、
-  依存補題、`#print axioms`、placeholder scan、focused buildを追う。
+  依存補題、`#print axioms`、placeholder scan、単一fileのfocused `lake env lean`
+  checkを追う。
 - 数学claimの弱化、結論相当のtheorem argument / typeclass / certificate field /
   structure fieldへの移動、未放電obligationを探す。
 - material premiseのcertificate provenance、proof-use、field-contentを追う。

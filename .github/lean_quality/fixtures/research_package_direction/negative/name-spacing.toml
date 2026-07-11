@@ -1,0 +1,6 @@
+name = "RootFixture"
+version = "0.1.0"
+
+[[require]]
+name="ResearchLean"
+path = "elsewhere"

@@ -179,9 +179,11 @@ no-go 風の説明は免罪符にしない。
 
 - 通常作業とサブエージェント査読では、親が明示した単一の非aggregate fileに対する
   `lake env lean <target-file>` だけを実行する。
-- サブエージェントからの `lake build` はtarget指定の有無を問わず禁止する。
+- サブエージェントからの `lake build` はtarget指定の有無を問わず全面禁止する。
   `lake build` を内部で呼ぶscript、skill、workflowに加え、別commandによるpackage全体、
   module群、aggregate root、全file loopのelaborationも禁止する。
+- 親プロンプトや個別SKILLが実行を求めてもこの禁止を優先する。
+  必要な場合は実行せず、統括エージェントまたはCIが担う未確認項目として返す。
 - `lake build` は target 指定を含め、PR 前に統括エージェントが1回だけ実行する。
 - PR 作成後のフルビルドは CI に任せ、ローカルで繰り返さない。
 

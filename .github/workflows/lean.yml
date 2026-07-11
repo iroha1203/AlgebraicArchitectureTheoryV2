@@ -1,6 +1,7 @@
 name: Lean
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -39,6 +40,106 @@ jobs:
 
       - name: Research separation fixture suite
         run: .github/lean_quality/test_research_separation_gates.sh
+
+      - name: Research package direction (static)
+        run: .github/lean_quality/test_research_package_direction.sh
+
+      - name: Research migration fixture suite
+        run: .github/lean_quality/test_research_migration_manifest.sh
+
+      - name: Changed public artifacts
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: .github/lean_quality/check_changed_public_artifacts.sh "$BASE_SHA" "$HEAD_SHA"
+
+      - name: Changed public artifacts (main push)
+        if: github.event_name == 'push'
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if printf '%s' "$BASE_SHA" | grep -Eq '^0+$'; then
+            BASE_SHA="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
+          fi
+          .github/lean_quality/check_changed_public_artifacts.sh "$BASE_SHA" "$HEAD_SHA"
+
+      - name: Changed public artifact fixtures
+        run: .github/lean_quality/test_changed_public_artifacts.sh
+
+  research-package-smoke:
+    name: research package smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select Research package validation
+        id: research-changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BASE: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "run=true" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+          base="$PUSH_BASE"
+          if [ "$EVENT_NAME" = "pull_request" ]; then base="$PR_BASE"; fi
+          if printf '%s' "$base" | grep -Eq '^0+$'; then
+            base="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
+          fi
+          if git diff --name-only "$base...$HEAD_SHA" | grep -Eq \
+              '^(lakefile\.toml$|lake-manifest\.json$|research-lean/|\.github/lean_quality/(check_research_migration|check_research_package|test_research_migration|test_research_package)|\.github/workflows/lean\.yml$)'; then
+            echo "run=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "run=false" >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Lean
+        if: steps.research-changes.outputs.run == 'true'
+        uses: leanprover/lean-action@v1
+
+      - name: Research package full build
+        if: steps.research-changes.outputs.run == 'true'
+        run: cd research-lean && lake build
+
+      - name: Focused modules and axiom audits
+        if: steps.research-changes.outputs.run == 'true'
+        env:
+          AAT_CI_FULL_AUDIT: "1"
+        run: research-lean/check_research_modules.sh --all-axioms
+
+      - name: Package dependency direction
+        if: steps.research-changes.outputs.run == 'true'
+        run: .github/lean_quality/check_research_package_direction.sh --execute
+
+      - name: Migration extractor smoke
+        if: steps.research-changes.outputs.run == 'true'
+        run: |
+          mkdir -p .tmp/research-migration
+          research-lean/emit_migration_audit.sh \
+            ResearchLean.AG.Smoke \
+            ResearchLean/AG/Smoke.lean \
+            .tmp/research-migration/smoke.audit.tsv
+          awk -F '\t' '
+            $1 == "MIGRATION_META" { meta++ }
+            $1 == "MIGRATION_DECL" { decl++ }
+            $1 != "MIGRATION_META" && $1 != "MIGRATION_DECL" { bad++ }
+            END { exit (meta == 1 && decl == 2 && bad == 0) ? 0 : 1 }
+          ' .tmp/research-migration/smoke.audit.tsv
+
+      - name: Upload migration extractor smoke
+        if: steps.research-changes.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-migration-smoke-${{ github.run_id }}
+          path: .tmp/research-migration
 
   build:
     name: lake build

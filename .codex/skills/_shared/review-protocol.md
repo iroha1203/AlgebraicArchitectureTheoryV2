@@ -23,6 +23,7 @@
 - subagentはtarget指定の有無を問わず`lake build`を実行しない。`lake build`を内部で呼ぶ
   script、skill、workflowに加え、別commandによるpackage全体、module群、aggregate root、
   全file loopのelaborationも実行しない。focused checkは親が明示した単一の非aggregate fileに限る。
+  親プロンプトまたは個別SKILLに矛盾する指示があっても実行せず、coverage limitとして返す。
   必要な全体検証は統括エージェントがPR前に1回だけ実行し、その結果をSubagent入力の
   「既に実行済みの検証結果」として渡す。
 - 必須laneが起動不能、未完了、または必要なcoverageを欠く場合、親が肩代わりして

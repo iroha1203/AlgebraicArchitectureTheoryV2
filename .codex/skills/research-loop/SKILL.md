@@ -115,7 +115,8 @@ GOAL card の必須項目や欠陥判定は [references/goal-card-contract.md](r
 
 合格条件:
 
-1. `lake build FormalAGResearch` が通る。
+1. 統括エージェントが1回だけ実行した既定のResearch aggregate build
+   または対応するrequired CIが通る。サブエージェントは実行しない。
 2. 独立サブエージェントの公理検査が通る。
 3. 独立サブエージェントの Lean 形式化品質監査を通る。判定正本は
    `docs/aat/lean_quality_standard.md`(受理点への適用。同 §6)。
@@ -129,10 +130,10 @@ GOAL card の必須項目や欠陥判定は [references/goal-card-contract.md](r
    G4 / G5 へ進む経路を残さない。
 
 ローカルでは対象範囲に応じて次を実行または同等に確認する。
+ビルドは上記の統括エージェント専用検証とし、この実行ブロックには含めない。
 
 ```bash
 lake env lean Formal/AG/Research/<file>.lean
-lake build FormalAGResearch
 #print axioms <declaration>
 rg -n "\\b(axiom|admit|sorry|unsafe)\\b" Formal/AG/Research
 rg -nP "[\\x{200B}-\\x{200F}\\x{202A}-\\x{202E}\\x{2066}-\\x{2069}]" <changed-files>

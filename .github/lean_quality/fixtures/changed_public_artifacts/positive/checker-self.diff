@@ -1,0 +1,4 @@
+diff --git a/.github/lean_quality/check_changed_public_artifacts.sh b/.github/lean_quality/check_changed_public_artifacts.sh
++++ b/.github/lean_quality/check_changed_public_artifacts.sh
+@@ -0,0 +1 @@
++private_patterns = (re.compile("/" + "Users/"),); machine_patterns = ("Hello" + "Lean",)
