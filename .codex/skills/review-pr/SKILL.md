@@ -76,7 +76,8 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
    - CI 状態(`gh pr checks`)。
    - checklist §6 の横断機械 scan(hidden/bidi、privacy / local-path、
      `git diff --check`)。
-   - 必要なら一時 worktree で `lake build` / cargo test を実行する。
+   - 必要なら統括エージェントが一時 worktree で `lake build` / cargo test を実行する。
+     `lake build` は1回に限り、サブエージェントに委譲しない。
 
 5. 統合判定する。
    - **委譲先判定の写像(合格の定義)**:
