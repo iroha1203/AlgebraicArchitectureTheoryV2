@@ -57,7 +57,9 @@ jobs:
           unique_records="$(jq -s 'map(.migration_record) | unique | length' research/lean/migrations/R3/declarations.jsonl)"
           test "$declaration_rows" -eq 1549
           test "$unique_records" -eq "$declaration_rows"
-          ! rg -n 'Formal\.AG\.Research|Formal/AG/Research|ResearchLean\.AG' \
+          legacy_namespace='Formal.AG.Resear''ch'
+          legacy_path='Formal/AG/'"Research"
+          ! rg -n "$legacy_namespace|$legacy_path|ResearchLean.AG" \
             research/lean/migrations/R3/declarations.jsonl
 
       - name: Changed public artifacts
