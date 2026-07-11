@@ -1,6 +1,6 @@
 ---
 name: repair-plan-creater
-description: Create archsig-repair-plan/v0.5.0 artifacts for ArchSig PRD-4 complete-support SAGA descent runs.
+description: Create archsig-repair-plan/v0.5.0 artifacts for ArchSig complete-support SAGA descent runs.
 ---
 
 # RepairPlan Creater

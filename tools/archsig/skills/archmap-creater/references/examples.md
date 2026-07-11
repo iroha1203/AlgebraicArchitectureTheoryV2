@@ -32,7 +32,7 @@ atoms.
 ```
 
 Bad: merging both observations into one generic semantic atom for
-`orders.Status`. This erases the alias evidence that PRD-4 `aliasWitnesses`
+`orders.Status`. This erases the alias evidence that SAGA `aliasWitnesses`
 measure on the ArchSig side.
 
 ## Coverage Ledger

@@ -13,7 +13,7 @@ open Opposite
 /--
 IV.定義5.1: local flatness data over a selected cover.
 
-Each cover chart carries a PRD-3 lawful section, and the section is required to
+Each cover chart carries a Part III lawful section, and the section is required to
 satisfy the primary obstruction-ideal vanishing condition `s_i^* I_Ob^U = 0`.
 The ambient ring and ideal are explicit parameters; this layer does not build a
 scheme-level gluing theorem.

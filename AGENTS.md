@@ -80,6 +80,8 @@
   `docs/sft/aat_interface.md` は、明示的な本文編集タスクの対象になった場合だけ更新する。
 - 完了レビューや残タスク整理では、対象 Issue / PRD / 計画書 / acceptance test が要求する
   concrete condition だけを判定する。
+- PRDの責務、参照禁止、完了後archiveの正本は [Repository documentation guideline](docs/guideline.md)
+  とする。PRD作業では同guidelineをhard ruleとして適用し、既存違反も例外扱いしない。
 - 作業は原則として GitHub Issue 起点で進める。次タスクは `priority:blocking`、`status:ready`、
   milestone の依存順を優先する。
 - 目的に対して自然に必要な設計、実装、docs、tests、website surface まで広げてよい。

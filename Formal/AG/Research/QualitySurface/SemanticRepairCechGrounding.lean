@@ -9060,7 +9060,7 @@ Cycle 242 finite-poset selected-complex constructor for the generated semantic
 coefficient layer.
 
 The selected semantic carriers and differentials are generated from
-`D.generalComplex`, the PRD-4 cover-relative complex selected by the
+`D.generalComplex`, the Part IV cover-relative complex selected by the
 finite-poset comparison data.  The residual remains visible selected input,
 with its ordinary Cech cocycle law.  This does not generate residual boundary,
 `H1` zero, descent/effectivity, refinement naturality, or a full sheaf
@@ -9158,7 +9158,7 @@ cover-relative cochain structure and comparison maps as material provenance.
 This is intentionally an audit theorem, not a construction theorem.  It shows
 which data are still carried by `FinitePosetCechComparisonData` after Cycle 242:
 additive structure on the general cover-relative cochains, maps to and from the
-PRD-2 finite-poset cochains, and compatibility of the selected cover-relative
+Part II finite-poset cochains, and compatibility of the selected cover-relative
 differential with the finite-poset differential.
 -/
 theorem finitePosetComparisonData_exposes_materialAdditiveAndDifferentialComparisonFields

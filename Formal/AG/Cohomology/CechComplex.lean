@@ -16,7 +16,7 @@ IV.定義3.1: cover-relative input for the general AAT Čech complex.
 
 The cover is recorded over a selected base object of the AAT site.  The
 overlap object for each simplex degree is explicit data, so later finite-poset
-comparison can instantiate this surface with the PRD-2 overlap construction.
+comparison can instantiate this surface with the Part II overlap construction.
 -/
 structure CoverRelativeCechCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (S : Site.AATSite A) where
@@ -353,7 +353,7 @@ theorem cohomologyClassSucc_eq_iff_additiveH1Class_eq
 /--
 IV.R2 frontier: finite-poset comparison witness for a general Čech complex.
 
-The actual PRD-2 comparison theorem is intentionally left for the R2 issue.
+The actual Part II comparison theorem is intentionally left for the R2 issue.
 This package is only a typed target for that theorem and carries no claim that
 an arbitrary general complex already agrees with the finite-poset surface.
 -/

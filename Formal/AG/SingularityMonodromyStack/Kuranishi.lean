@@ -38,7 +38,7 @@ structure KuranishiData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 VI.定理候補6.4: Kuranishi local model statement.
 
 The statement is data: lawful deformation germs are the zero locus of `kappa`.
-The PRD does not require a proof of a general Kuranishi local model theorem.
+the current implementation does not require a proof of a general Kuranishi local model theorem.
 -/
 structure KuranishiLocalModelStatement {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}

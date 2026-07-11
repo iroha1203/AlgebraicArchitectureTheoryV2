@@ -9,7 +9,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R4 / AC10 witness perturbation, persistence / zigzag reading, and
+Part VIII R4 / AC10 witness perturbation, persistence / zigzag reading, and
 stability theorem-candidate surfaces.
 
 The structures below record finite update and stability interfaces. They do

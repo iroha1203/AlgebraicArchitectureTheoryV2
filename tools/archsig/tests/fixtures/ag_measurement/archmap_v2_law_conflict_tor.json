@@ -4,22 +4,22 @@
   "sources": {
     "src:checkout-policy": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "B.5-checkout"
     },
     "src:inventory-policy": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "B.5-inventory"
     },
     "src:ambient": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R5"
     },
     "src:cover": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R5"
     }
   },

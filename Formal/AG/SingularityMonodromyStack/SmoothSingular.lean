@@ -167,14 +167,14 @@ variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
 variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
 
-/-- VI.定義5.2: the selected lawful locus is the PRD-3 `Flat_U` locus. -/
+/-- VI.定義5.2: the selected lawful locus is the Part III `Flat_U` locus. -/
 theorem lawfulLocus_eq_flatU_holds
     (N : NormalConeReading.{u, v, w, x, y, z} X) :
     N.lawfulLocus =
       LawAlgebra.LawfulLocus.localLawfulLocus N.LawCoordinateAlgebra N.obstructionFamily :=
   N.lawfulLocus_eq_flatU
 
-/-- VI.定義5.2: the selected obstruction ideal is the PRD-3 local `I_U`. -/
+/-- VI.定義5.2: the selected obstruction ideal is the Part III local `I_U`. -/
 theorem obstructionIdealCarrier_eq_I_U_holds
     (N : NormalConeReading.{u, v, w, x, y, z} X) :
     N.obstructionIdealCarrier = N.obstructionFamily.localObstructionIdeal :=

@@ -69,7 +69,7 @@
 ## Lean status discipline
 
 - Lean status は `proved`, `defined only`, `future proof obligation`, `empirical hypothesis` を区別する。
-- PRD-R 以降の theorem 系 status では、必要に応じて `packaged (assumption-relative)` と
+- peer-review hardening 以降の theorem 系 status では、必要に応じて `packaged (assumption-relative)` と
   `statement-only` も使う。`packaged (assumption-relative)` は仮定 record / certificate /
   selected package の field 合成から得る帰結、`statement-only` は型・candidate surface はあるが
   証明済み theorem として数えないものを指す。
@@ -83,7 +83,7 @@
 - **移植 ≠ import(Research 境界の不変条件)**: 本体(`Formal/AG` 本線、
   `Formal.lean` / `Formal/AG.lean` の配線を含む)から `Formal.AG.Research` を
   import してはならない。import 方向は Research → 本体のみ可
-  (研究 sandbox と正本の疎結合、PRD-R AC18)。「移植」とは本体内で構成を
+  (研究 sandbox と正本の疎結合、peer-review hardening AC18)。「移植」とは本体内で構成を
   再構成する蒸留であり、Research module の import +再導出ラッパーは
   依存 repackage として `unported` のまま扱う。検査:
   `rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!Formal/AG/Research/**' --glob '!Formal/AG/Research.lean'`
@@ -112,6 +112,8 @@
   `docs/aat/proof_obligations.md` / `docs/aat/lean_theorem_index.md` から辿れる
   対応する分割台帳 / 分割索引を更新する。
 - `docs/archive` は歴史的参照として扱い、現行文書の更新時に同じ変更を反映しない。
+- 文書 lifecycle は [repository documentation guideline](../guideline.md) に従う。AAT / Lean の恒久情報は
+  現行数学本文、Lean 品質基準、分割索引・台帳、statement contract に置く。
 - Architecture Signature は単一スコアではなく、多軸診断として扱う。
 - SOLID や Layered / Clean Architecture などの外部設計語彙は AAT の primitive ではない。
   必要な場合だけ、law presentation、cover、restriction compatibility、obstruction ideal、

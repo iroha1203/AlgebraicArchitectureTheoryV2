@@ -53,7 +53,7 @@ structure LawfulnessIdealCorrespondenceAssumptions where
 
 namespace LawfulnessIdealCorrespondenceAssumptions
 
-/-- III.定理11.1: local ideal lawfulness agrees with PRD-1 lawfulness. -/
+/-- III.定理11.1: local ideal lawfulness agrees with Part I lawfulness. -/
 theorem lawful_iff_semanticLawfulness
     (H : LawfulnessIdealCorrespondenceAssumptions s Obj LU Sig valuation) :
     s.Lawful ↔ Lawfulness Obj LU :=
@@ -62,7 +62,7 @@ theorem lawful_iff_semanticLawfulness
 
 /--
 III.定理11.1: local ideal lawfulness agrees with aggregate obstruction
-valuation zero, using PRD-1 `omegaU`.
+valuation zero, using Part I `omegaU`.
 -/
 theorem lawful_iff_omegaU_zero
     (H : LawfulnessIdealCorrespondenceAssumptions s Obj LU Sig valuation) :
@@ -72,7 +72,7 @@ theorem lawful_iff_omegaU_zero
       H.obstructionSoundness H.obstructionCompleteness Obj)
 
 /--
-III.定理11.1: local ideal lawfulness agrees with PRD-1
+III.定理11.1: local ideal lawfulness agrees with Part I
 `RequiredSignatureAxesZero`.
 -/
 theorem lawful_iff_requiredSignatureAxesZero

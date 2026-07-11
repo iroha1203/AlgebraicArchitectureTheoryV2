@@ -5,7 +5,7 @@ namespace AAT.AG
 universe u
 
 /--
-PRD-R I-1: canonical witness family indexed by the required laws of a selected
+peer-review hardening I-1: canonical witness family indexed by the required laws of a selected
 law universe. A bad witness is no longer an arbitrary token: it is exactly a
 selected required law that fails on the architecture object.
 -/
@@ -15,7 +15,7 @@ def requiredLawWitnessFamily {U : AtomCarrier.{u}} (LU : LawUniverse U) :
   badWitness A index := ¬ (LU.law index.1).holds A
 
 /--
-PRD-R I-1: canonical signature axes indexed by required laws. A selected axis
+peer-review hardening I-1: canonical signature axes indexed by required laws. A selected axis
 reads zero exactly when the corresponding required law holds.
 -/
 def requiredLawSignatureAxes {U : AtomCarrier.{u}} (LU : LawUniverse U) :
@@ -25,7 +25,7 @@ def requiredLawSignatureAxes {U : AtomCarrier.{u}} (LU : LawUniverse U) :
   zero A index := (LU.law index.1).holds A
 
 /--
-PRD-R I-1: semantic lawfulness agrees with absence of canonical required-law
+peer-review hardening I-1: semantic lawfulness agrees with absence of canonical required-law
 bad witnesses. This is an actual theorem about `Lawfulness`, not a projection
 from an assumption package.
 -/
@@ -41,7 +41,7 @@ theorem semanticLawful_iff_noRequiredObstruction_requiredLawWitness
       h ⟨index, hrequired⟩ hfail)
 
 /--
-PRD-R I-1: semantic lawfulness agrees with zero on the canonical required-law
+peer-review hardening I-1: semantic lawfulness agrees with zero on the canonical required-law
 signature axes.
 -/
 theorem semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes
@@ -55,7 +55,7 @@ theorem semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes
     exact h ⟨index, hrequired⟩ trivial
 
 /--
-PRD-R I-1: the two canonical concrete readings agree. Both sides are tied to
+peer-review hardening I-1: the two canonical concrete readings agree. Both sides are tied to
 the selected required law predicates, so the theorem cannot be satisfied by
 choosing `badWitness := True`.
 -/
@@ -66,7 +66,7 @@ theorem noRequiredObstruction_iff_requiredSignatureAxesZero_requiredLaw
   (semanticLawful_iff_noRequiredObstruction_requiredLawWitness A LU).symm.trans
     (semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes A LU)
 
-/-- PRD-R I-1: concrete three-reading agreement for required-law readings. -/
+/-- peer-review hardening I-1: concrete three-reading agreement for required-law readings. -/
 theorem concreteThreeReadingAgreement {U : AtomCarrier.{u}}
     (A : ArchitectureObject U) (LU : LawUniverse U) :
     (SemanticLawful A LU ↔

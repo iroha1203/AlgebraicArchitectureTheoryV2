@@ -10,13 +10,13 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R3 / AC7-AC9 square-free repair and Alexander dual surface.
+Part VIII R3 / AC7-AC9 square-free repair and Alexander dual surface.
 
 The repair objects here are combinatorial measurement targets. A minimal repair
 hitting set is not an architecture operation semantics or a legality theorem.
 -/
 
-/-- VIII.R3: Part VIII can reuse the PRD-3 square-free witness regime surface. -/
+/-- VIII.R3: Part VIII can reuse the Part III square-free witness regime surface. -/
 abbrev UsesSquareFreeWitnessRegime (E : Type u) :=
   LawAlgebra.StanleyReisner.SquareFreeWitnessRegime E
 
@@ -51,7 +51,7 @@ namespace SquareFreeRepairRegime
 variable {M : MeasurementProfile.{u, v}}
 
 /--
-VIII.Theorem 5.2 hardening: reuse the PRD-3 Stanley-Reisner ideal theorem for
+VIII.Theorem 5.2 hardening: reuse the Part III Stanley-Reisner ideal theorem for
 the selected source square-free witness regime.
 -/
 theorem source_obstructionIdeal_eq_stanleyReisnerIdeal
@@ -65,7 +65,7 @@ theorem source_obstructionIdeal_eq_stanleyReisnerIdeal
     M.WitnessVariables k R.sourceWitnessRegime
 
 /--
-VIII.Theorem 5.2 hardening: reuse the PRD-3 minimal generator / minimal forbidden
+VIII.Theorem 5.2 hardening: reuse the Part III minimal generator / minimal forbidden
 support theorem for the selected source square-free witness regime.
 -/
 theorem source_minimalGeneratorSupport_iff_minimalForbidden

@@ -1062,7 +1062,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     assert!(!missing_target.status.success());
     assert!(
         String::from_utf8_lossy(&missing_target.stderr).contains("requires target object"),
-        "measurement-packet handoff must reject structural verdicts without PRD-2 target"
+        "measurement-packet handoff must reject structural verdicts without a measurement target"
     );
 
     let unresolved_evidence_packet = out_dir.join("unresolved-evidence-measurement-packet.json");
@@ -1271,7 +1271,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     assert!(!missing_claim_status.status.success());
     assert!(
         String::from_utf8_lossy(&missing_claim_status.stderr).contains("claimStatus"),
-        "measurement-packet handoff must reject analytic readings without PRD-2 claimStatus"
+        "measurement-packet handoff must reject analytic readings without an analytic claimStatus"
     );
 }
 

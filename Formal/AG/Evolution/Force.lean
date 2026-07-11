@@ -8,7 +8,7 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R9 / AC18--AC19 force and force-integrability obstruction candidate.
+Part IX R9 / AC18--AC19 force and force-integrability obstruction candidate.
 
 Forces are selected temporal state morphisms inside one selected temporal
 site.  Integrability is a selected local-to-global evidence predicate, and the

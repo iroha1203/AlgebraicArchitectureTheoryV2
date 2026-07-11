@@ -11,7 +11,7 @@ Lean API を確認する入口として扱う。
 | 索引 | 対象 | 主な用途 |
 | --- | --- | --- |
 | [古典 AAT / downstream Lean API 索引](lean_theorem_index_classical_aat.md) | `Formal/Arch`、finite static structural core、Atom-generated kernel、SFT / ArchSig / tooling bridge | 既存 bounded theorem package、古典 AAT 由来 API、downstream bridge API を確認する。 |
-| [代数幾何 AAT Lean API 索引](lean_theorem_index_ag_aat.md) | `Formal/AG`、AG 版 AAT PRD-1〜10 | 現行 AAT 数学本文に対応する Lean declaration、本文ラベル、status を確認する。 |
+| [代数幾何 AAT Lean API 索引](lean_theorem_index_ag_aat.md) | `Formal/AG`、AG 版 AAT Part I〜10 | 現行 AAT 数学本文に対応する Lean declaration、本文ラベル、status を確認する。 |
 | [研究ループ Lean API 索引](lean_theorem_index_research.md) | `Formal/AG/Research`、target-theorem / research-loop theorem package | 研究ループで追加された theorem package と review 境界を確認する。 |
 
 ## 索引の読み方

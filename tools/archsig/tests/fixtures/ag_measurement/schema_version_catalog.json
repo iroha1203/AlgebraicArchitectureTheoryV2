@@ -67,7 +67,7 @@
       "ownerPhase": "ArchSig v0.5.0 ArchMap authoring",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.0-prd5-archmap-skill"
+        "archsig-contract:archmap-authoring-v0.5.0"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -94,7 +94,7 @@
       "ownerPhase": "ArchSig v0.5.0 ArchMap authoring",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.0-prd5-archmap-skill"
+        "archsig-contract:archmap-authoring-v0.5.0"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -121,7 +121,7 @@
       "ownerPhase": "ArchSig v0.5.0 ArchMap authoring",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.0-prd5-archmap-skill"
+        "archsig-contract:archmap-authoring-v0.5.0"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -148,7 +148,7 @@
       "ownerPhase": "ArchSig v0.5.0 ArchMap authoring",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.0-prd5-archmap-skill"
+        "archsig-contract:archmap-authoring-v0.5.0"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -229,7 +229,7 @@
       "ownerPhase": "ArchSig v0.5.0 SAGA Stage 1",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.0-prd4-lawpolicy-saga"
+        "archsig-contract:saga-stage1-v0.5.0"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -316,7 +316,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchSig measurement packet v1 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered PRD-4 conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, and REPAIR_TARGETS_IDENTIFIED.",
+        "fieldMappingPolicy": "ArchSig measurement packet v1 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, and REPAIR_TARGETS_IDENTIFIED.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -369,7 +369,7 @@
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.0-prd2-artifact-ci"
+        "archsig-contract:artifact-ci-v0.5.0"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -397,7 +397,7 @@
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.0-prd2-artifact-ci"
+        "archsig-contract:artifact-ci-v0.5.0"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -425,7 +425,7 @@
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.0-prd2-artifact-ci"
+        "archsig-contract:artifact-ci-v0.5.0"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -452,7 +452,7 @@
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.0-prd2-artifact-ci"
+        "archsig-contract:artifact-ci-v0.5.0"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {

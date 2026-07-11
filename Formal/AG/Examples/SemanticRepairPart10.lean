@@ -17,7 +17,7 @@ open Opposite
 open SemanticRepair
 
 /-!
-PRD-10 R9 / AC16 finite lawful firing instance.
+Part X R9 / AC16 finite lawful firing instance.
 
 Example 9.1 is the lawful firing witness.  It is separate from the circle-nerve
 nonzero witness used by example 9.2: in this lawful instance the generated
@@ -582,7 +582,7 @@ def lawEquationCore :
   supportLawIndex := PUnit.unit
   supportLawIndex_required := rfl
 
-/-! ## Integer law-equation core required by PRD R9(b) -/
+/-! ## Integer law-equation core required by Part X R9(b) -/
 
 /--
 X.例9.1 / #3102: production law-equation core with observable ring `ℤ` and
@@ -1579,7 +1579,7 @@ theorem circleNerve_nonzeroClassTransfer_packet :
   }⟩
 
 /--
-R5 / IV-2: PRD-10 circle-nerve nonzero H1 instance fired as a Part IV
+R5 / IV-2: Part X circle-nerve nonzero H1 instance fired as a Part IV
 pseudo-circle golden example.
 -/
 def circlePartIVPseudoCircleFiring :
@@ -1592,7 +1592,7 @@ def circlePartIVPseudoCircleFiring :
   coverRelativeResidualClass_nonzero := circleCoverRelativeH1_nonzero
 
 /--
-R5 / IV-2: the PRD-10 circle instance gives the Part IV reading "H0 sees no
+R5 / IV-2: the Part X circle instance gives the Part IV reading "H0 sees no
 obstruction, H1 is nonzero".
 -/
 theorem circlePartIV_h0_invisible_coverRelativeH1_nonzero :
@@ -1709,7 +1709,7 @@ def generatedLawFinitePosetCoverGeometry :
 abbrev generatedLawTupleGeometry :=
   generatedLawFinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap
 
-/-! ## PRD R9(b) integer lawful firing -/
+/-! ## Part X R9(b) integer lawful firing -/
 
 /-- Semantic input for the integer law-equation lawful firing. -/
 def integerLawFiniteFreeSemanticInput :
@@ -1782,7 +1782,7 @@ theorem integerLawFiniteFreeDisplayedRequiredLawsHoldOn :
   exact lawfulObject_noCycleLaw
 
 /--
-X.例9.1 / PRD R9(b): the integer observable core, witness `2`, proved quotient
+X.例9.1 / Part X R9(b): the integer observable core, witness `2`, proved quotient
 sheaf condition, and geometry-indexed lawful source fire the final ten-conclusion
 theorem.
 -/

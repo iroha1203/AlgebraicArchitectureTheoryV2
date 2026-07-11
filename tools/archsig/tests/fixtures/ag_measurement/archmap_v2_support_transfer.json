@@ -4,32 +4,32 @@
   "sources": {
     "src:transfer-api": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R8-transfer-api"
     },
     "src:transfer-data": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R8-transfer-data"
     },
     "src:ground-api": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R8-ground-api"
     },
     "src:ground-data": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R8-ground-data"
     },
     "src:repair-path": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R8-repair-path"
     },
     "src:cover": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R8"
     }
   },

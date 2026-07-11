@@ -109,7 +109,7 @@ IV.定理7.1 soundness assumption: compatible global lawful sections produce
 Čech coboundaries.
 
 This is the formal bridge for the proof sentence "if a global section exists,
-then the mismatch is a coboundary".  It is explicit because this PRD layer does
+then the mismatch is a coboundary".  It is explicit because this implementation layer does
 not construct a general descent theorem for all covers.
 -/
 structure GlobalSectionCoboundarySoundness {U : AtomCarrier.{u}}
@@ -227,7 +227,7 @@ end FiniteGlobalRestrictionPointwiseSoundness
 R5 / IV-3: selected restriction data witnessing that a compatible global
 lawful section produces the mismatch as a concrete Čech coboundary.
 
-This is the finite-regime bridge requested by PRD-R IV-3.  It does not assert a
+This is the finite-regime bridge requested by peer-review hardening IV-3.  It does not assert a
 general restriction functor for all lawful sections; the selected degree-zero
 restriction potential and the equality with the mismatch cochain are explicit
 data for the chosen cover/model.

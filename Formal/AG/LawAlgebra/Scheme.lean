@@ -191,7 +191,7 @@ III.R4: build an architecture scheme from a single affine AAT chart whose
 selected ringed topos reads the same Mathlib affine `Spec` locally ringed
 space.
 
-This realizes the PRD-R III-4 affine alternative additively: the atlas has one
+This realizes the peer-review hardening III-4 affine alternative additively: the atlas has one
 chart, its compatibility is the selected affine self-chart constructor, and the
 underlying locally ringed space is the chart's Mathlib `Spec` reading.
 -/

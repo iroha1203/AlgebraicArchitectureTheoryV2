@@ -10,7 +10,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R6 / AC14-AC16 finite Hodge, harmonic debt, repair lower bound, and
+Part VIII R6 / AC14-AC16 finite Hodge, harmonic debt, repair lower bound, and
 spectral reading surfaces.
 
 The theorem packages are relative to explicit finite inner-product cochain
@@ -272,12 +272,12 @@ theorem essentialRepairLowerBound {M : MeasurementProfile.{u, v}}
     Nonempty (EssentialRepairLowerBound B) :=
   ⟨essentialRepairLowerBoundPackage B⟩
 
-/-! ### PRD-R VIII-1: finite real inner-product Hodge bridge -/
+/-! ### peer-review hardening VIII-1: finite real inner-product Hodge bridge -/
 
 /--
 VIII.Theorem 8.5 hardening: a finite real inner-product cochain fragment.
 
-This is the load-bearing Mathlib-facing surface used by PRD-R AC15.  The
+This is the load-bearing Mathlib-facing surface used by peer-review hardening AC15.  The
 cochain spaces are actual finite-dimensional real inner-product spaces, the
 differentials are `LinearMap`s, and `d_next ∘ d_prev = 0` is an equality.
 -/

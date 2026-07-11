@@ -11,29 +11,29 @@ namespace RepresentationAnalysis
 universe u v w x y
 
 /-!
-PRD-7 R0 / AC1 bootstrap surface.
+Part VII R0 / AC1 bootstrap surface.
 
 This module is intentionally small: it only opens the Part VII namespace,
-checks that the PRD-3--6 entrypoints can be used as dependencies, and records
+checks that the Part III--6 entrypoints can be used as dependencies, and records
 that measurement verdicts remain outside Part VII.
 -/
 
-/-- VII.R0: Part VII can read PRD-3 architecture schemes. -/
+/-- VII.R0: Part VII can read Part III architecture schemes. -/
 abbrev UsesArchitectureScheme {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (S : Site.AATSite A) (k : Type v) [CommRing k] :=
   LawAlgebra.Scheme.ArchitectureScheme.{u, v, w, x, y} S k
 
-/-- VII.R0: Part VII can read PRD-4 cover-relative Cech complexes. -/
+/-- VII.R0: Part VII can read Part IV cover-relative Cech complexes. -/
 abbrev UsesCoverRelativeCechComplex {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} (cover : Cohomology.CoverRelativeCechCover S)
     (obstructionSheaf : Cohomology.ObstructionSheaf S) : Type u :=
   Cohomology.CoverRelativeCechComplex cover obstructionSheaf
 
-/-- VII.R0: Part VII can read PRD-5 repair comparison profiles. -/
+/-- VII.R0: Part VII can read Part V repair comparison profiles. -/
 abbrev UsesRepairComparisonProfile : Type (u + 1) :=
   Derived.RepairProfile.RepairComparisonProfile.{u}
 
-/-- VII.R0: Part VII can read PRD-6 architecture strata. -/
+/-- VII.R0: Part VII can read Part VI architecture strata. -/
 abbrev UsesArchitectureStratum {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} (parameter : SingularityMonodromyStack.StratumReadingParameter S)
     (k : Type v) [CommRing k] :=
@@ -46,7 +46,7 @@ inductive PrerequisiteStatus where
   deriving DecidableEq
 
 /--
-VII.R0: dependency status package for PRD-7.
+VII.R0: dependency status package for Part VII.
 
 The current repository state imports the four required predecessor entrypoints.
 If a future loop finds one missing, the corresponding field is the place to
@@ -58,29 +58,29 @@ structure PartVIIDependencyStatus where
   derived : PrerequisiteStatus
   singularityMonodromyStack : PrerequisiteStatus
 
-/-- VII.R0: current dependency status after importing PRD-3--6 entrypoints. -/
+/-- VII.R0: current dependency status after importing Part III--6 entrypoints. -/
 def currentDependencyStatus : PartVIIDependencyStatus where
   lawAlgebra := .available
   cohomology := .available
   derived := .available
   singularityMonodromyStack := .available
 
-/-- VII.R0: the PRD-3 LawAlgebra dependency is available. -/
+/-- VII.R0: the Part III LawAlgebra dependency is available. -/
 theorem current_lawAlgebra_available :
     currentDependencyStatus.lawAlgebra = .available :=
   rfl
 
-/-- VII.R0: the PRD-4 Cohomology dependency is available. -/
+/-- VII.R0: the Part IV Cohomology dependency is available. -/
 theorem current_cohomology_available :
     currentDependencyStatus.cohomology = .available :=
   rfl
 
-/-- VII.R0: the PRD-5 Derived dependency is available. -/
+/-- VII.R0: the Part V Derived dependency is available. -/
 theorem current_derived_available :
     currentDependencyStatus.derived = .available :=
   rfl
 
-/-- VII.R0: the PRD-6 SingularityMonodromyStack dependency is available. -/
+/-- VII.R0: the Part VI SingularityMonodromyStack dependency is available. -/
 theorem current_singularityMonodromyStack_available :
     currentDependencyStatus.singularityMonodromyStack = .available :=
   rfl
@@ -109,7 +109,7 @@ theorem readingLayer_holds (B : PartVIINoMeasurementVerdictBoundary) :
     B.representationPeriodMetricReadingLayer :=
   B.representationPeriodMetricReadingLayer_cert
 
-/-- VII.R0: measurement verdicts are reserved for PRD-8. -/
+/-- VII.R0: measurement verdicts are reserved for Part VIII. -/
 theorem measurementVerdictReservedForPartVIII_holds
     (B : PartVIINoMeasurementVerdictBoundary) :
     B.measurementVerdictReservedForPartVIII :=

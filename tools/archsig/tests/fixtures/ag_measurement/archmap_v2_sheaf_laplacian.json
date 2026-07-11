@@ -4,22 +4,22 @@
   "sources": {
     "src:left-cell": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R6-left"
     },
     "src:right-cell": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R6-right"
     },
     "src:boundary": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R6-boundary"
     },
     "src:cover": {
       "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
       "section": "R6"
     }
   },

@@ -17,7 +17,7 @@ I.公理A8 Essential Uniqueness.
 
 An extraction doctrine is a typed source reading together with a canonical
 `atomize` function into the selected family carrier. The source-side fields are
-opaque at PRD-1/R1 level; later PRD steps can refine them without changing the
+opaque at Part I/R1 level; later implementation steps can refine them without changing the
 uniqueness theorem below.
 -/
 structure ExtractionDoctrine (U : AtomCarrier.{u}) (Family : Type u) where

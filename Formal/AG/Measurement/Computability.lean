@@ -8,7 +8,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R2 / AC6 theorem 4.2 finite AAT computability package.
+Part VIII R2 / AC6 theorem 4.2 finite AAT computability package.
 
 The theorem is a bounded package construction: under a finite measurement
 regime and explicit selected objects, the requested invariants are represented

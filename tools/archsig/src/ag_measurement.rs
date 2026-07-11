@@ -11645,7 +11645,7 @@ fn check_computed_invariant_shape(packet: &ArchSigMeasurementPacketV1) -> Valida
                 examples.push(generic_validation_example(
                     &label,
                     kind,
-                    "computed invariant kind must be one of the closed PRD-2 v0.5.0 kinds",
+                    "computed invariant kind must be one of the closed measurement packet v0.5.0 kinds",
                 ));
             }
         }

@@ -13,7 +13,7 @@ universe u v w x y z
 /--
 VII.定義2.1: reading parameter for decorated architecture schemes.
 
-The underlying scheme object comes from PRD-3.  The morphism interface is kept
+The underlying scheme object comes from Part III.  The morphism interface is kept
 as selected data over a fixed reading contract.  The identity / composition laws
 and decoration-compatibility closure data are part of the parameter, so
 decorated schemes form a Mathlib category relative to this selected contract.
@@ -114,7 +114,7 @@ structure AATSchReadingParameter {U : AtomCarrier.{u}} {A : ArchitectureObject U
 /--
 VII.定義2.1: decorated architecture scheme `AATSch p`.
 
-The scheme is the PRD-3 architecture scheme together with the selected
+The scheme is the Part III architecture scheme together with the selected
 decoration readings that later representation families are allowed to read.
 -/
 structure AATSch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -133,7 +133,7 @@ variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
 variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
 
-/-- VII.定義2.1: forget the decoration to the PRD-3 architecture scheme. -/
+/-- VII.定義2.1: forget the decoration to the Part III architecture scheme. -/
 def underlyingScheme (X : AATSch p) :
     UsesArchitectureScheme.{u, v, w, x, y} S k :=
   X.scheme

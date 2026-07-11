@@ -8,7 +8,7 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R3 / AC7--AC8 state-transition presheaf surface.
+Part IX R3 / AC7--AC8 state-transition presheaf surface.
 
 The state-transition surface is relative to one selected temporal site.  It
 separates architecture-context restriction from selected trace transport and

@@ -13,7 +13,7 @@ universe u v w x y
 VII.定義5.2A: a selected Cech cocycle represents a selected cohomology class.
 
 Degree zero is represented by the cocycle subtype itself.  Positive degrees use
-the PRD-4 coboundary quotient constructor.
+the Part IV coboundary quotient constructor.
 -/
 def RepresentsCohomologyClass {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {S : Site.AATSite A}
@@ -357,8 +357,8 @@ theorem coboundary_pair_eq_zero_on_closed_chain
 end FiniteCechBoundary
 
 /--
-VII.定義5.2A: strict-period context specialized to a PRD-2 finite-poset Cech
-complex through the PRD-4 finite-poset comparison data.
+VII.定義5.2A: strict-period context specialized to a Part II finite-poset Cech
+complex through the Part IV finite-poset comparison data.
 -/
 structure FinitePosetCechStrictPeriodContext {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {S : Site.AATSite A}

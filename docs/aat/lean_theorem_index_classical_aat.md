@@ -469,7 +469,7 @@ does not by itself assert any unconditional operation law or global flatness
 preservation.
 Issue [#359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/359)
 records where each Chapter 3 operation lives after the public tag / proof
-obligation schema: [Architecture Calculus catalog placement](../archive/2026-05-09-first-class-docs/design/architecture_calculus_catalog_placement.md).
+obligation schema maintained in this index and `proof_obligations_classical_aat.md`.
 Only `compose`, `replace`, `protect`, and `reverse` currently have concrete
 finite graph kernels. `refine`, `abstract`, `split`, `merge`, `isolate`,
 `migrate`, `contract`, and `synthesize` are routed to contract / observation,
@@ -616,9 +616,7 @@ and [#327](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/327
 reuse this section as the bounded law audit surface for compose / replace /
 protect / reverse / repair.
 Issue [#360](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/360)
-continues from the placement decision in
-[Architecture Calculus catalog placement](../archive/2026-05-09-first-class-docs/design/architecture_calculus_catalog_placement.md)
-by adding concrete graph / repair / synthesis entrypoints for selected bounded
+continues from the Issue #359 placement decision by adding concrete graph / repair / synthesis entrypoints for selected bounded
 law packages.
 Issue [#381](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/381)
 adds the declared-interface-mediated compose associativity package, with
@@ -1696,8 +1694,7 @@ Files: `Formal/Arch/Signature/DistanceGeometry.lean`,
 `Formal/Arch/AAT/TheoremClassification.lean`,
 `Formal/Arch/Examples/AATPart4DistanceExamples.lean`.
 
-この節は [AAT Distance Extension Design](../archive/2026-06-16-aat-pre-ag-designs/AAT_Distance_Extension_Design.md) と
-[代数幾何的 AAT 数学本文](algebraic_geometric_theory/README.md) に対応する
+この節は [代数幾何的 AAT 数学本文](algebraic_geometric_theory/README.md) に対応する
 bounded Lean theorem package の入口である。Part IV 本文は数学理論の source text として保ち、
 Lean 実装 status はこの索引と `proof_obligations_classical_aat.md` に分離する。
 
@@ -3393,7 +3390,7 @@ zero 性 は主張しない。
 
 File: `Formal/Arch/Signature/MonodromyMeasurement.lean`
 
-Retired: この v1 reading-family guardrail は ArchSig PRD-3 により削除された。
+Retired: この v1 reading-family guardrail は ArchSig Part III により削除された。
 現行の ArchSig measurement path はこの Lean file を import しない。
 
 この節は ArchSig の monodromy / boundary-holonomy reading を Lean 側で読むための
@@ -3427,7 +3424,7 @@ zero-weight entry や unmeasured square の zero には読まない。
 
 File: `Formal/Arch/Signature/CurvatureTransferSpectrum.lean`
 
-Retired: この v1 reading-family guardrail は ArchSig PRD-3 により削除された。
+Retired: この v1 reading-family guardrail は ArchSig Part III により削除された。
 現行の ArchSig measurement path はこの Lean file を import しない。
 
 この節は Architecture Curvature Transfer Spectrum (ACTS) を Lean 側で読むための
@@ -3469,7 +3466,7 @@ support として読むだけで、future incident prediction や repair safety 
 
 File: `Formal/Arch/Signature/HomotopyHolonomyStokes.lean`
 
-Retired: この v1 reading-family guardrail は ArchSig PRD-3 により削除された。
+Retired: この v1 reading-family guardrail は ArchSig Part III により削除された。
 現行の ArchSig measurement path はこの Lean file を import しない。
 
 この節は Homotopy / Holonomy / Stokes readings を Lean 側で読むための minimal
@@ -4390,8 +4387,8 @@ Files: `Formal/Arch/Atom/Valence.lean`,
 `Formal/Arch/Examples/AATCompleteFormalizationExamples.lean`,
 `Formal/Arch/Examples/IncompatibleAtomCompositionExamples.lean`.
 
-この節は [AAT Atom-Based Reconstruction Plan](../archive/2026-06-16-aat-pre-ag-designs/atom_based_aat_reconstruction_plan.md)
-の acceptance kernel を履歴索引として残す。これは現行の代数幾何版 AAT 本文の代替ではない。
+この節は既存のAtom-generated theorem packageのacceptance kernelを索引化する。
+これは現行の代数幾何版 AAT 本文の代替ではない。
 現行 source of truth は `algebraic_geometric_theory/` の Atom / AAT site / sheaf /
 law algebra / obstruction ideal sheaf / lawful locus / derived law geometry である。
 Atom は無構造な点ではなく `AtomShape` /

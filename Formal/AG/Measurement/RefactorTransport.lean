@@ -8,7 +8,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R5 / AC11-AC12 refactor functoriality and class transport.
+Part VIII R5 / AC11-AC12 refactor functoriality and class transport.
 
 The refactor transport surface is assumption-relative. It does not claim that
 syntax-level refactors, external rewrites, or arbitrary profile morphisms

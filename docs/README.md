@@ -34,10 +34,6 @@ source of truth として扱わない。
 - [AAT directory guide](aat/README.md): AAT 配下の補助文書の読み方。
 - [SFT directory guide](sft/README.md): SFT 配下の補助文書の読み方。
 - [Website operations](website/README.md): 公開されない website 運用メモ、route 索引、設計文書。
-- [AAT / Lean guideline](aat/guideline.md): AAT docs と Lean 形式化の編集方針。
-- [SFT guideline](sft/guideline.md): SFT docs と AAT / SFT 境界の編集方針。
-- [Tooling guideline](tool/guideline.md): ArchMap / LawPolicy / ArchSig / FieldSig の編集方針。
-- [Website guideline](website/guideline.md): website public surface と内部運用メモの編集方針。
 
 ## 層の分担
 
@@ -74,6 +70,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 ## 編集ガイドライン
 
+- [Repository documentation guideline](guideline.md): PRD lifecycle、恒久source of truth、参照禁止、完了後archiveの共通規律。
 - [AAT / Lean guideline](aat/guideline.md): `Formal/AG` / `Formal/Arch`、AAT 数学本文、Lean status、proof obligation の編集方針。
 - [SFT guideline](sft/guideline.md): SFT 本文、AAT / SFT interface、forecast / governance claim boundary の編集方針。
 - [Tooling guideline](tool/guideline.md): ArchMap、LawPolicy、ArchSig、FieldSig、schema、CLI、fixture の編集方針。
@@ -82,9 +79,8 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 ## Archive
 
 - [2026-05-09 AAT/SFT reorg archive](archive/2026-05-09-aat-sft-reorg/): AAT/SFT 階層へ再編する前の旧 AAT Part 文書、旧数学設計書、旧 proof obligations、旧 theorem index、旧 Architecture Signature Dynamics 設計。
-- [2026-05-09 first-class docs archive](archive/2026-05-09-first-class-docs/): 後方互換のためだけに残っていた facade 文書、薄い索引、旧 PRD、旧 design note、旧 empirical pilot の退避先。
 - [2026-06-16 AAT pre-AG designs](archive/2026-06-16-aat-pre-ag-designs/): 代数幾何版へ完全移行する前の Atomic Theory / Atom-generated reconstruction / distance extension 設計。
-- [2026-06-16 ArchSig pre-AG PRDs](archive/2026-06-16-archsig-pre-ag-prds/): AG measurement path へ移行する前の LLM-native / AAT analysis engine / output / v0.3 PRD。
+- [2026-07 website renewal superseded plans](archive/2026-07-website-renewal-superseded/): 現行 website とリニューアル設計ノートへ吸収済みの旧計画・方針。
 - [AAT v2 research requirements revised split](archive/aat_v2_research_requirements_revised_split.md): 数学設計書とツール設計書へ分割する前の原本。
 - [Flatness-Obstruction Conjecture](archive/Flatness%E2%80%93Obstruction%20Conjecture.md): 現行本文へ整理する前の数学草案。
 - [証明義務と実証仮説 full ledger](archive/proof_obligations_full_ledger.md): `docs/aat/proof_obligations.md` を索引化する前の詳細 ledger。

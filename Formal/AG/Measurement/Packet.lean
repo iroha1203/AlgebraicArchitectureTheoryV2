@@ -9,7 +9,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R9 / AC21-AC22 measurement packets and finite measurement synthesis.
+Part VIII R9 / AC21-AC22 measurement packets and finite measurement synthesis.
 
 The packet separates certified structural verdicts from analytic readings,
 candidate interfaces, and conditional readings. The synthesis theorem is

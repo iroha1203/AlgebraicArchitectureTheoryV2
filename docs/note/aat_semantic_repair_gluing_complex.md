@@ -261,13 +261,13 @@ end Formal.AG.Research.QualitySurface
 
 ## 7. 推奨実行順序と PRD 化
 
-1. **PRD-1 = Stage 1 のみ**にスコープを絞る。acceptance:
+1. **Part I = Stage 1 のみ**にスコープを絞る。acceptance:
    - `GlobalRepairCoherent` が大域存在で定義されている(Q1)。
    - `no_global_repair_of_nonzero_obstruction` が sorry なし・独自 axiom なしで通る。
    - Cycle 80 witness の `ObstructionNonzero` 検算定理が通る(Q3)。
    - report に「必要性側」明記。
-2. Stage 1 が proved-in-research で固定できたら、PRD-2 = Stage 2(複体語への載せ替え + `B^1`)。
-3. PRD-3 = Stage 2.5(faithfulness bridge)。**ここで初めて genius unlock を狙う。** 失敗したら
+2. Stage 1 が proved-in-research で固定できたら、Part II = Stage 2(複体語への載せ替え + `B^1`)。
+3. Part III = Stage 2.5(faithfulness bridge)。**ここで初めて genius unlock を狙う。** 失敗したら
    「`H^1` は必要だが二次障害が残る」可能性を orientation-evidence として固定するのも可(それも成果)。
 4. Stage 3(本物の昇格)は別フェーズ。
 

@@ -264,7 +264,7 @@ def toAATCoverageFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 end WitnessClosureCover
 
 /--
-PRD-R II-1: seed-driven witness-closure cover input.
+peer-review hardening II-1: seed-driven witness-closure cover input.
 
 Unlike `WitnessClosureCover`, support and axis visibility are stated only on
 seed patches. Required witnesses are made visible by the generated witness
@@ -342,7 +342,7 @@ structure SeedWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject 
 
 namespace SeedWitnessClosureCover
 
-/-- PRD-R II-1: index set generated from seeds, required witnesses, and seed overlaps. -/
+/-- peer-review hardening II-1: index set generated from seeds, required witnesses, and seed overlaps. -/
 abbrev ClosedIndex {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : ContextPreorderCategory A} {LU : LawUniverse U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
@@ -350,7 +350,7 @@ abbrev ClosedIndex {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :=
   WitnessClosureIndex R K.SeedIndex
 
-/-- PRD-R II-1: context selected by a generated closed index. -/
+/-- peer-review hardening II-1: context selected by a generated closed index. -/
 def patch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : ContextPreorderCategory A} {LU : LawUniverse U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
@@ -359,7 +359,7 @@ def patch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     K.ClosedIndex -> ArchCtx A :=
   WitnessClosureIndex.patch P base K.seedPatch K.RequiredWitnessSupport
 
-/-- PRD-R II-1: each generated context reads into the base context. -/
+/-- peer-review hardening II-1: each generated context reads into the base context. -/
 def inclusion {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : ContextPreorderCategory A} {LU : LawUniverse U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
@@ -371,7 +371,7 @@ def inclusion {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   | Sum.inr (Sum.inr pair) =>
       P.overlap_le_base (K.seedInclusion pair.1) (K.seedInclusion pair.2)
 
-/-- PRD-R II-1: generated boundary visibility, by closed-index constructor. -/
+/-- peer-review hardening II-1: generated boundary visibility, by closed-index constructor. -/
 def closedBoundaryVisible {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : ContextPreorderCategory A} {LU : LawUniverse U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
@@ -393,7 +393,7 @@ def closedBoundaryVisible {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   | Sum.inr (Sum.inr pair1), Sum.inr (Sum.inr pair2) =>
       K.boundary_overlap_overlap pair1 pair2
 
-/-- PRD-R II-1: convert the seed-driven input to the frozen witness-closure package. -/
+/-- peer-review hardening II-1: convert the seed-driven input to the frozen witness-closure package. -/
 def toWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : ContextPreorderCategory A} {LU : LawUniverse U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
@@ -415,7 +415,7 @@ def toWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     ⟨Sum.inl i, hi⟩
   visibleBoundaryWitnesses := K.closedBoundaryVisible
 
-/-- PRD-R II-1: the generated closed cover as an admissible AAT coverage family. -/
+/-- peer-review hardening II-1: the generated closed cover as an admissible AAT coverage family. -/
 def toAATCoverageFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : ContextPreorderCategory A} {LU : LawUniverse U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
@@ -425,7 +425,7 @@ def toAATCoverageFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   K.toWitnessClosureCover.toAATCoverageFamily
 
 /--
-PRD-R II-1: the seed-driven closed cover is admissible. Support and axis
+peer-review hardening II-1: the seed-driven closed cover is admissible. Support and axis
 coverage come from seed patches, required witnesses from generated support
 contexts, and boundary coverage from the closed-index constructor cases.
 -/
@@ -476,7 +476,7 @@ theorem witnessClosureCover_uAdequate {U : AtomCarrier.{u}}
 
 namespace SeedWitnessClosureCover
 
-/-- PRD-R II-1: the seed-driven closed cover is `U`-adequate. -/
+/-- peer-review hardening II-1: the seed-driven closed cover is `U`-adequate. -/
 theorem uAdequate {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {C : ContextPreorderCategory A}
     {LU : LawUniverse U} {Sig : ArchitectureSignature U}

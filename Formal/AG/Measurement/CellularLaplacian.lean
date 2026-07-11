@@ -8,7 +8,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R6 / AC13 cellular measurement model, sheaf Laplacian, and
+Part VIII R6 / AC13 cellular measurement model, sheaf Laplacian, and
 distance-to-flatness readings.
 
 The model is finite and selected. It records the cochain, coboundary, adjoint,

@@ -9,7 +9,7 @@ namespace Measurement
 universe u v
 
 /-!
-PRD-8 R10 / AC23-AC24 AAT-GAGA finite measurement comparison.
+Part VIII R10 / AC23-AC24 AAT-GAGA finite measurement comparison.
 
 `GAGA` here is a finite-profile comparison packet. It does not assert external
 data-source fidelity, external procedure correctness, or truth across arbitrary

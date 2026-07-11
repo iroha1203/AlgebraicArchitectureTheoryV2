@@ -28,7 +28,7 @@ def BooleanLawZeroSetEmpty (I : Ideal (MvPolynomial E k)) : Prop :=
 /--
 III.定理候補7.2A: Architecture Nullstellensatz statement.
 
-This is intentionally a statement-only `Prop`, not a proved theorem in PRD-3.
+This is intentionally a statement-only `Prop`, not a proved theorem in Part III.
 It records the future theorem target: emptiness of the Boolean law zero set is
 equivalent to the radical unit certificate.
 -/

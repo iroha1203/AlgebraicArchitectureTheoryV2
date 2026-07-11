@@ -14,7 +14,7 @@ completion review.
 
 Canonicalization pointer: `G-aat-quality-surface-02`,
 `G-aat-quality-surface-05`, and `G-aat-quality-surface-06` have been promoted
-into the canonical Part X Semantic Repair Descent (SAGA) surface by PRD-10.
+into the canonical Part X Semantic Repair Descent (SAGA) surface by Part X.
 The correspondence and implementation history are tracked in Issue
 [#2910](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2910);
 future canonical status updates for these results belong in

@@ -9,7 +9,7 @@ namespace Evolution
 universe u v w x y z
 
 /-!
-PRD-9 R2 / AC4 temporal product-site surface.
+Part IX R2 / AC4 temporal product-site surface.
 
 The temporal site is a selected finite trace regime together with a selected
 finite AAT context regime.  It is not a general product-site construction over
@@ -149,11 +149,11 @@ theorem incidence_leg_selected (𝒯 : TemporalCover T) (i : 𝒯.Index) :
 end TemporalCover
 
 /--
-IX.§3 / AC4: typed comparison from a temporal cover to a PRD-4 site cover.
+IX.§3 / AC4: typed comparison from a temporal cover to a Part IV site cover.
 
 This records how temporal chart indices are represented by the AAT
 cover-relative Čech cover and how temporal trace/context legs are retained
-when the PRD-4 complex is reused.
+when the Part IV complex is reused.
 -/
 structure TemporalCoverToSiteCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
@@ -199,11 +199,11 @@ theorem context_leg_sound (M : TemporalCoverToSiteCover 𝒯 𝒰)
 end TemporalCoverToSiteCover
 
 /--
-IX.§3 / AC4: bridge from selected temporal cover data to the PRD-4
+IX.§3 / AC4: bridge from selected temporal cover data to the Part IV
 cover-relative Čech complex surface.
 
 The temporal cover is kept explicit, while the additive Čech complex is the
-existing PRD-4 package over the selected AAT site.
+existing Part IV package over the selected AAT site.
 -/
 structure TemporalCechBridge {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
@@ -221,7 +221,7 @@ variable {E : EvolutionProfile.{u, v, w, x, y, z}}
 variable {T : TemporalSite S E}
 variable {Ob : Cohomology.ObstructionSheaf S}
 
-/-- IX.§3 / AC4: read the selected PRD-4 cover-relative complex. -/
+/-- IX.§3 / AC4: read the selected Part IV cover-relative complex. -/
 def complex (B : TemporalCechBridge T Ob) :
     Cohomology.CoverRelativeCechComplex B.siteCover Ob :=
   B.siteComplex
@@ -243,8 +243,8 @@ end TemporalCechBridge
 /--
 IX.§3 / AC4: finite-poset temporal Čech bridge.
 
-This specializes the temporal bridge to a PRD-2 finite-poset Čech complex and
-the PRD-4 finite-poset comparison package.
+This specializes the temporal bridge to a Part II finite-poset Čech complex and
+the Part IV finite-poset comparison package.
 -/
 structure FinitePosetTemporalCechBridge {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
@@ -265,7 +265,7 @@ variable {E : EvolutionProfile.{u, v, w, x, y, z}}
 variable {T : TemporalSite S E}
 variable {Ob : Cohomology.ObstructionSheaf S}
 
-/-- IX.§3 / AC4: the induced PRD-4 cover-relative temporal bridge. -/
+/-- IX.§3 / AC4: the induced Part IV cover-relative temporal bridge. -/
 def toTemporalCechBridge (B : FinitePosetTemporalCechBridge T Ob) :
     TemporalCechBridge T Ob where
   temporalCover := B.temporalCover
@@ -273,7 +273,7 @@ def toTemporalCechBridge (B : FinitePosetTemporalCechBridge T Ob) :
   coverComparison := B.coverComparison
   siteComplex := B.comparison.generalComplex
 
-/-- IX.§3 / AC4: finite-poset cochains compare to the induced PRD-4 cochains. -/
+/-- IX.§3 / AC4: finite-poset cochains compare to the induced Part IV cochains. -/
 theorem cochain_to_from (B : FinitePosetTemporalCechBridge T Ob)
     (n : Nat) (c : Site.FinitePosetCechCochain T.siteRegime n) :
     B.comparison.comparisonTarget.toFinitePosetCochain n
@@ -298,7 +298,7 @@ theorem cohomology_to_from (B : FinitePosetTemporalCechBridge T Ob)
       (B.comparison.comparisonTarget.fromFinitePosetCohomology n h) = h :=
   B.comparison.cohomology_to_from n h
 
-/-- IX-3 / #3100: temporal PRD-4 cohomology maps are right inverses. -/
+/-- IX-3 / #3100: temporal Part IV cohomology maps are right inverses. -/
 theorem cohomology_from_to (B : FinitePosetTemporalCechBridge T Ob)
     (n : Nat) (h : B.comparison.generalComplex.CoverRelativeHn n) :
     B.comparison.comparisonTarget.fromFinitePosetCohomology n

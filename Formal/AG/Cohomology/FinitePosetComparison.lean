@@ -11,13 +11,13 @@ universe u
 open CategoryTheory
 
 /--
-IV.R2 / AC4: the cover-relative general Čech cover induced by a PRD-2 finite
+IV.R2 / AC4: the cover-relative general Čech cover induced by a Part II finite
 poset Čech complex.
 
 This construction only transports the selected finite-poset cover, simplices,
 overlap objects, faces, and face-overlap morphisms.  Coefficient comparison and
-additive Čech differential data are recorded separately, because the PRD-2
-surface is Type-valued while the PRD-4 obstruction surface is additive.
+additive Čech differential data are recorded separately, because the Part II
+surface is Type-valued while the Part IV obstruction surface is additive.
 -/
 def finitePosetCoverRelativeCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {K : Site.FinitePosetAATSiteRegime S}
@@ -33,12 +33,12 @@ def finitePosetCoverRelativeCover {U : AtomCarrier.{u}} {A : ArchitectureObject 
   faceRestriction n i σ := homOfLE (C.faces.faceOverlap_le n σ i)
 
 /--
-IV.R2 / AC4: explicit data comparing the PRD-4 general cover-relative complex
-with the PRD-2 finite-poset Čech complex.
+IV.R2 / AC4: explicit data comparing the Part IV general cover-relative complex
+with the Part II finite-poset Čech complex.
 
 The comparison is intentionally assumption-explicit: the finite-poset
 coefficient presheaf, the additive structure on the section products, and the
-maps between PRD-4 cochains and PRD-2 cochains are supplied by the selected
+maps between Part IV cochains and Part II cochains are supplied by the selected
 finite regime.  The resulting theorem package below does not assert that every
 AAT site or every coefficient sheaf admits such a comparison.
 -/
@@ -119,7 +119,7 @@ variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {K : Site.FinitePosetAATSiteRegime S}
 variable {C : Site.FinitePosetCechComplex K} {Ob : ObstructionSheaf S}
 
-/-- IV.R2 / AC4: build the PRD-4 general complex selected by the comparison data. -/
+/-- IV.R2 / AC4: build the Part IV general complex selected by the comparison data. -/
 def generalComplex (D : FinitePosetCechComparisonData C Ob) :
     CoverRelativeCechComplex (finitePosetCoverRelativeCover C) Ob where
   cochainAddCommGroup := D.cochainAddCommGroup
@@ -129,8 +129,8 @@ def generalComplex (D : FinitePosetCechComparisonData C Ob) :
   differential_comp := D.differential_comp
 
 /--
-IV.R2 / AC4: the PRD-2 finite-poset complex is a comparison target for the
-selected PRD-4 general complex.
+IV.R2 / AC4: the Part II finite-poset complex is a comparison target for the
+selected Part IV general complex.
 -/
 def comparisonTarget (D : FinitePosetCechComparisonData C Ob) :
     D.generalComplex.FinitePosetComparisonTarget where
@@ -150,7 +150,7 @@ def comparisonTarget (D : FinitePosetCechComparisonData C Ob) :
   from_to_finitePosetCohomology := fun n =>
     D.from_to_finitePosetCohomology n D.generalComplex
 
-/-- IV.R2 / AC4: cochains are identified with the PRD-2 finite-poset cochains. -/
+/-- IV.R2 / AC4: cochains are identified with the Part II finite-poset cochains. -/
 theorem cochain_to_from (D : FinitePosetCechComparisonData C Ob)
     (n : Nat) (c : Site.FinitePosetCechCochain K n) :
     D.comparisonTarget.toFinitePosetCochain n
@@ -185,7 +185,7 @@ theorem cohomology_to_from (D : FinitePosetCechComparisonData C Ob)
   D.to_from_finitePosetCohomology n D.generalComplex h
 
 /--
-IV.R2 / AC4: the selected cohomology maps are a right inverse on PRD-4
+IV.R2 / AC4: the selected cohomology maps are a right inverse on Part IV
 cover-relative cohomology.
 -/
 theorem cohomology_from_to (D : FinitePosetCechComparisonData C Ob)
