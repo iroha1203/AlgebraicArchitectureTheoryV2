@@ -120,7 +120,7 @@ Lean proof は `research/lean/ResearchLean/AG/QualitySurface/TupleTransportExact
 
 - 2026-06-20: Cycle 14 candidate picked.
 - 2026-06-20: `TupleTransportExactness.lean` added with component-law exactness theorem bundle.
-- 2026-06-20: `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/TupleTransportExactness.lean` pass.
-- 2026-06-20: `cd research/lean && lake build ResearchLean` pass.
+- 2026-06-20: `focused Lean check: ResearchLean/AG/QualitySurface/TupleTransportExactness.lean` pass.
+- 2026-06-20: `Research package build` pass.
 - 2026-06-20: `lake env lean .tmp/tuple_transport_axioms.lean` pass; reported theorem package is axiom-free.
 - 2026-06-20: G3 requested template-compliant candidate-card sync; card updated.

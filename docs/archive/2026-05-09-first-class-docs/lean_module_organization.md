@@ -47,7 +47,7 @@ Lean status: `defined only` / module organization / docs and API design.
 2. Issue [#426](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/426):
    `Core`, `Law`, `Signature`, `Extension`, `Operation` を依存グラフに沿って小さく移した。
 3. Issue [#427](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/427):
-   `docs/aat/lean_theorem_index.md` と `docs/aat/proof_obligations.md` の path / status を実配置へ同期した。
+   `Formal/` と `Formal/` の path / status を実配置へ同期した。
 4. Issue [#444](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/444):
    `Formal/Arch` 直下の import-only facade を削除し、canonical path へ一本化する。
 
@@ -70,13 +70,13 @@ file move を含む PR では、少なくとも次を確認する。
 - `Formal.lean`: public import entry point と import 順序。
 - moved Lean files: `import Formal.Arch.<Module>` から canonical path への更新。
 - `Formal/Arch` 直下に不要な import-only facade が残っていないこと。
-- `docs/aat/lean_theorem_index.md`: `File:` / `Files:` の path と section name。
-- `docs/aat/proof_obligations.md`: status ledger / proof obligation index に影響する path。
+- `Formal/`: `File:` / `Files:` の path と section name。
+- `Formal/`: status ledger / proof obligation index に影響する path。
 - `docs/README.md` と `docs/design/*.md`: Lean module path を参照する箇所。
 
 `docs/aat/mathematical_theory/README.md` は数学面の第一級設計書であり、作業状態や移行 status を
-混ぜない。module path の進捗管理はこの文書、`docs/aat/proof_obligations.md`、
-`docs/aat/lean_theorem_index.md` で扱う。
+混ぜない。module path の進捗管理はこの文書、`Formal/`、
+`Formal/` で扱う。
 
 ## PR 前チェック
 

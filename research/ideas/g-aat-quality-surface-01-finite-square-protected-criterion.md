@@ -112,7 +112,7 @@ previous_cycle_delta: cycle 11 の tuple endpoint witness から、再び finite
 
 - Lean file: `research/lean/ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean`
 - Evidence stage: `proved-in-research`
-- Build target: `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean`
+- Build target: `focused Lean check: ResearchLean/AG/QualitySurface/FiniteSquareCriterion.lean`
 - Main theorem: `FiniteSquareCriterion.same_trace_surface_but_finiteSquareCriterion_curved`
 - Axiom summary: `finiteSquare_curvature_of_visible_agreement_protected_discrepancy`、`finiteSquare_no_holonomy_of_faithful_reading`、`finiteSquare_not_faithful_of_curvature`、`finiteSquare_curvature_of_square_visible_protected_discrepancy`、`finiteSquare_no_holonomy_of_square_faithful_reading`、`traceCurvature_endpointPairOfSquare`、`traceCurvature_instantiates_traceMissingCriterion`、`traceCurvature_instantiates_repairFrontierCriterion`、`same_trace_surface_but_finiteSquareCriterion_curved` は `#print axioms` でいずれも axiom-free。
 - Formalization summary: `SquareEdgeTransport`、`FiniteSquare`、`endpointPairOfSquare` が四頂点、四つの typed edge transport、seed、二つの path composite endpoint を generic square data として保持する。`traceCurvatureSquare` と `traceCurvature_endpointPairOfSquare` により cycle 7 witness は generic square framework の instance として読める。

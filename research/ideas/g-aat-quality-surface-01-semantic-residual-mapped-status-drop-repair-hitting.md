@@ -122,9 +122,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualMap
 
 検証実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualMappedStatusDropRepairHitting.lean`: pass。
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualMappedStatusDropRepairHitting`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualMappedStatusDropRepairHitting.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualMappedStatusDropRepairHitting`: pass。
+- `Research package build`: pass。
 - `#print axioms`: generic theorem 群と inducing-map bridge は axiom-free。selected witness と package は標準
   `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
@@ -167,4 +167,4 @@ whole-codebase quality、arbitrary atlas category/functoriality。
 
 - 2026-06-23: Cycle 100 G1/G2 で cross-carrier residual status-drop repair-hitting transport を採択。
 - 2026-06-23: Lean 証拠を `SemanticResidualMappedStatusDropRepairHitting.lean` に固定し、単体
-  `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。
+  `lake env lean`、module build、`Research package build`、axiom 監査が通った。

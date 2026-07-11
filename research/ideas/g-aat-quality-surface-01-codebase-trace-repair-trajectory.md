@@ -127,8 +127,8 @@ G4 confirms or reduces the final SCORE.
 
 検証:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/CodebaseTraceRepairTrajectory.lean`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/CodebaseTraceRepairTrajectory.lean`: pass。
+- `Research package build`: pass。
 - `.tmp/codebase_trace_repair_trajectory_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - G3 公理検査: pass。

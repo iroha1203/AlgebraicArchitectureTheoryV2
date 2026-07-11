@@ -2,8 +2,8 @@
 
 この文書は、`Formal/Arch/Evolution/SFTDescent.lean` に binary local-to-global gluing core
 を実装する前の作業指示・履歴である。現在の実装状態の source of truth は
-`Formal/Arch/Evolution/SFTDescent.lean`, `docs/aat/lean_theorem_index.md`,
-`docs/aat/proof_obligations.md`, `docs/sft/sft_theorem_roadmap_and_research_vision.md` を見る。
+`Formal/Arch/Evolution/SFTDescent.lean`, `Formal/`,
+`Formal/`, `docs/sft/sft_theorem_roadmap_and_research_vision.md` を見る。
 
 実装後の現在状態では、`glueCompatibleBinaryClockedConeFamily` と
 `BinaryDescentAssumptions.ofStepGluing` が追加され、compatible local cone family から
@@ -688,8 +688,8 @@ rg -nP '[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}\x{FEFF}]' Formal do
 docs 更新:
 
 ```text
-docs/aat/lean_theorem_index.md
-docs/aat/proof_obligations.md
+Formal/
+Formal/
 docs/sft/sft_theorem_roadmap_and_research_vision.md
 docs/sft/sft_theorem_roadmap_update_lean.md
 ```

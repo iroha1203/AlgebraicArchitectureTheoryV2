@@ -115,8 +115,8 @@ or whole-codebase quality.
 
 Local G3 checks:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/frontier_local_repair_transport_commutator_axioms.lean`: pass; reported declarations depend on no axioms
 - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/AG/QualitySurface/FrontierLocalRepairTransportCommutator.lean`: pass; no hits in the Lean evidence file
 

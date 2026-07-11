@@ -85,8 +85,8 @@ Boundary:
 
 ## Verification
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/FailingSlotCertificate.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/FailingSlotCertificate.lean`: pass
+- `Research package build`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting in the Lean file: pass
 - `.tmp/failing_slot_certificate_axioms.lean`: pass
   - axiom-free: `mixedRouteSlotFailingCertificate`, `mixedRouteSlot_exists_failingSlotCertificate`

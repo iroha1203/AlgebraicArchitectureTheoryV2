@@ -95,7 +95,7 @@ Lean では `TraceLocusCertificate` に visible scalar、verdict、selected supp
 ## 進捗ログ
 
 - 2026-06-20: cycle 6 の G1 候補として作成。
-- 2026-06-20: `TraceLocus.lean` を追加し、`cd research/lean && lake env lean ResearchLean/AG/QualitySurface/TraceLocus.lean` と
-  `cd research/lean && lake build ResearchLean` の通過を確認。
+- 2026-06-20: `TraceLocus.lean` を追加し、`focused Lean check: ResearchLean/AG/QualitySurface/TraceLocus.lean` と
+  `Research package build` の通過を確認。
 - 2026-06-20: G2-A / G3 revise を受け、repair frontier exactness と repair frontier nonfaithfulness を追加し、
   主要 theorem の axiom 依存がないことを確認。

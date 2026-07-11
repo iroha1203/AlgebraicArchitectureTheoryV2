@@ -103,9 +103,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualUnh
 
 検証実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualUnhitStatusDropScanner.lean`: pass。
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualUnhitStatusDropScanner`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualUnhitStatusDropScanner.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualUnhitStatusDropScanner`: pass。
+- `Research package build`: pass。
 - `#print axioms`: generic theorem family は標準 `propext` のみ。selected witness と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
 claim boundary は、finite source edge order、explicit unhit triple predicate、mapped transport、scanner some-to-target-obstruction、
@@ -145,4 +145,4 @@ whole-codebase quality、arbitrary atlas category/functoriality。
 
 - 2026-06-23: Cycle 104 candidate として source unhit status-drop scanner exactness を採択。
 - 2026-06-23: Lean 証拠を `SemanticResidualUnhitStatusDropScanner.lean` に固定し、単体
-  `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。
+  `lake env lean`、module build、`Research package build`、axiom 監査が通った。

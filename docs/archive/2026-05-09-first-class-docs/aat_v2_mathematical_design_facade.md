@@ -7,8 +7,8 @@
 新しい AAT の数学理論は [docs/aat/mathematical_theory/README.md](../../aat/mathematical_theory/README.md) を
 参照する。
 
-Lean 実装 status は [docs/aat/proof_obligations.md](aat/proof_obligations.md) と
-[docs/aat/lean_theorem_index.md](aat/lean_theorem_index.md) で管理する。
+Lean 実装 status は [Formal/](aat/proof_obligations.md) と
+[Formal/](aat/lean_theorem_index.md) で管理する。
 
 SFT, Architecture Signature Dynamics, forecast, field, organization, AI dynamics は
 [docs/sft/software_field_theory.md](sft/software_field_theory.md) を参照する。

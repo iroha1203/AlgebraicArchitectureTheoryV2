@@ -1860,7 +1860,10 @@ pub fn static_hypothesis_refresh_cycle() -> HypothesisRefreshCycleV0 {
                 hypothesis_version: "2026-04".to_string(),
                 status_before: "active".to_string(),
                 evidence_boundary: "empirical hypothesis".to_string(),
-                source_refs: vec!["docs/proof_obligations.md#empirical-hypotheses".to_string()],
+                source_refs: vec![
+                    "docs/sft/software_field_theory.md#付録-b-主張の梯子と-empirical-hypothesis-台帳"
+                        .to_string(),
+                ],
                 non_conclusions: vec!["active hypothesis is not a proved theorem".to_string()],
             },
             VersionedHypothesisRefV0 {

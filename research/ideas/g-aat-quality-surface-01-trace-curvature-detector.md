@@ -95,7 +95,7 @@ Lean では `TraceSquareCertificate`、typed `EdgeTransport`、`lawThenCover`、
 ## 進捗ログ
 
 - 2026-06-20: cycle 7 の G1 候補として作成。
-- 2026-06-20: `TraceCurvature.lean` を追加し、`cd research/lean && lake env lean ResearchLean/AG/QualitySurface/TraceCurvature.lean` と
-  `cd research/lean && lake build ResearchLean` の通過を確認。
+- 2026-06-20: `TraceCurvature.lean` を追加し、`focused Lean check: ResearchLean/AG/QualitySurface/TraceCurvature.lean` と
+  `Research package build` の通過を確認。
 - 2026-06-20: G2-A の補強提案を受け、repair frontier 側の faithfulness 否定も追加し、
   主要 theorem の axiom 依存がないことを確認。

@@ -91,8 +91,8 @@ Boundary:
 
 ## Verification
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/FiniteRouteFamilyExactLocus.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/FiniteRouteFamilyExactLocus.lean`: pass
+- `Research package build`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/finite_route_family_exact_locus_axioms.lean`: pass
   - axiom-free: `mixedRouteSlotAssignment_secondary_fails`

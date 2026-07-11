@@ -103,9 +103,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualMap
 
 検証実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualMappedRepairHitting.lean`: pass。
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualMappedRepairHitting`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualMappedRepairHitting.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualMappedRepairHitting`: pass。
+- `Research package build`: pass。
 - `#print axioms`: generic cross-carrier repair-hitting theorem 群と Cycle 95 bridge は axiom-free。selected witness と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
 claim boundary は、finite old/new atlas skeletons with possibly different carriers、source-side supplied bookkeeping hit predicates、unhit edge/present/free preservation laws、new canonical residual cut class nonzero / vanishing、target transition closure / coherent data no-go に限定する。
@@ -142,4 +142,4 @@ unchecked: hit sufficiency、actual repair synthesis、global minimal repair set
 ## 進捗ログ
 
 - 2026-06-23: Cycle 97 G1/G2 で cross-carrier residual cut repair-hitting transport を採択。
-- 2026-06-23: Lean 証拠を `SemanticResidualMappedRepairHitting.lean` に固定し、単体 `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。
+- 2026-06-23: Lean 証拠を `SemanticResidualMappedRepairHitting.lean` に固定し、単体 `lake env lean`、module build、`Research package build`、axiom 監査が通った。

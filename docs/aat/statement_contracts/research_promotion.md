@@ -14,7 +14,7 @@ Research Leanの受理statementを本体へ昇格するとき、本体側stateme
 ## 適用対象
 
 - `docs/aat/research_evidence_index.md`で`ported`と判定するResearch成果
-- evidence indexが未整備の場合に、Research theorem index、reports、本体側対応記述から
+- evidence indexが未整備の場合に、Research Lean source、reports、本体側対応記述から
   本体対応候補として抽出したResearch成果
 - Research元statementを本体へ新規に昇格するPR
 - 既存`ported`行を再監査するbackfill
@@ -49,7 +49,6 @@ manifestに同じkeyと移動前後のsource/type/value/axiom digestが存在し
 - 本体先:
   `AAT.AG.SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedComparisonPacket_finiteFree`
 - 本体statement contract:
-  `docs/aat/statement_contracts/semantic_repair_part_x.md`と
   `Formal/AG/StatementContractsSemanticRepairPart10.lean`
 - audit declaration:
   `ResearchLean.AG.Audit.SemanticRepair.lawEquationGroundedComparisonPacket`

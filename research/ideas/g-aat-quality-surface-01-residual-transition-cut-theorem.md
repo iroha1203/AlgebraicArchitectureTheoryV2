@@ -86,12 +86,12 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualTra
 
 G3 初期実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualTransitionCut.lean`: pass。
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualEdgeTransitionObstruction`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualTransitionCut.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualEdgeTransitionObstruction`: pass。
 - dependency build は既存 QualitySurface module 群を含めて pass。
 - G3 形式化品質監査の revise に従い、`FiniteSemanticRepairAtlasSkeleton` に complete finite `indexOrder` / `atomOrder` witnesses を追加した。selected instance は flat / repair-frontier index と three refined semantic atoms を明示的に列挙する。
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualTransitionCut`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualTransitionCut`: pass。
+- `Research package build`: pass。
 - `#print axioms`: `transitionCoherentAtlasData_implies_edgeTransitions`、`residualTransitionCut_obstructs_atlasTransitionClosure`、`residualTransitionCut_obstructs_transitionCoherentData` は axiom-free。selected frontier-flat closure / data obstruction と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 - G3 公理監査: pass。core cut theorem は axiom-free、selected finite witness/package の標準公理依存は既存 selected Prop / quotient witness 由来として許容。
 - G3 Lean 形式化品質監査: pass。finite skeleton の complete lists と single-edge cut witness が候補カードと一致し、minimality、scanner exactness、obstruction class は今回の主張外として分離済み。

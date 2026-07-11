@@ -99,7 +99,7 @@ Phase B6 の最小仮説は次である。
 | H5 | Feature Extension Report は architecture review の合意形成を速める。 |
 
 これらは empirical hypothesis であり、Lean theorem ではない。現行の仮説管理は
-`docs/aat/proof_obligations.md` と GitHub Issues で行い、旧 evaluation query は archive の
+`Formal/` と GitHub Issues で行い、旧 evaluation query は archive の
 `docs/archive/2026-05-09-first-class-docs/design/b6_empirical_hypothesis_evaluation.md` に残す。
 
 ## Phase B7: PR review integration

@@ -109,9 +109,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAtl
 
 検証実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualAtlasMapLaws.lean`: pass。
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualAtlasMapLaws`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualAtlasMapLaws.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualAtlasMapLaws`: pass。
+- `Research package build`: pass。
 - `#print axioms`: inducing-map preservation / push / obstruction theorem は axiom-free。covering/canonical transport と selected map laws は標準 `propext`、selected transported class と package は標準 `propext` / `Quot.sound` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はなし。
 
 claim boundary は、finite semantic repair atlas skeleton 間の edge/residual-present/residual-free preserving maps、target cut-data lift、induced cut-locus embedding/equivalence、selected extended carrier witness に限定する。
@@ -148,4 +148,4 @@ unchecked: arbitrary atlas category、general atom-map semantic completeness、p
 ## 進捗ログ
 
 - 2026-06-23: Cycle 95 G1/G2 で residual cut-locus transport induced by edge/present/free map laws を採択。
-- 2026-06-23: Lean 証拠を `SemanticResidualAtlasMapLaws.lean` に固定し、単体 `lake env lean`、module build、`cd research/lean && lake build ResearchLean`、axiom 監査が通った。
+- 2026-06-23: Lean 証拠を `SemanticResidualAtlasMapLaws.lean` に固定し、単体 `lake env lean`、module build、`Research package build`、axiom 監査が通った。

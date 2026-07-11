@@ -164,11 +164,11 @@ theorem-level.
 
 Verification already passed for this candidate:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticRepairFiniteQueryRepresentationRealizedRecovery`
-- `cd research/lean && lake env lean ResearchLean.lean`
-- `cd research/lean && lake build ResearchLean.AG`
-- `cd research/lean && lake build ResearchLean`
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticRepairFiniteQueryRepresentationRealizedRecovery`
+- `focused Lean check: ResearchLean.lean`
+- `Research module build: ResearchLean.AG`
+- `Research package build`
 - `lake build`
 - `.tmp/g04_realized_recovery_axioms.lean` axiom audit: 13 reported
   declarations, no axioms.

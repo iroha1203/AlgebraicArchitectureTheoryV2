@@ -110,6 +110,6 @@ trace-missing atom が残ることを証明する。
 - 2026-06-20: cycle 4 の G1 候補生成から審判対象として作成。
 - 2026-06-20: G2 revise を受け、主成果を trace availability preservation から
   support transport と trace transport を分離する finite missing-trace witness へ寄せ、expected base score を 70 に調整。
-- 2026-06-20: `research/lean/ResearchLean/AG/QualitySurface/TraceTransport.lean` を追加。`cd research/lean && lake build ResearchLean`
+- 2026-06-20: `research/lean/ResearchLean/AG/QualitySurface/TraceTransport.lean` を追加。`Research package build`
   pass。G2 再審判は accept。G3 公理検査 pass: requested declarations depend on no axioms。G3 形式化品質監査 pass。
 - 2026-06-20: G4 SCORE 監査 reduce: base 60, multiplier 2.0, penalty 0, final 120。

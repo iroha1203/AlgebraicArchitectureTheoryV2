@@ -97,8 +97,8 @@ Declarations:
 
 Local G3 checks:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SupportLocalRepairFrontier.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/SupportLocalRepairFrontier.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/support_local_repair_frontier_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; `SupportLocalSourceRefRepair` is non-circular and proves the frontier restriction for arbitrary packet/action under table-level support laws and pre-frontier exactness

@@ -109,9 +109,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualFin
 
 G3 初期実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualFiniteScanner.lean`: pass。
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualFiniteScanner`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualFiniteScanner.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualFiniteScanner`: pass。
+- `Research package build`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
 - axiom probe: scanner theorem / selected witness / package declarations use standard `propext` only。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 - `git diff --check`: pass。

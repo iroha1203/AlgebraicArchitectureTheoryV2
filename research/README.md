@@ -30,7 +30,7 @@ GOAL(研究で成し遂げたいこと)
 | `ideas/` | 候補を一件ずつ書いたカード。選にもれたものや保留は `ideas/archived/` へ移す |
 | `reports/` | GOAL の能力がどう増えたかを書くレポート。GOAL ひとつにつき一つ |
 | `DESIGN.md` | この仕組みをいまの形にした理由の記録 |
-| `research/lean/ResearchLean/` | Lean による検証の作業場。`research/` には入れず、リポジトリ内の別ディレクトリに置く。`Formal/AG` 本体は参照のみ可 |
+| `research/lean/ResearchLean/` | Lean による検証の作業場。`Formal/AG` には入れず、`research/lean` の独立 package に置く。`Formal/AG` 本体は参照のみ可 |
 
 2026-07-12 の Research Lean package 移動に伴い、それ以前の ideas / reports にある
 filesystem path と検証 command は、移動後に再利用できる同等手順へ正規化している。

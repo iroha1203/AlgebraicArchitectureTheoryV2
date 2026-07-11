@@ -509,8 +509,8 @@ SFTTheoremRoadmap.finite_governance_cuts_obstruction_of_failure
 更新先:
 
 ```text
-docs/aat/lean_theorem_index.md
-docs/aat/proof_obligations.md
+Formal/
+Formal/
 docs/sft/sft_theorem_roadmap_and_research_vision.md
 docs/sft/sft_theorem_roadmap_update_lean_6.md
 ```

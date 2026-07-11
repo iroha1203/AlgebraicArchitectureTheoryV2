@@ -90,9 +90,9 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAli
 
 G3 実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualAliasClassification.lean`: pass。
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.SemanticResidualAliasClassification`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualAliasClassification.lean`: pass。
+- `Research module build: ResearchLean.AG.QualitySurface.SemanticResidualAliasClassification`: pass。
+- `Research package build`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
 - axiom probe: generic theorem 群は axiom-free。selected witness / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 - `git diff --check`: pass。

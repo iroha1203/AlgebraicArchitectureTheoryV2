@@ -118,8 +118,8 @@ Lean proves:
 
 Local checks:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/NaiveRefinementSupportCounterexample.lean`: pass.
-- `cd research/lean && lake build ResearchLean`: pass.
+- `focused Lean check: ResearchLean/AG/QualitySurface/NaiveRefinementSupportCounterexample.lean`: pass.
+- `Research package build`: pass.
 - `lake build`: pass, with only existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warnings.
 - `#print axioms`: all reported declarations are axiom-free.  No `sorryAx`, custom axiom, `propext`, `Classical.choice`, `Quot.sound`, or `unsafe` appears in the reported declarations.
 

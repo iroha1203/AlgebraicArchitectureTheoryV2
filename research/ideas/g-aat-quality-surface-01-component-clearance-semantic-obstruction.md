@@ -99,8 +99,8 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/ComponentClearanceS
 
 G3 実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ComponentClearanceSemanticObstruction.lean`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/ComponentClearanceSemanticObstruction.lean`: pass。
+- `Research package build`: pass。
 - axiom probe: direct declared plan / component-complete / basis-hit declarations は axiom-free。selected package は既存 Cech local exactness infrastructure 由来の標準 `propext` / `Quot.sound` を継承する。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 
 ## 審判メモ
@@ -136,5 +136,5 @@ G3 実績:
 ## 進捗ログ
 
 - 2026-06-22: G1 obstruction candidate として component-cleared semantic gluing obstruction が提示され、Cycle 79 picked とした。
-- 2026-06-22: Lean 証拠を `ComponentClearanceSemanticObstruction.lean` に固定し、単体 `lake env lean` と `cd research/lean && lake build ResearchLean` が通った。
+- 2026-06-22: Lean 証拠を `ComponentClearanceSemanticObstruction.lean` に固定し、単体 `lake env lean` と `Research package build` が通った。
 - 2026-06-22: G2 四審判はすべて accept。repo価値ロールの減点を採り、G4 SCORE 監査は base 70 / final +140 を confirm。

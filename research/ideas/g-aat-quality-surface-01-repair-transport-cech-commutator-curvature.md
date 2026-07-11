@@ -105,8 +105,8 @@ geometry not reducible to a mismatch list or scalar dashboard.
   genius no; C accepted base 90, genius no; D accepted base 90, genius no.
 - `G3_evidence`: Lean proof in
   `research/lean/ResearchLean/AG/QualitySurface/RepairTransportCechCommutatorCurvature.lean`.
-  `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/RepairTransportCechCommutatorCurvature.lean`
-  and `cd research/lean && lake build ResearchLean` passed.  Full `lake build` also passed;
+  `focused Lean check: ResearchLean/AG/QualitySurface/RepairTransportCechCommutatorCurvature.lean`
+  and `Research package build` passed.  Full `lake build` also passed;
   the only warnings were pre-existing linter warnings in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `G3_synced_score_expectation`: expected base lowered to 88 before G4.  The

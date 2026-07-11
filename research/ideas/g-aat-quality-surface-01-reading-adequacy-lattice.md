@@ -136,7 +136,7 @@ cycle 2 は scalar reading の非忠実性、cycle 5 は zero-looking state sepa
 
 ## G3 監査
 
-- build: `cd research/lean && lake build ResearchLean` pass、`cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ReadingAdequacy.lean` pass。
+- build: `Research package build` pass、`focused Lean check: ResearchLean/AG/QualitySurface/ReadingAdequacy.lean` pass。
 - axiom check: pass。主要 declaration はすべて `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - formalization quality audit: pass。候補の finite reading chain 相対の主張を適切な強さで表す。絶対 lattice、絶対最小性、source extraction completeness、実コード全体の品質判定は主張していない。
 - caveat: scalar-only 段と full protected signature / obligation-aware reading は今回の独立 declaration としては切っていない。cycle 8 の主張は support surface、trace-locus-aware reading、repair-aware reading、path-ordered trace case に限定する。

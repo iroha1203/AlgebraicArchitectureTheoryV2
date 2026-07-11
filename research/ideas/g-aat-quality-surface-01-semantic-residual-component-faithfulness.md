@@ -103,8 +103,8 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualCom
 
 G3 実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualComponentFaithfulness.lean`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualComponentFaithfulness.lean`: pass。
+- `Research package build`: pass。
 - `lake build`: pass。既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
 - axiom probe: generic theorem 群は axiom-free。selected witness / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 - `axiom|admit|sorry|unsafe` scan: 対象 Lean には該当なし。
@@ -141,5 +141,5 @@ G3 実績:
 ## 進捗ログ
 
 - 2026-06-22: G1 closer / unifier candidate として picked。
-- 2026-06-22: Lean 証拠を `SemanticResidualComponentFaithfulness.lean` に固定し、単体 `lake env lean` と `cd research/lean && lake build ResearchLean` が通った。
+- 2026-06-22: Lean 証拠を `SemanticResidualComponentFaithfulness.lean` に固定し、単体 `lake env lean` と `Research package build` が通った。
 - 2026-06-22: G4 SCORE 監査で base 75 / final +150 に確定した。

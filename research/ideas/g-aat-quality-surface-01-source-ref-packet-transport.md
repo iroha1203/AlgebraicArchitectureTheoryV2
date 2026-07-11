@@ -105,8 +105,8 @@ Lean proof は `research/lean/ResearchLean/AG/QualitySurface/SourceRefPacketTran
 
 ## G3 監査
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SourceRefPacketTransport.lean` pass。
-- `cd research/lean && lake build ResearchLean` pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SourceRefPacketTransport.lean` pass。
+- `Research package build` pass。
 - `lake env lean .tmp/source_ref_packet_transport_axioms.lean` pass。
 - reported declaration はすべて `does not depend on any axioms`。
 - local scan で `axiom` / `admit` / `sorry` / `unsafe`、不可視 Unicode、local path は no matches。

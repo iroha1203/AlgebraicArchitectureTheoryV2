@@ -4,6 +4,6 @@
 現行source of truthではなく、本文内のpath、status、宣言名、相互参照は当時の記録として読む。
 
 現行の数学claim、Lean status、proof obligation、固定statementは
-`docs/aat/algebraic_geometric_theory/`、`docs/aat/lean_theorem_index_ag_aat.md`、
-`docs/aat/proof_obligations_ag_aat.md`、`docs/aat/lean_ag_status_overlay.md`、
+`docs/aat/algebraic_geometric_theory/`、`Formal/AG/`、
+`Formal/AG/`、
 `docs/aat/statement_contracts/`で確認する。

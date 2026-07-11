@@ -161,9 +161,9 @@ Implemented Lean declarations:
 
 Build evidence:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/HandoffCechExactness.lean`: pass
-- `cd research/lean && lake env lean ResearchLean.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/HandoffCechExactness.lean`: pass
+- `focused Lean check: ResearchLean.lean`: pass
+- `Research package build`: pass
 - target scan for `axiom|admit|sorry|unsafe`: no matches
 - `#print axioms`: core definitions, overlap support definitions, repair
   obligation definitions, repair equivalence, and `locallyExactOverlapObstructedCover`

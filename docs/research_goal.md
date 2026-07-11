@@ -128,9 +128,7 @@ tool pass を Lean theorem として読まない。
 2. [AAT / SFT Interface](sft/aat_interface.md)
 3. [ソフトウェアの場の理論](sft/software_field_theory.md)
 
-Lean status、proof obligation、empirical hypothesis は
-[証明義務と実証仮説](aat/proof_obligations.md) と
-[Lean 定義・定理索引](aat/lean_theorem_index.md) に分離する。
-AAT と SFT の境界、Lean theorem / tool output / empirical hypothesis の区別は
-[AAT / SFT Interface](sft/aat_interface.md) と各索引文書で扱う。
+Lean status、proof obligation、empirical hypothesis は、Lean source、GOAL、GitHub Issue、PRで管理する。
+AAT と SFT の責務分離、Lean theorem / tool output / empirical hypothesis の区別は
+[AAT / SFT Interface](sft/aat_interface.md) と各本文で扱う。
 tooling の詳細は [AAT Tooling Documentation](tool/README.md) に置く。

@@ -78,8 +78,8 @@ Planned / proved declarations:
 
 Verification:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SelectedRouteCorrectionExactness.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/SelectedRouteCorrectionExactness.lean`: pass
+- `Research package build`: pass
 - `#print axioms` for all listed declarations: all `does not depend on any axioms`
 - forbidden-token scan on the Cycle 44 Lean/card files: no matches
 
@@ -105,5 +105,5 @@ Boundary:
 
 ## 進捗ログ
 
-- 2026-06-21: Cycle 44 候補として作成。Lean 単体チェックと `cd research/lean && lake build ResearchLean` は pass。
+- 2026-06-21: Cycle 44 候補として作成。Lean 単体チェックと `Research package build` は pass。
 - 2026-06-21: G2 は accept。G3 で網羅的 `#print axioms` と形式化品質監査が pass。

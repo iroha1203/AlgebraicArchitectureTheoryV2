@@ -129,7 +129,7 @@
       "statusBefore": "active",
       "evidenceBoundary": "empirical hypothesis",
       "sourceRefs": [
-        "docs/proof_obligations.md#empirical-hypotheses"
+        "docs/sft/software_field_theory.md#付録-b-主張の梯子と-empirical-hypothesis-台帳"
       ],
       "nonConclusions": [
         "active hypothesis is not a proved theorem"

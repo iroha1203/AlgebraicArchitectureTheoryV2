@@ -449,8 +449,8 @@ atomObservations
 
 成果物:
 
-- `docs/aat/proof_obligations.md` update
-- `docs/aat/lean_theorem_index.md` update
+- `Formal/` update
+- `Formal/` update
 - 必要なら `docs/aat/algebraic_geometric_theory/` 本文更新。ただしこれは実装後に行う。
 
 ## 8. 検査体系
@@ -809,9 +809,9 @@ AAT 実装境界において満たされている。
 - `Formal/Arch/Examples/AATCompleteFormalizationExamples.lean` の
   `generatedComponentCompleteFormalization_is_complete` は、concrete generated component example でも
   同じ completion boundary を読む。
-- `docs/aat/proof_obligations.md` は Issue #1654-#1664 の各 suite field を
+- `Formal/` は Issue #1654-#1664 の各 suite field を
   `proved suite connection` / `proved suite audit` / `proved completion boundary` として同期している。
-- `docs/aat/lean_theorem_index.md` は Atom-generated kernel、suite field、frontier closure、
+- `Formal/` は Atom-generated kernel、suite field、frontier closure、
   theorem classification registry、非主張境界を索引している。
 - `tools/archsig/tests/fixtures/atom_generated_acceptance/` と
   `tools/archsig/tests/cli.rs` は、`generatedMolecules`、`generatedLawInputs`、

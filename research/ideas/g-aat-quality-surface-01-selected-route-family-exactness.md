@@ -99,8 +99,8 @@ Boundary:
 
 ## Verification
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SelectedRouteFamilyExactness.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/SelectedRouteFamilyExactness.lean`: pass
+- `Research package build`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/selected_route_family_exactness_axioms.lean`: pass
   - axiom-free: `familySourceRefExact_iff_visible_empty`, `lossAwareAtlas_familyCriterion`, `lossAwareAtlas_not_familySourceRefExact`, `exactRestorationSubfamily_sourceRefExact`, `correctedRouteFamily_supportLocalized`, `allRouteDefectCorrection_familySourceRefExact`, `obligationOnlyCorrection_family_not_sourceRefExact`

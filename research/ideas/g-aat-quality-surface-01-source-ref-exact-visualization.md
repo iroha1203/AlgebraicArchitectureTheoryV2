@@ -122,8 +122,8 @@ Lean proof は `research/lean/ResearchLean/AG/QualitySurface/SourceRefExactVisua
 
 検証:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SourceRefExactVisualization.lean`: pass。
+- `Research package build`: pass。
 - `.tmp/source_ref_exact_visualization_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - 対象 Lean file の `axiom` / `admit` / `sorry` / `unsafe` / `Classical` / `choice` / `propext` /

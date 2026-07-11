@@ -58,7 +58,7 @@ Empirical hypothesis:
 
 定理候補:
   今後の定義・証明設計を示す本文内の候補。
-  Lean の中央 proof obligation になるのは、docs/aat の台帳に対応行を置いた場合だけである。
+  Lean の定義・定理として扱う場合は、数学本文と Formal/ の宣言を直接照合する。
 
 命題候補:
   定理候補と同格の、命題水準の候補ラベル。
@@ -171,8 +171,8 @@ D4 純数学本文と解釈境界の分離:
   定義の index に使わない。tooling(FieldSig)は本文の外。
 
 D5 主張の梯子:
-  §1 の通り。SFT の Formal theorem / 定理候補が Lean proof obligation になるのは
-  docs/aat 台帳に対応行を置いた場合だけである。
+  §1 の通り。SFT の Formal theorem / 定理候補を Lean 形式化の対象として扱うのは、
+  数学本文と Formal/ の宣言を直接照合した場合だけである。
 
 D6 模型非自明性:
   Model theorem は、同じ模型族の中で結論が成立しない相の非空性を併せて示す。
@@ -1858,8 +1858,8 @@ profile の事後再選択は反証の回避として扱い、別仮説として
 | H4 | diversity premium: 同能力の混成 delegator 群は、単一 delegator 群より hotspot 重なり衝突率が低い | 能力対等条件、hotspot 定義、衝突率の測り方を固定 | 混成群の衝突率が単一群以上 | モデル世代を跨ぐ再現を要求 | 未検証 |
 | H5 | Lehman 継続変化: 生きた開発系では目標移動の下界 v_min は零にならない(定理 37.2 の前提が現実で持続的に満たされる) | 「生きた系」の operational 定義(利用・変更の下限)、v の proxy(要求流入率)を固定 | 生きた系で v proxy が持続的に零 | 複数ドメインでの成立を要求 | 未検証 |
 
-SFT の Formal theorem / 定理候補が Lean proof obligation になるのは、
-docs/aat の台帳(lean_theorem_index / proof_obligations)に対応行を置いた場合だけである(D5)。
+SFT の Formal theorem / 定理候補を Lean 形式化の対象として扱うのは、
+数学本文と Formal/ の宣言を直接照合した場合だけである(D5)。
 
 ## 付録 C 物理アナロジー辞書(3 列)
 

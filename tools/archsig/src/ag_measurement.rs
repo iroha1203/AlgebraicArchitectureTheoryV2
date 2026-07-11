@@ -11019,6 +11019,7 @@ fn valued_adjacency_map(
 
 pub fn build_measurement_viewer_data_v1(
     normalized: &NormalizedArchMapV2,
+    archmap_document: &ArchMapDocumentV2,
     packet: &ArchSigMeasurementPacketV1,
     summary: &Value,
     insight_report: &Value,
@@ -11029,7 +11030,7 @@ pub fn build_measurement_viewer_data_v1(
     let viewer_atoms = projected_atoms(normalized, &preserved_atom_refs, 10_000);
     let viewer_contexts = projected_contexts(normalized, &preserved_context_refs, 20_000);
     let viewer_covers = projected_covers(normalized, 10_000);
-    let atom_nodes = viewer_atom_nodes(&viewer_atoms, insight_report);
+    let atom_nodes = viewer_atom_nodes(&viewer_atoms, archmap_document, insight_report);
     let molecule_groups = viewer_molecule_groups(&viewer_contexts);
     let atom_edges = viewer_atom_edges(&viewer_contexts);
     let context_memberships = normalized
@@ -11267,7 +11268,43 @@ fn projected_covers(normalized: &NormalizedArchMapV2, limit: usize) -> Vec<Norma
         .collect()
 }
 
-fn viewer_atom_nodes(atoms: &[NormalizedAtomV2], insight_report: &Value) -> Vec<Value> {
+/// Resolves a semantic source ref (an `archmap.sources` key) into the file
+/// path / symbol / line evidence declared by the supplied ArchMap, following
+/// one `source` indirection for symbol entries. Unresolvable refs keep the
+/// bare `ref` form; the viewer must not invent locations.
+fn resolved_source_ref_sample(archmap_document: &ArchMapDocumentV2, reference: &str) -> Value {
+    let mut sample = json!({ "ref": reference });
+    let Some(entry) = archmap_document.sources.get(reference) else {
+        return sample;
+    };
+    sample["sourceKind"] = json!(entry.kind);
+    let path = entry.path.clone().or_else(|| {
+        entry
+            .source
+            .as_ref()
+            .and_then(|parent| archmap_document.sources.get(parent))
+            .and_then(|parent| parent.path.clone())
+    });
+    if let Some(path) = path {
+        sample["path"] = json!(path);
+    }
+    if let Some(symbol) = &entry.symbol {
+        sample["symbol"] = json!(symbol);
+    }
+    if let Some(line) = entry.line {
+        sample["line"] = json!(line);
+    }
+    if let Some(section) = &entry.section {
+        sample["section"] = json!(section);
+    }
+    sample
+}
+
+fn viewer_atom_nodes(
+    atoms: &[NormalizedAtomV2],
+    archmap_document: &ArchMapDocumentV2,
+    insight_report: &Value,
+) -> Vec<Value> {
     let top_atoms = top_insight_atom_refs(insight_report);
     atoms
         .iter()
@@ -11275,7 +11312,7 @@ fn viewer_atom_nodes(atoms: &[NormalizedAtomV2], insight_report: &Value) -> Vec<
             let source_refs = atom
                 .source_refs
                 .iter()
-                .map(|source_ref| json!({ "ref": source_ref }))
+                .map(|source_ref| resolved_source_ref_sample(archmap_document, source_ref))
                 .collect::<Vec<_>>();
             json!({
                 "nodeId": atom.normalized_atom_id,

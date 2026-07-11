@@ -172,9 +172,9 @@ Lean file: `research/lean/ResearchLean/AG/QualitySurface/HandoffRepairTransversa
 - Lean file: `research/lean/ResearchLean/AG/QualitySurface/HandoffRepairTransversal.lean`
 - aggregate import: `research/lean/ResearchLean.lean`
 - local checks:
-  - `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/HandoffRepairTransversal.lean`: pass
-  - `cd research/lean && lake env lean ResearchLean.lean`: pass
-  - `cd research/lean && lake build ResearchLean`: pass
+  - `focused Lean check: ResearchLean/AG/QualitySurface/HandoffRepairTransversal.lean`: pass
+  - `focused Lean check: ResearchLean.lean`: pass
+  - `Research package build`: pass
   - `lake build`: pass。既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter warning のみ。
   - `lake env lean .tmp/handoff_repair_transversal_axioms.lean`: pass
   - target `axiom|admit|sorry|unsafe` scan: no matches

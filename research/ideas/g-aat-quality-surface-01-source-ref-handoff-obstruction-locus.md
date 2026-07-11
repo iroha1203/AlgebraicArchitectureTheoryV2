@@ -86,8 +86,8 @@ route dashboard の first failing item は有用な表示であるが、canonica
 ## 証明・根拠
 
 Lean file `research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffObstructionLocus.lean` に固定した。
-`cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SourceRefHandoffObstructionLocus.lean`、
-`cd research/lean && lake env lean ResearchLean.lean`、`cd research/lean && lake build ResearchLean`、full `lake build` は通過した。
+`focused Lean check: ResearchLean/AG/QualitySurface/SourceRefHandoffObstructionLocus.lean`、
+`focused Lean check: ResearchLean.lean`、`Research package build`、full `lake build` は通過した。
 full build の警告は既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter 警告のみである。
 
 証明済み declaration は次である。

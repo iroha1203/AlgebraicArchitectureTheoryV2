@@ -99,7 +99,7 @@ ADL は component / connector / view / constraint を扱えるが、semantic res
 
 - `score_reason`: target theorem の本体方向である necessity / sufficiency package を弱めずに狙う。G2 A の厳密性 revise を反映し、base は 95 に調整する。
 - `dullness_risk`: `B1` を広く定義して全 residual を boundary にする、または primitive を semantic repair と無証明に同一視すると失格。faithfulness hypotheses と visible/local witness validation を分けて記録する必要がある。
-- `proof_or_evidence_plan`: `FiniteSemanticRepairGluingComplex`、restriction-difference `delta0` law、`B1`、`ObstructionClassNonzero`、`GlobalSemanticRepairCoherent`、`SemanticFaithfulnessHypotheses` を `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean` に置き、既存の faithfulness / transport / visible-local obstruction theorem を package に接続した。`cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean` と対象 module build は通過済み。
+- `proof_or_evidence_plan`: `FiniteSemanticRepairGluingComplex`、restriction-difference `delta0` law、`B1`、`ObstructionClassNonzero`、`GlobalSemanticRepairCoherent`、`SemanticFaithfulnessHypotheses` を `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean` に置き、既存の faithfulness / transport / visible-local obstruction theorem を package に接続した。`focused Lean check: ResearchLean/AG/QualitySurface/SemanticRepairGluingComplex.lean` と対象 module build は通過済み。
 
 ## Target Theorem 寄与
 

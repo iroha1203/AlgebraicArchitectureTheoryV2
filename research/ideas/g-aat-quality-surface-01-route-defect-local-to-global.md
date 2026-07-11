@@ -110,8 +110,8 @@ Lean では次の declaration を固定した。
 
 検証:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/RouteDefectExcursionSupport.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/RouteDefectExcursionSupport.lean`: pass
+- `Research package build`: pass
 - `.tmp/route_defect_excursion_axioms.lean`: 全対象 declaration が axiom 依存なし
 - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean research/lean/ResearchLean.lean`: 新規差分に該当なし
 

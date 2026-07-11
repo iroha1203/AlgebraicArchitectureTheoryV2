@@ -77,8 +77,8 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/VisibleLawDeletionP
 
 Verification:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/VisibleLawDeletionProtectedZero.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/VisibleLawDeletionProtectedZero.lean`: pass
+- `Research package build`: pass
 - `.tmp/visible_law_deletion_axioms.lean`: all listed definitions and theorem declarations do not depend on any axioms
 - G3 axiom audit: pass after clarifying that `research/lean/ResearchLean` is the allowed research sandbox; no non-research `Formal/AG` proper file was edited.
 - G3 formalization-quality audit: pass. The audit confirmed that the statement matches the selected finite witness claim, is neither too weak nor too strong, keeps non-visible transport laws/action naturality/zero packet holonomy/empty support/visible failure in the same route square, and avoids global minimality or whole-codebase claims.

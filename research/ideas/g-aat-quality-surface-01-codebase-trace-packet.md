@@ -119,7 +119,7 @@ cycle 4 は trace transport と trace naturality を分離し、cycle 6 は toy 
 
 ## G3 監査
 
-- build: `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/CodebaseTracePacket.lean` pass、`cd research/lean && lake build ResearchLean` pass。
+- build: `focused Lean check: ResearchLean/AG/QualitySurface/CodebaseTracePacket.lean` pass、`Research package build` pass。
 - axiom check: pass。主要 declaration はすべて `does not depend on any axioms`。
 - formalization quality audit: pass。主張は supplied opaque source-ref table に相対化され、source extraction completeness、実コード全体の品質判定、現行 tooling schema impact は主張しない。
 - theorem highlights: `sourceRef_missing_projects_to_trace_missing`、`exact_packet_projects_to_exact_trace_repair`、`sourceRefLocusAware_faithful_to_repairFrontier_of_exact`、`same_surface_support_but_codebase_trace_frontier_diff`。

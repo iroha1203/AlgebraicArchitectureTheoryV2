@@ -134,9 +134,9 @@ Lean evidence stage: `proved-in-research` in
 
 G3 checks:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/OverlapObstructionBasis.lean`: pass.
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.OverlapObstructionBasis`: pass.
-- `cd research/lean && lake build ResearchLean`: pass.
+- `focused Lean check: ResearchLean/AG/QualitySurface/OverlapObstructionBasis.lean`: pass.
+- `Research module build: ResearchLean.AG.QualitySurface.OverlapObstructionBasis`: pass.
+- `Research package build`: pass.
 - `lake build`: pass; existing unrelated linter warnings remain in
   `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
 - `lake env lean .tmp/overlap_obstruction_basis_axioms.lean`: pass.

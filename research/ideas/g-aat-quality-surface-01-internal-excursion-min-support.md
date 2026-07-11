@@ -140,9 +140,9 @@ Lean では次の declaration を固定した。
 
 検証:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/InternalExcursionMinSupport.lean`: pass
-- `cd research/lean && lake build ResearchLean.AG.QualitySurface.InternalExcursionMinSupport`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/InternalExcursionMinSupport.lean`: pass
+- `Research module build: ResearchLean.AG.QualitySurface.InternalExcursionMinSupport`: pass
+- `Research package build`: pass
 - `.tmp/internal_excursion_min_support_axioms.lean`: 全対象 declaration が axiom 依存なし
 - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/AG/QualitySurface/InternalExcursionMinSupport.lean research/lean/ResearchLean.lean`: 該当なし
 

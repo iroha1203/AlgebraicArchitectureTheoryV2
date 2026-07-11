@@ -84,8 +84,8 @@ Declarations:
 
 Local G3 checks:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SourceRefExactFoldLocus.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/SourceRefExactFoldLocus.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/source_ref_exact_fold_locus_axioms.lean`: pass; all reported declarations depend on no axioms
 - independent axiom audit: pass; no `sorryAx`, nonstandard axioms, `propext`, `Classical.choice`, or `Quot.sound`
 - independent formalization-quality audit: pass; propagation uses source-ref exact legs and does not claim packet-zero-only visible propagation

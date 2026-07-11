@@ -105,8 +105,8 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/ComponentRefinement
 
 G3 実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ComponentRefinementSupportLift.lean`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/ComponentRefinementSupportLift.lean`: pass。
+- `Research package build`: pass。
 - `#print axioms`: `BranchComponentLiftClosed`、`ComponentSupportLiftClosed`、`branchComponentLiftClosed_gives_supportLiftClosedForBranch`、`CodeComponentLiftCovered`、`codeComponentLiftCovered_gives_codeReflectionCovered`、`listedComponentLiftCoverage_gives_branchFamilyAdequacy`、`traceOnly_componentLift_not_covers_refinedRepairFrontier` は axiom-free。`firstUncoveredComponentLift?_none_gives_branchFamilyAdequacy`、selected pass / package theorem は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`Quot.sound`、`unsafe` は出ていない。
 
 ## 審判メモ

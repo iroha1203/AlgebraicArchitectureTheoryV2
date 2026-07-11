@@ -118,8 +118,8 @@ Claim boundary:
 
 Local G3 checks:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`: pass
+- `Research package build`: pass
 - `lake env lean .tmp/route_defect_support_axioms.lean`: pass; reported declarations depend on no axioms
 - `rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/AG/QualitySurface/RouteDefectSupport.lean`: pass; no hits in the Lean evidence file
 

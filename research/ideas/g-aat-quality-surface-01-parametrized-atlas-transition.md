@@ -90,8 +90,8 @@ Boundary:
 
 ## Verification
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ParametrizedAtlasTransition.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/ParametrizedAtlasTransition.lean`: pass
+- `Research package build`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/parametrized_atlas_transition_axioms.lean`: pass
   - axiom-free: `stageAtlasCell_visibleInvariant`

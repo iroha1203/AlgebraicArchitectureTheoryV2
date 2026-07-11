@@ -124,8 +124,8 @@ Lean proof は `research/lean/ResearchLean/AG/QualitySurface/GridHolonomyLocaliz
 
 検証:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/GridHolonomyLocalization.lean`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/GridHolonomyLocalization.lean`: pass。
+- `Research package build`: pass。
 - `.tmp/grid_holonomy_localization_axioms.lean` の `#print axioms`: listed declarations are all
   `does not depend on any axioms`。`sorryAx`、`propext`、`Classical.choice`、`Quot.sound` は出ていない。
 - G3 公理検査: pass。

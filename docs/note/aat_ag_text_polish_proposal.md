@@ -468,7 +468,7 @@ quotient stack 宣言の重複(L1227/L1254)は前者に。
 
 台帳としての反復は構造的なので許容。次のみ調整する。
 
-- L29, L32, L34 [B] 「中央 Lean obligation ではなく、登録時に `proof_obligations.md` 側へ移す。」が3セルで同文 → 表の直前に「`local theorem candidate` は登録時に `proof_obligations.md` 側へ移す」と一度書き、セルからは削除
+- L29, L32, L34 [B] 「中央 Lean obligation ではなく、本文命題と対応する `Formal/` declaration を直接確認する。」が3セルで同文 → 表の直前に一度書き、セルからは削除
 - L86 [A]「例えば」→「たとえば」(R7)
 - L101, L286, L396 [A] 地の文・見出しの Cech → Čech(R7。表内の識別子 `Cech stability` は ASCII のまま)
 - L164-165 [B]「として読むことができる。」→「として読める。」(R6)

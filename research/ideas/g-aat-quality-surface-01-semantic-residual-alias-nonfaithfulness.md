@@ -87,8 +87,8 @@ Lean 証拠は `research/lean/ResearchLean/AG/QualitySurface/SemanticResidualAli
 
 G3 実績:
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SemanticResidualAliasNonfaithfulness.lean`: pass。
-- `cd research/lean && lake build ResearchLean`: pass。
+- `focused Lean check: ResearchLean/AG/QualitySurface/SemanticResidualAliasNonfaithfulness.lean`: pass。
+- `Research package build`: pass。
 - axiom probe: generic alias-gap lemmas は axiom-free。selected refined repair-frontier witness / selected closure nonfaithfulness / package は標準 `propext` のみ。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 
 ## 審判メモ
@@ -123,4 +123,4 @@ G3 実績:
 ## 進捗ログ
 
 - 2026-06-22: G1 generic obstruction candidate として residual alias gap を提示し、Cycle 81 picked とした。
-- 2026-06-22: Lean 証拠を `SemanticResidualAliasNonfaithfulness.lean` に固定し、単体 `lake env lean`、`cd research/lean && lake build ResearchLean`、axiom probe が通った。
+- 2026-06-22: Lean 証拠を `SemanticResidualAliasNonfaithfulness.lean` に固定し、単体 `lake env lean`、`Research package build`、axiom probe が通った。

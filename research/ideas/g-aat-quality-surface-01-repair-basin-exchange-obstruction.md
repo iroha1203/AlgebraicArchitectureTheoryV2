@@ -121,8 +121,8 @@ Lean では Research 側で次を固定した。
 
 検証は次の通り。
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/RepairBasinExchangeObstruction.lean`: pass.
-- `cd research/lean && lake build ResearchLean`: pass.
+- `focused Lean check: ResearchLean/AG/QualitySurface/RepairBasinExchangeObstruction.lean`: pass.
+- `Research package build`: pass.
 - `lake build`: pass. 既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter warning のみ。
 - `#print axioms`: `RepairRefinementBasinCell`、basis definitions、`RepairBasinMembership`、`CommonRepairBasinClearance`、`traceOnlyRepairPlan`、`traceOnlyRepairPlan_misses_repairFrontier`、`BasinExchangeObstruction` は axiom-free。selected cell / basis / common clearance / trace-only clearance/failure は標準 `propext`。same visible/local projection、obstruction package、nonfaithfulness package は標準 `propext` と既存 selected cover/local-exactness witness 由来の `Quot.sound`。`sorryAx`、custom axiom、`Classical.choice`、`unsafe` はない。
 - G3 形式化品質監査: pass。cell は endpoints、visible projection、`coarsePath`、`refinedPath` のみを field とし、exactness / basis / clearance / obstruction を field として保存しない。`RepairBasinMembership` は exact selected basis と declared clearance の組であり、単なる list hit ではない。

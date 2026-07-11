@@ -75,7 +75,7 @@ Team Topologies、CODEOWNERS / org-network dashboard、AI review は owner misma
 
 - `score_reason`: selected `ZMod 2` defect と boundary subgroup membership により、Cycle 2 receiver を finite coefficient vocabulary へ移すため base 55。
 - `dullness_risk`: full `H^1` や full quotient object を過大主張しない。selected boundary membership と finite examples に限定する。
-- `proof_or_evidence_plan`: `cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayBoundaryQuotient.lean`、`旧Research aggregate build`、`#print axioms` で検証する。
+- `proof_or_evidence_plan`: `focused Lean check: ResearchLean/AG/SFT/ConwayBoundaryQuotient.lean`、`旧Research aggregate build`、`#print axioms` で検証する。
 
 ## 証明・根拠の見込み
 
@@ -111,6 +111,6 @@ G1 obstruction / adversarial は finite `C^1/B^1`-style receiver を推奨した
 
 ## 進捗ログ
 
-- 2026-07-04: 作成。`cd research/lean && lake env lean ResearchLean/AG/SFT/ConwayBoundaryQuotient.lean` と
-  `cd research/lean && lake build ResearchLean.AG.SFT.ConwayBoundaryQuotient` が通過。`#print axioms` では
+- 2026-07-04: 作成。`focused Lean check: ResearchLean/AG/SFT/ConwayBoundaryQuotient.lean` と
+  `Research module build: ResearchLean.AG.SFT.ConwayBoundaryQuotient` が通過。`#print axioms` では
   `propext`, `Classical.choice`, `Quot.sound` 依存。G2/G3 後、score を base 55 / final 110 に修正。

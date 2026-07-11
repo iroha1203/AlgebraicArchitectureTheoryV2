@@ -165,9 +165,9 @@ G2-A revise への対応:
 - Lean file: `research/lean/ResearchLean/AG/QualitySurface/SourceRefHandoffComponentSupport.lean`
 - aggregate import: `research/lean/ResearchLean.lean`
 - local checks:
-  - `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SourceRefHandoffComponentSupport.lean`: pass
-  - `cd research/lean && lake env lean ResearchLean.lean`: pass
-  - `cd research/lean && lake build ResearchLean`: pass
+  - `focused Lean check: ResearchLean/AG/QualitySurface/SourceRefHandoffComponentSupport.lean`: pass
+  - `focused Lean check: ResearchLean.lean`: pass
+  - `Research package build`: pass
   - `lake build`: pass。既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter warning のみ。
   - `lake env lean .tmp/source_ref_handoff_component_support_axioms.lean`: pass
   - target `axiom|admit|sorry|unsafe` scan: no matches

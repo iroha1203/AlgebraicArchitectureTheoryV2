@@ -93,8 +93,8 @@ Boundary:
 
 ## Verification
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/SelectedSupportDefectLocalization.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/SelectedSupportDefectLocalization.lean`: pass
+- `Research package build`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/selected_support_defect_localization_axioms.lean`: pass
   - axiom-free: `localizedBranchDefect_obstructs_sourceRefExact`, `visibleRoute_obligation_localizedDefect`, `visibleRoute_obligationDefect_obstructs_sourceRefExact`, `allRouteDefectCorrection_localizedBranchesAgree`, `obligationOnlyCorrection_storageRepair_localizedDefect`, `obligationOnlyCorrection_localizedDefect_obstructs_sourceRefExact`

@@ -105,8 +105,8 @@ Boundary:
 
 ## Verification
 
-- `cd research/lean && lake env lean ResearchLean/AG/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`: pass
-- `cd research/lean && lake build ResearchLean`: pass
+- `focused Lean check: ResearchLean/AG/QualitySurface/ParametrizedSelectedCorrectionSystem.lean`: pass
+- `Research package build`: pass
 - forbidden-token scan for `sorry` / `admit` / `axiom` / `unsafe` / broad autoImplicit setting: pass
 - `.tmp/parametrized_selected_correction_system_axioms.lean`: pass
   - axiom-free: `correctionLe_refl`, `correctionLe_trans`, `correctionSourceRefExact_iff_hitsAllBranches`, `correctionHitsAllBranches_monotone`, `correctionSourceRefExact_monotone`, `systemSourceRefExact_iff_hitsAllBranches`, `monotoneCorrectionSystem_exact_upwardClosed`

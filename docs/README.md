@@ -18,10 +18,9 @@ source of truth として扱わない。
 2. [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md)
 3. [AAT / SFT Interface](sft/aat_interface.md)
 4. [ソフトウェアの場の理論](sft/software_field_theory.md)
-5. [証明義務と実証仮説](aat/proof_obligations.md)
-6. [Lean 定義・定理索引](aat/lean_theorem_index.md)
-7. [AAT Tooling Documentation](tool/README.md)
-8. 必要に応じて [AAT directory guide](aat/README.md), [SFT directory guide](sft/README.md)
+5. [Lean 形式化](../Formal/)
+6. [AAT Tooling Documentation](tool/README.md)
+7. 必要に応じて [AAT directory guide](aat/README.md), [SFT directory guide](sft/README.md)
 
 ## 全体文書
 
@@ -29,8 +28,7 @@ source of truth として扱わない。
 - [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md): AAT 数学本文の正典。Atom 公理系から architecture object を構成し、AAT site、sheaf、ringed topos、law algebra、obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、derived / stacky geometry、measurement、evolution geometry へ進む。
 - [AAT / SFT Interface](sft/aat_interface.md): SFT が AAT から借りる概念と、片方向依存の interface を整理する。
 - [ソフトウェアの場の理論](sft/software_field_theory.md): PRD / Spec / Issue / PR / Review / CI / organization / AI / lifecycle を force, field, trajectory, control として整理する。
-- [証明義務と実証仮説](aat/proof_obligations.md): theorem assumption、未解決課題、empirical hypothesis の入口。古典 AAT、代数幾何 AAT、研究ループの分割台帳へ導く。
-- [Lean 定義・定理索引](aat/lean_theorem_index.md): 現在 Lean に存在する主要な定義・定理の入口。古典 AAT、代数幾何 AAT、研究ループの分割索引へ導く。
+- [Lean 形式化](../Formal/): 現在Leanに存在する定義・定理のsource。
 - [AAT directory guide](aat/README.md): AAT 配下の補助文書の読み方。
 - [SFT directory guide](sft/README.md): SFT 配下の補助文書の読み方。
 - [Website operations](website/README.md): 公開されない website 運用メモ、route 索引、設計文書。
@@ -61,8 +59,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 ## Lean 形式化
 
-- [Lean 定義・定理索引](aat/lean_theorem_index.md): 実装済み Lean API の入口。詳細は古典 AAT、代数幾何 AAT、研究ループの分割索引で管理する。
-- [証明義務と実証仮説](aat/proof_obligations.md): theorem assumptions、未解決課題、empirical hypothesis の入口。詳細は古典 AAT、代数幾何 AAT、研究ループの分割台帳で管理する。
+- [Lean 形式化](../Formal/): 実装済みLean APIのsource。
 
 ## Tooling
 
@@ -87,4 +84,4 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 - [2026-07 website renewal superseded plans](archive/2026-07-website-renewal-superseded/): 現行 website とリニューアル設計ノートへ吸収済みの旧計画・方針。
 - [AAT v2 research requirements revised split](archive/aat_v2_research_requirements_revised_split.md): 数学設計書とツール設計書へ分割する前の原本。
 - [Flatness-Obstruction Conjecture](archive/Flatness%E2%80%93Obstruction%20Conjecture.md): 現行本文へ整理する前の数学草案。
-- [証明義務と実証仮説 full ledger](archive/proof_obligations_full_ledger.md): `docs/aat/proof_obligations.md` を索引化する前の詳細 ledger。
+- [証明義務と実証仮説 full ledger](archive/proof_obligations_full_ledger.md): 旧来の詳細資料。
