@@ -98,8 +98,11 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 
 対象に応じて最小限から広げる。
 
+重い Lean 検証には `AGENTS.md` の「Lean build 運用(hard rule)」を適用する。
+4本の独立査読では `lake build` の結果を共有し、各査読者は `lake build` を実行しない。
+追加検証は focused check に限定する。
+
 - focused check: `lake env lean <target-file>`
-- package / module check: `lake build <module>` または `lake build`
 - theorem dependency audit: 対象 Lean declaration ごとに `#print axioms <DeclarationName>` を一時確認する。複数 declaration が対象なら全件必須とし、未実行の declaration 名は最終報告の coverage に列挙する。確認用 scratch は `.tmp/` に置き、成果物に混ぜない。
 - placeholder scan: `rg -n "\b(axiom|admit|sorry|unsafe)\b|by\\s+trivial|by\\s+simp\\s*$" Formal`
 - hidden / bidi scan when reporting changed artifacts: `rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-or-reviewed-files>`
