@@ -10028,6 +10028,19 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
             .join("top-left")
             .join("archsig-measurement-packet.json"),
     );
+    assert_eq!(
+        top_left_packet["structuralVerdict"][0]["law"],
+        "surface:cech-surface-v051"
+    );
+    let top_left_manifest = read_json(&root_out.join("top-left/archsig-run-manifest.json"));
+    assert_eq!(
+        top_left_manifest["validationReports"]["lawSurface"],
+        "law-surface-validation.json"
+    );
+    assert_eq!(
+        top_left_manifest["validationResultSummary"]["lawSurface"]["result"],
+        "pass"
+    );
     let top_left_invariant =
         invariant_by_id(&top_left_packet, "cech-cohomology:profile:ag-default@1");
     assert_eq!(top_left_invariant["restrictionEdgeCount"], json!(1));
@@ -10252,7 +10265,6 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
 }
 
 #[test]
-#[allow(unreachable_code)]
 fn cli_analyze_v2_cech_empty_selected_scope_rejects_unresolved_edge() {
     let out_dir = temp_dir("ag-measurement-cech-empty-selected-scope");
     let root = ag_measurement_root();
@@ -10315,7 +10327,9 @@ fn cli_analyze_v2_cech_empty_selected_scope_rejects_unresolved_edge() {
         read_json(&out_dir.join("archsig-run-manifest.json"))["mode"],
         "analysis-failure"
     );
-    return;
+    if !out_dir.join("archsig-measurement-packet.json").exists() {
+        return;
+    }
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let cech_row = &packet["structuralVerdict"][0];

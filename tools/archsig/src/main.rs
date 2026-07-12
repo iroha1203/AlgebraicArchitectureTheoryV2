@@ -920,7 +920,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "lawSurfaceInputPath": law_surface_input_ref,
                         "measurementProfileInputPath": measurement_profile_input_ref,
                         "repairPlanInputPath": repair_plan_input_ref,
-                        "measurementProfileInputPath": measurement_profile_input_ref,
                         "rawArtifactRetention": "not-computed",
                         "generatedArtifacts": failure_generated_artifacts,
                         "omittedArtifacts": [
@@ -1017,7 +1016,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "lawSurfaceInputPath": law_surface_input_ref,
                             "measurementProfileInputPath": measurement_profile_input_ref,
                             "repairPlanInputPath": repair_plan_input_ref,
-                            "measurementProfileInputPath": measurement_profile_input_ref,
                             "rawArtifactRetention": "not-computed",
                             "generatedArtifacts": runtime_failure_generated_artifacts,
                             "omittedArtifacts": [
@@ -1126,7 +1124,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "lawSurfaceInputPath": law_surface_input_ref,
                     "measurementProfileInputPath": measurement_profile_input_ref,
                     "repairPlanInputPath": repair_plan_input_ref,
-                    "measurementProfileInputPath": measurement_profile_input_ref,
                     "rawArtifactRetention": "omitted",
                     "generatedArtifacts": measurement_generated_artifacts,
                     "omittedArtifacts": [],
