@@ -41,7 +41,9 @@ are not measured zeros.
 | Surface | Commands | Boundary |
 | --- | --- | --- |
 | ArchMap validation and authoring | `archmap` | ArchMap records source-grounded Atom observations over the finite-poset-site contract. Removed helper fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not positive input. Complete-first authoring should collect source support before handoff. ArchMap does not select laws or output obstruction circuits. |
+| ArchMap authoring support | `scope-manifest`, `extraction-diff` | `scope-manifest` builds the deterministic authoring worklist (paths, hashes, approved globs) that ArchMap surveys start from. `extraction-diff` compares two survey passes' candidate packets by authoring atom-match-key; it leaves adoption adjudication to the integrator and never auto-adopts. |
 | Interpretation profile | `law-policy` | LawPolicy selects evaluator manifests, basis refs, selected laws, measurement profiles, and non-conclusions. It is an evaluator selector, not AAT itself. |
+| MeasurementProfile validation | `measurement-profile` | Validates a standalone `measurement-profile/v0.5.0` artifact, including finite bounds against evaluator registry hard caps. |
 | RepairPlan validation | `repair-plan` | Validates the supplied `archsig-repair-plan/v0.5.0` SAGA Stage 1 input side. Generated conclusion tokens and reserved future fields fail closed. |
 | AG measurement | `analyze` | When `law-policy/v0.5.0` selects `measurementProfileRef` and the input is finite-poset-site `archmap/v0.5.0`, `analyze` emits `archsig-measurement-packet/v0.5.0`, conclusion-first summary, insight report, viewer data, and run manifest. `ag.saga-descent` can additionally consume a checked RepairPlan via `--repair-plan`; without it the row is `not_computed` with `silence_by_design`. |
 | Compare | `compare` | Compares two current `analyze` output directories and computes `archmap-diff/v0.5.0` plus `archsig-comparison-report/v0.5.0`. The diff is computed by ArchSig, not authored as a separate input artifact. |
@@ -98,8 +100,9 @@ the ready-to-run tool bundle. Each archive contains:
 After extracting the archive, put the `archsig` executable on `PATH` or set
 `ARCHSIG_BIN` to its path. Then use the bundled `skills/` directory as the LLM
 agent interface. For normal analysis, start from the ArchMap creator, LawPolicy
-creator, ArchSig reader, or PR reviewer skill; the skills call the CLI and read
-the ArchSig output for the user.
+creator, ArchSig reader, or PR reviewer skill; use the RepairPlan creator when
+a measured obstruction needs a SAGA repair route. The skills call the CLI and
+read the ArchSig output for the user.
 
 ## CLI Quick Start
 
@@ -176,7 +179,8 @@ language.
 | `archmap-creater` | Create bounded `archmap/v0.5.0` artifacts from repository evidence. It keeps ArchMap as source-grounded Atom observations, not law-relative analysis or removed v0 helper fields. |
 | `law-policy-creater` | Create project-specific `law-policy/v0.5.0` profiles from repository coding conventions, architecture rules, and user decisions. If docs do not define the evaluator universe, ask the user before selecting laws. |
 | `archsig-reader` | Run an ArchMap with a selected LawPolicy, read summary / viewer report / manifest first, compare high-priority readings with source evidence, and propose bounded improvements. It does not silently use a generic LawPolicy as project analysis. |
-| PR reviewer skill | Use `analyze`, `compare`, and `gate`, then read the changed code and explain review focus in human code-review language. It stops if the base measurement context is missing. |
+| `archsig-pr-reviewer` | Use `analyze`, `compare`, and `gate`, then read the changed code and explain review focus in human code-review language. It stops if the base measurement context is missing. |
+| `repair-plan-creater` | Author `archsig-repair-plan/v0.5.0` artifacts for SAGA descent runs, validated through `repair-plan` and consumed through `analyze --repair-plan`. |
 
 Typical use:
 
@@ -188,6 +192,9 @@ Typical use:
    `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json` first, then
    compare selected detail refs with source evidence before proposing
    improvements.
+5. When a measured obstruction needs a repair route, use `repair-plan-creater`
+   to author `archsig-repair-plan/v0.5.0`, validate it with `repair-plan`, and
+   re-run `analyze` with `--repair-plan`.
 
 For pull requests, run current base and head measurements, compare the two run
 directories, apply gate policy, then compare the report with source evidence

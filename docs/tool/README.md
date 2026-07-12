@@ -15,9 +15,17 @@ Current source-of-truth boundaries:
   selected covers.
 - LawPolicy selects evaluators, basis refs, scope, and severity.
 - MeasurementProfile selects the concrete finite measurement regime.
+- RepairPlan (`archsig-repair-plan/v0.5.0`) is the SAGA Stage 1 input side:
+  `repair-plan` validates it, and `analyze --repair-plan` consumes it when
+  `ag.saga-descent` is selected. Without it the row stays `not_computed` with
+  `silence_by_design`.
 - ArchSig `analyze` emits the current measurement packet, validation reports,
   summary, insight report, viewer data, and run manifest.
 - ArchSig compare + gate are the current PR / CI decision surfaces.
+- The bundled skills under `tools/archsig/skills` (`archmap-creater`,
+  `law-policy-creater`, `archsig-reader`, `archsig-pr-reviewer`,
+  `repair-plan-creater`) are the primary product interface for LLM agents; the
+  CLI is the stable runtime they call.
 - FieldSig reads ArchSig measurement packets as bounded current SFT handoff
   state. Raw ArchMap files and retired raw packets are not current handoff
   inputs.
@@ -31,6 +39,7 @@ Current entry points:
 - [Atom Handoff Checklist](atom_handoff.md)
 - [LawPolicy](law_policy.md)
 - [ArchSig Analyze E2E Workflow](llm_native_e2e_workflow.md)
+- [ArchSig skills](../../tools/archsig/skills/): 5本のバンドルSKILL(一次product interface)。
 - [ArchSig gate-policy authoring guide](archsig_gate_policy.md)
 - [ArchSig compare report guide](archsig_compare.md)
 - [ArchMapStore Notes](archmap_store.md)
