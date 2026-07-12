@@ -8,14 +8,38 @@ on:
       - main
 
 jobs:
-  research-separation-gates:
-    name: research separation gates
+  research-integrity-gates:
+    name: research integrity gates
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Select Research package validation
+        id: research-changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BASE: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "run=true" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+          base="$PUSH_BASE"
+          if [ "$EVENT_NAME" = "pull_request" ]; then base="$PR_BASE"; fi
+          if printf '%s' "$base" | grep -Eq '^0+$'; then
+            base="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
+          fi
+          if git diff --name-only "$base...$HEAD_SHA" | grep -Eq \
+              '^(lakefile\.toml$|lake-manifest\.json$|research/lean/|\.github/lean_quality/(check_research_migration|check_research_package|test_research_migration|test_research_package)|\.github/workflows/lean\.yml$)'; then
+            echo "run=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "run=false" >>"$GITHUB_OUTPUT"
+          fi
 
       - name: Current-tree import graph
         run: .github/lean_quality/check_research_import_direction.sh
@@ -43,6 +67,14 @@ jobs:
 
       - name: Research package direction (static)
         run: .github/lean_quality/test_research_package_direction.sh
+
+      - name: Set up Lean for Research package validation
+        if: steps.research-changes.outputs.run == 'true'
+        uses: leanprover/lean-action@v1
+
+      - name: Package dependency direction (runtime)
+        if: steps.research-changes.outputs.run == 'true'
+        run: .github/lean_quality/check_research_package_direction.sh --execute
 
       - name: Research migration fixture suite
         run: .github/lean_quality/test_research_migration_manifest.sh
@@ -82,47 +114,6 @@ jobs:
 
       - name: Changed public artifact fixtures
         run: .github/lean_quality/test_changed_public_artifacts.sh
-
-  research-package-smoke:
-    name: research package direction
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Select Research package validation
-        id: research-changes
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
-          PUSH_BASE: ${{ github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
-        run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            echo "run=true" >>"$GITHUB_OUTPUT"
-            exit 0
-          fi
-          base="$PUSH_BASE"
-          if [ "$EVENT_NAME" = "pull_request" ]; then base="$PR_BASE"; fi
-          if printf '%s' "$base" | grep -Eq '^0+$'; then
-            base="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
-          fi
-          if git diff --name-only "$base...$HEAD_SHA" | grep -Eq \
-              '^(lakefile\.toml$|lake-manifest\.json$|research/lean/|\.github/lean_quality/(check_research_migration|check_research_package|test_research_migration|test_research_package)|\.github/workflows/lean\.yml$)'; then
-            echo "run=true" >>"$GITHUB_OUTPUT"
-          else
-            echo "run=false" >>"$GITHUB_OUTPUT"
-          fi
-
-      - name: Set up Lean
-        if: steps.research-changes.outputs.run == 'true'
-        uses: leanprover/lean-action@v1
-
-      - name: Package dependency direction
-        if: steps.research-changes.outputs.run == 'true'
-        run: .github/lean_quality/check_research_package_direction.sh --execute
 
   build:
     name: lake build
