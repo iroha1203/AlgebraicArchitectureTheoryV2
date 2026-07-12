@@ -1203,3 +1203,82 @@ this site.  Instantiate two cores that differ only in their required-law
 violation witness, prove the resulting idempotent and square-zero ideal
 profiles, and connect their raw conormal presheaves to the current
 sheafification construction.
+
+## Cycle 18 — fixed finite ambient ring and two law cores
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedBooleanCircleLawCore.lean`
+- checkpoint spine:
+  - `AmbientRing`
+  - `killEps`
+  - `ambientRestrict`
+  - `ambientRestrict_comp`
+  - `generatorWitness`
+  - `core`
+  - `idempotentCore`
+  - `squareZeroCore`
+  - `idempotent_obstructionIdeal_sq`
+  - `squareZero_obstructionIdeal_sq`
+  - `idempotent_conormal_eq_zero`
+  - `squareZeroConormalGenerator_ne_zero`
+
+### Checkpoint delta
+
+Both law instances now use one fixed finite ring
+`ZMod 2 × TrivSqZeroExt (ZMod 2) (ZMod 2)` and one restriction operation.
+The restriction is identity except on a nonidentity arrow whose source is the
+selected cardinality-three context; there it applies `killEps`.  Identity and
+composition laws are proved from the Boolean context order, and explicit
+lemmas expose the identity and `killEps` cases.
+
+The shared `core g` constructor takes only a law generator.  Its site,
+observable ring, restriction maps, support Atom, and required law index do not
+depend on `g`.  The two instances are `core e` and `core j`, where `e² = e`,
+`j² = 0`, `j ≠ 0`, `killEps e = e`, and `killEps j = 0`.  Thus only the
+violation-witness generator changes.
+
+For the idempotent core, the generated obstruction ideal is `span {e}` and
+its square is itself, so every raw conormal value is zero.  For the square-zero
+core, the obstruction ideal has square zero.  It is `span {j}` below
+cardinality three and zero at cardinality three.  The displayed raw conormal
+generator below cardinality three is proved nonzero; the cardinality-three raw
+conormal is proved zero.
+
+### Premise delta
+
+- discharged: fixed finite ambient ring; fixed functorial restriction;
+  generator restriction compatibility; one common law-core constructor;
+  same-site/same-ring/same-restriction provenance; idempotent and square-zero
+  generated ideal profiles; raw idempotent conormal zero; raw square-zero
+  conormal nonzero below cardinality three and zero at cardinality three.
+- remaining: raw conormal presheaf sheafness and its sheafification comparison;
+  canonical tuple overlap/profile formulas; explicit cocycle and period
+  non-coboundary proof; the resulting sheafified zero/nonzero `H¹` pair;
+  primitive lawful-reading atlas construction; semantic specialization;
+  torsor/H0 transport; final package; and the global `H¹`-vanishing corollary.
+
+### Audits
+
+- focused law-core elaboration: pass (54 declarations)
+- module-wide standard-axiom assertion: pass
+- proof-use: restriction composition uses reverse-inclusion monotonicity and
+  `killEps` idempotence; obstruction ideals are recovered from the generated
+  required-law witness ideal; conormal claims use the computed ideal squares
+- provenance: both cores are applications of the same `core g` constructor;
+  no separate observable or restriction data is supplied to either instance
+- supplied-field audit: no ideal equality, ideal-power result, conormal value,
+  cocycle, class, or vanishing proof is accepted as a field
+- four independent review lanes: No major findings
+- target classification: the fixed-ring law-core and raw objectwise conormal
+  profiles are discharged; the D2 sheafified `H¹` pair is not yet discharged
+
+### Next obligation
+
+Prove that the square-zero raw conormal presheaf is a sheaf on this generated
+site and compare it canonically with its sheafification.  Compute its current
+canonical tuple coefficient maps, construct the three-edge cocycle, and prove
+non-coboundary by its nonzero period.  Transport that class through the
+sheafification comparison, while the idempotent raw conormal zero result gives
+the corresponding zero coefficient after the same comparison.
