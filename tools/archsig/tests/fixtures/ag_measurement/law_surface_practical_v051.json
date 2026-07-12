@@ -3,7 +3,7 @@
   "id": "law-surface:practical-rust-v051",
   "laws": [
     {
-      "lawId": "ag.cech-obstruction",
+      "lawId": "surface:cech-surface-v051",
       "conditionType": "closed-equational",
       "witnessVariables": [
         { "variable": "e_domain_shared", "binding": { "edge": ["ctx:domain", "ctx:shared"], "axis": "cech", "predicate": "sectionValue" } },

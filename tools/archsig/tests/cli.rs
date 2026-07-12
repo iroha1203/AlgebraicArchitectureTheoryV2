@@ -726,7 +726,8 @@ fn cli_law_policy_registry_keeps_ag_evaluator_after_split() {
     assert!(
         json["expandedPolicies"].as_array().is_some_and(|entries| {
             entries.iter().any(|entry| {
-                entry["law"] == "ag.cech-obstruction" && entry["evaluator"] == "ag.cech-obstruction"
+                entry["law"] == "surface:cech-surface-v051"
+                    && entry["evaluator"] == "ag.cech-obstruction"
             })
         }),
         "AG evaluator policy must survive registry module split"
@@ -2601,9 +2602,9 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     assert_eq!(
         stable_cech_row,
         json!({
-            "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/finite-f2-cech-computed",
+            "verdictRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v051/finite-f2-cech-computed",
             "evaluator": "ag.cech-obstruction",
-            "law": "ag.cech-obstruction",
+            "law": "surface:cech-surface-v051",
             "target": {
                 "kind": "cover-relative-cech-h1-class",
                 "coverRef": "cover:order-inventory",
@@ -9539,14 +9540,14 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.0");
-    assert_eq!(manifest["runId"], "run:3556f544c1ee");
+    assert_eq!(manifest["runId"], "run:c5241976e9eb");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "10a5ab2829fc8377227d836a75f5e850b128f7c27823fbaa2ce713415c1f86c0"
     );
     assert_eq!(
         manifest["inputDigests"]["lawPolicy"]["sha256"],
-        "66c5b23c7a853822abf3b09c1126003136487ff78deec1aa7315a4af2f42575c"
+        "f82258db94ce5d4a9206abf0652f8b65ad39c3833e655645b94bc63e51cb3224"
     );
     assert_eq!(
         manifest["inputDigests"]["measurementProfile"]["sha256"],
@@ -9690,7 +9691,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:3556f544c1ee-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:c5241976e9eb-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -10003,7 +10004,7 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
     let root_out = temp_dir("ag-measurement-cech-execution-plan");
     let surface_path = root.join("law_surface_cech_section_v051.json");
     let (mut law_policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
-    law_policy["policies"][0]["law"] = json!("ag.cech-obstruction");
+    law_policy["policies"][0]["law"] = json!("surface:cech-surface-v051");
     let policy_path = root_out.join("law_policy_cech_execution_plan.json");
     write_test_policy_and_profile(&policy_path, law_policy, profile);
 
@@ -10132,7 +10133,7 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
         section_report["gluingGeometry"]
     );
 
-    let mut invalid_surface = changed_surface;
+    let mut invalid_surface = changed_surface.clone();
     invalid_surface["laws"][0]["witnessVariables"][0]["binding"]["edge"] =
         json!(["ctx:top", "ctx:missing"]);
     let invalid_surface_path = root_out.join("law_surface_cech_execution_plan_invalid.json");
@@ -10170,6 +10171,55 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
             .exists()
     );
     assert!(!invalid_out_dir.join("normalized-archmap.json").exists());
+
+    let mut known_disconnected_surface = changed_surface;
+    known_disconnected_surface["laws"][0]["witnessVariables"][0]["binding"]["edge"] =
+        json!(["ctx:top", "ctx:bottom"]);
+    let known_disconnected_surface_path =
+        root_out.join("law_surface_cech_execution_plan_known_disconnected.json");
+    fs::write(
+        &known_disconnected_surface_path,
+        serde_json::to_string_pretty(&known_disconnected_surface)
+            .expect("known disconnected surface serializes"),
+    )
+    .expect("known disconnected surface is written");
+    let known_disconnected_out_dir = root_out.join("known-disconnected");
+    let known_disconnected_output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_cech_h1_visible.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-surface",
+        known_disconnected_surface_path
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        known_disconnected_out_dir.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(known_disconnected_output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&known_disconnected_output.stderr)
+            .contains("is not in the selected restriction 1-skeleton")
+    );
+    assert!(
+        !known_disconnected_out_dir
+            .join("archsig-measurement-packet.json")
+            .exists()
+    );
+    let known_disconnected_analysis =
+        read_json(&known_disconnected_out_dir.join("archsig-analysis-validation.json"));
+    assert_eq!(known_disconnected_analysis["summary"]["result"], "fail");
+    assert_eq!(
+        read_json(&known_disconnected_out_dir.join("archsig-run-manifest.json"))["mode"],
+        "analysis-failure"
+    );
 
     let mismatch_out_dir = root_out.join("mismatched-law");
     let mut mismatched_policy = read_json(&policy_path);
@@ -11797,7 +11847,7 @@ fn generated_cech_surface_path(
             "schema": "law-equation-surface/v0.5.1",
             "id": format!("law-surface:generated-{stem}"),
             "laws": [{
-                "lawId": "ag.cech-obstruction",
+                "lawId": "surface:cech-surface-v051",
                 "conditionType": "closed-equational",
                 "witnessVariables": witness_variables,
                 "forbiddenSupportGenerators": forbidden_support_generators
@@ -12758,7 +12808,7 @@ fn coherence_policy(_coefficient: &str, include_cech: bool) -> Value {
         policies.insert(
             0,
             json!({
-                "law": "ag.cech-obstruction",
+                "law": "surface:cech-surface-v051",
                 "evaluator": "ag.cech-obstruction",
                 "basis": ["policy-basis:layering"],
                 "scope": ["src/"],

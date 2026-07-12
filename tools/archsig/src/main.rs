@@ -942,6 +942,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "validationResultSummary": {
                             "archmap": validation_result_summary(&archmap_preflight),
                             "lawPolicy": validation_result_summary(&law_policy_preflight),
+                            "lawSurface": law_surface_preflight.as_ref().map(|(report, _)| validation_result_summary(report)),
                             "repairPlan": repair_plan_preflight.as_ref().map(|(report, _, _)| validation_result_summary(report)),
                             "analysis": validation_result_summary_from_counts("not_computed", 0, 0)
                         },
@@ -959,7 +960,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             }
             let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
             let normalized_archmap = normalize_archmap_v2(&archmap_document, &archmap_input_ref);
-            let measurement_packet = build_foundation_measurement_packet_v1(
+            let measurement_packet = match build_foundation_measurement_packet_v1(
                 &normalized_archmap,
                 &archmap_document,
                 &law_policy_document,
@@ -973,7 +974,79 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 repair_plan_input_ref.as_deref(),
                 residual_packet_input_ref.as_deref(),
             )
-            .map_err(|message| -> Box<dyn Error> { message.into() })?;
+            {
+                Ok(packet) => packet,
+                Err(message) => {
+                    let analysis_failure = serde_json::json!({
+                        "schema": "archsig-analysis-validation/v0.5.0",
+                        "checks": [{
+                            "id": "analysis-execution-plan",
+                            "result": "fail",
+                            "message": message.clone()
+                        }],
+                        "summary": {
+                            "result": "fail",
+                            "failedCheckCount": 1,
+                            "warningCheckCount": 0
+                        }
+                    });
+                    write_json(
+                        Some(analysis_validation_path),
+                        &with_run_contract(&analysis_failure, &run_contract)?,
+                    )?;
+                    write_json(
+                        Some(run_manifest_path),
+                        &serde_json::json!({
+                            "schema": "archsig-run-manifest/v0.5.0",
+                            "toolVersion": run_contract.tool_version.clone(),
+                            "runId": run_contract.run_id.clone(),
+                            "inputDigests": run_contract.input_digests.clone(),
+                            "commandName": "analyze",
+                            "mode": "analysis-failure",
+                            "conclusionCode": "ANALYSIS_FAILED_BEFORE_MEASUREMENT",
+                            "archmapInputPath": archmap_input_ref,
+                            "lawPolicyInputPath": law_policy_input_ref,
+                            "measurementProfileInputPath": measurement_profile_input_ref,
+                            "rawArtifactRetention": "not-computed",
+                            "generatedArtifacts": [
+                                "archmap-validation.json",
+                                "law-policy-validation.json",
+                                "law-surface-validation.json",
+                                "archsig-analysis-validation.json",
+                                "archsig-run-manifest.json"
+                            ],
+                            "omittedArtifacts": [
+                                "normalized-archmap.json",
+                                "archsig-measurement-packet.json",
+                                "archsig-analysis-summary.json",
+                                "archsig-insight-report.json",
+                                "archsig-insight-brief.md",
+                                "archsig-atom-viewer-data.json"
+                            ],
+                            "validationReports": {
+                                "archmap": "archmap-validation.json",
+                                "lawPolicy": "law-policy-validation.json",
+                                "lawSurface": law_surface_preflight.as_ref().map(|_| "law-surface-validation.json"),
+                                "repairPlan": repair_plan_preflight.as_ref().map(|_| "repair-plan-validation.json"),
+                                "analysis": "archsig-analysis-validation.json"
+                            },
+                            "validationResultSummary": {
+                                "archmap": validation_result_summary(&archmap_preflight),
+                                "lawPolicy": validation_result_summary(&law_policy_preflight),
+                                "lawSurface": law_surface_preflight.as_ref().map(|(report, _)| validation_result_summary(report)),
+                                "repairPlan": repair_plan_preflight.as_ref().map(|(report, _, _)| validation_result_summary(report)),
+                                "analysis": validation_result_summary_from_counts("fail", 1, 0)
+                            },
+                            "nonConclusions": [
+                                "Execution-plan failure occurred after input validation and before normalization.",
+                                "No measurement packet, structural verdict, or AG invariant was computed."
+                            ]
+                        }),
+                    )?;
+                    eprintln!("archsig analyze execution plan failed before measurement: {message}");
+                    return Ok(ExitCode::from(2));
+                }
+            };
             write_json(
                 Some(normalized_archmap_path),
                 &with_run_contract(&normalized_archmap, &run_contract)?,
@@ -1067,6 +1140,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "validationResultSummary": {
                         "archmap": validation_result_summary(&archmap_preflight),
                         "lawPolicy": validation_result_summary(&law_policy_preflight),
+                        "lawSurface": law_surface_preflight.as_ref().map(|(report, _)| validation_result_summary(report)),
                         "repairPlan": repair_plan_preflight.as_ref().map(|(report, _, _)| validation_result_summary(report)),
                         "analysis": validation_result_summary_from_counts(
                             if packet_failed { "fail" } else { "pass" },

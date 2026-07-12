@@ -3,7 +3,7 @@
   "id": "law-surface:cech-h1-v051",
   "laws": [
     {
-      "lawId": "ag.cech-obstruction",
+      "lawId": "surface:cech-surface-v051",
       "conditionType": "closed-equational",
       "witnessVariables": [
         {

@@ -103,7 +103,7 @@
       ]
     },
     {
-      "lawId": "ag.cech-obstruction",
+      "lawId": "surface:cech-surface-v051",
       "conditionType": "closed-equational",
       "witnessVariables": [
         {
