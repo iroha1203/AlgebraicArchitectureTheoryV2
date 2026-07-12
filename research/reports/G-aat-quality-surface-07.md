@@ -1127,3 +1127,79 @@ constructor must discharge every overlap expansion by computation, then
 produce an idempotent-law instance with zero conormal `H¹` and a square-zero-law
 instance with an explicit nonzero period class in the current canonical tuple
 complex.
+
+## Cycle 17 — finite Boolean-circle AAT site and actual cover
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedBooleanCircleSite.lean`
+- checkpoint spine:
+  - `ContextIndex`
+  - `contextPreorder`
+  - `contextOverlap`
+  - `coverageRequirements`
+  - `site`
+  - `cover`
+  - `cover_patch_injective`
+  - `cover_patch_ne_base`
+  - `geometry`
+  - `canonicalTupleGeometry`
+
+### Checkpoint delta
+
+The finite witness now has one coefficient-free AAT site.  Its selected
+contexts are subsets of `Fin 3`, ordered by reverse inclusion, and overlap is
+proved to be union.  Contexts outside this selected family retain identity
+morphisms only.  Three distinct required Atom supports generate an actual
+three-patch admissible cover by singleton contexts.
+
+The finite-poset geometry uses that same site and cover.  Every ordered nerve
+tuple is assigned the union of its chart indices, and the overlap-to-patch
+morphisms are derived from singleton membership in that union.  The canonical
+tuple geometry is therefore generated from the proved overlap operation rather
+than from a separate combinatorial complex.  Patch injectivity and patch/base
+inequality establish that the actual cover is nontrivial.
+
+No ring, algebraic ring ideal, coefficient sheaf, cohomology class, or
+vanishing statement is stored in the site data.  The coefficient-free cover
+adequacy structure uses only the universal `True` witness predicate and its
+trivial preservation proof; these fields do not construct or preserve either
+later law-generated algebraic ideal profile.
+
+### Premise delta
+
+- discharged: a finite Boolean-lattice context preorder; union overlap with its
+  universal property; an actual three-patch admissible AAT cover; distinct and
+  non-base patches; and a canonical ordered-tuple geometry generated from that
+  same cover.
+- remaining: one fixed ambient finite ring and restriction functor; the two
+  law-generated ideal profiles; raw conormal sheaves and sheafification
+  comparison; the explicit zero/nonzero `H¹` pair; the primitive lawful-reading
+  atlas constructor; semantic specialization; torsor/H0 transport; the final
+  package theorem; and the global `H¹`-vanishing corollary.
+
+### Audits
+
+- focused site elaboration: pass (36 declarations)
+- module-wide standard-axiom assertion: pass
+- proof-use: cover admissibility uses three distinct required Atom supports;
+  overlap universality uses reverse-inclusion/union; canonical tuple overlaps
+  use the tuple image in the same Boolean lattice
+- provenance: the site, cover, and overlap are independent of all later
+  coefficient and ideal choices
+- supplied-field audit: the only witness-ideal adequacy fields are the
+  universal `True` predicate and trivial preservation proof; no algebraic ring
+  ideal, coefficient sheaf, cocycle, class, or vanishing proof is accepted as
+  input
+- four independent review lanes after the report correction: No major findings
+- target classification: the actual finite site/cover geometry is discharged;
+  D2 is not yet discharged
+
+### Next obligation
+
+Define one fixed finite ambient ring presheaf and one restriction operation on
+this site.  Instantiate two cores that differ only in their required-law
+violation witness, prove the resulting idempotent and square-zero ideal
+profiles, and connect their raw conormal presheaves to the current
+sheafification construction.
