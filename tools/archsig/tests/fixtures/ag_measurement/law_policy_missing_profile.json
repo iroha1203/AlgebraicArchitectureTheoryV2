@@ -1,6 +1,7 @@
 {
-  "schema": "law-policy/v0.5.0",
+  "schema": "law-policy/v0.5.1",
   "id": "ag-measurement-policy-missing-profile",
+  "lawSurfaceRef": "law-surface:ag-measurement-v051",
   "policies": [
     {
     "law": "surface:cech-surface-v051",

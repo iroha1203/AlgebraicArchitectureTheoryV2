@@ -62,7 +62,7 @@ pub fn validate_archmap_v2_report(
     };
 
     ArchMapValidationReportV2 {
-        schema_version: "archmap-validation-report/v0.5.0".to_string(),
+        schema_version: "archmap-validation-report/v0.5.1".to_string(),
         archmap_ref: input_path.to_string(),
         input_schema: document.schema.clone(),
         checks,
@@ -126,14 +126,31 @@ pub fn static_aat_atom_binding_vocabulary_v1() -> LawSurfaceBindingVocabularyV1 
 
 fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
     let vocabulary = static_aat_atom_binding_vocabulary_v1();
-    let required_axes = ["cech", "square-free", "section-factorization"];
-    let required_predicates = ["support", "cooccurrence", "sectionValue"];
+    let required_axes = [
+        "cech",
+        "square-free",
+        "section-factorization",
+        "laplacian",
+        "period",
+        "transfer",
+    ];
+    let required_predicates = [
+        "support",
+        "cooccurrence",
+        "sectionValue",
+        "cellularCochain",
+        "periodIntegral",
+        "transferPairing",
+    ];
     let required_pairs = [
         ("cech", "sectionValue"),
         ("square-free", "support"),
         ("square-free", "cooccurrence"),
         ("section-factorization", "support"),
         ("section-factorization", "cooccurrence"),
+        ("laplacian", "cellularCochain"),
+        ("period", "periodIntegral"),
+        ("transfer", "transferPairing"),
     ];
     let mut examples = Vec::new();
     if vocabulary.schema != LAW_SURFACE_BINDING_VOCABULARY_SCHEMA {

@@ -41,7 +41,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
     let manifest = read_json(&root.join("archsig_viewer_gluing_geometry_golden_ux.json"));
     assert_eq!(
         manifest["schema"],
-        "archsig-viewer-gluing-geometry-golden-ux/v0.5.0"
+        "archsig-viewer-gluing-geometry-golden-ux/v0.5.1"
     );
     assert_eq!(manifest["cases"].as_array().map(Vec::len), Some(5));
 
@@ -86,6 +86,20 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
         } else {
             "law_surface_ag_v051.json"
         };
+        let law_surface_path = root.join(law_surface);
+        let law_policy_path = if law_surface == "law_surface_cech_h1_v051.json" {
+            let mut policy = read_json(&root.join(law_policy));
+            policy["lawSurfaceRef"] = read_json(&law_surface_path)["id"].clone();
+            let path = out_dir.join("law_policy.json");
+            fs::write(
+                &path,
+                serde_json::to_vec_pretty(&policy).expect("law policy serializes"),
+            )
+            .expect("law policy writes");
+            path
+        } else {
+            root.join(law_policy)
+        };
         let args = vec![
             "analyze".to_string(),
             "--archmap".to_string(),
@@ -94,7 +108,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
                 .expect("archmap path is utf-8")
                 .to_string(),
             "--law-policy".to_string(),
-            root.join(law_policy)
+            law_policy_path
                 .to_str()
                 .expect("law policy path is utf-8")
                 .to_string(),
@@ -104,7 +118,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
                 .expect("measurement profile path is utf-8")
                 .to_string(),
             "--law-surface".to_string(),
-            root.join(law_surface)
+            law_surface_path
                 .to_str()
                 .expect("law surface path is utf-8")
                 .to_string(),
@@ -126,7 +140,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
         let report = read_json(&out_dir.join("archsig-insight-report.json"));
         let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
         let gluing = &report["gluingGeometry"];
-        assert_eq!(gluing["schema"], "archsig-viewer-gluing-geometry/v0.5.0");
+        assert_eq!(gluing["schema"], "archsig-viewer-gluing-geometry/v0.5.1");
         assert_eq!(viewer["aatGeometryOverlays"]["gluingGeometry"], *gluing);
         assert!(viewer["aatGeometryOverlays"]["omittedGeometryCounts"].is_object());
 

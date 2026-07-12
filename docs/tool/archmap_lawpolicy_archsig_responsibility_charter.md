@@ -85,17 +85,17 @@ ArchMap が書かないもの:
 
 LawPolicy は、明示した law / evaluator / basis / scope / severity を **選ぶ** selector である。退役した policy pack selector は受理しない。
 加えて、何が forbidden か(law universe)を指定する。第III部は「law は atom を生成しない、coordinate を生成しない、law は loci を切り出す」と述べる。
-law は存在の根拠ではなく、どの witness ideal / defect representative を読むか、どの signature axis を要求するか、どの witness family を選ぶかを指定する装置である。
+law は存在の根拠ではなく、どの witness ideal / defect representative を読むかを指定する装置であり、witness variables と signature axis は supplied law-equation-surface と evaluator registry で解決される。
 
 LawPolicy が書かないもの: witness predicate の手書き、signature axis の手書き、score formula、obstruction circuit 定義、measurement profile 本体。
-これらは evaluator registry または MeasurementProfile の責務である。
+これらは supplied law-equation-surface、evaluator registry、または MeasurementProfile の責務である。
 何が forbidden かの **選択** は LawPolicy にある(第III部:law は loci を切り出す)。
 一方、forbidden support の inclusion-minimal 列挙や obstruction ideal の構成は、法代数理論では必要な数学的操作として現れるが、
 その **実行者は理論上未指定** であり、本ツールでは ArchSig がそれを担うという実装上の分割を採る。
 
 ## ArchSig は何か —— 計算層
 
-ArchSig は、`ArchMap + LawPolicy + MeasurementProfile` の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.0` を作る AG measurement layer である。
+ArchSig は、`ArchMap + LawPolicy + supplied law-equation-surface + MeasurementProfile` の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.1` を作る AG measurement layer である。
 **Lean 証明器ではない。** 神の視点も持たない。
 
 判定はすべてここで生まれる。cech defect の比較、minimal forbidden support の enumeration、obstruction ideal、

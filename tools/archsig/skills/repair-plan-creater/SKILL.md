@@ -1,11 +1,11 @@
 ---
 name: repair-plan-creater
-description: Create archsig-repair-plan/v0.5.0 artifacts for ArchSig complete-support SAGA descent runs.
+description: Create archsig-repair-plan/v0.5.1 artifacts for ArchSig complete-support SAGA descent runs.
 ---
 
 # RepairPlan Creater
 
-Use this skill to author `archsig-repair-plan/v0.5.0` artifacts for Stage 1
+Use this skill to author `archsig-repair-plan/v0.5.1` artifacts for Stage 1
 `ag.saga-descent` runs in complete-support mode.
 
 ## Scope
@@ -21,7 +21,7 @@ Use this skill to author `archsig-repair-plan/v0.5.0` artifacts for Stage 1
 1. Read the selected ArchMap evidence and identify only explicit atom refs,
    contexts, overlap refs, and repair variables already present in the input
    evidence.
-2. Emit a minimal `archsig-repair-plan/v0.5.0` document with:
+2. Emit a minimal `archsig-repair-plan/v0.5.1` document with:
    - `support.kind = complete` for every primitive.
    - Complete residual support variables for the chosen finite complex.
    - `faithfulness.mode = complete-support` when the complete-support alias
@@ -29,7 +29,7 @@ Use this skill to author `archsig-repair-plan/v0.5.0` artifacts for Stage 1
 3. Validate first:
    - `archsig repair-plan --repair-plan <plan> --archmap <archmap> --out <report>`
 4. Run the analyzer only after validation passes:
-   - `archsig analyze --archmap <archmap> --law-policy <policy> --measurement-profile <profile> --repair-plan <plan> --out-dir <run-dir>`
+   - `archsig analyze --archmap <archmap> --law-policy <policy> --measurement-profile <profile> --law-surface <law-surface> --repair-plan <plan> --out-dir <run-dir>`
 5. Read the resulting `archsig-measurement-packet.json` before summarizing any
    conclusion. Treat `boundaryStatements` as the source of silence and next
    required supply.

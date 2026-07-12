@@ -9,7 +9,7 @@ pub struct LawPolicyDocumentV1 {
     pub schema: String,
     pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub law_surface_ref: Option<Value>,
+    pub law_surface_ref: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub measurement_profile_ref: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -36,7 +36,9 @@ pub struct MeasurementProfileV1 {
     pub cover_ref: String,
     pub coefficient: String,
     pub eff_coeff: String,
-    #[serde(default)]
+    // This is an execution-only projection populated from the supplied law surface.
+    // `skip` makes a JSON witnessFamily field unknown under deny_unknown_fields.
+    #[serde(skip)]
     pub witness_family: Vec<MeasurementProfileWitnessV1>,
     pub resolution_selector: String,
     pub domain: String,

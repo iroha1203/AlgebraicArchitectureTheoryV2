@@ -1,11 +1,14 @@
 {
   "schema": "aat-atom-vocabulary-binding/v0.5.1",
   "id": "aat-atom-vocabulary-binding",
-  "axes": ["cech", "square-free", "section-factorization"],
-  "predicates": ["support", "cooccurrence", "sectionValue"],
+  "axes": ["cech", "square-free", "section-factorization", "laplacian", "period", "transfer"],
+  "predicates": ["support", "cooccurrence", "sectionValue", "cellularCochain", "periodIntegral", "transferPairing"],
   "axisPredicatePairs": [
     { "axis": "cech", "predicates": ["sectionValue"] },
     { "axis": "square-free", "predicates": ["support", "cooccurrence"] },
-    { "axis": "section-factorization", "predicates": ["support", "cooccurrence"] }
+    { "axis": "section-factorization", "predicates": ["support", "cooccurrence"] },
+    { "axis": "laplacian", "predicates": ["cellularCochain"] },
+    { "axis": "period", "predicates": ["periodIntegral"] },
+    { "axis": "transfer", "predicates": ["transferPairing"] }
   ]
 }

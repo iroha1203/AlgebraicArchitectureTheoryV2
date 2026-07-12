@@ -40,7 +40,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
   --out .archsig/archmap-validation.json
 ```
 
-`archmap` validates a supplied `archmap/v0.5.0` observation artifact. With the
+`archmap` validates a supplied `archmap/v0.5.1` observation artifact. With the
 optional `--scope-manifest`, `--candidate-packets`, `--extraction-consistency`,
 and `--coverage-ledger` inputs it also audits authoring survey traceability and
 adjudicated provenance closure.
@@ -77,11 +77,12 @@ adjudicate; it never auto-adopts candidates.
 cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
   --out .archsig/law-policy-validation.json
 ```
 
-`law-policy` validates a `law-policy/v0.5.0` selector artifact against its
-selected measurement profile.
+`law-policy` validates a `law-policy/v0.5.1` selector artifact against its
+selected measurement profile and supplied law-equation surface.
 
 ## Measurement Profile
 
@@ -91,7 +92,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- measurement-profile \
   --out .archsig/measurement-profile-validation.json
 ```
 
-`measurement-profile` validates a standalone `measurement-profile/v0.5.0`
+`measurement-profile` validates a standalone `measurement-profile/v0.5.1`
 artifact, including finite bounds against evaluator registry hard caps.
 
 ## Repair Plan
@@ -140,4 +141,4 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- schema-catalog \
   --out .archsig/schema-version-catalog.json
 ```
 
-The catalog lists current ArchSig v0.5.0 artifact contracts.
+The catalog lists current ArchSig v0.5.1 artifact contracts.

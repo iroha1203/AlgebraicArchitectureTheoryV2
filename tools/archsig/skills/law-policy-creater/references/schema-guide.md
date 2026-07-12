@@ -7,16 +7,17 @@ measurement path also uses LawPolicy to select a first-class MeasurementProfile.
 
 ```json
 {
-  "schema": "law-policy/v0.5.0",
+  "schema": "law-policy/v0.5.1",
   "id": "policy-id",
+  "lawSurfaceRef": "law-surface:ag-default-v051",
   "measurementProfileRef": "profile:ag-default@1",
   "basisLedger": [],
   "policies": []
 }
 ```
 
-Unknown root fields fail validation. `lawSurfaceRef` is reserved for Stage 2
-and fails closed when present.
+Unknown root fields fail validation. `lawSurfaceRef` is required and must match
+the id of the supplied law-equation-surface.
 
 ## Basis Ledger
 
@@ -40,7 +41,7 @@ authoring surface.
 
 ```json
 {
-  "law": "ag.cech-obstruction",
+  "law": "surface:cech-surface-v051",
   "evaluator": "ag.cech-obstruction",
   "basis": ["policy-basis:layering"],
   "scope": ["domain."],
@@ -48,7 +49,7 @@ authoring surface.
 }
 ```
 
-`policies[].profileRef` is reserved for multi-profile Stage 2 and fails closed
+`policies[].profileRef` is reserved for multi-profile selection and fails closed
 when present.
 
 ## Known Built-In Selectors
@@ -75,18 +76,12 @@ external `--measurement-profile` artifact's `profileId`.
 
 ```json
 {
-  "schema": "measurement-profile/v0.5.0",
+  "schema": "measurement-profile/v0.5.1",
   "profileId": "profile:ag-default@1",
   "siteRef": "archmap:/contexts",
   "coverRef": "cover:<archmap-cover-id>",
   "coefficient": "F2",
   "effCoeff": "finite-linear-algebra@1",
-  "witnessFamily": [
-    {
-      "law": "ag.cech-obstruction",
-      "variable": "witness:<evaluator-specific-ref>"
-    }
-  ],
   "resolutionSelector": "taylor@1",
   "domain": "finite-poset-site",
   "zeroPredicate": "rank-zero@1",
@@ -111,8 +106,8 @@ Rules:
 - `coverRef` must name a cover in the ArchMap v2 input; replace
   `cover:<archmap-cover-id>` before running `analyze`.
 - `verdictDiscipline` must be `five-valued-structural-verdict@1`.
-- `witnessFamily[]` entries carry law ids and evaluator-specific witness refs,
-  such as square-free variables, cells, cycles, or support targets.
+- Witness variables are declared in the referenced `law-equation-surface`; a
+  measurement-profile must not contain `witnessFamily`.
 - `finiteBounds` can only lower the registry hard caps shown above. Cap
   exceedance fails validation.
 - Algebraic structural profiles commonly use `F2`, `rank-zero@1`,
@@ -146,5 +141,5 @@ Do not emit:
 
 ArchSig evaluator registry owns witness requirements, axes, missing blocker
 rules, distance contribution, and result status computation. MeasurementProfile
-owns selected cover, coefficient, witness family, predicates, certificate
+owns selected cover, coefficient, predicates, certificate
 selector, and verdict discipline for AG measurement.

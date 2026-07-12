@@ -1,24 +1,10 @@
 {
-  "schema": "measurement-profile/v0.5.0",
+  "schema": "measurement-profile/v0.5.1",
   "profileId": "profile:ag-law-conflict-tor@1",
   "siteRef": "archmap:/contexts",
   "coverRef": "cover:law-conflict-tor",
   "coefficient": "F2",
   "effCoeff": "finite-linear-algebra@1",
-  "witnessFamily": [
-    {
-      "law": "ag.law-conflict-tor",
-      "variable": "x_checkout"
-    },
-    {
-      "law": "ag.law-conflict-tor",
-      "variable": "x_inventory"
-    },
-    {
-      "law": "ag.law-conflict-tor",
-      "variable": "x_payment"
-    }
-  ],
   "resolutionSelector": "taylor@1",
   "domain": "finite-poset-site",
   "zeroPredicate": "rank-zero@1",

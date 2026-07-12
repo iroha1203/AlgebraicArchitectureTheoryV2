@@ -152,6 +152,40 @@
       "forbiddenSupportGenerators": [
         { "support": ["x", "y"] }
       ]
+    },
+    {
+      "lawId": "law:laplacian",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        { "variable": "cell:left", "binding": { "axis": "laplacian", "predicate": "cellularCochain" } },
+        { "variable": "cell:right", "binding": { "axis": "laplacian", "predicate": "cellularCochain" } }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["cell:left", "cell:right"] }
+      ]
+    },
+    {
+      "lawId": "law:period",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        { "variable": "cycle:alpha", "binding": { "axis": "period", "predicate": "periodIntegral" } },
+        { "variable": "cycle:beta", "binding": { "axis": "period", "predicate": "periodIntegral" } }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["cycle:alpha"] },
+        { "support": ["cycle:beta"] }
+      ]
+    },
+    {
+      "lawId": "law:transfer",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        { "variable": "support:api", "binding": { "axis": "transfer", "predicate": "transferPairing" } },
+        { "variable": "support:data", "binding": { "axis": "transfer", "predicate": "transferPairing" } }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["support:api", "support:data"] }
+      ]
     }
   ]
 }
