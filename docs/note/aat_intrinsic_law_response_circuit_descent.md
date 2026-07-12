@@ -30,14 +30,48 @@ partial_U(s) = 0
 B_W = A_W/I_W
 ```
 
-とし、allowed first-order ArchitectureOperation の chartwise tangent object を `E_A(W)` と書く。
-semantic operation は derivation とは独立に定義し、その後で
+とする。quotient mapを`q_W : A_W -> B_W`と書く。semantic first-order operationは、
+law quotient前のambient algebra`A_0`上にあるtyped presentationから生成する。
+
+```text
+Op                 finite primitive operation labels
+opSchema           Op -> Formal.Arch.ArchitectureOperation
+rho_0              Op -> Der_k(A_0, A_0)
+```
+
+generated Zariski chart`W`へ`rho_0(op)`をlocalizeした`rho_W(op)`とquotient mapを合成し、
+
+```text
+d_(I,W)(op) = q_W o rho_W(op) : Der_k(A_W, B_W)
+```
+
+を作る。semantic first-order operation presentationは、このquotient-valued derivationに対応する
+square-zero algebra lift
+
+```text
+tilde q_W : A_W -> B_W ⋉ B_W
+fst o tilde q_W = q_W
+```
+
+として定義する。これは既存`ArchitectureOperation`のtyped first-order realizationであり、
+lawごとに無関係なlift familyを入力するものではない。その後でmathlibの
+`derivationToSquareZeroEquivLift`へ接続し、
 
 ```text
 semantic first-order ArchitectureOperation ~= allowed derivation
 ```
 
-を証明する。この比較を定義や structure field に埋め込まない。
+を証明する。`E_A`はfree module sheaf`O_Y^Op`からambient-to-quotient derivation sheafへのmapの
+sheaf-category imageとして定義する。初期targetではgenerated chartをtyped Zariski localizationに
+限定し、affine quasi-coherent imageとlocalization comparisonからrestrictionとsheaf conditionを
+構成する。objectwise spanをsheafと呼ばない。既存`Formal/Arch/Operation/ArchitectureOperation`は
+operation kindとwitness transportを与え、`rho_0`がそのfirst-order algebraic realizationを与える。
+
+異なるlaw ideal`I_0`と`I'_0`の間にquotient ring mapがあるとは仮定しない。共通なのは
+`A_0`、`Op`、`opSchema`、`rho_0`であり、各quotient mapとの合成から別々の
+ambient-to-quotient derivation sheafを作る。この意味でwitness pairは同一ambient operation
+presentationから生成される。`rho_W(op)(I_W) <= I_W`は入力条件にせず、対応するconormal responseが
+零であること、すなわちoperationがlawful locusに接することと同値なkernel theoremとして証明する。
 
 derivation `d : Der_k(A_W, B_W)` は `I_W^2` 上で零になるので、canonical に
 
@@ -46,7 +80,8 @@ J_W(d) : I_W/I_W^2 -> B_W
 J_W(d)([f]) = d(f)
 ```
 
-を定める。compatibleなlabeled conormal class `c_(e,W) : I_W/I_W^2` ごとのresponseを
+を定める。law witness label`e`のideal generatorを`Ideal.toCotangent`へ送って生成した
+labeled conormal class `c_(e,W) : I_W/I_W^2` ごとのresponseを
 
 ```text
 alpha_(e,W)(d) = J_W(d)(c_(e,W))
@@ -61,14 +96,28 @@ G-07 から再利用するのは、law-generated `I/I^2`、generated cover、Če
 actual gluing の構成法である。本構想の local repair 差は `I/I^2` ではなく
 response kernel に入るため、obstruction class 自体は新しく構成する。
 
+### 1.1 G-08でAATが獲得する能力
+
+G-08はAATをlawful locusの静的幾何から、operationがlawへ与える一次応答の幾何へ進める。
+
+1. `E_A`により、選択されたArchitectureOperationのtangent directionをsheafとして持つ。
+2. `J : E_A -> Hom(I/I^2, O_Y)`により、law idealをoperation responseのcovectorへ変換する。
+3. support-minimal circuitにより、repair不能性を最小law support付きcertificateとして返す。
+4. two-term object`K_P -> O_Y`により、fiberwise local failure`Q = coker(s_t)`と、
+   local repair torsorのglobalization failure`H^1(K)`を同じresponse mapから読む。
+5. このtwo-stage obstructionは、G-04のhigher / nonabelian / stacky repair towerと、
+   operation deformation complexへ進むdegree-zero / degree-oneの土台になる。
+6. effective finite measurement regimeでは同じmapをfiber matrixと有限Čech complexへ落とし、
+   ArchSigが検証可能なcertificateとして扱える。
+
 ---
 
 ## 2. 固定したい主定理
 
 affine chart algebra `A_W`、law ideal `I_W`、lawful chart `Y_W = Spec(A_W/I_W)`を持つ
-finite/small atom-generated ringed AAT geometryとgenerated cover `U`を固定する。lawful locus `Y` 上の
-conormal sheafを `C = I/I^2` とする。有限 law label 型 `L`、`P subset L`、`t in L \ P`、
-restriction-compatibleなlabeled conormal map `c : O_Y^L -> C`を固定する。各fiberでのresponseは
+finite atom-generated affine Zariski AAT geometryとgenerated cover `U`を固定する。lawful locus `Y` 上の
+conormal sheafを `C = I/I^2` とする。有限 law label 型 `L`、`P subset L`、`t in L \ P`を固定し、
+law witness generatorとrestrictionからlabeled conormal map `c : O_Y^L -> C`を構成する。各fiberでのresponseは
 
 ```text
 alpha_e(x) = evaluation at c_e(x) after J_x
@@ -91,8 +140,8 @@ Q = coker s_t
 ### 2.1 局所 circuit theorem
 
 各 geometric fiber `x` で、law responses `alpha_e(x)` が表現するmatroidを `M_x` とする。
-`E_A`がfinite locally freeで、protected response map `A_P`がlocally constant rankを持ち、
-`ker(A_P)`の形成がresidue-field base changeと可換であるとき、
+`E_A`がfinite locally freeで、protected response map `A_P`がlocally split constant rankを持つとする。
+この仮定から`ker(A_P)`のfinite locally free性とresidue-field base change可換性を証明した上で、
 
 ```text
 normalized repair exists at x
@@ -139,7 +188,7 @@ omega_(P,t) in CechH1(U, K)
 
 ```text
 omega_(P,t) = 0
-  <-> an actual global normalized ArchitectureOperation exists
+  <-> a global normalized section of E_A exists
 ```
 
 が成り立つ。
@@ -150,37 +199,57 @@ omega_(P,t) = 0
 
 ---
 
-## 3. 証明依存
+## 3. 実装フェーズと証明依存
+
+Lean prototypeはactive化前提にせず、G-08の最初のproof stageとして実装する。
+
+1. **Phase 0 — Semantic Operation Foundation**: typed`ArchitectureOperation` presentation、ambient derivation、
+   typed localization、`q_W o rho_W`、square-zero lift、operation image sheaf、conormal response、
+   response kernel theorem、Boolean-circle非零responseを構成する。
+2. **Phase 1 — Local Circuit and Support**: finite repair、minimal circuit、kernel base-change、support比較。
+3. **Phase 2 — Response-Kernel Descent**: local repair cocycle、choice independence、零classとglobal sectionの同値。
+4. **Phase 3 — Witness and Naturality**: witness対、presentation naturality、unit rescaling transport。
+5. **Phase 4 — Effective Measurement Shadow**: finite matrix / cochain certificateとsoundness。
+6. **Phase 5 — Integration and Final Gate**: main package、台帳同期、axiom audit、独立最終査読。
+
+Phase 0は見積り上も独立した実装段である。単一chartのAPI接続だけで終了せず、Boolean-circleで
+非零conormal responseが発火し、Phase 1のcircuit theoremへ渡せることを終了条件とする。
 
 ```text
-L0  normalized repair iff target is outside protected span
- |
- +- L1  support-minimal circuit extraction
- |
- +- L2  loop/nonloop separation
+L0  finite linear repair / support-minimal circuit / loop separation
 
-J0  semantic first-order operation definition
+J0  typed ArchitectureOperation presentation
  |
- +- J1  semantic operation ~= allowed derivation
+ +- J1  ambient derivation localization
       |
-      +- J2  derivation -> Hom(I/I^2, B)
+      +- J2  quotient-valued derivation / square-zero lift comparison
            |
-           +- J3  restriction naturality
+           +- J3  operation image sheaf / restriction naturality
                 |
-                +- C0  fiber circuit locus = Supp(coker s_t)
-                |
-                +- D0  local repair differences form a K-valued cocycle
+                +- J4  derivation -> Hom(I/I^2, B) / labeled response
                      |
-                     +- D1  choice independence
+                     +- J5  ideal-preserving iff conormal-response kernel
                           |
-                          +- D2  class zero iff actual global operation
-                               |
-                               +- E0  atom-generated nonzero witness
+                          +- J6  Boolean-circle nonzero response
+
+L0 + J6
+ |
+ +- C0  fiber circuit locus = Supp(coker s_t)
+      |
+      +- D0  local repair differences form a K-valued cocycle
+           |
+           +- D1  choice independence
+                |
+                +- D2  class zero iff global normalized E_A-section
+                     |
+                     +- M0  effective finite measurement certificate
+                          |
+                          +- E0  atom-generated witness pair / naturality
 ```
 
-critical path は `J0 -> J1 -> J2 -> J3 -> D0 -> D2 -> E0` である。
-有限線形 circuit は先に独立実装できる。Tor、定量不等式、scheme structure は支線とし、
-critical path を止めない。
+proof dependencyと実装gateは区別する。有限線形`L0`は独立に先行できるが、Phase 1は
+`J0 -> J1 -> J2 -> J3 -> J4 -> J5 -> J6`を完了してから開始する。Tor、定量不等式、
+scheme structureは支線とし、critical pathを止めない。
 
 ---
 
@@ -202,14 +271,18 @@ target_loop_is_singletonCircuit
 ### 4.2 intrinsic Jacobian
 
 ```text
+semanticFirstOrderOperation_equiv_derivation
 derivation_vanishes_on_ideal_sq
 derivationToConormalResponse_chartwise
 lawResponse_depends_only_on_conormalClass
 lawResponse_restriction_natural
-semanticFirstOrderOperation_equiv_derivation
 ```
 
-を構成する。`J_W`、response naturality、semantic equivalenceを入力fieldとして受け取る theorem は
+を構成する。semantic operation比較はmathlib
+`derivationToSquareZeroEquivLift`を再包装せず、AAT chart quotientとsquare-zero extensionを
+このAPIへ接続する。`Ideal.Cotangent`、`Ideal.toCotangent`、
+`KaehlerDifferential.linearMapEquivDerivation`をcomparison先に使う。
+`J_W`、response naturality、semantic equivalenceを入力fieldとして受け取る theorem は
 proof checkpoint に留める。
 
 ### 4.3 cover-relative descent
@@ -224,6 +297,19 @@ localRepairClass_eq_zero_iff_exists_globalRepair
 を既存の cover-relative additive Čech quotient と actual sheaf descent へ接続する。
 generic differentialやeffectivityを受け取るだけでなく、generated coverとrestrictionから
 対象instanceを構成する。
+
+### 4.4 two-stage repair object
+
+`K_P = ker(A_P)`と`s_t : K_P -> O_Y`からtwo-term object
+
+```text
+R_(P,t) = [K_P -> O_Y]
+```
+
+を作る。fiberwise`coker(s_t)`はnormalized repairの局所failureを、局所repairが存在する面では
+`ker(s_t) = K`値Čech classが大域化failureを読む。初期completionでは一般hypercohomologyを
+導入せず、local coker、repair torsor、`H^1(K)`、actual gluingを明示定理として接続する。
+この低次packageを後続のhypercohomology / derived deformation complexへのcomparison sourceにする。
 
 ---
 
@@ -273,21 +359,39 @@ c_t != 0 and sum_p |c_p| > 0
    support-minimal circuitがrepair不存在を証明する。
 2. **pure descent witness**: 全fiberでtargetはprotected span外で、各selected chartに
    explicit normalized repairが存在するが、local repair差の
-   `K` 値classが非零で、global normalized operationが存在しない。
+   `K` 値classが非零で、global normalized `E_A`-sectionが存在しない。
 
 第二例の候補は、3-chart cycle上のupper-triangular shearである。各chartではtarget responseを
 `1`に正規化できる一方、hidden operation方向のtransitionが非零Čech classを作る。
 completion evidenceにするには、chart algebra、law ideal、operation restriction、actual overlap、
 coboundary非所属を同一finite modelで証明する。
 
-両例は同一ambient siteと共通ambient operation schema上で構成する。law idealの変更でlawful-locus
-algebraも変わるため、operation sheafを同一視せず、共通schemaから各lawful locusへのcanonicalな
-base changeとして比較する。その上でlaw dataだけを変え、local circuit型とpure descent型が
+両例は同一ambient algebraと共通ambient operation presentation上で構成する。law idealの変更で
+lawful-locus algebraも変わるため、operation sheafを同一視せず、同じambient derivationをlocalizeして
+それぞれのquotient mapと合成して比較する。その上でlaw dataだけを変え、local circuit型とpure descent型が
 分かれるwitness pairを作る。これはAAT入力がobstructionの種類を変えることを示す。
 
 ---
 
-## 7. 新規性の判定
+## 7. 文献・既存理論監査と新規性
+
+一次資料との比較結果は次の通り。
+
+- [Stacks 04BP](https://stacks.math.columbia.edu/tag/04BP)はsquare-zero extensionのsection差が
+  derivationで記述されることを与える。semantic operation–derivation対応そのものは既知である。
+- [Stacks 04EA](https://stacks.math.columbia.edu/tag/04EA)と
+  [04EE](https://stacks.math.columbia.edu/tag/04EE)はconormal moduleとuniversal first-order
+  thickening、localization compatibilityを与える。`I/I^2`とchart restriction自体は既知である。
+- [Stacks 01UM](https://stacks.math.columbia.edu/tag/01UM)と
+  [04BJ](https://stacks.math.columbia.edu/tag/04BJ)はscheme / ringed-topos上のdifferentialsと
+  derivation sheafを与える。operation sheafを持つだけでは新規性にならない。
+- [Stacks 07Z6](https://stacks.math.columbia.edu/tag/07Z6)と
+  [07ZD](https://stacks.math.columbia.edu/tag/07ZD)はFitting ideal、finite locally free性、
+  base changeを与える。coker supportをdegeneracy locusとして読む骨格は既知である。
+- [Dinh–Mohammadi](https://arxiv.org/abs/1502.01005)などのOrlik–Terao研究は
+  hyperplane arrangementのrelation spaceとminimal dependenceを扱う。circuit抽出だけでは足りない。
+- [Curry](https://arxiv.org/abs/1303.3255)はcomputable cellular sheaf cohomologyとglobal sectionを
+  扱う。有限sheafのlocal-to-global obstructionだけでは足りない。
 
 個別には次は既知の数学的骨格である。
 
@@ -310,28 +414,59 @@ circuit support、local existence、degeneracy locusと、normalized repair tors
 分け、target labelのrescalingではnormalizationのtransportも明示する。より強い表示不変性は
 文献監査と反例探索後に判断する。
 
-publication-levelの新規性判定前に、hyperplane arrangement、Orlik–Terao、matroid syzygy、
-deformation complex、cellular sheaf、matroid bundle / degeneracy locusを監査する。
+publication-levelの最終判定では、上記に加えてdeformation complex、matroid bundle、
+operation-valued cellular sheafの直接的な先行定理をstatement単位で比較する。
 
 ---
 
-## 8. draft からの昇格条件
+## 8. Finite measurement shadow
 
-G-08をactiveなtarget-theoremへ昇格する前に、次を固定する。
+一般の数学certificateとArchSig向けのeffective finite measurement certificateを分ける。後者は
+computable coefficient field、selected geometric fiber evaluation、有限基底付きresponse module、
+有限基底付きČech cochain modules、boundary matrixを持つmeasurement regimeに対して生成する。
 
-1. `L`、`P`、`t in L \ P`とcompatible labeled conormal mapの型。
-2. G-07のsemantic first-order representationの実体と、本構想のoperation liftとのcomparison。
-3. semantic operationのzero、加法、scalar、restriction、sheaf conditionと、allowed derivationとの同値statement。
+```text
+fiber response matrix M_x[e,r] = alpha_e(x)(v_r)
+local success         normalized repair vector over kappa(x)
+local failure         support-minimal circuit coefficients over kappa(x)
+globalization input   finite K-valued overlap cocycle coordinates
+globalization failure dual functional vanishing on im(delta) but not on the cocycle
+provenance             Atom, law, operation, chart, point, cover, bases, transport
+```
+
+Lean側では数学certificateからeffective certificateへのsoundness、basis変更とlabeled presentation
+同型に対するtransport、dual witnessによるcoboundary image非所属の検証を証明し、matrix rankだけを不変量と呼ばない。
+ArchSig側はArchMap、LawPolicy、MeasurementProfileが選んだfiber evaluation、有限basis、cover、
+cochain modelからこのshadowを計算し、repair vector / circuit / cocycle witnessをanalysis packetへ載せられる。
+tooling実装は別Issueで扱い、G-08 completionは有限shadowがAAT theoremの正しいcertificateであることを
+Leanで証明するところまでとする。
+
+---
+
+## 9. active化契約とPhase 0停止規則
+
+G-08のactive化にLean prototypeの完成を要求しない。active化前に固定するのはtarget statement、
+material premise ledger、anti-weakening rule、文献監査、Phase 0–5の責務、失敗時の扱いである。
+
+Phase 0では次をLean上で固定する。
+
+1. `L`、`P`、`t in L \ P`とlaw witness generatorからlabeled conormal mapを生成する型。
+2. G-07のsection-lift representationをoperation liftと同一視せず、G-07から再利用する`I/I^2`、
+   cover、Čech engine、actual gluingのtyped import map。
+3. selected`ArchitectureOperation`のstate / witness parametersとambient derivation realizationを結ぶ
+   typed presentation、quotient-valued composition、typed Zariski localization、square-zero lift、
+   operation image sheafのstatement。
 4. chartwise `J_W`と`alpha_(e,W)`のrestriction naturalityを入力fieldにしない構成ルート。
 5. `Y_W = Spec(A_W/I_W)`、stalk、residue field、supportとgenerated AAT coverのcomparison。
-6. `A_P`のconstant rankとfiber kernel base-changeを支える仮定またはconstruction。
-7. fiberwise repair可能性からselected chartwise repairを得るroute、またはexplicit chartwise lift仮定。
-8. 同一ambient site / operation schemaから各lawful locusへbase changeしたwitness pairのLean prototype。
-9. cover、`P,t`、operation、conormal、responseを含むpresentation transport statementと、
-   文献監査後も残る新規性claim。
+6. Boolean-circle finite modelで非零conormal responseを構成し、Phase 1へ渡せること。
+
+typed presentation、operation image sheaf、ideal-preserving方向とresponse kernelの同値のいずれかが
+構成不能、restriction naturalityが得られない、またはBoolean-circle responseが零へ退化する場合は
+Phase 1へ進まない。target statementの改訂案を人間へ提示し、再査読する。
 
 G-03は一般generated nerveを扱う並行研究、G-04はideal-power higher stages、nonabelian、higher、
 stacky、universalityを扱う。G-08は両者を再包装せず、operation-response geometryと
 local circuit / global descentの逐次obstructionを担当する。
 
-Lean status: 本構想はdraftであり、対応するtarget theoremは未証明である。
+Lean status: G-08はactiveなtarget-theoremであり、対応するtarget theoremは未証明である。
+runtime proof stateはtracking Issue [#3282](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3282)を正本とする。
