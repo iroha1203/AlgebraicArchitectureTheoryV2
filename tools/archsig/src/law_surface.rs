@@ -20,7 +20,7 @@ const CONDITION_TYPES: [&str; 6] = [
     "stacky",
 ];
 
-const CONCLUSION_TOKENS: [&str; 10] = [
+const CONCLUSION_TOKENS: [&str; 13] = [
     "boundary",
     "certificate",
     "globalcoherent",
@@ -28,8 +28,11 @@ const CONCLUSION_TOKENS: [&str; 10] = [
     "lawful",
     "mismatch",
     "minimalforbiddensupports",
+    "measurednonzero",
+    "measuredzero",
     "nonzero",
     "obstruction",
+    "verdict",
     "violation",
 ];
 
@@ -94,6 +97,14 @@ pub struct LawSurfaceBindingVocabularyV1 {
     pub id: String,
     pub axes: Vec<String>,
     pub predicates: Vec<String>,
+    pub axis_predicate_pairs: Vec<LawSurfaceBindingPairV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LawSurfaceBindingPairV1 {
+    pub axis: String,
+    pub predicates: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -124,20 +135,10 @@ pub struct LawSurfaceValidationSummaryV1 {
 }
 
 pub fn static_law_surface_binding_vocabulary_v1() -> LawSurfaceBindingVocabularyV1 {
-    LawSurfaceBindingVocabularyV1 {
-        schema: LAW_SURFACE_BINDING_VOCABULARY_SCHEMA.to_string(),
-        id: "aat-law-surface-binding-vocabulary".to_string(),
-        axes: vec![
-            "support".to_string(),
-            "cooccurrence".to_string(),
-            "sectionValue".to_string(),
-        ],
-        predicates: vec![
-            "support".to_string(),
-            "cooccurrence".to_string(),
-            "sectionValue".to_string(),
-        ],
-    }
+    serde_json::from_str(include_str!(
+        "../skills/archmap-creater/references/aat-law-surface-binding-vocabulary.json"
+    ))
+    .expect("checked-in law surface binding vocabulary must be valid JSON")
 }
 
 pub fn validate_law_surface_v1_report(
@@ -151,7 +152,7 @@ pub fn validate_law_surface_v1_report(
         check_identity(surface),
         check_law_ids(surface),
         check_condition_types(surface),
-        check_shape_rules(surface),
+        check_shape_rules(surface, raw),
         check_bindings(surface, &vocabulary),
         check_forbidden_supports(surface),
         check_reserved_fields(raw),
@@ -271,7 +272,7 @@ fn check_condition_types(surface: &LawEquationSurfaceV1) -> ValidationCheck {
     )
 }
 
-fn check_shape_rules(surface: &LawEquationSurfaceV1) -> ValidationCheck {
+fn check_shape_rules(surface: &LawEquationSurfaceV1, raw: &Value) -> ValidationCheck {
     let mut examples = Vec::new();
     for (index, law) in surface.laws.iter().enumerate() {
         match law.condition_type.as_str() {
@@ -290,7 +291,7 @@ fn check_shape_rules(surface: &LawEquationSurfaceV1) -> ValidationCheck {
                         "closed-equational law requires forbiddenSupportGenerators",
                     ));
                 }
-                if law.evaluator_ref.is_some() {
+                if raw_law_field_is_present(raw, index, "evaluatorRef") {
                     examples.push(generic_validation_example(
                         &format!("laws[{index}].evaluatorRef"),
                         "present",
@@ -306,14 +307,14 @@ fn check_shape_rules(surface: &LawEquationSurfaceV1) -> ValidationCheck {
                         "non-closed law requires evaluatorRef",
                     ));
                 }
-                if !law.witness_variables.is_empty() {
+                if raw_law_field_is_present(raw, index, "witnessVariables") {
                     examples.push(generic_validation_example(
                         &format!("laws[{index}].witnessVariables"),
                         "present",
                         "ideal fields are reserved for closed-equational laws",
                     ));
                 }
-                if !law.forbidden_support_generators.is_empty() {
+                if raw_law_field_is_present(raw, index, "forbiddenSupportGenerators") {
                     examples.push(generic_validation_example(
                         &format!("laws[{index}].forbiddenSupportGenerators"),
                         "present",
@@ -337,6 +338,7 @@ fn check_bindings(
 ) -> ValidationCheck {
     let mut examples = Vec::new();
     for (law_index, law) in surface.laws.iter().enumerate() {
+        let mut witness_names = BTreeSet::new();
         for (variable_index, variable) in law.witness_variables.iter().enumerate() {
             let path = format!("laws[{law_index}].witnessVariables[{variable_index}].binding");
             if variable.variable.trim().is_empty() {
@@ -344,6 +346,25 @@ fn check_bindings(
                     &format!("laws[{law_index}].witnessVariables[{variable_index}].variable"),
                     "empty",
                     "witness variable names must be non-empty",
+                ));
+            }
+            if !witness_names.insert(variable.variable.as_str()) {
+                examples.push(generic_validation_example(
+                    &format!("laws[{law_index}].witnessVariables[{variable_index}].variable"),
+                    &variable.variable,
+                    "witness variable names must be unique within a law",
+                ));
+            }
+            if variable
+                .binding
+                .archmap_variable
+                .as_deref()
+                .is_some_and(|value| value.trim().is_empty())
+            {
+                examples.push(generic_validation_example(
+                    &format!("{path}.archmapVariable"),
+                    "empty",
+                    "archmapVariable aliases must be non-empty",
                 ));
             }
             let name_binding = variable.binding.archmap_variable.is_some();
@@ -364,23 +385,30 @@ fn check_bindings(
                     ));
                 }
             }
-            if let Some(axis) = &variable.binding.axis {
-                if !vocabulary.axes.contains(axis) {
-                    examples.push(generic_validation_example(
-                        &format!("{path}.axis"),
-                        axis,
-                        "binding axis is not declared by the shared vocabulary manifest",
-                    ));
-                }
-            }
-            if let Some(predicate) = &variable.binding.predicate {
-                if !vocabulary.predicates.contains(predicate) {
-                    examples.push(generic_validation_example(
-                        &format!("{path}.predicate"),
-                        predicate,
-                        "binding predicate is not declared by the shared vocabulary manifest",
-                    ));
-                }
+            let Some(axis) = variable.binding.axis.as_deref() else {
+                examples.push(generic_validation_example(
+                    &format!("{path}.axis"),
+                    "missing",
+                    "binding axis is required for vocabulary resolution",
+                ));
+                continue;
+            };
+            let Some(predicate) = variable.binding.predicate.as_deref() else {
+                examples.push(generic_validation_example(
+                    &format!("{path}.predicate"),
+                    "missing",
+                    "binding predicate is required for vocabulary resolution",
+                ));
+                continue;
+            };
+            if !vocabulary.axis_predicate_pairs.iter().any(|pair| {
+                pair.axis == axis && pair.predicates.iter().any(|item| item == predicate)
+            }) {
+                examples.push(generic_validation_example(
+                    &format!("{path}.axis/predicate"),
+                    &format!("{axis}/{predicate}"),
+                    "binding axis/predicate pair is not declared by the shared vocabulary manifest",
+                ));
             }
         }
     }
@@ -488,13 +516,8 @@ fn check_conclusion_tokens(surface: &LawEquationSurfaceV1) -> ValidationCheck {
     let mut examples = Vec::new();
     for (law_index, law) in surface.laws.iter().enumerate() {
         for (field, value) in [("lawId", law.law_id.as_str())].into_iter() {
-            let tokens = value
-                .split(|character: char| !character.is_ascii_alphanumeric())
-                .filter(|token| !token.is_empty())
-                .map(|token| token.to_ascii_lowercase())
-                .collect::<BTreeSet<_>>();
             for token in CONCLUSION_TOKENS {
-                if tokens.contains(token) {
+                if normalized_identifier_contains(value, token) {
                     examples.push(generic_validation_example(
                         &format!("laws[{law_index}].{field}"),
                         value,
@@ -504,14 +527,8 @@ fn check_conclusion_tokens(surface: &LawEquationSurfaceV1) -> ValidationCheck {
             }
         }
         for (variable_index, variable) in law.witness_variables.iter().enumerate() {
-            let tokens = variable
-                .variable
-                .split(|character: char| !character.is_ascii_alphanumeric())
-                .filter(|token| !token.is_empty())
-                .map(|token| token.to_ascii_lowercase())
-                .collect::<BTreeSet<_>>();
             for token in CONCLUSION_TOKENS {
-                if tokens.contains(token) {
+                if normalized_identifier_contains(&variable.variable, token) {
                     examples.push(generic_validation_example(
                         &format!("laws[{law_index}].witnessVariables[{variable_index}].variable"),
                         &variable.variable,
@@ -537,7 +554,10 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
             "binding vocabulary must use the v0.5.1 manifest",
         ));
     }
-    if vocabulary.axes.is_empty() || vocabulary.predicates.is_empty() {
+    if vocabulary.axes.is_empty()
+        || vocabulary.predicates.is_empty()
+        || vocabulary.axis_predicate_pairs.is_empty()
+    {
         examples.push(generic_validation_example(
             "bindingVocabulary",
             "empty",
@@ -549,6 +569,23 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
         "law surface and authoring use a non-empty versioned binding vocabulary",
         examples,
     )
+}
+
+fn raw_law_field_is_present(raw: &Value, index: usize, field: &str) -> bool {
+    raw.get("laws")
+        .and_then(Value::as_array)
+        .and_then(|laws| laws.get(index))
+        .and_then(Value::as_object)
+        .is_some_and(|law| law.contains_key(field))
+}
+
+fn normalized_identifier_contains(value: &str, token: &str) -> bool {
+    let normalized = value
+        .chars()
+        .filter(|character| character.is_ascii_alphanumeric())
+        .flat_map(|character| character.to_lowercase())
+        .collect::<String>();
+    normalized.contains(token)
 }
 
 fn check_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {

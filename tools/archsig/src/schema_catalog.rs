@@ -110,7 +110,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.1 LawPolicy Stage 2",
                 vec!["archsig-contract:v0.5.1-law-equation-surface"],
-                "Law equation surface v0.5.1 supplies law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. ArchSig derives equation-side measurements from this declaration.",
+                "Law equation surface v0.5.1 supplies the author declaration consumed by the Stage 2 execution plan: law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
                 vec![
                     "The surface does not supply verdicts, certificates, boundary membership, or global coherence conclusions.",
                     "Stage 3 reservation fields are rejected when written.",

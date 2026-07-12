@@ -1,0 +1,16 @@
+{
+  "schema": "aat-law-surface-binding-vocabulary/v0.5.1",
+  "id": "aat-law-surface-binding-vocabulary",
+  "axes": ["cech", "square-free", "section-factorization", "laplacian", "period", "transfer", "tor", "boundary-residue", "restriction-compatibility", "coherence", "refactor"],
+  "predicates": ["sectionValue", "cocycleValue", "support", "cooccurrence", "witnessAssignment", "cellularCochain", "cellularBoundary", "periodIntegral", "transferPairing", "repairPath", "groundCost", "commonAmbient", "lawIdealGenerator", "restrictionIdealGenerator"],
+  "axisPredicatePairs": [
+    { "axis": "cech", "predicates": ["sectionValue", "cocycleValue"] },
+    { "axis": "square-free", "predicates": ["support", "cooccurrence"] },
+    { "axis": "section-factorization", "predicates": ["support", "cooccurrence", "witnessAssignment"] },
+    { "axis": "laplacian", "predicates": ["cellularCochain", "cellularBoundary"] },
+    { "axis": "period", "predicates": ["periodIntegral"] },
+    { "axis": "transfer", "predicates": ["transferPairing", "repairPath", "groundCost"] },
+    { "axis": "tor", "predicates": ["commonAmbient", "lawIdealGenerator"] },
+    { "axis": "restriction-compatibility", "predicates": ["restrictionIdealGenerator"] }
+  ]
+}

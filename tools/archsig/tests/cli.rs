@@ -100,6 +100,126 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         })
     }));
 
+    let mut null_evaluator = read_json(&input);
+    null_evaluator["laws"][0]["evaluatorRef"] = Value::Null;
+    let null_evaluator_path = out_dir.join("null-evaluator.json");
+    fs::write(
+        &null_evaluator_path,
+        serde_json::to_vec_pretty(&null_evaluator).expect("null evaluator fixture serializes"),
+    )
+    .expect("null evaluator fixture writes");
+    let null_evaluator_report = out_dir.join("null-evaluator-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            null_evaluator_path.to_str().expect("path is utf-8"),
+            "--out",
+            null_evaluator_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&null_evaluator_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut empty_ideal = read_json(&input);
+    empty_ideal["laws"][1]["forbiddenSupportGenerators"] = json!([]);
+    let empty_ideal_path = out_dir.join("empty-ideal.json");
+    fs::write(
+        &empty_ideal_path,
+        serde_json::to_vec_pretty(&empty_ideal).expect("empty ideal fixture serializes"),
+    )
+    .expect("empty ideal fixture writes");
+    let empty_ideal_report = out_dir.join("empty-ideal-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            empty_ideal_path.to_str().expect("path is utf-8"),
+            "--out",
+            empty_ideal_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(read_json(&empty_ideal_report)["summary"]["result"], "fail");
+
+    for (name, shortcut) in [
+        ("camel-boundary", "ag.boundaryMembership"),
+        ("camel-coherent", "ag.globalCoherent"),
+        ("snake-zero", "ag.measured_zero"),
+        ("verdict", "ag.verdict"),
+    ] {
+        let mut shortcut_input = read_json(&input);
+        shortcut_input["laws"][0]["lawId"] = json!(shortcut);
+        let shortcut_path = out_dir.join(format!("{name}.json"));
+        fs::write(
+            &shortcut_path,
+            serde_json::to_vec_pretty(&shortcut_input).expect("shortcut fixture serializes"),
+        )
+        .expect("shortcut fixture writes");
+        let shortcut_report = out_dir.join(format!("{name}-report.json"));
+        run_sig0_expect_code(
+            &[
+                "law-surface",
+                "--law-surface",
+                shortcut_path.to_str().expect("path is utf-8"),
+                "--out",
+                shortcut_report.to_str().expect("path is utf-8"),
+            ],
+            1,
+        );
+        assert_eq!(read_json(&shortcut_report)["summary"]["result"], "fail");
+    }
+
+    let mut empty_alias = read_json(&input);
+    empty_alias["laws"][0]["witnessVariables"][0]["binding"]["archmapVariable"] = json!("");
+    let empty_alias_path = out_dir.join("empty-alias.json");
+    fs::write(
+        &empty_alias_path,
+        serde_json::to_vec_pretty(&empty_alias).expect("empty alias fixture serializes"),
+    )
+    .expect("empty alias fixture writes");
+    let empty_alias_report = out_dir.join("empty-alias-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            empty_alias_path.to_str().expect("path is utf-8"),
+            "--out",
+            empty_alias_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(read_json(&empty_alias_report)["summary"]["result"], "fail");
+
+    let mut duplicate_variable = read_json(&input);
+    duplicate_variable["laws"][0]["witnessVariables"][1]["variable"] = json!("p");
+    duplicate_variable["laws"][0]["witnessVariables"][1]["binding"]["archmapVariable"] = json!("p");
+    let duplicate_variable_path = out_dir.join("duplicate-variable.json");
+    fs::write(
+        &duplicate_variable_path,
+        serde_json::to_vec_pretty(&duplicate_variable)
+            .expect("duplicate variable fixture serializes"),
+    )
+    .expect("duplicate variable fixture writes");
+    let duplicate_variable_report = out_dir.join("duplicate-variable-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            duplicate_variable_path.to_str().expect("path is utf-8"),
+            "--out",
+            duplicate_variable_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&duplicate_variable_report)["summary"]["result"],
+        "fail"
+    );
+
     let mut unknown = read_json(&input);
     unknown["laws"][0]["verdict"] = json!("measured_zero");
     let unknown_path = out_dir.join("unknown.json");

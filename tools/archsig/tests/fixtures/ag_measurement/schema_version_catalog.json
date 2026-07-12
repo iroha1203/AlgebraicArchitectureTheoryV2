@@ -179,7 +179,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Law equation surface v0.5.1 supplies law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. ArchSig derives equation-side measurements from this declaration.",
+        "fieldMappingPolicy": "Law equation surface v0.5.1 supplies the author declaration consumed by the Stage 2 execution plan: law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

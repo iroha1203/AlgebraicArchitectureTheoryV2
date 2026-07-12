@@ -5,6 +5,11 @@ This catalog is a recommended token table inside
 is to keep repeated observations written with stable tokens while preserving
 author judgment about whether a token applies.
 
+The machine-readable AG binding pairs used by the law-equation-surface validator
+are fixed in `aat-law-surface-binding-vocabulary.json` in this directory. The
+validator embeds that same file; update the manifest and authoring guidance in
+one change when an accepted AG axis/predicate pair changes.
+
 New axis names are not introduced inside an authoring run. If the current axis
 table is insufficient, escalate to doctrine or registry work.
 
