@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 14
+- latest reviewed cycle: 15
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: compare the internal conormal ideal with Cycle 9's additive kernel sheaf
+- next obligation: construct the lawful-reading atlas and semantic first-order repair representation
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -958,3 +958,75 @@ Construct the canonical isomorphism between the underlying additive sheaf of
 the internal conormal ideal and Cycle 9's `sheafifiedShortComplex G` first
 term. Compare q1 and q0 through sheafification composition, then obtain the
 first-term isomorphism from the uniqueness of the two categorical kernels.
+
+## Cycle 15 — canonical internal/additive conormal comparison
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalComparison.lean`
+- checkpoint spine:
+  - `moduleForgetEquivalence`
+  - `sheafificationComparison`
+  - `q1SheafIso`
+  - `q0SheafIso`
+  - `projection_square`
+  - `conormalSheafIso`
+  - `conormalSheafIso_inclusion`
+  - `shortComplexIso`
+  - `internalUnderlyingShortExact`
+
+### Checkpoint delta
+
+Large integer modules are canonically equivalent to large additive
+commutative groups by restriction of scalars along the lifted-integer ring
+equivalence followed by the integer-module equivalence.  The induced
+forgetful functor preserves sheafification.  The canonical
+`sheafComposeNatIso` therefore compares the Cycle 9 additive sheafification
+with the underlying additive sheaves of the Cycle 13 internal q1 and q0 ring
+sheaves.  Naturality of that single comparison proves the projection square.
+
+The first-term comparison is generated from categorical universal
+properties.  Cycle 9 short exactness identifies its first term with the
+kernel of its projection.  The projection square transports that kernel, and
+preservation of kernels by the induced right-adjoint sheaf functor identifies
+it with the underlying additive carrier of the Cycle 14 true conormal ideal.
+The resulting inclusion square and q1/q0 comparisons form an isomorphism of
+short complexes, transporting short exactness to the internal ideal sequence.
+
+### Premise delta
+
+- discharged: canonical q1/q0 sheafification comparison; projection
+  naturality square; canonical internal/additive conormal kernel comparison;
+  inclusion compatibility; short-complex comparison; underlying internal
+  ideal short exactness.
+- remaining: lawful-reading atlas and semantic first-order repair
+  representation; a finite law-sensitive zero/nonzero witness pair; package
+  theorem; and the global `H¹`-vanishing corollary.
+
+### Audits
+
+- focused comparison elaboration: pass (16 declarations)
+- module-wide standard-axiom assertion: pass
+- proof-use: the q1/q0 comparison is the canonical sheaf-composition natural
+  isomorphism; the projection square is its naturality equation; the conormal
+  comparison uses Cycle 9 kernel exactness, `kernel.mapIso`, and
+  `PreservesKernel.iso`
+- provenance: the module/additive equivalence comes from the lifted-integer
+  ring equivalence and the integer-module/additive-group equivalence; no
+  objectwise or selected comparison is supplied
+- supplied-field audit: no sheafification comparison, projection square,
+  kernel comparison, inclusion square, exactness, or inverse is accepted as
+  input
+- four independent review lanes: No major findings
+- target classification: the law-generated ideal/quotient/kernel sheaves and
+  exactness ledger item is discharged; D2 finite nonvacuity and D3 semantic
+  representation remain
+
+### Next obligation
+
+Construct a lawful-reading atlas from patchwise raw readings whose overlap
+differences are explicit finite combinations of required-law witnesses.
+Generate q0 compatibility, actual sheaf amalgamation, and q1 local lifts from
+that input, then use the Cycle 15 comparison to identify the internal semantic
+repair fiber with the Cycle 12 actual global-lift fiber.
