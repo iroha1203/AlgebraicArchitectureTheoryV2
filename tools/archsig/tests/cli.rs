@@ -177,6 +177,11 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         ("debt", "ag.debt"),
         ("unsafe", "ag.unsafe"),
         ("failure", "ag.failure"),
+        ("fail", "ag.fail"),
+        ("failed", "ag.failed"),
+        ("failing", "ag.failing"),
+        ("obstructive", "ag.obstructive"),
+        ("risky", "ag.risky"),
         ("verdict", "ag.verdict"),
     ] {
         let mut shortcut_input = read_json(&input);

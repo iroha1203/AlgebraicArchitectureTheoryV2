@@ -174,6 +174,17 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
             ));
         }
     }
+    for pair in &vocabulary.axis_predicate_pairs {
+        for predicate in &pair.predicates {
+            if !required_pairs.contains(&(pair.axis.as_str(), predicate.as_str())) {
+                examples.push(generic_validation_example(
+                    "aatAtomBindingVocabulary.axisPredicatePairs",
+                    &format!("{}/{}", pair.axis, predicate),
+                    "the shared binding manifest must reject pairs outside the Stage 2 contract",
+                ));
+            }
+        }
+    }
     check_from_examples(
         "archmap-schema050-aat-binding-vocabulary",
         "ArchMap authoring and law-surface validation resolve one versioned binding manifest",

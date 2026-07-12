@@ -20,7 +20,7 @@ const CONDITION_TYPES: [&str; 6] = [
     "stacky",
 ];
 
-const CONCLUSION_TOKENS: [&str; 18] = [
+const CONCLUSION_TOKENS: [&str; 23] = [
     "boundary",
     "certificate",
     "globalcoherent",
@@ -37,6 +37,11 @@ const CONCLUSION_TOKENS: [&str; 18] = [
     "debt",
     "unsafe",
     "failure",
+    "fail",
+    "failed",
+    "failing",
+    "obstructive",
+    "risky",
     "verdict",
     "violation",
 ];
@@ -680,6 +685,13 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
         }
     }
     let mut pairs = BTreeSet::new();
+    let required_pairs = [
+        ("cech", "sectionValue"),
+        ("square-free", "support"),
+        ("square-free", "cooccurrence"),
+        ("section-factorization", "support"),
+        ("section-factorization", "cooccurrence"),
+    ];
     for pair in &vocabulary.axis_predicate_pairs {
         if !BINDING_AXES.contains(&pair.axis.as_str()) {
             examples.push(generic_validation_example(
@@ -696,6 +708,13 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
                     "binding pair predicate is outside the Stage 2 contract",
                 ));
             }
+            if !required_pairs.contains(&(pair.axis.as_str(), predicate.as_str())) {
+                examples.push(generic_validation_example(
+                    "bindingVocabulary.axisPredicatePairs",
+                    &format!("{}/{}", pair.axis, predicate),
+                    "binding pair is outside the exact Stage 2 manifest contract",
+                ));
+            }
             if !pairs.insert((pair.axis.as_str(), predicate.as_str())) {
                 examples.push(generic_validation_example(
                     "bindingVocabulary.axisPredicatePairs",
@@ -705,13 +724,7 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
             }
         }
     }
-    for (axis, predicate) in [
-        ("cech", "sectionValue"),
-        ("square-free", "support"),
-        ("square-free", "cooccurrence"),
-        ("section-factorization", "support"),
-        ("section-factorization", "cooccurrence"),
-    ] {
+    for (axis, predicate) in required_pairs {
         if !pairs.contains(&(axis, predicate)) {
             examples.push(generic_validation_example(
                 "bindingVocabulary.axisPredicatePairs",
@@ -817,5 +830,14 @@ mod tests {
             .expect("binding manifest serializes");
         value["unexpected"] = Value::Bool(true);
         assert!(serde_json::from_value::<LawSurfaceBindingVocabularyV1>(value).is_err());
+    }
+
+    #[test]
+    fn binding_manifest_rejects_extra_pairs() {
+        let mut vocabulary = static_law_surface_binding_vocabulary_v1();
+        vocabulary.axis_predicate_pairs[0]
+            .predicates
+            .push("support".to_string());
+        assert_eq!(check_vocabulary(&vocabulary).result, "fail");
     }
 }
