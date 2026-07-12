@@ -113,6 +113,7 @@
   .fid-tag { flex: 0 0 auto; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.4px; padding: 1px 6px;
     border-radius: 999px; margin-top: 1px; }
   .fid-tag.measured { background: rgba(56,224,200,0.14); color: var(--structural-zero); }
+  .fid-tag.derived { background: rgba(143,224,255,0.14); color: #8fe0ff; }
   .fid-tag.layout { background: rgba(120,150,200,0.16); color: #9fc0e8; }
   .fid-tag.decoration { background: rgba(106,119,144,0.18); color: var(--ink-faint); }
   #detail .ins-action { font-size: 12.5px; color: var(--structural-zero); }
@@ -207,6 +208,7 @@
     <div class="sep"></div>
     <div class="group">
       <div class="chip" id="term-mode" title="Switch between engineer wording and the precise AG vocabulary">Engineer terms</div>
+      <div class="chip" id="twist-toggle" title="Draw the measured F₂ cochain as its double cover: parallel sheets glue, crossed sheets twist">Twist view</div>
       <label class="toggle" title="Off = draw only measurement-driven geometry: no glow, no pulse, no arcs"><input type="checkbox" id="decor-toggle" checked />Decoration</label>
     </div>
     <div class="grow"></div>
@@ -322,6 +324,8 @@ const T = (pair) => (typeof pair === "string" ? pair : (TERM_MODE === "math" ? p
  * no probes, seams as straight solid tubes. Same data, no theater.
  * -------------------------------------------------------------------------- */
 let DECOR = localStorage.getItem("archview.decor") !== "off";
+/* twist view: inside the gluing scene, swap the seam for the F₂ double cover */
+let TWIST = localStorage.getItem("archview.twist") === "on";
 
 /* per-element fidelity declaration: which visual channels are measured, which
  * are layout embedding, which are pure decoration. Shown in the detail panel. */
@@ -329,8 +333,27 @@ const FIDELITY = {
   context: [
     ["radius", "measured", "∝ number of atoms observed in this context"],
     ["adjacency to neighbors", "measured", "cover restriction edges"],
-    ["absolute position", "layout", "force-directed embedding of the measured adjacency; coordinates carry no verdict"],
+    ["height (Y)", "measured", "restriction-poset depth — deeper shared overlaps sit lower"],
+    ["horizontal position (X,Z)", "derived", "spectral embedding of the measured nerve; in-component closeness reads as diffusion closeness, unique up to isometry and eigenvalue degeneracy"],
+    ["cross-component placement, absolute scale, coincident-spectrum separation", "layout", "no meaning; contexts with identical nerve neighborhoods coincide in the spectrum and are separated minimally for legibility"],
     ["glass material, iridescence", "decoration", ""],
+  ],
+  twistNode: [
+    ["two lifts per context", "measured", "the two locally consistent F₂ assignments over this context"],
+    ["sheet offset", "layout", ""],
+    ["node styling", "decoration", ""],
+  ],
+  twistEdge: [
+    ["parallel vs crossing", "measured", "the F₂ cochain value on this restriction edge (0 = parallel, 1 = crossed)"],
+    ["tube styling", "decoration", ""],
+  ],
+  sectionPoint: [
+    ["which value sits over which context", "measured", "declared section value (objectRef) lifted to its context"],
+    ["lane height", "layout", "lexicographic lane assignment"],
+    ["marker styling", "decoration", ""],
+  ],
+  sectionEdge: [
+    ["existence", "measured", "equal declared values across a restriction edge"],
   ],
   atom: [
     ["shape and hue", "measured", "atom family (kind)"],
@@ -494,7 +517,7 @@ const G = {
   cells: new THREE.Group(), atoms: new THREE.Group(), struts: new THREE.Group(),
   faces: new THREE.Group(), seam: new THREE.Group(), terrain: new THREE.Group(),
   periods: new THREE.Group(), cages: new THREE.Group(), labels: new THREE.Group(),
-  verdict: new THREE.Group(),
+  verdict: new THREE.Group(), twist: new THREE.Group(), sections: new THREE.Group(),
 };
 Object.values(G).forEach((g) => root.add(g));
 
@@ -662,61 +685,148 @@ function buildModel(data) {
 function firstOverlay(arr) { return Array.isArray(arr) && arr.length ? arr[0] : null; }
 
 /* ============================================================================
- * Layout — context centers from the measured nerve graph (force-directed),
- * atoms placed by their measured context memberships. Hash only declumps.
+ * Layout — DERIVED coordinates (measured-geometry design note, wave 1):
+ *   X,Z = spectral embedding of the measured nerve graph (Laplacian
+ *         eigenvectors; in-component distances read as diffusion closeness,
+ *         unique up to isometry and eigenvalue degeneracy),
+ *   Y   = measured restriction-poset depth (deeper shared overlaps sit lower).
+ * Atoms are placed by their measured context memberships; hash only declumps.
+ * Cross-component placement and absolute scale stay layout (no meaning).
  * ========================================================================== */
+function posetDepth(model) {
+  // depth(v) = longest restrictsTo chain from v down to a deepest overlap
+  const memo = new Map();
+  const visiting = new Set();
+  const depth = (id) => {
+    if (memo.has(id)) return memo.get(id);
+    if (visiting.has(id)) return 0;                    // defensive: site is a poset, cycles never measured
+    visiting.add(id);
+    const ctx = model.ctxById.get(id);
+    let d = 0;
+    for (const t of (ctx && ctx.restrictsTo) || []) if (model.ctxById.has(t)) d = Math.max(d, depth(t) + 1);
+    visiting.delete(id);
+    memo.set(id, d);
+    return d;
+  };
+  for (const c of model.contexts) depth(c.id);
+  return memo;
+}
+
+// deterministic cyclic Jacobi eigendecomposition of a small dense symmetric matrix.
+// Fixed sweep order -> same packet, same coordinates (up to fp).
+function jacobiEigen(mat, n) {
+  const a = mat.map((row) => row.slice());
+  const v = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => (i === j ? 1 : 0)));
+  for (let sweep = 0; sweep < 32; sweep++) {
+    let off = 0;
+    for (let p = 0; p < n; p++) for (let q = p + 1; q < n; q++) off += a[p][q] * a[p][q];
+    if (off < 1e-18) break;
+    for (let p = 0; p < n; p++) for (let q = p + 1; q < n; q++) {
+      if (Math.abs(a[p][q]) < 1e-15) continue;
+      const theta = (a[q][q] - a[p][p]) / (2 * a[p][q]);
+      const t = Math.sign(theta || 1) / (Math.abs(theta) + Math.sqrt(theta * theta + 1));
+      const c = 1 / Math.sqrt(t * t + 1), s = t * c;
+      for (let k = 0; k < n; k++) { const akp = a[k][p], akq = a[k][q]; a[k][p] = c * akp - s * akq; a[k][q] = s * akp + c * akq; }
+      for (let k = 0; k < n; k++) { const apk = a[p][k], aqk = a[q][k]; a[p][k] = c * apk - s * aqk; a[q][k] = s * apk + c * aqk; }
+      for (let k = 0; k < n; k++) { const vkp = v[k][p], vkq = v[k][q]; v[k][p] = c * vkp - s * vkq; v[k][q] = s * vkp + c * vkq; }
+    }
+  }
+  const eig = Array.from({ length: n }, (_, i) => ({ val: a[i][i], vec: v.map((row) => row[i]) }));
+  eig.sort((x, y) => x.val - y.val);
+  return eig;
+}
+
+const SPECTRAL_MAX_CONTEXTS = 240;   // Jacobi is O(n^3); larger sites fall back to a declared-layout ring
+
 function layoutContexts(model) {
   const ids = model.contexts.map((c) => c.id);
   const n = ids.length;
   const pos = new Map();
   if (n === 0) return pos;
-  const rnd = mulberry32(0x5eed);
-  // seed on a fibonacci-ish sphere (deterministic), then relax with the nerve graph
-  ids.forEach((id, i) => {
-    const t = (i + 0.5) / n;
-    const phi = Math.acos(1 - 2 * t);
-    const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-    const r = 46 + n * 1.4;
-    pos.set(id, new THREE.Vector3(
-      r * Math.sin(phi) * Math.cos(theta),
-      (t - 0.5) * 24,
-      r * Math.sin(phi) * Math.sin(theta)
-    ).addScalar((rnd() - 0.5) * 0.5));
-  });
-  if (n === 1) { pos.get(ids[0]).set(0, 0, 0); return pos; }
+  const depths = posetDepth(model);
+  const maxDepth = Math.max(0, ...depths.values());
+  // measured: a context's chain length counts how far it can descend through
+  // restrictsTo; the deepest shared overlap (chain 0) sits lowest.
+  const yOf = (id) => ((depths.get(id) || 0) - maxDepth / 2) * 26;
+  const scale = 46 + n * 1.4;
 
-  const adj = model.edges;
-  const k = 60; // ideal edge length scale
-  // O(n^2) relaxation — cap work for large finite sites (bail to the deterministic seed above ~400).
-  const ITERS = n > 400 ? 0 : n > 120 ? 80 : 320;
-  for (let iter = 0; iter < ITERS; iter++) {
-    const disp = new Map(ids.map((id) => [id, new THREE.Vector3()]));
-    // repulsion (all pairs)
-    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
-      const pi = pos.get(ids[i]), pj = pos.get(ids[j]);
-      const d = new THREE.Vector3().subVectors(pi, pj);
-      let len = d.length() || 0.01;
-      const f = (k * k) / len;
-      d.multiplyScalar(f / len);
-      disp.get(ids[i]).add(d); disp.get(ids[j]).sub(d);
-    }
-    // attraction (nerve edges)
-    for (const e of adj) {
-      const pa = pos.get(e.a), pb = pos.get(e.b);
-      const d = new THREE.Vector3().subVectors(pa, pb);
-      let len = d.length() || 0.01;
-      const f = (len * len) / k;
-      d.multiplyScalar(f / len);
-      disp.get(e.a).sub(d); disp.get(e.b).add(d);
-    }
-    const cool = 8 * (1 - iter / 320);
-    for (const id of ids) {
-      const dp = disp.get(id);
-      const len = dp.length() || 0.01;
-      pos.get(id).add(dp.multiplyScalar(Math.min(len, cool) / len));
-    }
+  if (n === 1) { pos.set(ids[0], new THREE.Vector3(0, yOf(ids[0]), 0)); return pos; }
+  if (n > SPECTRAL_MAX_CONTEXTS) {
+    // fallback ring — pure layout, declared as such (spectral cost bound)
+    ids.forEach((id, i) => {
+      const th = (2 * Math.PI * i) / n;
+      pos.set(id, new THREE.Vector3(scale * Math.cos(th), yOf(id), scale * Math.sin(th)));
+    });
+    return pos;
   }
-  // recenter at origin
+
+  // connected components of the measured nerve graph
+  const idx = new Map(ids.map((id, i) => [id, i]));
+  const adj = ids.map(() => []);
+  for (const e of model.edges) {
+    const i = idx.get(e.a), j = idx.get(e.b);
+    if (i != null && j != null) { adj[i].push(j); adj[j].push(i); }
+  }
+  const comp = new Array(n).fill(-1);
+  const comps = [];
+  for (let i = 0; i < n; i++) if (comp[i] < 0) {
+    const members = [i]; comp[i] = comps.length;
+    const queue = [i];
+    while (queue.length) { const c = queue.pop(); for (const nb of adj[c]) if (comp[nb] < 0) { comp[nb] = comps.length; queue.push(nb); members.push(nb); } }
+    comps.push(members);
+  }
+
+  let compOffset = 0;   // cross-component placement is layout (distance between components has no meaning)
+  for (const members of comps) {
+    const m = members.length;
+    if (m === 1) {
+      const id = ids[members[0]];
+      pos.set(id, new THREE.Vector3(compOffset, yOf(id), 0));
+      compOffset += scale * 0.9 + 30;
+      continue;
+    }
+    const local = new Map(members.map((g, i) => [g, i]));
+    const L = Array.from({ length: m }, () => new Array(m).fill(0));
+    for (const e of model.edges) {
+      const gi = idx.get(e.a), gj = idx.get(e.b);
+      if (local.has(gi) && local.has(gj)) {
+        const i = local.get(gi), j = local.get(gj);
+        L[i][j] -= 1; L[j][i] -= 1; L[i][i] += 1; L[j][j] += 1;
+      }
+    }
+    const eig = jacobiEigen(L, m);
+    let vx = (eig[1] && eig[1].vec.slice()) || new Array(m).fill(0);
+    let vz = m > 2 ? ((eig[2] && eig[2].vec.slice()) || new Array(m).fill(0)) : new Array(m).fill(0);
+    // deterministic orientation: index-weighted sum positive (vertex order is the normalized id order)
+    const fixSign = (vec) => { let s = 0; for (let i = 0; i < m; i++) s += vec[i] * (i + 1); return s < 0 ? vec.map((x) => -x) : vec; };
+    vx = fixSign(vx); vz = fixSign(vz);
+    const norm = Math.max(...vx.map(Math.abs), ...vz.map(Math.abs), 1e-9);
+    const r = scale * Math.max(0.45, Math.sqrt(m / n));
+    members.forEach((g, i) => {
+      const id = ids[g];
+      pos.set(id, new THREE.Vector3(compOffset + (vx[i] / norm) * r, yOf(id), (vz[i] / norm) * r));
+    });
+    compOffset += r * 2.4 + 30;
+  }
+  // coincident spectral coordinates = structurally interchangeable contexts
+  // (identical nerve neighborhoods). Separate them minimally and deterministically
+  // for legibility — this separation is layout, like the atom declump jitter.
+  const byCoord = new Map();
+  for (const id of ids) {
+    const p = pos.get(id);
+    const k = `${p.x.toFixed(4)}|${p.y.toFixed(4)}|${p.z.toFixed(4)}`;
+    if (!byCoord.has(k)) byCoord.set(k, []);
+    byCoord.get(k).push(id);
+  }
+  for (const group of byCoord.values()) {
+    if (group.length < 2) continue;
+    const rSep = Math.max(...group.map((id) => cellRadius(model, model.ctxById.get(id)))) * 1.35;
+    group.forEach((id, i) => {
+      const th = (2 * Math.PI * i) / group.length;
+      pos.get(id).add(new THREE.Vector3(rSep * Math.cos(th), 0, rSep * Math.sin(th)));
+    });
+  }
+  // recenter at origin (layout)
   const c = new THREE.Vector3();
   for (const id of ids) c.add(pos.get(id));
   c.divideScalar(n);
@@ -786,6 +896,8 @@ function buildAll() {
   buildFaces();
   buildAtoms();
   buildSeam();
+  buildTwist();
+  buildSections();
   buildTerrain();
   buildPeriods();
   buildCages();
@@ -1194,6 +1306,169 @@ function updateRepairProbe(probe, t) {
   probe.material.emissiveIntensity = 1.2 + (1 - u) * 0.6;
 }
 
+/* ============================================================================
+ * Wave 2 — double-cover twist view. The F₂ cochain on the nerve drawn as its
+ * double cover X_c: two lifts per context, parallel tubes where c=0, crossed
+ * tubes where c=1. Theorem (classical, per the measured-geometry design note):
+ * on a connected base, X_c is connected iff [c] ≠ 0 in H¹(graph; F₂).
+ * Connectivity here is a deterministic display derivation of packet data,
+ * NOT a new verdict — on disagreement with the packet the view goes silent.
+ * ========================================================================== */
+let TWIST_STATE = { agree: true, anyTwisted: false };
+function buildTwist() {
+  TWIST_STATE = { agree: true, anyTwisted: false };
+  if (!MODEL.edges.length) return;
+  const hh = 15;                                     // sheet band offset (layout)
+  const lift = (id, s) => {
+    const p = CTXPOS.get(id);
+    return p && p.clone().add(new THREE.Vector3(0, s === 0 ? hh : -hh, 0));
+  };
+  // union-find over the 2n lifted nodes
+  const parent = new Map();
+  const find = (k) => { let r = k; while (parent.get(r) !== r) r = parent.get(r); let c = k; while (parent.get(c) !== c) { const nx = parent.get(c); parent.set(c, r); c = nx; } return r; };
+  const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(ra, rb); };
+  const key = (id, s) => `${id}|${s}`;
+  for (const ctx of MODEL.contexts) { parent.set(key(ctx.id, 0), key(ctx.id, 0)); parent.set(key(ctx.id, 1), key(ctx.id, 1)); }
+  const baseParent = new Map(MODEL.contexts.map((c) => [c.id, c.id]));
+  const bfind = (k) => { let r = k; while (baseParent.get(r) !== r) r = baseParent.get(r); return r; };
+  for (const e of MODEL.edges) {
+    if (!CTXPOS.has(e.a) || !CTXPOS.has(e.b)) continue;
+    const v = e.value ? 1 : 0;
+    union(key(e.a, 0), key(e.b, v)); union(key(e.a, 1), key(e.b, 1 - v));
+    const ra = bfind(e.a), rb = bfind(e.b); if (ra !== rb) baseParent.set(ra, rb);
+  }
+  // per base component: the lift stays one piece iff the component carries a nonzero class
+  const twistedComponents = new Set();
+  for (const ctx of MODEL.contexts) {
+    if (find(key(ctx.id, 0)) === find(key(ctx.id, 1))) twistedComponents.add(bfind(ctx.id));
+  }
+  const anyTwisted = twistedComponents.size > 0;
+  // defensive contract: the packet verdict is authoritative. The derivation and the
+  // measured conclusion must agree; if they do not, this view stays silent.
+  const packetNonzero = MODEL.isNonzero;
+  const agree = !MODEL.cocycle.visible || (anyTwisted === packetNonzero);
+  TWIST_STATE = { agree, anyTwisted };
+  if (!agree) return;
+
+  for (const ctx of MODEL.contexts) {
+    for (const s of [0, 1]) {
+      const p = lift(ctx.id, s); if (!p) continue;
+      const twisted = twistedComponents.has(bfind(ctx.id));
+      const col = twisted ? COL.nonzero : COL.zero;
+      const node = new THREE.Mesh(new THREE.SphereGeometry(3.1, 16, 12),
+        new THREE.MeshStandardMaterial({ color: col, emissive: col,
+          emissiveIntensity: DECOR ? 0.9 : 0.4, roughness: 0.3, transparent: true, opacity: 0.92 }));
+      node.position.copy(p);
+      G.twist.add(node);
+      pickables.push({ mesh: node, info: { type: "twistNode", ctx, sheet: s, twisted } });
+    }
+  }
+  for (const e of MODEL.edges) {
+    const crossed = !!e.value;
+    const ends = crossed
+      ? [[lift(e.a, 0), lift(e.b, 1)], [lift(e.a, 1), lift(e.b, 0)]]
+      : [[lift(e.a, 0), lift(e.b, 0)], [lift(e.a, 1), lift(e.b, 1)]];
+    for (const [pa, pb] of ends) {
+      if (!pa || !pb) continue;
+      const col = crossed ? COL.nonzero : 0x9fb0cc;
+      const m = tube(pa, pb, crossed ? 1.1 : 0.7, new THREE.MeshStandardMaterial({
+        color: col, emissive: col, emissiveIntensity: DECOR ? (crossed ? 1.2 : 0.3) : (crossed ? 0.5 : 0.2),
+        roughness: 0.35, transparent: true, opacity: crossed ? 0.95 : 0.6 }));
+      G.twist.add(m);
+      pickables.push({ mesh: m, info: { type: "twistEdge", edge: e, crossed } });
+    }
+  }
+  const box = new THREE.Box3().setFromObject(G.twist);
+  if (!box.isEmpty()) {
+    const c = box.getCenter(new THREE.Vector3());
+    const txt = anyTwisted
+      ? T({ math: "double cover connected — [c] ≠ 0", eng: "the two sheets join into one — no single consistent assignment exists" })
+      : T({ math: "double cover splits — [c] = 0", eng: "two separate sheets — a consistent assignment exists" });
+    const lab = makeLabel(txt, { color: anyTwisted ? "#ffd9a8" : "#a8f0e6", scale: 1.1,
+      bg: anyTwisted ? "rgba(48,26,8,0.82)" : "rgba(6,28,26,0.8)" });
+    lab.position.set(c.x, box.max.y + 10, c.z);
+    G.twist.add(lab);
+  }
+}
+
+/* ============================================================================
+ * Wave 3 — étale-space section lanes. Declared section values (cech
+ * sectionValue atoms) lifted to horizontal lanes over their contexts;
+ * a lane edge exists only where equal values face each other across a
+ * measured restriction edge. A lane running through every context of the
+ * cover is a global section among the declared values. Undeclared contexts
+ * carry empty fibers (silence) — no lane crosses them.
+ * ========================================================================== */
+// lane palette avoids the reserved verdict lanes (amber = measured_nonzero, teal ring = zero)
+const LANE_COLORS = [0x6fb0ff, 0x8fe39a, 0xff9ecb, 0xc59cff, 0x6fe0d6, 0x9fb4d6, 0xff8d6b, 0xdfe6a0];
+function buildSections() {
+  const declared = new Map();                        // ctxId -> { value, atomId }
+  for (const atom of MODEL.atoms) {
+    if (atom.axis !== "cech") continue;
+    const anc = MODEL.anchorByAtom.get(atom.id) || {};
+    if (anc.predicate !== "sectionValue" || anc.objectRef == null) continue;
+    for (const c of atom.contexts || []) declared.set(c, { value: String(anc.objectRef), atomId: atom.id });
+  }
+  G.sections.userData.declaredCount = declared.size;
+  if (!declared.size) return;
+  const values = [...new Set([...declared.values()].map((d) => d.value))].sort();
+  const box = new THREE.Box3().setFromObject(G.cells.children.length ? G.cells : root);
+  const laneBase = (box.isEmpty() ? 30 : box.max.y) + 26;
+  const laneGap = 16;
+  const laneY = (v) => laneBase + values.indexOf(v) * laneGap;
+  const laneColor = (v) => LANE_COLORS[values.indexOf(v) % LANE_COLORS.length];
+  const markerPos = new Map();                        // ctxId -> Vector3 on its lane
+  for (const [ctxId, d] of declared) {
+    const p = CTXPOS.get(ctxId); if (!p) continue;
+    const mp = new THREE.Vector3(p.x, laneY(d.value), p.z);
+    markerPos.set(ctxId, mp);
+    const col = laneColor(d.value);
+    const marker = new THREE.Mesh(new THREE.SphereGeometry(2.6, 16, 12),
+      new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: DECOR ? 0.9 : 0.4, roughness: 0.3 }));
+    marker.position.copy(mp);
+    G.sections.add(marker);
+    pickables.push({ mesh: marker, info: { type: "sectionPoint", ctxId, value: d.value, atomId: d.atomId } });
+    // a faint drop-line ties the fiber point to its context (layout)
+    const drop = tube(mp.clone(), new THREE.Vector3(p.x, p.y, p.z), 0.22,
+      new THREE.MeshBasicMaterial({ color: 0x44506a, transparent: true, opacity: 0.4 }));
+    G.sections.add(drop);
+  }
+  // lane edges: equal declared values across a measured restriction edge
+  const laneAdj = new Map([...declared.keys()].map((c) => [c, []]));
+  for (const e of MODEL.edges) {
+    const da = declared.get(e.a), db = declared.get(e.b);
+    if (!da || !db || da.value !== db.value) continue;
+    const pa = markerPos.get(e.a), pb = markerPos.get(e.b);
+    if (!pa || !pb) continue;
+    const col = laneColor(da.value);
+    const m = tube(pa, pb, 0.9, new THREE.MeshStandardMaterial({
+      color: col, emissive: col, emissiveIntensity: DECOR ? 0.8 : 0.35, roughness: 0.4, transparent: true, opacity: 0.9 }));
+    G.sections.add(m);
+    pickables.push({ mesh: m, info: { type: "sectionEdge", edge: e, value: da.value } });
+    laneAdj.get(e.a).push(e.b); laneAdj.get(e.b).push(e.a);
+  }
+  // global-section check among declared values: one lane component spanning ALL cover contexts
+  let globalValue = null;
+  if (declared.size === MODEL.contexts.length && values.length >= 1) {
+    const start = MODEL.contexts[0] && MODEL.contexts[0].id;
+    if (start && declared.has(start)) {
+      const seen = new Set([start]); const q = [start];
+      while (q.length) { const c = q.pop(); for (const nb of laneAdj.get(c) || []) if (!seen.has(nb)) { seen.add(nb); q.push(nb); } }
+      if (seen.size === MODEL.contexts.length) globalValue = declared.get(start).value;
+    }
+  }
+  for (const v of values) {
+    const pts = [...declared.entries()].filter(([, d]) => d.value === v).map(([c]) => markerPos.get(c)).filter(Boolean);
+    if (!pts.length) continue;
+    const left = pts.reduce((a, b) => (a.x < b.x ? a : b));
+    const isGlobal = v === globalValue;
+    const lab = makeLabel(v.replace(/^section=/, "") + (isGlobal ? T({ math: " · global section", eng: " · holds everywhere" }) : ""),
+      { color: isGlobal ? "#a8f0e6" : "#cdd9ec", scale: 0.85, bg: isGlobal ? "rgba(6,28,26,0.8)" : "rgba(8,12,20,0.7)" });
+    lab.position.copy(left).add(new THREE.Vector3(-16, 5, 0));
+    G.sections.add(lab);
+  }
+}
+
 function buildVerdict() {
   const box = new THREE.Box3().setFromObject(root);
   const center = box.getCenter(new THREE.Vector3());
@@ -1248,6 +1523,12 @@ const SCENES = {
          eng: "Modules agree pairwise — do they stay consistent around every loop? Where does it break?" },
     show: { cells: 1, atoms: 1, struts: 1, faces: 1, seam: 1, labels: 1, verdict: 1 },
   },
+  sections: {
+    title: { math: "Étale space / sections", eng: "Section lanes" },
+    q: { math: "Which declared sections extend across the cover — and is there a global one?",
+         eng: "Which declared conventions hold where — and where do they break off?" },
+    show: { cells: 1, struts: 1, sections: 1, labels: 1, verdict: 0 },
+  },
   curvature: {
     title: { math: "Curvature / Hodge debt", eng: "Stress concentration" },
     q: { math: "Where does curvature concentrate? (analytic reading, not a verdict)",
@@ -1292,6 +1573,11 @@ function applyScene(id, opts = {}) {
   // silence note when a scene's measured content is absent
   noteSilence(id);
   applyLayerToggles();
+  // twist view swaps the seam (and the atom clutter) for the double cover inside
+  // the gluing scene; on packet/derivation disagreement it stays silent (packet is
+  // authoritative). Runs after layer toggles so the swap is not overridden.
+  G.twist.visible = id === "gluing" && TWIST && TWIST_STATE.agree && G.twist.children.length > 0;
+  if (G.twist.visible) { G.seam.visible = false; G.atoms.visible = false; G.faces.visible = false; }
   if (!opts.keepCamera) frameScene(id);   // sequence playback keeps the camera stable across frames
   updateStatus();
 }
@@ -1306,8 +1592,12 @@ function noteSilence(id) {
     { silent = true; msg = "No period / Stokes reading in this packet — nothing is drawn on this lane. (silence)"; }
   if (id === "forbidden" && !(MODEL && (MODEL.cages.length || MODEL.repairs.length)))
     { silent = true; msg = "No forbidden-support generators were projected under this profile — nothing is drawn here. (silence, not a flatness verdict)"; }
-  if (id === "gluing" && MODEL && !MODEL.cocycle.visible && MODEL.isZero)
+  if (id === "gluing" && MODEL && !MODEL.cocycle.visible && MODEL.isZero && !TWIST)
     { silent = true; msg = "No measured H¹ obstruction — the restriction loop closes. NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE."; }
+  if (id === "gluing" && MODEL && TWIST && !TWIST_STATE.agree)
+    { silent = true; msg = "Twist view is silent: the display derivation disagreed with the packet verdict — the packet is authoritative."; }
+  if (id === "sections" && MODEL && !(G.sections.userData.declaredCount > 0))
+    { silent = true; msg = "No section values were declared in this ArchMap — nothing to lift. (silence, not an empty-sheaf verdict)"; }
   document.getElementById("st-boundary").textContent = silent ? msg : (MODEL ? MODEL.boundary : "");
 }
 
@@ -1643,6 +1933,34 @@ function showDetail(info) {
     rows = [["signed curvature", info.cell.signedCurvature], ["cochain value", info.cell.cochainValue],
       ["status", info.cell.measurementStatus || "proxy"]];
     badge = `<span class="badge analytic">analytic relief — sign of local deviation</span>`;
+  } else if (info.type === "twistNode") {
+    title = `${info.ctx.id} · ${T({ math: `lift ${info.sheet}`, eng: `choice ${info.sheet ? "B" : "A"}` })}`;
+    kind = T({ math: "double cover node", eng: "one of the two consistent choices" });
+    rows = [["context", info.ctx.id], ["sheet", info.sheet]];
+    badge = info.twisted
+      ? `<span class="badge nonzero">${T({ math: "cover connected — [c] ≠ 0", eng: "walking a loop swaps the choice — no global pick exists" })}</span>`
+      : `<span class="badge zero">${T({ math: "cover splits — [c] = 0", eng: "the choice is globally consistent" })}</span>`;
+  } else if (info.type === "twistEdge") {
+    title = info.edge.id;
+    kind = T({ math: "double cover edge pair", eng: "shared boundary, lifted to the two sheets" });
+    rows = [["cochain value", info.crossed ? 1 : 0]];
+    badge = info.crossed
+      ? `<span class="badge nonzero">${T({ math: "c(e) = 1 — sheets cross", eng: "neighbors disagree here: one side forces the flipped choice" })}</span>`
+      : `<span class="badge silent">${T({ math: "c(e) = 0 — sheets parallel", eng: "neighbors agree across this boundary" })}</span>`;
+    extra = conventionRows(info.edge.support,
+      T({ math: "Mismatch support values", eng: "The disagreeing declarations" }));
+  } else if (info.type === "sectionPoint") {
+    const anc = MODEL.anchorByAtom.get(info.atomId) || {};
+    title = String(info.value).replace(/^section=/, "");
+    kind = T({ math: "section value over a context", eng: "declared convention in this module" });
+    rows = [["context", info.ctxId], ["declared value", info.value]];
+    const src = sourceRows(anc.sourceSamples);
+    if (src) extra = `<div class="sec-h">${T({ math: "Source landing", eng: "Where in the code" })}</div>${src}`;
+  } else if (info.type === "sectionEdge") {
+    title = String(info.value).replace(/^section=/, "");
+    kind = T({ math: "section lane edge", eng: "the convention extends across this boundary" });
+    rows = [["edge", info.edge.id], ["value", info.value]];
+    badge = `<span class="badge zero">${T({ math: "equal declared values on both sides", eng: "both modules declare the same convention" })}</span>`;
   }
   el.innerHTML = `<div class="kind">${kind}</div><h3>${escapeHtml(title)}</h3>${badge}
     <dl>${rows.map(([k, v]) => `<dt>${escapeHtml(String(k))}</dt><dd>${escapeHtml(String(v))}</dd>`).join("")}</dl>
@@ -1678,7 +1996,10 @@ function renderLegend() {
       math: "analytic reading (curvature / spectrum / period), never a verdict.",
       eng: "advisory reading (stress / spectrum / cycles), never a pass/fail claim." })}</div></div>
     <div class="note"><b>Atom families</b> — distinct shape <i>and</i> hue (sphere = component, octahedron = relation, …):<br>${fams}</div>
-    <div class="note"><b>Measured vs decoration</b> — sizes, thicknesses, amber marks and which edges exist are <i>measured</i>; absolute positions are a <i>layout</i> embedding of the measured adjacency; glow, pulse, arcs and probes are <i>decoration</i>. Turn "Decoration" off to draw measured geometry only; click any element for its per-channel breakdown.</div>
+    <div class="note"><b>Reading distances</b> — ${T({
+      math: "X,Z are a spectral embedding of the measured nerve: in-component closeness ≈ diffusion closeness, unique up to isometry/degeneracy. Y is restriction-poset depth (deeper overlaps sit lower). Cross-component distance and absolute scale carry no meaning.",
+      eng: "horizontally close = strongly coupled in the measured structure (within one connected part). Lower = a more deeply shared overlap. Distances between disconnected parts mean nothing." })}</div>
+    <div class="note"><b>Measured vs decoration</b> — sizes, thicknesses, amber marks and which edges exist are <i>measured</i>; horizontal coordinates are <i>derived</i> from the measured nerve spectrum and height from the measured poset; glow, pulse, arcs and probes are <i>decoration</i>. Turn "Decoration" off to draw measured geometry only; click any element for its per-channel breakdown.</div>
     <div class="note">The viewer adds no new structural verdict.</div>`;
 }
 
@@ -1964,6 +2285,15 @@ termChip.addEventListener("click", () => {
   }
 });
 renderTermChip();
+
+const twistChip = document.getElementById("twist-toggle");
+twistChip.classList.toggle("on", TWIST);
+twistChip.addEventListener("click", () => {
+  TWIST = !TWIST;
+  localStorage.setItem("archview.twist", TWIST ? "on" : "off");
+  twistChip.classList.toggle("on", TWIST);
+  if (MODEL) applyScene("gluing", { keepCamera: currentScene === "gluing" });
+});
 
 const decorToggle = document.getElementById("decor-toggle");
 decorToggle.checked = DECOR;
