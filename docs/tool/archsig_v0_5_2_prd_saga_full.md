@@ -368,5 +368,6 @@ PR-7 → PR-8。PR-4 は PR-2 と PR-3 の両方に依存する。
   v0.5.2 完了で V-C(SAGA ビュー)の計測前提が揃う。
 - **repair synthesis・最小修復・extraction completeness の主張** — 恒久非主張
   (claim boundary。hitting set は組合せ的 repair target、原則5.3 併記)。
-- **corpus M3 / 外部ドッグフーディング第 2 巡** — v0.5.1 後のドッグフーディングの結果を見て別途。
+- **corpus M3 / 外部ドッグフーディング** — v0.5.2 完成後(ユーザー決定 2026-07-12:
+  順序は v0.5.1 → v0.5.2 → ドッグフーディング。SAGA 込みの計測器を実戦投入する)。
 - **互換機構・migrate** — 恒久非目標(裁定10 / 裁定12)。
