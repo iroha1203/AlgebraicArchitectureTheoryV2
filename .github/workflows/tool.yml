@@ -154,7 +154,7 @@ jobs:
             --out "$fieldsig_dir/operation-support-estimate-law-surface.json"
 
           jq -e '
-            ([.descriptorRef.sourceRefIds[]? | startswith("archsigMeasurementStructuralLaw:surface:cech-surface-v051")] | any)
+            ([.descriptorRef.sourceRefIds[]? | startswith("archsigMeasurementLawSurface:input:law_surface_ag_v051.json")] | any)
           ' "$fieldsig_dir/operation-support-estimate-law-surface.json"
 
           jq -e '

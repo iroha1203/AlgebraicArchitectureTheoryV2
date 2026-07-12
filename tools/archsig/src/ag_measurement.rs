@@ -2329,7 +2329,16 @@ fn evaluate_section_factorization_v1(
             .iter()
             .filter(|support| {
                 support.support.iter().all(|variable| {
-                    assignment.as_ref().unwrap().assigned.get(variable) == Some(&true)
+                    let assignment_variable = execution_plan
+                        .and_then(|plan| plan.section_variable_aliases.as_ref())
+                        .and_then(|aliases| aliases.get(variable))
+                        .unwrap_or(variable);
+                    assignment
+                        .as_ref()
+                        .unwrap()
+                        .assigned
+                        .get(assignment_variable)
+                        == Some(&true)
                 })
             })
             .cloned()
@@ -9624,7 +9633,7 @@ fn section_forbidden_supports_from_plan(
         .ok_or_else(|| "section execution plan has no forbidden supports".to_string())?;
     let mut supports = Vec::new();
     for (index, support) in declared.iter().enumerate() {
-        let observed_support_variables = support
+        let mut observed_support_variables = support
             .iter()
             .map(|variable| {
                 plan.section_variable_aliases
@@ -9634,6 +9643,9 @@ fn section_forbidden_supports_from_plan(
                     .unwrap_or_else(|| variable.clone())
             })
             .collect::<Vec<_>>();
+        observed_support_variables.sort();
+        let mut declared_support = support.clone();
+        declared_support.sort();
         let Some(observed_support) = observed
             .iter()
             .find(|candidate| candidate.support == observed_support_variables)
@@ -9647,7 +9659,7 @@ fn section_forbidden_supports_from_plan(
                 "law-surface:{}:{}:forbidden:{}",
                 plan.surface_id, plan.selected_law_id, index
             ),
-            support: support.clone(),
+            support: declared_support,
             source_refs,
         });
     }

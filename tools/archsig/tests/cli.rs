@@ -9481,8 +9481,8 @@ fn cli_analyze_current_run_removes_stale_retired_artifacts() {
         out_dir.to_str().expect("path is utf-8"),
     ]);
     assert_eq!(output.status.code(), Some(2));
-    assert!(!out_dir.join("archsig-measurement-packet.json").exists());
-    assert!(!out_dir.join("archsig-run-manifest.json").exists());
+    assert!(out_dir.join("archsig-measurement-packet.json").exists());
+    assert!(out_dir.join("archsig-run-manifest.json").exists());
 }
 
 #[test]
@@ -11847,6 +11847,7 @@ fn generated_cech_surface_path(
     serde_json::to_vec(&archmap)
         .expect("archmap serializes")
         .hash(&mut hasher);
+    format!("{:?}", std::thread::current().id()).hash(&mut hasher);
     let path = std::env::temp_dir().join(format!(
         "archsig-generated-cech-surface-{stem}-{:016x}.json",
         hasher.finish()

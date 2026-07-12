@@ -773,9 +773,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let repair_plan_validation_path = out_dir.join("repair-plan-validation.json");
             let law_surface_validation_path = out_dir.join("law-surface-validation.json");
 
-            std::fs::create_dir_all(&out_dir)?;
-            remove_analyze_success_artifacts(&out_dir)?;
-
             let (archmap_preflight, archmap_failed) =
                 validate_archmap_command_input(&archmap, &None, &[], &[], &None)?;
             let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
@@ -863,6 +860,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 contract_site_cover_digest(&archmap_contract_input)?,
                 stamp,
             )?;
+            std::fs::create_dir_all(&out_dir)?;
+            remove_analyze_success_artifacts(&out_dir)?;
             write_json(
                 Some(archmap_validation_path),
                 &with_run_contract(&archmap_preflight, &run_contract)?,
@@ -918,6 +917,9 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "conclusionCode": ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT,
                         "archmapInputPath": archmap_input_ref,
                         "lawPolicyInputPath": law_policy_input_ref,
+                        "lawSurfaceInputPath": law_surface_input_ref,
+                        "measurementProfileInputPath": measurement_profile_input_ref,
+                        "repairPlanInputPath": repair_plan_input_ref,
                         "measurementProfileInputPath": measurement_profile_input_ref,
                         "rawArtifactRetention": "not-computed",
                         "generatedArtifacts": failure_generated_artifacts,
@@ -1012,6 +1014,9 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "conclusionCode": "ANALYSIS_FAILED_BEFORE_MEASUREMENT",
                             "archmapInputPath": archmap_input_ref,
                             "lawPolicyInputPath": law_policy_input_ref,
+                            "lawSurfaceInputPath": law_surface_input_ref,
+                            "measurementProfileInputPath": measurement_profile_input_ref,
+                            "repairPlanInputPath": repair_plan_input_ref,
                             "measurementProfileInputPath": measurement_profile_input_ref,
                             "rawArtifactRetention": "not-computed",
                             "generatedArtifacts": runtime_failure_generated_artifacts,
@@ -1118,6 +1123,9 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "conclusionCode": null,
                     "archmapInputPath": archmap_input_ref,
                     "lawPolicyInputPath": law_policy_input_ref,
+                    "lawSurfaceInputPath": law_surface_input_ref,
+                    "measurementProfileInputPath": measurement_profile_input_ref,
+                    "repairPlanInputPath": repair_plan_input_ref,
                     "measurementProfileInputPath": measurement_profile_input_ref,
                     "rawArtifactRetention": "omitted",
                     "generatedArtifacts": measurement_generated_artifacts,

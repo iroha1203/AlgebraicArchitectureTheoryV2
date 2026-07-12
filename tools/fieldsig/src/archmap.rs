@@ -895,6 +895,22 @@ fn archsig_measurement_packet_sft_source_refs(
     }
     refs.extend(
         packet
+            .get("suppliedData")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .filter(|entry| {
+                entry.get("kind").and_then(|value| value.as_str()) == Some("law-equation-surface")
+            })
+            .filter_map(|entry| {
+                entry
+                    .get("sourceArtifactRef")
+                    .and_then(|value| value.as_str())
+                    .map(|source| format!("archsigMeasurementLawSurface:{source}"))
+            }),
+    );
+    refs.extend(
+        packet
             .get("structuralVerdict")
             .and_then(|value| value.as_array())
             .into_iter()
