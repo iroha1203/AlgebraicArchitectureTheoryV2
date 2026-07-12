@@ -1,5 +1,6 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, hash_map::DefaultHasher};
 use std::fs;
+use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -2840,7 +2841,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             {
                 "suppliedId": "supplied:law-surface",
                 "kind": "law-equation-surface",
-                "sourceArtifactRef": "input:law_surface_ag_v051.json",
+                "sourceArtifactRef": "input:law_surface_cech_h1_v051.json",
                 "conformance": {
                     "status": "validated",
                     "checkRef": "law-equation-surface/v0.5.1-validation",
@@ -9538,7 +9539,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.0");
-    assert_eq!(manifest["runId"], "run:6fb28cff9d10");
+    assert_eq!(manifest["runId"], "run:3556f544c1ee");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "10a5ab2829fc8377227d836a75f5e850b128f7c27823fbaa2ce713415c1f86c0"
@@ -9689,7 +9690,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:6fb28cff9d10-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:3556f544c1ee-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -10002,7 +10003,7 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
     let root_out = temp_dir("ag-measurement-cech-execution-plan");
     let surface_path = root.join("law_surface_cech_section_v051.json");
     let (mut law_policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
-    law_policy["policies"][0]["law"] = json!("law:cech-overlap-equation");
+    law_policy["policies"][0]["law"] = json!("ag.cech-obstruction");
     let policy_path = root_out.join("law_policy_cech_execution_plan.json");
     write_test_policy_and_profile(&policy_path, law_policy, profile);
 
@@ -11658,10 +11659,8 @@ fn run_sig0_output(args: &[&str]) -> std::process::Output {
         .collect::<Vec<_>>();
     if owned_args.first().is_some_and(|arg| arg == "analyze")
         && !owned_args.iter().any(|arg| arg == "--law-surface")
-        && owned_args
-            .windows(2)
-            .find(|window| window[0] == "--law-policy")
-            .is_some_and(|window| {
+        && owned_args.windows(2).any(|window| {
+            window[0] == "--law-policy" && {
                 let policy = read_json(Path::new(&window[1]));
                 policy["policies"].as_array().is_some_and(|entries| {
                     entries.iter().any(|entry| {
@@ -11676,13 +11675,138 @@ fn run_sig0_output(args: &[&str]) -> std::process::Output {
                         )
                     })
                 })
-            })
+            }
+        })
     {
-        let law_surface = ag_measurement_root().join("law_surface_ag_v051.json");
+        let archmap_name = owned_args
+            .windows(2)
+            .find(|window| window[0] == "--archmap")
+            .map(|window| window[1].as_str())
+            .unwrap_or_default();
+        let law_surface_path = if archmap_name.contains("practical-rust-service") {
+            if archmap_name.contains("archmap_head") || archmap_name.contains("archmap_repaired") {
+                ag_measurement_root().join("law_surface_practical_v051.json")
+            } else {
+                ag_measurement_root().join("law_surface_practical_base_v051.json")
+            }
+        } else if archmap_name.contains("cech_forest_no_triple")
+            || archmap_name.contains("duplicate_surj_witness")
+        {
+            ag_measurement_root().join("law_surface_cech_forest_v051.json")
+        } else if archmap_name.contains("positive_capacity_no_class") {
+            ag_measurement_root().join("law_surface_cech_positive_capacity_v051.json")
+        } else if archmap_name.contains("cech_h1_visible")
+            || archmap_name.contains("unanchored_cech")
+        {
+            ag_measurement_root().join("law_surface_cech_h1_v051.json")
+        } else if let Some(generated) = generated_cech_surface_path(
+            owned_args
+                .windows(2)
+                .find(|window| window[0] == "--archmap")
+                .map(|window| Path::new(window[1].as_str())),
+            owned_args
+                .windows(2)
+                .find(|window| window[0] == "--measurement-profile")
+                .map(|window| Path::new(window[1].as_str())),
+        ) {
+            generated
+        } else {
+            ag_measurement_root().join("law_surface_ag_v051.json")
+        };
         owned_args.push("--law-surface".to_string());
-        owned_args.push(law_surface.to_str().expect("path is utf-8").to_string());
+        owned_args.push(
+            law_surface_path
+                .to_str()
+                .expect("path is utf-8")
+                .to_string(),
+        );
     }
     run_sig0_raw_output(&owned_args.iter().map(String::as_str).collect::<Vec<_>>())
+}
+
+fn generated_cech_surface_path(
+    archmap_path: Option<&Path>,
+    profile_path: Option<&Path>,
+) -> Option<PathBuf> {
+    let archmap_path = archmap_path?;
+    let profile_path = profile_path?;
+    let archmap = serde_json::from_slice::<Value>(&fs::read(archmap_path).ok()?).ok()?;
+    let profile = serde_json::from_slice::<Value>(&fs::read(profile_path).ok()?).ok()?;
+    let cover_ref = profile["coverRef"].as_str()?;
+    let selected_contexts = archmap["covers"]
+        .as_array()?
+        .iter()
+        .find(|cover| cover["id"] == cover_ref || cover["coverId"] == cover_ref)
+        .and_then(|cover| cover["contexts"].as_array())
+        .map(|contexts| {
+            contexts
+                .iter()
+                .filter_map(Value::as_str)
+                .collect::<BTreeSet<_>>()
+        })?;
+    let mut edges = BTreeSet::new();
+    for context in archmap["contexts"].as_array()? {
+        let source = context["id"].as_str()?;
+        if !selected_contexts.contains(source) {
+            continue;
+        }
+        for target in context["restrictsTo"].as_array().into_iter().flatten() {
+            let target = target.as_str()?;
+            if selected_contexts.contains(target) {
+                let mut edge = [source.to_string(), target.to_string()];
+                edge.sort();
+                edges.insert(edge);
+            }
+        }
+    }
+    if edges.is_empty() {
+        return None;
+    }
+    let witness_variables = edges
+        .iter()
+        .enumerate()
+        .map(|(index, edge)| {
+            json!({
+                "variable": format!("e_{index}"),
+                "binding": {
+                    "edge": edge,
+                    "axis": "cech",
+                    "predicate": "sectionValue"
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    let forbidden_support_generators = (0..edges.len())
+        .map(|index| json!({"support": [format!("e_{index}")]}))
+        .collect::<Vec<_>>();
+    let stem = archmap_path
+        .file_stem()
+        .and_then(|value| value.to_str())
+        .unwrap_or("archmap");
+    let mut hasher = DefaultHasher::new();
+    serde_json::to_vec(&archmap)
+        .expect("archmap serializes")
+        .hash(&mut hasher);
+    let path = std::env::temp_dir().join(format!(
+        "archsig-generated-cech-surface-{stem}-{:016x}.json",
+        hasher.finish()
+    ));
+    fs::write(
+        &path,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "law-equation-surface/v0.5.1",
+            "id": format!("law-surface:generated-{stem}"),
+            "laws": [{
+                "lawId": "ag.cech-obstruction",
+                "conditionType": "closed-equational",
+                "witnessVariables": witness_variables,
+                "forbiddenSupportGenerators": forbidden_support_generators
+            }]
+        }))
+        .expect("generated law surface serializes"),
+    )
+    .expect("generated law surface writes");
+    Some(path)
 }
 
 fn run_sig0_raw_output(args: &[&str]) -> std::process::Output {

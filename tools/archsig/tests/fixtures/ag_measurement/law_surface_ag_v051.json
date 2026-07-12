@@ -103,9 +103,30 @@
       ]
     },
     {
-      "lawId": "cech-descent",
-      "conditionType": "descent",
-      "evaluatorRef": "ag.cech-obstruction"
+      "lawId": "ag.cech-obstruction",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "e_order_shared",
+          "binding": {
+            "edge": ["ctx:order", "ctx:shared"],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        },
+        {
+          "variable": "e_inventory_shared",
+          "binding": {
+            "edge": ["ctx:inventory", "ctx:shared"],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["e_order_shared"] },
+        { "support": ["e_inventory_shared"] }
+      ]
     },
     {
       "lawId": "ag.section-factorization",

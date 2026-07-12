@@ -3,7 +3,7 @@
   "id": "law-surface:cech-section-v051",
   "laws": [
     {
-      "lawId": "law:cech-overlap-equation",
+      "lawId": "ag.cech-obstruction",
       "conditionType": "closed-equational",
       "witnessVariables": [
         {

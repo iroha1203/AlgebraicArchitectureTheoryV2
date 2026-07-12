@@ -1059,6 +1059,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "validationReports": {
                         "archmap": "archmap-validation.json",
                         "lawPolicy": "law-policy-validation.json",
+                        "lawSurface": law_surface_preflight.as_ref().map(|_| "law-surface-validation.json"),
                         "repairPlan": repair_plan_preflight.as_ref().map(|_| "repair-plan-validation.json"),
                         "analysis": "archsig-analysis-validation.json"
                     },
@@ -1104,6 +1105,7 @@ fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Err
         "archsig-insight-report.json".to_string(),
         "archsig-insight-brief.md".to_string(),
         "archsig-analysis-validation.json".to_string(),
+        "law-surface-validation.json".to_string(),
         "repair-plan-validation.json".to_string(),
     ];
     artifacts.extend([

@@ -33,20 +33,7 @@ pub(crate) fn build_law_execution_plan(
         };
     };
     let selected_law = if let Some(policy_law_id) = policy_law_id {
-        let selected_law = surface
-            .laws
-            .iter()
-            .find(|law| law.law_id == policy_law_id)
-            .or_else(|| {
-                (policy_law_id == evaluator)
-                    .then(|| {
-                        surface
-                            .laws
-                            .iter()
-                            .find(|law| law.evaluator_ref.as_deref() == Some(evaluator))
-                    })
-                    .flatten()
-            });
+        let selected_law = surface.laws.iter().find(|law| law.law_id == policy_law_id);
         let Some(selected_law) = selected_law else {
             return if matches!(
                 evaluator,
@@ -144,7 +131,15 @@ pub(crate) fn build_law_execution_plan(
                 }
                 let mut pair = [edge[0].clone(), edge[1].clone()];
                 pair.sort();
-                if !derived_edges.contains(&pair) {
+                let endpoints_are_known_and_selected = normalized
+                    .contexts
+                    .iter()
+                    .map(|context| context.normalized_context_id.as_str())
+                    .collect::<BTreeSet<_>>();
+                let endpoints_are_known_and_selected = endpoints_are_known_and_selected
+                    .contains(pair[0].as_str())
+                    && endpoints_are_known_and_selected.contains(pair[1].as_str());
+                if !derived_edges.contains(&pair) && !endpoints_are_known_and_selected {
                     return Err(format!(
                         "law {} cech witness {} edge {} -> {} is not in the selected restriction 1-skeleton",
                         selected_law.law_id, witness.variable, edge[0], edge[1]

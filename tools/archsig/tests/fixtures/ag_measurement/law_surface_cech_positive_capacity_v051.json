@@ -1,0 +1,24 @@
+{
+  "schema": "law-equation-surface/v0.5.1",
+  "id": "law-surface:cech-positive-capacity-v051",
+  "laws": [
+    {
+      "lawId": "ag.cech-obstruction",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        { "variable": "e_top_left", "binding": { "edge": ["ctx:top", "ctx:left"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_top_right", "binding": { "edge": ["ctx:top", "ctx:right"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_left_bottom", "binding": { "edge": ["ctx:left", "ctx:bottom"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_right_bottom", "binding": { "edge": ["ctx:right", "ctx:bottom"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_top_bottom", "binding": { "edge": ["ctx:top", "ctx:bottom"], "axis": "cech", "predicate": "sectionValue" } }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["e_top_left"] },
+        { "support": ["e_top_right"] },
+        { "support": ["e_left_bottom"] },
+        { "support": ["e_right_bottom"] },
+        { "support": ["e_top_bottom"] }
+      ]
+    }
+  ]
+}

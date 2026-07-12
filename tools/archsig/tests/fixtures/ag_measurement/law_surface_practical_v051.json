@@ -1,0 +1,42 @@
+{
+  "schema": "law-equation-surface/v0.5.1",
+  "id": "law-surface:practical-rust-v051",
+  "laws": [
+    {
+      "lawId": "ag.cech-obstruction",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        { "variable": "e_domain_shared", "binding": { "edge": ["ctx:domain", "ctx:shared"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_ports_shared", "binding": { "edge": ["ctx:ports", "ctx:shared"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_application_ports", "binding": { "edge": ["ctx:application", "ctx:ports"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_application_domain", "binding": { "edge": ["ctx:application", "ctx:domain"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_application_settlement", "binding": { "edge": ["ctx:application", "ctx:settlement"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_application_shared", "binding": { "edge": ["ctx:application", "ctx:shared"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_infrastructure_ports", "binding": { "edge": ["ctx:infrastructure", "ctx:ports"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_infrastructure_settlement", "binding": { "edge": ["ctx:infrastructure", "ctx:settlement"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_infrastructure_shared", "binding": { "edge": ["ctx:infrastructure", "ctx:shared"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_policy_shared", "binding": { "edge": ["ctx:policy", "ctx:shared"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_runtime_application", "binding": { "edge": ["ctx:runtime", "ctx:application"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_runtime_infrastructure", "binding": { "edge": ["ctx:runtime", "ctx:infrastructure"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_runtime_shared", "binding": { "edge": ["ctx:runtime", "ctx:shared"], "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_settlement_shared", "binding": { "edge": ["ctx:settlement", "ctx:shared"], "axis": "cech", "predicate": "sectionValue" } }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["e_domain_shared"] },
+        { "support": ["e_ports_shared"] },
+        { "support": ["e_application_ports"] },
+        { "support": ["e_application_domain"] },
+        { "support": ["e_application_settlement"] },
+        { "support": ["e_application_shared"] },
+        { "support": ["e_infrastructure_ports"] },
+        { "support": ["e_infrastructure_settlement"] },
+        { "support": ["e_infrastructure_shared"] },
+        { "support": ["e_policy_shared"] },
+        { "support": ["e_runtime_application"] },
+        { "support": ["e_runtime_infrastructure"] },
+        { "support": ["e_runtime_shared"] },
+        { "support": ["e_settlement_shared"] }
+      ]
+    }
+  ]
+}

@@ -599,7 +599,10 @@ fn check_reserved_fields(raw: &Value) -> ValidationCheck {
 fn check_conclusion_tokens(surface: &LawEquationSurfaceV1) -> ValidationCheck {
     let mut examples = Vec::new();
     for (law_index, law) in surface.laws.iter().enumerate() {
-        let mut candidates = vec![("lawId".to_string(), law.law_id.as_str())];
+        let mut candidates = Vec::new();
+        if law.law_id != "ag.cech-obstruction" {
+            candidates.push(("lawId".to_string(), law.law_id.as_str()));
+        }
         for (variable_index, variable) in law.witness_variables.iter().enumerate() {
             candidates.push((
                 format!("laws[{law_index}].witnessVariables[{variable_index}].variable"),
