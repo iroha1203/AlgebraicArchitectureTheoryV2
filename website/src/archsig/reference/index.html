@@ -2,8 +2,8 @@
 {
   "layout": "base.njk",
   "title": "ArchSig Reference",
-  "description": "ArchSig command, schema, and artifact reference for reproducible v0.5.0 analyze runs.",
-  "order": 41,
+  "description": "All ten CLI commands, exit codes, the schema catalog, the no-compatibility policy, and troubleshooting for ArchSig v0.5.0.",
+  "order": 42,
   "llmsLabel": "ArchSig Reference",
   "navSection": "archsig"
 }
@@ -12,100 +12,99 @@
       <section class="article-hero section-band">
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Reference</span></nav>
-          <p class="eyebrow">Commands and artifacts</p>
-          <h1>Reproduce an ArchSig run.</h1>
-          <p class="lede">Use this page when you need exact commands, artifact names, and schema boundaries for an ArchSig v0.5.0 analysis.</p>
+          <p class="eyebrow">Commands, schemas, exit codes</p>
+          <h1>The complete v0.5.0 surface.</h1>
+          <p class="lede">Ten subcommands, four exit codes, one contract version. This page is the lookup surface: what each command takes and emits, how CI should interpret exits, which schemas are current, and what to do when a run refuses your input.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#primary">Primary workflow</a></li><li><a href="#outputs">Workflow outputs</a></li><li><a href="#commands">Command surfaces</a></li><li><a href="#schemas">Artifact schemas</a></li><li><a href="#boundaries">Reference boundaries</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#commands">Commands</a></li><li><a href="#exit-codes">Exit codes</a></li><li><a href="#schemas">Schema catalog</a></li><li><a href="#compatibility">Compatibility policy</a></li><li><a href="#troubleshooting">Troubleshooting</a></li></ol></nav>
 {% include "series-nav.njk" %}
-            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="../manual/">Manual</a></li><li><a href="./" aria-current="page">Reference</a></li></ul></div>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../concepts/">Concepts</a></li><li><a href="../contracts/">Contracts</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../manual/">Manual</a></li><li><a href="./" aria-current="page">Reference</a></li><li><a href="../archview/">ArchView</a></li></ul></div>
           </aside>
           <div class="article-main">
-            <section id="primary" class="article-section">
-              <h2>Primary workflow</h2>
-              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes <code>archmap/v0.5.0</code>, <code>law-policy/v0.5.0</code>, and a separate <code>measurement-profile/v0.5.0</code>, then writes the measurement packet, summary, insight report, viewer data, validation reports, and run manifest.</p>
-              <figure class="code-panel">
-                <figcaption>Run analysis</figcaption>
-                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
-  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
-  --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --out-dir .archsig/analyze</code></pre>
-              </figure>
-              <p><code>archsig-analysis-summary.json</code> is the compact first reading surface. Read it together with <code>archsig-measurement-packet.json</code>, <code>archsig-insight-report.json</code>, <code>archsig-atom-viewer-data.json</code>, and <code>archsig-run-manifest.json</code> when source refs or measurement boundaries need inspection.</p>
-            </section>
-            <section id="outputs" class="article-section">
-              <h2>Workflow outputs</h2>
-              <ul class="status-list">
-                <li><strong><code>archmap-validation.json</code></strong><span>Validation report for the supplied <code>archmap/v0.5.0</code>.</span></li>
-                <li><strong><code>law-policy-validation.json</code></strong><span>Validation report for the selected <code>law-policy/v0.5.0</code>.</span></li>
-                <li><strong><code>normalized-archmap.json</code></strong><span>Deterministic finite-poset-site normalization of valid ArchMap input.</span></li>
-                <li><strong><code>archsig-measurement-packet.json</code></strong><span>Current AG measurement handoff with structural verdicts, computed invariants, analytic readings, assumptions, and claim boundaries.</span></li>
-                <li><strong><code>archsig-analysis-summary.json</code></strong><span>Conclusion-first compact reading surface with findings, action queue, measurement basis, and boundaries.</span></li>
-                <li><strong><code>archsig-insight-report.json</code></strong><span>Prioritized inspection queue and bounded reading guide derived from the measurement run.</span></li>
-                <li><strong><code>archsig-insight-brief.md</code></strong><span>Human-readable brief for the same bounded insight report.</span></li>
-                <li><strong><code>archsig-atom-viewer-data.json</code></strong><span>Bounded ArchView projection that adds no structural verdict.</span></li>
-                <li><strong><code>archsig-run-manifest.json</code></strong><span>Generated artifact list, input digests, validation summary, and run metadata.</span></li>
-                <li><strong><code>archsig-analysis-validation.json</code></strong><span>Validation report for the generated measurement packet.</span></li>
-              </ul>
-            </section>
             <section id="commands" class="article-section">
-              <h2>Command surfaces</h2>
+              <h2>Commands</h2>
+              <p>In a repository checkout, prefix each command with <code>cargo run --manifest-path tools/archsig/Cargo.toml --</code>; with the release bundle, call <code>bin/archsig</code> directly. <code>archsig &lt;command&gt; --help</code> prints the authoritative flag list.</p>
+              <h3>The measurement workflow</h3>
               <div class="article-table">
                 <table>
-                  <thead><tr><th scope="col">Command</th><th scope="col">Use it for</th></tr></thead>
+                  <thead><tr><th scope="col">Command</th><th scope="col">Does</th><th scope="col">Key flags</th></tr></thead>
                   <tbody>
-                    <tr><td><code>archmap</code></td><td>Validate an <code>archmap/v0.5.0</code>.</td></tr>
-                    <tr><td><code>law-policy</code></td><td>Validate a selected <code>law-policy/v0.5.0</code> evaluator selector.</td></tr>
-                    <tr><td><code>measurement-profile</code></td><td>Validate the separate <code>measurement-profile/v0.5.0</code> measurement regime.</td></tr>
-                    <tr><td><code>repair-plan</code></td><td>Validate a supplied <code>archsig-repair-plan/v0.5.0</code> SAGA input.</td></tr>
-                    <tr><td><code>analyze</code></td><td>Run the primary ArchMap plus LawPolicy analysis workflow.</td></tr>
-                    <tr><td><code>compare</code></td><td>Compare two current <code>analyze</code> run directories and compute the ArchMap diff and comparison report.</td></tr>
-                    <tr><td><code>gate</code></td><td>Apply gate policy to a measurement packet and optional comparison report.</td></tr>
-                    <tr><td><code>schema-catalog</code></td><td>Emit the current ArchSig schema catalog.</td></tr>
+                    <tr><td><code>analyze</code></td><td>The primary workflow: validates all inputs, normalizes the evidence, runs the selected evaluators, writes the ten run artifacts.</td><td><code>--archmap</code> <code>--law-policy</code> <code>--measurement-profile</code> <code>--out-dir</code>, optional <code>--repair-plan</code></td></tr>
+                    <tr><td><code>compare</code></td><td>Juxtaposes two run directories at record level; emits <code>archsig-comparison-report.json</code> and <code>archmap-diff.json</code>.</td><td><code>--base-run</code> <code>--head-run</code> <code>--out-dir</code></td></tr>
+                    <tr><td><code>gate</code></td><td>Maps a packet's verdicts to pass / pass_with_boundary / block under your policy. The CI decision surface.</td><td><code>--packet</code> <code>--policy</code> <code>--out</code>, optional <code>--comparison</code></td></tr>
                   </tbody>
                 </table>
               </div>
+              <h3>Input validators</h3>
+              <div class="article-table">
+                <table>
+                  <thead><tr><th scope="col">Command</th><th scope="col">Validates</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>archmap</code></td><td>An <code>archmap/v0.5.0</code> observation artifact; with <code>--scope-manifest</code> / <code>--candidate-packets</code> / <code>--extraction-consistency</code> / <code>--coverage-ledger</code>, also the authoring provenance (see <a href="../contracts/#archmap">Contracts</a>).</td></tr>
+                    <tr><td><code>law-policy</code></td><td>A <code>law-policy/v0.5.0</code> selector against its measurement profile.</td></tr>
+                    <tr><td><code>measurement-profile</code></td><td>A standalone <code>measurement-profile/v0.5.0</code> artifact, including finite bounds against registry hard caps.</td></tr>
+                    <tr><td><code>repair-plan</code></td><td>A standalone <code>archsig-repair-plan/v0.5.0</code> against its ArchMap; fails closed on conclusion tokens, unresolved refs, parity or support inconsistencies.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <h3>Authoring support</h3>
+              <div class="article-table">
+                <table>
+                  <thead><tr><th scope="col">Command</th><th scope="col">Does</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>scope-manifest</code></td><td>Builds the deterministic authoring worklist (paths, hashes, approved globs) that ArchMap surveys start from.</td></tr>
+                    <tr><td><code>extraction-diff</code></td><td>Compares two survey passes' candidate packets by literal match keys; leaves adjudication to the integrator, never auto-adopts.</td></tr>
+                    <tr><td><code>schema-catalog</code></td><td>Prints the machine-readable catalog of every current artifact contract, with per-artifact boundaries and non-conclusions.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section id="exit-codes" class="article-section">
+              <h2>Exit codes</h2>
+              <div class="article-table">
+                <table>
+                  <thead><tr><th scope="col">Code</th><th scope="col">Meaning</th><th scope="col">CI should</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>0</code></td><td>Success. For <code>gate</code>: no rule mapped to block.</td><td>Proceed.</td></tr>
+                    <tr><td><code>1</code></td><td>The command ran and the answer is negative — <code>gate</code> blocked, or a validator found the artifact invalid.</td><td>Fail the check and surface the report.</td></tr>
+                    <tr><td><code>2</code></td><td>Input error before measurement: unreadable file, JSON parse failure, schema mismatch.</td><td>Fail as a configuration error; nothing was measured.</td></tr>
+                    <tr><td><code>3</code></td><td>Internal runtime error.</td><td>Fail and report a bug.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>The distinction between 1 and 2 is worth wiring into CI messages: exit 1 means "your architecture evidence produced a blocking verdict", exit 2 means "your setup is broken" — very different notifications.</p>
             </section>
             <section id="schemas" class="article-section">
-              <h2>Artifact schemas</h2>
-              <div class="article-table">
-                <table>
-                  <thead><tr><th scope="col">Schema</th><th scope="col">Role</th></tr></thead>
-                  <tbody>
-                    <tr><td><code>archmap/v0.5.0</code></td><td>Source-grounded Atom observations, contexts, covers, declared sources, and fixed extraction doctrine.</td></tr>
-                    <tr><td><code>archmap-validation-report/v0.5.0</code></td><td>ArchMap shape, source, atom, context, cover, and finite-poset-site validation.</td></tr>
-                    <tr><td><code>law-policy/v0.5.0</code></td><td>Evaluator selectors, laws, basis refs, scope, severity, and the selected measurement-profile ref.</td></tr>
-                    <tr><td><code>law-policy-validation-report/v0.5.0</code></td><td>LawPolicy selector validation against the evaluator registry.</td></tr>
-                    <tr><td><code>normalized-archmap/v0.5.0</code></td><td>Canonical finite-poset-site normalization for current analysis runs.</td></tr>
-                    <tr><td><code>measurement-profile/v0.5.0</code></td><td>Selected cover, coefficient, witness family, predicates, certificate selector, and verdict discipline.</td></tr>
-                    <tr><td><code>archsig-repair-plan/v0.5.0</code></td><td>Checked SAGA Stage 1 input for an optional repair run.</td></tr>
-                    <tr><td><code>archsig-measurement-packet/v0.5.0</code></td><td>Current AG measurement packet and FieldSig handoff.</td></tr>
-                    <tr><td><code>archsig-boundary-statement/v0.5.0</code></td><td>Typed scoped qualifiers for packet rows and claim boundaries.</td></tr>
-                    <tr><td><code>archsig-gate-policy/v0.5.0</code></td><td>Institutional verdict-to-action mapping for CI decisions.</td></tr>
-                    <tr><td><code>archsig-gate-report/v0.5.0</code></td><td>Gate result preserving the original measurement verdict vocabulary.</td></tr>
-                    <tr><td><code>archmap-diff/v0.5.0</code></td><td>Computed normalized ArchMap differences between two runs.</td></tr>
-                    <tr><td><code>archsig-comparison-report/v0.5.0</code></td><td>Record-level comparison and verdict transitions between two runs.</td></tr>
-                    <tr><td><code>archsig-run-manifest/v0.5.0</code></td><td>Generated artifact list, input digests, validation summary, and run metadata.</td></tr>
-                    <tr><td><code>archsig-atom-viewer-data/v0.5.0</code></td><td>Bounded browser projection for ArchView.</td></tr>
-                  </tbody>
-                </table>
-              </div>
+              <h2>Schema catalog</h2>
+              <p>Every artifact carries a <code>schema</code> field with a single contract version. The current input contracts are <code>archmap/v0.5.0</code>, <code>law-policy/v0.5.0</code>, <code>measurement-profile/v0.5.0</code>, <code>archsig-gate-policy/v0.5.0</code>, and <code>archsig-repair-plan/v0.5.0</code>; the output contracts are <code>archsig-measurement-packet/v0.5.0</code>, <code>archsig-comparison-report/v0.5.0</code>, <code>archsig-gate-report/v0.5.0</code>, <code>archsig-atom-viewer-data/v0.5.0</code>, <code>archsig-run-manifest/v0.5.0</code>, <code>normalized-archmap/v0.5.0</code>, and <code>archmap-diff/v0.5.0</code>.</p>
+              <p>The authoritative, machine-readable list — including each artifact's compatibility boundary and standing non-conclusions — comes from the binary itself:</p>
+              <figure class="code-panel">
+                <figcaption>Print the catalog</figcaption>
+                <pre><code>archsig schema-catalog --out schema-version-catalog.json</code></pre>
+              </figure>
             </section>
-            <section id="boundaries" class="article-section">
-              <h2>Reference boundaries</h2>
+            <section id="compatibility" class="article-section">
+              <h2>Compatibility policy: there is none, on purpose</h2>
+              <p>ArchSig is pre-1.0 and applies a deliberate no-compatibility rule. Validators accept exactly the current contract version; older or newer forms fail as ordinary validation errors (exit 1 / 2). There is no migration command, no acceptance window, no deprecated-but-tolerated fields. When the contract version moves, inputs are re-authored — for Skill-authored artifacts that is a re-run, not a hand-migration.</p>
+              <p>What this buys: every artifact in circulation means exactly one thing, and a reader never has to ask which era's semantics a field carries. Check the top of any artifact's <code>schema</code> string against the <a href="#schemas">catalog</a> and you know everything about its form.</p>
+            </section>
+            <section id="troubleshooting" class="article-section">
+              <h2>Troubleshooting</h2>
               <ul class="status-list">
-                <li><strong>Current input contract</strong><span>ArchSig analysis consumes supplied <code>archmap/v0.5.0</code>, <code>law-policy/v0.5.0</code>, and <code>measurement-profile/v0.5.0</code>. The selected vocabulary, profile, and evidence determine what the run can report.</span></li>
-                <li><strong>Comparison contract</strong><span><code>compare</code> computes record-level differences from two current run directories; it does not assign causality or semantic equivalence.</span></li>
-                <li><strong>FieldSig handoff</strong><span>FieldSig reads <code>archsig-measurement-packet/v0.5.0</code> as bounded current measurement state. It is not forecast truth, causal proof, or global safety.</span></li>
-                <li><strong>Validation boundary</strong><span>Validation checks artifact shape and guardrails. It is not a Lean proof, runtime correctness proof, or repair safety certificate.</span></li>
+                <li><strong>Exit 2 with a schema message</strong><span>Your artifact declares a retired or unknown schema version. There is no compatibility path — re-author against the current contract (see <a href="#compatibility">above</a>).</span></li>
+                <li><strong>The output directory has files but no fresh manifest</strong><span>If input open / parse / decode fails before preflight, <code>analyze</code> leaves the out-dir untouched — what you see is a previous run. Never read run artifacts until you have confirmed this run's <code>archsig-run-manifest.json</code>. When a run does start, ArchSig first deletes its known generated artifacts from the out-dir, so a reused directory cannot serve stale results as current ones.</span></li>
+                <li><strong><code>ag.saga-descent</code> shows <code>not_computed</code></strong><span>Not a failure: the policy selects it but no <code>--repair-plan</code> was supplied. The row carries a <code>silence_by_design</code> boundary. Supply a validated plan to compute it (<a href="../contracts/#repairplan">Contracts</a>).</span></li>
+                <li><strong><code>compare</code> says the runs are not comparable</strong><span>The site changed between runs — contexts or covers differ. This is boundary data, not an error and not a degradation claim; the report still carries both runs' independent conclusions, and gate policies handle the transition through the <code>other</code> mapping key.</span></li>
+                <li><strong><code>gate</code> reports <code>NOT_EVALUABLE</code> for a rule</strong><span>The rule could not be applied to this packet (for example an introduced-by-change rule without a comparison). It is neither pass nor block; the decision comes from the rules that did evaluate.</span></li>
+                <li><strong>An evaluator you selected is silent</strong><span>Most evaluators have explicit evidence preconditions — no restriction edges, no triple-overlap skeleton, no core/feature/boundary classification, no witness atom. The <a href="../analyses/">catalog</a> lists each one's silence condition; the row's boundary statement names the missing supply.</span></li>
+                <li><strong>ArchView opens as an empty shell</strong><span>It fetches <code>archsig-atom-viewer-data.json</code> from its own directory — serve the run directory itself, or drag the file in. And it loads Three.js from a CDN, so it needs network access (<a href="../archview/#own-output">details</a>).</span></li>
               </ul>
             </section>
-            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../manual/"><span>Previous</span><strong>Manual</strong></a></nav>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../manual/"><span>Previous</span><strong>Manual</strong></a><a class="page-nav-next" href="../archview/"><span>Next</span><strong>ArchView</strong></a></nav>
           </div>
         </div>
       </section>

@@ -1,0 +1,96 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "ArchSig Concepts",
+  "description": "The three-layer input contract, the five-valued verdict vocabulary, comparability, and the boundary discipline: what ArchSig says, and what it refuses to say.",
+  "order": 38,
+  "llmsLabel": "ArchSig Concepts",
+  "navSection": "archsig"
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Concepts</span></nav>
+          <p class="eyebrow">The rules of the instrument</p>
+          <h1>What ArchSig says — and what it refuses to say.</h1>
+          <p class="lede">ArchSig's usefulness comes from a small number of hard rules: observation never contains judgment, verdicts come from a closed five-word vocabulary, every conclusion is relative to declared evidence, and what cannot be measured is recorded as silence — not as failure, and not as safety.</p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#layers">Three layers, three responsibilities</a></li><li><a href="#observation">Observation is not judgment</a></li><li><a href="#verdicts">The five-valued verdict</a></li><li><a href="#relative">Everything is profile-relative</a></li><li><a href="#comparability">Comparability</a></li><li><a href="#silence">Silence as a feature</a></li><li><a href="#theory">Where the theory lives</a></li></ol></nav>
+{% include "series-nav.njk" %}
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="./" aria-current="page">Concepts</a></li><li><a href="../contracts/">Contracts</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li><li><a href="../archview/">ArchView</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <section id="layers" class="article-section">
+              <h2>Three layers, three responsibilities</h2>
+              <p>Every ArchSig run is the same computation: <code>ArchMap × (LawPolicy + MeasurementProfile) → measurement</code>. The three inputs are deliberately separate layers, because when a conclusion turns out wrong you need to know <em>which layer</em> was wrong — the observation, the selection, or the computation.</p>
+              <ul class="status-list">
+                <li><strong>ArchMap observes</strong><span>A source-grounded record of what is the case: components, relations, declared section values, contexts, and the selected cover, each backed by source refs. It contains no evaluation of any kind.</span></li>
+                <li><strong>LawPolicy + MeasurementProfile select</strong><span>Which evaluators run, over which scope, at which severity, against which basis documents — and the concrete finite regime: the cover, the coefficient, the witness family, the bounds. Selection is an institutional act, and it is recorded as one.</span></li>
+                <li><strong>ArchSig computes</strong><span>The CLI turns evidence plus selection into bounded verdicts and invariants, deterministically. It never adds evidence, never extends scope, and never softens a verdict.</span></li>
+              </ul>
+              <p>Because the layers are separate, a bad reading has a findable owner: a wrong observation is fixed in the ArchMap, a wrong selection in the policy, a wrong computation in ArchSig itself. Mixing the layers would make that attribution impossible — which is why the validators reject inputs that try.</p>
+            </section>
+            <section id="observation" class="article-section">
+              <h2>Observation is not judgment</h2>
+              <p>An ArchMap may say <em>"the payment adapter derives the discount per line, rounded half-to-even"</em>. It may never say <em>"the payment adapter's rounding is wrong"</em>. The words <em>violation</em>, <em>mismatch</em>, <em>bad</em>, <em>nonzero</em> do not belong to observation; conclusions exist only as computation output. The ArchMap validator treats judgment vocabulary inside observations as a hard error.</p>
+              <p>One nuance matters: the <em>semantic</em> reading inside an observation — what a piece of code means, which convention it implements — is legitimately a human (or agent) judgment call about meaning, and ArchSig protects it. The same function can mean different things in different bounded contexts, and only a reader can say which. What is banned is evaluation, not interpretation. Interpretation is the observer's job; evaluation is the instrument's.</p>
+              <p>In the <a href="../getting-started/">one-cent drift</a>, each context declares the money convention its code actually implements, grounded in the symbols that carry it. No context is "the wrong one" — the measured obstruction is a property of the loop, computed later, by the evaluator the policy selected.</p>
+            </section>
+            <section id="verdicts" class="article-section">
+              <h2>The five-valued verdict</h2>
+              <p>Every structural verdict row carries exactly one of five values. The discipline is that no value is ever rounded into a neighbor — an unmeasured row does not become "probably fine", and a blocked computation does not become "error".</p>
+              <div class="article-table">
+                <table>
+                  <thead><tr><th scope="col">Verdict</th><th scope="col">It means</th><th scope="col">It does not mean</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>measured_zero</code></td><td>The evaluator ran on the declared evidence and the obstruction is absent — a positive result with a certificate.</td><td>"Nothing was found because nothing was looked at."</td></tr>
+                    <tr><td><code>measured_nonzero</code></td><td>The evaluator ran and the obstruction is present, with concrete support named in the packet.</td><td>A style warning, a score, or a proof that the code misbehaves at runtime.</td></tr>
+                    <tr><td><code>unmeasured</code></td><td>The selected evidence does not cover this row.</td><td>Safe. It is not <code>measured_zero</code> and is never merged with it.</td></tr>
+                    <tr><td><code>unknown</code></td><td>Evidence exists but does not determine the answer under this profile.</td><td>An error, or a promise that more computation would decide it.</td></tr>
+                    <tr><td><code>not_computed</code></td><td>The evaluator did not run — for example <code>ag.saga-descent</code> without a repair plan stays <code>not_computed</code> with a <code>silence_by_design</code> boundary.</td><td>A failure. Some silences are the designed behavior.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>A sixth word appears at the gate: <code>violated_assumption_dependency</code>, for rows whose declared assumptions were violated. A gate policy must map all six explicitly, using only three actions — <code>pass</code>, <code>pass_with_boundary</code>, <code>block</code> — and the four non-terminal values (<code>unmeasured</code>, <code>unknown</code>, <code>not_computed</code>, <code>violated_assumption_dependency</code>) may not map to a plain <code>pass</code>. Rounding silence into passing is structurally impossible to write into a valid policy.</p>
+            </section>
+            <section id="relative" class="article-section">
+              <h2>Everything is profile-relative</h2>
+              <p>Conclusion codes end in <code>UNDER_PROFILE</code> for a reason. <code>MEASURED_H1_OBSTRUCTION_UNDER_PROFILE</code> asserts: over the selected cover, with the selected coefficient, on the declared section values, the mismatch class is nonzero. It does not assert that the codebase is broken everywhere, that production will fail, or that no other defect exists. Conversely the zero is a real zero <em>of that measurement</em> — conventions were observed everywhere in the cover and they glue.</p>
+              <p>This relativity is not a hedge; it is what makes the result checkable. Every run's packet carries the input digests, the assumption ledger (which premises were checked, which remain assumed, and what checked them), and the exact evidence refs. A reviewer who disputes a conclusion disputes something concrete: the cover, a section value, an assumption's status.</p>
+            </section>
+            <section id="comparability" class="article-section">
+              <h2>Comparability: when two runs may be compared</h2>
+              <p><code>archsig compare</code> juxtaposes two runs at record level, and it grades how comparable they are before saying anything about transitions:</p>
+              <ul class="status-list">
+                <li><strong><code>identical</code></strong><span>Same ArchMap digest, LawPolicy digest, profile fingerprint, and tool version.</span></li>
+                <li><strong><code>verdict-row</code></strong><span>Same profile fingerprint, site cover digest, and tool version — verdict rows can be matched one-to-one even though the evidence changed. This is the normal PR case.</span></li>
+                <li><strong><code>not-comparable</code></strong><span>The site itself changed — for example the PR added a context, as the one-cent drift head does. The report records both independent conclusions and a typed boundary, and refuses row-level claims.</span></li>
+              </ul>
+              <p>Compare never claims that an obstruction was "introduced by" or "fixed by" a change, never transports a cohomology class across runs, and never decides causality. Those readings are left to the humans and agents looking at the juxtaposition — with the gate acting on each run's own verdicts, which is why a not-comparable head run can still be blocked on its absolute rule.</p>
+            </section>
+            <section id="silence" class="article-section">
+              <h2>Silence as a feature</h2>
+              <p>ArchSig speaks only within the vocabulary its inputs select, and is silent about everything else. Silence appears in the artifacts as typed boundary statements — <em>this profile did not observe X</em>, <em>this evaluator needs a repair plan to run</em> — placed near the conclusions they bound, and never as a to-do list of everything the tool did not check. A long list of non-conclusions would itself be a claim ("these are the things worth checking"), and ArchSig has no evidence for it.</p>
+              <p>Practically: when reading output, treat <code>boundaryStatements</code> as the precise edge of what was measured, and treat anything outside it as simply unaddressed — not risky, not safe, unaddressed.</p>
+            </section>
+            <section id="theory" class="article-section">
+              <h2>Where the theory lives</h2>
+              <p>None of the pages in this manual require the mathematics. But every measurement is the finite, executable form of a theorem in <a href="../../aat/">Algebraic Architecture Theory</a>, and the packet's <code>theoremRef</code> fields point at the exact statements. If you want the underlying picture:</p>
+              <ul class="chapter-list">
+                <li><a href="../../aat/sites-and-sheaves/">Part II. Sites and Sheaves</a><span>Contexts, covers, restriction, and what "section value" means.</span></li>
+                <li><a href="../../aat/obstruction-cohomology/">Part IV. Obstruction Cohomology</a><span>Why "locally fine, globally broken" is measurable, and what the H¹ class support is.</span></li>
+                <li><a href="../../aat/measurement-theory/">Part VIII. Measurement Theory</a><span>The finite measurement regime: why every ArchSig verdict is relative to a selected profile.</span></li>
+                <li><a href="../../aat/semantic-repair-saga/">Part X. Semantic Repair Descent</a><span>The repair theory behind <code>ag.saga-descent</code> and repair plans.</span></li>
+              </ul>
+              <p>The direction of the link matters: theory explains the measurement, but reading the measurement never requires the theory. Per-evaluator anchors are listed in <a href="../analyses/">Analyses</a>.</p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../getting-started/"><span>Previous</span><strong>Getting Started</strong></a><a class="page-nav-next" href="../contracts/"><span>Next</span><strong>Contracts</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>

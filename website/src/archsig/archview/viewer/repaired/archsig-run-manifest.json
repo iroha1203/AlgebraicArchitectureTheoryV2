@@ -1,0 +1,84 @@
+{
+  "archmapInputPath": "input:archmap_repaired.json",
+  "artifactLinks": {
+    "insightBrief": "archsig-insight-brief.md",
+    "insightReport": "archsig-insight-report.json",
+    "measurementPacket": "archsig-measurement-packet.json",
+    "summary": "archsig-analysis-summary.json",
+    "viewerData": "archsig-atom-viewer-data.json"
+  },
+  "commandName": "analyze",
+  "conclusionCode": null,
+  "generatedArtifacts": [
+    "archmap-validation.json",
+    "law-policy-validation.json",
+    "normalized-archmap.json",
+    "archsig-measurement-packet.json",
+    "archsig-analysis-validation.json",
+    "archsig-analysis-summary.json",
+    "archsig-insight-report.json",
+    "archsig-insight-brief.md",
+    "archsig-atom-viewer-data.json",
+    "archsig-run-manifest.json"
+  ],
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap_repaired.json",
+      "sha256": "e5c605fe2e19f72743293bdb25babd65576ca0f6147a09acd38d9c0a6dc70eb4"
+    },
+    "lawPolicy": {
+      "path": "input:law_policy.json",
+      "sha256": "66c5b23c7a853822abf3b09c1126003136487ff78deec1aa7315a4af2f42575c"
+    },
+    "measurementProfile": {
+      "path": "input:measurement_profile.json",
+      "sha256": "79c8734ab3abf06207e2233a816a015d9295886c3979ec09d0750bcd3daf9163"
+    },
+    "profileFingerprint": {
+      "basis": "archmap shape + selected LawPolicy profile ref and external MeasurementProfile artifact",
+      "sha256": "56cf8b94553161873472f4ab99809301a208e217319c44b149a7bddc78bb8483"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "1a0e6eb84b839c216ea0672d4365ecc0838f05928baaa3443ed00725c8f104cf",
+      "status": "computed"
+    }
+  },
+  "lawPolicyInputPath": "input:law_policy.json",
+  "measurementProfileInputPath": "input:measurement_profile.json",
+  "mode": "measurement",
+  "nonConclusions": [
+    "Finite-poset-site run manifest records the v0.5.0 AG measurement foundation artifacts.",
+    "Foundation packet rows are not completed AG invariant evaluator computation."
+  ],
+  "omittedArtifacts": [],
+  "rawArtifactPaths": null,
+  "rawArtifactRetention": "omitted",
+  "runId": "run:d5160d7478b3",
+  "schema": "archsig-run-manifest/v0.5.0",
+  "toolVersion": "0.5.0",
+  "validationReports": {
+    "analysis": "archsig-analysis-validation.json",
+    "archmap": "archmap-validation.json",
+    "lawPolicy": "law-policy-validation.json",
+    "repairPlan": null
+  },
+  "validationResultSummary": {
+    "analysis": {
+      "failedCheckCount": 0,
+      "result": "pass",
+      "warningCheckCount": 0
+    },
+    "archmap": {
+      "failedCheckCount": 0,
+      "result": "pass",
+      "warningCheckCount": 0
+    },
+    "lawPolicy": {
+      "failedCheckCount": 0,
+      "result": "pass",
+      "warningCheckCount": 0
+    },
+    "repairPlan": null
+  }
+}

@@ -2,8 +2,8 @@
 {
   "layout": "base.njk",
   "title": "ArchSig Analyses",
-  "description": "A practical catalog of ArchSig analyses: boundary movement, responsibility drift, semantic coupling, order sensitivity, hotspots, and missing evidence.",
-  "order": 38,
+  "description": "The evaluator catalog: ten structural measurements from glue obstruction to repair descent, each with what it answers, when it stays silent, and its theory anchor.",
+  "order": 40,
   "llmsLabel": "ArchSig Analyses",
   "navSection": "archsig"
 }
@@ -12,89 +12,65 @@
       <section class="article-hero section-band">
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Analyses</span></nav>
-          <p class="eyebrow">What ArchSig can inspect</p>
-          <h1>See the structure behind the architecture.</h1>
-          <p class="lede">Linters, tests, and dependency graphs show important facts. ArchSig reads what those facts mean for architecture: which boundaries are bending, which responsibilities are moving, and which evidence is still missing.</p>
+          <p class="eyebrow">The evaluator catalog</p>
+          <h1>Ten measurements, one question each.</h1>
+          <p class="lede">A LawPolicy selects evaluators from a fixed registry. Each evaluator answers one structural question over the declared evidence, has explicit conditions under which it stays silent, and anchors to a specific theorem in the AAT text. This page is the catalog.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#catalog">Analysis catalog</a></li><li><a href="#summary">What the summary reads</a></li><li><a href="#families">Reading families</a></li><li><a href="#ai-code">AI-assisted code review</a></li><li><a href="#tools">How it fits with other tools</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#how-to-read">How to read this catalog</a></li><li><a href="#gluing">Gluing and coherence</a></li><li><a href="#sections">Sections and restrictions</a></li><li><a href="#conflict">Conflict and repair targets</a></li><li><a href="#analytic">Analytic readings</a></li><li><a href="#saga">Repair descent</a></li><li><a href="#foundation">The foundation row</a></li></ol></nav>
 {% include "series-nav.njk" %}
-            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="./" aria-current="page">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li></ul></div>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../concepts/">Concepts</a></li><li><a href="../contracts/">Contracts</a></li><li><a href="./" aria-current="page">Analyses</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li><li><a href="../archview/">ArchView</a></li></ul></div>
           </aside>
           <div class="article-main">
-            <section id="catalog" class="article-section">
-              <h2>Analysis catalog</h2>
-              <p>These are the questions ArchSig is designed to help an agent answer after it has source evidence and a selected LawPolicy.</p>
+            <section id="how-to-read" class="article-section">
+              <h2>How to read this catalog</h2>
+              <p>Every entry follows the same shape: the engineer's question the evaluator answers, what a nonzero result names concretely, and when the evaluator is silent by design. The theory anchor is a one-way link — it explains the measurement for readers who want the underlying statement, but no entry requires it. Verdicts always land in the <a href="../concepts/#verdicts">five-valued vocabulary</a>; "silent" below means <code>not_computed</code> or <code>unmeasured</code> with a typed boundary, never an error.</p>
+              <p>Evaluators marked <em>analytic reading</em> produce numbers to inspect, not verdicts to gate on — the packet keeps the two strictly apart.</p>
+            </section>
+            <section id="gluing" class="article-section">
+              <h2>Gluing and coherence</h2>
               <ul class="status-list">
-                <li><strong>Boundary movement</strong><span>Which service, feature, adapter, provider, queue, cache, or ownership boundary is being crossed, weakened, or moved?</span></li>
-                <li><strong>Responsibility drift</strong><span>Which module is absorbing business rules, workflow assumptions, provider details, state decisions, or review pressure that used to belong elsewhere?</span></li>
-                <li><strong>Semantic coupling</strong><span>Where do files remain locally reasonable but share hidden assumptions about order, retries, rounding, lifecycle state, authorization, or contracts?</span></li>
-                <li><strong>Feature extension pressure</strong><span>Does a new feature extend the system through an intended interface, or does it reach into another feature's internals?</span></li>
-                <li><strong>Operation order sensitivity</strong><span>Do two implementation paths preserve the same visible behavior, or does the order of operations change the architecture-relevant outcome?</span></li>
-                <li><strong>Hotspots and recurrent pressure</strong><span>Which supports keep attracting nonzero readings, repeated review focus, architectural holes, or missing evidence?</span></li>
-                <li><strong>Evidence gaps</strong><span>Which docs, tests, traces, policy decisions, ownership rules, or source refs are missing before the team should trust a reading?</span></li>
+                <li><strong><code>ag.cech-obstruction</code> — the headline measurement</strong><span>Do the conventions each context declares glue into one global convention across the selected cover, or is there a mismatch loop no local fix can resolve? Nonzero names the exact overlap edges and evidence atoms carrying the obstruction (<code>classSupport</code>), plus the shape of the cover's nerve. When the cover has no cycles and no triple overlaps and every restriction check passes, it can conclude <code>COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION</code> — the cover itself rules the obstruction out. This is the evaluator behind the <a href="../getting-started/">one-cent drift</a>. <em>Anchor: <a href="../../aat/obstruction-cohomology/">Part IV</a>, §12 (Čech H¹ over the selected cover, F₂ coefficients).</em></span></li>
+                <li><strong><code>ag.coherence-obstruction</code> — one level up</strong><span>Where pairwise agreements exist, do they cohere on triple overlaps? Runs only when the selected cover supplies a finite triple-overlap 2-skeleton (and at most 12 contexts); silent without one. Existence-level reading of H² coherence. <em>Anchor: <a href="../../aat/obstruction-cohomology/">Part IV</a>, §10.</em></span></li>
               </ul>
             </section>
-            <section id="summary" class="article-section">
-              <h2>What the summary reads</h2>
-              <p>The agent starts from <code>archsig-analysis-summary.json</code> to choose what to inspect next. On this page, the point is not the field list itself; it is the review work those fields help prioritize.</p>
+            <section id="sections" class="article-section">
+              <h2>Sections and restrictions</h2>
               <ul class="status-list">
-                <li><strong>Review priority</strong><span>Which boundary, module, workflow, or evidence gap should be opened first.</span></li>
-                <li><strong>Architecture tendency</strong><span>Where pressure is concentrating across axes, hotspots, workflow risk, bridges, path readings, and observation gaps.</span></li>
-                <li><strong>Source follow-up</strong><span>Which packet refs and source refs the agent should check before turning a reading into a finding.</span></li>
-                <li><strong>Action queue</strong><span>The review queue the agent follows back into packet detail and source evidence before returning comments or repair candidates.</span></li>
+                <li><strong><code>ag.restriction-compatibility</code></strong><span>Does what a context declares survive restriction to its sub-contexts — is each declared value still the declared value after you narrow the view? Checks every restriction edge of the finite poset; silent when the cover has no restriction edges. <em>Anchor: <a href="../../aat/sites-and-sheaves/">Part II</a> (presheaf restriction on the finite poset site).</em></span></li>
+                <li><strong><code>ag.section-factorization</code></strong><span>Can a selected witness assignment actually be realized as a section — does the assignment factor through the declared structure? Silent when the profile's witness-assignment atom is absent from the evidence. <em>Anchor: <a href="../../aat/sites-and-sheaves/">Part II</a>.</em></span></li>
+                <li><strong><code>ag.boundary-residue</code></strong><span>When a feature extension sits on top of a core, does work at the feature boundary leave residue that the boundary accounting cannot absorb? Requires the cover to classify patches as core / feature / boundary; silent without that classification. <em>Anchor: <a href="../../aat/obstruction-cohomology/">Part IV</a>, §§8–9 and §13 (boundary pairing and Stokes accounting).</em></span></li>
               </ul>
             </section>
-            <section id="families" class="article-section">
-              <h2>Reading families</h2>
-              <p>ArchSig's implementation groups structural readings into several families. They are not separate products; they are different views over the same ArchMap plus LawPolicy analysis.</p>
-              <div class="article-table">
-                <table>
-                  <thead><tr><th scope="col">Family</th><th scope="col">What it helps read</th><th scope="col">Review question</th></tr></thead>
-                  <tbody>
-                    <tr><td>Signature axes</td><td>Nonzero law-relative architecture pressure.</td><td>Which selected architecture expectations are being stressed?</td></tr>
-                    <tr><td>Workflow risk</td><td>Permission, authority, state/effect, LLM mediation, and domain-cohesion pressure around observed molecules.</td><td>Which workflow responsibilities need source review first?</td></tr>
-                    <tr><td>Spectrum and hotspots</td><td>Concentrated support, recurrent obstruction patterns, witness clusters, and coverage gaps.</td><td>Where is review pressure accumulating across the codebase?</td></tr>
-                    <tr><td>Transfer bridges</td><td>Bridge atom families, overlap paths, split readiness, and boundary preparation needs.</td><td>What should be prepared before a refactor, extraction, or repair?</td></tr>
-                    <tr><td>Homotopy and holes</td><td>Path candidates, unfilled loops, nonzero holonomy loops, local curvature cells, and missing filler evidence.</td><td>Do two implementation paths really behave the same under the selected reading?</td></tr>
-                    <tr><td>Observation axes</td><td>Projection fidelity loss, atom origin closure debt, effect relation pressure, synthesis blockage, operation preconditions, and path multiplicity loss.</td><td>Is the observation strong enough, and what evidence is still missing?</td></tr>
-                    <tr><td>Repair and operation deltas</td><td>Repair candidates, decreased axes, transferred obstructions, side-effect axes, and operation readiness.</td><td>Could a local fix move pressure somewhere else?</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="claim-strip">
-                <p>Changing the LawPolicy changes the reading. ArchSig analysis is policy-relative: laws, witness rules, axes, and coverage expectations define what the packet can measure.</p>
-              </div>
-            </section>
-            <section id="ai-code" class="article-section">
-              <h2>AI-assisted code review</h2>
-              <p>ArchSig is especially useful when generated code is locally correct but the design impact is unclear.</p>
+            <section id="conflict" class="article-section">
+              <h2>Conflict and repair targets</h2>
               <ul class="status-list">
-                <li><strong>Working code with unclear architecture impact</strong><span>Ask the agent to inspect whether a generated change moved responsibility, bypassed a boundary, or introduced a shortcut that future changes may copy.</span></li>
-                <li><strong>Many small PRs that feel harmless</strong><span>Use the summary to see whether review pressure is accumulating around the same module, workflow, provider, or boundary.</span></li>
-                <li><strong>Repair planning after a generated change</strong><span>Ask for repair candidates and confirmation checks before turning a local cleanup into a broader refactor.</span></li>
+                <li><strong><code>ag.law-conflict-tor</code></strong><span>Two selected laws constrain the same variables — do they merely overlap, or do they genuinely conflict in a way that no assignment satisfies both? Nonzero carries the conflict's support. Requires generators for exactly the common ambient law pair; fails closed on anything else. <em>Anchor: <a href="../../aat/derived-geometry-repair/">Part V</a> (Tor₁ as the derived measure of law conflict).</em></span></li>
+                <li><strong><code>ag.square-free-repair</code></strong><span>Which minimal combinations of evidence atoms are forbidden together — and what are the minimal sets of removals that would clear every forbidden combination? The second list is the repair-target surface (<code>REPAIR_TARGETS_IDENTIFIED</code>): combinatorial candidates for where to cut, not a claim about which cut is semantically best. <em>Anchor: <a href="../../aat/law-algebra-lawful-locus/">Part III</a>, §5 (square-free monomial reading; Alexander duality for minimal hitting sets).</em></span></li>
               </ul>
             </section>
-            <section id="tools" class="article-section">
-              <h2>How it fits with other tools</h2>
-              <p>ArchSig does not replace existing technical evidence. It gives an agent a way to connect that evidence to architecture review.</p>
-              <div class="article-table">
-                <table>
-                  <thead><tr><th scope="col">Tool family</th><th scope="col">What it mainly sees</th><th scope="col">ArchSig adds</th></tr></thead>
-                  <tbody>
-                    <tr><td>Linter</td><td>Local rule violations.</td><td>Architecture readings under selected laws.</td></tr>
-                    <tr><td>Static analyzer</td><td>Syntax, types, dataflow, and dependency facts.</td><td>Source-backed architecture observations and witness readings.</td></tr>
-                    <tr><td>Dependency graph</td><td>Edges between modules.</td><td>Boundary movement, semantic coupling, support, coverage, and path readings.</td></tr>
-                    <tr><td>Metrics dashboard</td><td>Aggregate counts and trends.</td><td>Evidence-backed review findings, repair candidates, and confirmation checks.</td></tr>
-                    <tr><td>Generic AI review</td><td>Free-form comments over code and diff context.</td><td>ArchMap evidence, LawPolicy, validation, packet refs, and measurement families.</td></tr>
-                  </tbody>
-                </table>
-              </div>
+            <section id="analytic" class="article-section">
+              <h2>Analytic readings — numbers, not verdicts</h2>
+              <ul class="status-list">
+                <li><strong><code>ag.sheaf-laplacian</code></strong><span>Where does disagreement concentrate, even when nothing is strictly obstructed? Computes the finite sheaf-Laplacian spectrum and a Hodge-style decomposition as an analytic reading. The assumption ledger marks "harmonic debt minimality" as theorem-candidate — the packet carries that status rather than hiding it. <em>Anchor: <a href="../../aat/measurement-theory/">Part VIII</a>, §8.</em></span></li>
+                <li><strong><code>ag.period-stokes-audit</code></strong><span>Do the supplied finite period values balance the books — does the boundary accounting identity hold on the declared model, under one fixed coefficient reading? An audit of supplied accounting values, not a discovery pass. <em>Anchor: <a href="../../aat/obstruction-cohomology/">Part IV</a> §13 and <a href="../../aat/representations-periods/">Part VII</a> §5.</em></span></li>
+              </ul>
             </section>
-            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../getting-started/"><span>Previous</span><strong>Getting Started</strong></a><a class="page-nav-next" href="../examples/"><span>Next</span><strong>Examples</strong></a></nav>
+            <section id="saga" class="article-section">
+              <h2>Repair descent</h2>
+              <ul class="status-list">
+                <li><strong><code>ag.saga-descent</code></strong><span>Given a declared repair plan, does the repaired assignment actually glue within the selected finite complex? <code>REPAIR_GLUES_WITHIN_SELECTED_COMPLEX</code> when it does; <code>MEASURED_NONGLUING_RESIDUAL</code> with concrete support when it does not. Runs in complete-support mode on a validated <code>archsig-repair-plan/v0.5.0</code> (see <a href="../contracts/#repairplan">Contracts</a>); without a plan it stays <code>not_computed</code> with a <code>silence_by_design</code> boundary. It measures the plan you declared — it does not synthesize repairs or claim the plan is minimal. <em>Anchor: <a href="../../aat/semantic-repair-saga/">Part X</a> (semantic repair descent; the Lean-proved core of the descent theorems).</em></span></li>
+              </ul>
+            </section>
+            <section id="foundation" class="article-section">
+              <h2>The foundation row</h2>
+              <p>Alongside the selected evaluators, every run emits an <code>ag.foundation</code> row: whether the declared evidence and profile actually support AG measurement at all (<code>AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE</code>). When foundation checks fail, evaluator rows depend on violated assumptions and the gate sees <code>violated_assumption_dependency</code> — the run degrades loudly, not silently.</p>
+              <p>Selection is per-repository: a policy that selects only <code>ag.cech-obstruction</code> is complete and normal (the shipped demo does exactly that). Add evaluators when your evidence and your review questions justify them — the <a href="../contracts/#lawpolicy">LawPolicy page</a> covers how selection is declared and justified.</p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../contracts/"><span>Previous</span><strong>Contracts</strong></a><a class="page-nav-next" href="../manual/"><span>Next</span><strong>Manual</strong></a></nav>
           </div>
         </div>
       </section>

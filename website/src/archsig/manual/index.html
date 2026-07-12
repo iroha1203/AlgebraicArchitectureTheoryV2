@@ -2,8 +2,8 @@
 {
   "layout": "base.njk",
   "title": "ArchSig Manual",
-  "description": "Manual for reading ArchSig output: summary, viewer data, measurement packet, measurement families, coverage gaps, source refs, and claim boundaries.",
-  "order": 40,
+  "description": "How to read every output artifact — summary, packet, insight report, gate and comparison reports — plus task recipes for CI gating, PR review, and repair planning.",
+  "order": 41,
   "llmsLabel": "ArchSig Manual",
   "navSection": "archsig"
 }
@@ -12,98 +12,125 @@
       <section class="article-hero section-band">
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Manual</span></nav>
-          <p class="eyebrow">Reading ArchSig output</p>
-          <h1>From summary to evidence.</h1>
-          <p class="lede">ArchSig output is structured so an agent can start with a compact summary, then open packet detail only where the review needs evidence, coverage, or exact measurement boundaries.</p>
+          <p class="eyebrow">Reading the output</p>
+          <h1>Ten artifacts, one reading order.</h1>
+          <p class="lede">An <code>analyze</code> run writes ten files into the output directory. You rarely need all of them: the summary tells you where to look, the insight report ranks what to inspect, and the packet holds the full evidence when you need to verify a claim. This page is the reading order, then the recipes.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-	          <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#artifacts">Artifacts</a></li><li><a href="#summary">Read summary first</a></li><li><a href="#packet">Open measurement detail</a></li><li><a href="#families">Measurement families</a></li><li><a href="#basis">Measurement basis</a></li><li><a href="#statuses">Reading statuses</a></li><li><a href="#boundaries">Measurement scope</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#rundir">The run directory</a></li><li><a href="#summary">Start: the summary</a></li><li><a href="#insight">The insight queue</a></li><li><a href="#packet">The measurement packet</a></li><li><a href="#gate-report">Gate and comparison reports</a></li><li><a href="#recipes">Task recipes</a></li></ol></nav>
 {% include "series-nav.njk" %}
-            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="./" aria-current="page">Manual</a></li><li><a href="../reference/">Reference</a></li></ul></div>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../concepts/">Concepts</a></li><li><a href="../contracts/">Contracts</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="./" aria-current="page">Manual</a></li><li><a href="../reference/">Reference</a></li><li><a href="../archview/">ArchView</a></li></ul></div>
           </aside>
           <div class="article-main">
-            <section id="artifacts" class="article-section">
-              <h2>Artifacts</h2>
-              <p>ArchSig reads a finite-poset-site ArchMap with a selected LawPolicy measurement profile, then emits a measurement packet, summary, insight report, viewer data, and run manifest.</p>
-              <ul class="status-list">
-                <li><strong><code>archmap/v0.5.0</code></strong><span>Source-grounded atoms, contexts, covers, declared sources, and extraction doctrine.</span></li>
-                <li><strong><code>law-policy/v0.5.0</code></strong><span>The selected evaluator manifests, laws, measurement profile, policies, basis refs, and non-conclusions.</span></li>
-                <li><strong><code>archsig-measurement-packet.json</code></strong><span>Structural verdicts, computed invariants, analytic readings, assumptions, and non-conclusions.</span></li>
-                <li><strong><code>archsig-analysis-summary.json</code></strong><span>The compact first reading surface for Skills and human reviewers.</span></li>
-                <li><strong><code>archsig-run-manifest.json</code></strong><span>Generated artifact list, input digests, validation summary, and run metadata.</span></li>
-              </ul>
-            </section>
-            <section id="summary" class="article-section">
-              <h2>Read summary first</h2>
-	              <p>The summary is designed to keep the review focused. It answers what was measured before the reader opens detailed measurement rows.</p>
-              <ol class="numbered-status-list">
-                <li><strong><code>verdict</code></strong><span>The measured conclusion for the supplied ArchMap and LawPolicy.</span></li>
-                <li><strong><code>qualityMeasurement</code></strong><span>Counts for nonzero axes, hotspots, recurrent pressure, holes, holonomy loops, workflow risk, transfer bridges, and coverage gaps.</span></li>
-                <li><strong><code>distanceInsights</code></strong><span>The engineer-facing distance reading: structural center, change-sensitive areas, policy obstruction state, blocked evidence, recommended refs, and comparison-needed claims.</span></li>
-                <li><strong><code>distanceDiagnosis</code></strong><span>The measurement-state reading for Part IV distance families, including moved axes, blocked results, family summaries, and primary distance refs.</span></li>
-                <li><strong><code>trendDiagnosis</code></strong><span>Where pressure concentrates and which cross-axis insights appear.</span></li>
-                <li><strong><code>richDominantFindings</code></strong><span>Compact packet refs for spectrum hotspots, architectural holes, nonzero holonomy, and structural readings.</span></li>
-	                <li><strong><code>sourceRefs</code></strong><span>The bridge from summary to source evidence and selected measurement rows.</span></li>
-                <li><strong><code>actionQueue</code></strong><span>The prioritized review queue with detail refs, including generated, spectrum, homotopy, and structural refs.</span></li>
-                <li><strong><code>measurementBasis</code></strong><span>Input refs, validation results, coverage gaps, measured boundaries, and selected policy refs.</span></li>
-              </ol>
-            </section>
-	            <section id="packet" class="article-section">
-	              <h2>Open measurement detail</h2>
-	              <p>Open <code>archsig-measurement-packet.json</code> and the insight report when a finding needs source refs, assumptions, missing support, or a selected measurement row.</p>
-	              <ul class="status-list">
-	                <li><strong><code>structuralVerdict</code></strong><span>Shows measured, nonzero, unknown, unmeasured, and not-computed structural rows.</span></li>
-	                <li><strong><code>sourceRefs</code></strong><span>Point the agent back to files, symbols, docs, tests, traces, or other source evidence.</span></li>
-	                <li><strong><code>missingEvidence</code> and coverage gaps</strong><span>Keep unknown evidence visible instead of treating absence as zero.</span></li>
-	                <li><strong><code>nonConclusions</code></strong><span>State what the measurement output is not claiming.</span></li>
-              </ul>
-            </section>
-            <section id="families" class="article-section">
-              <h2>Measurement families</h2>
-              <p>Families are different views over the same ArchMap plus LawPolicy analysis. Some rows use exact packet field names; grouped rows collect related readings that currently appear across packet sections rather than as one single top-level field.</p>
+            <section id="rundir" class="article-section">
+              <h2>The run directory</h2>
               <div class="article-table">
                 <table>
-                  <thead><tr><th scope="col">Family</th><th scope="col">Read it for</th></tr></thead>
+                  <thead><tr><th scope="col">File</th><th scope="col">What it is</th><th scope="col">Read it when</th></tr></thead>
                   <tbody>
-                    <tr><td><code>signatureAxes</code></td><td>Selected law-axis pressure and zero / nonzero readings.</td></tr>
-                    <tr><td><code>workflowRiskReadings</code></td><td>Permission, authority, state/effect, LLM mediation, and domain-cohesion pressure.</td></tr>
-                    <tr><td><code>architectureSpectrumReport</code></td><td>Hotspots, witness clusters, recurrent obstruction support, coverage gaps, and review focus.</td></tr>
-                    <tr><td><code>transferBridgeReadings</code></td><td>Bridge pressure, overlap paths, split readiness, and boundary preparation.</td></tr>
-                    <tr><td><code>architectureHomotopyReport</code></td><td>Filled loops, unfilled holes, nonzero holonomy loops, local curvature cells, filler evidence, and coverage gaps.</td></tr>
-                    <tr><td><code>homotopyDistanceReadings</code></td><td>Selected homotopy distance, filling cost, observation-gap lower bound, selected Dehn area, and blocker refs for missing filler or selected-axis coverage.</td></tr>
-                    <tr><td>Observation-axis readings</td><td>Projection fidelity, atom origin closure, effect relation pressure, synthesis blockage, operation preconditions, and path multiplicity loss.</td></tr>
-                    <tr><td>Repair / operation readings</td><td>Repair candidates, operation deltas, transferred obstructions, side-effect axes, and readiness.</td></tr>
+                    <tr><td><code>archsig-analysis-summary.json</code></td><td>Conclusion-first compact surface</td><td>Always, first</td></tr>
+                    <tr><td><code>archsig-insight-brief.md</code></td><td>Human-readable digest of the insight queue</td><td>You want prose, not JSON</td></tr>
+                    <tr><td><code>archsig-insight-report.json</code></td><td>Prioritized inspection cards with evidence refs</td><td>Deciding what to open first</td></tr>
+                    <tr><td><code>archsig-measurement-packet.json</code></td><td>The full measurement: verdicts, invariants, assumptions</td><td>Verifying or disputing a claim</td></tr>
+                    <tr><td><code>archsig-atom-viewer-data.json</code></td><td>ArchView projection of the measured geometry</td><td>Opening <a href="../archview/">ArchView</a></td></tr>
+                    <tr><td><code>archsig-run-manifest.json</code></td><td>Artifact list, input digests, run metadata</td><td>Reproducing or auditing the run</td></tr>
+                    <tr><td><code>archmap-validation.json</code>, <code>law-policy-validation.json</code>, <code>archsig-analysis-validation.json</code></td><td>Input and run validation reports</td><td>A run stopped before measuring</td></tr>
+                    <tr><td><code>normalized-archmap.json</code></td><td>Canonical form of the evidence used</td><td>Comparing runs; debugging normalization</td></tr>
                   </tbody>
                 </table>
               </div>
+              <p>One rule before reading anything: check that <code>archsig-run-manifest.json</code> exists and lists the artifact you are about to read. If input parsing fails before preflight, ArchSig leaves the output directory untouched — files from a <em>previous</em> run may still be sitting there, and the missing manifest is your signal not to read them.</p>
             </section>
-            <section id="basis" class="article-section">
-              <h2>Measurement basis</h2>
-              <p>Every reading is relative to the supplied evidence and selected policy. Before acting on a finding, check what was measured.</p>
+            <section id="summary" class="article-section">
+              <h2>Start: the summary and its <code>readThisFirst</code></h2>
+              <p>The summary opens with a block written for exactly this moment:</p>
+              <figure class="code-panel">
+                <figcaption>archsig-analysis-summary.json → readThisFirst (real output, one-cent drift head)</figcaption>
+                <pre><code>"readThisFirst": {
+  "conclusion": "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+  "whatItMeans": "Local rules are not enough to explain the selected cover;
+                  ArchSig measured a cross-context glue mismatch.",
+  "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence",
+  "boundary": "Profile-relative. 7 assumptions declared. 0 non-terminal rows.",
+  "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue."
+}</code></pre>
+              </figure>
+              <p>Around it, the summary carries the structural verdict counts (<code>rowCount</code>, <code>measuredNonzeroCount</code>, <code>unmeasuredCount</code>, <code>nonTerminalCount</code>), the input digests that pin exactly which evidence and policy produced this conclusion, the assumption summary, the translation-rule table that maps verdict rows to conclusion codes, and the non-conclusions — the standing list of things a summary never claims. Three reading habits:</p>
               <ul class="status-list">
-                <li><strong>Observed source state</strong><span>Which ArchMap was read, which source refs were included, and which observations were source-backed.</span></li>
-                <li><strong>Selected policy</strong><span>Which LawPolicy selected the evaluator pack, evaluator ids, basis refs, scope, and severity.</span></li>
-                <li><strong>Validation state</strong><span>Whether ArchMap, LawPolicy, and analysis validation passed, warned, or failed.</span></li>
-                <li><strong>Coverage boundary</strong><span>Which gaps block a zero reading or require more evidence before repair planning.</span></li>
+                <li><strong>Trust the conclusion's grammar</strong><span><code>…UNDER_PROFILE</code> is not decoration: the claim is relative to the selected cover and coefficient. What that buys you is covered in <a href="../concepts/#relative">Concepts</a>.</span></li>
+                <li><strong>Check the non-terminal count</strong><span><code>0 non-terminal rows</code> means every selected evaluator actually measured. A nonzero count means some rows are <code>unmeasured</code> / <code>unknown</code> / <code>not_computed</code> — go see which, and why, before celebrating a zero.</span></li>
+                <li><strong>Follow <code>whereToLookFirst</code></strong><span>It points into the insight report's top card, which carries the evidence refs for the headline finding.</span></li>
               </ul>
             </section>
-            <section id="statuses" class="article-section">
-              <h2>Reading statuses</h2>
+            <section id="insight" class="article-section">
+              <h2>The insight queue</h2>
+              <p><code>archsig-insight-report.json</code> turns the packet into ranked inspection cards: each card names a finding, its supporting evidence refs (context ids, atom ids, source paths), and what would confirm or discharge it. <code>archsig-insight-brief.md</code> is the same queue as short prose — the natural thing to paste into a PR comment. The queue ranks <em>where to look</em>; it does not add claims beyond the packet, and an agent following the <code>archsig-reader</code> Skill is required to open the cited source before turning a card into a recommendation.</p>
+            </section>
+            <section id="packet" class="article-section">
+              <h2>The measurement packet</h2>
+              <p><code>archsig-measurement-packet.json</code> (<code>archsig-measurement-packet/v0.5.0</code>) is the artifact everything else summarizes, and the handoff FieldSig reads. Its load-bearing sections:</p>
               <ul class="status-list">
-                <li><strong><code>actionable</code></strong><span>The bounded reading has enough evidence for review action.</span></li>
-                <li><strong><code>needsReview</code></strong><span>Human or source review is required before implementation decisions.</span></li>
-                <li><strong><code>blockedByCoverageGap</code></strong><span>Missing evidence must stay visible as an unknown remainder.</span></li>
-                <li><strong><code>nonConclusion</code></strong><span>ArchSig explicitly refuses a conclusion on that surface.</span></li>
+                <li><strong><code>structuralVerdict[]</code></strong><span>One row per selected evaluator: the five-valued verdict, the certificate ref behind it, the law it checked, and <code>dependsOnAssumptions</code> — which assumption-ledger entries this row's validity rides on.</span></li>
+                <li><strong><code>computedInvariants[]</code></strong><span>The concrete mathematical objects: ranks, class supports, spectra, forbidden supports, hitting sets. This is where a nonzero verdict names its evidence.</span></li>
+                <li><strong><code>assumptions[]</code> (the assumption ledger)</strong><span>Every premise the run leaned on, each with a status — <code>checked</code> (and by what) or <code>assumed</code> (and by which input). Theorem premises are discharged by finite checks where possible and honestly listed where not.</span></li>
+                <li><strong><code>boundaryStatements[]</code></strong><span>The typed edge of the measurement: what was not observed, what stayed silent and why. Treat these as the exact limits of the claim, per <a href="../concepts/#silence">Concepts</a>.</span></li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Where the one-cent drift names its culprits (head packet)</figcaption>
+                <pre><code>computedInvariants → cech-cohomology → classSupport.edgeRefs
+  ctx:application → ctx:settlement
+  ctx:infrastructure → ctx:ports
+  ctx:infrastructure → ctx:settlement
+classSupport.supportAtomRefs
+  atom:cech-money-application, atom:cech-money-infrastructure,
+  atom:cech-money-settlement, ...</code></pre>
+              </figure>
+              <p>Each support atom resolves back through the ArchMap's <code>sources</code> declarations to a path, symbol, and line — which is how ArchView's click-to-source landing works, and how a reviewer gets from "the loop doesn't close" to the three functions that disagree.</p>
             </section>
-            <section id="boundaries" class="article-section">
-              <h2>Measurement scope</h2>
-              <p>Read every result as relative to the supplied ArchMap, selected LawPolicy, validation state, and coverage boundary. If the evidence or policy changes, the reading can change too.</p>
+            <section id="gate-report" class="article-section">
+              <h2>Gate and comparison reports</h2>
+              <p>The <a href="../getting-started/#by-hand">CI surface</a> adds two artifacts. The gate report records the decision and, rule by rule, which verdict rows mapped to which actions:</p>
+              <figure class="code-panel">
+                <figcaption>archsig-gate-report.json (real output, head run)</figcaption>
+                <pre><code>"decision": "BLOCKED_BY_GATE_POLICY",
+"ruleOutcomes": [
+  {
+    "ruleId": "absolute-verdict-discipline",
+    "scope": "absolute",
+    "appliedMapping": [
+      {
+        "verdict": "measured_nonzero",
+        "action": "block",
+        "rowRef": "structuralVerdict/ag-cech-obstruction/…"
+      }
+    ]
+  }
+]</code></pre>
+              </figure>
+              <p>The comparison report grades comparability first (<code>identical</code> / <code>verdict-row</code> / <code>not-comparable</code>), then records row-level verdict transitions with refs into both runs. Its four conclusion codes are deliberately transport-free — <code>MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE</code> says the record changed, not that your commit caused the fix. The reasoning behind that restraint is in <a href="../concepts/#comparability">Concepts</a>.</p>
             </section>
-            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../examples/"><span>Previous</span><strong>Examples</strong></a><a class="page-nav-next" href="../reference/"><span>Next</span><strong>Reference</strong></a></nav>
+            <section id="recipes" class="article-section">
+              <h2>Task recipes</h2>
+              <h3>CI gate</h3>
+              <p>Run <code>analyze</code> on the head evidence, then <code>gate</code> against the packet. The exit code is the contract: 0 pass, 1 block, 2 invalid input. Store the run directory as a CI artifact so a blocked PR carries its own evidence.</p>
+              <figure class="code-panel">
+                <figcaption>The two commands CI needs</figcaption>
+                <pre><code>archsig analyze --archmap archmap.json --law-policy law_policy.json \
+  --measurement-profile profile.json --out-dir "$RUN_DIR"
+archsig gate --packet "$RUN_DIR/archsig-measurement-packet.json" \
+  --policy gate_policy.json --out "$RUN_DIR/archsig-gate-report.json"</code></pre>
+              </figure>
+              <h3>PR review</h3>
+              <p>The <code>archsig-pr-reviewer</code> Skill runs base and head measurement, <code>compare</code>, and <code>gate</code>, then reads the changed source before writing anything. What you should expect back: the gate decision with its blocking rules, the introduced / cleared / preexisting transitions, source evidence checked per finding, and concrete follow-up questions. What you should not accept: the gate decision presented as merge approval, or comparison output presented as proof the change caused anything.</p>
+              <h3>Repair planning</h3>
+              <p>After a block: read the packet's class support to see which contexts and atoms carry the mismatch, let <code>repair-plan-creater</code> author a plan over exactly that complex, validate it, and re-run <code>analyze --repair-plan</code>. <code>REPAIR_GLUES_WITHIN_SELECTED_COMPLEX</code> from <code>ag.saga-descent</code> is the measured version of "this fix actually closes the loop" — within the selected complex, which is precisely the scope the block was about. The full authoring contract is on the <a href="../contracts/#repairplan">Contracts page</a>.</p>
+              <h3>Handing off to evolution analysis</h3>
+              <p>FieldSig reads the measurement packet — not raw ArchMaps, not summaries — as its bounded input for software-evolution readings. If you are exploring that layer, start from <a href="../../sft/">SFT</a>; the handoff contract stays out of this manual by design.</p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../analyses/"><span>Previous</span><strong>Analyses</strong></a><a class="page-nav-next" href="../reference/"><span>Next</span><strong>Reference</strong></a></nav>
           </div>
         </div>
       </section>
