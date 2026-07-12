@@ -1,10 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::law_surface::LawSurfaceBindingVocabularyV1;
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V2_SCHEMA, AatAtomVocabularyEntryV1,
     AatAtomVocabularyV1, ArchMapDocumentV2, ArchMapValidationReportV2, ArchMapValidationSummaryV2,
-    ValidationCheck, ValidationExample, canonical_archmap_extraction_doctrine_ref_v2,
+    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, ValidationCheck, ValidationExample,
+    canonical_archmap_extraction_doctrine_ref_v2,
 };
 
 pub fn compare_archmap_v2_doctrine(
@@ -44,6 +46,7 @@ pub fn validate_archmap_v2_report(
         check_archmap_v2_atom_ids(document),
         check_archmap_v2_no_diagnostic_shortcuts(document),
         check_archmap_v2_atom_kind_vocabulary(document),
+        check_archmap_v2_binding_vocabulary(),
         check_archmap_v2_atom_shapes(document),
         check_archmap_v2_contexts(document),
         check_archmap_v2_covers(document),
@@ -112,6 +115,128 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
             "Vocabulary lint checks token membership only and does not decide whether a new atom kind should be added to the doctrine.".to_string(),
         ],
     }
+}
+
+pub fn static_aat_atom_binding_vocabulary_v1() -> LawSurfaceBindingVocabularyV1 {
+    serde_json::from_str(include_str!(
+        "../skills/archmap-creater/references/aat-law-surface-binding-vocabulary.json"
+    ))
+    .expect("checked-in AAT atom binding vocabulary must be valid JSON")
+}
+
+fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
+    let vocabulary = static_aat_atom_binding_vocabulary_v1();
+    let required_axes = ["cech", "square-free", "section-factorization"];
+    let required_predicates = ["support", "cooccurrence", "sectionValue"];
+    let required_pairs = [
+        ("cech", "sectionValue"),
+        ("square-free", "support"),
+        ("square-free", "cooccurrence"),
+        ("section-factorization", "support"),
+        ("section-factorization", "cooccurrence"),
+    ];
+    let mut examples = Vec::new();
+    if vocabulary.schema != LAW_SURFACE_BINDING_VOCABULARY_SCHEMA {
+        examples.push(generic_validation_example(
+            "aatAtomBindingVocabulary.schema",
+            &vocabulary.schema,
+            "ArchMap authoring and law-surface validation use the v0.5.1 binding manifest",
+        ));
+    }
+    for axis in required_axes {
+        if !vocabulary.axes.iter().any(|item| item == axis) {
+            examples.push(generic_validation_example(
+                "aatAtomBindingVocabulary.axes",
+                axis,
+                "the shared binding manifest must retain every Stage 2 axis",
+            ));
+        }
+    }
+    for predicate in required_predicates {
+        if !vocabulary.predicates.iter().any(|item| item == predicate) {
+            examples.push(generic_validation_example(
+                "aatAtomBindingVocabulary.predicates",
+                predicate,
+                "the shared binding manifest must retain every Stage 2 predicate",
+            ));
+        }
+    }
+    for axis in &vocabulary.axes {
+        if !required_axes.contains(&axis.as_str()) {
+            examples.push(generic_validation_example(
+                "aatAtomBindingVocabulary.axes",
+                axis,
+                "the shared binding manifest must reject axes outside the Stage 2 contract",
+            ));
+        }
+    }
+    for duplicate in duplicates(vocabulary.axes.iter().map(String::as_str)) {
+        examples.push(generic_validation_example(
+            "aatAtomBindingVocabulary.axes",
+            &duplicate,
+            "the shared binding manifest must declare each axis once",
+        ));
+    }
+    for predicate in &vocabulary.predicates {
+        if !required_predicates.contains(&predicate.as_str()) {
+            examples.push(generic_validation_example(
+                "aatAtomBindingVocabulary.predicates",
+                predicate,
+                "the shared binding manifest must reject predicates outside the Stage 2 contract",
+            ));
+        }
+    }
+    for duplicate in duplicates(vocabulary.predicates.iter().map(String::as_str)) {
+        examples.push(generic_validation_example(
+            "aatAtomBindingVocabulary.predicates",
+            &duplicate,
+            "the shared binding manifest must declare each predicate once",
+        ));
+    }
+    for (axis, predicate) in required_pairs {
+        let present = vocabulary
+            .axis_predicate_pairs
+            .iter()
+            .any(|pair| pair.axis == axis && pair.predicates.iter().any(|item| item == predicate));
+        if !present {
+            examples.push(generic_validation_example(
+                "aatAtomBindingVocabulary.axisPredicatePairs",
+                &format!("{axis}/{predicate}"),
+                "the shared binding manifest must retain every Stage 2 pair",
+            ));
+        }
+    }
+    let mut pair_keys = BTreeSet::new();
+    for pair in &vocabulary.axis_predicate_pairs {
+        if pair.predicates.is_empty() {
+            examples.push(generic_validation_example(
+                "aatAtomBindingVocabulary.axisPredicatePairs[].predicates",
+                &pair.axis,
+                "the shared binding manifest must not declare an axis without predicates",
+            ));
+        }
+        for predicate in &pair.predicates {
+            if !pair_keys.insert((pair.axis.as_str(), predicate.as_str())) {
+                examples.push(generic_validation_example(
+                    "aatAtomBindingVocabulary.axisPredicatePairs",
+                    &format!("{}/{}", pair.axis, predicate),
+                    "the shared binding manifest must declare each pair once",
+                ));
+            }
+            if !required_pairs.contains(&(pair.axis.as_str(), predicate.as_str())) {
+                examples.push(generic_validation_example(
+                    "aatAtomBindingVocabulary.axisPredicatePairs",
+                    &format!("{}/{}", pair.axis, predicate),
+                    "the shared binding manifest must reject pairs outside the Stage 2 contract",
+                ));
+            }
+        }
+    }
+    check_from_examples(
+        "archmap-schema050-aat-binding-vocabulary",
+        "ArchMap authoring and law-surface validation resolve one versioned binding manifest",
+        examples,
+    )
 }
 
 fn check_archmap_v2_schema(schema: &str) -> ValidationCheck {

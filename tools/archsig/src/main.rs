@@ -9,15 +9,16 @@ use archsig::{
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT, ArchMapDocumentV2,
     ArchMapValidationReportV2, ArchmapCandidatePacketV1, ArchmapCoverageLedgerV1,
     ArchmapExtractionConsistencyV1, ArchmapScopeManifestV1, AuthoringAuditInputV1,
-    ExtractionDiffOptions, LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1,
-    MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
-    SchemaVersionCatalogV0, ScopeManifestOptions, archmap_authoring_audit_checks_v1,
-    build_comparison_artifacts_v1, build_extraction_consistency_v1,
-    build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
-    build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
-    build_repair_plan_validation_report_v1, build_scope_manifest_v1, normalize_archmap_v2,
-    static_schema_version_catalog, validate_archmap_v2_report, validate_authoring_audit_input_v1,
-    validate_law_policy_v1_report, validate_measurement_packet_value_v1,
+    ExtractionDiffOptions, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
+    LawEquationSurfaceV1, LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1,
+    RepairPlanDocumentV1, SchemaVersionCatalogV0, ScopeManifestOptions,
+    archmap_authoring_audit_checks_v1, build_comparison_artifacts_v1,
+    build_extraction_consistency_v1, build_foundation_measurement_packet_v1, build_gate_report_v1,
+    build_insight_brief_v1, build_insight_report_v1, build_measurement_summary_v1,
+    build_measurement_viewer_data_v1, build_repair_plan_validation_report_v1,
+    build_scope_manifest_v1, normalize_archmap_v2, static_schema_version_catalog,
+    validate_archmap_v2_report, validate_authoring_audit_input_v1, validate_law_policy_v1_report,
+    validate_law_surface_v1_report, validate_measurement_packet_value_v1,
     validate_measurement_profile_v1_checks,
 };
 use clap::{Parser, Subcommand};
@@ -148,6 +149,17 @@ enum Command {
         measurement_profile: PathBuf,
 
         /// Output LawPolicy fixture or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Validate a supplied law-equation-surface/v0.5.1 author declaration.
+    LawSurface {
+        /// Input law-equation-surface/v0.5.1 JSON path.
+        #[arg(long = "law-surface")]
+        law_surface: PathBuf,
+
+        /// Output law-equation-surface validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -505,6 +517,17 @@ fn validate_measurement_profile_command_input(
     ))
 }
 
+fn validate_law_surface_command_input(
+    input: &PathBuf,
+) -> Result<(serde_json::Value, bool), Box<dyn Error>> {
+    let raw: serde_json::Value = read_json(input)?;
+    require_schema(&raw, LAW_EQUATION_SURFACE_V1_SCHEMA, "--law-surface")?;
+    let surface: LawEquationSurfaceV1 = serde_json::from_value(raw.clone())?;
+    let report = validate_law_surface_v1_report(&surface, &raw, &stable_input_ref(input));
+    let failed = report.summary.result == "fail";
+    Ok((serde_json::to_value(report)?, failed))
+}
+
 fn validate_repair_plan_command_input(
     input: &PathBuf,
     archmap: &ArchMapDocumentV2,
@@ -646,6 +669,16 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let (report, policy_failed) = validate_law_policy_command_input(&law_policy, &profile)?;
             write_json(out, &report)?;
             Ok(if policy_failed || profile_failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::LawSurface { law_surface, out }) => {
+            reject_output_overwrite(&law_surface, &out)?;
+            let (report, failed) = validate_law_surface_command_input(&law_surface)?;
+            write_json(out, &report)?;
+            Ok(if failed {
                 ExitCode::from(1)
             } else {
                 ExitCode::SUCCESS

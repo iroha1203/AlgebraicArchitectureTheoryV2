@@ -326,8 +326,25 @@ fn measurement_profile_v1_checks(profile: &MeasurementProfileV1) -> Vec<Validati
             "MeasurementProfile v0.5.0 declares site, cover, coefficients, predicates, certificates, verdict discipline, and finite bounds",
             examples,
         ),
+        check_measurement_profile_reserved_fields(profile),
         check_measurement_profile_finite_bounds(profile),
     ]
+}
+
+fn check_measurement_profile_reserved_fields(profile: &MeasurementProfileV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if profile.diagnostic_ceiling.is_some() {
+        examples.push(generic_validation_example(
+            "diagnosticCeiling",
+            "present",
+            "diagnosticCeiling is reserved for Stage 3 and must fail closed",
+        ));
+    }
+    check_examples(
+        "measurement-profile-schema050-reserved-fields",
+        "Stage 3 measurement-profile reservation fields fail closed when written",
+        examples,
+    )
 }
 
 fn measurement_profile_errors(

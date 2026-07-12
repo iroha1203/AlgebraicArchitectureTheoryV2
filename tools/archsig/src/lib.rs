@@ -6,6 +6,7 @@ pub mod authoring;
 mod compare;
 mod gate;
 mod law_policy;
+mod law_surface;
 mod normalizer;
 mod repair_plan;
 mod saga;
@@ -19,7 +20,8 @@ pub use ag_measurement::{
     selected_measurement_profile_v1, validate_measurement_packet_value_v1,
 };
 pub use archmap::{
-    compare_archmap_v2_doctrine, static_aat_atom_vocabulary_v1, validate_archmap_v2_report,
+    compare_archmap_v2_doctrine, static_aat_atom_binding_vocabulary_v1,
+    static_aat_atom_vocabulary_v1, validate_archmap_v2_report,
 };
 pub use authoring::{
     ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY,
@@ -32,8 +34,15 @@ pub use authoring::{
 pub use compare::build_comparison_artifacts_v1;
 pub use gate::{build_gate_report_v1, validate_gate_policy_v1};
 pub use law_policy::{
-    expand_law_policy_v1, static_law_evaluator_registry_v1, validate_law_policy_v1_report,
-    validate_measurement_profile_v1_checks,
+    expand_law_policy_v1, is_compatible_evaluator_condition, static_law_evaluator_registry_v1,
+    validate_law_policy_v1_report, validate_measurement_profile_v1_checks,
+};
+pub use law_surface::{
+    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_EQUATION_SURFACE_VALIDATION_REPORT_SCHEMA,
+    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, LawBindingV1, LawEquationSurfaceV1, LawEquationV1,
+    LawForbiddenSupportGeneratorV1, LawSurfaceBindingPairV1, LawSurfaceBindingVocabularyV1,
+    LawSurfaceValidationInputV1, LawSurfaceValidationReportV1, LawSurfaceValidationSummaryV1,
+    LawWitnessVariableV1, static_law_surface_binding_vocabulary_v1, validate_law_surface_v1_report,
 };
 pub use normalizer::normalize_archmap_v2;
 pub use repair_plan::{build_repair_plan_validation_report_v1, validate_repair_plan_v1_checks};

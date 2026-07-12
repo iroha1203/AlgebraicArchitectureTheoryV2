@@ -23,7 +23,135 @@ pub(crate) fn write_json<T: serde::Serialize>(
     Ok(())
 }
 pub(crate) fn read_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, Box<dyn Error>> {
-    Ok(serde_json::from_reader(File::open(path)?)?)
+    let text = std::fs::read_to_string(path)?;
+    reject_duplicate_keys(&text)?;
+    Ok(serde_json::from_str(&text)?)
+}
+
+pub(crate) fn reject_output_overwrite(
+    input: &PathBuf,
+    output: &Option<PathBuf>,
+) -> Result<(), Box<dyn Error>> {
+    let Some(output) = output else {
+        return Ok(());
+    };
+    let input_path = std::fs::canonicalize(input)?;
+    let output_path = if output.exists() {
+        std::fs::canonicalize(output)?
+    } else if output.is_absolute() {
+        output.clone()
+    } else {
+        std::env::current_dir()?.join(output)
+    };
+    let same_path = input_path == output_path;
+    #[cfg(unix)]
+    let same_inode = if output.exists() {
+        use std::os::unix::fs::MetadataExt;
+        let input_metadata = std::fs::metadata(input)?;
+        let output_metadata = std::fs::metadata(output)?;
+        input_metadata.dev() == output_metadata.dev()
+            && input_metadata.ino() == output_metadata.ino()
+    } else {
+        false
+    };
+    #[cfg(not(unix))]
+    let same_inode = false;
+    if same_path || same_inode {
+        return Err("output path must differ from input path".into());
+    }
+    Ok(())
+}
+
+struct StrictValueSeed;
+
+impl<'de> serde::de::DeserializeSeed<'de> for StrictValueSeed {
+    type Value = ();
+
+    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(StrictValueVisitor)
+    }
+}
+
+struct StrictValueVisitor;
+
+impl<'de> serde::de::Visitor<'de> for StrictValueVisitor {
+    type Value = ();
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a JSON value without duplicate object keys")
+    }
+
+    fn visit_bool<E>(self, _: bool) -> Result<Self::Value, E> {
+        Ok(())
+    }
+
+    fn visit_i64<E>(self, _: i64) -> Result<Self::Value, E> {
+        Ok(())
+    }
+
+    fn visit_u64<E>(self, _: u64) -> Result<Self::Value, E> {
+        Ok(())
+    }
+
+    fn visit_f64<E>(self, _: f64) -> Result<Self::Value, E> {
+        Ok(())
+    }
+
+    fn visit_str<E>(self, _: &str) -> Result<Self::Value, E> {
+        Ok(())
+    }
+
+    fn visit_string<E>(self, _: String) -> Result<Self::Value, E> {
+        Ok(())
+    }
+
+    fn visit_none<E>(self) -> Result<Self::Value, E> {
+        Ok(())
+    }
+
+    fn visit_unit<E>(self) -> Result<Self::Value, E> {
+        Ok(())
+    }
+
+    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(StrictValueVisitor)
+    }
+
+    fn visit_seq<A>(self, mut sequence: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        while sequence.next_element_seed(StrictValueSeed)?.is_some() {}
+        Ok(())
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut keys = BTreeSet::new();
+        while let Some(key) = map.next_key::<String>()? {
+            if !keys.insert(key.clone()) {
+                return Err(serde::de::Error::custom(format!(
+                    "duplicate JSON object key: {key}"
+                )));
+            }
+            map.next_value_seed(StrictValueSeed)?;
+        }
+        Ok(())
+    }
+}
+
+fn reject_duplicate_keys(input: &str) -> Result<(), Box<dyn Error>> {
+    let mut deserializer = serde_json::Deserializer::from_str(input);
+    serde::de::Deserializer::deserialize_any(&mut deserializer, StrictValueVisitor)?;
+    Ok(())
 }
 
 pub(crate) fn require_schema(

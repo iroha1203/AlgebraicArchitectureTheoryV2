@@ -21,6 +21,7 @@ fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
     LawEvaluatorManifestV1 {
         evaluator_id: "ag.saga-descent".to_string(),
         law_id: "ag.saga-descent".to_string(),
+        condition_types: vec!["descent".to_string()],
         required_atom_constructors: Vec::new(),
         required_predicates: Vec::new(),
         required_molecule_condition:
@@ -56,6 +57,7 @@ fn ag_coherence_manifest() -> LawEvaluatorManifestV1 {
     LawEvaluatorManifestV1 {
         evaluator_id: "ag.coherence-obstruction".to_string(),
         law_id: "ag.coherence-obstruction".to_string(),
+        condition_types: vec!["descent".to_string()],
         required_atom_constructors: Vec::new(),
         required_predicates: vec!["cech.sectionValue".to_string()],
         required_molecule_condition:
@@ -87,6 +89,7 @@ fn ag_boundary_residue_manifest() -> LawEvaluatorManifestV1 {
     LawEvaluatorManifestV1 {
         evaluator_id: "ag.boundary-residue".to_string(),
         law_id: "ag.boundary-residue".to_string(),
+        condition_types: vec!["descent".to_string()],
         required_atom_constructors: Vec::new(),
         required_predicates: vec![
             "boundary-residue.patchRole".to_string(),
@@ -124,6 +127,7 @@ fn ag_period_stokes_audit_manifest() -> LawEvaluatorManifestV1 {
     LawEvaluatorManifestV1 {
         evaluator_id: "ag.period-stokes-audit".to_string(),
         law_id: "ag.period-stokes-audit".to_string(),
+        condition_types: vec!["temporal".to_string()],
         required_atom_constructors: Vec::new(),
         required_predicates: vec![
             "period.dOmegaIntegral".to_string(),
@@ -159,6 +163,7 @@ fn ag_section_manifest() -> LawEvaluatorManifestV1 {
     LawEvaluatorManifestV1 {
         evaluator_id: "ag.section-factorization".to_string(),
         law_id: "ag.section-factorization".to_string(),
+        condition_types: vec!["open".to_string(), "descent".to_string()],
         required_atom_constructors: Vec::new(),
         required_predicates: vec![
             "section-factorization.support".to_string(),
@@ -193,6 +198,7 @@ fn ag_restriction_manifest() -> LawEvaluatorManifestV1 {
     LawEvaluatorManifestV1 {
         evaluator_id: "ag.restriction-compatibility".to_string(),
         law_id: "ag.restriction-compatibility".to_string(),
+        condition_types: vec!["descent".to_string()],
         required_atom_constructors: Vec::new(),
         required_predicates: vec![
             "restriction-compatibility.restrictionIdealGenerator".to_string(),
@@ -227,6 +233,7 @@ fn ag_manifest(evaluator_id: &str, law_id: &str) -> LawEvaluatorManifestV1 {
     LawEvaluatorManifestV1 {
         evaluator_id: evaluator_id.to_string(),
         law_id: law_id.to_string(),
+        condition_types: condition_types_for(evaluator_id),
         required_atom_constructors: Vec::new(),
         required_predicates: Vec::new(),
         required_molecule_condition:
@@ -253,4 +260,20 @@ fn ag_manifest(evaluator_id: &str, law_id: &str) -> LawEvaluatorManifestV1 {
             "tests/fixtures/ag_measurement/law_policy_missing_profile.json".to_string(),
         ],
     }
+}
+
+fn condition_types_for(evaluator_id: &str) -> Vec<String> {
+    let condition_types = match evaluator_id {
+        "ag.cech-obstruction" => ["descent"].as_slice(),
+        "ag.square-free-repair" | "ag.law-conflict-tor" | "ag.sheaf-laplacian" => {
+            ["constructible"].as_slice()
+        }
+        "ag.period-stokes" => ["temporal"].as_slice(),
+        "ag.support-transfer" => ["constructible"].as_slice(),
+        _ => &[],
+    };
+    condition_types
+        .iter()
+        .map(|value| (*value).to_string())
+        .collect()
 }

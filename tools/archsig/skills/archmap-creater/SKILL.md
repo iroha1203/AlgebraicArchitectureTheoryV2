@@ -29,6 +29,12 @@ scope. Do not claim that all possible repository evidence was extracted.
   `archsig analyze` run.
 - Optional: a baseline scope manifest for `incremental-dual` mode.
 
+For Stage 2 law bindings, read
+`references/aat-law-surface-binding-vocabulary.json` before authoring any AG
+axis/predicate pair. Treat its versioned pairs as the accepted vocabulary for
+the law-equation-surface contract; the broader reference table is guidance for
+other evaluator stages and must not be substituted for this manifest.
+
 ## Operating Modes
 
 - `full-dual`: default for initial authoring and major revisions. Survey the

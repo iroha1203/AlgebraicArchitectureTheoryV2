@@ -26,6 +26,638 @@ fn ag_measurement_root() -> PathBuf {
 }
 
 #[test]
+fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
+    let out_dir = temp_dir("law-surface-v051");
+    let root = ag_measurement_root();
+    let input = root.join("law_surface_v051.json");
+    let report = out_dir.join("law-surface-validation.json");
+
+    run_sig0(&[
+        "law-surface",
+        "--law-surface",
+        input.to_str().expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "pass");
+    assert_eq!(
+        json["schema"],
+        "law-equation-surface-validation-report/v0.5.1"
+    );
+
+    let mut reserved = read_json(&input);
+    reserved["skeleton"] = json!({"reserved": true});
+    let reserved_path = out_dir.join("reserved.json");
+    fs::write(
+        &reserved_path,
+        serde_json::to_vec_pretty(&reserved).expect("reserved fixture serializes"),
+    )
+    .expect("reserved fixture writes");
+    let reserved_report = out_dir.join("reserved-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            reserved_path.to_str().expect("path is utf-8"),
+            "--out",
+            reserved_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let reserved_json = read_json(&reserved_report);
+    assert_eq!(reserved_json["summary"]["result"], "fail");
+    assert!(reserved_json["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-equation-surface-v051-reserved-fields" && check["result"] == "fail"
+        })
+    }));
+
+    for field in ["defectSources", "quotientSheafCondition"] {
+        let mut reserved = read_json(&input);
+        reserved[field] = json!({"reserved": true});
+        let reserved_path = out_dir.join(format!("reserved-{field}.json"));
+        fs::write(
+            &reserved_path,
+            serde_json::to_vec_pretty(&reserved).expect("reserved field serializes"),
+        )
+        .expect("reserved field writes");
+        let reserved_report = out_dir.join(format!("reserved-{field}-report.json"));
+        run_sig0_expect_code(
+            &[
+                "law-surface",
+                "--law-surface",
+                reserved_path.to_str().expect("path is utf-8"),
+                "--out",
+                reserved_report.to_str().expect("path is utf-8"),
+            ],
+            1,
+        );
+        assert_eq!(read_json(&reserved_report)["summary"]["result"], "fail");
+    }
+
+    for field in ["skeleton", "defectSources", "quotientSheafCondition"] {
+        let mut null_reserved = read_json(&input);
+        null_reserved[field] = Value::Null;
+        let null_reserved_path = out_dir.join(format!("reserved-{field}-null.json"));
+        fs::write(
+            &null_reserved_path,
+            serde_json::to_vec_pretty(&null_reserved).expect("null reserved field serializes"),
+        )
+        .expect("null reserved field writes");
+        let null_reserved_report = out_dir.join(format!("reserved-{field}-null-report.json"));
+        run_sig0_expect_code(
+            &[
+                "law-surface",
+                "--law-surface",
+                null_reserved_path.to_str().expect("path is utf-8"),
+                "--out",
+                null_reserved_report.to_str().expect("path is utf-8"),
+            ],
+            1,
+        );
+        assert_eq!(
+            read_json(&null_reserved_report)["summary"]["result"],
+            "fail"
+        );
+    }
+
+    let mut weakened = read_json(&input);
+    weakened["laws"][0]["conditionType"] = json!("open");
+    let weakened_path = out_dir.join("weakened.json");
+    fs::write(
+        &weakened_path,
+        serde_json::to_vec_pretty(&weakened).expect("weakened fixture serializes"),
+    )
+    .expect("weakened fixture writes");
+    let weakened_report = out_dir.join("weakened-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            weakened_path.to_str().expect("path is utf-8"),
+            "--out",
+            weakened_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let weakened_json = read_json(&weakened_report);
+    assert_eq!(weakened_json["summary"]["result"], "fail");
+    assert!(weakened_json["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-equation-surface-v051-shape-rules" && check["result"] == "fail"
+        })
+    }));
+
+    let mut null_evaluator = read_json(&input);
+    null_evaluator["laws"][0]["evaluatorRef"] = Value::Null;
+    let null_evaluator_path = out_dir.join("null-evaluator.json");
+    fs::write(
+        &null_evaluator_path,
+        serde_json::to_vec_pretty(&null_evaluator).expect("null evaluator fixture serializes"),
+    )
+    .expect("null evaluator fixture writes");
+    let null_evaluator_report = out_dir.join("null-evaluator-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            null_evaluator_path.to_str().expect("path is utf-8"),
+            "--out",
+            null_evaluator_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&null_evaluator_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut empty_ideal = read_json(&input);
+    empty_ideal["laws"][0]["forbiddenSupportGenerators"] = json!([]);
+    let empty_ideal_path = out_dir.join("empty-ideal.json");
+    fs::write(
+        &empty_ideal_path,
+        serde_json::to_vec_pretty(&empty_ideal).expect("empty ideal fixture serializes"),
+    )
+    .expect("empty ideal fixture writes");
+    let empty_ideal_report = out_dir.join("empty-ideal-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            empty_ideal_path.to_str().expect("path is utf-8"),
+            "--out",
+            empty_ideal_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(read_json(&empty_ideal_report)["summary"]["result"], "fail");
+
+    for (name, shortcut) in [
+        ("camel-boundary", "ag.boundaryMembership"),
+        ("camel-coherent", "ag.globalCoherent"),
+        ("snake-zero", "ag.measured_zero"),
+        ("nsdepth", "ag.nsdepth"),
+        ("risk", "ag.risk"),
+        ("debt", "ag.debt"),
+        ("unsafe", "ag.unsafe"),
+        ("failure", "ag.failure"),
+        ("fail", "ag.fail"),
+        ("failed", "ag.failed"),
+        ("failing", "ag.failing"),
+        ("obstructive", "ag.obstructive"),
+        ("risky", "ag.risky"),
+        ("certificate", "ag.certificate"),
+        ("h1zero", "ag.h1zero"),
+        ("lawful", "ag.lawful"),
+        ("mismatch", "ag.mismatch"),
+        ("minimal-forbidden-supports", "ag.minimalForbiddenSupports"),
+        ("measured-nonzero", "ag.measuredNonzero"),
+        ("nonzero", "ag.nonzero"),
+        ("obstruction", "ag.obstruction"),
+        ("violation", "ag.violation"),
+        ("violate", "ag.violate"),
+        ("violated", "ag.violated"),
+        ("violates", "ag.violates"),
+        ("violating", "ag.violating"),
+        ("verdict", "ag.verdict"),
+    ] {
+        let mut shortcut_input = read_json(&input);
+        shortcut_input["laws"][0]["lawId"] = json!(shortcut);
+        let shortcut_path = out_dir.join(format!("{name}.json"));
+        fs::write(
+            &shortcut_path,
+            serde_json::to_vec_pretty(&shortcut_input).expect("shortcut fixture serializes"),
+        )
+        .expect("shortcut fixture writes");
+        let shortcut_report = out_dir.join(format!("{name}-report.json"));
+        run_sig0_expect_code(
+            &[
+                "law-surface",
+                "--law-surface",
+                shortcut_path.to_str().expect("path is utf-8"),
+                "--out",
+                shortcut_report.to_str().expect("path is utf-8"),
+            ],
+            1,
+        );
+        assert_eq!(read_json(&shortcut_report)["summary"]["result"], "fail");
+    }
+
+    let mut non_shortcut = read_json(&input);
+    non_shortcut["laws"][0]["lawId"] = json!("ag.nonzeroish");
+    let non_shortcut_path = out_dir.join("non-shortcut.json");
+    fs::write(
+        &non_shortcut_path,
+        serde_json::to_vec_pretty(&non_shortcut).expect("non-shortcut fixture serializes"),
+    )
+    .expect("non-shortcut fixture writes");
+    let non_shortcut_report = out_dir.join("non-shortcut-report.json");
+    run_sig0(
+        [
+            "law-surface",
+            "--law-surface",
+            non_shortcut_path.to_str().expect("path is utf-8"),
+            "--out",
+            non_shortcut_report.to_str().expect("path is utf-8"),
+        ]
+        .as_slice(),
+    );
+    assert_eq!(read_json(&non_shortcut_report)["summary"]["result"], "pass");
+
+    let mut alias_shortcut = read_json(&input);
+    alias_shortcut["laws"][0]["witnessVariables"][0]["binding"]["archmapVariable"] =
+        json!("ag.nsdepth");
+    let alias_shortcut_path = out_dir.join("alias-shortcut.json");
+    fs::write(
+        &alias_shortcut_path,
+        serde_json::to_vec_pretty(&alias_shortcut).expect("alias shortcut serializes"),
+    )
+    .expect("alias shortcut writes");
+    let alias_shortcut_report = out_dir.join("alias-shortcut-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            alias_shortcut_path.to_str().expect("path is utf-8"),
+            "--out",
+            alias_shortcut_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&alias_shortcut_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut empty_alias = read_json(&input);
+    empty_alias["laws"][0]["witnessVariables"][0]["binding"]["archmapVariable"] = json!("");
+    let empty_alias_path = out_dir.join("empty-alias.json");
+    fs::write(
+        &empty_alias_path,
+        serde_json::to_vec_pretty(&empty_alias).expect("empty alias fixture serializes"),
+    )
+    .expect("empty alias fixture writes");
+    let empty_alias_report = out_dir.join("empty-alias-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            empty_alias_path.to_str().expect("path is utf-8"),
+            "--out",
+            empty_alias_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(read_json(&empty_alias_report)["summary"]["result"], "fail");
+
+    let mut omitted_alias = read_json(&input);
+    omitted_alias["laws"][0]["witnessVariables"][0]["binding"]
+        .as_object_mut()
+        .expect("binding is object")
+        .remove("archmapVariable");
+    let omitted_alias_path = out_dir.join("omitted-alias.json");
+    fs::write(
+        &omitted_alias_path,
+        serde_json::to_vec_pretty(&omitted_alias).expect("omitted alias fixture serializes"),
+    )
+    .expect("omitted alias fixture writes");
+    run_sig0(&[
+        "law-surface",
+        "--law-surface",
+        omitted_alias_path.to_str().expect("path is utf-8"),
+    ]);
+
+    let mut null_alias_edge = read_json(&input);
+    null_alias_edge["laws"][0]["witnessVariables"][0]["binding"]["archmapVariable"] = Value::Null;
+    null_alias_edge["laws"][0]["witnessVariables"][0]["binding"]["edge"] =
+        json!(["ctx:a", "ctx:b"]);
+    null_alias_edge["laws"][0]["witnessVariables"][0]["binding"]["axis"] = json!("cech");
+    null_alias_edge["laws"][0]["witnessVariables"][0]["binding"]["predicate"] =
+        json!("sectionValue");
+    let null_alias_edge_path = out_dir.join("null-alias-edge.json");
+    fs::write(
+        &null_alias_edge_path,
+        serde_json::to_vec_pretty(&null_alias_edge).expect("null alias edge serializes"),
+    )
+    .expect("null alias edge writes");
+    let null_alias_edge_report = out_dir.join("null-alias-edge-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            null_alias_edge_path.to_str().expect("path is utf-8"),
+            "--out",
+            null_alias_edge_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&null_alias_edge_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut mismatched_binding = read_json(&input);
+    let binding = mismatched_binding["laws"][0]["witnessVariables"][0]["binding"]
+        .as_object_mut()
+        .expect("binding is object");
+    binding.remove("archmapVariable");
+    binding.insert("edge".to_string(), json!(["ctx:a", "ctx:b"]));
+    let mismatched_binding_path = out_dir.join("mismatched-binding.json");
+    fs::write(
+        &mismatched_binding_path,
+        serde_json::to_vec_pretty(&mismatched_binding).expect("mismatched binding serializes"),
+    )
+    .expect("mismatched binding writes");
+    let mismatched_binding_report = out_dir.join("mismatched-binding-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            mismatched_binding_path.to_str().expect("path is utf-8"),
+            "--out",
+            mismatched_binding_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&mismatched_binding_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut wrong_pair = read_json(&input);
+    wrong_pair["laws"][0]["witnessVariables"][0]["binding"]["predicate"] = json!("sectionValue");
+    let wrong_pair_path = out_dir.join("wrong-pair.json");
+    fs::write(
+        &wrong_pair_path,
+        serde_json::to_vec_pretty(&wrong_pair).expect("wrong pair serializes"),
+    )
+    .expect("wrong pair writes");
+    let wrong_pair_report = out_dir.join("wrong-pair-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            wrong_pair_path.to_str().expect("path is utf-8"),
+            "--out",
+            wrong_pair_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let wrong_pair_json = read_json(&wrong_pair_report);
+    assert!(wrong_pair_json["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-equation-surface-v051-bindings" && check["result"] == "fail"
+        })
+    }));
+
+    let mut duplicate_variable = read_json(&input);
+    duplicate_variable["laws"][0]["witnessVariables"][1]["variable"] = json!("p");
+    duplicate_variable["laws"][0]["witnessVariables"][1]["binding"]["archmapVariable"] = json!("p");
+    let duplicate_variable_path = out_dir.join("duplicate-variable.json");
+    fs::write(
+        &duplicate_variable_path,
+        serde_json::to_vec_pretty(&duplicate_variable)
+            .expect("duplicate variable fixture serializes"),
+    )
+    .expect("duplicate variable fixture writes");
+    let duplicate_variable_report = out_dir.join("duplicate-variable-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            duplicate_variable_path.to_str().expect("path is utf-8"),
+            "--out",
+            duplicate_variable_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&duplicate_variable_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut duplicate_alias = read_json(&input);
+    duplicate_alias["laws"][0]["witnessVariables"][1]["binding"]["archmapVariable"] = json!("p");
+    let duplicate_alias_path = out_dir.join("duplicate-alias.json");
+    fs::write(
+        &duplicate_alias_path,
+        serde_json::to_vec_pretty(&duplicate_alias).expect("duplicate alias serializes"),
+    )
+    .expect("duplicate alias writes");
+    let duplicate_alias_report = out_dir.join("duplicate-alias-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            duplicate_alias_path.to_str().expect("path is utf-8"),
+            "--out",
+            duplicate_alias_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&duplicate_alias_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut self_edge = read_json(&input);
+    self_edge["laws"][0]["witnessVariables"][0]["binding"]
+        .as_object_mut()
+        .expect("binding is object")
+        .remove("archmapVariable");
+    self_edge["laws"][0]["witnessVariables"][0]["binding"]["edge"] = json!(["ctx:a", "ctx:a"]);
+    self_edge["laws"][0]["witnessVariables"][0]["binding"]["axis"] = json!("cech");
+    self_edge["laws"][0]["witnessVariables"][0]["binding"]["predicate"] = json!("sectionValue");
+    let self_edge_path = out_dir.join("self-edge.json");
+    fs::write(
+        &self_edge_path,
+        serde_json::to_vec_pretty(&self_edge).expect("self edge serializes"),
+    )
+    .expect("self edge writes");
+    let self_edge_report = out_dir.join("self-edge-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            self_edge_path.to_str().expect("path is utf-8"),
+            "--out",
+            self_edge_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(read_json(&self_edge_report)["summary"]["result"], "fail");
+
+    for (name, axis, predicate) in [
+        ("square-free-support", "square-free", "support"),
+        ("square-free-cooccurrence", "square-free", "cooccurrence"),
+        ("cech-section-value", "cech", "sectionValue"),
+        (
+            "section-factorization-support",
+            "section-factorization",
+            "support",
+        ),
+        (
+            "section-factorization-cooccurrence",
+            "section-factorization",
+            "cooccurrence",
+        ),
+    ] {
+        let mut accepted = read_json(&input);
+        let binding_object = accepted["laws"][0]["witnessVariables"][0]["binding"]
+            .as_object_mut()
+            .expect("binding is object");
+        binding_object.insert("axis".to_string(), json!(axis));
+        binding_object.insert("predicate".to_string(), json!(predicate));
+        if axis == "cech" {
+            binding_object.remove("archmapVariable");
+            binding_object.insert("edge".to_string(), json!(["ctx:a", "ctx:b"]));
+        } else {
+            binding_object.remove("edge");
+            binding_object.insert("archmapVariable".to_string(), json!("p"));
+        }
+        let accepted_path = out_dir.join(format!("accepted-{name}.json"));
+        fs::write(
+            &accepted_path,
+            serde_json::to_vec_pretty(&accepted).expect("accepted binding serializes"),
+        )
+        .expect("accepted binding writes");
+        run_sig0(&[
+            "law-surface",
+            "--law-surface",
+            accepted_path.to_str().expect("path is utf-8"),
+        ]);
+    }
+
+    let mut unknown_evaluator = read_json(&input);
+    unknown_evaluator["laws"][1]["evaluatorRef"] = json!("ag.not-registered");
+    let unknown_evaluator_path = out_dir.join("unknown-evaluator.json");
+    fs::write(
+        &unknown_evaluator_path,
+        serde_json::to_vec_pretty(&unknown_evaluator)
+            .expect("unknown evaluator fixture serializes"),
+    )
+    .expect("unknown evaluator fixture writes");
+    let unknown_evaluator_report = out_dir.join("unknown-evaluator-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            unknown_evaluator_path.to_str().expect("path is utf-8"),
+            "--out",
+            unknown_evaluator_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let unknown_evaluator_json = read_json(&unknown_evaluator_report);
+    assert!(
+        unknown_evaluator_json["checks"]
+            .as_array()
+            .is_some_and(|checks| {
+                checks.iter().any(|check| {
+                    check["id"] == "law-equation-surface-v051-evaluator-refs"
+                        && check["result"] == "fail"
+                })
+            })
+    );
+
+    let mut mismatched_evaluator = read_json(&input);
+    mismatched_evaluator["laws"][1]["conditionType"] = json!("open");
+    mismatched_evaluator["laws"][1]["evaluatorRef"] = json!("ag.square-free-repair");
+    let mismatched_evaluator_path = out_dir.join("mismatched-evaluator.json");
+    fs::write(
+        &mismatched_evaluator_path,
+        serde_json::to_vec_pretty(&mismatched_evaluator)
+            .expect("mismatched evaluator fixture serializes"),
+    )
+    .expect("mismatched evaluator fixture writes");
+    let mismatched_evaluator_report = out_dir.join("mismatched-evaluator-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            mismatched_evaluator_path.to_str().expect("path is utf-8"),
+            "--out",
+            mismatched_evaluator_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&mismatched_evaluator_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut open_section = read_json(&input);
+    open_section["laws"][1]["conditionType"] = json!("open");
+    let open_section_path = out_dir.join("open-section.json");
+    fs::write(
+        &open_section_path,
+        serde_json::to_vec_pretty(&open_section).expect("open section fixture serializes"),
+    )
+    .expect("open section fixture writes");
+    run_sig0(&[
+        "law-surface",
+        "--law-surface",
+        open_section_path.to_str().expect("path is utf-8"),
+    ]);
+
+    let mut unknown = read_json(&input);
+    unknown["laws"][0]["verdict"] = json!("measured_zero");
+    let unknown_path = out_dir.join("unknown.json");
+    fs::write(
+        &unknown_path,
+        serde_json::to_vec_pretty(&unknown).expect("unknown fixture serializes"),
+    )
+    .expect("unknown fixture writes");
+    let unknown_output = run_sig0_output(&[
+        "law-surface",
+        "--law-surface",
+        unknown_path.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(unknown_output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&unknown_output.stderr).contains("unknown field"));
+
+    let duplicate_key_path = out_dir.join("duplicate-key.json");
+    fs::write(
+        &duplicate_key_path,
+        r#"{"schema":"law-equation-surface/v0.5.1","id":"law-surface:duplicate","laws":[{"lawId":"law:first","lawId":"law:second","conditionType":"descent","evaluatorRef":"ag.section-factorization"}]}"#,
+    )
+    .expect("duplicate key fixture writes");
+    let duplicate_key_output = run_sig0_output(&[
+        "law-surface",
+        "--law-surface",
+        duplicate_key_path.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(duplicate_key_output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&duplicate_key_output.stderr).contains("duplicate JSON object key")
+    );
+
+    let same_output = run_sig0_output(&[
+        "law-surface",
+        "--law-surface",
+        input.to_str().expect("path is utf-8"),
+        "--out",
+        input.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(same_output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&same_output.stderr).contains("output path must differ"));
+
+    let hard_link = out_dir.join("law-surface-hard-link.json");
+    fs::hard_link(&input, &hard_link).expect("hard link fixture creates");
+    let hard_link_output = run_sig0_output(&[
+        "law-surface",
+        "--law-surface",
+        input.to_str().expect("path is utf-8"),
+        "--out",
+        hard_link.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(hard_link_output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&hard_link_output.stderr).contains("output path must differ"));
+}
+
+#[test]
 fn cli_law_policy_ag_evaluator_requires_measurement_profile() {
     let out_dir = temp_dir("ag-policy-missing-profile");
     let root = ag_measurement_root();
@@ -1595,6 +2227,63 @@ fn cli_measurement_profile_finite_bounds_cap_and_effective_lowering() {
     let cap_json = read_json(&cap_report);
     assert_eq!(
         check_by_id(&cap_json, "measurement-profile-schema050-finite-bounds")["result"],
+        "fail"
+    );
+
+    let mut reserved_profile = read_json(&root.join("measurement_profile_ag.json"));
+    reserved_profile["diagnosticCeiling"] = json!({"reserved": true});
+    let reserved_profile_path = out_dir.join("measurement_profile_reserved.json");
+    fs::write(
+        &reserved_profile_path,
+        serde_json::to_vec_pretty(&reserved_profile).expect("reserved profile serializes"),
+    )
+    .expect("reserved profile writes");
+    let reserved_profile_report = out_dir.join("reserved-profile-report.json");
+    run_sig0_expect_code(
+        &[
+            "measurement-profile",
+            "--measurement-profile",
+            reserved_profile_path.to_str().expect("path is utf-8"),
+            "--out",
+            reserved_profile_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&reserved_profile_report),
+            "measurement-profile-schema050-reserved-fields"
+        )["result"],
+        "fail"
+    );
+
+    let mut null_reserved_profile = read_json(&root.join("measurement_profile_ag.json"));
+    null_reserved_profile["diagnosticCeiling"] = Value::Null;
+    let null_reserved_profile_path = out_dir.join("measurement_profile_reserved_null.json");
+    fs::write(
+        &null_reserved_profile_path,
+        serde_json::to_vec_pretty(&null_reserved_profile)
+            .expect("null reserved profile serializes"),
+    )
+    .expect("null reserved profile writes");
+    let null_reserved_profile_report = out_dir.join("reserved-profile-null-report.json");
+    run_sig0_expect_code(
+        &[
+            "measurement-profile",
+            "--measurement-profile",
+            null_reserved_profile_path.to_str().expect("path is utf-8"),
+            "--out",
+            null_reserved_profile_report
+                .to_str()
+                .expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&null_reserved_profile_report),
+            "measurement-profile-schema050-reserved-fields"
+        )["result"],
         "fail"
     );
 
@@ -8940,6 +9629,8 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archmap-candidate-packet/v0.5.0",
             "archmap-extraction-consistency/v0.5.0",
             "archmap-coverage-ledger/v0.5.0",
+            "aat-atom-vocabulary-binding/v0.5.1",
+            "law-equation-surface/v0.5.1",
             "law-policy/v0.5.0",
             "measurement-profile/v0.5.0",
             "archsig-repair-plan/v0.5.0",
@@ -8961,7 +9652,8 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archmap-scope-manifest/v0.5.0"
             | "archmap-candidate-packet/v0.5.0"
             | "archmap-extraction-consistency/v0.5.0"
-            | "archmap-coverage-ledger/v0.5.0" => "authoring",
+            | "archmap-coverage-ledger/v0.5.0"
+            | "aat-atom-vocabulary-binding/v0.5.1" => "authoring",
             _ => "primary",
         };
         assert_eq!(entry["artifactRole"].as_str(), Some(expected_role));
