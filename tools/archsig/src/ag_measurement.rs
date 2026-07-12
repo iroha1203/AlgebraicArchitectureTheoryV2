@@ -440,6 +440,7 @@ pub fn build_foundation_measurement_packet_v1(
     repair_plan: Option<&RepairPlanDocumentV1>,
     archmap_ref: &str,
     law_policy_ref: &str,
+    law_surface_ref: Option<&str>,
     measurement_profile_ref: &str,
     repair_plan_ref: Option<&str>,
     residual_packet_ref: Option<&str>,
@@ -627,7 +628,8 @@ pub fn build_foundation_measurement_packet_v1(
         } else if evaluator == "ag.square-free-repair" {
             let law_id = entry.law.as_deref().unwrap_or(evaluator);
             let law = resolve_closed_law(law_surface, law_id, evaluator)?;
-            let (witness_variables, archmap_aliases) = law_witness_bindings(law)?;
+            let (witness_variables, archmap_aliases, binding_axis, binding_predicate) =
+                law_witness_bindings(law)?;
             validate_square_free_profile_v1(&profile, &witness_variables)?;
             let measurement = evaluate_square_free_repair_v1(
                 normalized,
@@ -635,6 +637,8 @@ pub fn build_foundation_measurement_packet_v1(
                 law,
                 &witness_variables,
                 &archmap_aliases,
+                &binding_axis,
+                &binding_predicate,
             )?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
@@ -659,15 +663,10 @@ pub fn build_foundation_measurement_packet_v1(
             });
         } else if evaluator == "ag.law-conflict-tor" {
             let tor_laws = resolve_tor_laws(law_surface, evaluator)?;
-            let (witness_variables, archmap_aliases) = merged_law_witness_bindings(&tor_laws)?;
+            let witness_variables = merged_law_witness_bindings(&tor_laws)?;
             validate_tor_profile_v1(&profile, &witness_variables)?;
-            let measurement = evaluate_law_conflict_tor_v1(
-                normalized,
-                &profile,
-                &tor_laws,
-                &witness_variables,
-                &archmap_aliases,
-            )?;
+            let measurement =
+                evaluate_law_conflict_tor_v1(normalized, &profile, &tor_laws, &witness_variables)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             analytic_readings.extend(measurement.analytic_readings);
@@ -831,6 +830,7 @@ pub fn build_foundation_measurement_packet_v1(
         supplied_data: supplied_data_ledger(
             archmap_ref,
             law_policy_ref,
+            law_surface_ref,
             measurement_profile_ref,
             repair_plan_ref,
             residual_packet_ref,
@@ -846,6 +846,7 @@ pub fn build_foundation_measurement_packet_v1(
 fn supplied_data_ledger(
     archmap_ref: &str,
     law_policy_ref: &str,
+    law_surface_ref: Option<&str>,
     measurement_profile_ref: &str,
     repair_plan_ref: Option<&str>,
     residual_packet_ref: Option<&str>,
@@ -873,6 +874,15 @@ fn supplied_data_ledger(
             "validated",
         ),
     ];
+    if let Some(law_surface_ref) = law_surface_ref {
+        entries.push(supplied_data_entry(
+            "supplied:law-surface",
+            "law-equation-surface",
+            law_surface_ref,
+            "law-equation-surface/v0.5.1-validation",
+            "validated",
+        ));
+    }
     if let Some(repair_plan_ref) = repair_plan_ref {
         entries.push(supplied_data_entry(
             "supplied:repair-plan",
@@ -1582,9 +1592,10 @@ fn resolve_tor_laws<'a>(
 
 fn law_witness_bindings(
     law: &crate::LawEquationV1,
-) -> Result<(Vec<String>, BTreeMap<String, String>), String> {
+) -> Result<(Vec<String>, BTreeMap<String, String>, String, String), String> {
     let mut witness_variables = Vec::new();
     let mut archmap_aliases = BTreeMap::new();
+    let mut binding_pairs = BTreeSet::new();
     for witness in &law.witness_variables {
         let variable = witness.variable.trim();
         if variable.is_empty() {
@@ -1605,6 +1616,19 @@ fn law_witness_bindings(
                 law.law_id
             ));
         }
+        let axis = witness.binding.axis.as_deref().ok_or_else(|| {
+            format!(
+                "law surface law {} gives witness {variable} no binding axis",
+                law.law_id
+            )
+        })?;
+        let predicate = witness.binding.predicate.as_deref().ok_or_else(|| {
+            format!(
+                "law surface law {} gives witness {variable} no binding predicate",
+                law.law_id
+            )
+        })?;
+        binding_pairs.insert((axis.to_string(), predicate.to_string()));
         if archmap_aliases
             .insert(variable.to_string(), alias.to_string())
             .is_some()
@@ -1616,17 +1640,33 @@ fn law_witness_bindings(
         }
         witness_variables.push(variable.to_string());
     }
+    let mut binding_pairs = binding_pairs.into_iter();
+    let (binding_axis, binding_predicate) = binding_pairs.next().ok_or_else(|| {
+        format!(
+            "law surface law {} must declare at least one witness binding",
+            law.law_id
+        )
+    })?;
+    if binding_pairs.next().is_some() {
+        return Err(format!(
+            "law surface law {} mixes binding axis/predicate pairs across witnesses",
+            law.law_id
+        ));
+    }
     witness_variables.sort();
-    Ok((witness_variables, archmap_aliases))
+    Ok((
+        witness_variables,
+        archmap_aliases,
+        binding_axis,
+        binding_predicate,
+    ))
 }
 
-fn merged_law_witness_bindings(
-    laws: &[&crate::LawEquationV1],
-) -> Result<(Vec<String>, BTreeMap<String, String>), String> {
+fn merged_law_witness_bindings(laws: &[&crate::LawEquationV1]) -> Result<Vec<String>, String> {
     let mut witness_variables = BTreeSet::new();
     let mut archmap_aliases = BTreeMap::new();
     for law in laws {
-        let (law_witnesses, law_aliases) = law_witness_bindings(law)?;
+        let (law_witnesses, law_aliases, _, _) = law_witness_bindings(law)?;
         witness_variables.extend(law_witnesses);
         for (variable, alias) in law_aliases {
             if let Some(previous) = archmap_aliases.insert(variable.clone(), alias.clone()) {
@@ -1638,7 +1678,7 @@ fn merged_law_witness_bindings(
             }
         }
     }
-    Ok((witness_variables.into_iter().collect(), archmap_aliases))
+    Ok(witness_variables.into_iter().collect())
 }
 
 fn declared_law_supports(
@@ -1670,7 +1710,12 @@ fn observed_support_matches(
     atom: &NormalizedAtomV2,
     support: &[String],
     archmap_aliases: &BTreeMap<String, String>,
+    observed_axis: &str,
+    observed_predicate: &str,
 ) -> bool {
+    if atom.axis != observed_axis || atom.predicate != observed_predicate {
+        return false;
+    }
     let observed = square_free_atom_variables(atom)
         .into_iter()
         .collect::<BTreeSet<_>>();
@@ -1679,6 +1724,43 @@ fn observed_support_matches(
             .get(variable)
             .is_some_and(|alias| observed.contains(alias))
     })
+}
+
+fn observation_selector(
+    evaluator_kind: &str,
+    binding_axis: &str,
+    binding_predicate: &str,
+) -> Result<(&'static str, &'static str), String> {
+    match evaluator_kind {
+        "square-free" if binding_axis == "square-free" => {
+            if matches!(binding_predicate, "support" | "cooccurrence") {
+                Ok((
+                    "square-free",
+                    if binding_predicate == "support" {
+                        "support"
+                    } else {
+                        "cooccurrence"
+                    },
+                ))
+            } else {
+                Err(format!(
+                    "square-free law binding predicate {binding_predicate} is not an observed support predicate"
+                ))
+            }
+        }
+        "tor" if binding_axis == "square-free" => {
+            if matches!(binding_predicate, "support" | "cooccurrence") {
+                Ok(("tor", "lawIdealGenerator"))
+            } else {
+                Err(format!(
+                    "Tor law binding predicate {binding_predicate} is not an accepted support predicate"
+                ))
+            }
+        }
+        _ => Err(format!(
+            "{evaluator_kind} law binding axis/predicate {binding_axis}/{binding_predicate} is not executable"
+        )),
+    }
 }
 
 fn observed_tor_support_is_square_free(atom: &NormalizedAtomV2) -> bool {
@@ -1699,6 +1781,8 @@ fn evaluate_square_free_repair_v1(
     law: &crate::LawEquationV1,
     witness_variables: &[String],
     archmap_aliases: &BTreeMap<String, String>,
+    binding_axis: &str,
+    binding_predicate: &str,
 ) -> Result<SquareFreeMeasurementV1, String> {
     let selected_contexts = selected_cover_contexts(normalized, profile)
         .into_iter()
@@ -1709,6 +1793,8 @@ fn evaluate_square_free_repair_v1(
         law,
         witness_variables,
         archmap_aliases,
+        binding_axis,
+        binding_predicate,
     )?;
     let minimal_forbidden_supports = minimal_supports(
         generators
@@ -2417,7 +2503,6 @@ fn evaluate_law_conflict_tor_v1(
     profile: &MeasurementProfileV1,
     laws: &[&crate::LawEquationV1],
     witness_variables: &[String],
-    archmap_aliases: &BTreeMap<String, String>,
 ) -> Result<TorMeasurementV1, String> {
     let selected_contexts = selected_cover_contexts(normalized, profile)
         .into_iter()
@@ -2445,13 +2530,7 @@ fn evaluate_law_conflict_tor_v1(
         });
     };
 
-    let generators = tor_ideal_generators(
-        normalized,
-        &selected_contexts,
-        laws,
-        witness_variables,
-        archmap_aliases,
-    )?;
+    let generators = tor_ideal_generators(normalized, &selected_contexts, laws, witness_variables)?;
     let law_order = ambient.law_pair.clone();
     let selected_laws = generators
         .iter()
@@ -2471,11 +2550,11 @@ fn evaluate_law_conflict_tor_v1(
             })
             .collect::<Vec<_>>();
         return Ok(TorMeasurementV1 {
-            verdict: "measured_zero".to_string(),
-            zero: true,
+            verdict: "not_computed".to_string(),
+            zero: false,
             non_zero: false,
-            method_status: "finite_monomial_tor_taylor_computed".to_string(),
-            cert_ref: Some(ambient.atom_ref.clone()),
+            method_status: "law_support_observation_incomplete".to_string(),
+            cert_ref: None,
             reason: "no declared law support was observed in the selected common ambient"
                 .to_string(),
             computed_invariants: vec![json!({
@@ -2497,20 +2576,21 @@ fn evaluate_law_conflict_tor_v1(
                 "lawConflicts": [],
                 "torByDegree": [{
                     "degree": 1,
-                    "classCount": 0,
+                    "classCount": null,
+                    "status": "not_computed",
                     "coefficient": "F2",
                     "scope": "H_1 of Taylor(I_left) tensor R/I_right by square-free multidegree"
                 }],
                 "proxyComparison": {
                     "previousMethod": "finite-degree1-shared-support-conflict@1",
                     "proxyClassCount": 0,
-                    "taylorClassCount": 0,
-                    "comparison": "taylor_not_above_proxy"
+                    "taylorClassCount": null,
+                    "comparison": "not_computed"
                 },
                 "boundaryNote": "Taylor Tor_1 is a field-coefficient F2 reading over the selected common ambient; higher Tor_i and flat base change stability are not concluded."
             })],
             analytic_readings: Vec::new(),
-            assumptions: tor_assumptions(profile, Some(&ambient), "checked", "checked"),
+            assumptions: tor_assumptions(profile, Some(&ambient), "violated", "checked"),
         });
     }
     let outside_ambient = selected_laws
@@ -2701,11 +2781,11 @@ fn tor_partial_observation_measurement(
         .map(|law| json!({"law": law, "generators": []}))
         .collect::<Vec<_>>();
     TorMeasurementV1 {
-        verdict: "measured_zero".to_string(),
-        zero: true,
+        verdict: "not_computed".to_string(),
+        zero: false,
         non_zero: false,
-        method_status: "finite_monomial_tor_taylor_computed".to_string(),
-        cert_ref: Some(ambient.atom_ref.clone()),
+        method_status: "law_support_observation_incomplete".to_string(),
+        cert_ref: None,
         reason: reason.to_string(),
         computed_invariants: vec![json!({
             "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
@@ -2726,20 +2806,21 @@ fn tor_partial_observation_measurement(
             "lawConflicts": [],
             "torByDegree": [{
                 "degree": 1,
-                "classCount": 0,
+                "classCount": null,
+                "status": "not_computed",
                 "coefficient": "F2",
                 "scope": "H_1 of Taylor(I_left) tensor R/I_right by square-free multidegree"
             }],
             "proxyComparison": {
                 "previousMethod": "finite-degree1-shared-support-conflict@1",
                 "proxyClassCount": 0,
-                "taylorClassCount": 0,
-                "comparison": "taylor_not_above_proxy"
+                "taylorClassCount": null,
+                "comparison": "not_computed"
             },
             "boundaryNote": "Taylor Tor_1 is a field-coefficient F2 reading over the selected common ambient; higher Tor_i and flat base change stability are not concluded."
         })],
         analytic_readings: Vec::new(),
-        assumptions: tor_assumptions(profile, Some(ambient), "checked", "checked"),
+        assumptions: tor_assumptions(profile, Some(ambient), "violated", "checked"),
     }
 }
 
@@ -8860,7 +8941,6 @@ fn tor_ideal_generators(
     selected_contexts: &BTreeSet<String>,
     laws: &[&crate::LawEquationV1],
     witness_variables: &[String],
-    archmap_aliases: &BTreeMap<String, String>,
 ) -> Result<Vec<TorIdealGeneratorV1>, String> {
     let observations = normalized
         .atoms
@@ -8889,6 +8969,9 @@ fn tor_ideal_generators(
     }
     let mut generators = Vec::new();
     for law in laws {
+        let (_, law_aliases, binding_axis, binding_predicate) = law_witness_bindings(law)?;
+        let (observed_axis, observed_predicate) =
+            observation_selector("tor", &binding_axis, &binding_predicate)?;
         let declared_supports = declared_law_supports(law, witness_variables)?;
         if !observed_laws.contains(&law.law_id) {
             continue;
@@ -8897,7 +8980,15 @@ fn tor_ideal_generators(
             let matching_atoms = observations
                 .iter()
                 .filter(|atom| atom.subject == law.law_id)
-                .filter(|atom| observed_support_matches(atom, support, archmap_aliases))
+                .filter(|atom| {
+                    observed_support_matches(
+                        atom,
+                        support,
+                        &law_aliases,
+                        observed_axis,
+                        observed_predicate,
+                    )
+                })
                 .collect::<Vec<_>>();
             if matching_atoms.is_empty() {
                 continue;
@@ -10057,20 +10148,32 @@ fn square_free_generators_from_law_surface(
     law: &crate::LawEquationV1,
     witness_variables: &[String],
     archmap_aliases: &BTreeMap<String, String>,
+    binding_axis: &str,
+    binding_predicate: &str,
 ) -> Result<Vec<SquareFreeGeneratorV1>, String> {
+    let (observed_axis, observed_predicate) =
+        observation_selector("square-free", binding_axis, binding_predicate)?;
     let declared_supports = declared_law_supports(law, witness_variables)?;
     let support_atoms = normalized
         .atoms
         .iter()
         .filter(|atom| is_raw_support_predicate(atom))
-        .filter(|atom| atom.axis == "square-free")
+        .filter(|atom| atom.axis == observed_axis && atom.predicate == observed_predicate)
         .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
         .collect::<Vec<_>>();
     let mut generators = Vec::new();
     for (index, support) in declared_supports.iter().enumerate() {
         let support_atom_refs = support_atoms
             .iter()
-            .filter(|atom| observed_support_matches(atom, support, archmap_aliases))
+            .filter(|atom| {
+                observed_support_matches(
+                    atom,
+                    support,
+                    archmap_aliases,
+                    observed_axis,
+                    observed_predicate,
+                )
+            })
             .map(|atom| atom.normalized_atom_id.clone())
             .collect::<Vec<_>>();
         generators.push(SquareFreeGeneratorV1 {
@@ -12742,6 +12845,7 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
                 kind,
                 "archmap"
                     | "law-policy"
+                    | "law-equation-surface"
                     | "measurement-profile"
                     | "repair-plan"
                     | "residual-packet"

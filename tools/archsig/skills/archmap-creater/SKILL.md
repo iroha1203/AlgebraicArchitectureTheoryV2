@@ -141,7 +141,10 @@ add or remove support atoms to change the law universe.
      produced, omit `--extraction-consistency` and state that adjudicated
      provenance was not supplied to the binary audit.
    - Repair any failed checks and rerun applicable validation.
-   - If LawPolicy and MeasurementProfile are supplied, run `archsig analyze`.
+   - If LawPolicy, MeasurementProfile, and a Stage 2 law-equation-surface are
+     supplied, run `archsig analyze --law-surface <law-surface.json>` together
+     with the ArchMap, LawPolicy, and MeasurementProfile paths. This explicit
+     law-surface input is required for square-free and Tor evaluation.
      If the user asks for analyze without LawPolicy, stop and ask for LawPolicy
      creation rather than inventing one.
 

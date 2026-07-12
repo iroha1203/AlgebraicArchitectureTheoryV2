@@ -811,6 +811,9 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .is_some_and(|(_, failed)| *failed);
             let archmap_input_ref = artifact_input_ref(&archmap);
             let law_policy_input_ref = artifact_input_ref(&law_policy);
+            let law_surface_input_ref = law_surface
+                .as_ref()
+                .map(|path| artifact_input_ref(path));
             let measurement_profile_input_ref = artifact_input_ref(&measurement_profile);
             let repair_plan_input_ref = repair_plan.as_ref().map(|path| artifact_input_ref(path));
             let residual_packet_input_ref =
@@ -847,6 +850,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let run_contract = AnalyzeRunContract::from_inputs(
                 &archmap,
                 &law_policy,
+                law_surface.as_deref(),
                 &measurement_profile,
                 residual_packet.as_deref(),
                 contract_profile_fingerprint(
@@ -887,6 +891,9 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 let mut insight_report = build_validation_failure_insight_report(
                     &archmap_preflight,
                     &law_policy_preflight,
+                    law_surface_preflight
+                        .as_ref()
+                        .map(|(report, _)| report),
                     repair_plan_preflight
                         .as_ref()
                         .map(|(report, _, _)| report),
@@ -965,6 +972,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 repair_plan_document.as_ref(),
                 &archmap_input_ref,
                 &law_policy_input_ref,
+                law_surface_input_ref.as_deref(),
                 &measurement_profile_input_ref,
                 repair_plan_input_ref.as_deref(),
                 residual_packet_input_ref.as_deref(),
@@ -1119,11 +1127,13 @@ fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Err
 fn build_validation_failure_insight_report(
     archmap_validation: &Value,
     law_policy_validation: &Value,
+    law_surface_validation: Option<&Value>,
     repair_plan_validation: Option<&Value>,
 ) -> Value {
     let failed_refs = validation_failure_refs(
         archmap_validation,
         law_policy_validation,
+        law_surface_validation,
         repair_plan_validation,
     );
     let primary_ref = failed_refs
@@ -1331,6 +1341,7 @@ fn build_validation_failure_viewer_data(insight_report: &Value) -> Value {
 fn validation_failure_refs(
     archmap_validation: &Value,
     law_policy_validation: &Value,
+    law_surface_validation: Option<&Value>,
     repair_plan_validation: Option<&Value>,
 ) -> Vec<String> {
     let mut refs = Vec::new();
@@ -1342,6 +1353,12 @@ fn validation_failure_refs(
         "law-policy-validation",
         law_policy_validation,
     ));
+    if let Some(law_surface_validation) = law_surface_validation {
+        refs.extend(validation_report_failure_refs(
+            "law-surface-validation",
+            law_surface_validation,
+        ));
+    }
     if let Some(repair_plan_validation) = repair_plan_validation {
         refs.extend(validation_report_failure_refs(
             "repair-plan-validation",

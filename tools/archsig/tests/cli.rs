@@ -6473,6 +6473,82 @@ fn cli_analyze_v2_square_free_requires_explicit_law_surface() {
 }
 
 #[test]
+fn cli_analyze_v2_square_free_law_surface_generator_change_is_observed() {
+    let out_dir = temp_dir("ag-measurement-square-free-law-surface-change");
+    let root = ag_measurement_root();
+    let mut surface = read_json(&root.join("law_surface_ag_v051.json"));
+    surface["laws"][0]["forbiddenSupportGenerators"]
+        .as_array_mut()
+        .expect("forbidden support generators are array")
+        .push(json!({"support": ["x_checkout", "x_payment"]}));
+    let surface_path = out_dir.join("law_surface_changed.json");
+    fs::write(
+        &surface_path,
+        serde_json::to_vec_pretty(&surface).expect("law surface serializes"),
+    )
+    .expect("law surface fixture writes");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_square_free_repair.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        root.join("measurement_profile_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-surface",
+        surface_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
+    assert!(manifest["inputDigests"]["lawSurface"]["sha256"].is_string());
+    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
+    assert_eq!(
+        repair["minimalForbiddenSupports"].as_array().unwrap().len(),
+        3
+    );
+    assert!(
+        repair["minimalForbiddenSupports"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|support| support == &json!(["x_checkout", "x_payment"]))
+    );
+}
+
+#[test]
+fn cli_analyze_v2_tor_requires_explicit_law_surface() {
+    let out_dir = temp_dir("ag-measurement-tor-missing-law-surface");
+    let root = ag_measurement_root();
+    let output = run_sig0_raw_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_law_conflict_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        root.join("measurement_profile_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("requires --law-surface"));
+}
+
+#[test]
 fn cli_analyze_v2_square_free_without_observed_support_keeps_declared_generators() {
     let out_dir = temp_dir("ag-measurement-square-free-zero");
     let root = ag_measurement_root();
@@ -6699,7 +6775,7 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
 }
 
 #[test]
-fn cli_analyze_v2_law_conflict_tor_disjoint_supports_are_measured_zero() {
+fn cli_analyze_v2_law_conflict_tor_disjoint_supports_are_not_computed() {
     let out_dir = temp_dir("ag-measurement-law-conflict-tor-disjoint");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
@@ -6733,7 +6809,7 @@ fn cli_analyze_v2_law_conflict_tor_disjoint_supports_are_measured_zero() {
     ]);
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "not_computed");
     let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
     assert_eq!(
         tor["lawConflicts"]

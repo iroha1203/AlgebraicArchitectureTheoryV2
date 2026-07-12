@@ -16,6 +16,7 @@ impl AnalyzeRunContract {
     pub(crate) fn from_inputs(
         archmap: &Path,
         law_policy: &Path,
+        law_surface: Option<&Path>,
         measurement_profile: &Path,
         residual_packet: Option<&Path>,
         profile_fingerprint: Value,
@@ -24,19 +25,30 @@ impl AnalyzeRunContract {
     ) -> Result<Self, Box<dyn Error>> {
         let archmap_digest = canonical_json_file_digest(archmap)?;
         let law_policy_digest = canonical_json_file_digest(law_policy)?;
+        let law_surface_digest = law_surface
+            .map(canonical_json_file_digest)
+            .transpose()?;
         let measurement_profile_digest = canonical_json_file_digest(measurement_profile)?;
         let tool_version = env!("CARGO_PKG_VERSION").to_string();
         let residual_packet_digest = residual_packet
             .map(canonical_json_file_digest)
             .transpose()?;
-        let run_seed = if let Some(residual_packet_digest) = residual_packet_digest.as_deref() {
-            format!(
+        let run_seed = match (
+            law_surface_digest.as_deref(),
+            residual_packet_digest.as_deref(),
+        ) {
+            (Some(law_surface_digest), Some(residual_packet_digest)) => format!(
+                "{archmap_digest}|{law_policy_digest}|{law_surface_digest}|{measurement_profile_digest}|{residual_packet_digest}|{tool_version}"
+            ),
+            (Some(law_surface_digest), None) => format!(
+                "{archmap_digest}|{law_policy_digest}|{law_surface_digest}|{measurement_profile_digest}|{tool_version}"
+            ),
+            (None, Some(residual_packet_digest)) => format!(
                 "{archmap_digest}|{law_policy_digest}|{measurement_profile_digest}|{residual_packet_digest}|{tool_version}"
-            )
-        } else {
-            format!(
+            ),
+            (None, None) => format!(
                 "{archmap_digest}|{law_policy_digest}|{measurement_profile_digest}|{tool_version}"
-            )
+            ),
         };
         let run_hash = sha256_hex(run_seed.as_bytes());
         let mut run_id = format!("run:{}", &run_hash[..12]);
@@ -60,6 +72,12 @@ impl AnalyzeRunContract {
             "profileFingerprint": profile_fingerprint,
             "siteCoverDigest": site_cover_digest
         });
+        if let (Some(path), Some(digest)) = (law_surface, law_surface_digest) {
+            input_digests["lawSurface"] = serde_json::json!({
+                "path": artifact_input_ref(path),
+                "sha256": digest
+            });
+        }
         if let Some(residual_packet_digest) = residual_packet_digest {
             input_digests["residualPacket"] = serde_json::json!({
                 "path": artifact_input_ref(residual_packet.expect("residual packet path is present")),
