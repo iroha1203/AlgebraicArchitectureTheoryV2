@@ -85,4 +85,22 @@ elab "#emit_migration_audit " moduleName:ident : command => do
     ].map tabSafe
     liftIO <| IO.println (String.intercalate "\t" fields)
 
+/-- Emit only one declaration's type for relational statement contracts. -/
+elab "#emit_migration_type_audit " declarationName:ident : command => do
+  let env ← getEnv
+  let declarationId := declarationName.getId
+  let some info := env.find? declarationId
+    | throwError "E_MIGRATION_DECLARATION: declaration not found: {declarationId}"
+  let levels := info.levelParams.map normalizeName
+  let fields := [
+    "MIGRATION_DECL",
+    "$TYPE_AUDIT",
+    normalizeName declarationId,
+    String.intercalate "," levels,
+    serializeExpr info.type,
+    "$TYPE_ONLY",
+    "$TYPE_ONLY"
+  ].map tabSafe
+  liftIO <| IO.println (String.intercalate "\t" fields)
+
 end ResearchLean.Tools.MigrationAudit
