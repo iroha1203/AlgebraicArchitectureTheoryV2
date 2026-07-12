@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 10
+- latest reviewed cycle: 11
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: instantiate large-coefficient D0 and construct the true ideal subsheaf
+- next obligation: prove large-coefficient D0 effectivity and its lift-fiber torsor
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -651,3 +651,76 @@ Port the generic D0 lift problem to bundled
 kernel comparison from the generated short exact sequence, and instantiate it
 with Cycle 9.  Keep the sheafified ring action and true ideal-subsheaf proof as
 separate D1 obligations.
+
+## Cycle 11 — short-exact large connecting class
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedLargeConormalDescent.lean`
+- checkpoint spine:
+  - `sectionFunctor`
+  - `sectionKernelIsLimit`
+  - `sectionKernelIso`
+  - `sectionKernelEquiv`
+  - `sectionKernelEquiv_apply`
+  - `LocalLiftData`
+  - `LocalLiftData.map_differential`
+  - `LocalLiftData.restrictionCochain_cocycle`
+  - `LocalLiftData.localLiftDifferenceFor`
+  - `LocalLiftData.localLiftDifferenceFor_cocycle`
+  - `LocalLiftData.connectingClassFor`
+  - `LocalLiftData.localLiftDifferenceFor_sub`
+  - `LocalLiftData.connectingClass_choice_independent`
+
+### Checkpoint delta
+
+The Cycle 10 large-coefficient complex now receives the first half of generic
+D0.  For a short exact complex of bundled additive sheaves at the concrete
+coefficient universe used by Cycle 9, evaluation at each site object transports
+the categorical kernel limit through `sheafToPresheaf` and evaluation.  The
+resulting categorical kernel is identified with the concrete additive kernel,
+so the sectionwise kernel equivalence is generated from `K.ShortExact` rather
+than accepted as local-lift data.
+
+`LocalLiftData geometry K` stores only the fixed quotient section, explicit
+generator-local lifts, and the equations saying that they lift that same
+section.  These inputs generate the overlap difference, its degree-one cocycle,
+and the large additive connecting class.  Two explicit local-lift choices
+differ by a generated degree-zero kernel primitive, and quotient soundness
+proves that their connecting classes agree.
+
+### Premise delta
+
+- discharged in this checkpoint: sectionwise kernel comparison generated from
+  categorical short exactness; large-coefficient cochain naturality; the
+  local-lift connecting cocycle; and independence of the local-lift choice.
+- remaining: class-zero iff actual global lift; selected-cover sheaf gluing;
+  nonempty lift-fiber torsor and simple transitivity; direct Cycle 9
+  specialization theorem; a true ideal subsheaf; semantic representations;
+  finite zero/nonzero witness pair; package theorem; and the `H¹ = 0`
+  corollary.
+
+### Audits
+
+- focused Cycle 11 elaboration: pass
+- module-wide standard-axiom assertion: pass (48 declarations)
+- certificate provenance: `sectionKernelEquiv` is built from
+  `ShortComplex.ShortExact.fIsKernel`, preservation of the kernel limit under
+  the underlying-presheaf and evaluation functors, and
+  `AddCommGrpCat.kernelIsoKer`
+- supplied-field audit: `LocalLiftData` contains no kernel comparison,
+  exactness, cocycle, class-zero, compatible family, or global-lift field
+- sectionwise-surjectivity audit: no sheaf epimorphism is interpreted as
+  surjective on sections
+- target classification: connecting-class construction and choice
+  independence are proved; D0 effectivity is still unproved
+
+### Next obligation
+
+Use `h1Class_isZero_iff` to obtain the correction cochain, prove that corrected
+local lifts form a compatible family on the selected generated cover, derive
+their amalgamation from the bundled middle sheaf condition, and use quotient
+separatedness to prove the primary `H1IsZero` iff actual-global-lift theorem.
+Then construct the nonempty lift-fiber torsor and specialize the result to the
+Cycle 9 law-generated sheafified short complex.
