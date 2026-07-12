@@ -170,6 +170,13 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
             ));
         }
     }
+    for duplicate in duplicates(vocabulary.axes.iter().map(String::as_str)) {
+        examples.push(generic_validation_example(
+            "aatAtomBindingVocabulary.axes",
+            &duplicate,
+            "the shared binding manifest must declare each axis once",
+        ));
+    }
     for predicate in &vocabulary.predicates {
         if !required_predicates.contains(&predicate.as_str()) {
             examples.push(generic_validation_example(
@@ -178,6 +185,13 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
                 "the shared binding manifest must reject predicates outside the Stage 2 contract",
             ));
         }
+    }
+    for duplicate in duplicates(vocabulary.predicates.iter().map(String::as_str)) {
+        examples.push(generic_validation_example(
+            "aatAtomBindingVocabulary.predicates",
+            &duplicate,
+            "the shared binding manifest must declare each predicate once",
+        ));
     }
     for (axis, predicate) in required_pairs {
         let present = vocabulary
@@ -192,8 +206,23 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
             ));
         }
     }
+    let mut pair_keys = BTreeSet::new();
     for pair in &vocabulary.axis_predicate_pairs {
+        if pair.predicates.is_empty() {
+            examples.push(generic_validation_example(
+                "aatAtomBindingVocabulary.axisPredicatePairs[].predicates",
+                &pair.axis,
+                "the shared binding manifest must not declare an axis without predicates",
+            ));
+        }
         for predicate in &pair.predicates {
+            if !pair_keys.insert((pair.axis.as_str(), predicate.as_str())) {
+                examples.push(generic_validation_example(
+                    "aatAtomBindingVocabulary.axisPredicatePairs",
+                    &format!("{}/{}", pair.axis, predicate),
+                    "the shared binding manifest must declare each pair once",
+                ));
+            }
             if !required_pairs.contains(&(pair.axis.as_str(), predicate.as_str())) {
                 examples.push(generic_validation_example(
                     "aatAtomBindingVocabulary.axisPredicatePairs",

@@ -20,7 +20,7 @@ const CONDITION_TYPES: [&str; 6] = [
     "stacky",
 ];
 
-const CONCLUSION_TOKENS: [&str; 23] = [
+const CONCLUSION_TOKENS: [&str; 27] = [
     "boundary",
     "certificate",
     "globalcoherent",
@@ -44,6 +44,10 @@ const CONCLUSION_TOKENS: [&str; 23] = [
     "risky",
     "verdict",
     "violation",
+    "violate",
+    "violated",
+    "violates",
+    "violating",
 ];
 
 const BINDING_AXES: [&str; 3] = ["cech", "square-free", "section-factorization"];

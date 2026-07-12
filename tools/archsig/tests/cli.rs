@@ -96,6 +96,32 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         assert_eq!(read_json(&reserved_report)["summary"]["result"], "fail");
     }
 
+    for field in ["skeleton", "defectSources", "quotientSheafCondition"] {
+        let mut null_reserved = read_json(&input);
+        null_reserved[field] = Value::Null;
+        let null_reserved_path = out_dir.join(format!("reserved-{field}-null.json"));
+        fs::write(
+            &null_reserved_path,
+            serde_json::to_vec_pretty(&null_reserved).expect("null reserved field serializes"),
+        )
+        .expect("null reserved field writes");
+        let null_reserved_report = out_dir.join(format!("reserved-{field}-null-report.json"));
+        run_sig0_expect_code(
+            &[
+                "law-surface",
+                "--law-surface",
+                null_reserved_path.to_str().expect("path is utf-8"),
+                "--out",
+                null_reserved_report.to_str().expect("path is utf-8"),
+            ],
+            1,
+        );
+        assert_eq!(
+            read_json(&null_reserved_report)["summary"]["result"],
+            "fail"
+        );
+    }
+
     let mut weakened = read_json(&input);
     weakened["laws"][0]["conditionType"] = json!("open");
     let weakened_path = out_dir.join("weakened.json");
@@ -148,7 +174,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     );
 
     let mut empty_ideal = read_json(&input);
-    empty_ideal["laws"][1]["forbiddenSupportGenerators"] = json!([]);
+    empty_ideal["laws"][0]["forbiddenSupportGenerators"] = json!([]);
     let empty_ideal_path = out_dir.join("empty-ideal.json");
     fs::write(
         &empty_ideal_path,
@@ -191,6 +217,10 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         ("nonzero", "ag.nonzero"),
         ("obstruction", "ag.obstruction"),
         ("violation", "ag.violation"),
+        ("violate", "ag.violate"),
+        ("violated", "ag.violated"),
+        ("violates", "ag.violates"),
+        ("violating", "ag.violating"),
         ("verdict", "ag.verdict"),
     ] {
         let mut shortcut_input = read_json(&input);
@@ -587,6 +617,22 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     ]);
     assert_eq!(unknown_output.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&unknown_output.stderr).contains("unknown field"));
+
+    let duplicate_key_path = out_dir.join("duplicate-key.json");
+    fs::write(
+        &duplicate_key_path,
+        r#"{"schema":"law-equation-surface/v0.5.1","id":"law-surface:duplicate","laws":[{"lawId":"law:first","lawId":"law:second","conditionType":"descent","evaluatorRef":"ag.section-factorization"}]}"#,
+    )
+    .expect("duplicate key fixture writes");
+    let duplicate_key_output = run_sig0_output(&[
+        "law-surface",
+        "--law-surface",
+        duplicate_key_path.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(duplicate_key_output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&duplicate_key_output.stderr).contains("duplicate JSON object key")
+    );
 }
 
 #[test]
