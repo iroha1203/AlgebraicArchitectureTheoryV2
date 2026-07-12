@@ -1431,3 +1431,79 @@ Generate the canonical isomorphisms from each lifted raw coefficient to
 sectionwise additive equivalences, and prove restriction naturality.  Then the
 explicit canonical tuple calculation can be performed directly on raw active
 representatives and transported without a supplied comparison.
+
+## Cycle 21 — canonical raw-to-sheafified conormal comparison
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedBooleanCircleConormalSheafification.lean`
+- checkpoint spine:
+  - `liftedConormal_isSheaf`
+  - `liftedRawConormalSheafificationIso`
+  - `liftedRawConormalSheafificationIso_hom`
+  - `rawToLiftedX1Equiv`
+  - `liftedX1_map_up`
+  - `rawConormalX1Equiv`
+  - `rawConormalX1Equiv_restrict`
+  - `squareZeroConormalSheafificationIso`
+  - `idempotentConormalSheafificationIso`
+  - `squareZeroRawConormalX1Equiv_restrict`
+
+### Checkpoint delta
+
+Any generated raw conormal sheaf remains a sheaf after the additive universe
+lift.  For the lifted coefficient, Mathlib's concrete `isoSheafify` is composed
+with `plusPlusIsoSheafify`, the canonical comparison from concrete
+sheafification to the repository's abstract `presheafToSheaf`.  The resulting
+isomorphism has exactly the `sheafifiedShortComplex.X₁.val` target.
+
+The comparison hom is proved equal to the abstract sheafification unit
+`toSheafify`; no arbitrary objectwise isomorphism or comparison map is chosen.
+Sectionwise, the small raw conormal is first sent through `AddEquiv.ulift` and
+then through that presheaf isomorphism.  The lifted restriction is proved to be
+the universe lift of the raw conormal restriction, and naturality of the
+canonical unit proves compatibility with every context arrow.
+
+The generic adapter accepts a raw sheaf theorem, but both Boolean-circle
+instances discharge it concretely with Cycle 20.  The exported square-zero and
+idempotent isomorphisms, sectionwise equivalences, and restriction theorems
+therefore have no sheaf premise left as an argument.
+
+### Premise delta
+
+- discharged: lifted raw conormal sheafness; canonical lifted-raw to
+  `sheafifiedShortComplex.X₁.val` isomorphism; equality of its hom with the
+  abstract sheafification unit; small-to-large section equivalence; restriction
+  naturality; concrete idempotent and square-zero specializations with all
+  sheaf premises discharged.
+- remaining: canonical tuple overlap/profile formulas; explicit cocycle and
+  period non-coboundary; the sheafified zero/nonzero `H¹` pair; primitive
+  lawful-reading atlas; semantic specialization; torsor/H0; final package; and
+  the global `H¹`-vanishing corollary.
+
+### Audits
+
+- focused conormal-sheafification elaboration: pass (15 declarations)
+- module-wide standard-axiom assertion: pass
+- proof-use: raw sheafness is transported through universe lift; the concrete
+  and abstract canonical sheafifications are connected by Mathlib's unit
+  comparison; section naturality uses the actual lifted presheaf map
+- provenance: `liftedRawConormalSheafificationIso_hom` identifies the map with
+  `toSheafify`; both concrete instances use Cycle 20 sheaf theorems directly
+- supplied-field audit: the generic adapter's sheaf argument is fully
+  discharged in every concrete export; no comparison, naturality, cocycle,
+  class, or vanishing witness is supplied
+- four independent review lanes: No major findings
+- target classification: the canonical raw/sheafified conormal connection is
+  discharged; the D2 cohomology calculation remains
+
+### Next obligation
+
+Compute the canonical tuple overlap context as the union of its chart indices.
+For the square-zero coefficient, prove that degree-zero and degree-one tuple
+values use the nonzero active group, while a degree-two tuple has zero
+coefficient exactly when its three indices are distinct.  Define the
+three-edge raw cocycle, prove its cocycle equation over every ordered triple,
+and prove non-coboundary from its nonzero period before transporting it through
+this cycle's canonical comparison.
