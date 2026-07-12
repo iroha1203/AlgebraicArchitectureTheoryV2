@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 12
+- latest reviewed cycle: 13
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: construct the true law-generated ideal subsheaf and the required H0 comparison
+- next obligation: construct the conormal kernel action as a true ideal object
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -798,3 +798,80 @@ additive sequence, so the next construction must generate the ambient ring
 action and ideal stability rather than accept either as input. Then identify
 the resulting underlying additive kernel sheaf with the Cycle 9 first term and
 construct the required degree-zero cohomology comparison.
+
+## Cycle 13 — law-generated internal ring sheaves
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedRingSheaf.lean`
+- checkpoint spine:
+  - `LargeInt`
+  - `LargeZMod`
+  - `commRingObject`
+  - `observableRingCoefficient`
+  - `q1RingCoefficient`
+  - `q0RingCoefficient`
+  - `projectionRingCoefficient`
+  - `q1RingPresheafObject`
+  - `q0RingPresheafObject`
+  - `projectionRingPresheaf`
+  - `q1RingSheafObject`
+  - `q0RingSheafObject`
+  - `projectionRingSheaf`
+
+### Checkpoint delta
+
+The law-generated observable rings, `O/I²`, and `O/I` now form actual internal
+commutative-ring coefficient functors in large-universe integer modules. The
+construction lifts each raw commutative ring and restriction homomorphism
+through `AlgCat` and the equivalence between algebra objects and internal
+monoids, with commutativity proved from the original ring multiplication.
+
+The q1-to-q0 projection is proved natural as a morphism of internal ring
+coefficient functors. The functor-category commutative-monoid equivalence then
+packages q1, q0, and their projection as internal ring presheaf objects.
+Canonical monoidal sheafification transports the same objects and morphism to
+internal commutative ring sheaves on the selected AAT site.
+
+This cycle intentionally stops at ring sheaves and their projection. The
+categorical kernel, its ambient action, ideal stability, and comparison with
+Cycle 9's additive first term remain unproved and are not part of this
+checkpoint claim.
+
+### Premise delta
+
+- discharged: law-generated q1/q0 ring-valued coefficient functors; universe
+  lift with scalar compatibility; internal commutative ring presheaves;
+  natural ring projection; monoidal sheafification of q1/q0 and the projection.
+- remaining: the projection kernel as a true ideal object; the comparison with
+  Cycle 9's additive conormal sheaf; the required degree-zero cohomology
+  comparison; semantic representations; a finite law-sensitive zero/nonzero
+  witness pair; package theorem; and the global `H¹`-vanishing corollary.
+
+### Audits
+
+- focused Cycle 13 elaboration: pass
+- module-wide standard-axiom assertion: pass (24 declarations)
+- placeholder / hidden Unicode / private-path scans: pass
+- proof-use: q1/q0 functor laws reduce to the generated quotient restriction
+  lemmas and `G.restrict_id` / `G.restrict_comp`; projection naturality reduces
+  to the raw representative lemmas
+- provenance: ring multiplication and commutativity come from the raw quotient
+  rings; sheafified objects and projection are direct functorial images under
+  canonical monoidal sheafification
+- supplied-field audit: no ring object, action, ideal stability, kernel,
+  exactness, or sheafification certificate is accepted as input
+- public-claim correction: the module was renamed from the overbroad draft
+  name to `LawGeneratedRingSheaf` before review approval
+- four independent review lanes after the rename: No major findings
+- target classification: the ring-sheaf prerequisite for the true conormal
+  ideal is discharged; G-07 remains a proof checkpoint
+
+### Next obligation
+
+Take the categorical kernel of `projectionRingSheaf`, prove multiplication by
+q1 preserves that kernel, and construct its internal module object without an
+action or stability premise. Then compare the underlying additive kernel sheaf
+with Cycle 9's `sheafifiedShortComplex G` first term by canonical
+sheafification comparison and kernel uniqueness.
