@@ -115,6 +115,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
   --out-dir .archsig/analyze
 ```
 
@@ -122,6 +123,7 @@ This writes:
 
 - `.archsig/analyze/archmap-validation.json`
 - `.archsig/analyze/law-policy-validation.json`
+- `.archsig/analyze/law-surface-validation.json`
 - `.archsig/analyze/normalized-archmap.json`
 - `.archsig/analyze/archsig-analysis-validation.json`
 - `.archsig/analyze/archsig-analysis-summary.json`
