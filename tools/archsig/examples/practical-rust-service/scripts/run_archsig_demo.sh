@@ -29,10 +29,15 @@ echo "=== Act 2: measure base and head ==="
 for state in base:archmap.json head:archmap_head.json; do
   name="${state%%:*}"
   archmap="${state##*:}"
+  law_surface="$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v051.json"
+  if [ "$name" = "base" ]; then
+    law_surface="$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_base_v051.json"
+  fi
   "${ARCHSIG[@]}" analyze \
     --archmap "$EXAMPLE/archmap/$archmap" \
     --law-policy "$EXAMPLE/law_policy/law_policy.json" \
     --measurement-profile "$EXAMPLE/law_policy/measurement_profile.json" \
+    --law-surface "$law_surface" \
     --out-dir "$OUT/$name" >/dev/null
   conclusion "$OUT/$name/archsig-analysis-summary.json" "analyze $name" conclusion
 done
@@ -57,6 +62,7 @@ echo "=== Act 4: measure, compare, and gate the repaired state ==="
   --archmap "$EXAMPLE/archmap/archmap_repaired.json" \
   --law-policy "$EXAMPLE/law_policy/law_policy.json" \
   --measurement-profile "$EXAMPLE/law_policy/measurement_profile.json" \
+  --law-surface "$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v051.json" \
   --out-dir "$OUT/repaired" >/dev/null
 conclusion "$OUT/repaired/archsig-analysis-summary.json" "analyze repaired" conclusion
 "${ARCHSIG[@]}" compare \

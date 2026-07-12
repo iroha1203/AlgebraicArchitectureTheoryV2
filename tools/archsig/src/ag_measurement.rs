@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
 
+use crate::law_execution::{LawExecutionPlanV1, build_law_execution_plan};
 use crate::saga::evaluate_saga_descent_v1;
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
@@ -510,9 +511,22 @@ pub fn build_foundation_measurement_packet_v1(
             .is_some_and(|evaluator| evaluator.starts_with("ag."))
     }) {
         let evaluator = entry.evaluator.as_deref().unwrap_or_default();
+        let selected_contexts_for_plan = (evaluator == "ag.cech-obstruction").then(|| {
+            selected_cover_contexts(normalized, &profile)
+                .into_iter()
+                .collect::<BTreeSet<_>>()
+        });
+        let execution_plan = build_law_execution_plan(
+            normalized,
+            law_surface,
+            entry.law.as_deref(),
+            evaluator,
+            selected_contexts_for_plan.as_ref(),
+        )?;
         if evaluator == "ag.cech-obstruction" {
             validate_cech_profile_v1(&profile)?;
-            let measurement = evaluate_cech_obstruction_v1(normalized, &profile);
+            let measurement =
+                evaluate_cech_obstruction_v1(normalized, &profile, execution_plan.as_ref());
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             assumptions.extend(measurement.assumptions);
@@ -581,7 +595,8 @@ pub fn build_foundation_measurement_packet_v1(
             });
         } else if evaluator == "ag.section-factorization" {
             validate_section_profile_v1(&profile)?;
-            let measurement = evaluate_section_factorization_v1(normalized, &profile)?;
+            let measurement =
+                evaluate_section_factorization_v1(normalized, &profile, execution_plan.as_ref())?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             assumptions.extend(measurement.assumptions);
@@ -2266,13 +2281,28 @@ fn evaluate_restriction_compatibility_v1(
 fn evaluate_section_factorization_v1(
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
+    execution_plan: Option<&LawExecutionPlanV1>,
 ) -> Result<SectionMeasurementV1, String> {
     let selected_contexts = selected_cover_contexts(normalized, profile)
         .into_iter()
         .collect::<BTreeSet<_>>();
-    let witness_variables = section_witness_variables(profile);
-    let forbidden_supports =
-        section_forbidden_supports(normalized, &selected_contexts, &witness_variables)?;
+    let witness_variables = if let Some(plan) = execution_plan {
+        plan.section_witness_variables.clone().ok_or_else(|| {
+            "ag.section-factorization execution plan contains no witness variables".to_string()
+        })?
+    } else {
+        section_witness_variables(profile)
+    };
+    let forbidden_supports = if let Some(plan) = execution_plan {
+        section_forbidden_supports_from_plan(
+            normalized,
+            &selected_contexts,
+            &witness_variables,
+            plan,
+        )?
+    } else {
+        section_forbidden_supports(normalized, &selected_contexts, &witness_variables)?
+    };
     let minimal_forbidden_supports = minimal_section_forbidden_supports(&forbidden_supports);
     let assignment = section_assignment(normalized, &selected_contexts, &witness_variables)?;
     let assignment_status = if let Some(assignment) = &assignment {
@@ -2299,7 +2329,16 @@ fn evaluate_section_factorization_v1(
             .iter()
             .filter(|support| {
                 support.support.iter().all(|variable| {
-                    assignment.as_ref().unwrap().assigned.get(variable) == Some(&true)
+                    let assignment_variable = execution_plan
+                        .and_then(|plan| plan.section_variable_aliases.as_ref())
+                        .and_then(|aliases| aliases.get(variable))
+                        .unwrap_or(variable);
+                    assignment
+                        .as_ref()
+                        .unwrap()
+                        .assigned
+                        .get(assignment_variable)
+                        == Some(&true)
                 })
             })
             .cloned()
@@ -6831,9 +6870,24 @@ struct CechEdgeV1 {
 fn evaluate_cech_obstruction_v1(
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
+    execution_plan: Option<&LawExecutionPlanV1>,
 ) -> CechMeasurementV1 {
     let selected_contexts = selected_cover_contexts(normalized, profile);
-    let edges = cech_edges(normalized, &selected_contexts);
+    let derived_edges = cech_edges(normalized, &selected_contexts);
+    let edges = execution_plan
+        .and_then(|plan| plan.cech_edges.as_ref())
+        .map(|selected_edges| {
+            derived_edges
+                .iter()
+                .filter(|edge| {
+                    let mut pair = [edge.source_context.clone(), edge.target_context.clone()];
+                    pair.sort();
+                    selected_edges.contains(&pair)
+                })
+                .cloned()
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or(derived_edges);
     let cover_nerve_projection =
         cover_nerve_projection_v1(normalized, &selected_contexts, &edges, &profile.cover_ref);
     let cover_nerve_face_count = cover_nerve_projection["faces"]
@@ -9563,6 +9617,52 @@ fn section_forbidden_supports(
         });
     }
     supports.sort_by(|left, right| left.support_id.cmp(&right.support_id));
+    Ok(supports)
+}
+
+fn section_forbidden_supports_from_plan(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+    plan: &LawExecutionPlanV1,
+) -> Result<Vec<SectionForbiddenSupportV1>, String> {
+    let observed = section_forbidden_supports(normalized, selected_contexts, witness_variables)?;
+    let declared = plan
+        .section_forbidden_supports
+        .as_ref()
+        .ok_or_else(|| "section execution plan has no forbidden supports".to_string())?;
+    let mut supports = Vec::new();
+    for (index, support) in declared.iter().enumerate() {
+        let mut observed_support_variables = support
+            .iter()
+            .map(|variable| {
+                plan.section_variable_aliases
+                    .as_ref()
+                    .and_then(|aliases| aliases.get(variable))
+                    .cloned()
+                    .unwrap_or_else(|| variable.clone())
+            })
+            .collect::<Vec<_>>();
+        observed_support_variables.sort();
+        let mut declared_support = support.clone();
+        declared_support.sort();
+        let Some(observed_support) = observed
+            .iter()
+            .find(|candidate| candidate.support == observed_support_variables)
+        else {
+            return Ok(Vec::new());
+        };
+        let mut source_refs = observed_support.source_refs.clone();
+        source_refs.push(format!("law-surface:{}", plan.surface_id));
+        supports.push(SectionForbiddenSupportV1 {
+            support_id: format!(
+                "law-surface:{}:{}:forbidden:{}",
+                plan.surface_id, plan.selected_law_id, index
+            ),
+            support: declared_support,
+            source_refs,
+        });
+    }
     Ok(supports)
 }
 
@@ -13905,7 +14005,7 @@ mod tests {
         normalized.covers[0].context_ids.clear();
         let profile = packet_fixture().profile;
 
-        let measurement = evaluate_cech_obstruction_v1(&normalized, &profile);
+        let measurement = evaluate_cech_obstruction_v1(&normalized, &profile, None);
 
         assert_eq!(measurement.verdict, "not_computed");
         assert!(!measurement.zero);

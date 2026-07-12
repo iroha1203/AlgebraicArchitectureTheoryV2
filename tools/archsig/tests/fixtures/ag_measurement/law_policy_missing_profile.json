@@ -3,7 +3,7 @@
   "id": "ag-measurement-policy-missing-profile",
   "policies": [
     {
-      "law": "ag.cech-obstruction",
+    "law": "surface:cech-surface-v051",
       "evaluator": "ag.cech-obstruction",
       "basis": [
         "policy-basis:layering"

@@ -49,10 +49,11 @@ const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 15] = [
     "topological-debt-capacity",
 ];
 
-const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 5] = [
+const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 6] = [
     "archmap",
     "law-policy",
     "measurement-profile",
+    "law-equation-surface",
     "repair-plan",
     "residual-packet",
 ];
@@ -892,6 +893,22 @@ fn archsig_measurement_packet_sft_source_refs(
     if let Some(profile_id) = json_path_string(packet, &["profile"], "profileId") {
         refs.push(format!("archsigMeasurementProfile:{profile_id}"));
     }
+    refs.extend(
+        packet
+            .get("suppliedData")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .filter(|entry| {
+                entry.get("kind").and_then(|value| value.as_str()) == Some("law-equation-surface")
+            })
+            .filter_map(|entry| {
+                entry
+                    .get("sourceArtifactRef")
+                    .and_then(|value| value.as_str())
+                    .map(|source| format!("archsigMeasurementLawSurface:{source}"))
+            }),
+    );
     refs.extend(
         packet
             .get("structuralVerdict")

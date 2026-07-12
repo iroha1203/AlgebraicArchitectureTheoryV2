@@ -1,0 +1,48 @@
+{
+  "schema": "law-equation-surface/v0.5.1",
+  "id": "law-surface:cech-section-v051",
+  "laws": [
+    {
+      "lawId": "surface:cech-surface-v051",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "e_top_left",
+          "binding": {
+            "edge": ["ctx:top", "ctx:left"],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["e_top_left"] }
+      ]
+    },
+    {
+      "lawId": "ag.section-factorization",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "x",
+          "binding": {
+            "archmapVariable": "x",
+            "axis": "section-factorization",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "y",
+          "binding": {
+            "archmapVariable": "y",
+            "axis": "section-factorization",
+            "predicate": "support"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["x", "y"] }
+      ]
+    }
+  ]
+}

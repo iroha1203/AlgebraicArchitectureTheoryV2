@@ -101,6 +101,57 @@
       "forbiddenSupportGenerators": [
         { "support": ["x_inventory", "x_payment"] }
       ]
+    },
+    {
+      "lawId": "surface:cech-surface-v051",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "e_order_shared",
+          "binding": {
+            "edge": ["ctx:order", "ctx:shared"],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        },
+        {
+          "variable": "e_inventory_shared",
+          "binding": {
+            "edge": ["ctx:inventory", "ctx:shared"],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["e_order_shared"] },
+        { "support": ["e_inventory_shared"] }
+      ]
+    },
+    {
+      "lawId": "ag.section-factorization",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "x",
+          "binding": {
+            "archmapVariable": "x",
+            "axis": "section-factorization",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "y",
+          "binding": {
+            "archmapVariable": "y",
+            "axis": "section-factorization",
+            "predicate": "support"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["x", "y"] }
+      ]
     }
   ]
 }

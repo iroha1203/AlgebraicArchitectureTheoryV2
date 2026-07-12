@@ -81,6 +81,11 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
         };
         let law_policy = case["lawPolicy"].as_str().expect("law policy is string");
         let measurement_profile = measurement_profile_for(&root, law_policy);
+        let law_surface = if archmap_name.contains("cech_h1_visible") {
+            "law_surface_cech_h1_v051.json"
+        } else {
+            "law_surface_ag_v051.json"
+        };
         let args = vec![
             "analyze".to_string(),
             "--archmap".to_string(),
@@ -99,7 +104,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
                 .expect("measurement profile path is utf-8")
                 .to_string(),
             "--law-surface".to_string(),
-            root.join("law_surface_ag_v051.json")
+            root.join(law_surface)
                 .to_str()
                 .expect("law surface path is utf-8")
                 .to_string(),
