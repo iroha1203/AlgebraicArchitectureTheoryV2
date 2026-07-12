@@ -26,6 +26,7 @@ import ResearchLean.AG.QualitySurface.LawGeneratedConormalDescent
 import ResearchLean.AG.QualitySurface.LawGeneratedLargeConormalDescent
 import ResearchLean.AG.QualitySurface.LawGeneratedLargeCoefficientCech
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerLiftedSheafification
+import ResearchLean.AG.QualitySurface.LawGeneratedRingSheaf
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerSequence
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerShortExact
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealSubpresheaf
