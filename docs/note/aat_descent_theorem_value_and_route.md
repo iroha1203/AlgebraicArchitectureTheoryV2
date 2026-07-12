@@ -1,10 +1,11 @@
 # Conormal first-order descent — target と証明ルート
 
-SAGA 定理([証明記録](aat_saga_theorem_proof_record.md))の次に狙う
-**Law-Generated Conormal First-Order Descent Theorem(未証明)** の設計ノート。
+SAGA 定理([証明記録](aat_saga_theorem_proof_record.md))の次に証明した
+**Law-Generated Conormal First-Order Descent Theorem** の設計ノート。
 固定 statement と完了条件の正本は
 [research/goals/G-aat-quality-surface-07.md](../../research/goals/G-aat-quality-surface-07.md)の`G-aat-quality-surface-07`であり、
-本ノートは数学的根拠と証明順序を記録する。
+本ノートは数学的根拠と証明順序を記録する。完了証拠は
+[research/reports/G-aat-quality-surface-07.md](../../research/reports/G-aat-quality-surface-07.md)に置く。
 
 参照:
 
@@ -197,25 +198,12 @@ partial_(n,U)(s_(n-1)) in CechH1(U, I^n/I^(n+1))
 
 ## 4. Law-sensitive finite witness
 
-同じcoverとambient ringを固定し、law idealだけを変えてclassが零 / 非零に分かれる例を作る。
-候補は
-
-```text
-R = F_2[x,a,b] / (x^2, a^2, b^2)
-phi(x) = x + ab
-phi(a) = a
-phi(b) = b
-```
-
-を係数環とし、3-chart circle型Čech modelの一辺だけに`phi`を使う。
-
-- `I = (ab)`: `I^2 = 0`。`x mod I`のlocal lift mismatchは`omega = (0,0,ab)`。
-  periodが非零なら`CechH1(U,I/I^2)`の非零classとglobal first-order lift不存在を与える。
-- `J = (a,b)`: `J^2 = (ab)`、`J^3 = 0`。`O/J^2`では`ab = 0`なのでfirst-order
-  classは零だが、full `O`のmismatchは`J^2/J^3`で検出される。
-
-この例は未検証候補である。ring endomorphism、restriction functoriality、period map、
-coboundary非所属、generated coverへのrealizationをLeanで確認して初めて完了根拠になる。
+Lean実装ではBoolean-circle site、selected cover、ambient ring、restrictionを共通に固定し、
+law witness idealだけを変えたidempotent-zero / square-zero-nonzero対を構成した。
+`LawGeneratedBooleanCircleConormalH1Pair.lean`が同一幾何上の零 / 非零classをまとめ、
+`LawGeneratedBooleanCircleSquareZeroH1.lean`が非零period classを、
+`LawGeneratedBooleanCirclePrimitiveAtlas.lean`がAtom / law入力から生成した非零lawful readingを与える。
+これらはfinal packageのlaw-sensitive nonvacuity witnessとして接続されている。
 
 ---
 
@@ -240,8 +228,8 @@ G-07: law-generated conormal first-order descent
 G-04: ideal-power higher stages、nonabelian / higher / stacky / universality
 ```
 
-G-07は高優先のactive target-theorem GOALであり、tracking Issueは初回
-`$target-theorem-loop G-aat-quality-surface-07`のT0で作成する。
+G-07は`target-theorem-proved`として完了し、tracking Issue
+[#3246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3246)はclose済みである。
 
 ---
 
@@ -265,4 +253,6 @@ LIFTS_AT_ORDER_n_BUT_BLOCKED_AT_ORDER_(n+1):
 これはAAT定理の後続clientであり、入力contract、fixture、conclusion code、実証評価は
 別のtooling PRDで扱う。
 
-Lean status: G-07 target theoremは未証明である。
+Lean status: G-07 target theoremは`ResearchLean`で証明済みである。完了packageは
+`lawGeneratedConormalFirstOrderDescent_package`、完了記録は
+[research/reports/G-aat-quality-surface-07.md](../../research/reports/G-aat-quality-surface-07.md)を参照する。

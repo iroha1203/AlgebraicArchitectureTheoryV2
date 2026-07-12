@@ -1,10 +1,13 @@
 # G-aat-quality-surface-07 — law-generated conormal first-order descent theorem の証明
 
 - `id`: `G-aat-quality-surface-07`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。固定artifact、完了条件、4本の独立math / Lean査読、PR #3278のCI、report、tracking Issueの同期を完了。
+- `completed at`: `2026-07-12 JST`
 - `priority`: `high`
 - `research mode`: `target-theorem`
-- `tracking issue`: `pending`。初回`$target-theorem-loop G-aat-quality-surface-07`のT0で作成し、以後のruntime stateを置く。
+- `tracking issue`: [#3246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3246) closed as `COMPLETED`.
+- `completion report`: [research/reports/G-aat-quality-surface-07.md](../reports/G-aat-quality-surface-07.md)
 - `source note`: [docs/note/aat_descent_theorem_value_and_route.md](../../docs/note/aat_descent_theorem_value_and_route.md)
 - `predecessor / successor relation`: G-02 / G-05 / G-06(SAGA)を証明済みの地盤として使う。G-07はlaw-generated abelian first-order descentを担当し、G-03は一般generated nerve、G-04はideal-power higher stagesとnonabelian / higher / stacky / universalityを担当する。
 - `research aim`: law witnessから`I`、`O/I^2 -> O/I`、`ConDef = I/I^2`を生成し、lawful sectionごとのconnecting classがactual global first-order liftの存在をちょうど判定することをLeanで証明する。
