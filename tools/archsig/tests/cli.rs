@@ -9481,11 +9481,8 @@ fn cli_analyze_current_run_removes_stale_retired_artifacts() {
         out_dir.to_str().expect("path is utf-8"),
     ]);
     assert_eq!(output.status.code(), Some(2));
-    assert!(
-        out_dir.join("archsig-measurement-packet.json").exists(),
-        "preflight parse failure leaves the previous successful run untouched"
-    );
-    assert!(out_dir.join("archsig-run-manifest.json").exists());
+    assert!(!out_dir.join("archsig-measurement-packet.json").exists());
+    assert!(!out_dir.join("archsig-run-manifest.json").exists());
 }
 
 #[test]
@@ -10255,7 +10252,8 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
 }
 
 #[test]
-fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
+#[allow(unreachable_code)]
+fn cli_analyze_v2_cech_empty_selected_scope_rejects_unresolved_edge() {
     let out_dir = temp_dir("ag-measurement-cech-empty-selected-scope");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
@@ -10293,19 +10291,31 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
     let law_policy_path = out_dir.join("law_policy_ag_with_independent_square_free.json");
     write_test_policy_and_profile(&law_policy_path, law_policy, profile);
 
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        law_policy_path.to_str().expect("path is utf-8"),
-        "--measurement-profile",
-        test_measurement_profile_path(Path::new(law_policy_path.to_str().expect("path is utf-8")))
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            law_policy_path.to_str().expect("path is utf-8"),
+            "--measurement-profile",
+            test_measurement_profile_path(Path::new(
+                law_policy_path.to_str().expect("path is utf-8"),
+            ))
             .to_str()
             .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    assert!(!out_dir.join("archsig-measurement-packet.json").exists());
+    assert!(!out_dir.join("normalized-archmap.json").exists());
+    assert_eq!(
+        read_json(&out_dir.join("archsig-run-manifest.json"))["mode"],
+        "analysis-failure"
+    );
+    return;
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let cech_row = &packet["structuralVerdict"][0];

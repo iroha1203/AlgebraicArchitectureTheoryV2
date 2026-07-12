@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::{LawEquationSurfaceV1, NormalizedArchMapV2};
 
@@ -10,6 +10,7 @@ pub(crate) struct LawExecutionPlanV1 {
     pub(crate) selected_law_id: String,
     pub(crate) cech_edges: Option<BTreeSet<[String; 2]>>,
     pub(crate) section_witness_variables: Option<Vec<String>>,
+    pub(crate) section_variable_aliases: Option<BTreeMap<String, String>>,
     pub(crate) section_forbidden_supports: Option<Vec<Vec<String>>>,
 }
 
@@ -107,6 +108,7 @@ pub(crate) fn build_law_execution_plan(
 
     let mut explicit_cech_edges = BTreeSet::new();
     let mut section_witness_variables = Vec::new();
+    let mut section_variable_aliases = BTreeMap::new();
     for witness in &selected_law.witness_variables {
         let axis = witness.binding.axis.as_deref().unwrap_or_default();
         match evaluator {
@@ -131,7 +133,7 @@ pub(crate) fn build_law_execution_plan(
                 }
                 let mut pair = [edge[0].clone(), edge[1].clone()];
                 pair.sort();
-                if !derived_edges.is_empty() && !derived_edges.contains(&pair) {
+                if !derived_edges.contains(&pair) {
                     return Err(format!(
                         "law {} cech witness {} edge {} -> {} is not in the selected restriction 1-skeleton",
                         selected_law.law_id, witness.variable, edge[0], edge[1]
@@ -151,13 +153,13 @@ pub(crate) fn build_law_execution_plan(
                         selected_law.law_id, witness.variable
                     ));
                 }
-                section_witness_variables.push(
-                    witness
-                        .binding
-                        .archmap_variable
-                        .clone()
-                        .unwrap_or_else(|| witness.variable.clone()),
-                );
+                let alias = witness
+                    .binding
+                    .archmap_variable
+                    .clone()
+                    .unwrap_or_else(|| witness.variable.clone());
+                section_variable_aliases.insert(witness.variable.clone(), alias.clone());
+                section_witness_variables.push(alias);
             }
             _ => {}
         }
@@ -191,6 +193,8 @@ pub(crate) fn build_law_execution_plan(
         cech_edges: (!explicit_cech_edges.is_empty()).then_some(explicit_cech_edges),
         section_witness_variables: (!section_witness_variables.is_empty())
             .then_some(section_witness_variables),
+        section_variable_aliases: (!section_variable_aliases.is_empty())
+            .then_some(section_variable_aliases),
         section_forbidden_supports,
     }))
 }

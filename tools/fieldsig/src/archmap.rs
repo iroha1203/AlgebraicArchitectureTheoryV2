@@ -49,10 +49,11 @@ const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 15] = [
     "topological-debt-capacity",
 ];
 
-const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 5] = [
+const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 6] = [
     "archmap",
     "law-policy",
     "measurement-profile",
+    "law-equation-surface",
     "repair-plan",
     "residual-packet",
 ];

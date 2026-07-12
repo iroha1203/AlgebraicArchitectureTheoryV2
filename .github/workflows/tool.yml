@@ -149,6 +149,14 @@ jobs:
             --measurement-packet "$archsig_measurement_dir/archsig-measurement-packet.json" \
             --out "$fieldsig_dir/operation-support-estimate-measurement.json"
 
+          cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
+            --measurement-packet "$archsig_measurement_dir/gate-smoke/archsig-measurement-packet.json" \
+            --out "$fieldsig_dir/operation-support-estimate-law-surface.json"
+
+          jq -e '
+            ([.descriptorRef.sourceRefIds[]? | startswith("archsigMeasurementStructuralLaw:surface:cech-surface-v051")] | any)
+          ' "$fieldsig_dir/operation-support-estimate-law-surface.json"
+
           jq -e '
             .schema == "operation-support-estimate/v0.5.0"
             and .descriptorRef.artifactKind == "archsig-measurement-packet"

@@ -773,6 +773,9 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let repair_plan_validation_path = out_dir.join("repair-plan-validation.json");
             let law_surface_validation_path = out_dir.join("law-surface-validation.json");
 
+            std::fs::create_dir_all(&out_dir)?;
+            remove_analyze_success_artifacts(&out_dir)?;
+
             let (archmap_preflight, archmap_failed) =
                 validate_archmap_command_input(&archmap, &None, &[], &[], &None)?;
             let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
@@ -860,8 +863,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 contract_site_cover_digest(&archmap_contract_input)?,
                 stamp,
             )?;
-            std::fs::create_dir_all(&out_dir)?;
-            remove_analyze_success_artifacts(&out_dir)?;
             write_json(
                 Some(archmap_validation_path),
                 &with_run_contract(&archmap_preflight, &run_contract)?,
@@ -977,6 +978,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             {
                 Ok(packet) => packet,
                 Err(message) => {
+                    let mut runtime_failure_generated_artifacts = validation_generated_artifacts.clone();
+                    runtime_failure_generated_artifacts.extend([
+                        "archsig-analysis-validation.json",
+                        "archsig-run-manifest.json",
+                    ]);
                     let analysis_failure = serde_json::json!({
                         "schema": "archsig-analysis-validation/v0.5.0",
                         "checks": [{
@@ -1008,13 +1014,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "lawPolicyInputPath": law_policy_input_ref,
                             "measurementProfileInputPath": measurement_profile_input_ref,
                             "rawArtifactRetention": "not-computed",
-                            "generatedArtifacts": [
-                                "archmap-validation.json",
-                                "law-policy-validation.json",
-                                "law-surface-validation.json",
-                                "archsig-analysis-validation.json",
-                                "archsig-run-manifest.json"
-                            ],
+                            "generatedArtifacts": runtime_failure_generated_artifacts,
                             "omittedArtifacts": [
                                 "normalized-archmap.json",
                                 "archsig-measurement-packet.json",

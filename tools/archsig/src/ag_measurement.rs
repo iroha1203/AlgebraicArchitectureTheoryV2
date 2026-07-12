@@ -9624,9 +9624,19 @@ fn section_forbidden_supports_from_plan(
         .ok_or_else(|| "section execution plan has no forbidden supports".to_string())?;
     let mut supports = Vec::new();
     for (index, support) in declared.iter().enumerate() {
+        let observed_support_variables = support
+            .iter()
+            .map(|variable| {
+                plan.section_variable_aliases
+                    .as_ref()
+                    .and_then(|aliases| aliases.get(variable))
+                    .cloned()
+                    .unwrap_or_else(|| variable.clone())
+            })
+            .collect::<Vec<_>>();
         let Some(observed_support) = observed
             .iter()
-            .find(|candidate| candidate.support == *support)
+            .find(|candidate| candidate.support == observed_support_variables)
         else {
             return Ok(Vec::new());
         };
