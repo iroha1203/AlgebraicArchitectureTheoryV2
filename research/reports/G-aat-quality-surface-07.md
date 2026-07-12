@@ -9,11 +9,11 @@ Issue #3246.
 
 ## Target Proof State
 
-- status: target-proof-checkpoint
-- latest reviewed cycle: 16
-- completion candidate: no
+- status: target-theorem-proved candidate
+- latest reviewed cycle: 26
+- completion candidate: yes
 - tracking Issue: #3246
-- next obligation: construct the finite Boolean-circle law-sensitive witness
+- next obligation: pass PR CI and record the completion ledger
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -1794,3 +1794,75 @@ Transport the existing simply-transitive global-lift action through
 `SemanticFirstOrderRepairEquiv`.  Add the universal `H¹ = 0` globalization
 corollary, then assemble the fixed primary equivalence, representation, torsor,
 D2 pair, and corollary into the final package theorem.
+
+## Cycle 26 — final conormal first-order descent package
+
+- decision: approve
+- result type: target-theorem-proved candidate
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalFirstOrderDescentPackage.lean`
+- completion spine:
+  - `globalLiftH0Action`
+  - `globalLiftH0Action_simplyTransitive`
+  - `semanticRepairH0Action`
+  - `semanticRepairH0Action_simplyTransitive`
+  - `internalFirstOrderLiftSemanticRepairEquiv`
+  - `allGlobalLifts_nonempty_of_H1_isZero`
+  - `lawGeneratedConormalFirstOrderDescent_package`
+
+### Completion delta
+
+The canonical conormal base-section equivalence transports the kernel action
+to cover-relative `H⁰`.  For any two actual global lifts, the existing unique
+kernel section is transported through that equivalence, proving simple
+transitivity without adding a nonemptiness premise: the left endpoint itself
+supplies the local instance required by the generic torsor API.  Conjugating
+the action through the constructive semantic/global-lift equivalence gives the
+same result for semantic first-order correction primitives.
+
+The internal `Q₁` section fiber and semantic correction-primitive fiber are
+connected by composing their independently proved equivalences with the actual
+global-lift fiber.  Universal vanishing of cover-relative conormal `H¹` is kept
+as a corollary: it applies the primary class-zero iff actual-global-lift theorem
+to every explicit locally liftable atlas.  It is not a premise of the primary
+equivalence.
+
+The final generic package theorem contains local-lift choice independence;
+class-zero iff actual additive global lift; class-zero iff actual internal
+`Q₁` section; the conormal section/`H⁰` additive equivalence; semantic/global
+and internal/semantic equivalences; both simply-transitive `H⁰` actions; the
+universal `H¹` corollary; the concrete nonzero lawful base section; and the
+fixed idempotent-zero / square-zero-nonzero conormal `H¹` pair.
+
+### Final premise ledger
+
+- retained direction data: the selected site/base/cover and explicit local
+  solvability encoded by the generated atlas; universal `H¹` vanishing only
+  in its stated globalization corollary.
+- discharged: ideal-power sheaves and short exactness; conormal comparison;
+  cover generation and sheaf effectivity; choice independence; actual
+  class-zero iff global lift; internal and semantic representations; conormal
+  section/`H⁰` comparison; lift-fiber simple transitivity; primitive lawful
+  reading and nonzero actual `Q₀` section; law-sensitive D2 witness pair.
+- no remaining G-07 proof obligation.
+
+### Audits
+
+- focused final-package elaboration: pass (18 declarations)
+- coordinating full `lake build`: pass (7718 jobs)
+- module-wide standard-axiom assertion: pass
+- proof-use: the primary equivalence constructs and restricts actual global
+  sections; the unique kernel section is transported through the `H⁰`
+  equivalence; semantic simple transitivity is conjugated through the actual
+  constructive equivalence; universal `H¹` vanishing is used only on each
+  generated connecting class
+- provenance: ideal, quotient, conormal kernel, cover, atlas, lawful section,
+  overlap coefficients, and finite witness pair trace to reviewed Cycle 1–25
+  constructions
+- supplied-field audit: no class-zero proof, global lift, repair witness,
+  simple-transitivity witness, universal vanishing, or final package conclusion
+  is accepted as input
+- final four independent math/Lean review lanes: No major findings
+- target classification candidate: all fixed artifacts and completion
+  conditions are represented in Lean; PR CI and completion-ledger sync remain
+  before recording completion
