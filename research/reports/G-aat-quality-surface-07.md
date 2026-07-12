@@ -1576,3 +1576,74 @@ every degree-zero coboundary has zero period and that `rawOmega` has period the
 nonzero square-zero generator.  Then extend the Cycle 21 sectionwise canonical
 comparison cochainwise, prove it commutes with the differential, and transport
 the non-coboundary cocycle to `sheafifiedShortComplex.X₁.val`.
+
+## Cycle 23 — nonzero sheafified square-zero conormal H¹
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedBooleanCircleSquareZeroH1.lean`
+- checkpoint spine:
+  - `activeValue_d0_edge`
+  - `rawPeriod`
+  - `rawPeriod_d0`
+  - `rawPeriod_rawOmega`
+  - `rawOmega_not_coboundary`
+  - `toX1Cochain`
+  - `toX1Cochain_differential`
+  - `squareZeroOmegaCocycle`
+  - `squareZeroOmega_not_coboundary`
+  - `squareZeroOmegaClass_not_zero`
+
+### Checkpoint delta
+
+The oriented `01 + 12 + 20` period is evaluated in the ambient ring through
+the unique active representatives of the three actual pair-overlap sections.
+For a degree-zero coboundary, the three restriction differences telescope to
+zero.  For `rawOmega`, all three oriented edges carry the concrete generator;
+in characteristic two their sum is that generator, which was already proved
+nonzero.  Thus the raw cocycle is not a coboundary.
+
+The Cycle 21 sectionwise canonical equivalence is extended pointwise to
+additive cochain maps in both directions.  Restriction naturality proves that
+the forward comparison commutes with every generated face restriction and
+hence with every alternating differential.  Pointwise inverse identities then
+prove the same for the inverse comparison.  The transported cocycle is
+therefore an actual `H1Cocycle` for
+`(sheafifiedShortComplex squareZeroCore).X₁.val`, and
+`h1Class_isZero_iff` plus the raw period obstruction proves its repository
+`H¹` class is nonzero.
+
+### Premise delta
+
+- discharged: raw three-edge period; period-zero theorem for every raw
+  coboundary; nonzero period of `rawOmega`; raw non-coboundary; cochainwise
+  canonical comparison and inverse; differential naturality; sheafified
+  square-zero cocycle; sheafified non-coboundary; concrete nonzero `H¹` class.
+- remaining: the matching idempotent coefficient `H¹ = 0` theorem on the
+  same cover and ambient ring; primitive lawful-reading atlas; semantic
+  specialization; torsor/H0; final package; and the global `H¹`-vanishing
+  corollary.
+
+### Audits
+
+- focused square-zero-H¹ elaboration: pass (26 declarations)
+- module-wide standard-axiom assertion: pass
+- proof-use: the period consumes all three actual edge restrictions; canonical
+  sectionwise naturality is used termwise in the actual differential; the
+  quotient zero criterion consumes the proved non-coboundary statement
+- provenance: the class is represented by the Cycle 22 concrete cocycle and
+  transported only through the Cycle 21 canonical sheafification comparison
+- supplied-field audit: no period, primitive, comparison, cochain-map,
+  cocycle, coboundary, class-nonzero, or vanishing witness is accepted as input
+- four independent review lanes: No major findings
+- target classification: the nonzero half of the D2 coefficient pair is
+  discharged; the idempotent zero half remains
+
+### Next obligation
+
+Use `idempotentRawConormalX1Equiv` together with the proved raw idempotent
+conormal zero theorem to show that every section of the first idempotent
+sheafified coefficient is zero.  Deduce that every degree-one cocycle is the
+zero coboundary and package `H¹ = 0` for the same canonical cover, completing
+the fixed D2 pair.
