@@ -1,0 +1,106 @@
+{
+  "schema": "law-equation-surface/v0.5.1",
+  "id": "law-surface:ag-measurement-v051",
+  "laws": [
+    {
+      "lawId": "ag.square-free-repair",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "x_checkout",
+          "binding": {
+            "archmapVariable": "x_checkout",
+            "axis": "square-free",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "x_inventory",
+          "binding": {
+            "archmapVariable": "x_inventory",
+            "axis": "square-free",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "x_payment",
+          "binding": {
+            "archmapVariable": "x_payment",
+            "axis": "square-free",
+            "predicate": "support"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["x_checkout", "x_inventory"] },
+        { "support": ["x_inventory", "x_payment"] }
+      ]
+    },
+    {
+      "lawId": "law:checkout",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "x_checkout",
+          "binding": {
+            "archmapVariable": "x_checkout",
+            "axis": "square-free",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "x_inventory",
+          "binding": {
+            "archmapVariable": "x_inventory",
+            "axis": "square-free",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "x_payment",
+          "binding": {
+            "archmapVariable": "x_payment",
+            "axis": "square-free",
+            "predicate": "support"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["x_checkout", "x_inventory"] }
+      ]
+    },
+    {
+      "lawId": "law:inventory",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "x_checkout",
+          "binding": {
+            "archmapVariable": "x_checkout",
+            "axis": "square-free",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "x_inventory",
+          "binding": {
+            "archmapVariable": "x_inventory",
+            "axis": "square-free",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "x_payment",
+          "binding": {
+            "archmapVariable": "x_payment",
+            "axis": "square-free",
+            "predicate": "support"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["x_inventory", "x_payment"] }
+      ]
+    }
+  ]
+}

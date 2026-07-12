@@ -98,6 +98,11 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
                 .to_str()
                 .expect("measurement profile path is utf-8")
                 .to_string(),
+            "--law-surface".to_string(),
+            root.join("law_surface_ag_v051.json")
+                .to_str()
+                .expect("law surface path is utf-8")
+                .to_string(),
             "--out-dir".to_string(),
             out_dir.to_str().expect("output path is utf-8").to_string(),
         ];
