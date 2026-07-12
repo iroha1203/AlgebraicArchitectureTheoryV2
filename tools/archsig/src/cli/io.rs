@@ -28,6 +28,27 @@ pub(crate) fn read_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Resul
     Ok(serde_json::from_str(&text)?)
 }
 
+pub(crate) fn reject_output_overwrite(
+    input: &PathBuf,
+    output: &Option<PathBuf>,
+) -> Result<(), Box<dyn Error>> {
+    let Some(output) = output else {
+        return Ok(());
+    };
+    let input_path = std::fs::canonicalize(input)?;
+    let output_path = if output.exists() {
+        std::fs::canonicalize(output)?
+    } else if output.is_absolute() {
+        output.clone()
+    } else {
+        std::env::current_dir()?.join(output)
+    };
+    if input_path == output_path {
+        return Err("output path must differ from input path".into());
+    }
+    Ok(())
+}
+
 struct StrictValueSeed;
 
 impl<'de> serde::de::DeserializeSeed<'de> for StrictValueSeed {

@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::validation::{count_checks, generic_validation_example, validation_check};
+use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{ValidationCheck, ValidationExample};
 
 pub const LAW_EQUATION_SURFACE_V1_SCHEMA: &str = "law-equation-surface/v0.5.1";
@@ -679,6 +679,13 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
             ));
         }
     }
+    for duplicate in duplicates(vocabulary.axes.iter().map(String::as_str)) {
+        examples.push(generic_validation_example(
+            "bindingVocabulary.axes",
+            &duplicate,
+            "binding vocabulary axes must be unique",
+        ));
+    }
     for predicate in &vocabulary.predicates {
         if !BINDING_PREDICATES.contains(&predicate.as_str()) {
             examples.push(generic_validation_example(
@@ -687,6 +694,13 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
                 "binding vocabulary contains a predicate outside the Stage 2 contract",
             ));
         }
+    }
+    for duplicate in duplicates(vocabulary.predicates.iter().map(String::as_str)) {
+        examples.push(generic_validation_example(
+            "bindingVocabulary.predicates",
+            &duplicate,
+            "binding vocabulary predicates must be unique",
+        ));
     }
     let mut pairs = BTreeSet::new();
     let required_pairs = [
@@ -842,6 +856,14 @@ mod tests {
         vocabulary.axis_predicate_pairs[0]
             .predicates
             .push("support".to_string());
+        assert_eq!(check_vocabulary(&vocabulary).result, "fail");
+    }
+
+    #[test]
+    fn binding_manifest_rejects_duplicate_axes_and_predicates() {
+        let mut vocabulary = static_law_surface_binding_vocabulary_v1();
+        vocabulary.axes.push("cech".to_string());
+        vocabulary.predicates.push("support".to_string());
         assert_eq!(check_vocabulary(&vocabulary).result, "fail");
     }
 }

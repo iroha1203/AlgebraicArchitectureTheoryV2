@@ -633,6 +633,16 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     assert!(
         String::from_utf8_lossy(&duplicate_key_output.stderr).contains("duplicate JSON object key")
     );
+
+    let same_output = run_sig0_output(&[
+        "law-surface",
+        "--law-surface",
+        input.to_str().expect("path is utf-8"),
+        "--out",
+        input.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(same_output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&same_output.stderr).contains("output path must differ"));
 }
 
 #[test]

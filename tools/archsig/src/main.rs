@@ -675,6 +675,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             })
         }
         Some(Command::LawSurface { law_surface, out }) => {
+            reject_output_overwrite(&law_surface, &out)?;
             let (report, failed) = validate_law_surface_command_input(&law_surface)?;
             write_json(out, &report)?;
             Ok(if failed {
