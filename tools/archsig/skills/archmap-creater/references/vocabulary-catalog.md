@@ -15,6 +15,13 @@ The manifest is the accepted Stage 2 law-surface subset. The broader AG table
 below also records evaluator-specific and later-stage vocabulary for authoring
 reference; those entries are not accepted as law-surface/v0.5.1 bindings.
 
+For square-free and Tor Stage 2 runs, `support` / `cooccurrence` atoms are
+observed-complex records. The law-equation-surface owns witness variables and
+forbidden support generators; an ArchMap atom can supply a matching observation
+reference but cannot add a generator to the obstruction ideal. Undeclared atom
+variables are ignored for the law-coordinate projection, and law changes must
+be made in the law surface rather than by editing support atoms.
+
 New axis names are not introduced inside an authoring run. If the current axis
 table is insufficient, escalate to doctrine or registry work.
 

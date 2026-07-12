@@ -6263,7 +6263,7 @@ fn cli_analyze_v2_projects_analytic_overlay_bundle_to_viewer_lane() {
 }
 
 #[test]
-fn cli_analyze_v2_square_free_requires_matching_witness_family() {
+fn cli_analyze_v2_square_free_uses_law_surface_witnesses() {
     let out_dir = temp_dir("ag-measurement-square-free-witness-family");
     let root = ag_measurement_root();
     let (policy, mut profile) =
@@ -6272,28 +6272,25 @@ fn cli_analyze_v2_square_free_requires_matching_witness_family() {
     let policy_path = out_dir.join("law_policy_square_free_missing_witness.json");
     write_test_policy_and_profile(&policy_path, policy, profile);
 
-    run_sig0_expect_code(
-        &[
-            "analyze",
-            "--archmap",
-            root.join("archmap_v2_square_free_repair.json")
-                .to_str()
-                .expect("path is utf-8"),
-            "--law-policy",
-            policy_path.to_str().expect("path is utf-8"),
-            "--measurement-profile",
-            test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
-                .to_str()
-                .expect("path is utf-8"),
-            "--out-dir",
-            out_dir.to_str().expect("path is utf-8"),
-        ],
-        2,
-    );
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_square_free_repair.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
 }
 
 #[test]
-fn cli_analyze_v2_square_free_rejects_generator_outside_witness_family() {
+fn cli_analyze_v2_square_free_ignores_undeclared_observed_variables() {
     let out_dir = temp_dir("ag-measurement-square-free-unknown-variable");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
@@ -6305,32 +6302,29 @@ fn cli_analyze_v2_square_free_rejects_generator_outside_witness_family() {
     )
     .expect("archmap fixture can be written");
 
-    run_sig0_expect_code(
-        &[
-            "analyze",
-            "--archmap",
-            archmap_path.to_str().expect("path is utf-8"),
-            "--law-policy",
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(
             root.join("law_policy_square_free.json")
                 .to_str()
                 .expect("path is utf-8"),
-            "--measurement-profile",
-            test_measurement_profile_path(Path::new(
-                root.join("law_policy_square_free.json")
-                    .to_str()
-                    .expect("path is utf-8"),
-            ))
-            .to_str()
-            .expect("path is utf-8"),
-            "--out-dir",
-            out_dir.to_str().expect("path is utf-8"),
-        ],
-        2,
-    );
+        ))
+        .to_str()
+        .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
 }
 
 #[test]
-fn cli_analyze_v2_square_free_rejects_too_many_witness_variables() {
+fn cli_analyze_v2_square_free_uses_profile_only_for_runtime_caps() {
     let out_dir = temp_dir("ag-measurement-square-free-too-many-witnesses");
     let root = ag_measurement_root();
     let (policy, mut profile) =
@@ -6348,28 +6342,138 @@ fn cli_analyze_v2_square_free_rejects_too_many_witness_variables() {
     let policy_path = out_dir.join("law_policy_square_free_too_many_witnesses.json");
     write_test_policy_and_profile(&policy_path, policy, profile);
 
-    run_sig0_expect_code(
-        &[
-            "analyze",
-            "--archmap",
-            root.join("archmap_v2_square_free_repair.json")
-                .to_str()
-                .expect("path is utf-8"),
-            "--law-policy",
-            policy_path.to_str().expect("path is utf-8"),
-            "--measurement-profile",
-            test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
-                .to_str()
-                .expect("path is utf-8"),
-            "--out-dir",
-            out_dir.to_str().expect("path is utf-8"),
-        ],
-        2,
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_square_free_repair.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+}
+
+#[test]
+fn cli_analyze_v2_square_free_observation_does_not_supply_generators() {
+    let root = ag_measurement_root();
+    let baseline_out = run_analyze_fixture_lock(
+        "ag-measurement-square-free-law-surface-baseline",
+        "archmap_v2_square_free_repair.json",
+        "law_policy_square_free.json",
+        None,
+    );
+    let extra_out = temp_dir("ag-measurement-square-free-observation-extra");
+    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(json!({
+            "id": "atom:support-checkout-inventory-extra",
+            "kind": "relation",
+            "subject": "x_checkout",
+            "object": "x_inventory",
+            "axis": "square-free",
+            "predicate": "support",
+            "refs": ["src:checkout", "src:inventory"]
+        }));
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(json!("atom:support-checkout-inventory-extra"));
+    let archmap_path = extra_out.join("archmap-extra-support.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture writes");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        root.join("measurement_profile_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        extra_out.to_str().expect("path is utf-8"),
+    ]);
+
+    let baseline = read_json(&baseline_out.join("archsig-measurement-packet.json"));
+    let extra = read_json(&extra_out.join("archsig-measurement-packet.json"));
+    let baseline_repair = invariant_by_id(&baseline, "square-free-repair:profile:ag-square-free@1");
+    let extra_repair = invariant_by_id(&extra, "square-free-repair:profile:ag-square-free@1");
+    assert_eq!(
+        baseline_repair["obstructionIdeal"]["generators"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|generator| generator["support"].clone())
+            .collect::<Vec<_>>(),
+        extra_repair["obstructionIdeal"]["generators"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|generator| generator["support"].clone())
+            .collect::<Vec<_>>(),
+        "observed support atoms must not change the declared obstruction ideal"
+    );
+    assert_eq!(
+        baseline_repair["minimalForbiddenSupports"],
+        extra_repair["minimalForbiddenSupports"]
+    );
+    assert_eq!(
+        baseline_repair["alexanderDualRepair"]["minimalHittingSets"],
+        extra_repair["alexanderDualRepair"]["minimalHittingSets"]
+    );
+    assert!(
+        extra_repair["obstructionIdeal"]["generators"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|generator| generator["supportAtomRefs"]
+                .as_array()
+                .unwrap()
+                .contains(&json!("atom:support-checkout-inventory-extra")))
     );
 }
 
 #[test]
-fn cli_analyze_v2_square_free_without_generators_returns_measured_zero() {
+fn cli_analyze_v2_square_free_requires_explicit_law_surface() {
+    let out_dir = temp_dir("ag-measurement-square-free-missing-law-surface");
+    let root = ag_measurement_root();
+    let output = run_sig0_raw_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_square_free_repair.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        root.join("measurement_profile_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("requires --law-surface"));
+}
+
+#[test]
+fn cli_analyze_v2_square_free_without_observed_support_keeps_declared_generators() {
     let out_dir = temp_dir("ag-measurement-square-free-zero");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
@@ -6424,14 +6528,24 @@ fn cli_analyze_v2_square_free_without_generators_returns_measured_zero() {
     ]);
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
     let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
     assert_eq!(
         repair["obstructionIdeal"]["generators"]
             .as_array()
-            .expect("generators is array")
+            .unwrap()
             .len(),
-        0
+        2
+    );
+    assert!(
+        repair["obstructionIdeal"]["generators"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|generator| generator["supportAtomRefs"].as_array().unwrap().is_empty())
     );
 }
 
@@ -6523,9 +6637,9 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
             "multidegree": ["x_checkout", "x_inventory", "x_payment"],
             "sharedSupport": ["x_inventory"],
             "leftLaw": "law:checkout",
-            "leftGeneratorRef": "atom:checkout-law-generator",
+            "leftGeneratorRef": "law-surface:law:checkout:1",
             "rightLaw": "law:inventory",
-            "rightGeneratorRef": "atom:inventory-law-generator",
+            "rightGeneratorRef": "law-surface:law:inventory:1",
             "contextRefs": ["ctx:tor-common-ambient"],
             "sourceRefs": ["src:checkout-policy", "src:inventory-policy"]
         }])
@@ -6631,11 +6745,11 @@ fn cli_analyze_v2_law_conflict_tor_disjoint_supports_are_measured_zero() {
 }
 
 #[test]
-fn cli_analyze_v2_law_conflict_tor_nested_common_factor_is_nonzero() {
+fn cli_analyze_v2_law_conflict_tor_undeclared_nested_support_is_unmeasured() {
     let out_dir = temp_dir("ag-measurement-law-conflict-tor-nested");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
-    archmap["atoms"][1]["object"] = Value::String("x_inventory".to_string());
+    archmap["atoms"][1]["object"] = Value::String("x_checkout,x_inventory,x_inventory".to_string());
     archmap["atoms"][2]["object"] = Value::String("x_inventory,x_payment".to_string());
     let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_nested.json");
     fs::write(
@@ -6665,15 +6779,9 @@ fn cli_analyze_v2_law_conflict_tor_nested_common_factor_is_nonzero() {
     ]);
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(
-        packet["structuralVerdict"][0]["verdict"],
-        "measured_nonzero"
-    );
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unmeasured");
     let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
-    assert_eq!(
-        tor["lawConflicts"][0]["sharedSupport"],
-        serde_json::json!(["x_inventory"])
-    );
+    assert!(tor["lawConflicts"].as_array().unwrap().is_empty());
 }
 
 #[test]
@@ -6732,7 +6840,7 @@ fn cli_analyze_v2_law_conflict_tor_taylor_reduces_proxy_overcount() {
     );
     let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
     assert_eq!(tor["method"], "finite-monomial-tor-taylor@1");
-    assert_eq!(tor["proxyComparison"]["proxyClassCount"], Value::from(2));
+    assert_eq!(tor["proxyComparison"]["proxyClassCount"], Value::from(1));
     assert_eq!(tor["proxyComparison"]["taylorClassCount"], Value::from(1));
     assert_eq!(
         tor["lawConflicts"][0]["multidegree"],
@@ -6783,11 +6891,11 @@ fn cli_analyze_v2_law_conflict_tor_preserves_common_ambient_law_pair_order() {
     assert_eq!(tor["lawConflicts"][0]["rightLaw"], "law:checkout");
     assert_eq!(
         tor["lawConflicts"][0]["leftGeneratorRef"],
-        "atom:inventory-law-generator"
+        "law-surface:law:inventory:1"
     );
     assert_eq!(
         tor["lawConflicts"][0]["rightGeneratorRef"],
-        "atom:checkout-law-generator"
+        "law-surface:law:checkout:1"
     );
 }
 
@@ -6796,7 +6904,7 @@ fn cli_analyze_v2_law_conflict_tor_non_square_free_is_unmeasured() {
     let out_dir = temp_dir("ag-measurement-law-conflict-tor-non-square-free");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
-    archmap["atoms"][1]["object"] = Value::String("x_inventory,x_inventory".to_string());
+    archmap["atoms"][1]["object"] = Value::String("x_checkout,x_inventory,x_inventory".to_string());
     let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_non_square_free.json");
     fs::write(
         &archmap_path,
@@ -6981,7 +7089,7 @@ fn cli_analyze_v2_law_conflict_tor_without_common_ambient_is_not_computed() {
 }
 
 #[test]
-fn cli_analyze_v2_law_conflict_tor_requires_matching_witness_family() {
+fn cli_analyze_v2_law_conflict_tor_uses_law_surface_witnesses() {
     let out_dir = temp_dir("ag-measurement-law-conflict-tor-witness-family");
     let root = ag_measurement_root();
     let (policy, mut profile) = read_fixture_policy_profile(&root.join("law_policy_tor.json"));
@@ -6989,24 +7097,21 @@ fn cli_analyze_v2_law_conflict_tor_requires_matching_witness_family() {
     let policy_path = out_dir.join("law_policy_tor_missing_witness.json");
     write_test_policy_and_profile(&policy_path, policy, profile);
 
-    run_sig0_expect_code(
-        &[
-            "analyze",
-            "--archmap",
-            root.join("archmap_v2_law_conflict_tor.json")
-                .to_str()
-                .expect("path is utf-8"),
-            "--law-policy",
-            policy_path.to_str().expect("path is utf-8"),
-            "--measurement-profile",
-            test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
-                .to_str()
-                .expect("path is utf-8"),
-            "--out-dir",
-            out_dir.to_str().expect("path is utf-8"),
-        ],
-        2,
-    );
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_law_conflict_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
 }
 
 #[test]
@@ -7076,7 +7181,7 @@ fn cli_analyze_v2_law_conflict_tor_rejects_malformed_common_ambient_pair() {
 }
 
 #[test]
-fn cli_analyze_v2_law_conflict_tor_rejects_generator_outside_witness_family() {
+fn cli_analyze_v2_law_conflict_tor_ignores_undeclared_observed_variables() {
     let out_dir = temp_dir("ag-measurement-law-conflict-tor-unknown-variable");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
@@ -7088,28 +7193,25 @@ fn cli_analyze_v2_law_conflict_tor_rejects_generator_outside_witness_family() {
     )
     .expect("archmap fixture can be written");
 
-    run_sig0_expect_code(
-        &[
-            "analyze",
-            "--archmap",
-            archmap_path.to_str().expect("path is utf-8"),
-            "--law-policy",
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(
             root.join("law_policy_tor.json")
                 .to_str()
                 .expect("path is utf-8"),
-            "--measurement-profile",
-            test_measurement_profile_path(Path::new(
-                root.join("law_policy_tor.json")
-                    .to_str()
-                    .expect("path is utf-8"),
-            ))
-            .to_str()
-            .expect("path is utf-8"),
-            "--out-dir",
-            out_dir.to_str().expect("path is utf-8"),
-        ],
-        2,
-    );
+        ))
+        .to_str()
+        .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
 }
 
 #[test]
@@ -9852,10 +9954,10 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
         .find(|row| row["evaluator"] == "ag.square-free-repair")
         .expect("independent square-free row exists");
     assert_eq!(
-        square_free_row["verdict"], "measured_zero",
+        square_free_row["verdict"], "measured_nonzero",
         "independent measured_zero row must not be downgraded by unrelated violated Cech precondition"
     );
-    assert_eq!(square_free_row["verdictData"]["zero"], true);
+    assert_eq!(square_free_row["verdictData"]["zero"], false);
     assert!(
         !square_free_row["dependsOnAssumptions"]
             .as_array()
@@ -9936,10 +10038,7 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
     assert_eq!(validation["summary"]["result"], "pass");
 
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
-    assert_eq!(
-        summary["conclusion"],
-        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
-    );
+    assert_eq!(summary["conclusion"], "REPAIR_TARGETS_IDENTIFIED");
     assert_eq!(
         summary["structuralVerdictSummary"]["nonTerminalCount"],
         Value::from(1)
@@ -11206,6 +11305,25 @@ fn run_sig0_expect_code(args: &[&str], expected_code: i32) {
 }
 
 fn run_sig0_output(args: &[&str]) -> std::process::Output {
+    let mut owned_args = args
+        .iter()
+        .map(|arg| (*arg).to_string())
+        .collect::<Vec<_>>();
+    if owned_args.first().is_some_and(|arg| arg == "analyze")
+        && !owned_args.iter().any(|arg| arg == "--law-surface")
+        && owned_args
+            .windows(2)
+            .find(|window| window[0] == "--law-policy")
+            .is_some_and(|window| window[1].contains("square_free") || window[1].contains("tor"))
+    {
+        let law_surface = ag_measurement_root().join("law_surface_ag_v051.json");
+        owned_args.push("--law-surface".to_string());
+        owned_args.push(law_surface.to_str().expect("path is utf-8").to_string());
+    }
+    run_sig0_raw_output(&owned_args.iter().map(String::as_str).collect::<Vec<_>>())
+}
+
+fn run_sig0_raw_output(args: &[&str]) -> std::process::Output {
     Command::new(env!("CARGO_BIN_EXE_archsig"))
         .args(args)
         .output()

@@ -35,6 +35,15 @@ axis/predicate pair. Treat its versioned pairs as the accepted vocabulary for
 the law-equation-surface contract; the broader reference table is guidance for
 other evaluator stages and must not be substituted for this manifest.
 
+For Stage 2 square-free and Tor authoring, support atoms are observed-complex
+evidence: they record whether a declared witness-variable cooccurrence was
+observed in the selected context. They do not define forbidden generators or
+law ideals. Put witness variables and forbidden support generators in the
+supplied law-equation-surface; ArchSig derives the obstruction ideal from that
+surface and uses matching support atoms only as observation references. Atoms
+with undeclared variables are not projected into the law coordinates. Do not
+add or remove support atoms to change the law universe.
+
 ## Operating Modes
 
 - `full-dual`: default for initial authoring and major revisions. Survey the
