@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 15
+- latest reviewed cycle: 16
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: construct the lawful-reading atlas and semantic first-order repair representation
+- next obligation: construct the finite Boolean-circle law-sensitive witness
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -1030,3 +1030,100 @@ differences are explicit finite combinations of required-law witnesses.
 Generate q0 compatibility, actual sheaf amalgamation, and q1 local lifts from
 that input, then use the Cycle 15 comparison to identify the internal semantic
 repair fiber with the Cycle 12 actual global-lift fiber.
+
+## Cycle 16 — explicit law-generated atlas and correction-primitive representation
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedSemanticFirstOrderRepair.lean`
+- checkpoint spine:
+  - `PatchReadingSource`
+  - `DisplayedRequiredLaw`
+  - `OverlapLawCombination`
+  - `ExplicitLawGeneratedReadingAtlas`
+  - `rawQ0_pair_compatible`
+  - `additiveAtlasQ0Reading`
+  - `internalAtlasQ0Reading`
+  - `atlasQ0Comparison`
+  - `toLocalLiftData`
+  - `InternalFirstOrderLift`
+  - `internalFirstOrderLiftEquiv`
+  - `SemanticFirstOrderRepair`
+  - `SemanticFirstOrderRepairEquiv`
+  - `connectingClass_isZero_iff_nonempty_semanticFirstOrderRepair`
+
+### Checkpoint delta
+
+The checkpoint accepts an explicit patch-reading atlas.  Every pairwise
+reading difference is displayed as a finite linear combination of selected
+required-law violation witnesses indexed by actual Atom data.  This expansion
+is a conditional local-relation input, not a discharged lawful-reading
+constructor.  Given that explicit equation, generated-ideal containment sends
+the difference to equality in `O/I`.
+
+Those local quotient readings are extended to arbitrary common refinements
+and amalgamated independently in two sheaves.  The first construction uses
+Cycle 9's additive q0 sheafification; the second uses Cycle 13's internal q0
+module sheaf.  The local sheafification-unit factorization and selected-cover
+separatedness prove `atlasQ0Comparison`, identifying the two actual base
+sections through Cycle 15's canonical q0 comparison.
+
+The same raw local readings modulo `I²` generate q1 local lifts and therefore
+the entire Cycle 12 `LocalLiftData` without a local-solvability certificate.
+The internal q1 projection fiber is kept under the explicit name
+`InternalFirstOrderLift`; Cycle 15 compares it with the additive global-lift
+fiber.
+
+`SemanticFirstOrderRepair` is defined independently as a kernel-valued Čech
+zero-cochain whose coboundary is the generated local-lift difference.  Such a
+correction primitive generates an actual global lift by correcting the local
+q1 readings and using sheaf amalgamation.  Conversely, every actual global
+lift generates its correction primitive.  Selected-cover separatedness and
+the sectionwise kernel equivalence prove that these two constructions are
+inverse.  Cycle 12 effectivity therefore identifies connecting-class zero
+with existence of this correction-primitive representation.
+
+### Premise delta
+
+- discharged: explicit-atlas q0 compatibility; actual q0 sheaf effectivity;
+  generated q1 local solvability; additive/internal q0 comparison;
+  correction-primitive/global-lift equivalence; class-zero iff correction
+  primitive existence.
+- remaining: a constructor that derives the explicit overlap expansions from
+  primitive semantic/law data; the same-cover/same-ambient-ring law-sensitive
+  finite zero/nonzero witness pair; semantic repair specialization; torsor/H0
+  transport; the final theorem package; and the global `H¹`-vanishing
+  corollary.
+
+### Audits
+
+- focused atlas/correction elaboration: pass (115 declarations)
+- module-wide standard-axiom assertion: pass
+- proof-use: ideal membership uses required-law witness containment;
+  common-refinement compatibility, `amalgamate`, `valid_glue`, separatedness,
+  both Cycle 15 quotient comparisons, Cycle 12 correction/gluing, and the
+  sectionwise kernel equivalence occur in the proof chain
+- provenance: the overlap expansion is explicitly classified as input and
+  exposes every coefficient, law, Atom, and raw equality; additive and
+  internal base sections are independently generated before comparison;
+  correction primitives contain no global section
+- supplied-field audit: the pairwise finite expansion is an explicit
+  conditional field and is not counted as lawful-reading discharge; no
+  quotient section, compatible family, glue, local q1 lift, global lift,
+  class-zero proof, comparison, inverse, or effectivity certificate is
+  accepted as input
+- four independent review lanes: No major findings
+- target classification: explicit-atlas algebraic effectivity and the
+  correction-primitive representation are discharged; primitive
+  lawful-reading provenance remains
+
+### Next obligation
+
+Construct the explicit atlas from concrete semantic/law input on one finite
+Boolean-circle AAT site.  Keep the site, cover, observable restriction functor,
+and ambient ring fixed while changing only the law witness ideal.  The finite
+constructor must discharge every overlap expansion by computation, then
+produce an idempotent-law instance with zero conormal `H¹` and a square-zero-law
+instance with an explicit nonzero period class in the current canonical tuple
+complex.
