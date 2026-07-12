@@ -959,10 +959,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             }
             let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
             let normalized_archmap = normalize_archmap_v2(&archmap_document, &archmap_input_ref);
-            write_json(
-                Some(normalized_archmap_path),
-                &with_run_contract(&normalized_archmap, &run_contract)?,
-            )?;
             let measurement_packet = build_foundation_measurement_packet_v1(
                 &normalized_archmap,
                 &archmap_document,
@@ -978,6 +974,10 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 residual_packet_input_ref.as_deref(),
             )
             .map_err(|message| -> Box<dyn Error> { message.into() })?;
+            write_json(
+                Some(normalized_archmap_path),
+                &with_run_contract(&normalized_archmap, &run_contract)?,
+            )?;
             let packet_value = serde_json::to_value(&measurement_packet)?;
             let packet_validation = validate_measurement_packet_value_v1(&packet_value);
             let packet_failed = packet_validation.iter().any(|check| check.result == "fail");

@@ -101,6 +101,36 @@
       "forbiddenSupportGenerators": [
         { "support": ["x_inventory", "x_payment"] }
       ]
+    },
+    {
+      "lawId": "cech-descent",
+      "conditionType": "descent",
+      "evaluatorRef": "ag.cech-obstruction"
+    },
+    {
+      "lawId": "ag.section-factorization",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "x",
+          "binding": {
+            "archmapVariable": "x",
+            "axis": "section-factorization",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "y",
+          "binding": {
+            "archmapVariable": "y",
+            "axis": "section-factorization",
+            "predicate": "support"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["x", "y"] }
+      ]
     }
   ]
 }

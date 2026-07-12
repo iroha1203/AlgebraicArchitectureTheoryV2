@@ -21,8 +21,28 @@
     },
     {
       "lawId": "ag.section-factorization",
-      "conditionType": "descent",
-      "evaluatorRef": "ag.section-factorization"
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "x",
+          "binding": {
+            "archmapVariable": "x",
+            "axis": "section-factorization",
+            "predicate": "support"
+          }
+        },
+        {
+          "variable": "y",
+          "binding": {
+            "archmapVariable": "y",
+            "axis": "section-factorization",
+            "predicate": "support"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["x", "y"] }
+      ]
     }
   ]
 }

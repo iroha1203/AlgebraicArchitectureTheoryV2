@@ -511,8 +511,18 @@ pub fn build_foundation_measurement_packet_v1(
             .is_some_and(|evaluator| evaluator.starts_with("ag."))
     }) {
         let evaluator = entry.evaluator.as_deref().unwrap_or_default();
-        let execution_plan =
-            build_law_execution_plan(normalized, law_surface, entry.law.as_deref(), evaluator)?;
+        let selected_contexts_for_plan = (evaluator == "ag.cech-obstruction").then(|| {
+            selected_cover_contexts(normalized, &profile)
+                .into_iter()
+                .collect::<BTreeSet<_>>()
+        });
+        let execution_plan = build_law_execution_plan(
+            normalized,
+            law_surface,
+            entry.law.as_deref(),
+            evaluator,
+            selected_contexts_for_plan.as_ref(),
+        )?;
         if evaluator == "ag.cech-obstruction" {
             validate_cech_profile_v1(&profile)?;
             let measurement =
@@ -2277,17 +2287,22 @@ fn evaluate_section_factorization_v1(
         .into_iter()
         .collect::<BTreeSet<_>>();
     let witness_variables = if let Some(plan) = execution_plan {
-        if plan.evaluator_law_ids.is_empty() {
-            return Err(
-                "ag.section-factorization execution plan contains no selected law".to_string(),
-            );
-        }
-        section_witness_variables(profile)
+        plan.section_witness_variables.clone().ok_or_else(|| {
+            "ag.section-factorization execution plan contains no witness variables".to_string()
+        })?
     } else {
         section_witness_variables(profile)
     };
-    let forbidden_supports =
-        section_forbidden_supports(normalized, &selected_contexts, &witness_variables)?;
+    let forbidden_supports = if let Some(plan) = execution_plan {
+        section_forbidden_supports_from_plan(
+            normalized,
+            &selected_contexts,
+            &witness_variables,
+            plan,
+        )?
+    } else {
+        section_forbidden_supports(normalized, &selected_contexts, &witness_variables)?
+    };
     let minimal_forbidden_supports = minimal_section_forbidden_supports(&forbidden_supports);
     let assignment = section_assignment(normalized, &selected_contexts, &witness_variables)?;
     let assignment_status = if let Some(assignment) = &assignment {
@@ -9593,6 +9608,39 @@ fn section_forbidden_supports(
         });
     }
     supports.sort_by(|left, right| left.support_id.cmp(&right.support_id));
+    Ok(supports)
+}
+
+fn section_forbidden_supports_from_plan(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+    plan: &LawExecutionPlanV1,
+) -> Result<Vec<SectionForbiddenSupportV1>, String> {
+    let observed = section_forbidden_supports(normalized, selected_contexts, witness_variables)?;
+    let declared = plan
+        .section_forbidden_supports
+        .as_ref()
+        .ok_or_else(|| "section execution plan has no forbidden supports".to_string())?;
+    let mut supports = Vec::new();
+    for (index, support) in declared.iter().enumerate() {
+        let Some(observed_support) = observed
+            .iter()
+            .find(|candidate| candidate.support == *support)
+        else {
+            return Ok(Vec::new());
+        };
+        let mut source_refs = observed_support.source_refs.clone();
+        source_refs.push(format!("law-surface:{}", plan.surface_id));
+        supports.push(SectionForbiddenSupportV1 {
+            support_id: format!(
+                "law-surface:{}:{}:forbidden:{}",
+                plan.surface_id, plan.selected_law_id, index
+            ),
+            support: support.clone(),
+            source_refs,
+        });
+    }
     Ok(supports)
 }
 
