@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 13
+- latest reviewed cycle: 14
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: construct the conormal kernel action as a true ideal object
+- next obligation: compare the internal conormal ideal with Cycle 9's additive kernel sheaf
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -875,3 +875,86 @@ q1 preserves that kernel, and construct its internal module object without an
 action or stability premise. Then compare the underlying additive kernel sheaf
 with Cycle 9's `sheafifiedShortComplex G` first term by canonical
 sheafification comparison and kernel uniqueness.
+
+## Cycle 14 — true conormal ideal and selected-cover H0 comparison
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean files:
+  - `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalIdealSheaf.lean`
+  - `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedLargeCoefficientH0.lean`
+- checkpoint spine:
+  - `moduleSheafMonoidalClosed`
+  - `moduleSheafMonoidalPreadditive`
+  - `conormalIdealCarrier`
+  - `multiplication_kernel_annihilates`
+  - `conormalIdealAction`
+  - `conormalIdealModObj`
+  - `conormalIdeal`
+  - `conormalIdealInclusion`
+  - `H0`
+  - `baseSectionToH0`
+  - `h0ToBaseSection`
+  - `baseSectionsEquivH0`
+  - `lawGeneratedConormalSectionsEquivH0`
+
+### Checkpoint delta
+
+The kernel of the Cycle 13 ring-sheaf projection now carries a generated
+ambient q1 action. The sheaf category's tensor additivity is itself generated:
+reflective monoidal closedness makes left tensoring a left adjoint, hence
+additive, while braiding transfers additivity to right tensoring. This supplies
+the tensor-zero fact needed to combine `IsMonHom.mul_hom` with the categorical
+kernel equation.
+
+Ambient multiplication therefore factors through the kernel by `kernel.lift`.
+Cancelling the kernel inclusion reduces the action's unit and multiplication
+laws to the internal ring laws. The resulting `ModObj` is bundled as a `Mod_`
+ideal, with a module morphism into the regular q1 module and a theorem that its
+underlying inclusion is killed by the q1-to-q0 projection. No action or
+stability premise is accepted.
+
+Independently, the large selected-cover degree-zero cohomology is fixed as
+`ker d⁰`. Restriction sends an actual base section to this kernel. In the other
+direction, a zero-cocycle gives canonical-pair agreement, compatibility on all
+common refinements, and a sheaf amalgamation. Validity of that glue and
+separatedness prove both inverse laws, yielding
+`baseSectionsEquivH0`. Direct specialization to Cycle 9's first sheaf proves
+the required additive `ConDef(W) ≃ Čech H⁰(U, ConDef)` comparison.
+
+### Premise delta
+
+- discharged: the Cycle 13 projection kernel as a true internal ideal object;
+  generated ambient action and stability; module inclusion and projection-zero;
+  selected-cover degree-zero cohomology; base-section/H0 additive equivalence;
+  direct Cycle 9 additive-conormal specialization.
+- remaining: an explicit comparison between the new internal-ring kernel
+  carrier and Cycle 9's additive first sheaf; semantic representations; a
+  finite law-sensitive zero/nonzero witness pair; package theorem; and the
+  global `H¹`-vanishing corollary.
+
+### Audits
+
+- focused ideal elaboration: pass (19 declarations)
+- focused H0 elaboration: pass (24 declarations)
+- both module-wide standard-axiom assertions: pass
+- placeholder / hidden Unicode / private-path scans: pass
+- ideal proof-use: closed monoidal reflection, tensor additivity,
+  `IsMonHom.mul_hom`, `kernel.condition`, `kernel.lift`, mono cancellation, and
+  internal monoid laws all occur in the construction
+- H0 proof-use: pair agreement, arbitrary common refinement,
+  `FamilyOfElements`, `amalgamate`, `valid_glue`, and separatedness all occur in
+  the two inverse proofs
+- supplied-field audit: no action, stability, kernel comparison, compatible
+  family, glue, or comparison inverse is accepted as input
+- four independent review lanes: No major findings
+- target classification: true conormal ideal and the selected-cover H0
+  comparison are discharged; the explicit cross-construction kernel
+  comparison and D2--D3 package obligations remain
+
+### Next obligation
+
+Construct the canonical isomorphism between the underlying additive sheaf of
+the internal conormal ideal and Cycle 9's `sheafifiedShortComplex G` first
+term. Compare q1 and q0 through sheafification composition, then obtain the
+first-term isomorphism from the uniqueness of the two categorical kernels.
