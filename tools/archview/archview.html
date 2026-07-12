@@ -28,36 +28,42 @@
     border-radius: 14px; backdrop-filter: blur(16px) saturate(1.15); -webkit-backdrop-filter: blur(16px) saturate(1.15);
     box-shadow: 0 18px 50px rgba(0,0,0,0.45); }
 
-  /* top toolbar */
-  #toolbar { top: 14px; left: 14px; right: 14px; display: flex; gap: 14px; align-items: center;
-    padding: 10px 14px; flex-wrap: wrap; }
-  #toolbar .brand { font-weight: 650; letter-spacing: 0.2px; font-size: 14px; white-space: nowrap; }
+  /* top toolbar — a fixed two-row layout: scene tabs on row 1 (horizontally
+     scrollable if they don't fit), controls on row 2. Never a third row. */
+  #toolbar { top: 14px; left: 14px; right: 14px; display: flex; flex-direction: column; gap: 8px;
+    padding: 10px 14px; }
+  .tb-row { display: flex; gap: 14px; align-items: center; min-width: 0; }
+  #toolbar .brand { font-weight: 650; letter-spacing: 0.2px; font-size: 14px; white-space: nowrap; flex: 0 0 auto; }
   #toolbar .brand small { color: var(--ink-faint); font-weight: 500; }
-  #toolbar .group { display: flex; gap: 6px; align-items: center; }
-  #toolbar .sep { width: 1px; height: 26px; background: var(--glass-line); }
+  #toolbar .group { display: flex; gap: 6px; align-items: center; flex: 0 0 auto; }
+  #toolbar .sep { width: 1px; height: 26px; background: var(--glass-line); flex: 0 0 auto; }
+  #toolbar #scene-buttons { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+  #scene-buttons::-webkit-scrollbar { height: 6px; }
+  .tb-controls { flex-wrap: wrap; row-gap: 8px; }
   .chip { font-size: 12px; color: var(--ink-dim); padding: 6px 10px; border-radius: 9px;
     border: 1px solid transparent; cursor: pointer; user-select: none; white-space: nowrap; }
   .chip:hover { color: var(--ink); background: rgba(120,150,200,0.10); }
   .chip.on { color: var(--ink); background: rgba(120,150,200,0.16); border-color: var(--glass-line); }
   .scene-btn { font-size: 12.5px; }
   button.bare { font: inherit; color: var(--ink-dim); background: transparent; border: 1px solid var(--glass-line);
-    border-radius: 9px; padding: 6px 11px; cursor: pointer; font-size: 12px; }
+    border-radius: 9px; padding: 6px 11px; cursor: pointer; font-size: 12px; white-space: nowrap; }
   button.bare:hover { color: var(--ink); border-color: rgba(120,150,200,0.4); }
-  .toggle { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-dim); cursor: pointer; }
+  .toggle { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-dim); cursor: pointer; white-space: nowrap; }
   .toggle input { accent-color: #5fa8ff; }
   .grow { flex: 1; }
   #search { background: rgba(8,12,20,0.6); border: 1px solid var(--glass-line); color: var(--ink);
-    border-radius: 9px; padding: 6px 10px; font-size: 12px; width: 170px; }
+    border-radius: 9px; padding: 6px 10px; font-size: 12px; width: 150px; flex: 0 1 150px; min-width: 90px; }
   #search::placeholder { color: var(--ink-faint); }
 
-  /* question HUD (center top) */
-  #question { top: 116px; left: 50%; transform: translateX(-50%); padding: 8px 16px; text-align: center;
-    pointer-events: none; max-width: 70vw; }
-  #question .scene-title { font-size: 13px; font-weight: 600; }
-  #question .scene-q { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; }
+  /* question band — a slim full-width strip directly under the toolbar, replacing
+     the old floating center-top HUD that used to sit on top of the 3D scene. */
+  #question { left: 14px; right: 14px; padding: 7px 16px; display: flex; align-items: baseline; gap: 10px;
+    overflow: hidden; }
+  #question .scene-title { font-size: 12.5px; font-weight: 600; flex: 0 0 auto; white-space: nowrap; }
+  #question .scene-q { font-size: 11.5px; color: var(--ink-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* insight rail (left, below toolbar) */
-  #insight-rail { left: 14px; top: 116px; width: 288px; max-height: calc(100vh - 480px); min-height: 120px; overflow: auto; padding: 12px 14px; }
+  /* insight rail (left, below the toolbar+question band; top/max-height set by layoutChrome()) */
+  #insight-rail { left: 14px; width: 288px; min-height: 120px; overflow: auto; padding: 12px 14px; }
   #insight-rail h4 { margin: 0 0 10px; font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--ink-faint); }
   #insight-rail h4 span { color: var(--ink-dim); }
   .insight-card { display: flex; gap: 9px; align-items: flex-start; padding: 9px 10px; margin: 6px 0; border-radius: 10px;
@@ -71,8 +77,15 @@
   .insight-card .ic-rank { font-size: 10px; color: var(--ink-faint); margin-top: 3px; }
   .rail-empty { font-size: 11.5px; color: var(--ink-dim); line-height: 1.5; padding: 6px 2px; }
 
-  /* legend (left) */
-  #legend { left: 14px; bottom: 56px; width: 246px; padding: 12px 14px; font-size: 11.5px; }
+  /* legend — full text lives in an on-demand slide-in panel from the left,
+     opened by the toolbar's "How to read" button. Same wording as before,
+     just no longer permanently docked over the scene. */
+  #legend { top: 0; left: 0; bottom: 0; width: min(420px, 92vw); border-radius: 0;
+    border-left: none; border-top: none; border-bottom: none;
+    transform: translateX(-102%); transition: transform 0.32s cubic-bezier(.4,.1,.2,1);
+    overflow: auto; padding: 46px 20px 40px 24px; font-size: 11.5px; }
+  #legend.open { transform: translateX(0); }
+  #legend-close { position: absolute; top: 14px; right: 16px; }
   #legend h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--ink-faint); }
   .leg-row { display: flex; gap: 9px; align-items: flex-start; margin: 6px 0; color: var(--ink-dim); }
   .leg-mark { width: 14px; height: 14px; border-radius: 4px; flex: 0 0 auto; margin-top: 1px; position: relative; }
@@ -83,9 +96,18 @@
   #legend .note { margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--glass-line);
     color: var(--ink-faint); font-size: 10.5px; line-height: 1.45; }
 
-  /* detail (right) */
-  #detail { right: 14px; top: 116px; width: 290px; max-height: calc(100vh - 188px); overflow: auto; padding: 14px 16px; font-size: 12.5px; }
-  #detail.empty { color: var(--ink-faint); }
+  /* compact color key — always-on 4-item strip standing in for the old docked
+     legend panel; left-bottom, just above the status bar. */
+  #color-key { left: 14px; bottom: 56px; display: flex; gap: 13px; align-items: center;
+    padding: 8px 13px; font-size: 11px; color: var(--ink-dim); }
+  .ck-item { display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+  .ck-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+
+  /* detail (right) — on-demand only: hidden until an element/insight is picked,
+     closed with ×. top/max-height are set by layoutChrome(). */
+  #detail { right: 14px; width: 290px; overflow: auto; padding: 16px 16px 16px; font-size: 12.5px; }
+  #detail-close { position: absolute; top: 10px; right: 12px; }
+  #detail-body { margin-top: 4px; }
   #detail h3 { margin: 0 0 4px; font-size: 14px; }
   #detail .kind { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.5px; }
   #detail dl { margin: 12px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; }
@@ -194,34 +216,44 @@
   a.filelabel { cursor: pointer; }
   ::-webkit-scrollbar { width: 9px; height: 9px; }
   ::-webkit-scrollbar-thumb { background: rgba(120,150,200,0.22); border-radius: 8px; }
+
+  /* z-index regulation: the always-on chrome never covers itself; overlays
+     (report / how-to-read / detail / timeline) draw above the chrome and above
+     the 3D scene, never the reverse. */
+  #toolbar, #question, #insight-rail, #color-key, #status { z-index: 10; }
+  #legend, #detail, #report, #timeline { z-index: 20; }
 </style>
 </head>
 <body>
   <div id="scene"></div>
 
   <div id="toolbar" class="panel">
-    <div class="brand">ArchView<br><small id="brand-sub">AAT tooling · geometry layer</small></div>
-    <div class="sep"></div>
-    <div class="group" id="scene-buttons"></div>
-    <div class="sep"></div>
-    <div class="group" id="layer-toggles"></div>
-    <div class="sep"></div>
-    <div class="group">
-      <div class="chip" id="term-mode" title="Switch between engineer wording and the precise AG vocabulary">Engineer terms</div>
-      <div class="chip" id="twist-toggle" title="Draw the measured F₂ cochain as its double cover: parallel sheets glue, crossed sheets twist">Twist view</div>
-      <label class="toggle" title="Off = draw only measurement-driven geometry: no glow, no pulse, no arcs"><input type="checkbox" id="decor-toggle" checked />Decoration</label>
+    <div class="tb-row tb-scenes">
+      <div class="brand">ArchView<br><small id="brand-sub">AAT tooling · geometry layer</small></div>
+      <div class="sep"></div>
+      <div class="group" id="scene-buttons"></div>
     </div>
-    <div class="grow"></div>
-    <input id="search" placeholder="find atom / context…" autocomplete="off" />
-    <button class="bare" id="reset-cam">Reset view</button>
-    <a class="filelabel"><button class="bare" id="open-file">Open data…</button></a>
-    <input id="file" type="file" accept="application/json,.json" />
-    <button class="bare" id="report-toggle">Report</button>
+    <div class="tb-row tb-controls">
+      <div class="group" id="layer-toggles"></div>
+      <div class="sep"></div>
+      <div class="group">
+        <div class="chip" id="term-mode" title="Switch between engineer wording and the precise AG vocabulary">Engineer terms</div>
+        <div class="chip" id="twist-toggle" title="Draw the measured F₂ cochain as its double cover: parallel sheets glue, crossed sheets twist">Twist view</div>
+        <label class="toggle" title="Off = draw only measurement-driven geometry: no glow, no pulse, no arcs"><input type="checkbox" id="decor-toggle" checked />Decoration</label>
+      </div>
+      <div class="grow"></div>
+      <input id="search" placeholder="find atom / context…" autocomplete="off" />
+      <button class="bare" id="reset-cam">Reset view</button>
+      <a class="filelabel"><button class="bare" id="open-file">Open data…</button></a>
+      <input id="file" type="file" accept="application/json,.json" />
+      <button class="bare" id="how-to-read-toggle">How to read</button>
+      <button class="bare" id="report-toggle">Report</button>
+    </div>
   </div>
 
   <div id="question" class="panel">
-    <div class="scene-title" id="q-title">Nerve &amp; Cover</div>
-    <div class="scene-q" id="q-question">What finite site and cover did ArchSig measure?</div>
+    <span class="scene-title" id="q-title">Nerve &amp; Cover</span>
+    <span class="scene-q" id="q-question">What finite site and cover did ArchSig measure?</span>
   </div>
 
   <div id="insight-rail" class="panel">
@@ -230,12 +262,21 @@
     <div id="insight-empty" class="rail-empty hidden"></div>
   </div>
 
-  <div id="legend" class="panel"></div>
+  <div id="legend" class="panel">
+    <button class="bare" id="legend-close">Close</button>
+    <div id="legend-body"></div>
+  </div>
 
-  <div id="detail" class="panel empty">
-    <div class="kind">selection</div>
-    <h3>Nothing selected</h3>
-    <div style="color:var(--ink-faint);font-size:12px;margin-top:6px">Click a context cell, an atom bead, a strut, or the obstruction seam to inspect what was measured there.</div>
+  <div id="detail" class="panel hidden">
+    <button class="bare" id="detail-close">Close</button>
+    <div id="detail-body"></div>
+  </div>
+
+  <div id="color-key" class="panel">
+    <span class="ck-item"><span class="ck-dot" style="background:var(--structural-zero)"></span>Teal</span>
+    <span class="ck-item"><span class="ck-dot" style="background:var(--structural-nonzero)"></span>Amber</span>
+    <span class="ck-item"><span class="ck-dot" style="background:var(--analytic)"></span>Lavender</span>
+    <span class="ck-item"><span class="ck-dot" style="background:var(--silence)"></span>Grey</span>
   </div>
 
   <div id="status" class="panel">
@@ -544,7 +585,33 @@ function makeLabel(text, { color = "#cdd9ec", scale = 1, bg = "rgba(8,12,20,0.55
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
   sp.scale.set((w / h) * 6 * scale, 6 * scale, 1);
+  sp.userData.labelText = text; // for duplicate-label consolidation, see mergeDuplicateLabels()
   return sp;
+}
+// Same-text sprite labels within one group (== one scene's drawn content) collapse to a single
+// instance at the centroid of their positions, so identical wording never stacks/overlaps.
+// The text itself is untouched; only the redundant repeated instances are removed.
+function mergeDuplicateLabels(group) {
+  const byText = new Map();
+  for (const child of group.children) {
+    if (!child.isSprite || !child.userData.labelText) continue;
+    const key = child.userData.labelText;
+    if (!byText.has(key)) byText.set(key, []);
+    byText.get(key).push(child);
+  }
+  for (const dups of byText.values()) {
+    if (dups.length < 2) continue;
+    const centroid = new THREE.Vector3();
+    for (const d of dups) centroid.add(d.position);
+    centroid.divideScalar(dups.length);
+    dups[0].position.copy(centroid);
+    for (let i = 1; i < dups.length; i++) {
+      const d = dups[i];
+      d.material.map?.dispose?.();
+      d.material.dispose?.();
+      group.remove(d);
+    }
+  }
 }
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -902,6 +969,7 @@ function buildAll() {
   buildPeriods();
   buildCages();
   buildVerdict();
+  for (const g of Object.values(G)) mergeDuplicateLabels(g);
   // horizon sized to content
   const box = new THREE.Box3().setFromObject(root);
   const sph = box.getBoundingSphere(new THREE.Sphere());
@@ -1699,8 +1767,8 @@ function navigateToInsight(ins) {
 }
 
 function showInsightDetail(ins) {
-  const el = document.getElementById("detail");
-  el.classList.remove("empty");
+  document.getElementById("detail").classList.remove("hidden");
+  const el = document.getElementById("detail-body");
   const anchors = (ins.evidence.atomRefs || []).map((r) => ({ ref: r, a: MODEL.anchorByAtom.get(r) }))
     .filter((x) => x.a && (x.a.subjectRef || (x.a.sourceRefs || []).length));
   const anchorRows = anchors.slice(0, 8).map(({ ref, a }) =>
@@ -1865,8 +1933,8 @@ function conventionRows(atomRefs, heading) {
 let LAST_DETAIL = null; // re-render the open selection when the term lane flips
 function showDetail(info) {
   LAST_DETAIL = info;
-  const el = document.getElementById("detail");
-  el.classList.remove("empty");
+  document.getElementById("detail").classList.remove("hidden");
+  const el = document.getElementById("detail-body");
   let kind = info.type, title = "", rows = [], badge = "", extra = "";
   if (info.type === "context") {
     title = info.ctx.id; kind = "context (nerve vertex)";
@@ -1975,7 +2043,7 @@ function escapeHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<"
 function renderLegend() {
   const fams = Object.entries(FAMILY_COLORS).map(([f, c]) =>
     `<span style="display:inline-flex;gap:4px;align-items:center;margin:2px 7px 2px 0"><span style="width:9px;height:9px;border-radius:2px;background:#${c.toString(16).padStart(6, "0")}"></span><span style="font-size:10.5px;color:var(--ink-dim)">${f}</span></span>`).join("");
-  document.getElementById("legend").innerHTML = `
+  document.getElementById("legend-body").innerHTML = `
     <h4>How to read this</h4>
     <div class="leg-row"><span class="leg-mark ring" style="border-color:#a9c4ef"></span><div><b>Glass cage</b> — ${T({
       math: "a context (local window). Radius ∝ #atoms it observes.",
@@ -2001,6 +2069,17 @@ function renderLegend() {
       eng: "horizontally close = strongly coupled in the measured structure (within one connected part). Lower = a more deeply shared overlap. Distances between disconnected parts mean nothing." })}</div>
     <div class="note"><b>Measured vs decoration</b> — sizes, thicknesses, amber marks and which edges exist are <i>measured</i>; horizontal coordinates are <i>derived</i> from the measured nerve spectrum and height from the measured poset; glow, pulse, arcs and probes are <i>decoration</i>. Turn "Decoration" off to draw measured geometry only; click any element for its per-channel breakdown.</div>
     <div class="note">The viewer adds no new structural verdict.</div>`;
+  const ck = document.querySelectorAll("#color-key .ck-item");
+  if (ck.length === 4) {
+    ck[0].title = T({ math: "the loop closes: NO measured obstruction.",
+      eng: "every loop closes: no inconsistency was measured." });
+    ck[1].title = T({ math: "čech-mismatch marker & the measured H¹ cocycle that won't close.",
+      eng: "a measured disagreement between neighbors, and the loop of disagreements that no single-module fix can reconcile." });
+    ck[2].title = T({ math: "analytic reading (curvature / spectrum / period), never a verdict.",
+      eng: "advisory reading (stress / spectrum / cycles), never a pass/fail claim." });
+    ck[3].title = T({ math: "cover restriction edge (no shared atoms).",
+      eng: "a shared boundary between two modules (no disagreement observed)." });
+  }
 }
 
 function updateStatus() {
@@ -2081,10 +2160,17 @@ async function loadCompanions(base = ".") {
   return { summary, manifest };
 }
 function resetDetail() {
-  const el = document.getElementById("detail");
-  el.classList.add("empty");
-  el.innerHTML = `<div class="kind">selection</div><h3>Nothing selected</h3>
-    <div style="color:var(--ink-faint);font-size:12px;margin-top:6px">Click a context cell, an atom bead, a strut, or the obstruction seam to inspect what was measured there.</div>`;
+  document.getElementById("detail").classList.add("hidden");
+  document.getElementById("detail-body").innerHTML = "";
+}
+// the ×-close on the detail panel: hide it and drop back to the "nothing selected" state
+// (no active insight card, no highlight) — same state resetDetail() already represents.
+function closeDetail() {
+  resetDetail();
+  LAST_DETAIL = null;
+  activeInsightId = null;
+  clearHighlight();
+  renderInsightRail();
 }
 function renderData(data, source, companions, opts = {}) {
   if (!data || data.schema !== EXPECTED_VIEWER_SCHEMA) {
@@ -2274,7 +2360,7 @@ function renderTermChip() {
 termChip.addEventListener("click", () => {
   TERM_MODE = TERM_MODE === "math" ? "engineer" : "math";
   localStorage.setItem("archview.termMode", TERM_MODE);
-  renderTermChip(); buildSceneButtons(); renderLegend();
+  renderTermChip(); buildSceneButtons(); renderLegend(); layoutChrome();
   if (MODEL) {
     highlighted = [];                             // meshes were rebuilt; drop stale highlight handles
     buildAll();                                   // labels in the 3D scene carry lane wording too
@@ -2309,6 +2395,11 @@ document.getElementById("report-toggle").addEventListener("click", () =>
 document.getElementById("tl-play").addEventListener("click", togglePlay);
 document.getElementById("report-close").addEventListener("click", () =>
   document.getElementById("report").classList.remove("open"));
+document.getElementById("how-to-read-toggle").addEventListener("click", () =>
+  document.getElementById("legend").classList.toggle("open"));
+document.getElementById("legend-close").addEventListener("click", () =>
+  document.getElementById("legend").classList.remove("open"));
+document.getElementById("detail-close").addEventListener("click", closeDetail);
 
 /* search highlight */
 // search highlight — bump self-glow + scale (NOT bloom; the H¹ bloom budget is reserved).
@@ -2337,6 +2428,28 @@ document.getElementById("search").addEventListener("input", (e) => {
 });
 
 /* ============================================================================
+ * Chrome layout — the always-on panels (question band, insight rail, detail)
+ * are positioned from measured rects of the toolbar/color-key, not hardcoded
+ * pixel guesses, so they never overlap regardless of toolbar row count or
+ * viewport size.
+ * ========================================================================== */
+function layoutChrome() {
+  const toolbarRect = document.getElementById("toolbar").getBoundingClientRect();
+  const question = document.getElementById("question");
+  question.style.top = Math.ceil(toolbarRect.bottom + 10) + "px";
+  const qRect = question.getBoundingClientRect();
+  const contentTop = Math.ceil(qRect.bottom + 10);
+  const colorKeyRect = document.getElementById("color-key").getBoundingClientRect();
+  const bottomLimit = colorKeyRect.top - 10;
+  const maxH = Math.max(140, Math.round(bottomLimit - contentTop));
+  for (const id of ["insight-rail", "detail"]) {
+    const el = document.getElementById(id);
+    el.style.top = contentTop + "px";
+    el.style.maxHeight = maxH + "px";
+  }
+}
+
+/* ============================================================================
  * Resize + animation
  * ========================================================================== */
 window.addEventListener("resize", () => {
@@ -2344,6 +2457,7 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   bloomComposer.setSize(window.innerWidth, window.innerHeight);
   finalComposer.setSize(window.innerWidth, window.innerHeight);
+  layoutChrome();
 });
 
 const clock = new THREE.Clock();
@@ -2374,6 +2488,7 @@ function animate() {
 renderLegend();
 buildSceneButtons();
 buildLayerToggles();
+layoutChrome();
 emptyShell();
 loadDefault();
 animate();
