@@ -10,7 +10,7 @@
   ArchMap / extractor は source code から Atom evidence や AAT measurement input を提示・検査する
   実測 surface であり、AAT の定理や完了条件を定義しない。
 - LawPolicy selector は明示した law / evaluator / basis / scope / severity を選ぶ `law-policy/v0.5.0` artifact である。退役した policy pack selector は受理しない。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v0.5.0` を選ぶ。cover、coefficient、witness family、exactness assumption、distance rule は evaluator registry または MeasurementProfile の責務である。AAT そのものではない。
-- ArchSig v0.5.0 は、ArchMap + LawPolicy + MeasurementProfile の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.0` を作る AG measurement layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
+- ArchSig v0.5.0 は、ArchMap + LawPolicy + MeasurementProfile の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.0` を作る AG measurement layer である。Rust と Lean の対応を tooling contract として要求しない。
 - ArchView は ArchSig が emitted した measurement / viewer artifact を AAT 代数幾何の幾何として投影する可視化レイヤーである。ArchView は新しい structural verdict を作らず、`archsig-atom-viewer-data.json`、同一ディレクトリの summary / manifest、または `archview-sequence/v0.5.0` の実測フレーム列だけを表示する。
 - ArchSig の `analyze` は選ばれた LawPolicy、MeasurementProfile、evidence contract の中で
   structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、

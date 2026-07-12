@@ -21,7 +21,7 @@ GitHub Release notes は原則として英語で書く。
 - Release は GitHub Issue / PR の完了状態を根拠にする。
 - Release notes は `.github/RELEASE_TEMPLATE.md` を起点に英語で作成する。
 - ArchSig / FieldSig の claim scope を混同しない。
-- ArchSig は AAT structural telemetry / analysis packet / review artifact として扱う。
+- ArchSig は、宣言された ArchMap + LawPolicy + MeasurementProfile から bounded verdict と analysis packet を計算する計測層として書く。結論の相対性は入力契約に由来する帰結として述べ、「theorem prover ではない」型の否定形免責を identity 文に書かない(AGENTS.md「責務範囲」の記述規律)。
 - FieldSig は forecast, governance, calibration, operational feedback を扱うが、forecast correctness、probability、causal correctness、global safety、CI/Test/human review の置換を主張しない。
 - ArchSig release notes では、Architecture Signature を単一スコアではなく、多軸診断として扱う。
 - Release を勝手に publish しない。公開は必ずユーザー確認後に行う。

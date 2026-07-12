@@ -72,6 +72,12 @@
   肯定形で述べる。ユーザーや対象 artifact が明示していない限り、
   「この定理は実コードベース全体を対象としません」のような外側の否定 claim を付け足さない。
   外側は補足 caveat ではなく沈黙で扱う。
+- Tooling の identity も同じ規律で書く。ArchSig の定義は
+  「ArchMap + LawPolicy + MeasurementProfile から bounded verdict を計算する計測層」という
+  肯定形であり、結論の相対性はこの入力契約に由来する帰結として述べる。
+  「theorem prover ではない」「global truth ではない」のような否定形免責を
+  identity 文へ習慣的に併記しない。否定を書くのは、読者の実在する誤推論を塞ぐ場合だけ、
+  結論の近くで一度に限る。
 
 ## 作業規律
 

@@ -40,7 +40,7 @@ AAT / Lean / ArchSig の責務境界を作業前に必ず分ける。
 
 - **AAT** は Atom を公理とする純粋数学理論。source observation、measurement、tooling validation の境界を AAT 内部に持ち込まない。測定境界は ArchMap / ArchSig / FieldSig 側の artifact contract として扱う。
 - **Lean 形式化**は神様の視点ではない。語れる命題だけを形式化し、全 runtime・全 semantic universe・全未来予測のような証明対象を勝手にスコープへ入れない。
-- **ArchSig** は Rust tooling であり Lean 証明器ではない。`ArchMap + LawPolicy + evidence contract` に相対化し、選ばれた語彙内の肯定的な diagnostic conclusion を出す。Rust と Lean の対応は要求しない。
+- **ArchSig** は `ArchMap + LawPolicy + evidence contract` から選ばれた語彙内の肯定的な diagnostic conclusion を計算する Rust tooling。結論の相対性は入力契約に由来する帰結であり、identity を「Lean 証明器ではない」のような否定形で書かない。Rust と Lean の対応は要求しない。
 - **ウィトゲンシュタイン的責務境界**: ArchSig は与えられた入力 contract から語れることだけを語り、語れないことには沈黙する。入力 contract を補完・推測・拡張しない。語り得ない領域は残タスクや失敗ではなく沈黙として扱い、必要な場合だけ結論の近くに最小限の boundary として書く。
 - 完了レビューや残タスク整理では、対象 Issue / PRD / acceptance test が実際に要求している concrete condition だけを判定する。無制限 claim(現実コード全体、意味宇宙全体、未来予測)を勝手に残タスク化しない。
 - **禁止**: AAT の完了レビューで source extraction / ArchMap observation / tooling validation の完全性を「未完了部分」「残タスク」「証明不能な限界」として持ち出さない。必要なら tooling / SFT 側の具体的な artifact・fixture・schema・validator・Issue acceptance として別に扱う。
