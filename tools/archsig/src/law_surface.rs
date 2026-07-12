@@ -47,6 +47,12 @@ pub struct LawEquationSurfaceV1 {
     pub id: String,
     #[serde(default)]
     pub laws: Vec<LawEquationV1>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub skeleton: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub defect_sources: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quotient_sheaf_condition: Option<Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -60,12 +66,6 @@ pub struct LawEquationV1 {
     pub forbidden_support_generators: Vec<LawForbiddenSupportGeneratorV1>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evaluator_ref: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub skeleton: Option<Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub defect_sources: Option<Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub quotient_sheaf_condition: Option<Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -153,6 +153,7 @@ pub fn validate_law_surface_v1_report(
         check_identity(surface),
         check_law_ids(surface),
         check_condition_types(surface),
+        check_evaluator_refs(surface),
         check_shape_rules(surface, raw),
         check_bindings(surface, &vocabulary, raw),
         check_forbidden_supports(surface),
@@ -269,6 +270,30 @@ fn check_condition_types(surface: &LawEquationSurfaceV1) -> ValidationCheck {
     check_examples(
         "law-equation-surface-v051-condition-types",
         "conditionType uses the six declared law condition types",
+        examples,
+    )
+}
+
+fn check_evaluator_refs(surface: &LawEquationSurfaceV1) -> ValidationCheck {
+    let registry = crate::static_law_evaluator_registry_v1();
+    let mut examples = Vec::new();
+    for (index, law) in surface.laws.iter().enumerate() {
+        if let Some(evaluator_ref) = law.evaluator_ref.as_deref()
+            && !registry
+                .evaluators
+                .iter()
+                .any(|manifest| manifest.evaluator_id == evaluator_ref)
+        {
+            examples.push(generic_validation_example(
+                &format!("laws[{index}].evaluatorRef"),
+                evaluator_ref,
+                "evaluatorRef must resolve to the versioned law evaluator registry",
+            ));
+        }
+    }
+    check_examples(
+        "law-equation-surface-v051-evaluator-refs",
+        "non-closed evaluator references resolve through the law evaluator registry",
         examples,
     )
 }
@@ -541,21 +566,13 @@ fn check_forbidden_supports(surface: &LawEquationSurfaceV1) -> ValidationCheck {
 
 fn check_reserved_fields(raw: &Value) -> ValidationCheck {
     let mut examples = Vec::new();
-    for (law_index, law) in raw
-        .get("laws")
-        .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-        .enumerate()
-    {
-        for field in ["skeleton", "defectSources", "quotientSheafCondition"] {
-            if law.get(field).is_some() {
-                examples.push(generic_validation_example(
-                    &format!("laws[{law_index}].{field}"),
-                    "present",
-                    "Stage 3 reservation is declared but unsupported and must fail closed",
-                ));
-            }
+    for field in ["skeleton", "defectSources", "quotientSheafCondition"] {
+        if raw.get(field).is_some() {
+            examples.push(generic_validation_example(
+                field,
+                "present",
+                "Stage 3 reservation is declared but unsupported and must fail closed",
+            ));
         }
     }
     check_examples(
@@ -568,23 +585,27 @@ fn check_reserved_fields(raw: &Value) -> ValidationCheck {
 fn check_conclusion_tokens(surface: &LawEquationSurfaceV1) -> ValidationCheck {
     let mut examples = Vec::new();
     for (law_index, law) in surface.laws.iter().enumerate() {
-        for (field, value) in [("lawId", law.law_id.as_str())].into_iter() {
+        let mut candidates = vec![("lawId".to_string(), law.law_id.as_str())];
+        for (variable_index, variable) in law.witness_variables.iter().enumerate() {
+            candidates.push((
+                format!("laws[{law_index}].witnessVariables[{variable_index}].variable"),
+                variable.variable.as_str(),
+            ));
+            if let Some(alias) = variable.binding.archmap_variable.as_deref() {
+                candidates.push((
+                    format!(
+                        "laws[{law_index}].witnessVariables[{variable_index}].binding.archmapVariable"
+                    ),
+                    alias,
+                ));
+            }
+        }
+        for (field, value) in candidates {
             for token in CONCLUSION_TOKENS {
                 if normalized_identifier_contains(value, token) {
                     examples.push(generic_validation_example(
-                        &format!("laws[{law_index}].{field}"),
+                        &field,
                         value,
-                        "law identifiers must not encode evaluator conclusions",
-                    ));
-                }
-            }
-        }
-        for (variable_index, variable) in law.witness_variables.iter().enumerate() {
-            for token in CONCLUSION_TOKENS {
-                if normalized_identifier_contains(&variable.variable, token) {
-                    examples.push(generic_validation_example(
-                        &format!("laws[{law_index}].witnessVariables[{variable_index}].variable"),
-                        &variable.variable,
                         "witness variable names must not encode evaluator conclusions",
                     ));
                 }
@@ -728,12 +749,48 @@ fn raw_witness_field_is_null(
 }
 
 fn normalized_identifier_contains(value: &str, token: &str) -> bool {
-    let normalized = value
-        .chars()
-        .filter(|character| character.is_ascii_alphanumeric())
-        .flat_map(|character| character.to_lowercase())
-        .collect::<String>();
-    normalized.contains(token)
+    let segments = identifier_segments(value);
+    let token = token.to_ascii_lowercase();
+    if segments.iter().any(|segment| segment == &token) {
+        return true;
+    }
+    for start in 0..segments.len() {
+        let mut combined = String::new();
+        for segment in segments.iter().skip(start) {
+            combined.push_str(segment);
+            if combined == token {
+                return true;
+            }
+            if combined.len() > token.len() {
+                break;
+            }
+        }
+    }
+    false
+}
+
+fn identifier_segments(value: &str) -> Vec<String> {
+    let mut segments = Vec::new();
+    let mut current = String::new();
+    let mut previous_is_lowercase = false;
+    for character in value.chars() {
+        if !character.is_ascii_alphanumeric() {
+            if !current.is_empty() {
+                segments.push(std::mem::take(&mut current));
+            }
+            previous_is_lowercase = false;
+            continue;
+        }
+        if character.is_ascii_uppercase() && previous_is_lowercase && !current.is_empty() {
+            segments.push(std::mem::take(&mut current));
+        }
+        current.push(character.to_ascii_lowercase());
+        previous_is_lowercase = character.is_ascii_lowercase();
+    }
+    if !current.is_empty() {
+        segments.push(current);
+    }
+    segments
 }
 
 fn check_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {

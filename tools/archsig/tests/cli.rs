@@ -47,7 +47,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     );
 
     let mut reserved = read_json(&input);
-    reserved["laws"][0]["skeleton"] = json!({"reserved": true});
+    reserved["skeleton"] = json!({"reserved": true});
     let reserved_path = out_dir.join("reserved.json");
     fs::write(
         &reserved_path,
@@ -72,6 +72,29 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
             check["id"] == "law-equation-surface-v051-reserved-fields" && check["result"] == "fail"
         })
     }));
+
+    for field in ["defectSources", "quotientSheafCondition"] {
+        let mut reserved = read_json(&input);
+        reserved[field] = json!({"reserved": true});
+        let reserved_path = out_dir.join(format!("reserved-{field}.json"));
+        fs::write(
+            &reserved_path,
+            serde_json::to_vec_pretty(&reserved).expect("reserved field serializes"),
+        )
+        .expect("reserved field writes");
+        let reserved_report = out_dir.join(format!("reserved-{field}-report.json"));
+        run_sig0_expect_code(
+            &[
+                "law-surface",
+                "--law-surface",
+                reserved_path.to_str().expect("path is utf-8"),
+                "--out",
+                reserved_report.to_str().expect("path is utf-8"),
+            ],
+            1,
+        );
+        assert_eq!(read_json(&reserved_report)["summary"]["result"], "fail");
+    }
 
     let mut weakened = read_json(&input);
     weakened["laws"][0]["conditionType"] = json!("open");
@@ -173,6 +196,52 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         );
         assert_eq!(read_json(&shortcut_report)["summary"]["result"], "fail");
     }
+
+    let mut non_shortcut = read_json(&input);
+    non_shortcut["laws"][0]["lawId"] = json!("ag.nonzeroish");
+    let non_shortcut_path = out_dir.join("non-shortcut.json");
+    fs::write(
+        &non_shortcut_path,
+        serde_json::to_vec_pretty(&non_shortcut).expect("non-shortcut fixture serializes"),
+    )
+    .expect("non-shortcut fixture writes");
+    let non_shortcut_report = out_dir.join("non-shortcut-report.json");
+    run_sig0(
+        [
+            "law-surface",
+            "--law-surface",
+            non_shortcut_path.to_str().expect("path is utf-8"),
+            "--out",
+            non_shortcut_report.to_str().expect("path is utf-8"),
+        ]
+        .as_slice(),
+    );
+    assert_eq!(read_json(&non_shortcut_report)["summary"]["result"], "pass");
+
+    let mut alias_shortcut = read_json(&input);
+    alias_shortcut["laws"][0]["witnessVariables"][0]["binding"]["archmapVariable"] =
+        json!("ag.nsdepth");
+    let alias_shortcut_path = out_dir.join("alias-shortcut.json");
+    fs::write(
+        &alias_shortcut_path,
+        serde_json::to_vec_pretty(&alias_shortcut).expect("alias shortcut serializes"),
+    )
+    .expect("alias shortcut writes");
+    let alias_shortcut_report = out_dir.join("alias-shortcut-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            alias_shortcut_path.to_str().expect("path is utf-8"),
+            "--out",
+            alias_shortcut_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&alias_shortcut_report)["summary"]["result"],
+        "fail"
+    );
 
     let mut empty_alias = read_json(&input);
     empty_alias["laws"][0]["witnessVariables"][0]["binding"]["archmapVariable"] = json!("");
@@ -373,8 +442,19 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     assert_eq!(read_json(&self_edge_report)["summary"]["result"], "fail");
 
     for (name, axis, predicate) in [
-        ("cech", "cech", "sectionValue"),
-        ("section-factorization", "section-factorization", "support"),
+        ("square-free-support", "square-free", "support"),
+        ("square-free-cooccurrence", "square-free", "cooccurrence"),
+        ("cech-section-value", "cech", "sectionValue"),
+        (
+            "section-factorization-support",
+            "section-factorization",
+            "support",
+        ),
+        (
+            "section-factorization-cooccurrence",
+            "section-factorization",
+            "cooccurrence",
+        ),
     ] {
         let mut accepted = read_json(&input);
         let binding_object = accepted["laws"][0]["witnessVariables"][0]["binding"]
@@ -401,6 +481,38 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
             accepted_path.to_str().expect("path is utf-8"),
         ]);
     }
+
+    let mut unknown_evaluator = read_json(&input);
+    unknown_evaluator["laws"][1]["evaluatorRef"] = json!("ag.not-registered");
+    let unknown_evaluator_path = out_dir.join("unknown-evaluator.json");
+    fs::write(
+        &unknown_evaluator_path,
+        serde_json::to_vec_pretty(&unknown_evaluator)
+            .expect("unknown evaluator fixture serializes"),
+    )
+    .expect("unknown evaluator fixture writes");
+    let unknown_evaluator_report = out_dir.join("unknown-evaluator-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            unknown_evaluator_path.to_str().expect("path is utf-8"),
+            "--out",
+            unknown_evaluator_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let unknown_evaluator_json = read_json(&unknown_evaluator_report);
+    assert!(
+        unknown_evaluator_json["checks"]
+            .as_array()
+            .is_some_and(|checks| {
+                checks.iter().any(|check| {
+                    check["id"] == "law-equation-surface-v051-evaluator-refs"
+                        && check["result"] == "fail"
+                })
+            })
+    );
 
     let mut unknown = read_json(&input);
     unknown["laws"][0]["verdict"] = json!("measured_zero");

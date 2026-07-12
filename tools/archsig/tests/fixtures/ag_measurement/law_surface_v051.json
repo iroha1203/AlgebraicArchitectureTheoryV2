@@ -32,7 +32,7 @@
     {
       "lawId": "ag.section-factorization",
       "conditionType": "descent",
-      "evaluatorRef": "ag.cech-obstruction@1"
+      "evaluatorRef": "ag.section-factorization"
     }
   ]
 }
