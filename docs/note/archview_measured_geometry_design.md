@@ -207,3 +207,113 @@ ArchSig 本体(Rust の測定・packet 生成)の変更は全 wave で不要。
 3. 大規模 site(contexts > 数百)でのスペクトル計算コストとフォールバック
    (現行 force-directed の ITERS 打ち切りと同様の段階縮退)。
 4. sequence mode(base→head→repaired 再生)で twist view を既定にするか。
+
+---
+
+## 9. 続き: AG 正典の絵への全面転換(Issue #3272)
+
+Wave 1–3(上記 §5)は座標系(A)と2つの層ビュー(B)を計測駆動にしたが、
+描画の**語彙**自体はまだ site の nerve(球体 + strut グラフ)のままだった。
+Issue #3272 は同じ計測フィールドを使い、**語彙**を代数幾何の正典的な絵
+(開被覆のパッチワーク・overlap のレンズ・étale space のシート・二重被覆)
+へ置き換える。新しい計測フィールドの追加や ArchSig 側の変更は不要。
+
+### 9.1 底空間 = パッチワーク
+
+各 context は球(icosahedron)ではなく、**平たい半透明の円盤**として描く。
+配置は既存のスペクトル埋め込み(X,Z)をそのまま使うが、**Y は全パッチで 0**
+にする — 底空間はほぼ同一平面に置かれた開被覆であり、poset の塔ではない。
+
+restriction poset の深さ(§A-2 で導入した測定量)は捨てていない。移動先を
+変えただけである: パッチではなく、2つのパッチを結ぶ **overlap lens** の
+沈み込みとして残す(`computeLensGeom` の `lensY`)。深い重なりほど lens が
+低く沈む — 「重なりが深いほど下にある」という A-2 の意味論は保存される。
+
+### 9.2 overlap = レンズ(vesica)
+
+restriction edge を、2つのパッチ中心を結ぶ線分上の **vesica(レンズ)形の
+領域**として構成的に描く(`lensBoundaryPoints`: 2本の二次 Bézier 弧)。
+サイズは `nerve.edges[].supportAtomRefs`(mismatch marker)ではなく、
+**`ctx(a).atomIds ∩ ctx(b).atomIds` の実測サイズ**(§2 の「共有 atom 数」列)
+に比例させる — 両 context の atomIds は既に実測フィールドなので、その
+交差サイズは新しい観測ではなく厳密な集合演算である。mismatch marker を
+持つ edge は amber 化し、縁の太さ(rim tube)を marker 数に比例させる。
+
+パッチ同士がスペクトル埋め込み上でたまたま接近・接触しても意味はない。
+「重なり」を主張するのはレンズだけである。
+
+### 9.3 atom 配置 = 所属(hash jitter の全廃)
+
+旧実装は `mulberry32(hash32(atomId))` によるジッターで atom を context の
+centroid 付近に散らしていた。これは「所属している」以上の情報を持たない
+乱数だった。新実装はこれを完全に置き換える:
+
+- k=1(単一 context 所属): その context のパッチ内。
+- k=2(2つの context に所属): その2 context を結ぶ **測定された** restriction
+  edge があれば、そのレンズ内。無ければ(§9.5 参照)2 context の centroid
+  へフォールバック。
+- k=3 かつ測定された triangle が存在すれば、その face 内。
+- それ以外(k>3、または対応する triangle が無い k=3)は測定された
+  memberships の centroid へフォールバック(layout 申告)。
+
+領域内の並びは `placeMembersInCell`: family をアルファベット順に等角
+セクターへ割り当て、セクター内は id 順にリングへ配置する、完全に決定論的
+な規則。乱数・ハッシュは一切使わない。
+
+### 9.4 上空 = étale space(Sections シーン)
+
+宣言された section 値ごとに、その値を持つ context のパッチ上空へ
+半透明のシート片を浮かべる(lane 高さ = 既存のレーン割当)。restriction
+edge の両側で値が一致すれば、**同じ overlap lens の footprint**(§9.2 の
+`computeLensGeom` を lane の高さへ持ち上げたもの)で連続な bridge を貼る。
+値が不一致なら bridge を貼らず、代わりに zigzag の **裂け目**(fault line)
+を明示する。H¹ cocycle support 上にある裂け目だけ amber + bloom
+(bloom は測定 H¹ evidence 専用の予算のまま、他の裂け目は bloom しない)。
+大域切断が存在すれば、teal の一枚シートが全パッチを覆う。
+
+### 9.5 Twist view = 文字通りの二重被覆
+
+union-find による連結性判定ロジック(§B-1、packet 不一致時は沈黙する防御
+契約を含む)は完全に維持。変えたのは描画だけ: 各 lift(点)をパッチと
+同じ円盤形の**シート片**にし、各 restriction edge の接続をチューブでは
+なく水平方向に幅を持つ **band**(平面帯)にした。cochain 値が 1 の edge は
+band を反対側のシートへ渡すため、2本の band が空間中で視覚的に交差する
+— これが Möbius 的な捻れの literal な実装である。
+
+### 9.6 色規律の強化
+
+atom family 色(`FAMILY_COLORS`)を、シルエット灰色(`COL.silence`)へ
+55% ブレンドして低彩度化した(`FAMILY_COLORS_VIVID` を hover/選択時のみの
+ポップとして残す)。Sections レーン色(`LANE_COLORS`)も同様に 45%
+ブレンドする。高彩度は teal(measured_zero)/ amber(measured_nonzero)/
+lavender(analytic)/ grey(silence)の4レーンにのみ残す。family の識別は
+主に形(`FAMILY_SHAPE`)が担う — 色は二次的な、意図的に控えめな手がかりに
+格下げされた。
+
+### 9.7 forbidden support = 底面のハッチング領域
+
+`forbiddenCages` は浮遊する 3D ボックスではなく、forbidden な atom の
+(X,Z)射影を覆う、底面上の暗いハッチング済み円盤として描く。repair の
+landing-ladder は同じ底面基準(パッチ平面のすぐ下)を上端の目安にし、
+さらに下の lawful floor まで下降する — poset 高さではなく底空間に追従する。
+
+### 9.8 判定規律への回答
+
+§0 の3条件で検査する: (1) 駆動データは `ctx.atomIds` の交差サイズ・
+restriction poset 深さ・宣言された section 値・F₂ cochain 値のいずれも
+既存の実測フィールド。新しい観測・推測はゼロ。(2) レンズの大きさ =
+交差集合のサイズという対応は集合論的に自明であり、étale space・二重被覆
+の対応は §B-1/B-2 の定理をそのまま流用している。(3) 各チャネルは
+`FIDELITY`(archview.html)で measured / derived / layout / decoration の
+いずれかに一意に分解して申告できる(paint 表現は §5 の実装 wave 表と同じ
+表で管理)。採用。
+
+### 9.9 却下した代替案(追記)
+
+- **真の vesica(2円の交差)の幾何** ではなく、2本の二次 Bézier 曲線による
+  近似形状を採用した。真の円交差はレンズの大きさ(半径)を決めるのに
+  余分な非線形方程式を要求し、視覚的な違いは小さい。近似形状であることを
+  `FIDELITY.strut` に明記して layout 申告する。
+- **k>3 memberships 用の高次 overlap 領域**(4重以上の重なりの専用ジオメト
+  リ)は追加しない。H² を可視化しない既存境界と同じ理由で、3重を超える
+  overlap は測定された centroid フォールバックのまま(layout 申告)。

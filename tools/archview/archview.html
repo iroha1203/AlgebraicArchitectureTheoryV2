@@ -346,12 +346,24 @@ const COL = {
   zero: 0x38e0c8, nonzero: 0xffb24c, analytic: 0xb69cff, silence: 0x6a7790,
   cell: 0x7fa6d8, strut: 0x9fb4d6, face: 0x8694ad, ink: 0xe8eef7,
 };
-const FAMILY_COLORS = {
+// High saturation is reserved for the four semantic lanes (COL.zero/nonzero/
+// analytic/silence). Family identity is carried primarily by SHAPE
+// (FAMILY_SHAPE); color is a secondary, deliberately low-saturation cue so it
+// never competes with — or gets mistaken for — a measured verdict lane.
+// FAMILY_COLORS_VIVID is kept only as the optional hover/selection pop.
+function mixHex(h1, h2, t) { return new THREE.Color(h1).lerp(new THREE.Color(h2), t).getHex(); }
+const FAMILY_COLORS_VIVID = {
   component: 0x6fb0ff, relation: 0xff9ecb, capability: 0x8fe39a, state: 0xffd27a,
   effect: 0xff8d6b, authority: 0xc59cff, contract: 0x6fe0d6, semantic: 0xb9c4d6,
   runtime: 0xffc14d,
 };
-const familyColor = (f) => FAMILY_COLORS[f] ?? 0xb9c4d6;
+const FAMILY_MUTE_TOWARD = 0x6a7790; // COL.silence — desaturation target
+const FAMILY_MUTE_T = 0.58;
+const FAMILY_COLORS = Object.fromEntries(
+  Object.entries(FAMILY_COLORS_VIVID).map(([k, v]) => [k, mixHex(v, FAMILY_MUTE_TOWARD, FAMILY_MUTE_T)])
+);
+const familyColor = (f) => FAMILY_COLORS[f] ?? mixHex(0xb9c4d6, FAMILY_MUTE_TOWARD, FAMILY_MUTE_T);
+const familyColorVivid = (f) => FAMILY_COLORS_VIVID[f] ?? 0xb9c4d6;
 
 /* ---- terminology lanes ----------------------------------------------------
  * Every user-facing phrase has an engineer lane and a math lane. Both describe
@@ -372,42 +384,52 @@ let TWIST = localStorage.getItem("archview.twist") === "on";
  * are layout embedding, which are pure decoration. Shown in the detail panel. */
 const FIDELITY = {
   context: [
-    ["radius", "measured", "∝ number of atoms observed in this context"],
-    ["adjacency to neighbors", "measured", "cover restriction edges"],
-    ["height (Y)", "measured", "restriction-poset depth — deeper shared overlaps sit lower"],
+    ["radius", "measured", "∝ number of atoms observed in this context (open patch of the base space)"],
+    ["adjacency to neighbors", "measured", "cover restriction edges, drawn as the overlap lens between two patches"],
     ["horizontal position (X,Z)", "derived", "spectral embedding of the measured nerve; in-component closeness reads as diffusion closeness, unique up to isometry and eigenvalue degeneracy"],
+    ["height (Y)", "layout", "0 for every patch — patches lie in one near-flat plane, the base space. The measured restriction-poset depth still drives geometry, but it now sinks the OVERLAP LENS between two patches, not the patches themselves — see the strut/lens fidelity below"],
+    ["disc outline", "layout", "a declared canonical patch shape; only its radius is measured"],
     ["cross-component placement, absolute scale, coincident-spectrum separation", "layout", "no meaning; contexts with identical nerve neighborhoods coincide in the spectrum and are separated minimally for legibility"],
-    ["glass material, iridescence", "decoration", ""],
+    ["translucent material, rim glow", "decoration", ""],
   ],
   twistNode: [
-    ["two lifts per context", "measured", "the two locally consistent F₂ assignments over this context"],
-    ["sheet offset", "layout", ""],
-    ["node styling", "decoration", ""],
+    ["two lifts per context", "measured", "the two locally consistent F₂ assignments over this context, each drawn as a sheet fragment above/below the base patch"],
+    ["sheet offset", "layout", "the ±h vertical gap between the two lifts"],
+    ["fragment styling", "decoration", ""],
   ],
   twistEdge: [
-    ["parallel vs crossing", "measured", "the F₂ cochain value on this restriction edge (0 = parallel, 1 = crossed)"],
-    ["tube styling", "decoration", ""],
+    ["parallel vs crossing", "measured", "the F₂ cochain value on this restriction edge (0 = parallel band, 1 = the band crosses to the other sheet — the literal twist)"],
+    ["band width, glow", "decoration", ""],
   ],
   sectionPoint: [
-    ["which value sits over which context", "measured", "declared section value (objectRef) lifted to its context"],
+    ["which value sits over which context", "measured", "declared section value (objectRef) lifted to its context as a sheet fragment"],
+    ["teal vs lane color", "measured", "teal marks the fragment as part of a measured global section (holds over every context of the cover); otherwise its declared-value lane color"],
     ["lane height", "layout", "lexicographic lane assignment"],
-    ["marker styling", "decoration", ""],
+    ["fragment styling (disc, opacity)", "decoration", ""],
   ],
   sectionEdge: [
-    ["existence", "measured", "equal declared values across a restriction edge"],
+    ["existence", "measured", "equal declared values across a restriction edge — drawn as a continuous bridge over the same footprint as the base overlap lens, lifted to lane height"],
+  ],
+  sectionTear: [
+    ["existence", "measured", "declared section values differ across this restriction edge — no bridge is drawn; a torn seam marks the fault instead"],
+    ["amber + bloom vs amber only", "measured", "bloom marks a tear that also sits on the measured H¹ cocycle support: no relabeling anywhere closes it. A plain amber tear is a local disagreement not on that support"],
+    ["zigzag shape", "decoration", ""],
   ],
   atom: [
-    ["shape and hue", "measured", "atom family (kind)"],
+    ["shape", "measured", "atom family (kind) — the primary, color-independent family channel"],
+    ["hue", "measured", "atom family, deliberately low-saturation so it never competes with the four verdict lanes (teal/amber/lavender/grey); a brief high-saturation pop while hovered/selected"],
     ["size", "measured", "∝ valence"],
-    ["amber color", "measured", "membership in the measured H¹ cocycle support"],
-    ["position inside the cell", "layout", "centroid of measured context memberships + deterministic declump jitter"],
+    ["amber color", "measured", "membership in the measured H¹ cocycle support (overrides the family hue)"],
+    ["which region it stands in (patch / pairwise lens / triple face)", "measured", "its measured context membership(s): one context → that patch; two → the pairwise overlap lens if a measured restriction edge covers that pair; three with a measured triple overlap → that face"],
+    ["position within its region", "layout", "deterministic family-sector, id-order ring placement — no hash or random jitter. Memberships of >3 contexts, or a pair without a measured edge, fall back to the centroid of the measured context positions (declared layout)"],
     ["glow / pulse", "decoration", ""],
   ],
   strut: [
-    ["existence", "measured", "cover restriction edge"],
-    ["thickness", "measured", "∝ number of mismatch markers"],
-    ["amber vs grey", "measured", "carries a mismatch marker or not"],
-    ["glow", "decoration", ""],
+    ["existence", "measured", "cover restriction edge, drawn as a vesica-shaped lens on the segment joining the two patch centers"],
+    ["lens size (major/minor axis)", "measured", "∝ √(measured shared-atom count) — the exact size of ctx(a).atomIds ∩ ctx(b).atomIds"],
+    ["vertical sink", "measured", "∝ average restriction-poset depth of the two endpoints — a deeper shared overlap sinks lower, relocated here from the (now flat) patches"],
+    ["rim thickness, amber vs grey", "measured", "∝ number of čech-mismatch markers on this edge; grey when none"],
+    ["lens outline curve, fill glow", "decoration", ""],
   ],
   seam: [
     ["which edges", "measured", "the H¹ cocycle support edges"],
@@ -416,29 +438,20 @@ const FIDELITY = {
   face: [
     ["existence", "measured", "triple overlap in the nerve"],
     ["opacity", "measured", "∝ shared atoms"],
+    ["vertical lift above the patch plane", "decoration", "keeps the frosted canopy from z-fighting the coincident flat patches below it"],
   ],
   curvature: [["height", "measured", "∝ hotspot weight (analytic lane)"], ["cone shape", "decoration", ""]],
   spectralGap: [["slab height", "measured", "∝ spectral gap (analytic lane)"]],
   period: [["tube radius", "measured", "∝ pairing magnitude"], ["ring placement", "decoration", "schematic, not measured winding"]],
-  cage: [["which atoms", "measured", "forbidden support"], ["box shape", "decoration", ""]],
-  repair: [["rung count", "measured", "= hitting-set size"], ["ladder, probe", "decoration", ""]],
+  cage: [["which atoms", "measured", "forbidden support"], ["footprint", "layout", "sized to cover the projected positions of the forbidden atoms on the base plane"], ["hatched base-region styling", "decoration", ""]],
+  repair: [["rung count", "measured", "= hitting-set size"], ["ladder anchored to the base plane, probe", "decoration", ""]],
   spectrumCell: [["pin height/sign", "measured", "signed curvature (analytic lane)"]],
 };
 
-/* ---- deterministic prng (no Math.random in layout) ----------------------- */
-function hash32(str) {
-  let h = 2166136261 >>> 0;
-  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return h >>> 0;
-}
-function mulberry32(a) {
-  return function () {
-    a |= 0; a = (a + 0x6D2B79F5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+/* No hash/random jitter anywhere in this file: every layout position (patch,
+ * lens, atom, sheet) is a pure deterministic function of measured fields —
+ * see placeMembersInCell() (family-sector, id-order rings) and
+ * computeLensGeom() (spectral position + measured shared-atom count/depth). */
 
 /* ---- three.js bootstrap -------------------------------------------------- */
 const host = document.getElementById("scene");
@@ -503,7 +516,10 @@ const darkMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
 const matCache = new Map();
 
 const renderScenePass = new RenderPass(scene, camera);
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.25, 0.6, 0.0);
+// strength/threshold tuned down from (1.25, 0.6, 0.0): a dense cluster of amber
+// obstruction beads used to bloom into one indistinguishable fireball. Kept low
+// enough that individual lenses/tears stay legible; still measured-evidence-only.
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.32, 0.35, 0.36);
 const bloomComposer = new EffectComposer(renderer);
 bloomComposer.renderToScreen = false;
 bloomComposer.addPass(renderScenePass);
@@ -648,16 +664,30 @@ function buildModel(data) {
   }));
   const ctxById = new Map(contexts.map((c) => [c.id, c]));
 
-  // nerve adjacency (the measured cover restriction edges)
-  const edges = (nerve.edges || []).map((e) => ({
-    id: e.edgeId, a: e.sourceContextRef, b: e.targetContextRef,
-    support: e.supportAtomRefs || [], value: e.value ?? 0,
-  })).filter((e) => ctxById.has(e.a) && ctxById.has(e.b));
+  // nerve adjacency (the measured cover restriction edges). sharedCount is the
+  // measured size of the overlap region (|ctx(a).atomIds ∩ ctx(b).atomIds|) —
+  // an exact set-intersection over two already-measured atomIds lists, not an
+  // invented quantity. support/value stay the mismatch-marker reading (unchanged).
+  const edges = (nerve.edges || []).map((e) => {
+    const ctxA = ctxById.get(e.sourceContextRef), ctxB = ctxById.get(e.targetContextRef);
+    let sharedCount = 0;
+    if (ctxA && ctxB) {
+      const setA = new Set(ctxA.atomIds);
+      for (const id of ctxB.atomIds) if (setA.has(id)) sharedCount++;
+    }
+    return {
+      id: e.edgeId, a: e.sourceContextRef, b: e.targetContextRef,
+      support: e.supportAtomRefs || [], value: e.value ?? 0, sharedCount,
+    };
+  }).filter((e) => ctxById.has(e.a) && ctxById.has(e.b));
+  const edgeByPair = new Map(edges.map((e) => [[e.a, e.b].sort().join("|"), e]));
 
   const triangles = (nerve.triangles || []).map((t) => ({
     id: t.faceId, ctx: t.contextRefs || [], shared: t.sharedAtomRefs || [],
     coherence: t.coherenceClaim,
   })).filter((t) => (t.ctx || []).every((cid) => ctxById.has(cid)));
+  const triByCtxKey = new Map(triangles.filter((t) => (t.ctx || []).length === 3)
+    .map((t) => [t.ctx.slice().sort().join("|"), t]));
 
   // atoms
   const atoms = (site.atoms || []).map((a) => {
@@ -741,7 +771,7 @@ function buildModel(data) {
   for (const s of data.viewerVisualScenes || []) emittedScenes[s.sceneId] = { userQuestion: s.userQuestion, status: s.sceneStatus, kind: s.kind };
 
   return {
-    contexts, ctxById, edges, triangles, atoms, cocycle, nerve, cellCarriers,
+    contexts, ctxById, edges, edgeByPair, triangles, triByCtxKey, atoms, cocycle, nerve, cellCarriers,
     conclusion, isNonzero, isZero, isFoundation, analytic, locus, cages, repairs,
     covers: site.covers || [], coverId: (site.covers && site.covers[0] && site.covers[0].normalizedCoverId) || "",
     omitted: data.omittedDetailCounts || {}, nonConclusions: data.nonConclusions || [],
@@ -752,12 +782,20 @@ function buildModel(data) {
 function firstOverlay(arr) { return Array.isArray(arr) && arr.length ? arr[0] : null; }
 
 /* ============================================================================
- * Layout — DERIVED coordinates (measured-geometry design note, wave 1):
+ * Layout — DERIVED coordinates (AG patchwork geometry, Issue #3272):
  *   X,Z = spectral embedding of the measured nerve graph (Laplacian
  *         eigenvectors; in-component distances read as diffusion closeness,
- *         unique up to isometry and eigenvalue degeneracy),
- *   Y   = measured restriction-poset depth (deeper shared overlaps sit lower).
- * Atoms are placed by their measured context memberships; hash only declumps.
+ *         unique up to isometry and eigenvalue degeneracy). Contexts are the
+ *         open patches of the base space and sit in ONE near-flat plane here —
+ *         the base space is a patchwork, not a poset tower.
+ *   Y   = flat (0) for every patch. The measured restriction-poset depth does
+ *         NOT move the patches any more; it moves the OVERLAP LENSES between
+ *         them instead (see computeLensGeom / LENS_SINK below) — a deeper
+ *         shared overlap sinks slightly below the patch plane, exactly the
+ *         "restriction poset depth" reading, relocated to where the overlap
+ *         actually lives.
+ * Atoms are placed deterministically by measured context/overlap membership
+ * (family-sector id-order rings — see layoutAtoms); no hash/random jitter.
  * Cross-component placement and absolute scale stay layout (no meaning).
  * ========================================================================== */
 function posetDepth(model) {
@@ -810,11 +848,10 @@ function layoutContexts(model) {
   const n = ids.length;
   const pos = new Map();
   if (n === 0) return pos;
-  const depths = posetDepth(model);
-  const maxDepth = Math.max(0, ...depths.values());
-  // measured: a context's chain length counts how far it can descend through
-  // restrictsTo; the deepest shared overlap (chain 0) sits lowest.
-  const yOf = (id) => ((depths.get(id) || 0) - maxDepth / 2) * 26;
+  // patches lie in one near-flat plane (base space = patchwork, not a poset
+  // tower); the measured restriction-poset depth is carried by the overlap
+  // lenses instead (computeLensGeom), not by the patches themselves.
+  const yOf = () => 0;
   const scale = 46 + n * 1.4;
 
   if (n === 1) { pos.set(ids[0], new THREE.Vector3(0, yOf(ids[0]), 0)); return pos; }
@@ -903,19 +940,137 @@ function layoutContexts(model) {
 
 function cellRadius(model, ctx) { return 7 + Math.sqrt((ctx.atomIds || []).length) * 3.4; }
 
+/* ---- overlap-lens geometry — shared by buildLenses() and layoutAtoms() ----
+ * A lens is a vesica ("eye") shape built from two quadratic Bézier curves,
+ * with its major axis aligned to the line joining the two measured patch
+ * centers and its size driven by the measured shared-atom count. Its vertical
+ * sink is the (measured) restriction-poset depth of its two endpoints — the
+ * ONLY place poset depth still moves geometry, now that patches are flat. */
+const LENS_SINK = 3.1;      // Y drop per unit of average endpoint poset-depth (measured driver, layout scale)
+const ATOM_LIFT = 0.95;     // atoms sit this far above their assigned patch/lens surface (layout)
+function computeLensGeom(e) {
+  const pa = CTXPOS.get(e.a), pb = CTXPOS.get(e.b);
+  if (!pa || !pb) return null;
+  const dx = pb.x - pa.x, dz = pb.z - pa.z;
+  const dist = Math.max(Math.hypot(dx, dz), 0.001);
+  const angle = Math.atan2(dz, dx);
+  const shared = e.sharedCount || 0;
+  const a = Math.min(dist * 0.42, 3 + Math.sqrt(shared) * 2.6);   // major half-axis ∝ √(shared atoms), measured
+  const b = a * 0.5;
+  const depthA = DEPTHS.get(e.a) || 0, depthB = DEPTHS.get(e.b) || 0;
+  const lensY = -((depthA + depthB) / 2) * LENS_SINK;              // measured restriction-poset depth → sink
+  const mid = new THREE.Vector3((pa.x + pb.x) / 2, lensY, (pa.z + pb.z) / 2);
+  return { mid, angle, a, b, lensY, cosA: Math.cos(angle), sinA: Math.sin(angle), shared, dist };
+}
+function lensLocalToWorld(geom, u, v) {
+  return new THREE.Vector3(
+    geom.mid.x + u * geom.cosA - v * geom.sinA,
+    geom.mid.y,
+    geom.mid.z + u * geom.sinA + v * geom.cosA,
+  );
+}
+// closed boundary of the vesica(a,b) shape in LOCAL (u,v) coordinates, as a
+// polyline of Vector2 (two quadratic Bézier arcs, tip to tip).
+function lensBoundaryPoints(a, b, n = 16) {
+  const bez = (t, p0, p1, p2) => { const mt = 1 - t; return mt * mt * p0 + 2 * mt * t * p1 + t * t * p2; };
+  const pts = [];
+  for (let i = 0; i <= n; i++) { const t = i / n; pts.push(new THREE.Vector2(bez(t, -a, 0, a), bez(t, 0, b, 0))); }
+  for (let i = 1; i < n; i++) { const t = i / n; pts.push(new THREE.Vector2(bez(t, a, 0, -a), bez(t, 0, -b, 0))); }
+  return pts;
+}
+
+/* ---- deterministic membership placement — id-order, family-sector rings ---
+ * NO hash/random jitter anywhere: the (u,v) offset of an atom inside its
+ * measured membership region (patch / pairwise lens / triple face) is a pure
+ * function of (a) which family it belongs to (measured), sorted alphabetically
+ * into equal angular sectors, and (b) its sorted position among same-family
+ * members (measured id), placed on concentric rings within its sector. */
+function placeMembersInCell(members, boundRadius) {
+  const out = new Map();
+  const byFamily = new Map();
+  for (const m of members) { if (!byFamily.has(m.family)) byFamily.set(m.family, []); byFamily.get(m.family).push(m); }
+  const families = [...byFamily.keys()].sort();
+  const nF = families.length || 1;
+  families.forEach((fam, fi) => {
+    const list = byFamily.get(fam).slice().sort((x, y) => (x.id < y.id ? -1 : x.id > y.id ? 1 : 0));
+    const n = list.length;
+    const perRing = Math.max(1, Math.ceil(Math.sqrt(n)));
+    const ringsTotal = Math.ceil(n / perRing);
+    const sectorStart = (fi / nF) * Math.PI * 2;
+    const sectorWidth = (Math.PI * 2 / nF) * 0.82;   // small gap between family sectors, legibility only
+    list.forEach((m, i) => {
+      const ring = Math.floor(i / perRing);
+      const slot = i % perRing;
+      const slotsInRing = Math.min(perRing, n - ring * perRing);
+      const angle = sectorStart + (slotsInRing > 1 ? (slot / (slotsInRing - 1)) : 0.5) * sectorWidth;
+      const rFrac = (ring + 1) / (ringsTotal + 0.4);
+      const r = rFrac * boundRadius;
+      out.set(m.id, { u: r * Math.cos(angle), v: r * Math.sin(angle) });
+    });
+  });
+  return out;
+}
+
 function layoutAtoms(model, ctxPos) {
   const ap = new Map();
+  // group atoms by their measured membership region: a single patch, a
+  // pairwise overlap lens, a triple-overlap face, or (fallback) a bare
+  // centroid — the last two only when the packet does not carry the matching
+  // nerve edge/triangle for an observed membership (declared as layout there).
+  const groups = new Map(); // key -> { kind, ref, members: [{id,family}] }
   for (const atom of model.atoms) {
     const ctxs = (atom.contexts || []).filter((c) => ctxPos.has(c));
-    const base = new THREE.Vector3();
-    if (ctxs.length === 0) { base.set(0, -34, 0); }
-    else { for (const c of ctxs) base.add(ctxPos.get(c)); base.divideScalar(ctxs.length); }
-    // jitter inside the cell — sub-dominant, seeded by atom id (declump only)
-    const rnd = mulberry32(hash32(atom.id));
-    const spread = ctxs.length ? Math.min(...ctxs.map((c) => cellRadius(model, model.ctxById.get(c)))) * 0.62 : 8;
-    const jitter = new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).multiplyScalar(spread);
-    if (ctxs.length >= 2) jitter.multiplyScalar(0.45); // shared atoms hug the overlap midpoint
-    ap.set(atom.id, base.add(jitter));
+    let key, kind, ref;
+    if (ctxs.length === 0) { key = "floating"; kind = "floating"; }
+    else if (ctxs.length === 1) { key = "ctx:" + ctxs[0]; kind = "context"; ref = ctxs[0]; }
+    else if (ctxs.length === 2) {
+      const edge = model.edgeByPair.get(ctxs.slice().sort().join("|"));
+      if (edge) { key = "edge:" + edge.id; kind = "lens"; ref = edge; }
+      else { key = "pair:" + ctxs.slice().sort().join("|"); kind = "fallback"; ref = ctxs; }
+    } else {
+      const tri = ctxs.length === 3 ? model.triByCtxKey.get(ctxs.slice().sort().join("|")) : null;
+      if (tri) { key = "tri:" + tri.id; kind = "triangle"; ref = tri; }
+      else { key = "multi:" + ctxs.slice().sort().join("|"); kind = "fallback"; ref = ctxs; }
+    }
+    if (!groups.has(key)) groups.set(key, { kind, ref, members: [] });
+    groups.get(key).members.push({ id: atom.id, family: atom.family });
+  }
+  for (const { kind, ref, members } of groups.values()) {
+    let center, boundRadius, y, toWorld;
+    if (kind === "floating") {
+      center = new THREE.Vector3(0, -34, 0); boundRadius = 20;
+      toWorld = (u, v) => new THREE.Vector3(center.x + u, center.y, center.z + v);
+    } else if (kind === "context") {
+      const p = ctxPos.get(ref);
+      boundRadius = cellRadius(model, model.ctxById.get(ref)) * 0.68;
+      y = p.y + ATOM_LIFT;
+      toWorld = (u, v) => new THREE.Vector3(p.x + u, y, p.z + v);
+    } else if (kind === "lens") {
+      const geom = computeLensGeom(ref);
+      if (!geom) continue;
+      boundRadius = geom.b * 0.82;
+      y = geom.lensY + ATOM_LIFT;
+      toWorld = (u, v) => { const w = lensLocalToWorld(geom, u, v); w.y = y; return w; };
+    } else if (kind === "triangle") {
+      const pts = ref.ctx.map((c) => ctxPos.get(c)).filter(Boolean);
+      const c = new THREE.Vector3(); pts.forEach((p) => c.add(p)); c.divideScalar(pts.length || 1);
+      // nest slightly below the average of the triangle's pairwise lenses when measured, else a small constant sink
+      const edgeYs = [];
+      for (let i = 0; i < ref.ctx.length; i++) for (let j = i + 1; j < ref.ctx.length; j++) {
+        const e = model.edgeByPair.get([ref.ctx[i], ref.ctx[j]].sort().join("|"));
+        if (e) { const g = computeLensGeom(e); if (g) edgeYs.push(g.lensY); }
+      }
+      y = (edgeYs.length ? edgeYs.reduce((s, v) => s + v, 0) / edgeYs.length : 0) - LENS_SINK * 0.4 + ATOM_LIFT;
+      boundRadius = 4.2;
+      toWorld = (u, v) => new THREE.Vector3(c.x + u, y, c.z + v);
+    } else { // fallback: centroid of the measured context memberships, declared layout
+      const pts = ref.map((c) => ctxPos.get(c)).filter(Boolean);
+      const c = new THREE.Vector3(); pts.forEach((p) => c.add(p)); c.divideScalar(pts.length || 1);
+      boundRadius = 6; y = c.y + ATOM_LIFT;
+      toWorld = (u, v) => new THREE.Vector3(c.x + u, y, c.z + v);
+    }
+    const placed = placeMembersInCell(members, boundRadius);
+    for (const m of members) { const uv = placed.get(m.id); ap.set(m.id, toWorld(uv.u, uv.v)); }
   }
   return ap;
 }
@@ -937,8 +1092,16 @@ function clearGroups() {
   pickables.length = 0;
 }
 
-let CTXPOS = new Map(), ATOMPOS = new Map();
+let CTXPOS = new Map(), ATOMPOS = new Map(), DEPTHS = new Map();
 let BASE_FOG = 0.0016; // scene-radius-scaled fog density, recomputed per load in buildAll
+// per-bead damp for amber emissive glow (atoms + the H¹ seam), recomputed per load in
+// buildAll from the measured cocycle support cardinality. A dense obstruction cluster
+// (many amber atoms + many seam stitches sharing the same tight neighborhood) used to
+// bloom into one indistinguishable fireball; this throttles each element's own
+// emissiveIntensity as that measured cardinality grows, so bloom stays legible. It is a
+// deterministic function of a measured count — no randomness — and never changes WHICH
+// elements are amber, only how hard each one glows.
+let AMBER_DAMP = 1;
 
 // Resolve an analytic cell id (cell:left, ...) to a position via the MEASURED carrier graph:
 // context match -> carrier-atom centroid -> null (never invent). Used by curvature/spectrum.
@@ -957,9 +1120,12 @@ function buildAll() {
   clearGroups();
   if (!MODEL) return;
   CTXPOS = layoutContexts(MODEL);
+  DEPTHS = posetDepth(MODEL);            // measured restriction-poset depth — now drives lens sink, not patch height
   ATOMPOS = layoutAtoms(MODEL, CTXPOS);
+  const amberCount = MODEL.cocycle.visible ? MODEL.cocycle.supportAtoms.length + MODEL.cocycle.supportEdges.length : 0;
+  AMBER_DAMP = 1 / (1 + amberCount * 0.5);
   buildCells();
-  buildStruts();
+  buildLenses();
   buildFaces();
   buildAtoms();
   buildSeam();
@@ -981,59 +1147,99 @@ function buildAll() {
   scene.fog.density = BASE_FOG;
 }
 
+// base-space patches: a context is an open set of the measured cover, drawn as
+// a flat translucent disc lying in the (near-)shared patch plane. Outline is a
+// declared canonical shape (layout); radius and X,Z position are measured/derived.
 function buildCells() {
-  const geo = new THREE.IcosahedronGeometry(1, 1);
   for (const ctx of MODEL.contexts) {
     const p = CTXPOS.get(ctx.id); if (!p) continue;
     const r = cellRadius(MODEL, ctx);
     const mat = new THREE.MeshPhysicalMaterial({
-      color: COL.cell, transparent: true, opacity: 0.05, roughness: 0.12, metalness: 0,
-      transmission: 0.2, thickness: 1.5, ior: 1.2, clearcoat: 0.6, clearcoatRoughness: 0.3,
-      iridescence: 0.35, iridescenceIOR: 1.35, emissive: COL.cell, emissiveIntensity: 0.1,
+      color: COL.cell, transparent: true, opacity: 0.15, roughness: 0.4, metalness: 0,
+      clearcoat: 0.3, clearcoatRoughness: 0.45, emissive: COL.cell, emissiveIntensity: 0.05,
       side: THREE.DoubleSide, depthWrite: false,
     });
-    const m = new THREE.Mesh(geo, mat);
-    m.position.copy(p); m.scale.setScalar(r);
+    const m = new THREE.Mesh(new THREE.CircleGeometry(r, 40), mat);
+    m.rotation.x = -Math.PI / 2; m.position.copy(p);
     G.cells.add(m);
     pickables.push({ mesh: m, info: { type: "context", ctx } });
-    // bright wire shell — the cell silhouette (primary legibility of the 7 contexts)
-    const wire = new THREE.LineSegments(
-      new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(r, 1)),
-      new THREE.LineBasicMaterial({ color: 0xdbe9ff, transparent: true, opacity: 0.82 })
-    );
-    wire.position.copy(p); G.cells.add(wire);
+    // bright rim — the patch silhouette (primary legibility of the covering opens)
+    const rim = new THREE.Mesh(new THREE.RingGeometry(r * 0.975, r, 64),
+      new THREE.MeshBasicMaterial({ color: 0xdbe9ff, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
+    rim.rotation.x = -Math.PI / 2; rim.position.copy(p).add(new THREE.Vector3(0, 0.02, 0));
+    G.cells.add(rim);
     const label = makeLabel(ctx.id.replace(/^ctx:/, ""), { color: "#aebfd8", scale: 0.95 });
-    label.position.copy(p).add(new THREE.Vector3(0, r + 5, 0));
+    label.position.copy(p).add(new THREE.Vector3(0, 6, 0));
     G.labels.add(label);
   }
 }
 
-function buildStruts() {
+// overlap lenses: the measured restriction edges as constructive vesica regions
+// sitting on the segment joining the two patch centers. Size ∝ measured shared
+// atom count; vertical sink ∝ measured restriction-poset depth (computeLensGeom).
+// Mismatch markers (čech-mismatch support) turn the lens amber; rim thickness
+// and fill intensity scale with #markers — never bloom (bloom stays reserved
+// for measured H¹ evidence, drawn separately in buildSeam()).
+function buildLenses() {
   for (const e of MODEL.edges) {
-    const pa = CTXPOS.get(e.a), pb = CTXPOS.get(e.b); if (!pa || !pb) continue;
-    const marked = e.support.length > 0;               // carries a čech-mismatch marker → measured_nonzero lane
-    const radius = 0.55 + e.support.length * 0.6;       // thickness ∝ #mismatch markers (measured)
-    const mat = marked
-      ? new THREE.MeshStandardMaterial({ color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 0.5,
-          roughness: 0.3, metalness: 0.2, transparent: true, opacity: 0.95 })
-      : new THREE.MeshStandardMaterial({ color: 0x9fb0cc, roughness: 0.35, metalness: 0.25,
-          transparent: true, opacity: 0.7, emissive: 0x2a3a55, emissiveIntensity: 0.35 }); // frosted restriction edge (silence lane)
-    const m = tube(pa, pb, radius, mat);
-    G.struts.add(m);
-    pickables.push({ mesh: m, info: { type: "strut", edge: e, marked } });
+    const geom = computeLensGeom(e); if (!geom) continue;
+    const marked = e.support.length > 0;
+    const boundary = lensBoundaryPoints(geom.a, geom.b, 18);
+    const center3 = lensLocalToWorld(geom, 0, 0);
+    const positions = [];
+    for (let i = 0; i < boundary.length; i++) {
+      const p0 = lensLocalToWorld(geom, boundary[i].x, boundary[i].y);
+      const p1 = lensLocalToWorld(geom, boundary[(i + 1) % boundary.length].x, boundary[(i + 1) % boundary.length].y);
+      positions.push(center3.x, center3.y, center3.z, p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
+    }
+    const fillGeo = new THREE.BufferGeometry();
+    fillGeo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    fillGeo.computeVertexNormals();
+    const fillColor = marked ? COL.nonzero : COL.cell;
+    // decoration off drops bloom/pulse everywhere else, but a marked (amber) lens still needs
+    // to read as amber rather than fade toward the same pale/cream tone as an unmarked lens.
+    // ACES filmic tonemapping crushes a high-luminance amber toward white, so raising
+    // emissiveIntensity alone makes this worse, not better; bypassing tonemapping for this one
+    // (still measured amber-vs-grey) material is what actually keeps the hue legible.
+    const fillOpacity = geom.shared > 0 ? (marked ? (DECOR ? 0.32 : 0.5) : 0.16) : 0.06;   // no measured overlap at all → near-silent
+    const fillMat = new THREE.MeshStandardMaterial({
+      color: fillColor, transparent: true, opacity: fillOpacity, roughness: 0.55, metalness: 0.1,
+      emissive: fillColor, emissiveIntensity: marked ? (DECOR ? 0.35 + Math.min(e.support.length, 6) * 0.08 : 0.9) : 0.08,
+      side: THREE.DoubleSide, depthWrite: false,
+    });
+    if (marked && !DECOR) fillMat.toneMapped = false;
+    const fill = new THREE.Mesh(fillGeo, fillMat);
+    G.struts.add(fill);
+    pickables.push({ mesh: fill, info: { type: "strut", edge: e, marked } });
+    // rim: traces the lens boundary as a single closed tube; thickness ∝ #mismatch
+    // markers (measured), else a thin neutral line. One TubeGeometry per edge
+    // (not N cylinders) keeps this cheap even on larger measured covers.
+    const rimRadius = marked ? 0.5 + e.support.length * 0.45 : 0.16;
+    const rimColor = marked ? COL.nonzero : 0x9fb0cc;
+    const rimMat = new THREE.MeshStandardMaterial({ color: rimColor, emissive: rimColor,
+      emissiveIntensity: marked ? (DECOR ? 0.55 : 0.9) : 0.15, roughness: 0.35, metalness: 0.15,
+      transparent: true, opacity: marked ? 0.95 : 0.55 });
+    if (marked && !DECOR) rimMat.toneMapped = false;
+    const curvePts = boundary.map((pt) => lensLocalToWorld(geom, pt.x, pt.y));
+    const curve = new THREE.CatmullRomCurve3(curvePts, true);
+    const rim = new THREE.Mesh(new THREE.TubeGeometry(curve, boundary.length, rimRadius, 7, true), rimMat);
+    G.struts.add(rim);
   }
 }
 
 function buildFaces() {
   // triple overlaps — existence only. H² coherence is NOT visualized (silence).
+  // Vertices lift slightly above the patch plane so the frosted canopy reads as
+  // its own layer instead of z-fighting the coincident flat patches below it.
+  const LIFT = 1.6;
   for (const t of MODEL.triangles) {
-    const pts = t.ctx.map((c) => CTXPOS.get(c)).filter(Boolean);
+    const pts = t.ctx.map((c) => { const p = CTXPOS.get(c); return p && p.clone().add(new THREE.Vector3(0, LIFT, 0)); }).filter(Boolean);
     if (pts.length < 3) continue;
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(
       [pts[0].x, pts[0].y, pts[0].z, pts[1].x, pts[1].y, pts[1].z, pts[2].x, pts[2].y, pts[2].z], 3));
     g.computeVertexNormals();
-    const opacity = 0.06 + Math.min(t.shared.length, 4) * 0.03; // frosted; sub-verdict
+    const opacity = 0.08 + Math.min(t.shared.length, 4) * 0.035; // frosted; sub-verdict
     const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
       color: COL.face, transparent: true, opacity, roughness: 0.9, metalness: 0,
       side: THREE.DoubleSide, depthWrite: false,
@@ -1065,7 +1271,8 @@ function buildAtoms() {
   for (const k in _glyphGeo) delete _glyphGeo[k]; // fresh geometries per build (prior ones disposed on clear)
   for (const atom of MODEL.atoms) {
     const p = ATOMPOS.get(atom.id); if (!p) continue;
-    const r = 2.8 + (atom.valence - 1) * 1.3;          // size ∝ valence (measured)
+    const r = 2.3 + (atom.valence - 1) * 1.05;         // size ∝ valence (measured); scaled down so a dense
+                                                        // cluster of atoms doesn't fully cover its patch/lens
     const isObstruction = MODEL.cocycle.visible && MODEL.cocycle.supportAtoms.includes(atom.id);
     const fc = familyColor(atom.family);
     const mat = new THREE.MeshStandardMaterial({
@@ -1074,13 +1281,16 @@ function buildAtoms() {
       emissive: isObstruction ? COL.nonzero : fc,
       // calm self-glow for lawful beads; only obstruction blooms. Glow is decoration —
       // measured-only mode keeps color/shape/size (measured) and drops the theater.
-      emissiveIntensity: DECOR ? (isObstruction ? 1.7 : 1.45) : (isObstruction ? 0.6 : 0.35),
+      emissiveIntensity: DECOR ? (isObstruction ? 1.7 * AMBER_DAMP : 1.45) : (isObstruction ? 0.6 : 0.35),
     });
     const m = makeGlyph(atom.family, mat);
     m.position.copy(p); m.scale.setScalar(r);
     m.userData.baseEmissive = mat.emissive.getHex();
     m.userData.baseIntensity = mat.emissiveIntensity;
     m.userData.baseScale = r;
+    // hover/selection pop: swap the muted family hue for its vivid counterpart while
+    // highlighted (obstruction amber is already the strongest lane and is left alone).
+    m.userData.hoverEmissive = isObstruction ? COL.nonzero : familyColorVivid(atom.family);
     if (isObstruction && DECOR) { m.layers.enable(BLOOM_LAYER); m.userData.pulse = true; }
     G.atoms.add(m);
     pickables.push({ mesh: m, info: { type: "atom", atom, isObstruction } });
@@ -1099,13 +1309,17 @@ function buildSeam() {
     const pa = CTXPOS.get(se.sourceContextRef), pb = CTXPOS.get(se.targetContextRef);
     if (!pa || !pb) continue;
     if (DECOR) {
-      // glowing dashed stitches between the two contexts
+      // glowing dashed stitches between the two contexts. A tight cocycle loop
+      // (many support edges close together) used to pile these into one white
+      // blob; AMBER_DAMP (floored so the loop stays traceable) throttles the
+      // per-stitch intensity as the measured support cardinality grows.
+      const seamDamp = Math.max(AMBER_DAMP, 0.3);
       const segs = 11;
       for (let i = 0; i < segs; i++) {
         if (i % 2 === 1) continue;
         const a = arch(pa, pb, i / segs), b = arch(pa, pb, (i + 1) / segs);
         const m = tube(a, b, 1.9, new THREE.MeshStandardMaterial({
-          color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.6,
+          color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.6 * seamDamp,
           roughness: 0.3, metalness: 0.1,
         }));
         m.layers.enable(BLOOM_LAYER); m.userData.pulse = true;
@@ -1114,14 +1328,18 @@ function buildSeam() {
       // stitch knots at the gap ends — the torn seam reads as discrete stitches
       for (const tt of [0.06, 0.5, 0.94]) {
         const knot = new THREE.Mesh(new THREE.SphereGeometry(2.6, 18, 14),
-          new THREE.MeshStandardMaterial({ color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.4, roughness: 0.25 }));
+          new THREE.MeshStandardMaterial({ color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.4 * seamDamp, roughness: 0.25 }));
         knot.position.copy(arch(pa, pb, tt)); knot.layers.enable(BLOOM_LAYER); knot.userData.pulse = true;
         G.seam.add(knot);
       }
     } else {
-      // decoration off: the measured support edge as a plain straight tube, amber, no bloom
-      const m = tube(pa, pb, 1.6, new THREE.MeshStandardMaterial({
-        color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 0.6, roughness: 0.35, metalness: 0.1 }));
+      // decoration off: the measured support edge as a plain straight tube, amber, no bloom.
+      // toneMapped:false for the same reason as the marked lens above — ACES filmic crushes a
+      // bright amber toward white, so the hue needs to bypass it to stay legibly amber.
+      const seamMat = new THREE.MeshStandardMaterial({
+        color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 0.9, roughness: 0.4, metalness: 0.05 });
+      seamMat.toneMapped = false;
+      const m = tube(pa, pb, 1.6, seamMat);
       G.seam.add(m);
     }
     const mid = arch(pa, pb, 0.5);
@@ -1268,36 +1486,57 @@ function buildPeriods() {
   });
 }
 
+// a diagonal-hatch canvas texture for the forbidden-support base regions — a
+// fresh instance per buildCages() call so clearGroups()'s per-mesh disposal
+// never frees a texture another live mesh still references.
+function hatchTexture() {
+  const c = document.createElement("canvas"); c.width = 64; c.height = 64;
+  const ctx = c.getContext("2d");
+  ctx.strokeStyle = "rgba(255,178,76,0.55)"; ctx.lineWidth = 3;
+  for (let i = -64; i < 128; i += 11) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + 64, 64); ctx.stroke(); }
+  const tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
 function buildCages() {
-  // forbidden supports as broken-line cages around their measured support atoms.
-  // real v2 field is atomRefs (+ cageId, supportVariables); keep older aliases as fallback.
+  // forbidden supports as dark hatched CLOSED REGIONS on the base plane, footed
+  // under the (X,Z) projection of their measured support atoms — not a floating
+  // 3D box. real v2 field is atomRefs (+ cageId, supportVariables); keep older
+  // aliases as fallback.
+  const CAGE_Y = -1.4;
   MODEL.cages.forEach((cage, ci) => {
     const refs = cage.atomRefs || cage.supportAtomRefs || cage.support || [];
     const pts = refs.map((r) => ATOMPOS.get(r)).filter(Boolean);
     if (!pts.length) return;
-    const c = new THREE.Vector3(); pts.forEach((p) => c.add(p)); c.divideScalar(pts.length);
-    const r = 5 + pts.length * 3;
-    const cageMesh = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.BoxGeometry(r, r, r)),
-      new THREE.LineDashedMaterial({ color: COL.nonzero, dashSize: 1.6, gapSize: 1.1, transparent: true, opacity: 0.85 })
-    );
-    cageMesh.computeLineDistances(); cageMesh.position.copy(c);
-    G.cages.add(cageMesh);
-    const proxy = pickProxy(c, r * 0.5);
+    const c = new THREE.Vector3(); pts.forEach((p) => c.add(new THREE.Vector3(p.x, 0, p.z))); c.divideScalar(pts.length);
+    const spread = pts.reduce((m, p) => Math.max(m, Math.hypot(p.x - c.x, p.z - c.z)), 0);
+    const r = Math.max(6, spread + 4 + pts.length * 0.6);   // footprint ∝ spread of the forbidden atoms (measured)
+    const y = CAGE_Y - ci * 0.2;                            // stagger multiple cages so their hatch planes don't z-fight
+    const region = new THREE.Mesh(new THREE.CircleGeometry(r, 36), new THREE.MeshBasicMaterial({
+      color: 0x140b06, map: hatchTexture(), transparent: true, opacity: 0.88, side: THREE.DoubleSide, depthWrite: false,
+    }));
+    region.rotation.x = -Math.PI / 2; region.position.set(c.x, y, c.z);
+    G.cages.add(region);
+    const rim = new THREE.Mesh(new THREE.RingGeometry(r * 0.97, r, 48), new THREE.MeshStandardMaterial({
+      color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 0.45, transparent: true, opacity: 0.75, side: THREE.DoubleSide }));
+    rim.rotation.x = -Math.PI / 2; rim.position.set(c.x, y + 0.02, c.z);
+    G.cages.add(rim);
+    const proxy = pickProxy(new THREE.Vector3(c.x, y, c.z), r * 0.55);
     pickables.push({ mesh: proxy, info: { type: "cage", cage } });
     G.cages.add(proxy);
     const lab = makeLabel("forbidden: " + (cage.supportVariables || refs).join(" ∧ ").replace(/atom:/g, ""),
       { color: "#ffd9a8", scale: 0.85, bg: "rgba(48,26,8,0.8)" });
     // stagger cage labels (in tiny single-context scenes the centroids nearly coincide)
-    lab.position.copy(c).add(new THREE.Vector3((ci - (MODEL.cages.length - 1) / 2) * 26, r * 0.7 + 6 + ci * 7, 0));
+    lab.position.set(c.x + (ci - (MODEL.cages.length - 1) / 2) * 26, y + 4, c.z);
     G.cages.add(lab);
   });
   // repair morphisms as Alexander-dual LANDING-LADDERS: rung count = |supportVariables| (the measured
   // hitting set). The shortest ladder is the cheapest measured repair target. A descending probe stops
   // SHORT of the lawful floor (essential lower bound) — never landing, since landing would assert a fix.
+  // The ladder now anchors to the same base plane the forbidden regions sit on (CAGE_Y above), descending
+  // further below it to the lawful floor — both follow the flat base space, not a poset-driven height.
   if (MODEL.repairs.length) {
     const minRungs = Math.min(...MODEL.repairs.map((rm) => (rm.supportVariables || []).length || 1));
-    const lawfulY = -6;                                  // the lawful-locus floor plane
+    const lawfulY = CAGE_Y - 14;                          // the lawful-locus floor plane, below the base + cage layer
     MODEL.repairs.forEach((rm, ri) => {
       const cagePts = (rm.fromCageRefs || []).map((cr) => {
         const cg = MODEL.cages.find((c) => c.cageId === cr);
@@ -1375,12 +1614,15 @@ function updateRepairProbe(probe, t) {
 }
 
 /* ============================================================================
- * Wave 2 — double-cover twist view. The F₂ cochain on the nerve drawn as its
- * double cover X_c: two lifts per context, parallel tubes where c=0, crossed
- * tubes where c=1. Theorem (classical, per the measured-geometry design note):
- * on a connected base, X_c is connected iff [c] ≠ 0 in H¹(graph; F₂).
- * Connectivity here is a deterministic display derivation of packet data,
- * NOT a new verdict — on disagreement with the packet the view goes silent.
+ * Wave 2 — the double cover drawn as two SHEETS. The F₂ cochain on the nerve
+ * has, on a connected base, X_c connected ⟺ [c] ≠ 0 in H¹(graph; F₂). The
+ * union-find derivation is UNCHANGED from before (still the packet-authoritative,
+ * silent-on-disagreement contract) — only the rendering changes: each lift is
+ * now a small patch-shaped sheet fragment (not a bare point), and each
+ * restriction edge is a flat BAND between fragments (not a tube). A crossed
+ * edge (c=1) sends the band to the OTHER sheet, so two bands correcting the
+ * same pair of contexts visibly cross in space — the literal Möbius-style
+ * twist — exactly on the cocycle-support edges.
  * ========================================================================== */
 let TWIST_STATE = { agree: true, anyTwisted: false };
 function buildTwist() {
@@ -1391,7 +1633,7 @@ function buildTwist() {
     const p = CTXPOS.get(id);
     return p && p.clone().add(new THREE.Vector3(0, s === 0 ? hh : -hh, 0));
   };
-  // union-find over the 2n lifted nodes
+  // union-find over the 2n lifted nodes — unchanged derivation logic
   const parent = new Map();
   const find = (k) => { let r = k; while (parent.get(r) !== r) r = parent.get(r); let c = k; while (parent.get(c) !== c) { const nx = parent.get(c); parent.set(c, r); c = nx; } return r; };
   const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(ra, rb); };
@@ -1423,10 +1665,12 @@ function buildTwist() {
       const p = lift(ctx.id, s); if (!p) continue;
       const twisted = twistedComponents.has(bfind(ctx.id));
       const col = twisted ? COL.nonzero : COL.zero;
-      const node = new THREE.Mesh(new THREE.SphereGeometry(3.1, 16, 12),
-        new THREE.MeshStandardMaterial({ color: col, emissive: col,
-          emissiveIntensity: DECOR ? 0.9 : 0.4, roughness: 0.3, transparent: true, opacity: 0.92 }));
-      node.position.copy(p);
+      // a sheet fragment: same disc language as the base patches, just lifted
+      const r = cellRadius(MODEL, MODEL.ctxById.get(ctx.id)) * 0.72;
+      const node = new THREE.Mesh(new THREE.CircleGeometry(r, 28),
+        new THREE.MeshStandardMaterial({ color: col, emissive: col, side: THREE.DoubleSide, depthWrite: false,
+          emissiveIntensity: DECOR ? 0.55 : 0.25, roughness: 0.35, transparent: true, opacity: 0.4 }));
+      node.rotation.x = -Math.PI / 2; node.position.copy(p);
       G.twist.add(node);
       pickables.push({ mesh: node, info: { type: "twistNode", ctx, sheet: s, twisted } });
     }
@@ -1439,11 +1683,11 @@ function buildTwist() {
     for (const [pa, pb] of ends) {
       if (!pa || !pb) continue;
       const col = crossed ? COL.nonzero : 0x9fb0cc;
-      const m = tube(pa, pb, crossed ? 1.1 : 0.7, new THREE.MeshStandardMaterial({
-        color: col, emissive: col, emissiveIntensity: DECOR ? (crossed ? 1.2 : 0.3) : (crossed ? 0.5 : 0.2),
-        roughness: 0.35, transparent: true, opacity: crossed ? 0.95 : 0.6 }));
-      G.twist.add(m);
-      pickables.push({ mesh: m, info: { type: "twistEdge", edge: e, crossed } });
+      const band = buildBand(pa, pb, crossed ? 5.5 : 3.2, new THREE.MeshStandardMaterial({
+        color: col, emissive: col, emissiveIntensity: DECOR ? (crossed ? 1.0 : 0.25) : (crossed ? 0.45 : 0.18),
+        roughness: 0.35, transparent: true, opacity: crossed ? 0.85 : 0.5, side: THREE.DoubleSide, depthWrite: false }));
+      G.twist.add(band);
+      pickables.push({ mesh: band, info: { type: "twistEdge", edge: e, crossed } });
     }
   }
   const box = new THREE.Box3().setFromObject(G.twist);
@@ -1458,17 +1702,41 @@ function buildTwist() {
     G.twist.add(lab);
   }
 }
+// a flat quad ribbon between two points, width in the horizontal (X,Z) plane —
+// used for the twist bands (buildTwist) and could be reused elsewhere for any
+// "connects two lifted sheets" reading.
+function buildBand(pa, pb, width, mat) {
+  const dir = new THREE.Vector3().subVectors(pb, pa);
+  const horiz = new THREE.Vector3(dir.x, 0, dir.z);
+  if (horiz.lengthSq() < 1e-6) horiz.set(1, 0, 0);
+  const perp = new THREE.Vector3(-horiz.z, 0, horiz.x).normalize().multiplyScalar(width / 2);
+  const p0 = pa.clone().add(perp), p1 = pa.clone().sub(perp), p2 = pb.clone().add(perp), p3 = pb.clone().sub(perp);
+  const geo = new THREE.BufferGeometry();
+  const flat = [p0, p1, p2, p1, p3, p2].flatMap((v) => [v.x, v.y, v.z]);
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(flat, 3));
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, mat);
+}
 
 /* ============================================================================
- * Wave 3 — étale-space section lanes. Declared section values (cech
- * sectionValue atoms) lifted to horizontal lanes over their contexts;
- * a lane edge exists only where equal values face each other across a
- * measured restriction edge. A lane running through every context of the
- * cover is a global section among the declared values. Undeclared contexts
- * carry empty fibers (silence) — no lane crosses them.
+ * Wave 2 — étale space, drawn as SHEET FRAGMENTS. Each declared section value
+ * lifts its context's patch to a horizontal lane as a small translucent sheet
+ * fragment (same disc language as the base patch). Where two neighbors declare
+ * the SAME value across a measured restriction edge, their fragments are
+ * joined by a continuous bridge (reusing the base lens footprint, just lifted
+ * to lane height) — the sheet reads as one surface there. Where they declare
+ * DIFFERENT values, the fragments sit at different heights and are explicitly
+ * marked with a torn seam at the overlap instead of a bridge — a fault line,
+ * not a fabricated connection. A torn seam that is ALSO on the measured H¹
+ * cocycle support is the one that can never be closed by any relabeling —
+ * amber + bloom (bloom stays reserved for measured H¹ evidence). A global
+ * section (one bridged sheet spanning every patch) recolors teal, matching
+ * the "loop closes" lawful lane used everywhere else in ArchView.
  * ========================================================================== */
-// lane palette avoids the reserved verdict lanes (amber = measured_nonzero, teal ring = zero)
-const LANE_COLORS = [0x6fb0ff, 0x8fe39a, 0xff9ecb, 0xc59cff, 0x6fe0d6, 0x9fb4d6, 0xff8d6b, 0xdfe6a0];
+// lane palette avoids the reserved verdict lanes (amber = measured_nonzero, teal ring = zero);
+// muted for the same reason family colors are muted — shape/labels carry identity, not saturation.
+const LANE_COLORS_VIVID = [0x6fb0ff, 0x8fe39a, 0xff9ecb, 0xc59cff, 0x6fe0d6, 0x9fb4d6, 0xff8d6b, 0xdfe6a0];
+const LANE_COLORS = LANE_COLORS_VIVID.map((c) => mixHex(c, FAMILY_MUTE_TOWARD, 0.45));
 function buildSections() {
   const declared = new Map();                        // ctxId -> { value, atomId }
   for (const atom of MODEL.atoms) {
@@ -1481,41 +1749,16 @@ function buildSections() {
   if (!declared.size) return;
   const values = [...new Set([...declared.values()].map((d) => d.value))].sort();
   const box = new THREE.Box3().setFromObject(G.cells.children.length ? G.cells : root);
-  const laneBase = (box.isEmpty() ? 30 : box.max.y) + 26;
-  const laneGap = 16;
+  const laneBase = (box.isEmpty() ? 30 : box.max.y) + 18;
+  const laneGap = 13;
   const laneY = (v) => laneBase + values.indexOf(v) * laneGap;
-  const laneColor = (v) => LANE_COLORS[values.indexOf(v) % LANE_COLORS.length];
-  const markerPos = new Map();                        // ctxId -> Vector3 on its lane
-  for (const [ctxId, d] of declared) {
-    const p = CTXPOS.get(ctxId); if (!p) continue;
-    const mp = new THREE.Vector3(p.x, laneY(d.value), p.z);
-    markerPos.set(ctxId, mp);
-    const col = laneColor(d.value);
-    const marker = new THREE.Mesh(new THREE.SphereGeometry(2.6, 16, 12),
-      new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: DECOR ? 0.9 : 0.4, roughness: 0.3 }));
-    marker.position.copy(mp);
-    G.sections.add(marker);
-    pickables.push({ mesh: marker, info: { type: "sectionPoint", ctxId, value: d.value, atomId: d.atomId } });
-    // a faint drop-line ties the fiber point to its context (layout)
-    const drop = tube(mp.clone(), new THREE.Vector3(p.x, p.y, p.z), 0.22,
-      new THREE.MeshBasicMaterial({ color: 0x44506a, transparent: true, opacity: 0.4 }));
-    G.sections.add(drop);
-  }
-  // lane edges: equal declared values across a measured restriction edge
+  const laneColorOf = (v) => LANE_COLORS[values.indexOf(v) % LANE_COLORS.length];
+  // global-section check among declared values: one bridge-connected component spanning ALL cover contexts
   const laneAdj = new Map([...declared.keys()].map((c) => [c, []]));
   for (const e of MODEL.edges) {
     const da = declared.get(e.a), db = declared.get(e.b);
-    if (!da || !db || da.value !== db.value) continue;
-    const pa = markerPos.get(e.a), pb = markerPos.get(e.b);
-    if (!pa || !pb) continue;
-    const col = laneColor(da.value);
-    const m = tube(pa, pb, 0.9, new THREE.MeshStandardMaterial({
-      color: col, emissive: col, emissiveIntensity: DECOR ? 0.8 : 0.35, roughness: 0.4, transparent: true, opacity: 0.9 }));
-    G.sections.add(m);
-    pickables.push({ mesh: m, info: { type: "sectionEdge", edge: e, value: da.value } });
-    laneAdj.get(e.a).push(e.b); laneAdj.get(e.b).push(e.a);
+    if (da && db && da.value === db.value) { laneAdj.get(e.a).push(e.b); laneAdj.get(e.b).push(e.a); }
   }
-  // global-section check among declared values: one lane component spanning ALL cover contexts
   let globalValue = null;
   if (declared.size === MODEL.contexts.length && values.length >= 1) {
     const start = MODEL.contexts[0] && MODEL.contexts[0].id;
@@ -1525,8 +1768,85 @@ function buildSections() {
       if (seen.size === MODEL.contexts.length) globalValue = declared.get(start).value;
     }
   }
+  const colorFor = (v) => (v === globalValue ? COL.zero : laneColorOf(v));
+
+  const fragPos = new Map();                          // ctxId -> Vector3, fragment center on its lane
+  for (const [ctxId, d] of declared) {
+    const p = CTXPOS.get(ctxId); if (!p) continue;
+    const y = laneY(d.value);
+    fragPos.set(ctxId, new THREE.Vector3(p.x, y, p.z));
+    const col = colorFor(d.value);
+    const r = cellRadius(MODEL, MODEL.ctxById.get(ctxId)) * 0.62;
+    const glowIntensity = DECOR ? (d.value === globalValue ? 0.5 : 0.4) : 0.2;
+    const frag = new THREE.Mesh(new THREE.CircleGeometry(r, 30),
+      new THREE.MeshStandardMaterial({ color: col, emissive: col, side: THREE.DoubleSide, depthWrite: false,
+        emissiveIntensity: glowIntensity, roughness: 0.4, transparent: true, opacity: 0.5 }));
+    frag.rotation.x = -Math.PI / 2; frag.position.set(p.x, y, p.z);
+    G.sections.add(frag);
+    pickables.push({ mesh: frag, info: { type: "sectionPoint", ctxId, value: d.value, atomId: d.atomId } });
+    // a faint drop-line ties the fiber fragment to its context patch (layout)
+    const drop = tube(new THREE.Vector3(p.x, y, p.z), new THREE.Vector3(p.x, p.y, p.z), 0.2,
+      new THREE.MeshBasicMaterial({ color: 0x44506a, transparent: true, opacity: 0.4 }));
+    G.sections.add(drop);
+  }
+  const cocycleKeys = new Set((MODEL.cocycle.supportEdges || [])
+    .map((se) => [se.sourceContextRef, se.targetContextRef].sort().join("|")));
+
+  for (const e of MODEL.edges) {
+    const da = declared.get(e.a), db = declared.get(e.b);
+    if (!da || !db) continue;
+    const pa = fragPos.get(e.a), pb = fragPos.get(e.b);
+    if (!pa || !pb) continue;
+    if (da.value === db.value) {
+      // agreement: a continuous bridge over the SAME footprint as the base overlap lens
+      const base = computeLensGeom(e); if (!base) continue;
+      const laneGeom = { ...base, mid: new THREE.Vector3(base.mid.x, laneY(da.value), base.mid.z) };
+      const col = colorFor(da.value);
+      const boundary = lensBoundaryPoints(laneGeom.a, laneGeom.b, 14);
+      const center3 = lensLocalToWorld(laneGeom, 0, 0);
+      const positions = [];
+      for (let i = 0; i < boundary.length; i++) {
+        const p0 = lensLocalToWorld(laneGeom, boundary[i].x, boundary[i].y);
+        const p1 = lensLocalToWorld(laneGeom, boundary[(i + 1) % boundary.length].x, boundary[(i + 1) % boundary.length].y);
+        positions.push(center3.x, center3.y, center3.z, p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+      g.computeVertexNormals();
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+        color: col, emissive: col, emissiveIntensity: DECOR ? 0.55 : 0.3, roughness: 0.45,
+        side: THREE.DoubleSide, depthWrite: false, transparent: true, opacity: 0.62 }));
+      G.sections.add(m);
+      pickables.push({ mesh: m, info: { type: "sectionEdge", edge: e, value: da.value } });
+    } else {
+      // disagreement: an explicit torn seam — the two fragments stay at their own
+      // heights and are NOT bridged. A short jagged fault line marks the tear at
+      // the shared overlap; edges on the measured H¹ cocycle support are the ones
+      // that can never be closed by any single relabeling — amber + bloom.
+      const onCocycle = cocycleKeys.has([e.a, e.b].sort().join("|"));
+      const midx = (pa.x + pb.x) / 2, midz = (pa.z + pb.z) / 2;
+      const zigzag = [
+        new THREE.Vector3(pa.x, pa.y, pa.z),
+        new THREE.Vector3(midx + (pb.x - pa.x) * 0.18, pa.y * 0.72 + pb.y * 0.28, midz + (pb.z - pa.z) * 0.18),
+        new THREE.Vector3(midx - (pb.x - pa.x) * 0.18, pa.y * 0.28 + pb.y * 0.72, midz - (pb.z - pa.z) * 0.18),
+        new THREE.Vector3(pb.x, pb.y, pb.z),
+      ];
+      const col = COL.nonzero;
+      const rad = onCocycle ? 0.75 : 0.45;
+      const segMat = new THREE.MeshStandardMaterial({ color: col, emissive: col, roughness: 0.3,
+        emissiveIntensity: DECOR ? (onCocycle ? 1.6 : 0.5) : (onCocycle ? 0.6 : 0.3), transparent: true, opacity: 0.92 });
+      for (let i = 0; i < zigzag.length - 1; i++) {
+        const seg = tube(zigzag[i], zigzag[i + 1], rad, segMat);
+        if (onCocycle && DECOR) { seg.layers.enable(BLOOM_LAYER); seg.userData.pulse = true; }
+        G.sections.add(seg);
+      }
+      const proxy = pickProxy(new THREE.Vector3(midx, (pa.y + pb.y) / 2, midz), 3);
+      pickables.push({ mesh: proxy, info: { type: "sectionTear", edge: e, valueA: da.value, valueB: db.value, onCocycle } });
+      G.sections.add(proxy);
+    }
+  }
   for (const v of values) {
-    const pts = [...declared.entries()].filter(([, d]) => d.value === v).map(([c]) => markerPos.get(c)).filter(Boolean);
+    const pts = [...declared.entries()].filter(([, d]) => d.value === v).map(([c]) => fragPos.get(c)).filter(Boolean);
     if (!pts.length) continue;
     const left = pts.reduce((a, b) => (a.x < b.x ? a : b));
     const isGlobal = v === globalValue;
@@ -1540,12 +1860,8 @@ function buildSections() {
 function buildVerdict() {
   const box = new THREE.Box3().setFromObject(root);
   const center = box.getCenter(new THREE.Vector3());
-  const code = MODEL.conclusion;
-  const color = MODEL.isNonzero ? "#ffd9a8" : (MODEL.isZero ? "#a8f0e6" : (MODEL.isFoundation ? "#bfe0ea" : "#cdd9ec"));
-  const bg = MODEL.isNonzero ? "rgba(40,22,6,0.78)" : (MODEL.isZero ? "rgba(6,28,26,0.78)" : "rgba(10,22,30,0.78)");
-  const lab = makeLabel(code, { color, scale: 1.45, bg });
-  lab.position.set(center.x, box.max.y + 14, center.z);
-  G.verdict.add(lab);
+  // conclusion code text lives in the status bar only — a floating 3D banner
+  // duplicated it and collided with the top chrome at the map-view camera angle
   if (MODEL.isZero) {
     // the loop closes — a calm, slowly breathing teal ring at the centroid
     const ring = new THREE.Mesh(
@@ -1677,7 +1993,10 @@ function frameScene(id) {
   if (box.isEmpty()) return;
   const sph = box.getBoundingSphere(new THREE.Sphere());
   const dist = sph.radius / Math.sin((camera.fov * Math.PI) / 360) * 0.8;
-  const dir = new THREE.Vector3(0.32, 0.28, 1).normalize();
+  // ~55° elevation so the (near-flat, Y=0) base-space patchwork reads as a map
+  // seen from above, not as a thin edge-on line — was (0.32,0.28,1), ~15° elevation,
+  // a leftover from the old spherical nerve layout.
+  const dir = new THREE.Vector3(0.3, 1.2, 0.9).normalize();
   controls.target.copy(sph.center);
   camera.position.copy(sph.center).add(dir.multiplyScalar(dist));
   camera.near = Math.max(0.1, dist / 400); camera.far = dist * 12; camera.updateProjectionMatrix();
@@ -1726,7 +2045,10 @@ function highlightRefs(atomRefs = [], contextRefs = []) {
   for (const p of pickables) {
     if (p.info.type === "atom" && aset.has(p.info.atom.id)) {
       const m = p.mesh, ud = m.userData;
-      if (ud.baseIntensity != null && m.material && m.material.emissive) { m.material.emissiveIntensity = Math.max(ud.baseIntensity, 0.85) * 2.2; }
+      if (ud.baseIntensity != null && m.material && m.material.emissive) {
+        if (ud.hoverEmissive != null) m.material.emissive.setHex(ud.hoverEmissive); // muted → vivid pop while highlighted
+        m.material.emissiveIntensity = Math.max(ud.baseIntensity, 0.85) * 2.2;
+      }
       if (ud.baseScale != null) m.scale.setScalar(ud.baseScale * 1.6);
       highlighted.push(m);
     }
@@ -1740,7 +2062,8 @@ function frameToRefs(atomRefs = [], contextRefs = []) {
   const sph = box.getBoundingSphere(new THREE.Sphere());
   const radius = Math.max(sph.radius, 24);
   const dist = radius / Math.sin((camera.fov * Math.PI) / 360) * 1.15;
-  const dir = new THREE.Vector3(0.32, 0.3, 1).normalize();
+  // same ~55° elevation as frameScene() — was (0.32,0.3,1), ~15° elevation.
+  const dir = new THREE.Vector3(0.3, 1.2, 0.9).normalize();
   controls.target.copy(sph.center);
   camera.position.copy(sph.center).add(dir.multiplyScalar(dist));
   camera.updateProjectionMatrix();
@@ -2029,6 +2352,15 @@ function showDetail(info) {
     kind = T({ math: "section lane edge", eng: "the convention extends across this boundary" });
     rows = [["edge", info.edge.id], ["value", info.value]];
     badge = `<span class="badge zero">${T({ math: "equal declared values on both sides", eng: "both modules declare the same convention" })}</span>`;
+  } else if (info.type === "sectionTear") {
+    title = info.edge.id; kind = T({ math: "étale sheet tear", eng: "where the convention breaks" });
+    rows = [["value at " + info.edge.a, String(info.valueA).replace(/^section=/, "")],
+      ["value at " + info.edge.b, String(info.valueB).replace(/^section=/, "")]];
+    badge = info.onCocycle
+      ? `<span class="badge nonzero">${T({ math: "on the H¹ cocycle support — no relabeling closes this",
+          eng: "part of the measured global mismatch — no local fix closes this loop" })}</span>`
+      : `<span class="badge nonzero">${T({ math: "declared values differ across this restriction edge",
+          eng: "the two modules declare different conventions here" })}</span>`;
   }
   el.innerHTML = `<div class="kind">${kind}</div><h3>${escapeHtml(title)}</h3>${badge}
     <dl>${rows.map(([k, v]) => `<dt>${escapeHtml(String(k))}</dt><dd>${escapeHtml(String(v))}</dd>`).join("")}</dl>
@@ -2045,29 +2377,32 @@ function renderLegend() {
     `<span style="display:inline-flex;gap:4px;align-items:center;margin:2px 7px 2px 0"><span style="width:9px;height:9px;border-radius:2px;background:#${c.toString(16).padStart(6, "0")}"></span><span style="font-size:10.5px;color:var(--ink-dim)">${f}</span></span>`).join("");
   document.getElementById("legend-body").innerHTML = `
     <h4>How to read this</h4>
-    <div class="leg-row"><span class="leg-mark ring" style="border-color:#a9c4ef"></span><div><b>Glass cage</b> — ${T({
-      math: "a context (local window). Radius ∝ #atoms it observes.",
-      eng: "a module boundary (what one part of the system can see). Radius ∝ #observed facts." })}</div></div>
-    <div class="leg-row"><span class="leg-mark" style="background:#8294b4"></span><div><b>Grey strut</b> — ${T({
-      math: "cover restriction edge (no shared atoms).",
-      eng: "a shared boundary between two modules (no disagreement observed)." })}</div></div>
-    <div class="leg-row"><span class="leg-mark seam"></span><div><b>Amber strut / seam</b> — ${T({
-      math: "čech-mismatch marker &amp; the measured H¹ cocycle that won't close. Thickness ∝ #markers; edge value = |support| mod 2 (parity).",
-      eng: "a measured disagreement between neighbors, and the loop of disagreements that no single-module fix can reconcile. Thickness ∝ #disagreements." })}</div></div>
+    <div class="leg-row"><span class="leg-mark ring" style="border-color:#a9c4ef"></span><div><b>Patch</b> — ${T({
+      math: "a context: an open set of the measured base space. Radius ∝ #atoms it observes. Patches sit in one near-flat plane — the base space is a patchwork, not a poset tower.",
+      eng: "a module boundary (what one part of the system can see). Radius ∝ #observed facts. All modules sit on one shared ground — height no longer marks depth." })}</div></div>
+    <div class="leg-row"><span class="leg-mark" style="background:#8294b4"></span><div><b>Grey lens</b> — ${T({
+      math: "the overlap region of a cover restriction edge, sized ∝ √(measured shared-atom count). Sinks slightly below the patch plane ∝ the average restriction-poset depth of its two contexts — the ONE place poset depth still drives geometry.",
+      eng: "a shared boundary region between two modules, sized by how much they actually share. Sinks a little for deeper, more foundational overlaps." })}</div></div>
+    <div class="leg-row"><span class="leg-mark seam"></span><div><b>Amber lens / seam</b> — ${T({
+      math: "a lens carrying čech-mismatch markers (rim thickness ∝ #markers), and — separately — the measured H¹ cocycle that won't close. Edge value = |support| mod 2 (parity).",
+      eng: "a shared boundary where a measured disagreement sits, and the loop of disagreements that no single-module fix can reconcile." })}</div></div>
     <div class="leg-row"><span class="leg-mark frost"></span><div><b>Frosted face</b> — ${T({
       math: "triple overlap. Existence only; H² stays silent.",
       eng: "a three-way shared boundary. Drawn as existing only; nothing further is claimed." })}</div></div>
-    <div class="leg-row"><span class="leg-mark ring"></span><div><b>Teal ring</b> — ${T({
-      math: "the loop closes: NO measured obstruction.",
-      eng: "every loop closes: no inconsistency was measured." })}</div></div>
+    <div class="leg-row"><span class="leg-mark ring"></span><div><b>Teal ring / sheet</b> — ${T({
+      math: "the loop closes: NO measured obstruction. In the Sections scene, a teal sheet spanning every patch is a measured global section.",
+      eng: "every loop closes: no inconsistency was measured. In Section lanes, a teal sheet covering everything means one convention holds everywhere." })}</div></div>
     <div class="leg-row"><span class="leg-mark" style="background:#b69cff"></span><div><b>Lavender</b> — ${T({
       math: "analytic reading (curvature / spectrum / period), never a verdict.",
       eng: "advisory reading (stress / spectrum / cycles), never a pass/fail claim." })}</div></div>
-    <div class="note"><b>Atom families</b> — distinct shape <i>and</i> hue (sphere = component, octahedron = relation, …):<br>${fams}</div>
+    <div class="note"><b>Atom placement</b> — ${T({
+      math: "an atom stands inside the measured membership region it belongs to: its single context's patch, the pairwise overlap lens (2 contexts), or the triple-overlap face (3 contexts) — never a jittered blob. Position within that region is a deterministic family-sector, id-order ring; no hash or random layout.",
+      eng: "an atom sits inside the module (or shared overlap, or three-way overlap) it actually belongs to, arranged by kind in a fixed, repeatable pattern — nothing is randomly scattered." })}</div>
+    <div class="note"><b>Atom families</b> — distinct shape <i>and</i> a deliberately muted hue (sphere = component, octahedron = relation, …; high-saturation color is reserved for teal/amber/lavender/grey, never family identity):<br>${fams}</div>
     <div class="note"><b>Reading distances</b> — ${T({
-      math: "X,Z are a spectral embedding of the measured nerve: in-component closeness ≈ diffusion closeness, unique up to isometry/degeneracy. Y is restriction-poset depth (deeper overlaps sit lower). Cross-component distance and absolute scale carry no meaning.",
-      eng: "horizontally close = strongly coupled in the measured structure (within one connected part). Lower = a more deeply shared overlap. Distances between disconnected parts mean nothing." })}</div>
-    <div class="note"><b>Measured vs decoration</b> — sizes, thicknesses, amber marks and which edges exist are <i>measured</i>; horizontal coordinates are <i>derived</i> from the measured nerve spectrum and height from the measured poset; glow, pulse, arcs and probes are <i>decoration</i>. Turn "Decoration" off to draw measured geometry only; click any element for its per-channel breakdown.</div>
+      math: "X,Z are a spectral embedding of the measured nerve: in-component closeness ≈ diffusion closeness, unique up to isometry/degeneracy. Cross-component distance and absolute scale carry no meaning. Y is 0 for every patch; restriction-poset depth now shows up as the overlap lens's vertical sink, not patch height.",
+      eng: "horizontally close = strongly coupled in the measured structure (within one connected part). Distances between disconnected parts mean nothing. All modules sit at the same height; a more deeply shared overlap sinks its lens slightly, not the modules themselves." })}</div>
+    <div class="note"><b>Measured vs decoration</b> — patch/lens size, sink, rim thickness, amber marks, atom shape/family region, and which edges exist are <i>measured</i>; horizontal coordinates are <i>derived</i> from the measured nerve spectrum; ring placement within a region, patch/lens outline shape, and lane height are <i>layout</i>; glow, pulse, arcs and probes are <i>decoration</i>. Turn "Decoration" off to draw measured geometry only; click any element for its per-channel breakdown.</div>
     <div class="note">The viewer adds no new structural verdict.</div>`;
   const ck = document.querySelectorAll("#color-key .ck-item");
   if (ck.length === 4) {
@@ -2077,7 +2412,7 @@ function renderLegend() {
       eng: "a measured disagreement between neighbors, and the loop of disagreements that no single-module fix can reconcile." });
     ck[2].title = T({ math: "analytic reading (curvature / spectrum / period), never a verdict.",
       eng: "advisory reading (stress / spectrum / cycles), never a pass/fail claim." });
-    ck[3].title = T({ math: "cover restriction edge (no shared atoms).",
+    ck[3].title = T({ math: "cover restriction edge / overlap lens (no mismatch markers).",
       eng: "a shared boundary between two modules (no disagreement observed)." });
   }
 }
@@ -2413,6 +2748,7 @@ document.getElementById("search").addEventListener("input", (e) => {
     const id = (p.info.atom.subject + " " + p.info.atom.id).toLowerCase();
     const match = q && id.includes(q);
     if (match) {
+      if (ud.hoverEmissive != null) mat.emissive.setHex(ud.hoverEmissive);
       mat.emissiveIntensity = Math.max(ud.baseIntensity, 0.85) * 2.0;
       p.mesh.scale.setScalar(ud.baseScale * 1.5);
     } else if (highlighted.includes(p.mesh)) {
@@ -2467,7 +2803,7 @@ function animate() {
   controls.update();
   if (!DECOR) { renderFrame(); return; }   // measured-only mode: static geometry, no theater
   // gentle life: obstruction pulse, calm-ring breathing, cell drift
-  for (const g of [G.seam, G.atoms]) for (const o of g.children) {
+  for (const g of [G.seam, G.atoms, G.sections]) for (const o of g.children) {
     if (o.userData && o.userData.isProbe) { updateProbe(o, t); continue; }
     if (o.userData && o.userData.pulse && o.material && o.material.emissive) {
       o.material.emissiveIntensity = 1.6 + Math.sin(t * 3.2) * 0.7;
