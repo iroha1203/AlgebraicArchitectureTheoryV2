@@ -143,3 +143,33 @@ ArchSig evaluator registry owns witness requirements, axes, missing blocker
 rules, distance contribution, and result status computation. MeasurementProfile
 owns selected cover, coefficient, predicates, certificate
 selector, and verdict discipline for AG measurement.
+
+## Executable three-artifact and bundle workflow
+
+From the repository root, the current fixtures provide an executable authoring
+and validation path:
+
+```bash
+mkdir -p .tmp/law-policy-authoring
+cargo run --manifest-path tools/archsig/Cargo.toml -- measurement-profile \
+  --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
+  --out .tmp/law-policy-authoring/profile-validation.json
+cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
+  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
+  --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --out .tmp/law-policy-authoring/policy-validation.json
+cargo run --manifest-path tools/archsig/Cargo.toml -- policy-bundle \
+  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
+  --out .tmp/law-policy-authoring/policy-bundle.json
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
+  --policy-bundle .tmp/law-policy-authoring/policy-bundle.json \
+  --out-dir .tmp/law-policy-authoring/analyze
+```
+
+The profile contains no `witnessFamily`; the law surface is the sole source of
+witness variables and forbidden supports. The final packet and run manifest
+must expose the bundle's `componentFingerprints`.

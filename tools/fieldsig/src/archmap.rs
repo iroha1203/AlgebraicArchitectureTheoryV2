@@ -344,6 +344,36 @@ fn validate_archsig_measurement_packet_handoff_shape(
     if packet_id.trim().is_empty() {
         return Err("FieldSig ArchSig measurement handoff requires non-empty packetId".into());
     }
+    let fingerprints = packet
+        .get("componentFingerprints")
+        .and_then(|value| value.as_object())
+        .ok_or("FieldSig ArchSig measurement handoff requires componentFingerprints object")?;
+    let expected = BTreeSet::from(["lawPolicy", "lawSurface", "measurementProfile"]);
+    let actual = fingerprints
+        .keys()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if actual != expected {
+        return Err(
+            "FieldSig ArchSig measurement handoff componentFingerprints must contain exactly lawPolicy, lawSurface, measurementProfile".into(),
+        );
+    }
+    for component in expected {
+        let fingerprint = fingerprints
+            .get(component)
+            .and_then(|value| value.as_str())
+            .ok_or_else(|| format!("FieldSig ArchSig measurement handoff componentFingerprints.{component} must be a string"))?;
+        if fingerprint.len() != 71
+            || !fingerprint.starts_with("sha256:")
+            || !fingerprint[7..]
+                .bytes()
+                .all(|byte| byte.is_ascii_hexdigit())
+        {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff componentFingerprints.{component} must be sha256:<64 hex chars>"
+            ).into());
+        }
+    }
     let profile = packet
         .get("profile")
         .and_then(|value| value.as_object())
@@ -905,6 +935,19 @@ fn archsig_measurement_packet_sft_source_refs(
     }
     if let Some(profile_id) = json_path_string(packet, &["profile"], "profileId") {
         refs.push(format!("archsigMeasurementProfile:{profile_id}"));
+    }
+    if let Some(fingerprints) = packet
+        .get("componentFingerprints")
+        .and_then(|value| value.as_object())
+    {
+        for component in ["lawPolicy", "lawSurface", "measurementProfile"] {
+            if let Some(fingerprint) = fingerprints.get(component).and_then(|value| value.as_str())
+            {
+                refs.push(format!(
+                    "archsigMeasurementComponentFingerprint:{component}:{fingerprint}"
+                ));
+            }
+        }
     }
     refs.extend(
         packet

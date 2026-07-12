@@ -1,10 +1,11 @@
 # ArchSig
 
 `archsig` is the ArchMap -> ArchSig structural analysis CLI. The current
-runtime reads supplied `archmap/v0.5.1` evidence and a selected
-`law-policy/v0.5.1` profile. The AG measurement path reads finite-poset-site
-ArchMap shape plus a selected `measurement-profile/v0.5.1` and emits
-`archsig-measurement-packet/v0.5.1`.
+runtime reads supplied `archmap/v0.5.1` evidence and selected
+`law-policy/v0.5.1`, `law-equation-surface/v0.5.1`, and
+`measurement-profile/v0.5.1` artifacts. Reproducible runs fix those three
+policy components with `archsig-policy-bundle/v0.5.1`; the AG measurement path
+emits `archsig-measurement-packet/v0.5.1`.
 
 ArchSig is an LLM-native tool. The intended product interface is the bundled
 LLM skills in `tools/archsig/skills`, not a human manually reading internal JSON.
@@ -14,8 +15,9 @@ compare high-priority findings with source evidence, and translate the result
 into review or improvement language.
 
 ArchSig's responsibility is bounded structural diagnosis over supplied
-`ArchMap + LawPolicy`: it validates the input surfaces, builds AAT-oriented
+`ArchMap + LawPolicy + law-equation-surface + MeasurementProfile`: it validates the input surfaces, builds AAT-oriented
 reading families, and preserves the measurement basis for human / LLM review.
+For reproducible runs, `policy-bundle` fixes the three selected policy components with canonical fingerprints; the individual component flags are the equivalent direct-input form.
 FieldSig owns forecast, governance, calibration, and operational feedback under
 `tools/fieldsig`.
 
@@ -184,7 +186,7 @@ language.
 | --- | --- |
 | `archmap-creater` | Create bounded `archmap/v0.5.1` artifacts from repository evidence. It keeps ArchMap as source-grounded Atom observations, not law-relative analysis or removed v0 helper fields. |
 | `law-policy-creater` | Create project-specific `law-policy/v0.5.1` profiles from repository coding conventions, architecture rules, and user decisions. If docs do not define the evaluator universe, ask the user before selecting laws. |
-| `archsig-reader` | Run an ArchMap with a selected LawPolicy, read summary / viewer report / manifest first, compare high-priority readings with source evidence, and propose bounded improvements. It does not silently use a generic LawPolicy as project analysis. |
+| `archsig-reader` | Run an ArchMap with a selected policy bundle, read summary / viewer report / manifest first, compare high-priority readings with source evidence, and propose bounded improvements. It does not silently use a generic LawPolicy as project analysis. |
 | `archsig-pr-reviewer` | Use `analyze`, `compare`, and `gate`, then read the changed code and explain review focus in human code-review language. It stops if the base measurement context is missing. |
 | `repair-plan-creater` | Author `archsig-repair-plan/v0.5.1` artifacts for SAGA descent runs, validated through `repair-plan` and consumed through `analyze --repair-plan`. |
 

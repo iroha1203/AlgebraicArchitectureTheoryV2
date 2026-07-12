@@ -18,6 +18,22 @@ The corpus verifies deterministic measurement output, gate policy behavior,
 comparison behavior, and schema catalog stability. The measurement packet is
 the input artifact for the separately owned FieldSig handoff tests.
 
+R9 numeric locks are executable in `cli_r9_numeric_locks_preserve_ag_measurement_values_and_verdicts`:
+
+- pseudo-circle H¹ over `F2`: `H1 = 1`, `measured_nonzero`;
+- circle-nerve fixture: `H1 = 1`, `classNonzero = true`, and the declared
+  mismatch support remains `atom:b8-cocycle-P`;
+- square-free repair: minimal hitting sets
+  `{x_inventory}` and `{x_checkout,x_payment}`;
+- Tor conflict: degree-1 class count `1`, `measured_nonzero`;
+- repeated circle-nerve runs: byte-identical packet, summary, viewer, and
+  manifest artifacts.
+
+The one-cent drift script asserts the four-act lock:
+`analyze → gate BLOCK → repair → PASS`, including the expected comparison
+codes. The head and repaired runs use the same policy bundle so the selected
+law surface and measurement profile are fixed together.
+
 ## AG measurement fixtures
 
 - `archmap_v2_cech_h1_visible.json`

@@ -1,13 +1,39 @@
 {
-  "schema": "archsig-measurement-packet/v0.5.0",
+  "schema": "archsig-measurement-packet/v0.5.1",
   "packetId": "archsig-measurement-fixture",
+  "componentFingerprints": {
+    "lawPolicy": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "lawSurface": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "measurementProfile": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
   "profile": {
-    "profileId": "profile:fieldsig-fixture"
+    "schema": "measurement-profile/v0.5.1",
+    "profileId": "profile:fieldsig-fixture",
+    "siteRef": "archmap:/contexts",
+    "coverRef": "cover:fieldsig-fixture",
+    "coefficient": "F2",
+    "effCoeff": "finite-linear-algebra@1",
+    "resolutionSelector": "cech@1",
+    "domain": "finite-poset-site",
+    "zeroPredicate": "rank-zero@1",
+    "nonZeroPredicate": "rank-positive@1",
+    "certSelector": "finite-certificate@1",
+    "verdictDiscipline": "five-valued-structural-verdict@1"
   },
   "structuralVerdict": [],
   "computedInvariants": [],
   "analyticReadings": [],
   "assumptions": [],
+  "suppliedData": [{
+    "suppliedId": "supplied:archmap",
+    "kind": "archmap",
+    "sourceArtifactRef": "input:archmap.json",
+    "conformance": {
+      "status": "validated",
+      "checkRef": "archmap/v0.5.1-validation"
+    }
+  }],
+  "boundaryStatements": [],
   "nonConclusions": [
     "FieldSig fixture reads ArchSig measurement state as bounded input only."
   ]

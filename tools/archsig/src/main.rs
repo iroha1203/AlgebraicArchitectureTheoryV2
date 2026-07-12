@@ -199,7 +199,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Run the primary ArchMap + LawPolicy -> ArchSig analysis workflow.
+    /// Run the primary ArchMap + policy-bundle (LawPolicy + law surface + MeasurementProfile) -> ArchSig analysis workflow.
     Analyze {
         /// Input ArchMap observation artifact path.
         #[arg(long)]
@@ -817,6 +817,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             out,
         }) => {
             if let Some(bundle_path) = policy_bundle {
+                reject_output_overwrite(&bundle_path, &out)?;
                 let resolved = resolve_and_verify_policy_bundle(&bundle_path, None, None, None)?;
                 write_json(out, &resolved.report)?;
                 Ok(if resolved.report["summary"]["result"] == "pass" {
@@ -834,14 +835,20 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 let measurement_profile = measurement_profile.ok_or(
                     "--law-policy, --law-surface, and --measurement-profile are required when creating a policy bundle",
                 )?;
+                let out = out.ok_or(
+                    "--out is required when creating a policy bundle so component references remain resolvable",
+                )?;
+                reject_output_overwrite(&law_policy, &Some(out.clone()))?;
+                reject_output_overwrite(&law_surface, &Some(out.clone()))?;
+                reject_output_overwrite(&measurement_profile, &Some(out.clone()))?;
                 let bundle = build_policy_bundle(
                     &law_policy,
                     &law_surface,
                     &measurement_profile,
-                    out.as_deref(),
+                    Some(&out),
                     &id,
                 )?;
-                write_json(out, &bundle)?;
+                write_json(Some(out), &bundle)?;
                 Ok(ExitCode::SUCCESS)
             }
         }

@@ -4,23 +4,32 @@
     "checkedCount": 4,
     "violatedCount": 0
   },
+  "componentFingerprints": {
+    "lawPolicy": "sha256:8ea157edec4b604e89d65bd38bd2e1da615fb4b5c7f69e5ee7da1b3ca3ebd125",
+    "lawSurface": "sha256:f7131846b456c621bb32992b659a9b7dea480b1d619bb132dde4abc87a59739b",
+    "measurementProfile": "sha256:5409ebe4d9fec65c100fc22395168a801d87f9d542be47189d3f6ccb5fe6c42f"
+  },
   "conclusion": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
   "inputDigests": {
     "archmap": {
       "path": "input:archmap.json",
-      "sha256": "10a5ab2829fc8377227d836a75f5e850b128f7c27823fbaa2ce713415c1f86c0"
+      "sha256": "ae4ff70181f17ad5f5cf1942815dbcdda752e7fb7d841587c5cf1afd48cf2e1e"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "66c5b23c7a853822abf3b09c1126003136487ff78deec1aa7315a4af2f42575c"
+      "sha256": "8ea157edec4b604e89d65bd38bd2e1da615fb4b5c7f69e5ee7da1b3ca3ebd125"
+    },
+    "lawSurface": {
+      "path": "input:law_surface_practical_base_v051.json",
+      "sha256": "f7131846b456c621bb32992b659a9b7dea480b1d619bb132dde4abc87a59739b"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
-      "sha256": "79c8734ab3abf06207e2233a816a015d9295886c3979ec09d0750bcd3daf9163"
+      "sha256": "5409ebe4d9fec65c100fc22395168a801d87f9d542be47189d3f6ccb5fe6c42f"
     },
     "profileFingerprint": {
-      "basis": "archmap shape + selected LawPolicy profile ref and external MeasurementProfile artifact",
-      "sha256": "56cf8b94553161873472f4ab99809301a208e217319c44b149a7bddc78bb8483"
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "5f429f9b294efdec80715872d3c3715ee2082abae4cf4dd4f71be79a5a013ccb"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -33,7 +42,7 @@
     "insightReport": "archsig-insight-report.json",
     "viewerData": "archsig-atom-viewer-data.json"
   },
-  "measurementPacketSchema": "archsig-measurement-packet/v0.5.0",
+  "measurementPacketSchema": "archsig-measurement-packet/v0.5.1",
   "nonConclusions": [
     "Summary conclusion is relative to MeasurementProfile and assumption ledger.",
     "Schema foundation rows do not claim completed AG invariant computation."
@@ -47,15 +56,15 @@
     "whatItMeans": "No selected H1 glue mismatch was measured under the profile.",
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
-  "runId": "run:302ac792f7ec",
-  "schema": "archsig-analysis-summary/v0.5.0",
+  "runId": "run:946877d47467",
+  "schema": "archsig-analysis-summary/v0.5.1",
   "structuralVerdictSummary": {
     "measuredNonzeroCount": 0,
     "nonTerminalCount": 0,
     "rowCount": 1,
     "unmeasuredCount": 0
   },
-  "toolVersion": "0.5.0",
+  "toolVersion": "0.5.1",
   "translationRule": {
     "boundary": "Supply a selected nonzero cocycle support or different profile before claiming an H1 obstruction.",
     "conclusionCode": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",

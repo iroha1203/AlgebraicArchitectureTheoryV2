@@ -2538,6 +2538,106 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
 }
 
 #[test]
+fn cli_r9_numeric_locks_preserve_ag_measurement_values_and_verdicts() {
+    let pseudo_circle = run_analyze_fixture_lock_with_surface(
+        "r9-pseudo-circle-h1",
+        "archmap_v2_cech_h1_visible.json",
+        "law_policy_cech_h1.json",
+        "law_surface_cech_h1_v051.json",
+        None,
+    );
+    let pseudo_circle_packet = read_json(&pseudo_circle.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        pseudo_circle_packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+    let pseudo_circle_invariant = invariant_by_id(
+        &pseudo_circle_packet,
+        "cech-cohomology:profile:ag-default@1",
+    );
+    assert_eq!(pseudo_circle_invariant["dimensions"]["H1"], 1);
+    assert_eq!(pseudo_circle_invariant["coefficient"], "F2");
+
+    let circle_nerve_a = run_analyze_fixture_lock_with_surface(
+        "r9-circle-nerve-a",
+        "archmap_v2_cech_b8_toy.json",
+        "law_policy_cech_b8.json",
+        "law_surface_cech_b8_v051.json",
+        None,
+    );
+    let circle_nerve_b = run_analyze_fixture_lock_with_surface(
+        "r9-circle-nerve-b",
+        "archmap_v2_cech_b8_toy.json",
+        "law_policy_cech_b8.json",
+        "law_surface_cech_b8_v051.json",
+        None,
+    );
+    assert_byte_identical_analysis_artifacts(&circle_nerve_a, &circle_nerve_b);
+    let circle_nerve_packet = read_json(&circle_nerve_a.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        circle_nerve_packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+    let circle_nerve =
+        invariant_by_id(&circle_nerve_packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(circle_nerve["dimensions"]["H1"], 1);
+    assert_eq!(circle_nerve["observedCocycle"]["classNonzero"], true);
+    assert_eq!(
+        circle_nerve["observedCocycle"]["mismatchSupportRefs"],
+        json!(["atom:b8-cocycle-P"])
+    );
+
+    let square_free = run_analyze_fixture_lock_with_surface(
+        "r9-square-free-hitting-sets",
+        "archmap_v2_square_free_repair.json",
+        "law_policy_square_free.json",
+        "law_surface_ag_v051.json",
+        None,
+    );
+    let square_free_packet = read_json(&square_free.join("archsig-measurement-packet.json"));
+    let square_free_invariant = invariant_by_id(
+        &square_free_packet,
+        "square-free-repair:profile:ag-square-free@1",
+    );
+    assert_eq!(
+        square_free_invariant["alexanderDualRepair"]["minimalHittingSets"],
+        json!([["x_inventory"], ["x_checkout", "x_payment"]]),
+    );
+    assert_eq!(
+        square_free_packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+
+    let tor = run_analyze_fixture_lock_with_surface(
+        "r9-tor-one",
+        "archmap_v2_law_conflict_tor.json",
+        "law_policy_tor.json",
+        "law_surface_ag_v051.json",
+        None,
+    );
+    let tor_packet = read_json(&tor.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        tor_packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+    let tor_invariant = invariant_by_id(
+        &tor_packet,
+        "law-conflict-tor:profile:ag-law-conflict-tor@1",
+    );
+    assert_eq!(
+        tor_invariant["torByDegree"],
+        json!([{
+            "degree": 1,
+            "classCount": 1,
+            "coefficient": "F2",
+            "scope": "H_1 of Taylor(I_left) tensor R/I_right by square-free multidegree"
+        }])
+    );
+    assert_eq!(tor_invariant["lawConflicts"][0]["degree"], 1);
+    assert_eq!(tor_invariant["proxyComparison"]["taylorClassCount"], 1);
+}
+
+#[test]
 fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     let out_dir = temp_dir("ag-measurement-cech-h1-visible");
     let root = ag_measurement_root();
@@ -5653,7 +5753,7 @@ fn cli_analyze_v2_validation_failure_emits_blocking_insight_projection() {
         manifest["conclusionCode"],
         "VALIDATION_FAILED_BEFORE_MEASUREMENT"
     );
-    assert_eq!(manifest["toolVersion"], "0.5.0");
+    assert_eq!(manifest["toolVersion"], "0.5.1");
     assert!(
         manifest["runId"]
             .as_str()
@@ -9420,7 +9520,7 @@ fn practical_rust_service_example_runs_current_analyze() {
 
     assert_eq!(manifest["schema"], "archsig-run-manifest/v0.5.1");
     assert_eq!(manifest["mode"], "measurement");
-    assert_eq!(manifest["toolVersion"], "0.5.0");
+    assert_eq!(manifest["toolVersion"], "0.5.1");
     assert!(
         manifest["runId"]
             .as_str()
@@ -9561,8 +9661,8 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     }
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
-    assert_eq!(manifest["toolVersion"], "0.5.0");
-    assert_eq!(manifest["runId"], "run:5c52332950b8");
+    assert_eq!(manifest["toolVersion"], "0.5.1");
+    assert_eq!(manifest["runId"], "run:946877d47467");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "ae4ff70181f17ad5f5cf1942815dbcdda752e7fb7d841587c5cf1afd48cf2e1e"
@@ -9713,7 +9813,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:5c52332950b8-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:946877d47467-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -10064,6 +10164,14 @@ fn cli_policy_bundle_fingerprints_and_analyze_handoff_are_fail_closed() {
         validation.to_str().expect("validation path is utf-8"),
     ]);
     assert_eq!(read_json(&validation)["summary"]["result"], "pass");
+    let overwrite_validation = run_sig0_raw_output(&[
+        "policy-bundle",
+        "--policy-bundle",
+        bundle.to_str().expect("bundle path is utf-8"),
+        "--out",
+        bundle.to_str().expect("bundle output path is utf-8"),
+    ]);
+    assert_eq!(overwrite_validation.status.code(), Some(2));
 
     let analyze_dir = out_dir.join("analyze");
     run_sig0(&[
@@ -10131,6 +10239,30 @@ fn cli_policy_bundle_fingerprints_and_analyze_handoff_are_fail_closed() {
             .expect("unknown bundle path is utf-8"),
     ]);
     assert_eq!(unknown_output.status.code(), Some(2));
+
+    let overwrite_output = run_sig0_raw_output(&[
+        "policy-bundle",
+        "--law-policy",
+        law_policy.to_str().expect("policy path is utf-8"),
+        "--law-surface",
+        law_surface.to_str().expect("surface path is utf-8"),
+        "--measurement-profile",
+        measurement_profile.to_str().expect("profile path is utf-8"),
+        "--out",
+        law_policy.to_str().expect("policy output path is utf-8"),
+    ]);
+    assert_eq!(overwrite_output.status.code(), Some(2));
+
+    let stdout_creation = run_sig0_raw_output(&[
+        "policy-bundle",
+        "--law-policy",
+        law_policy.to_str().expect("policy path is utf-8"),
+        "--law-surface",
+        law_surface.to_str().expect("surface path is utf-8"),
+        "--measurement-profile",
+        measurement_profile.to_str().expect("profile path is utf-8"),
+    ]);
+    assert_eq!(stdout_creation.status.code(), Some(2));
 }
 
 #[test]
@@ -12433,6 +12565,63 @@ fn run_analyze_fixture_lock(
         law_policy_path.to_str().expect("path is utf-8").to_string(),
         "--measurement-profile".to_string(),
         measurement_profile_path
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+    ];
+    if let Some(repair_plan) = repair_plan {
+        args.push("--repair-plan".to_string());
+        args.push(repair_plan.to_str().expect("path is utf-8").to_string());
+    }
+    args.push("--out-dir".to_string());
+    args.push(out_dir.to_str().expect("path is utf-8").to_string());
+    let arg_refs = args.iter().map(String::as_str).collect::<Vec<_>>();
+    run_sig0(&arg_refs);
+    out_dir
+}
+
+fn run_analyze_fixture_lock_with_surface(
+    case_id: &str,
+    archmap: &str,
+    law_policy: &str,
+    law_surface: &str,
+    repair_plan: Option<&Path>,
+) -> PathBuf {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir(case_id);
+    let source_law_policy_path = root.join(law_policy);
+    let measurement_profile_path = if matches!(
+        law_policy,
+        "law_policy_cech_h1.json" | "law_policy_cech_b8.json"
+    ) {
+        root.join("measurement_profile_ag.json")
+    } else {
+        test_measurement_profile_path(&source_law_policy_path)
+    };
+    let law_surface_path = root.join(law_surface);
+    let policy = read_json(&source_law_policy_path);
+    let surface = read_json(&law_surface_path);
+    assert_eq!(
+        policy["lawSurfaceRef"], surface["id"],
+        "R9 fixture policy must explicitly resolve to its supplied law surface"
+    );
+    let law_policy_path = source_law_policy_path;
+    let mut args = vec![
+        "analyze".to_string(),
+        "--archmap".to_string(),
+        root.join(archmap)
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--law-policy".to_string(),
+        law_policy_path.to_str().expect("path is utf-8").to_string(),
+        "--measurement-profile".to_string(),
+        measurement_profile_path
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--law-surface".to_string(),
+        law_surface_path
             .to_str()
             .expect("path is utf-8")
             .to_string(),

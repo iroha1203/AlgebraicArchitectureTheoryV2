@@ -14,7 +14,7 @@ compatibility replacement for retired PR review commands.
 Current boundary:
 
 ```text
-ArchMap + LawPolicy + MeasurementProfile
+ArchMap + policy-bundle(LawPolicy + law-equation-surface + MeasurementProfile)
   -> archsig analyze
   -> measurement packet / summary / viewer data / run manifest
   -> archsig compare
