@@ -9,6 +9,7 @@ mod law_execution;
 mod law_policy;
 mod law_surface;
 mod normalizer;
+mod policy_bundle;
 mod repair_plan;
 mod saga;
 mod schema;
@@ -46,6 +47,11 @@ pub use law_surface::{
     LawWitnessVariableV1, static_law_surface_binding_vocabulary_v1, validate_law_surface_v1_report,
 };
 pub use normalizer::normalize_archmap_v2;
+pub use policy_bundle::{
+    ARCHSIG_POLICY_BUNDLE_V1_SCHEMA, ARCHSIG_POLICY_BUNDLE_VALIDATION_REPORT_SCHEMA,
+    ArchSigPolicyBundleV1, ComponentFingerprintsV1, build_policy_bundle, component_fingerprints,
+    resolve_and_verify_policy_bundle,
+};
 pub use repair_plan::{build_repair_plan_validation_report_v1, validate_repair_plan_v1_checks};
 pub(crate) use schema::*;
 pub use schema::{

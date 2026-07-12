@@ -12053,6 +12053,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             "toolVersion",
             "runId",
             "inputDigests",
+            "componentFingerprints",
         ],
         &mut examples,
     );

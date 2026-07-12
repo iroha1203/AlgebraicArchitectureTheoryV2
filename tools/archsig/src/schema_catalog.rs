@@ -6,13 +6,14 @@ use crate::{
     ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
-    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, LAW_SURFACE_BINDING_VOCABULARY_SCHEMA,
-    MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
-    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
-    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
-    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
+    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_POLICY_BUNDLE_V1_SCHEMA,
+    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
+    ARCHSIG_SAGA_CONCLUSION_CODES, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
+    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
+    NORMALIZED_ARCHMAP_V2_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
+    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
+    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
+    SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -113,7 +114,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "The AAT atom binding vocabulary manifest fixes the supported Stage 2 axis/predicate pairs shared by ArchMap authoring and law-equation-surface validation.",
                 vec![
                     "The manifest does not add evaluator conclusions or compute measurements.",
-                    "Pairs outside cech, square-free, and section-factorization are not accepted by this stage.",
+                    "Pairs outside the registered Stage 2 axis/predicate vocabulary are not accepted by this stage.",
                 ],
             ),
             artifact(
@@ -140,6 +141,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "LawPolicy v0.5.1 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
                     "LawPolicy validation does not run the evaluator pipeline.",
+                ],
+            ),
+            artifact(
+                "archsig-policy-bundle/v0.5.1",
+                "ArchSig policy bundle v0.5.1",
+                ARCHSIG_POLICY_BUNDLE_V1_SCHEMA,
+                "primary",
+                "ArchSig v0.5.1 LawPolicy Stage 2",
+                vec!["archsig-contract:v0.5.1-law-equation-surface"],
+                "Policy bundle v0.5.1 fixes LawPolicy, law-equation-surface, and MeasurementProfile references together with canonical JSON SHA-256 component fingerprints for one analyze run.",
+                vec![
+                    "The bundle records component identity; it does not add evaluator conclusions or prove semantic equivalence.",
+                    "Fingerprint mismatch is a validation failure before measurement.",
                 ],
             ),
             artifact(
@@ -474,6 +488,7 @@ mod tests {
                 "aat-atom-vocabulary-binding/v0.5.1",
                 "law-equation-surface/v0.5.1",
                 "law-policy/v0.5.1",
+                "archsig-policy-bundle/v0.5.1",
                 "law-evaluator-registry/v0.5.1",
                 "measurement-profile/v0.5.1",
                 "archsig-repair-plan/v0.5.1",

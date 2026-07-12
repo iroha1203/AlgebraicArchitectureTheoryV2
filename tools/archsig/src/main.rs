@@ -15,8 +15,9 @@ use archsig::{
     archmap_authoring_audit_checks_v1, build_comparison_artifacts_v1,
     build_extraction_consistency_v1, build_foundation_measurement_packet_v1, build_gate_report_v1,
     build_insight_brief_v1, build_insight_report_v1, build_measurement_summary_v1,
-    build_measurement_viewer_data_v1, build_repair_plan_validation_report_v1,
-    build_scope_manifest_v1, normalize_archmap_v2, static_schema_version_catalog,
+    build_measurement_viewer_data_v1, build_policy_bundle, build_repair_plan_validation_report_v1,
+    build_scope_manifest_v1, component_fingerprints as build_component_fingerprints,
+    normalize_archmap_v2, resolve_and_verify_policy_bundle, static_schema_version_catalog,
     validate_archmap_v2_report, validate_authoring_audit_input_v1, validate_law_policy_v1_report,
     validate_law_surface_v1_report, validate_measurement_packet_value_v1,
     validate_measurement_profile_v1_checks,
@@ -205,16 +206,28 @@ enum Command {
         archmap: PathBuf,
 
         /// Input LawPolicy artifact path.
-        #[arg(long = "law-policy")]
-        law_policy: PathBuf,
+        #[arg(
+            long = "law-policy",
+            required_unless_present = "policy_bundle",
+            conflicts_with = "policy_bundle"
+        )]
+        law_policy: Option<PathBuf>,
 
         /// Optional law-equation-surface/v0.5.1 artifact supplying evaluator execution plans.
-        #[arg(long = "law-surface")]
+        #[arg(long = "law-surface", conflicts_with = "policy_bundle")]
         law_surface: Option<PathBuf>,
 
         /// Input MeasurementProfile artifact path.
-        #[arg(long = "measurement-profile")]
-        measurement_profile: PathBuf,
+        #[arg(
+            long = "measurement-profile",
+            required_unless_present = "policy_bundle",
+            conflicts_with = "policy_bundle"
+        )]
+        measurement_profile: Option<PathBuf>,
+
+        /// Policy bundle supplying the LawPolicy, law surface, MeasurementProfile, and fingerprints.
+        #[arg(long = "policy-bundle", conflicts_with_all = ["law_policy", "law_surface", "measurement_profile"])]
+        policy_bundle: Option<PathBuf>,
 
         /// Optional SAGA RepairPlan artifact path.
         #[arg(long = "repair-plan")]
@@ -265,6 +278,32 @@ enum Command {
         /// Output directory for archmap-diff.json and archsig-comparison-report.json.
         #[arg(long = "out-dir")]
         out_dir: PathBuf,
+    },
+    /// Create or validate an ArchSig policy bundle.
+    PolicyBundle {
+        /// Existing policy bundle to validate. Omit this when creating a bundle.
+        #[arg(long = "policy-bundle", conflicts_with_all = ["law_policy", "law_surface", "measurement_profile"])]
+        policy_bundle: Option<PathBuf>,
+
+        /// LawPolicy component used when creating or explicitly verifying a bundle.
+        #[arg(long = "law-policy", requires_all = ["law_surface", "measurement_profile"])]
+        law_policy: Option<PathBuf>,
+
+        /// Law equation surface component used when creating or explicitly verifying a bundle.
+        #[arg(long = "law-surface", requires_all = ["law_policy", "measurement_profile"])]
+        law_surface: Option<PathBuf>,
+
+        /// MeasurementProfile component used when creating or explicitly verifying a bundle.
+        #[arg(long = "measurement-profile", requires_all = ["law_policy", "law_surface"])]
+        measurement_profile: Option<PathBuf>,
+
+        /// Bundle identifier for a newly created bundle.
+        #[arg(long, default_value = "policy-bundle:archsig-v051")]
+        id: String,
+
+        /// Output bundle or validation report path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
     },
     SchemaCatalog {
         /// Output schema version catalog JSON path. If omitted, JSON is written to stdout.
@@ -769,16 +808,75 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             )?;
             Ok(ExitCode::SUCCESS)
         }
+        Some(Command::PolicyBundle {
+            policy_bundle,
+            law_policy,
+            law_surface,
+            measurement_profile,
+            id,
+            out,
+        }) => {
+            if let Some(bundle_path) = policy_bundle {
+                let resolved = resolve_and_verify_policy_bundle(&bundle_path, None, None, None)?;
+                write_json(out, &resolved.report)?;
+                Ok(if resolved.report["summary"]["result"] == "pass" {
+                    ExitCode::SUCCESS
+                } else {
+                    ExitCode::from(1)
+                })
+            } else {
+                let law_policy = law_policy.ok_or(
+                    "--law-policy, --law-surface, and --measurement-profile are required when creating a policy bundle",
+                )?;
+                let law_surface = law_surface.ok_or(
+                    "--law-policy, --law-surface, and --measurement-profile are required when creating a policy bundle",
+                )?;
+                let measurement_profile = measurement_profile.ok_or(
+                    "--law-policy, --law-surface, and --measurement-profile are required when creating a policy bundle",
+                )?;
+                let bundle = build_policy_bundle(
+                    &law_policy,
+                    &law_surface,
+                    &measurement_profile,
+                    out.as_deref(),
+                    &id,
+                )?;
+                write_json(out, &bundle)?;
+                Ok(ExitCode::SUCCESS)
+            }
+        }
         Some(Command::Analyze {
             archmap,
             law_policy,
             law_surface,
             measurement_profile,
+            policy_bundle,
             repair_plan,
             residual_packet,
             out_dir,
             stamp,
         }) => {
+            let (law_policy, law_surface, measurement_profile, bundle_fingerprints) =
+                if let Some(bundle_path) = policy_bundle {
+                    let resolved = resolve_and_verify_policy_bundle(&bundle_path, None, None, None)?;
+                    if resolved.report["summary"]["result"] != "pass" {
+                        return Err("policy bundle fingerprint validation failed".into());
+                    }
+                    (
+                        resolved.law_policy,
+                        Some(resolved.law_surface),
+                        resolved.measurement_profile,
+                        Some(serde_json::json!(resolved.bundle.component_fingerprints)),
+                    )
+                } else {
+                    (
+                        law_policy.ok_or("--law-policy is required without --policy-bundle")?,
+                        law_surface,
+                        measurement_profile
+                            .ok_or("--measurement-profile is required without --policy-bundle")?,
+                        None,
+                    )
+                };
             let archmap_validation_path = out_dir.join("archmap-validation.json");
             let law_policy_validation_path = out_dir.join("law-policy-validation.json");
             let analysis_summary_path = out_dir.join("archsig-analysis-summary.json");
@@ -873,6 +971,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 "archsig-atom-viewer-data.json",
                 "archsig-run-manifest.json",
             ]);
+            let component_fingerprints = bundle_fingerprints.or(Some(serde_json::json!(
+                build_component_fingerprints(&law_policy, law_surface.as_deref().ok_or(
+                    "analyze requires --law-surface for LawPolicy v0.5.1",
+                )?, &measurement_profile)?
+            )));
             let run_contract = AnalyzeRunContract::from_inputs(
                 &archmap,
                 &law_policy,
@@ -884,6 +987,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     &measurement_profile_contract_input,
                 )?,
                 contract_site_cover_digest(&archmap_contract_input)?,
+                component_fingerprints,
                 stamp,
             )?;
             std::fs::create_dir_all(&out_dir)?;
@@ -938,6 +1042,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "toolVersion": run_contract.tool_version.clone(),
                         "runId": run_contract.run_id.clone(),
                         "inputDigests": run_contract.input_digests.clone(),
+                        "componentFingerprints": run_contract.component_fingerprints.clone(),
                         "commandName": "analyze",
                         "mode": "validation-failure",
                         "conclusionCode": ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT,
@@ -1037,6 +1142,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "toolVersion": run_contract.tool_version.clone(),
                             "runId": run_contract.run_id.clone(),
                             "inputDigests": run_contract.input_digests.clone(),
+                            "componentFingerprints": run_contract.component_fingerprints.clone(),
                             "commandName": "analyze",
                             "mode": "analysis-failure",
                             "conclusionCode": "ANALYSIS_FAILED_BEFORE_MEASUREMENT",
@@ -1145,6 +1251,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "toolVersion": run_contract.tool_version.clone(),
                     "runId": run_contract.run_id.clone(),
                     "inputDigests": run_contract.input_digests.clone(),
+                    "componentFingerprints": run_contract.component_fingerprints.clone(),
                     "commandName": "analyze",
                     "mode": "measurement",
                     "conclusionCode": null,

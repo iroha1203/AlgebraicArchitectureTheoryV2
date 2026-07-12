@@ -84,6 +84,30 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
 `law-policy` validates a `law-policy/v0.5.1` selector artifact against its
 selected measurement profile and supplied law-equation surface.
 
+## Policy Bundle
+
+Create a bundle that fixes the three component artifacts and their canonical
+JSON SHA-256 fingerprints:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- policy-bundle \
+  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
+  --out .archsig/policy-bundle.json
+```
+
+Validate an existing bundle with `archsig policy-bundle --policy-bundle
+.archsig/policy-bundle.json`. The bundle can replace the individual component
+flags for `analyze`:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
+  --policy-bundle .archsig/policy-bundle.json \
+  --out-dir .archsig/analyze-bundled
+```
+
 ## Measurement Profile
 
 ```bash

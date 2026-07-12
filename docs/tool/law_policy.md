@@ -8,6 +8,7 @@ Current ArchSig `analyze` reads:
 ```text
 ArchMap finite-poset-site evidence
   + LawPolicy evaluator selection
+  + law-equation-surface declaration
   + MeasurementProfile selected regime
   -> archsig-measurement-packet/v0.5.1
 ```
@@ -32,6 +33,12 @@ validation failure. LawPolicy does not embed witness rules, distance profiles,
 operation costs, coverage DSLs, repair recipes, or Lean proof assumptions.
 Those calculation rules belong to ArchSig evaluator registry code and the
 external MeasurementProfile.
+
+`policy-bundle` can fix these three component artifacts with canonical JSON
+SHA-256 fingerprints. `analyze --policy-bundle` resolves the components from
+the bundle and records the same `componentFingerprints` in the measurement
+packet and run manifest; individual component flags are exclusive with the
+bundle flag.
 
 ## 第VIII部の定義との対応
 
