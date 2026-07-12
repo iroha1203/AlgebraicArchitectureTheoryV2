@@ -1,0 +1,39 @@
+{
+  "schema": "law-equation-surface/v0.5.1",
+  "id": "law-surface:ag-v051",
+  "laws": [
+    {
+      "lawId": "ag.square-free-equation",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "p",
+          "binding": {
+            "archmapVariable": "p",
+            "axis": "support",
+            "predicate": "cooccurrence"
+          }
+        },
+        {
+          "variable": "q",
+          "binding": {
+            "archmapVariable": "q",
+            "axis": "support",
+            "predicate": "cooccurrence"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        {
+          "support": ["p", "q"]
+        }
+      ]
+    },
+    {
+      "lawId": "ag.section-factorization",
+      "conditionType": "descent",
+      "evaluatorRef": "ag.cech-obstruction@1",
+      "witnessVariables": []
+    }
+  ]
+}

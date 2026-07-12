@@ -168,6 +168,33 @@
       }
     },
     {
+      "artifactId": "law-equation-surface/v0.5.1",
+      "artifactName": "Law equation surface v0.5.1 author declaration",
+      "schemaName": "law-equation-surface/v0.5.1",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.5.1 LawPolicy Stage 2",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.1-law-equation-surface"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Law equation surface v0.5.1 supplies law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. ArchSig derives equation-side measurements from this declaration.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "The surface does not supply verdicts, certificates, boundary membership, or global coherence conclusions.",
+          "Stage 3 reservation fields are rejected when written."
+        ]
+      }
+    },
+    {
       "artifactId": "law-policy/v0.5.0",
       "artifactName": "LawPolicy v0.5.0 selector artifact",
       "schemaName": "law-policy/v0.5.0",

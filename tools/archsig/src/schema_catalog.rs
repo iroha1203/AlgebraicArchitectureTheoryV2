@@ -7,11 +7,12 @@ use crate::{
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES, LAW_POLICY_V1_SCHEMA,
-    MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
-    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
-    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
-    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
+    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
+    NORMALIZED_ARCHMAP_V2_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
+    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
+    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
+    SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -100,6 +101,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "Coverage ledger rows record authoring survey state; they do not assert extraction completeness.",
                     "Coverage ledger is not read by analyze.",
+                ],
+            ),
+            artifact(
+                "law-equation-surface/v0.5.1",
+                "Law equation surface v0.5.1 author declaration",
+                LAW_EQUATION_SURFACE_V1_SCHEMA,
+                "primary",
+                "ArchSig v0.5.1 LawPolicy Stage 2",
+                vec!["archsig-contract:v0.5.1-law-equation-surface"],
+                "Law equation surface v0.5.1 supplies law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. ArchSig derives equation-side measurements from this declaration.",
+                vec![
+                    "The surface does not supply verdicts, certificates, boundary membership, or global coherence conclusions.",
+                    "Stage 3 reservation fields are rejected when written.",
                 ],
             ),
             artifact(
@@ -444,6 +458,7 @@ mod tests {
                 "archmap-candidate-packet/v0.5.0",
                 "archmap-extraction-consistency/v0.5.0",
                 "archmap-coverage-ledger/v0.5.0",
+                "law-equation-surface/v0.5.1",
                 "law-policy/v0.5.0",
                 "law-evaluator-registry/v0.5.0",
                 "measurement-profile/v0.5.0",
