@@ -10214,6 +10214,30 @@ fn cli_policy_bundle_fingerprints_and_analyze_handoff_are_fail_closed() {
     ]);
     assert_eq!(mismatched_output.status.code(), Some(1));
 
+    let analyze_mismatched_dir = out_dir.join("analyze-mismatched-bundle");
+    let analyze_mismatched_output = run_sig0_raw_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--policy-bundle",
+        mismatched_path
+            .to_str()
+            .expect("mismatched bundle path is utf-8"),
+        "--out-dir",
+        analyze_mismatched_dir
+            .to_str()
+            .expect("mismatched analyze path is utf-8"),
+    ]);
+    assert_eq!(analyze_mismatched_output.status.code(), Some(2));
+    assert!(
+        !analyze_mismatched_dir
+            .join("archsig-measurement-packet.json")
+            .exists(),
+        "analyze must not emit a measurement packet for a mismatched policy bundle"
+    );
+
     let mut unknown_policy = read_json(&law_policy);
     unknown_policy["unexpected"] = json!(true);
     let unknown_policy_path = out_dir.join("law_policy_unknown.json");
