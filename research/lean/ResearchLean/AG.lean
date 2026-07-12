@@ -31,6 +31,7 @@ import ResearchLean.AG.QualitySurface.LawGeneratedConormalIdealSheaf
 import ResearchLean.AG.QualitySurface.LawGeneratedConormalComparison
 import ResearchLean.AG.QualitySurface.LawGeneratedBooleanCircleSite
 import ResearchLean.AG.QualitySurface.LawGeneratedBooleanCircleLawCore
+import ResearchLean.AG.QualitySurface.LawGeneratedBooleanCircleTopology
 import ResearchLean.AG.QualitySurface.LawGeneratedSemanticFirstOrderRepair
 import ResearchLean.AG.QualitySurface.LawGeneratedRingSheaf
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerSequence
