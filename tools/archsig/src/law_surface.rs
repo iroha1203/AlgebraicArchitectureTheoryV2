@@ -36,6 +36,9 @@ const CONCLUSION_TOKENS: [&str; 13] = [
     "violation",
 ];
 
+const BINDING_AXES: [&str; 3] = ["cech", "square-free", "section-factorization"];
+const BINDING_PREDICATES: [&str; 3] = ["support", "cooccurrence", "sectionValue"];
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LawEquationSurfaceV1 {
@@ -596,6 +599,83 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
             "empty",
             "binding vocabulary must declare axes and predicates",
         ));
+    }
+    for axis in BINDING_AXES {
+        if !vocabulary.axes.iter().any(|item| item == axis) {
+            examples.push(generic_validation_example(
+                "bindingVocabulary.axes",
+                axis,
+                "the shared AAT atom vocabulary manifest must retain every Stage 2 axis",
+            ));
+        }
+    }
+    for predicate in BINDING_PREDICATES {
+        if !vocabulary.predicates.iter().any(|item| item == predicate) {
+            examples.push(generic_validation_example(
+                "bindingVocabulary.predicates",
+                predicate,
+                "the shared AAT atom vocabulary manifest must retain every Stage 2 predicate",
+            ));
+        }
+    }
+    for axis in &vocabulary.axes {
+        if !BINDING_AXES.contains(&axis.as_str()) {
+            examples.push(generic_validation_example(
+                "bindingVocabulary.axes",
+                axis,
+                "binding vocabulary contains an axis outside the Stage 2 contract",
+            ));
+        }
+    }
+    for predicate in &vocabulary.predicates {
+        if !BINDING_PREDICATES.contains(&predicate.as_str()) {
+            examples.push(generic_validation_example(
+                "bindingVocabulary.predicates",
+                predicate,
+                "binding vocabulary contains a predicate outside the Stage 2 contract",
+            ));
+        }
+    }
+    let mut pairs = BTreeSet::new();
+    for pair in &vocabulary.axis_predicate_pairs {
+        if !BINDING_AXES.contains(&pair.axis.as_str()) {
+            examples.push(generic_validation_example(
+                "bindingVocabulary.axisPredicatePairs[].axis",
+                &pair.axis,
+                "binding pair axis is outside the Stage 2 contract",
+            ));
+        }
+        for predicate in &pair.predicates {
+            if !BINDING_PREDICATES.contains(&predicate.as_str()) {
+                examples.push(generic_validation_example(
+                    "bindingVocabulary.axisPredicatePairs[].predicates[]",
+                    predicate,
+                    "binding pair predicate is outside the Stage 2 contract",
+                ));
+            }
+            if !pairs.insert((pair.axis.as_str(), predicate.as_str())) {
+                examples.push(generic_validation_example(
+                    "bindingVocabulary.axisPredicatePairs",
+                    &format!("{}/{}", pair.axis, predicate),
+                    "binding axis/predicate pairs must be unique",
+                ));
+            }
+        }
+    }
+    for (axis, predicate) in [
+        ("cech", "sectionValue"),
+        ("square-free", "support"),
+        ("square-free", "cooccurrence"),
+        ("section-factorization", "support"),
+        ("section-factorization", "cooccurrence"),
+    ] {
+        if !pairs.contains(&(axis, predicate)) {
+            examples.push(generic_validation_example(
+                "bindingVocabulary.axisPredicatePairs",
+                &format!("{axis}/{predicate}"),
+                "the shared AAT atom vocabulary manifest must retain every required Stage 2 pair",
+            ));
+        }
     }
     check_examples(
         "law-equation-surface-v051-binding-vocabulary",

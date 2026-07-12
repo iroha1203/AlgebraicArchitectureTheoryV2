@@ -206,7 +206,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Law equation surface v0.5.1 supplies the authoring input contract for a later Stage 2 execution plan: law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
+        "fieldMappingPolicy": "Law equation surface v0.5.1 records the authoring input contract for law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
