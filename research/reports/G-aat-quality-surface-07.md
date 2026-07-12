@@ -10,10 +10,10 @@ Issue #3246.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 11
+- latest reviewed cycle: 12
 - completion candidate: no
 - tracking Issue: #3246
-- next obligation: prove large-coefficient D0 effectivity and its lift-fiber torsor
+- next obligation: construct the true law-generated ideal subsheaf and the required H0 comparison
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -724,3 +724,77 @@ their amalgamation from the bundled middle sheaf condition, and use quotient
 separatedness to prove the primary `H1IsZero` iff actual-global-lift theorem.
 Then construct the nonempty lift-fiber torsor and specialize the result to the
 Cycle 9 law-generated sheafified short complex.
+
+## Cycle 12 — large-coefficient D0 effectivity and lift-fiber torsor
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedLargeConormalDescent.lean`
+- checkpoint spine:
+  - `LocalLiftData.GlobalLift`
+  - `LocalLiftData.connectingClassFor_isZero_of_globalLift`
+  - `LocalLiftData.exists_correction_of_connectingClassFor_isZero`
+  - `LocalLiftData.correctedLocalLift_arrowsCompatible`
+  - `LocalLiftData.amalgamatedCorrectedLocalLift`
+  - `LocalLiftData.projection_amalgamatedCorrectedLocalLift`
+  - `LocalLiftData.connectingClassFor_isZero_iff_nonempty_globalLift`
+  - `LocalLiftData.globalLiftAddTorsor`
+  - `LocalLiftData.globalLiftFiber_simplyTransitive`
+  - `LocalLiftData.lawGenerated_connectingClass_isZero_iff_nonempty_globalLift`
+
+### Checkpoint delta
+
+The large-coefficient connecting class now has the full section-specific D0
+effectivity theorem. An actual global lift generates a kernel-valued
+degree-zero primitive, hence an `H1IsZero` witness. Conversely, the repository
+zero-class criterion produces a correction cochain. Its corrected local lifts
+agree on canonical pairs and therefore on every common refinement. The middle
+bundled sheaf amalgamates that compatible family, while quotient separatedness
+proves that the amalgam projects to the original base section.
+
+This proves
+`H1IsZero (connectingClassFor hK L) ↔ Nonempty GlobalLift`. Global kernel
+sections act freely and transitively on every nonempty lift fiber, producing a
+Mathlib `AddTorsor`, an explicit simple-transitivity theorem, and an equivalence
+after choosing one lift. The theorem is specialized directly to Cycle 9's
+canonical law-generated sheafified short exact sequence.
+
+### Premise delta
+
+- discharged: large-coefficient class vanishing iff actual global lift;
+  selected-cover sheaf gluing; quotient separatedness; nonempty lift-fiber
+  torsor; and direct Cycle 9 law-generated specialization.
+- remaining: a true law-generated ideal subsheaf with sheafified ambient ring
+  action and stability; the required `ConDef(W)` to degree-zero cohomology
+  comparison; semantic representations; a finite law-sensitive zero/nonzero
+  witness pair; package theorem; and the global `H¹`-vanishing corollary.
+
+### Audits
+
+- focused Cycle 12 elaboration: pass
+- module-wide standard-axiom assertion: pass (94 declarations)
+- placeholder / hidden Unicode / private-path scans: pass
+- statement review: the primary statement uses repository `H1IsZero` and an
+  actual global section fiber, not a primitive or compatible-family predicate
+- effectivity proof-use: pair agreement, arbitrary common refinement,
+  `FamilyOfElements`, `amalgamate`, `valid_glue`, and quotient separatedness
+  all occur in the proof chain
+- provenance: sectionwise kernel comparison is generated from categorical
+  short exactness; the law specialization supplies Cycle 9's generated
+  `sheafifiedShortComplex_shortExact`
+- supplied-field audit: `LocalLiftData` still contains only the base section,
+  explicit local lifts, and their projection equations
+- four independent review lanes: No major findings
+- target classification: large-coefficient D0 and its law-sequence
+  specialization are discharged; G-07 remains a proof checkpoint until the
+  remaining D1--D3 artifacts and final package are complete
+
+### Next obligation
+
+Construct the law-generated coefficient as a true ideal object after
+sheafification. The current `AddCommGrpCat` sheafification supplies only the
+additive sequence, so the next construction must generate the ambient ring
+action and ideal stability rather than accept either as input. Then identify
+the resulting underlying additive kernel sheaf with the Cycle 9 first term and
+construct the required degree-zero cohomology comparison.
