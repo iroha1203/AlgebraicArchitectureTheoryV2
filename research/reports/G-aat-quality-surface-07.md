@@ -9,11 +9,11 @@ Issue #3246.
 
 ## Target Proof State
 
-- status: target-theorem-proved candidate
+- status: target-theorem-proved
 - latest reviewed cycle: 26
-- completion candidate: yes
+- completion candidate: completed
 - tracking Issue: #3246
-- next obligation: pass PR CI and record the completion ledger
+- next obligation: none
 
 ## Cycle 1 — small generated cover and repository H1 checkpoint
 
@@ -1798,7 +1798,7 @@ D2 pair, and corollary into the final package theorem.
 ## Cycle 26 — final conormal first-order descent package
 
 - decision: approve
-- result type: target-theorem-proved candidate
+- result type: target-theorem-proved
 - Lean file:
   `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedConormalFirstOrderDescentPackage.lean`
 - completion spine:
@@ -1863,6 +1863,7 @@ fixed idempotent-zero / square-zero-nonzero conormal `H¹` pair.
   simple-transitivity witness, universal vanishing, or final package conclusion
   is accepted as input
 - final four independent math/Lean review lanes: No major findings
-- target classification candidate: all fixed artifacts and completion
-  conditions are represented in Lean; PR CI and completion-ledger sync remain
-  before recording completion
+- PR #3278 CI: all checks pass
+- target classification: target-theorem-proved; all fixed artifacts,
+  completion conditions, independent reviews, CI, report, and Tracking Issue
+  #3246 are synchronized
