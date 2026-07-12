@@ -1647,3 +1647,60 @@ conormal zero theorem to show that every section of the first idempotent
 sheafified coefficient is zero.  Deduce that every degree-one cocycle is the
 zero coboundary and package `H¹ = 0` for the same canonical cover, completing
 the fixed D2 pair.
+
+## Cycle 24 — fixed conormal H¹ zero/nonzero pair
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedBooleanCircleConormalH1Pair.lean`
+- checkpoint spine:
+  - `idempotentX1_eq_zero`
+  - `idempotentCochain_eq_zero`
+  - `idempotentH1Class_isZero`
+  - `idempotentH1_isZero`
+  - `conormalH1_zero_nonzero_pair`
+
+### Checkpoint delta
+
+Every raw idempotent conormal section is zero by the Cycle 18 ideal-square
+calculation.  Applying the inverse of the Cycle 21 canonical sectionwise
+comparison and then its forward map proves that every section of
+`(sheafifiedShortComplex idempotentCore).X₁.val` is zero.  Consequently every
+generated cochain is zero, every represented `H¹` class satisfies the actual
+quotient zero predicate, and quotient induction proves this for every class.
+
+`conormalH1_zero_nonzero_pair` combines that universal idempotent vanishing
+with the Cycle 23 concrete nonzero square-zero class.  Both coefficients use
+the same `geometry`, `site`, three-patch cover, `AmbientRing`, and ambient
+restriction operation; their law cores differ only in the generator as proved
+in Cycle 18.
+
+### Premise delta
+
+- discharged: sheafified idempotent section zero; all idempotent cochains zero;
+  every represented idempotent `H¹` class zero; every quotient class zero;
+  fixed same-data idempotent-zero / square-zero-nonzero `H¹` pair.
+- remaining: primitive lawful-reading atlas; semantic specialization;
+  torsor/H0; final package; and the global `H¹`-vanishing corollary.
+
+### Audits
+
+- focused conormal-H¹-pair elaboration: pass (6 declarations)
+- module-wide standard-axiom assertion: pass
+- proof-use: raw idempotent zero is transported through the canonical
+  sectionwise equivalence; cochain zero feeds the concrete quotient criterion;
+  quotient induction covers every `H¹` class
+- provenance: the zero half uses `idempotentRawConormalX1Equiv`; the nonzero
+  half is exactly the Cycle 23 concrete class on the same geometry
+- supplied-field audit: no section-zero, cochain-zero, class-zero, universal
+  vanishing, or pair conclusion is accepted as input
+- four independent review lanes: No major findings
+- target classification: the fixed D2 pair is discharged
+
+### Next obligation
+
+Construct the primitive lawful-reading atlas from the fixed required-law
+families rather than a supplied ideal equality.  Specialize the general
+conormal connecting-class / lift / torsor theorems to the law-generated ideal
+power sequence, then assemble the final representation and completion package.
