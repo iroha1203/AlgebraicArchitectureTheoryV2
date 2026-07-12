@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
 
+use crate::law_execution::{LawExecutionPlanV1, build_law_execution_plan};
 use crate::saga::evaluate_saga_descent_v1;
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
@@ -510,9 +511,12 @@ pub fn build_foundation_measurement_packet_v1(
             .is_some_and(|evaluator| evaluator.starts_with("ag."))
     }) {
         let evaluator = entry.evaluator.as_deref().unwrap_or_default();
+        let execution_plan =
+            build_law_execution_plan(normalized, law_surface, entry.law.as_deref(), evaluator)?;
         if evaluator == "ag.cech-obstruction" {
             validate_cech_profile_v1(&profile)?;
-            let measurement = evaluate_cech_obstruction_v1(normalized, &profile);
+            let measurement =
+                evaluate_cech_obstruction_v1(normalized, &profile, execution_plan.as_ref());
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             assumptions.extend(measurement.assumptions);
@@ -581,7 +585,8 @@ pub fn build_foundation_measurement_packet_v1(
             });
         } else if evaluator == "ag.section-factorization" {
             validate_section_profile_v1(&profile)?;
-            let measurement = evaluate_section_factorization_v1(normalized, &profile)?;
+            let measurement =
+                evaluate_section_factorization_v1(normalized, &profile, execution_plan.as_ref())?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             assumptions.extend(measurement.assumptions);
@@ -2266,11 +2271,21 @@ fn evaluate_restriction_compatibility_v1(
 fn evaluate_section_factorization_v1(
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
+    execution_plan: Option<&LawExecutionPlanV1>,
 ) -> Result<SectionMeasurementV1, String> {
     let selected_contexts = selected_cover_contexts(normalized, profile)
         .into_iter()
         .collect::<BTreeSet<_>>();
-    let witness_variables = section_witness_variables(profile);
+    let witness_variables = if let Some(plan) = execution_plan {
+        if plan.evaluator_law_ids.is_empty() {
+            return Err(
+                "ag.section-factorization execution plan contains no selected law".to_string(),
+            );
+        }
+        section_witness_variables(profile)
+    } else {
+        section_witness_variables(profile)
+    };
     let forbidden_supports =
         section_forbidden_supports(normalized, &selected_contexts, &witness_variables)?;
     let minimal_forbidden_supports = minimal_section_forbidden_supports(&forbidden_supports);
@@ -6831,9 +6846,24 @@ struct CechEdgeV1 {
 fn evaluate_cech_obstruction_v1(
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
+    execution_plan: Option<&LawExecutionPlanV1>,
 ) -> CechMeasurementV1 {
     let selected_contexts = selected_cover_contexts(normalized, profile);
-    let edges = cech_edges(normalized, &selected_contexts);
+    let derived_edges = cech_edges(normalized, &selected_contexts);
+    let edges = execution_plan
+        .and_then(|plan| plan.cech_edges.as_ref())
+        .map(|selected_edges| {
+            derived_edges
+                .iter()
+                .filter(|edge| {
+                    let mut pair = [edge.source_context.clone(), edge.target_context.clone()];
+                    pair.sort();
+                    selected_edges.contains(&pair)
+                })
+                .cloned()
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or(derived_edges);
     let cover_nerve_projection =
         cover_nerve_projection_v1(normalized, &selected_contexts, &edges, &profile.cover_ref);
     let cover_nerve_face_count = cover_nerve_projection["faces"]
@@ -13905,7 +13935,7 @@ mod tests {
         normalized.covers[0].context_ids.clear();
         let profile = packet_fixture().profile;
 
-        let measurement = evaluate_cech_obstruction_v1(&normalized, &profile);
+        let measurement = evaluate_cech_obstruction_v1(&normalized, &profile, None);
 
         assert_eq!(measurement.verdict, "not_computed");
         assert!(!measurement.zero);

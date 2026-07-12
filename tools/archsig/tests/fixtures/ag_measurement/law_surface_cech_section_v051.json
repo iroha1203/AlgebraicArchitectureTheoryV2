@@ -1,0 +1,28 @@
+{
+  "schema": "law-equation-surface/v0.5.1",
+  "id": "law-surface:cech-section-v051",
+  "laws": [
+    {
+      "lawId": "law:cech-overlap-equation",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "e_top_left",
+          "binding": {
+            "edge": ["ctx:top", "ctx:left"],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        { "support": ["e_top_left"] }
+      ]
+    },
+    {
+      "lawId": "ag.section-factorization",
+      "conditionType": "descent",
+      "evaluatorRef": "ag.section-factorization"
+    }
+  ]
+}

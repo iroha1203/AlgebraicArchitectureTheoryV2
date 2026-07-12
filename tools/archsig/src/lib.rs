@@ -5,6 +5,7 @@ mod archmap;
 pub mod authoring;
 mod compare;
 mod gate;
+mod law_execution;
 mod law_policy;
 mod law_surface;
 mod normalizer;

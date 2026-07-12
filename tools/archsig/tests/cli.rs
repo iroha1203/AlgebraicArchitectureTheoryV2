@@ -9933,6 +9933,152 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
 }
 
 #[test]
+fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
+    let root = ag_measurement_root();
+    let root_out = temp_dir("ag-measurement-cech-execution-plan");
+    let surface_path = root.join("law_surface_cech_section_v051.json");
+    let (mut law_policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
+    law_policy["policies"][0]["law"] = json!("law:cech-overlap-equation");
+    let policy_path = root_out.join("law_policy_cech_execution_plan.json");
+    write_test_policy_and_profile(&policy_path, law_policy, profile);
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_cech_h1_visible.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-surface",
+        surface_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        root_out.join("top-left").to_str().expect("path is utf-8"),
+    ]);
+
+    let top_left_packet = read_json(
+        &root_out
+            .join("top-left")
+            .join("archsig-measurement-packet.json"),
+    );
+    let top_left_invariant =
+        invariant_by_id(&top_left_packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(top_left_invariant["restrictionEdgeCount"], json!(1));
+    assert_eq!(
+        top_left_invariant["coverNerveProjection"]["edges"][0]["edgeId"],
+        json!("ctx:top->ctx:left")
+    );
+
+    let mut changed_surface = read_json(&surface_path);
+    changed_surface["laws"][0]["witnessVariables"][0]["binding"]["edge"] =
+        json!(["ctx:top", "ctx:right"]);
+    let changed_surface_path = root_out.join("law_surface_cech_execution_plan_changed.json");
+    fs::write(
+        &changed_surface_path,
+        serde_json::to_string_pretty(&changed_surface).expect("surface serializes"),
+    )
+    .expect("changed surface is written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_cech_h1_visible.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-surface",
+        changed_surface_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        root_out.join("top-right").to_str().expect("path is utf-8"),
+    ]);
+    let top_right_packet = read_json(
+        &root_out
+            .join("top-right")
+            .join("archsig-measurement-packet.json"),
+    );
+    let top_right_invariant =
+        invariant_by_id(&top_right_packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(top_right_invariant["restrictionEdgeCount"], json!(1));
+    assert_eq!(
+        top_right_invariant["coverNerveProjection"]["edges"][0]["edgeId"],
+        json!("ctx:top->ctx:right")
+    );
+
+    let section_out = root_out.join("section");
+    let section_archmap_path = section_out.join("archmap.json");
+    fs::create_dir_all(&section_out).expect("section output directory exists");
+    fs::write(
+        &section_archmap_path,
+        serde_json::to_string_pretty(&section_archmap("lawful"))
+            .expect("section archmap serializes"),
+    )
+    .expect("section archmap is written");
+    let section_policy_path = section_out.join("law_policy.json");
+    write_test_policy_and_profile(&section_policy_path, section_policy(), section_profile());
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        section_archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        section_policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(
+            section_policy_path.to_str().expect("path is utf-8"),
+        ))
+        .to_str()
+        .expect("path is utf-8"),
+        "--law-surface",
+        surface_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        section_out.to_str().expect("path is utf-8"),
+    ]);
+    let section_packet = read_json(&section_out.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        section_row(&section_packet)["verdict"],
+        json!("measured_zero")
+    );
+
+    let mut invalid_surface = changed_surface;
+    invalid_surface["laws"][0]["witnessVariables"][0]["binding"]["edge"] =
+        json!(["ctx:top", "ctx:missing"]);
+    let invalid_surface_path = root_out.join("law_surface_cech_execution_plan_invalid.json");
+    fs::write(
+        &invalid_surface_path,
+        serde_json::to_string_pretty(&invalid_surface).expect("surface serializes"),
+    )
+    .expect("invalid surface is written");
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_cech_h1_visible.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--measurement-profile",
+            test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-surface",
+            invalid_surface_path.to_str().expect("path is utf-8"),
+            "--out-dir",
+            root_out.join("invalid").to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
 fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
     let out_dir = temp_dir("ag-measurement-cech-empty-selected-scope");
     let root = ag_measurement_root();

@@ -204,7 +204,7 @@ enum Command {
         #[arg(long = "law-policy")]
         law_policy: PathBuf,
 
-        /// Optional law-equation-surface/v0.5.1 artifact supplying square-free / tor equations.
+        /// Optional law-equation-surface/v0.5.1 artifact supplying evaluator execution plans.
         #[arg(long = "law-surface")]
         law_surface: Option<PathBuf>,
 
