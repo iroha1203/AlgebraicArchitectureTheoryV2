@@ -643,6 +643,18 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     ]);
     assert_eq!(same_output.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&same_output.stderr).contains("output path must differ"));
+
+    let hard_link = out_dir.join("law-surface-hard-link.json");
+    fs::hard_link(&input, &hard_link).expect("hard link fixture creates");
+    let hard_link_output = run_sig0_output(&[
+        "law-surface",
+        "--law-surface",
+        input.to_str().expect("path is utf-8"),
+        "--out",
+        hard_link.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(hard_link_output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&hard_link_output.stderr).contains("output path must differ"));
 }
 
 #[test]

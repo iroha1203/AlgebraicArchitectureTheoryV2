@@ -43,7 +43,20 @@ pub(crate) fn reject_output_overwrite(
     } else {
         std::env::current_dir()?.join(output)
     };
-    if input_path == output_path {
+    let same_path = input_path == output_path;
+    #[cfg(unix)]
+    let same_inode = if output.exists() {
+        use std::os::unix::fs::MetadataExt;
+        let input_metadata = std::fs::metadata(input)?;
+        let output_metadata = std::fs::metadata(output)?;
+        input_metadata.dev() == output_metadata.dev()
+            && input_metadata.ino() == output_metadata.ino()
+    } else {
+        false
+    };
+    #[cfg(not(unix))]
+    let same_inode = false;
+    if same_path || same_inode {
         return Err("output path must differ from input path".into());
     }
     Ok(())
