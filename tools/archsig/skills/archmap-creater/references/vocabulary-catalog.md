@@ -11,6 +11,10 @@ ArchMap vocabulary reader and validator use that same `aat-atom-vocabulary`
 binding manifest; update the manifest and authoring guidance in one change when
 an accepted AG axis/predicate pair changes.
 
+The manifest is the accepted Stage 2 law-surface subset. The broader AG table
+below also records evaluator-specific and later-stage vocabulary for authoring
+reference; those entries are not accepted as law-surface/v0.5.1 bindings.
+
 New axis names are not introduced inside an authoring run. If the current axis
 table is insufficient, escalate to doctrine or registry work.
 

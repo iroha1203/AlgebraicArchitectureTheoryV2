@@ -149,6 +149,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         ("camel-boundary", "ag.boundaryMembership"),
         ("camel-coherent", "ag.globalCoherent"),
         ("snake-zero", "ag.measured_zero"),
+        ("nsdepth", "ag.nsdepth"),
         ("verdict", "ag.verdict"),
     ] {
         let mut shortcut_input = read_json(&input);
@@ -319,6 +320,87 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         read_json(&duplicate_variable_report)["summary"]["result"],
         "fail"
     );
+
+    let mut duplicate_alias = read_json(&input);
+    duplicate_alias["laws"][0]["witnessVariables"][1]["binding"]["archmapVariable"] = json!("p");
+    let duplicate_alias_path = out_dir.join("duplicate-alias.json");
+    fs::write(
+        &duplicate_alias_path,
+        serde_json::to_vec_pretty(&duplicate_alias).expect("duplicate alias serializes"),
+    )
+    .expect("duplicate alias writes");
+    let duplicate_alias_report = out_dir.join("duplicate-alias-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            duplicate_alias_path.to_str().expect("path is utf-8"),
+            "--out",
+            duplicate_alias_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&duplicate_alias_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut self_edge = read_json(&input);
+    self_edge["laws"][0]["witnessVariables"][0]["binding"]
+        .as_object_mut()
+        .expect("binding is object")
+        .remove("archmapVariable");
+    self_edge["laws"][0]["witnessVariables"][0]["binding"]["edge"] = json!(["ctx:a", "ctx:a"]);
+    self_edge["laws"][0]["witnessVariables"][0]["binding"]["axis"] = json!("cech");
+    self_edge["laws"][0]["witnessVariables"][0]["binding"]["predicate"] = json!("sectionValue");
+    let self_edge_path = out_dir.join("self-edge.json");
+    fs::write(
+        &self_edge_path,
+        serde_json::to_vec_pretty(&self_edge).expect("self edge serializes"),
+    )
+    .expect("self edge writes");
+    let self_edge_report = out_dir.join("self-edge-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            self_edge_path.to_str().expect("path is utf-8"),
+            "--out",
+            self_edge_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(read_json(&self_edge_report)["summary"]["result"], "fail");
+
+    for (name, axis, predicate) in [
+        ("cech", "cech", "sectionValue"),
+        ("section-factorization", "section-factorization", "support"),
+    ] {
+        let mut accepted = read_json(&input);
+        let binding_object = accepted["laws"][0]["witnessVariables"][0]["binding"]
+            .as_object_mut()
+            .expect("binding is object");
+        binding_object.insert("axis".to_string(), json!(axis));
+        binding_object.insert("predicate".to_string(), json!(predicate));
+        if axis == "cech" {
+            binding_object.remove("archmapVariable");
+            binding_object.insert("edge".to_string(), json!(["ctx:a", "ctx:b"]));
+        } else {
+            binding_object.remove("edge");
+            binding_object.insert("archmapVariable".to_string(), json!("p"));
+        }
+        let accepted_path = out_dir.join(format!("accepted-{name}.json"));
+        fs::write(
+            &accepted_path,
+            serde_json::to_vec_pretty(&accepted).expect("accepted binding serializes"),
+        )
+        .expect("accepted binding writes");
+        run_sig0(&[
+            "law-surface",
+            "--law-surface",
+            accepted_path.to_str().expect("path is utf-8"),
+        ]);
+    }
 
     let mut unknown = read_json(&input);
     unknown["laws"][0]["verdict"] = json!("measured_zero");

@@ -20,7 +20,7 @@ const CONDITION_TYPES: [&str; 6] = [
     "stacky",
 ];
 
-const CONCLUSION_TOKENS: [&str; 13] = [
+const CONCLUSION_TOKENS: [&str; 14] = [
     "boundary",
     "certificate",
     "globalcoherent",
@@ -30,6 +30,7 @@ const CONCLUSION_TOKENS: [&str; 13] = [
     "minimalforbiddensupports",
     "measurednonzero",
     "measuredzero",
+    "nsdepth",
     "nonzero",
     "obstruction",
     "verdict",
@@ -94,7 +95,7 @@ pub struct LawForbiddenSupportGeneratorV1 {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LawSurfaceBindingVocabularyV1 {
     pub schema: String,
     pub id: String,
@@ -340,6 +341,7 @@ fn check_bindings(
     let mut examples = Vec::new();
     for (law_index, law) in surface.laws.iter().enumerate() {
         let mut witness_names = BTreeSet::new();
+        let mut effective_archmap_variables = BTreeSet::new();
         for (variable_index, variable) in law.witness_variables.iter().enumerate() {
             let path = format!("laws[{law_index}].witnessVariables[{variable_index}].binding");
             for field in ["archmapVariable", "edge", "axis", "predicate"] {
@@ -377,6 +379,18 @@ fn check_bindings(
                     "archmapVariable aliases must be non-empty",
                 ));
             }
+            let effective_archmap_variable = variable
+                .binding
+                .archmap_variable
+                .as_deref()
+                .unwrap_or(variable.variable.as_str());
+            if !effective_archmap_variables.insert(effective_archmap_variable) {
+                examples.push(generic_validation_example(
+                    &format!("{path}.archmapVariable"),
+                    effective_archmap_variable,
+                    "effective ArchMap variable aliases must be unique within a law",
+                ));
+            }
             let Some(axis) = variable.binding.axis.as_deref() else {
                 examples.push(generic_validation_example(
                     &format!("{path}.axis"),
@@ -412,11 +426,14 @@ fn check_bindings(
                         ));
                     }
                     if let Some(edge) = &variable.binding.edge {
-                        if edge.len() != 2 || edge.iter().any(|value| value.trim().is_empty()) {
+                        if edge.len() != 2
+                            || edge.iter().any(|value| value.trim().is_empty())
+                            || edge[0] == edge[1]
+                        {
                             examples.push(generic_validation_example(
                                 &format!("{path}.edge"),
                                 "invalid",
-                                "edge binding must contain exactly two non-empty context refs",
+                                "edge binding must contain two distinct non-empty context refs",
                             ));
                         }
                     }
@@ -726,4 +743,17 @@ fn check_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> Va
         check.examples = examples;
     }
     check
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn binding_manifest_rejects_unknown_fields() {
+        let mut value = serde_json::to_value(static_law_surface_binding_vocabulary_v1())
+            .expect("binding manifest serializes");
+        value["unexpected"] = Value::Bool(true);
+        assert!(serde_json::from_value::<LawSurfaceBindingVocabularyV1>(value).is_err());
+    }
 }
