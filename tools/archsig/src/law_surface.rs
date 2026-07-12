@@ -9,7 +9,7 @@ use crate::{ValidationCheck, ValidationExample};
 pub const LAW_EQUATION_SURFACE_V1_SCHEMA: &str = "law-equation-surface/v0.5.1";
 pub const LAW_EQUATION_SURFACE_VALIDATION_REPORT_SCHEMA: &str =
     "law-equation-surface-validation-report/v0.5.1";
-pub const LAW_SURFACE_BINDING_VOCABULARY_SCHEMA: &str = "aat-law-surface-binding-vocabulary/v0.5.1";
+pub const LAW_SURFACE_BINDING_VOCABULARY_SCHEMA: &str = "aat-atom-vocabulary-binding/v0.5.1";
 
 const CONDITION_TYPES: [&str; 6] = [
     "closed-equational",
@@ -135,10 +135,7 @@ pub struct LawSurfaceValidationSummaryV1 {
 }
 
 pub fn static_law_surface_binding_vocabulary_v1() -> LawSurfaceBindingVocabularyV1 {
-    serde_json::from_str(include_str!(
-        "../skills/archmap-creater/references/aat-law-surface-binding-vocabulary.json"
-    ))
-    .expect("checked-in law surface binding vocabulary must be valid JSON")
+    crate::archmap::static_aat_atom_binding_vocabulary_v1()
 }
 
 pub fn validate_law_surface_v1_report(
@@ -153,7 +150,7 @@ pub fn validate_law_surface_v1_report(
         check_law_ids(surface),
         check_condition_types(surface),
         check_shape_rules(surface, raw),
-        check_bindings(surface, &vocabulary),
+        check_bindings(surface, &vocabulary, raw),
         check_forbidden_supports(surface),
         check_reserved_fields(raw),
         check_conclusion_tokens(surface),
@@ -335,12 +332,22 @@ fn check_shape_rules(surface: &LawEquationSurfaceV1, raw: &Value) -> ValidationC
 fn check_bindings(
     surface: &LawEquationSurfaceV1,
     vocabulary: &LawSurfaceBindingVocabularyV1,
+    raw: &Value,
 ) -> ValidationCheck {
     let mut examples = Vec::new();
     for (law_index, law) in surface.laws.iter().enumerate() {
         let mut witness_names = BTreeSet::new();
         for (variable_index, variable) in law.witness_variables.iter().enumerate() {
             let path = format!("laws[{law_index}].witnessVariables[{variable_index}].binding");
+            for field in ["archmapVariable", "edge", "axis", "predicate"] {
+                if raw_witness_field_is_null(raw, law_index, variable_index, field) {
+                    examples.push(generic_validation_example(
+                        &format!("{path}.{field}"),
+                        "null",
+                        "binding fields must be omitted or carry a concrete value",
+                    ));
+                }
+            }
             if variable.variable.trim().is_empty() {
                 examples.push(generic_validation_example(
                     &format!("laws[{law_index}].witnessVariables[{variable_index}].variable"),
@@ -367,24 +374,6 @@ fn check_bindings(
                     "archmapVariable aliases must be non-empty",
                 ));
             }
-            let name_binding = variable.binding.archmap_variable.is_some();
-            let edge_binding = variable.binding.edge.is_some();
-            if name_binding == edge_binding {
-                examples.push(generic_validation_example(
-                    &path,
-                    "ambiguous",
-                    "binding must use exactly one of archmapVariable or edge",
-                ));
-            }
-            if let Some(edge) = &variable.binding.edge {
-                if edge.len() != 2 || edge.iter().any(|value| value.trim().is_empty()) {
-                    examples.push(generic_validation_example(
-                        &format!("{path}.edge"),
-                        "invalid",
-                        "edge binding must contain exactly two non-empty context refs",
-                    ));
-                }
-            }
             let Some(axis) = variable.binding.axis.as_deref() else {
                 examples.push(generic_validation_example(
                     &format!("{path}.axis"),
@@ -409,6 +398,50 @@ fn check_bindings(
                     &format!("{axis}/{predicate}"),
                     "binding axis/predicate pair is not declared by the shared vocabulary manifest",
                 ));
+            }
+            match axis {
+                "cech" => {
+                    if variable.binding.edge.is_none() {
+                        examples.push(generic_validation_example(
+                            &path,
+                            "missing-edge",
+                            "cech bindings require an edge declaration",
+                        ));
+                    }
+                    if let Some(edge) = &variable.binding.edge {
+                        if edge.len() != 2 || edge.iter().any(|value| value.trim().is_empty()) {
+                            examples.push(generic_validation_example(
+                                &format!("{path}.edge"),
+                                "invalid",
+                                "edge binding must contain exactly two non-empty context refs",
+                            ));
+                        }
+                    }
+                    if variable.binding.archmap_variable.is_some() {
+                        examples.push(generic_validation_example(
+                            &format!("{path}.archmapVariable"),
+                            "present",
+                            "cech bindings use edge declarations rather than name aliases",
+                        ));
+                    }
+                }
+                "square-free" | "section-factorization" => {
+                    if let Some(edge) = &variable.binding.edge {
+                        examples.push(generic_validation_example(
+                            &format!("{path}.edge"),
+                            "present",
+                            "square-free and section-factorization bindings use variable names",
+                        ));
+                        if edge.len() != 2 || edge.iter().any(|value| value.trim().is_empty()) {
+                            examples.push(generic_validation_example(
+                                &format!("{path}.edge"),
+                                "invalid",
+                                "edge binding must contain exactly two non-empty context refs",
+                            ));
+                        }
+                    }
+                }
+                _ => {}
             }
         }
     }
@@ -577,6 +610,24 @@ fn raw_law_field_is_present(raw: &Value, index: usize, field: &str) -> bool {
         .and_then(|laws| laws.get(index))
         .and_then(Value::as_object)
         .is_some_and(|law| law.contains_key(field))
+}
+
+fn raw_witness_field_is_null(
+    raw: &Value,
+    law_index: usize,
+    variable_index: usize,
+    field: &str,
+) -> bool {
+    raw.get("laws")
+        .and_then(Value::as_array)
+        .and_then(|laws| laws.get(law_index))
+        .and_then(|law| law.get("witnessVariables"))
+        .and_then(Value::as_array)
+        .and_then(|variables| variables.get(variable_index))
+        .and_then(|variable| variable.get("binding"))
+        .and_then(Value::as_object)
+        .and_then(|binding| binding.get(field))
+        .is_some_and(Value::is_null)
 }
 
 fn normalized_identifier_contains(value: &str, token: &str) -> bool {

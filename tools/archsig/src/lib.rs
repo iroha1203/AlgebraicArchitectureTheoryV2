@@ -20,7 +20,8 @@ pub use ag_measurement::{
     selected_measurement_profile_v1, validate_measurement_packet_value_v1,
 };
 pub use archmap::{
-    compare_archmap_v2_doctrine, static_aat_atom_vocabulary_v1, validate_archmap_v2_report,
+    compare_archmap_v2_doctrine, static_aat_atom_binding_vocabulary_v1,
+    static_aat_atom_vocabulary_v1, validate_archmap_v2_report,
 };
 pub use authoring::{
     ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY,

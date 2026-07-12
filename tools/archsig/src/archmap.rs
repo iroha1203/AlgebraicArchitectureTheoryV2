@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::law_surface::LawSurfaceBindingVocabularyV1;
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V2_SCHEMA, AatAtomVocabularyEntryV1,
@@ -112,6 +113,13 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
             "Vocabulary lint checks token membership only and does not decide whether a new atom kind should be added to the doctrine.".to_string(),
         ],
     }
+}
+
+pub fn static_aat_atom_binding_vocabulary_v1() -> LawSurfaceBindingVocabularyV1 {
+    serde_json::from_str(include_str!(
+        "../skills/archmap-creater/references/aat-law-surface-binding-vocabulary.json"
+    ))
+    .expect("checked-in AAT atom binding vocabulary must be valid JSON")
 }
 
 fn check_archmap_v2_schema(schema: &str) -> ValidationCheck {

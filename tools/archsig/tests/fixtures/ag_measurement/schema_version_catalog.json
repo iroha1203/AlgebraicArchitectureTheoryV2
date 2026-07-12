@@ -168,6 +168,33 @@
       }
     },
     {
+      "artifactId": "aat-atom-vocabulary-binding/v0.5.1",
+      "artifactName": "AAT atom binding vocabulary manifest v0.5.1",
+      "schemaName": "aat-atom-vocabulary-binding/v0.5.1",
+      "artifactRole": "authoring",
+      "ownerPhase": "ArchSig v0.5.1 LawPolicy Stage 2",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.1-law-equation-surface"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "The AAT atom binding vocabulary manifest fixes the supported Stage 2 axis/predicate pairs shared by ArchMap authoring and law-equation-surface validation.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "The manifest does not add evaluator conclusions or compute measurements.",
+          "Pairs outside cech, square-free, and section-factorization are not accepted by this stage."
+        ]
+      }
+    },
+    {
       "artifactId": "law-equation-surface/v0.5.1",
       "artifactName": "Law equation surface v0.5.1 author declaration",
       "schemaName": "law-equation-surface/v0.5.1",
@@ -179,7 +206,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Law equation surface v0.5.1 supplies the author declaration consumed by the Stage 2 execution plan: law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
+        "fieldMappingPolicy": "Law equation surface v0.5.1 supplies the authoring input contract for a later Stage 2 execution plan: law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

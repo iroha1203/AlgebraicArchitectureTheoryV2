@@ -8,11 +8,11 @@ use crate::{
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
     ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
-    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
-    NORMALIZED_ARCHMAP_V2_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
-    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
-    SchemaVersionCatalogV0,
+    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, LAW_SURFACE_BINDING_VOCABULARY_SCHEMA,
+    MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
+    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
+    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
+    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -104,13 +104,26 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
+                "aat-atom-vocabulary-binding/v0.5.1",
+                "AAT atom binding vocabulary manifest v0.5.1",
+                LAW_SURFACE_BINDING_VOCABULARY_SCHEMA,
+                "authoring",
+                "ArchSig v0.5.1 LawPolicy Stage 2",
+                vec!["archsig-contract:v0.5.1-law-equation-surface"],
+                "The AAT atom binding vocabulary manifest fixes the supported Stage 2 axis/predicate pairs shared by ArchMap authoring and law-equation-surface validation.",
+                vec![
+                    "The manifest does not add evaluator conclusions or compute measurements.",
+                    "Pairs outside cech, square-free, and section-factorization are not accepted by this stage.",
+                ],
+            ),
+            artifact(
                 "law-equation-surface/v0.5.1",
                 "Law equation surface v0.5.1 author declaration",
                 LAW_EQUATION_SURFACE_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.5.1 LawPolicy Stage 2",
                 vec!["archsig-contract:v0.5.1-law-equation-surface"],
-                "Law equation surface v0.5.1 supplies the author declaration consumed by the Stage 2 execution plan: law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
+                "Law equation surface v0.5.1 supplies the authoring input contract for a later Stage 2 execution plan: law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
                 vec![
                     "The surface does not supply verdicts, certificates, boundary membership, or global coherence conclusions.",
                     "Stage 3 reservation fields are rejected when written.",
@@ -458,6 +471,7 @@ mod tests {
                 "archmap-candidate-packet/v0.5.0",
                 "archmap-extraction-consistency/v0.5.0",
                 "archmap-coverage-ledger/v0.5.0",
+                "aat-atom-vocabulary-binding/v0.5.1",
                 "law-equation-surface/v0.5.1",
                 "law-policy/v0.5.0",
                 "law-evaluator-registry/v0.5.0",

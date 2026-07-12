@@ -194,6 +194,106 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     );
     assert_eq!(read_json(&empty_alias_report)["summary"]["result"], "fail");
 
+    let mut omitted_alias = read_json(&input);
+    omitted_alias["laws"][0]["witnessVariables"][0]["binding"]
+        .as_object_mut()
+        .expect("binding is object")
+        .remove("archmapVariable");
+    let omitted_alias_path = out_dir.join("omitted-alias.json");
+    fs::write(
+        &omitted_alias_path,
+        serde_json::to_vec_pretty(&omitted_alias).expect("omitted alias fixture serializes"),
+    )
+    .expect("omitted alias fixture writes");
+    run_sig0(&[
+        "law-surface",
+        "--law-surface",
+        omitted_alias_path.to_str().expect("path is utf-8"),
+    ]);
+
+    let mut null_alias_edge = read_json(&input);
+    null_alias_edge["laws"][0]["witnessVariables"][0]["binding"]["archmapVariable"] = Value::Null;
+    null_alias_edge["laws"][0]["witnessVariables"][0]["binding"]["edge"] =
+        json!(["ctx:a", "ctx:b"]);
+    null_alias_edge["laws"][0]["witnessVariables"][0]["binding"]["axis"] = json!("cech");
+    null_alias_edge["laws"][0]["witnessVariables"][0]["binding"]["predicate"] =
+        json!("sectionValue");
+    let null_alias_edge_path = out_dir.join("null-alias-edge.json");
+    fs::write(
+        &null_alias_edge_path,
+        serde_json::to_vec_pretty(&null_alias_edge).expect("null alias edge serializes"),
+    )
+    .expect("null alias edge writes");
+    let null_alias_edge_report = out_dir.join("null-alias-edge-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            null_alias_edge_path.to_str().expect("path is utf-8"),
+            "--out",
+            null_alias_edge_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&null_alias_edge_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut mismatched_binding = read_json(&input);
+    let binding = mismatched_binding["laws"][0]["witnessVariables"][0]["binding"]
+        .as_object_mut()
+        .expect("binding is object");
+    binding.remove("archmapVariable");
+    binding.insert("edge".to_string(), json!(["ctx:a", "ctx:b"]));
+    let mismatched_binding_path = out_dir.join("mismatched-binding.json");
+    fs::write(
+        &mismatched_binding_path,
+        serde_json::to_vec_pretty(&mismatched_binding).expect("mismatched binding serializes"),
+    )
+    .expect("mismatched binding writes");
+    let mismatched_binding_report = out_dir.join("mismatched-binding-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            mismatched_binding_path.to_str().expect("path is utf-8"),
+            "--out",
+            mismatched_binding_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&mismatched_binding_report)["summary"]["result"],
+        "fail"
+    );
+
+    let mut wrong_pair = read_json(&input);
+    wrong_pair["laws"][0]["witnessVariables"][0]["binding"]["predicate"] = json!("sectionValue");
+    let wrong_pair_path = out_dir.join("wrong-pair.json");
+    fs::write(
+        &wrong_pair_path,
+        serde_json::to_vec_pretty(&wrong_pair).expect("wrong pair serializes"),
+    )
+    .expect("wrong pair writes");
+    let wrong_pair_report = out_dir.join("wrong-pair-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            wrong_pair_path.to_str().expect("path is utf-8"),
+            "--out",
+            wrong_pair_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let wrong_pair_json = read_json(&wrong_pair_report);
+    assert!(wrong_pair_json["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-equation-surface-v051-bindings" && check["result"] == "fail"
+        })
+    }));
+
     let mut duplicate_variable = read_json(&input);
     duplicate_variable["laws"][0]["witnessVariables"][1]["variable"] = json!("p");
     duplicate_variable["laws"][0]["witnessVariables"][1]["binding"]["archmapVariable"] = json!("p");
@@ -9152,6 +9252,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archmap-candidate-packet/v0.5.0",
             "archmap-extraction-consistency/v0.5.0",
             "archmap-coverage-ledger/v0.5.0",
+            "aat-atom-vocabulary-binding/v0.5.1",
             "law-equation-surface/v0.5.1",
             "law-policy/v0.5.0",
             "measurement-profile/v0.5.0",
@@ -9174,7 +9275,8 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archmap-scope-manifest/v0.5.0"
             | "archmap-candidate-packet/v0.5.0"
             | "archmap-extraction-consistency/v0.5.0"
-            | "archmap-coverage-ledger/v0.5.0" => "authoring",
+            | "archmap-coverage-ledger/v0.5.0"
+            | "aat-atom-vocabulary-binding/v0.5.1" => "authoring",
             _ => "primary",
         };
         assert_eq!(entry["artifactRole"].as_str(), Some(expected_role));
