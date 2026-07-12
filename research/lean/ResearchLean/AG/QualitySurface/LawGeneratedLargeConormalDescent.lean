@@ -13,10 +13,10 @@ import Mathlib.Tactic
 
 For a selected finite-poset cover and a short exact complex of bundled
 `AddCommGrpCat`-valued sheaves, this file constructs the connecting Cech class
-of an explicitly locally liftable section and proves independence from the
-chosen generator-local lifts.  The equivalence between class vanishing and an
-actual global lift, selected-cover gluing, and the lift-fiber torsor remain the
-next proof obligations.
+of an explicitly locally liftable section, proves independence from the chosen
+generator-local lifts, derives selected-cover gluing, and proves that class
+vanishing is equivalent to an actual global lift.  When the lift fiber is
+nonempty, global kernel sections act simply transitively on it.
 
 The kernel comparison is derived from `ShortComplex.ShortExact`: evaluation at
 each site object preserves the kernel limit.  No exactness, effectivity, class
@@ -338,6 +338,540 @@ def connectingCocycle (hK : K.ShortExact) :=
 
 def connectingClass (hK : K.ShortExact) :=
   P.connectingClassFor hK P.chosenGeneratorLocalLiftFamily
+
+/-! ## Actual global lifts and the forward implication -/
+
+/-- Actual global middle sections projecting to the fixed quotient section. -/
+def GlobalLift : Type (u + 1) :=
+  { lift : K.X₂.val.obj (op geometry.base) //
+    K.g.val.app _ lift = P.baseSection }
+
+/-- Restriction of a global lift to the canonical degree-zero tuples. -/
+def globalRestrictionCochain (lift : P.GlobalLift) :
+    LawGeneratedLargeCoefficientCech.Cochain geometry K.X₂.val 0 :=
+  restrictionCochain (geometry := geometry) K.X₂.val lift.1
+
+theorem globalRestrictionCochain_cocycle (lift : P.GlobalLift) :
+    LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val
+      (P.globalRestrictionCochain lift) = 0 :=
+  restrictionCochain_cocycle (geometry := geometry) K.X₂.val lift.1
+
+theorem projection_globalRestrictionCochain (lift : P.GlobalLift)
+    (sigma : LawGeneratedLargeCoefficientCech.Tuple geometry 0) :
+    K.g.val.app _ (P.globalRestrictionCochain lift sigma) =
+      P.baseSectionCochain sigma := by
+  have hnat := K.g.val.naturality_apply
+    (homOfLE (geometry.cover.inclusion (sigma 0))).op lift.1
+  change K.g.val.app _
+      (K.X₂.val.map (homOfLE (geometry.cover.inclusion (sigma 0))).op lift.1) =
+    K.X₃.val.map (homOfLE (geometry.cover.inclusion (sigma 0))).op
+      (K.g.val.app _ lift.1) at hnat
+  rw [lift.2] at hnat
+  simpa only [globalRestrictionCochain, restrictionCochain, baseSectionCochain] using hnat
+
+/-- Kernel primitive comparing local lifts with a global lift. -/
+def primitiveOfGlobal (hK : K.ShortExact) (L : P.GeneratorLocalLiftFamily)
+    (lift : P.GlobalLift) :
+    LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0 :=
+  fun sigma =>
+    (sectionKernelEquiv K hK _).symm
+      ⟨P.localLiftCochainFor L sigma - P.globalRestrictionCochain lift sigma, by
+        change K.g.val.app _
+          (P.localLiftCochainFor L sigma - P.globalRestrictionCochain lift sigma) = 0
+        rw [map_sub, P.projection_localLiftCochainFor,
+          P.projection_globalRestrictionCochain, sub_self]⟩
+
+theorem kernel_primitiveOfGlobal (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily) (lift : P.GlobalLift)
+    (sigma : LawGeneratedLargeCoefficientCech.Tuple geometry 0) :
+    K.f.val.app _ (P.primitiveOfGlobal hK L lift sigma) =
+      P.localLiftCochainFor L sigma - P.globalRestrictionCochain lift sigma := by
+  rw [← sectionKernelEquiv_apply K hK]
+  change ((sectionKernelEquiv K hK _) ((sectionKernelEquiv K hK _).symm _)).1 = _
+  rw [AddEquiv.apply_symm_apply]
+
+theorem localLiftDifferenceFor_eq_d0_primitiveOfGlobal (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily) (lift : P.GlobalLift) :
+    P.localLiftDifferenceFor hK L =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val
+        (P.primitiveOfGlobal hK L lift) := by
+  funext sigma
+  apply (sectionKernelEquiv K hK _).injective
+  apply Subtype.ext
+  rw [sectionKernelEquiv_apply K hK, P.kernel_localLiftDifferenceFor]
+  rw [sectionKernelEquiv_apply K hK]
+  have hmap := congrFun
+    (map_differential (geometry := geometry) K.f.val 0
+      (P.primitiveOfGlobal hK L lift)) sigma
+  change _ = mapCochain K.f.val 1
+    (LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val
+      (P.primitiveOfGlobal hK L lift)) sigma
+  rw [show mapCochain K.f.val 1
+      (LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val
+        (P.primitiveOfGlobal hK L lift)) sigma =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val
+        (mapCochain K.f.val 0 (P.primitiveOfGlobal hK L lift)) sigma by
+    simpa only [LawGeneratedLargeCoefficientCech.d0] using hmap]
+  calc
+    _ = LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val
+        (P.localLiftCochainFor L - P.globalRestrictionCochain lift) sigma := by
+      have hsub := congrFun
+        (map_sub (LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val)
+          (P.localLiftCochainFor L) (P.globalRestrictionCochain lift)) sigma
+      rw [hsub]
+      change _ = LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val
+          (P.localLiftCochainFor L) sigma -
+        LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val
+          (P.globalRestrictionCochain lift) sigma
+      rw [congrFun (P.globalRestrictionCochain_cocycle lift) sigma]
+      simp
+    _ = LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val
+        (mapCochain K.f.val 0 (P.primitiveOfGlobal hK L lift)) sigma := by
+      exact congrArg
+        (fun z => LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val z sigma)
+        (funext fun tau => (P.kernel_primitiveOfGlobal hK L lift tau).symm)
+
+theorem connectingClassFor_isZero_of_globalLift (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily) (lift : P.GlobalLift) :
+    (LawGeneratedLargeCoefficientCech.threeTermComplex geometry K.X₁.val).H1IsZero
+      (P.connectingClassFor hK L) := by
+  apply (LawGeneratedLargeCoefficientCech.h1Class_isZero_iff
+    geometry K.X₁.val (P.connectingCocycleFor hK L)).2
+  exact ⟨P.primitiveOfGlobal hK L lift,
+    P.localLiftDifferenceFor_eq_d0_primitiveOfGlobal hK L lift⟩
+
+/-! ## Class zero produces an actual global lift -/
+
+/-- Canonical degree-zero tuple displaying one cover generator. -/
+def zeroSimplex (P : LocalLiftData geometry K) (i : geometry.cover.Index) :
+    LawGeneratedLargeCoefficientCech.Tuple geometry 0 := fun _ => i
+
+/-- Canonical degree-one tuple displaying an ordered pair of generators. -/
+def pairSimplex (P : LocalLiftData geometry K) (i j : geometry.cover.Index) :
+    LawGeneratedLargeCoefficientCech.Tuple geometry 1 := Fin.cases i (fun _ => j)
+
+@[simp] theorem pairSimplex_zero (i j : geometry.cover.Index) :
+    P.pairSimplex i j 0 = i := rfl
+
+@[simp] theorem pairSimplex_one (i j : geometry.cover.Index) :
+    P.pairSimplex i j 1 = j := rfl
+
+@[simp] theorem face_pairSimplex_zero (i j : geometry.cover.Index) :
+    LawGeneratedLargeCoefficientCech.face geometry 0 (P.pairSimplex i j) 0 =
+      P.zeroSimplex j := by
+  funext k
+  have hk : k = 0 := Fin.eq_zero k
+  subst k
+  rfl
+
+@[simp] theorem face_pairSimplex_one (i j : geometry.cover.Index) :
+    LawGeneratedLargeCoefficientCech.face geometry 0 (P.pairSimplex i j) 1 =
+      P.zeroSimplex i := by
+  funext k
+  have hk : k = 0 := Fin.eq_zero k
+  subst k
+  rfl
+
+/-- Pointwise application of the kernel inclusion to a cochain. -/
+def kernelCochain (P : LocalLiftData geometry K) (n : Nat)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val n) :
+    LawGeneratedLargeCoefficientCech.Cochain geometry K.X₂.val n :=
+  mapCochain K.f.val n b
+
+theorem kernelCochain_d (n : Nat)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val n) :
+    P.kernelCochain (n + 1)
+        (LawGeneratedLargeCoefficientCech.differential geometry K.X₁.val n b) =
+      LawGeneratedLargeCoefficientCech.differential geometry K.X₂.val n
+        (P.kernelCochain n b) :=
+  map_differential (geometry := geometry) K.f.val n b
+
+/-- Correct a local-lift cochain by a kernel-valued zero-cochain. -/
+def correctedLocalLiftCochain (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0) :
+    LawGeneratedLargeCoefficientCech.Cochain geometry K.X₂.val 0 :=
+  P.localLiftCochainFor L - P.kernelCochain 0 b
+
+def correctedLocalLift (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (i : geometry.cover.Index) :
+    K.X₂.val.obj (op
+      (Site.ContextCategoryObject.of S.contextPreorder (geometry.cover.patch i))) := by
+  simpa [zeroSimplex, correctedLocalLiftCochain, localLiftCochainFor, kernelCochain,
+    mapCochain, LawGeneratedLargeCoefficientCech.overlapObject,
+    Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
+    Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap] using
+    P.correctedLocalLiftCochain L b (P.zeroSimplex i)
+
+theorem correctedLocalLift_eq_cochain (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (i : geometry.cover.Index) :
+    P.correctedLocalLift L b i = P.correctedLocalLiftCochain L b (P.zeroSimplex i) := by
+  simp [correctedLocalLift, correctedLocalLiftCochain, zeroSimplex,
+    LawGeneratedLargeCoefficientCech.overlapObject,
+    Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
+    Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap]
+
+/-- Evaluation at any degree-zero tuple is the displayed generator section. -/
+theorem map_correctedLocalLiftCochain_eq
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (tau : LawGeneratedLargeCoefficientCech.Tuple geometry 0)
+    {X : S.category}
+    (f : X ⟶ LawGeneratedLargeCoefficientCech.overlapObject geometry 0 tau)
+    (g : X ⟶ Site.ContextCategoryObject.of S.contextPreorder
+      (geometry.cover.patch (tau 0))) :
+    (K.X₂.val ⋙ forget AddCommGrpCat).map f.op
+        (P.correctedLocalLiftCochain L b tau) =
+      (K.X₂.val ⋙ forget AddCommGrpCat).map g.op
+        (P.correctedLocalLift L b (tau 0)) := by
+  let i := tau 0
+  have htau : tau = P.zeroSimplex i := by
+    funext k
+    have hk : k = 0 := Fin.eq_zero k
+    subst k
+    rfl
+  revert f g
+  rw [htau]
+  intro f g
+  rw [P.correctedLocalLift_eq_cochain L b]
+  rw [show f = g from Subsingleton.elim _ _]
+  rfl
+
+theorem correctedLocalLiftCochain_d_eq_zero (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (hb : P.localLiftDifferenceFor hK L =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b) :
+    LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val
+      (P.correctedLocalLiftCochain L b) = 0 := by
+  rw [show P.correctedLocalLiftCochain L b =
+    P.localLiftCochainFor L - P.kernelCochain 0 b from rfl, map_sub]
+  have hkd := P.kernelCochain_d 0 b
+  change P.kernelCochain 1
+      (LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b) =
+    LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val
+      (P.kernelCochain 0 b) at hkd
+  rw [← hkd]
+  rw [show LawGeneratedLargeCoefficientCech.d0 geometry K.X₂.val
+        (P.localLiftCochainFor L) = P.kernelCochain 1
+          (P.localLiftDifferenceFor hK L) by
+        funext sigma
+        simpa [kernelCochain, mapCochain] using
+          (P.kernel_localLiftDifferenceFor hK L sigma).symm]
+  rw [hb, sub_self]
+
+theorem exists_correction_of_connectingClassFor_isZero (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (hzero : (LawGeneratedLargeCoefficientCech.threeTermComplex geometry K.X₁.val).H1IsZero
+      (P.connectingClassFor hK L)) :
+    ∃ b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0,
+      P.localLiftDifferenceFor hK L =
+        LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b :=
+  (LawGeneratedLargeCoefficientCech.h1Class_isZero_iff
+    geometry K.X₁.val (P.connectingCocycleFor hK L)).1 hzero
+
+/-- Corrected generator sections agree on every canonical ordered pair overlap. -/
+theorem correctedLocalLift_pairAgreement (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (hb : P.localLiftDifferenceFor hK L =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b)
+    (i j : geometry.cover.Index) :
+    let sigma := P.pairSimplex i j
+    let overlapObj := LawGeneratedLargeCoefficientCech.overlapObject geometry 1 sigma
+    let toI : overlapObj ⟶ Site.ContextCategoryObject.of S.contextPreorder
+        (geometry.cover.patch i) :=
+      homOfLE (by simpa [sigma, pairSimplex] using
+        geometry.canonicalTupleOverlapFromOverlap_le_patch 1 sigma 0)
+    let toJ : overlapObj ⟶ Site.ContextCategoryObject.of S.contextPreorder
+        (geometry.cover.patch j) :=
+      homOfLE (by simpa [sigma, pairSimplex] using
+        geometry.canonicalTupleOverlapFromOverlap_le_patch 1 sigma 1)
+    K.X₂.val.map toJ.op (P.correctedLocalLift L b j) =
+      K.X₂.val.map toI.op (P.correctedLocalLift L b i) := by
+  intro sigma overlapObj toI toJ
+  have hz := congrFun (P.correctedLocalLiftCochain_d_eq_zero hK L b hb) sigma
+  dsimp [LawGeneratedLargeCoefficientCech.d0,
+    LawGeneratedLargeCoefficientCech.differential] at hz
+  rw [Fin.sum_univ_two] at hz
+  simp only [Fin.val_zero, Fin.val_one, if_pos (by decide : Even 0),
+    if_neg (by decide : ¬ Even 1)] at hz
+  have heq : LawGeneratedLargeCoefficientCech.faceRestriction geometry K.X₂.val 0
+      (P.correctedLocalLiftCochain L b) sigma 0 =
+    LawGeneratedLargeCoefficientCech.faceRestriction geometry K.X₂.val 0
+      (P.correctedLocalLiftCochain L b) sigma 1 := by
+    exact sub_eq_zero.mp (by simpa [sub_eq_add_neg] using hz)
+  rw [P.correctedLocalLift_eq_cochain L b i,
+    P.correctedLocalLift_eq_cochain L b j]
+  let tau0 := LawGeneratedLargeCoefficientCech.face geometry 0 sigma 0
+  let tau1 := LawGeneratedLargeCoefficientCech.face geometry 0 sigma 1
+  let f0 := LawGeneratedLargeCoefficientCech.faceHom geometry 0 sigma 0
+  let f1 := LawGeneratedLargeCoefficientCech.faceHom geometry 0 sigma 1
+  have h0 := P.map_correctedLocalLiftCochain_eq L b tau0 f0 toJ
+  have h1 := P.map_correctedLocalLiftCochain_eq L b tau1 f1 toI
+  change (K.X₂.val ⋙ forget AddCommGrpCat).map f0.op
+      (P.correctedLocalLiftCochain L b tau0) =
+    (K.X₂.val ⋙ forget AddCommGrpCat).map f1.op
+      (P.correctedLocalLiftCochain L b tau1) at heq
+  simpa [tau0, tau1, sigma] using h0.symm.trans (heq.trans h1)
+
+theorem correctedLocalLift_arrowsCompatible (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (hb : P.localLiftDifferenceFor hK L =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b) :
+    Presieve.Arrows.Compatible (K.X₂.val ⋙ forget AddCommGrpCat)
+      (fun i : geometry.cover.Index => homOfLE (geometry.cover.inclusion i))
+      (P.correctedLocalLift L b) := by
+  intro i j Z gi gj hcomm
+  let sigma := P.pairSimplex i j
+  let overlapObj := LawGeneratedLargeCoefficientCech.overlapObject geometry 1 sigma
+  have hZi : S.contextPreorder.le Z.ctx (geometry.cover.patch i) := leOfHom gi
+  have hZj : S.contextPreorder.le Z.ctx (geometry.cover.patch j) := leOfHom gj
+  have hkLe : S.contextPreorder.le Z.ctx
+      (geometry.canonicalTupleOverlapFromOverlap 1 sigma) :=
+    geometry.canonicalTupleOverlapFromOverlap_lift sigma (by
+      intro k
+      refine Fin.cases hZi (fun _ => hZj) k)
+  let kHom : Z ⟶ overlapObj := homOfLE hkLe
+  let toI : overlapObj ⟶ Site.ContextCategoryObject.of S.contextPreorder
+      (geometry.cover.patch i) :=
+    homOfLE (geometry.canonicalTupleOverlapFromOverlap_le_patch 1 sigma 0)
+  let toJ : overlapObj ⟶ Site.ContextCategoryObject.of S.contextPreorder
+      (geometry.cover.patch j) :=
+    homOfLE (geometry.canonicalTupleOverlapFromOverlap_le_patch 1 sigma 1)
+  have hpair := P.correctedLocalLift_pairAgreement hK L b hb i j
+  dsimp only at hpair
+  rw [show gi = kHom ≫ toI from Subsingleton.elim _ _,
+    show gj = kHom ≫ toJ from Subsingleton.elim _ _]
+  change (K.X₂.val ⋙ forget AddCommGrpCat).map (kHom ≫ toI).op
+      (P.correctedLocalLift L b i) =
+    (K.X₂.val ⋙ forget AddCommGrpCat).map (kHom ≫ toJ).op
+      (P.correctedLocalLift L b j)
+  rw [op_comp, op_comp, FunctorToTypes.map_comp_apply,
+    FunctorToTypes.map_comp_apply]
+  exact congrArg ((K.X₂.val ⋙ forget AddCommGrpCat).map kHom.op) hpair.symm
+
+/-- Underlying type-valued presheaf of a bundled additive sheaf. -/
+abbrev underlyingTypePresheaf
+    (𝓕 : Sheaf S.topology AddCommGrpCat.{u + 1}) :=
+  𝓕.val ⋙ forget AddCommGrpCat
+
+theorem underlyingTypePresheaf_isSheaf
+    (𝓕 : Sheaf S.topology AddCommGrpCat.{u + 1}) :
+    Presieve.IsSheaf S.topology (underlyingTypePresheaf 𝓕) :=
+  (isSheaf_iff_isSheaf_of_type S.topology _).1
+    (Presheaf.isSheaf_comp_of_isSheaf S.topology 𝓕.val
+      (forget AddCommGrpCat) 𝓕.cond)
+
+theorem isSheafFor_selectedCover
+    (𝓕 : Sheaf S.topology AddCommGrpCat.{u + 1}) :
+    Presieve.IsSheafFor (underlyingTypePresheaf 𝓕) geometry.cover.presieve := by
+  apply (Presieve.isSheafFor_iff_generate geometry.cover.presieve).2
+  exact underlyingTypePresheaf_isSheaf 𝓕
+    (Sieve.generate geometry.cover.presieve) geometry.coverAdequate.isCover
+
+theorem projection_correctedLocalLift (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (i : geometry.cover.Index) :
+    K.g.val.app _ (P.correctedLocalLift L b i) =
+      K.X₃.val.map (homOfLE (geometry.cover.inclusion i)).op P.baseSection := by
+  rw [P.correctedLocalLift_eq_cochain L b i]
+  change K.g.val.app _
+    (P.localLiftCochainFor L (P.zeroSimplex i) -
+      P.kernelCochain 0 b (P.zeroSimplex i)) = _
+  rw [map_sub, P.projection_localLiftCochainFor]
+  have hk : K.g.val.app _ (P.kernelCochain 0 b (P.zeroSimplex i)) = 0 := by
+    simpa [kernelCochain, mapCochain] using
+      projection_kernel (K := K) _ (b (P.zeroSimplex i))
+  rw [hk, sub_zero]
+  rfl
+
+noncomputable def correctedLocalLiftFamily (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (hb : P.localLiftDifferenceFor hK L =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b) :
+    Presieve.FamilyOfElements (underlyingTypePresheaf K.X₂)
+      geometry.cover.presieve := by
+  simpa [Site.AATCoverageFamily.presieve] using
+    (P.correctedLocalLift_arrowsCompatible hK L b hb).familyOfElements
+
+theorem correctedLocalLiftFamily_compatible (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (hb : P.localLiftDifferenceFor hK L =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b) :
+    (P.correctedLocalLiftFamily hK L b hb).Compatible := by
+  simpa [correctedLocalLiftFamily, Site.AATCoverageFamily.presieve] using
+    (P.correctedLocalLift_arrowsCompatible hK L b hb).familyOfElements_compatible
+
+noncomputable def amalgamatedCorrectedLocalLift (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (hb : P.localLiftDifferenceFor hK L =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b) :
+    K.X₂.val.obj (op geometry.base) :=
+  (isSheafFor_selectedCover (geometry := geometry) K.X₂).amalgamate
+    (P.correctedLocalLiftFamily hK L b hb)
+    (P.correctedLocalLiftFamily_compatible hK L b hb)
+
+theorem amalgamatedCorrectedLocalLift_restrict (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (hb : P.localLiftDifferenceFor hK L =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b)
+    (i : geometry.cover.Index) :
+    K.X₂.val.map (homOfLE (geometry.cover.inclusion i)).op
+        (P.amalgamatedCorrectedLocalLift hK L b hb) =
+      P.correctedLocalLift L b i := by
+  have hvalid := (isSheafFor_selectedCover (geometry := geometry) K.X₂).valid_glue
+    (P.correctedLocalLiftFamily_compatible hK L b hb)
+    (homOfLE (geometry.cover.inclusion i))
+    (show geometry.cover.presieve (homOfLE (geometry.cover.inclusion i)) by
+      exact Presieve.ofArrows.mk i)
+  calc
+    _ = P.correctedLocalLiftFamily hK L b hb
+        (homOfLE (geometry.cover.inclusion i))
+        (show geometry.cover.presieve (homOfLE (geometry.cover.inclusion i)) by
+          exact Presieve.ofArrows.mk i) := by
+      simpa [amalgamatedCorrectedLocalLift] using hvalid
+    _ = P.correctedLocalLift L b i := by
+      simp [correctedLocalLiftFamily, Site.AATCoverageFamily.presieve]
+
+theorem projection_amalgamatedCorrectedLocalLift (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (b : LawGeneratedLargeCoefficientCech.Cochain geometry K.X₁.val 0)
+    (hb : P.localLiftDifferenceFor hK L =
+      LawGeneratedLargeCoefficientCech.d0 geometry K.X₁.val b) :
+    K.g.val.app _ (P.amalgamatedCorrectedLocalLift hK L b hb) =
+      P.baseSection := by
+  apply (isSheafFor_selectedCover (geometry := geometry) K.X₃).isSeparatedFor.ext
+  rintro Y _ ⟨i⟩
+  let f : Site.ContextCategoryObject.of S.contextPreorder
+      (geometry.cover.patch i) ⟶ geometry.base :=
+    homOfLE (geometry.cover.inclusion i)
+  have hnat := K.g.val.naturality_apply f.op
+    (P.amalgamatedCorrectedLocalLift hK L b hb)
+  calc
+    K.X₃.val.map f.op
+        (K.g.val.app _ (P.amalgamatedCorrectedLocalLift hK L b hb)) =
+      K.g.val.app _
+        (K.X₂.val.map f.op (P.amalgamatedCorrectedLocalLift hK L b hb)) := hnat.symm
+    _ = K.g.val.app _ (P.correctedLocalLift L b i) := by
+      exact congrArg (fun x => K.g.val.app _ x)
+        (by simpa [f] using P.amalgamatedCorrectedLocalLift_restrict hK L b hb i)
+    _ = K.X₃.val.map f.op P.baseSection := by
+      simpa [f] using P.projection_correctedLocalLift hK L b i
+
+theorem nonempty_globalLift_of_connectingClassFor_isZero (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily)
+    (hzero : (LawGeneratedLargeCoefficientCech.threeTermComplex geometry K.X₁.val).H1IsZero
+      (P.connectingClassFor hK L)) :
+    Nonempty P.GlobalLift := by
+  obtain ⟨b, hb⟩ := P.exists_correction_of_connectingClassFor_isZero hK L hzero
+  exact ⟨⟨P.amalgamatedCorrectedLocalLift hK L b hb,
+    P.projection_amalgamatedCorrectedLocalLift hK L b hb⟩⟩
+
+/-- Primary large-coefficient D0 effectivity theorem. -/
+theorem connectingClassFor_isZero_iff_nonempty_globalLift (hK : K.ShortExact)
+    (L : P.GeneratorLocalLiftFamily) :
+    (LawGeneratedLargeCoefficientCech.threeTermComplex geometry K.X₁.val).H1IsZero
+      (P.connectingClassFor hK L) ↔ Nonempty P.GlobalLift := by
+  constructor
+  · exact P.nonempty_globalLift_of_connectingClassFor_isZero hK L
+  · rintro ⟨lift⟩
+    exact P.connectingClassFor_isZero_of_globalLift hK L lift
+
+/-! ## The global-lift fiber is a kernel-section torsor -/
+
+def kernelAction (hK : K.ShortExact) (n : K.X₁.val.obj (op geometry.base))
+    (lift : P.GlobalLift) : P.GlobalLift :=
+  ⟨lift.1 + K.f.val.app _ n, by
+    rw [map_add, lift.2, projection_kernel (K := K), add_zero]⟩
+
+def kernelVSub (hK : K.ShortExact) (left right : P.GlobalLift) :
+    K.X₁.val.obj (op geometry.base) :=
+  (sectionKernelEquiv K hK _).symm
+    ⟨left.1 - right.1, by
+      change K.g.val.app _ (left.1 - right.1) = 0
+      rw [map_sub, left.2, right.2, sub_self]⟩
+
+theorem kernel_kernelVSub (hK : K.ShortExact) (left right : P.GlobalLift) :
+    K.f.val.app _ (P.kernelVSub hK left right) = left.1 - right.1 := by
+  rw [← sectionKernelEquiv_apply K hK]
+  change ((sectionKernelEquiv K hK _) ((sectionKernelEquiv K hK _).symm _)).1 = _
+  rw [AddEquiv.apply_symm_apply]
+
+noncomputable instance globalLiftAddTorsor (hK : K.ShortExact)
+    [Nonempty P.GlobalLift] :
+    AddTorsor (K.X₁.val.obj (op geometry.base)) P.GlobalLift where
+  vadd := P.kernelAction hK
+  zero_vadd := by
+    intro lift
+    apply Subtype.ext
+    change lift.1 + K.f.val.app _ 0 = lift.1
+    rw [map_zero, add_zero]
+  add_vadd := by
+    intro a b lift
+    apply Subtype.ext
+    change lift.1 + K.f.val.app _ (a + b) =
+      (lift.1 + K.f.val.app _ b) + K.f.val.app _ a
+    rw [map_add]
+    abel
+  nonempty := inferInstance
+  vsub := P.kernelVSub hK
+  vsub_vadd' := by
+    intro left right
+    apply Subtype.ext
+    change right.1 + K.f.val.app _ (P.kernelVSub hK left right) = left.1
+    rw [P.kernel_kernelVSub hK]
+    abel
+  vadd_vsub' := by
+    intro n lift
+    apply (sectionKernelEquiv K hK _).injective
+    apply Subtype.ext
+    rw [sectionKernelEquiv_apply K hK, sectionKernelEquiv_apply K hK]
+    rw [P.kernel_kernelVSub hK]
+    change (lift.1 + K.f.val.app _ n) - lift.1 = K.f.val.app _ n
+    abel
+
+theorem globalLiftFiber_simplyTransitive (hK : K.ShortExact)
+    [Nonempty P.GlobalLift] (left right : P.GlobalLift) :
+    ∃! n : K.X₁.val.obj (op geometry.base), P.kernelAction hK n left = right := by
+  letI := P.globalLiftAddTorsor hK
+  change ∃! n : K.X₁.val.obj (op geometry.base), n +ᵥ left = right
+  refine ⟨right -ᵥ left, vsub_vadd right left, ?_⟩
+  intro n hn
+  exact vadd_right_cancel left (hn.trans (vsub_vadd right left).symm)
+
+noncomputable def globalLiftFiberEquiv (hK : K.ShortExact)
+    [Nonempty P.GlobalLift] (origin : P.GlobalLift) :
+    K.X₁.val.obj (op geometry.base) ≃ P.GlobalLift := by
+  letI := P.globalLiftAddTorsor hK
+  exact Equiv.vaddConst origin
+
+/-! ## Law-generated ideal-power specialization -/
+
+/--
+The canonical sheafification of the law-generated ideal-power sequence satisfies
+the large-coefficient D0 effectivity theorem for every explicitly locally
+liftable quotient section.
+-/
+theorem lawGenerated_connectingClass_isZero_iff_nonempty_globalLift
+    (G : AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore S)
+    (P : LocalLiftData geometry
+      (LawGeneratedIdealPowerLiftedSheafification.sheafifiedShortComplex G))
+    (L : P.GeneratorLocalLiftFamily) :
+    (LawGeneratedLargeCoefficientCech.threeTermComplex geometry
+      (LawGeneratedIdealPowerLiftedSheafification.sheafifiedShortComplex G).X₁.val).H1IsZero
+      (P.connectingClassFor
+        (LawGeneratedIdealPowerLiftedSheafification.sheafifiedShortComplex_shortExact G) L) ↔
+      Nonempty P.GlobalLift := by
+  exact P.connectingClassFor_isZero_iff_nonempty_globalLift
+    (LawGeneratedIdealPowerLiftedSheafification.sheafifiedShortComplex_shortExact G) L
 
 end LocalLiftData
 
