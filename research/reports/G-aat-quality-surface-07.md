@@ -1507,3 +1507,72 @@ coefficient exactly when its three indices are distinct.  Define the
 three-edge raw cocycle, prove its cocycle equation over every ordered triple,
 and prove non-coboundary from its nonzero period before transporting it through
 this cycle's canonical comparison.
+
+## Cycle 22 — canonical tuple profile and raw circle cocycle
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedBooleanCircleTupleProfile.lean`
+- checkpoint spine:
+  - `overlapObject_zero_ctx`
+  - `overlapObject_one_ctx`
+  - `overlapObject_two_ctx`
+  - `pairOverlap_not_deep`
+  - `tripleOverlap_deep_iff`
+  - `squareZeroConormalGenerator_restrict`
+  - `rawOmega`
+  - `activeValue_faceRestriction`
+  - `rawOmega_cocycle`
+
+### Checkpoint delta
+
+The actual `LawGeneratedLargeCoefficientCech` overlap objects are computed
+from `canonicalTupleCoverGeometryFromOverlap`: degree zero is one singleton
+chart, degree one is the union of two selected indices, and degree two is the
+union of three selected indices.  Hence every pair overlap is nondeep, while a
+triple overlap is deep exactly when its entries exhaust `Fin 3`.
+
+The raw one-cochain `rawOmega` assigns the proved nonzero square-zero conormal
+generator to every nonrepeated ordered pair and zero to repeated pairs.  Its
+differential is proved in the repository's actual canonical-tuple complex.
+On a deep triple the target conormal group is zero.  On a nondeep triple,
+active-value injectivity and restriction invariance reduce the alternating
+sum to the finite `Fin 3` repetition calculation; the two surviving generator
+terms add to zero in `ZMod 2`.
+
+### Premise delta
+
+- discharged: degree-zero, degree-one, and degree-two canonical overlap
+  formulas; pair nondeepness; triple deep classification; raw generator
+  restriction invariance; the explicit raw circle one-cochain; its cocycle
+  equation on every ordered triple.
+- remaining: period non-coboundary; transport of the cocycle through the
+  canonical Cycle 21 comparison; the sheafified zero/nonzero `H¹` pair;
+  primitive lawful-reading atlas; semantic specialization; torsor/H0; final
+  package; and the global `H¹`-vanishing corollary.
+
+### Audits
+
+- focused tuple-profile elaboration: pass (27 declarations)
+- module-wide standard-axiom assertion: pass
+- proof-use: the actual generated overlap operation computes every tuple
+  context; deep-context conormal zero handles distinct triples; nondeep active
+  representatives handle repeated triples
+- provenance: the cocycle is constructed from the concrete square-zero
+  conormal generator and the actual canonical tuple differential
+- supplied-field audit: no overlap profile, restriction compatibility,
+  cocycle equation, class, period, or vanishing result is accepted as input
+- independent design lane: same-complex route confirmed; no separate circle
+  complex is introduced
+- four independent review lanes: No major findings
+- target classification: the raw cocycle is constructed; its non-coboundary
+  period and canonical sheafified transport remain
+
+### Next obligation
+
+Evaluate the `01`, `12`, and `20` edge period on raw cochains.  Prove that
+every degree-zero coboundary has zero period and that `rawOmega` has period the
+nonzero square-zero generator.  Then extend the Cycle 21 sectionwise canonical
+comparison cochainwise, prove it commutes with the differential, and transport
+the non-coboundary cocycle to `sheafifiedShortComplex.X₁.val`.
