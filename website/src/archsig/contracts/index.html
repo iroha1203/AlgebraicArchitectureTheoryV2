@@ -1,0 +1,145 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "ArchSig Contracts",
+  "description": "How the five input artifacts get authored for your repository: ArchMap evidence, LawPolicy, MeasurementProfile, gate policy, and repair plans — each with its validator.",
+  "order": 39,
+  "llmsLabel": "ArchSig Contracts",
+  "navSection": "archsig"
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Contracts</span></nav>
+          <p class="eyebrow">Authoring the inputs</p>
+          <h1>ArchSig measures what you declare. Here is how to declare it.</h1>
+          <p class="lede">ArchSig does not scan your code by itself — it computes over declared, validated input artifacts. That is the biggest difference from a linter, and the biggest entry barrier. This page walks each input contract: who writes it, what it contains, and the validator that checks it before anything is measured.</p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#overview">The input surface</a></li><li><a href="#archmap">ArchMap: the evidence</a></li><li><a href="#lawpolicy">LawPolicy and MeasurementProfile</a></li><li><a href="#gatepolicy">Gate policy</a></li><li><a href="#repairplan">Repair plan</a></li><li><a href="#validators">Validate everything first</a></li></ol></nav>
+{% include "series-nav.njk" %}
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../concepts/">Concepts</a></li><li><a href="./" aria-current="page">Contracts</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li><li><a href="../archview/">ArchView</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <section id="overview" class="article-section">
+              <h2>The input surface</h2>
+              <p>An <code>analyze</code> run takes three artifacts; the CI surface adds a fourth; repair measurement adds a fifth. Each has a single current schema version (<code>…/v0.5.0</code>) and a dedicated validator subcommand.</p>
+              <div class="article-table">
+                <table>
+                  <thead><tr><th scope="col">Artifact</th><th scope="col">Schema</th><th scope="col">Authored by</th><th scope="col">Validator</th></tr></thead>
+                  <tbody>
+                    <tr><td>ArchMap</td><td><code>archmap/v0.5.0</code></td><td>Agent via <code>archmap-creater</code>, you approve scope</td><td><code>archsig archmap</code></td></tr>
+                    <tr><td>LawPolicy</td><td><code>law-policy/v0.5.0</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig law-policy</code></td></tr>
+                    <tr><td>MeasurementProfile</td><td><code>measurement-profile/v0.5.0</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig measurement-profile</code></td></tr>
+                    <tr><td>Gate policy</td><td><code>archsig-gate-policy/v0.5.0</code></td><td>Your CI owner, by hand</td><td>checked by <code>archsig gate</code></td></tr>
+                    <tr><td>Repair plan</td><td><code>archsig-repair-plan/v0.5.0</code></td><td>Agent via <code>repair-plan-creater</code></td><td><code>archsig repair-plan</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>The shipped example carries a complete, working set of all of these — <code>tools/archsig/examples/practical-rust-service/</code> in the repository is the reference answer for "what should mine look like".</p>
+            </section>
+            <section id="archmap" class="article-section">
+              <h2>ArchMap: the evidence file</h2>
+              <p>The ArchMap records what is the case in your repository: components, relations, capabilities, declared section values, bounded contexts, restriction directions, and the selected cover — every entry grounded in source refs (path, symbol, line). It records <em>observations only</em>; evaluation vocabulary is a validation error (<a href="../concepts/#observation">why</a>).</p>
+              <p>Authoring is the <code>archmap-creater</code> Skill's job, and it is a real survey, not a one-shot generation:</p>
+              <ol class="numbered-status-list">
+                <li><strong>Scope manifest — you approve this step</strong><span>The agent runs <code>archsig scope-manifest</code> to build a deterministic worklist (repo-relative paths, content hashes, include/exclude globs) and presents exclusions for approval before reading any source.</span></li>
+                <li><strong>Two independent reading passes</strong><span>The worklist is surveyed twice without sharing candidate atoms between passes. <code>archsig extraction-diff</code> then compares the passes by literal match keys.</span></li>
+                <li><strong>Human-rule adjudication</strong><span>Every candidate found by only one pass is re-read and explicitly adjudicated (<code>adopted</code> / <code>merged</code> / <code>not-adopted</code>). No similarity merging, no majority voting — the match rate is a record, not a pass/fail score.</span></li>
+                <li><strong>Coverage ledger</strong><span>A row-per-source ledger records what was surveyed and what was not, with procedural reasons only. Unread files stay visible instead of silently disappearing.</span></li>
+              </ol>
+              <figure class="code-panel">
+                <figcaption>Binary authoring validation (run by the Skill)</figcaption>
+                <pre><code>archsig archmap \
+  --input archmap.json \
+  --scope-manifest &lt;run-dir&gt;/scope-manifest.json \
+  --candidate-packets '&lt;run-dir&gt;/candidates/*.json' \
+  --extraction-consistency &lt;run-dir&gt;/extraction-consistency.json \
+  --coverage-ledger &lt;run-dir&gt;/coverage-ledger.json \
+  --out &lt;run-dir&gt;/archmap-validation.json</code></pre>
+              </figure>
+              <p>What you supervise: the scope (is the agent reading the right code?), the exclusions (is anything important skipped?), and spot-checks of atoms against their cited sources. The ArchMap's claims are bounded to the recorded revision and approved scope — it never claims to have extracted everything extractable.</p>
+            </section>
+            <section id="lawpolicy" class="article-section">
+              <h2>LawPolicy and MeasurementProfile: the selection</h2>
+              <p>The LawPolicy selects <em>what to measure</em>: evaluator ids from the registry (see <a href="../analyses/">Analyses</a> for the catalog), the laws they check, scope globs, severity, and basis refs into a <code>basisLedger</code> — the documents your team points to as "this is why this rule". The MeasurementProfile selects <em>how</em>: the cover, the coefficient, witness family, verdict discipline, and finite bounds. LawPolicy references the profile (<code>measurementProfileRef</code>); the two are separate files supplied separately.</p>
+              <figure class="code-panel">
+                <figcaption>A minimal LawPolicy (the shipped fixture's shape, with your repo's basis document)</figcaption>
+                <pre><code>{
+  "schema": "law-policy/v0.5.0",
+  "id": "ag-measurement-policy",
+  "measurementProfileRef": "profile:ag-default@1",
+  "policies": [
+    {
+      "law": "ag.cech-obstruction",
+      "evaluator": "ag.cech-obstruction",
+      "basis": ["policy-basis:layering"],
+      "scope": ["src/"],
+      "severity": "high"
+    }
+  ],
+  "basisLedger": [
+    {
+      "basisId": "policy-basis:layering",
+      "kind": "repo-document",
+      "path": "docs/architecture/layering.md",
+      "revision": "current"
+    }
+  ]
+}</code></pre>
+              </figure>
+              <p>The division of labor is strict: the policy holds <em>selection only</em>. Witness rules, distance profiles, operation costs, and repair recipes live in ArchSig's evaluator registry code — a policy that tries to embed calculation rules fails validation. The <code>law-policy-creater</code> Skill ships starter files for both artifacts and, when the evidence does not justify a selector, is instructed to ask you rather than pick a generic policy.</p>
+            </section>
+            <section id="gatepolicy" class="article-section">
+              <h2>Gate policy: the CI mapping you own</h2>
+              <p>The gate policy is the one input a human normally writes by hand, because it encodes an institutional decision: which measurement verdicts block a merge <em>in this repository</em>. An <code>absolute</code> rule must map all six verdict values explicitly to one of three actions — and the four non-terminal values cannot map to a plain <code>pass</code>, so silence can never slip through as approval.</p>
+              <figure class="code-panel">
+                <figcaption>The demo's CI mapping (law_policy/gate_policy.json)</figcaption>
+                <pre><code>measured_nonzero                 → block
+measured_zero                    → pass
+unmeasured                       → pass_with_boundary
+unknown                          → pass_with_boundary
+not_computed                     → pass_with_boundary
+violated_assumption_dependency   → block</code></pre>
+              </figure>
+              <p>An optional <code>introduced-by-change</code> rule activates only when a comparison report is supplied; without one it is recorded as <code>not_applicable</code>, never as pass. A conservative starter template ships in the repository at <code>tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json</code>.</p>
+            </section>
+            <section id="repairplan" class="article-section">
+              <h2>Repair plan: the measured path out</h2>
+              <p>When a gate blocks, the way back is not "delete the finding" — it is a repair plan: a declared assignment of repair variables over the finite complex, which <code>ag.saga-descent</code> then measures for whether it actually glues. The <code>repair-plan-creater</code> Skill authors these in <code>complete-support</code> mode, using only atoms, contexts, and overlap refs already present in the evidence.</p>
+              <p>The discipline mirrors the rest of the system: the plan is an <em>input</em>, so it may not contain conclusion tokens, may not claim faithfulness modes it cannot witness, and fails closed on unresolved refs or parity violations. If complete support cannot be read from the evidence, the Skill stops and reports the missing supply instead of weakening the plan.</p>
+              <figure class="code-panel">
+                <figcaption>Validate, then measure</figcaption>
+                <pre><code>archsig repair-plan \
+  --repair-plan repair_plan.json \
+  --archmap archmap.json \
+  --out repair-plan-validation.json
+
+archsig analyze \
+  --archmap archmap.json \
+  --law-policy law_policy.json \
+  --measurement-profile measurement_profile.json \
+  --repair-plan repair_plan.json \
+  --out-dir run/</code></pre>
+              </figure>
+              <p>Without <code>--repair-plan</code>, a policy that selects <code>ag.saga-descent</code> still runs — the evaluator just stays <code>not_computed</code> with a <code>silence_by_design</code> boundary. Silence, not error.</p>
+            </section>
+            <section id="validators" class="article-section">
+              <h2>Validate everything first</h2>
+              <p>Each input has a standalone validator subcommand, and <code>analyze</code> re-validates everything at the start of a run. Validation failures happen <em>before measurement</em> — the run writes validation reports and stops; it never emits a half-measured packet.</p>
+              <figure class="code-panel">
+                <figcaption>Standalone validation of the selection artifacts</figcaption>
+                <pre><code>archsig measurement-profile --measurement-profile profile.json --out profile-validation.json
+archsig law-policy --law-policy law_policy.json --measurement-profile profile.json --out policy-validation.json</code></pre>
+              </figure>
+              <p>Two properties make the validators trustworthy inputs to CI. Acceptance is exact: only the current contract version <code>&lt;name&gt;/v0.5.0</code> is accepted, and there is no compatibility window (see <a href="../reference/#compatibility">Reference</a>). And rejection is loud: retired forms and unknown fields fail as ordinary validation errors instead of being silently coerced.</p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../concepts/"><span>Previous</span><strong>Concepts</strong></a><a class="page-nav-next" href="../analyses/"><span>Next</span><strong>Analyses</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>

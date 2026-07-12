@@ -60,12 +60,14 @@ route の追加・削除は `website/src/**/index.html` の増減がそのまま
 | `/sft/references/formal-anchors/` | `website/src/sft/references/formal-anchors/index.html` | SFT formal anchors。Lean status、formalized carriers、theorem-shaped surfaces。 |
 | `/sft/references/research-program/` | `website/src/sft/references/research-program/index.html` | SFT research program。workbench、calibration、AI governance benchmark、closed-loop tooling へ進む研究計画。 |
 | `/sft/references/glossary/` | `website/src/sft/references/glossary/index.html` | SFT glossary。field、force、attractor、ForecastCone、ConsequenceEnvelope などの用語境界と参照先。 |
-| `/archsig/` | `website/src/archsig/index.html` | ArchSig v0.5.0 output contract の Skill-first architecture analysis landing。 |
-| `/archsig/getting-started/` | `website/src/archsig/getting-started/index.html` | LLM Skill onboarding、prompt examples、Skill が作る ArchMap / LawPolicy / analysis output。 |
-| `/archsig/analyses/` | `website/src/archsig/analyses/index.html` | Boundary movement、responsibility drift、semantic coupling、order sensitivity、hotspots、missing evidence の分析カタログ。 |
-| `/archsig/examples/` | `website/src/archsig/examples/index.html` | Skill request から returned findings / repair candidates / confirmation checks までの短い例。 |
-| `/archsig/manual/` | `website/src/archsig/manual/index.html` | `archsig-analysis-summary.json`、viewer data、analysis packet、measurement families、coverage gap、measurement basis の読み方。 |
-| `/archsig/reference/` | `website/src/archsig/reference/index.html` | `analyze` primary workflow、command、schema、compatibility、artifact reference。 |
+| `/archsig/` | `website/src/archsig/index.html` | ArchSig v0.5.0 landing。one-cent drift、計測/投影/進化の三分業、Skill 5本、install。 |
+| `/archsig/getting-started/` | `website/src/archsig/getting-started/index.html` | 保証された最初の15分。デモ script 4幕、同じ acts を手で、ArchView、自リポジトリへの導線。全コマンド実走確認済み。 |
+| `/archsig/concepts/` | `website/src/archsig/concepts/index.html` | 三層入力契約、観測≠判定、5値 verdict、profile 相対性、comparability、沈黙の規律、theory anchor 導線。 |
+| `/archsig/contracts/` | `website/src/archsig/contracts/index.html` | 入力 artifact authoring: ArchMap survey、LawPolicy / MeasurementProfile、gate policy、repair plan、validator。 |
+| `/archsig/analyses/` | `website/src/archsig/analyses/index.html` | evaluator カタログ(10本+foundation 行): 各 evaluator の問い・沈黙条件・理論 anchor。 |
+| `/archsig/manual/` | `website/src/archsig/manual/index.html` | run directory の読み順(readThisFirst → insight → packet → gate / compare)とタスク別レシピ(CI / PR review / repair)。 |
+| `/archsig/reference/` | `website/src/archsig/reference/index.html` | CLI 10 subcommand、exit code、schema catalog、無互換方針、troubleshooting。 |
+| `/archsig/archview/` | `website/src/archsig/archview/index.html` | ArchView 解説+live demo(one-cent drift の実測3フレーム sequence。viewer assets は `viewer/` passthrough)。 |
 | `/outreach/` | `website/src/outreach/index.html` | Outreach article index と canonical technical pages への戻り導線。 |
 
 ## sitemap 対応ルール

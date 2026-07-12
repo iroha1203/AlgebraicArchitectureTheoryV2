@@ -2,7 +2,7 @@
 {
   "layout": "base.njk",
   "title": "ArchSig Getting Started",
-  "description": "Start ArchSig through LLM Skills: ask for an architecture review, provide scope and evidence, then read findings, repair candidates, and confirmation checks.",
+  "description": "Reproduce the one-cent drift in fifteen minutes: measure the defect, watch the gate block, measure the repair, watch the gate pass. Every command on this page runs as written.",
   "order": 37,
   "llmsLabel": "ArchSig Getting Started",
   "navSection": "archsig"
@@ -12,110 +12,140 @@
       <section class="article-hero section-band">
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Getting Started</span></nav>
-          <p class="eyebrow">Run ArchSig through an LLM Skill</p>
-          <h1>Ask your LLM agent to review the design impact.</h1>
-          <p class="lede">Give the agent a repo, a PR, or a feature area, then have it run the ArchSig Skills. The agent builds the architecture reading, checks the relevant source, and returns what reviewers should inspect next.</p>
+          <p class="eyebrow">The guaranteed first fifteen minutes</p>
+          <h1>Measure a real defect, block it, repair it, pass.</h1>
+          <p class="lede">This page is one copy-paste path from a fresh clone to a blocked PR and its measured repair. Every command below was run as written against v0.5.0; the expected output is printed next to it. If you prefer to supervise an agent instead, the first section is all you need.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#request">Ask the agent</a></li><li><a href="#skills">Three Skills</a></li><li><a href="#how">How ArchSig works</a></li><li><a href="#scope">Tell it what to inspect</a></li><li><a href="#builds">What the Skills build</a></li><li><a href="#returns">What the agent returns</a></li><li><a href="#improve">Improve the request</a></li><li><a href="#manual">When to open the manual</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#agent">Supervise an agent</a></li><li><a href="#prereq">Prerequisites</a></li><li><a href="#demo">One script, four acts</a></li><li><a href="#by-hand">The same acts by hand</a></li><li><a href="#see">See it in ArchView</a></li><li><a href="#own-repo">Your own repository</a></li></ol></nav>
 {% include "series-nav.njk" %}
-            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="./" aria-current="page">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li></ul></div>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="./" aria-current="page">Getting Started</a></li><li><a href="../concepts/">Concepts</a></li><li><a href="../contracts/">Contracts</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li><li><a href="../archview/">ArchView</a></li></ul></div>
           </aside>
           <div class="article-main">
-            <section id="request" class="article-section">
-              <h2>Ask the agent to run the Skills</h2>
-              <p>You do not need to begin with commands or schema names. Ask your LLM agent to use the ArchSig Skills, then state the architecture worry you want reviewed.</p>
+            <section id="agent" class="article-section">
+              <h2>Path A: supervise an agent</h2>
+              <p>If your LLM agent has the ArchSig Skills installed (they ship in the <a href="../#install">release bundle</a>), you do not run commands at all. Ask for the analysis, approve the scope the agent proposes, and read the findings.</p>
               <figure class="code-panel">
-                <figcaption>Change review request</figcaption>
-                <pre><code>Run the ArchSig Skills to review this PR.
-The code passes tests, but I want to know whether it weakens the payment boundary.
-Return findings with source refs, repair candidates, and checks I should run before approving.</code></pre>
+                <figcaption>A request that works</figcaption>
+                <pre><code>Run the ArchSig Skills on this repository.
+Focus on the payment and settlement modules.
+I want to know whether they still agree on one money convention.
+Return findings with code refs and repair candidates.</code></pre>
+              </figure>
+              <p>The agent will build the evidence file (<code>archmap-creater</code>), select a policy (<code>law-policy-creater</code>), run the measurement, and come back with findings tied to source locations (<code>archsig-reader</code>). What you should check before trusting the reading is covered in <a href="../manual/#recipes">the Manual's task recipes</a>. The rest of this page is Path B: the same measurement driven by hand, so you can verify what the agent does.</p>
+            </section>
+            <section id="prereq" class="article-section">
+              <h2>Prerequisites</h2>
+              <ul class="status-list">
+                <li><strong>Rust toolchain</strong><span><code>cargo</code> on your PATH (any recent stable). The demo builds ArchSig and a 3,000-line sample service from source.</span></li>
+                <li><strong>Python 3</strong><span>Used only by the demo script to print conclusions, and later to serve ArchView locally.</span></li>
+                <li><strong>The repository</strong><span><code>git clone https://github.com/iroha1203/AlgebraicArchitectureTheoryV2.git</code> — the demo, its evidence files, and all fixtures live in the repo. Run everything below from the repo root.</span></li>
+              </ul>
+            </section>
+            <section id="demo" class="article-section">
+              <h2>One script, four acts</h2>
+              <p>The shipped demo is a realistic Rust commerce service where a PR makes the customer's card get charged one cent more than the checkout page displays — while every unit test stays green in every build configuration. One script runs the whole story:</p>
+              <figure class="code-panel">
+                <figcaption>Run the demo</figcaption>
+                <pre><code>tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh</code></pre>
+              </figure>
+              <p>The script walks four acts and prints one conclusion per step. This is the exact output to expect:</p>
+              <figure class="code-panel">
+                <figcaption>Expected conclusions</figcaption>
+                <pre><code>[analyze base]           NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
+[analyze head]           MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
+[compare base-&gt;head]     RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA
+[gate head]              BLOCKED_BY_GATE_POLICY
+[analyze repaired]       NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
+[compare head-&gt;repaired] MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE
+[gate repaired]          PASS_WITHIN_GATE_POLICY</code></pre>
+              </figure>
+              <p>Act 1 proves the point of the demo: all three build states (base, head, repaired) compile, pass <code>cargo test</code>, and run. The head state then prints the drift itself:</p>
+              <figure class="code-panel">
+                <figcaption>Act 1, head state (--features psp-compliance)</figcaption>
+                <pre><code>displayed total 33140 cents (33990 minus 850 loyalty discount)
+payment pay-1 authorized for 33141 cents
+display total 33140 cents / psp captured 33141 cents / exact 33140.2500 cents
+RECONCILIATION MISMATCH: psp captured +1 cents against the displayed total</code></pre>
+              </figure>
+              <p>Three modules speak three money conventions — grand-total half-up in checkout, per-line half-to-even in the payment adapter, exact ten-thousandths in the new settlement ledger. Each is locally correct under its own spec. On the loop they cannot all be right, and ArchSig measures exactly that.</p>
+              <p>Note the two different comparison outcomes. Base→head is <em>not comparable</em>: the PR added a settlement context, so the measurement site itself changed, and ArchSig refuses to pretend the two runs measure the same thing — the gate blocks on the head run's own verdict instead. Head→repaired keeps the same site, so the comparison is row-comparable and records that the measured obstruction is no longer recorded. Why ArchSig is this strict is explained in <a href="../concepts/#comparability">Concepts</a>.</p>
+            </section>
+            <section id="by-hand" class="article-section">
+              <h2>The same acts by hand</h2>
+              <p>Every step of the script is an ordinary CLI call over three declared inputs: an evidence file (ArchMap), a policy (LawPolicy), and a measurement regime (MeasurementProfile). Here is the head measurement, the gate, and the repair, exactly as the script runs them.</p>
+              <figure class="code-panel">
+                <figcaption>1. Measure the PR under review</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/examples/practical-rust-service/archmap/archmap_head.json \
+  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
+  --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
+  --out-dir .tmp/archsig-demo/head</code></pre>
+              </figure>
+              <p>The run directory now holds ten artifacts — packet, summary, insight report, viewer data, validation reports, manifest. Start with the summary's <code>readThisFirst</code> block:</p>
+              <figure class="code-panel">
+                <figcaption>.tmp/archsig-demo/head/archsig-analysis-summary.json (excerpt)</figcaption>
+                <pre><code>"readThisFirst": {
+  "conclusion": "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+  "whatItMeans": "Local rules are not enough to explain the selected cover;
+                  ArchSig measured a cross-context glue mismatch.",
+  "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence",
+  "boundary": "Profile-relative. 7 assumptions declared. 0 non-terminal rows."
+}</code></pre>
               </figure>
               <figure class="code-panel">
-                <figcaption>Codebase inspection request</figcaption>
-                <pre><code>Run the ArchSig Skills to inspect the checkout codebase.
-Find where workflow responsibility and provider coupling are concentrating.
-Summarize the architecture tendencies and list the first files reviewers should open.</code></pre>
+                <figcaption>2. Gate it, the way CI would</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
+  --packet .tmp/archsig-demo/head/archsig-measurement-packet.json \
+  --policy tools/archsig/examples/practical-rust-service/law_policy/gate_policy.json \
+  --out .tmp/archsig-demo/gate-head.json</code></pre>
               </figure>
-            </section>
-            <section id="skills" class="article-section">
-              <h2>Three Skills</h2>
-              <p>The ArchSig workflow is built around three Skills.</p>
-              <ul class="status-list">
-                <li><strong><code>archmap-creater</code></strong><span>Creates a source-backed <code>archmap/v0.5.0</code> with observations, contexts, covers, and source refs.</span></li>
-                <li><strong><code>law-policy-creater</code></strong><span>Creates a <code>law-policy/v0.5.0</code> with registry evaluator selectors, basis refs, scope, severity, and a separate measurement-profile ref. If evidence does not justify a selector, the Skill should ask instead of choosing a generic policy.</span></li>
-                <li><strong><code>archsig-reader</code></strong><span>Runs ArchSig, reads the summary and packet detail, checks the relevant source again, and returns review findings, repair candidates, and confirmation points.</span></li>
-              </ul>
-            </section>
-            <section id="how" class="article-section">
-              <h2>How ArchSig works</h2>
-              <p>Behind the Skill workflow, ArchSig has a simple shape: provide <code>archmap/v0.5.0</code>, <code>law-policy/v0.5.0</code>, and <code>measurement-profile/v0.5.0</code>, run <code>analyze</code>, then read the measurement packet and compact summary.</p>
-              <ol class="numbered-status-list">
-                <li><strong>ArchMap records evidence</strong><span><code>archmap/v0.5.0</code> records source-grounded observations, contexts, covers, and extraction doctrine. It is evidence, not a verdict.</span></li>
-                <li><strong>LawPolicy selects registry entries</strong><span><code>law-policy/v0.5.0</code> selects evaluator manifests, laws, basis refs, scope, severity, and the external measurement profile. The registry owns evaluator rules.</span></li>
-                <li><strong>The CLI runs bounded analysis</strong><span>The agent passes the three current artifacts to <code>archsig analyze</code>. ArchSig normalizes the ArchMap, validates the policy and profile, and keeps blocked, unknown, unmeasured, and not-computed support out of measured zero.</span></li>
-                <li><strong>The summary becomes the review surface</strong><span><code>archsig-analysis-summary.json</code> exposes the conclusion, structural verdict summary, dominant findings, action queue, measurement basis, boundaries, and metadata.</span></li>
-              </ol>
+              <p>The gate report's <code>decision</code> is <code>BLOCKED_BY_GATE_POLICY</code>, and the command exits with code 1 — that exit code is the CI contract. The policy file maps <code>measured_nonzero → block</code>; the mapping is yours to own, per repository.</p>
               <figure class="code-panel">
-                <figcaption>Core shape</figcaption>
-                <pre><code>archmap/v0.5.0
-  + law-policy/v0.5.0
-  + measurement-profile/v0.5.0
-  -> archsig analyze
-  -> archsig-measurement-packet.json
-  -> archsig-analysis-summary.json
-  -> LLM agent review findings</code></pre>
+                <figcaption>3. Measure the repaired PR, compare, gate again</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap tools/archsig/examples/practical-rust-service/archmap/archmap_repaired.json \
+  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
+  --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
+  --out-dir .tmp/archsig-demo/repaired
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
+  --base-run .tmp/archsig-demo/head \
+  --head-run .tmp/archsig-demo/repaired \
+  --out-dir .tmp/archsig-demo/compare
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
+  --packet .tmp/archsig-demo/repaired/archsig-measurement-packet.json \
+  --policy tools/archsig/examples/practical-rust-service/law_policy/gate_policy.json \
+  --comparison .tmp/archsig-demo/compare/archsig-comparison-report.json \
+  --out .tmp/archsig-demo/gate-repaired.json</code></pre>
               </figure>
+              <p>The repair is what payment systems actually do: designate one money authority, keep submitting PSP line items per the processor spec, and book the rounding residue as an explicit adjustment line. In the evidence file this is one shared convention on every context — the mismatch support is gone, <code>compare</code> records <code>MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE</code>, and the gate exits 0 with <code>PASS_WITHIN_GATE_POLICY</code>.</p>
             </section>
-            <section id="scope" class="article-section">
-              <h2>Tell it what to inspect</h2>
-              <p>A good request gives the agent enough context to avoid a generic review. Name the scope, the design concern, and the evidence that should or should not count.</p>
-              <ul class="status-list">
-                <li><strong>Scope</strong><span>Repository, PR, branch, subsystem, package, service, feature area, or release window.</span></li>
-                <li><strong>Goal</strong><span>Boundary review, architecture drift check, feature extension review, repair planning, evidence audit, or current-state inspection.</span></li>
-                <li><strong>Risk focus</strong><span>Responsibility movement, hidden coupling, workflow ordering, provider contracts, cache access, authorization, retries, state transitions, or generated-code review.</span></li>
-                <li><strong>Available evidence</strong><span>Code, tests, docs, traces, PR description, architecture notes, ownership rules, or known missing evidence.</span></li>
-                <li><strong>Excluded readings</strong><span>Areas out of scope, private systems, stale docs, generic laws, or claims the team does not want inferred.</span></li>
-              </ul>
+            <section id="see" class="article-section">
+              <h2>See it in ArchView</h2>
+              <p>The head run's viewer data shows the eight contexts, the settlement cycle, and the mismatch seam in 3D. Copy the viewer next to the run output and serve the directory:</p>
+              <figure class="code-panel">
+                <figcaption>Open the measured geometry</figcaption>
+                <pre><code>cp tools/archview/archview.html .tmp/archsig-demo/head/
+python3 -m http.server 8000 --directory .tmp/archsig-demo/head
+# open http://localhost:8000/archview.html</code></pre>
+              </figure>
+              <p>Or skip the local setup: the <a href="../archview/">ArchView page</a> hosts this exact demo — base, head, and repaired as a three-frame measured sequence.</p>
             </section>
-            <section id="builds" class="article-section">
-              <h2>What the Skills build</h2>
-              <p>The LLM agent uses the Skills to turn the request into bounded analysis artifacts. You normally read the result, not every intermediate file.</p>
-              <ul class="status-list">
-                <li><strong>ArchMap</strong><span>A source-backed map of observations, contexts, covers, and source refs.</span></li>
-                <li><strong>LawPolicy</strong><span>The selected registry evaluator policy with basis refs, scope, severity, and measurement-profile ref.</span></li>
-                <li><strong>ArchSig output</strong><span>Measurement packet, compact summary, insight report, viewer data, run manifest, and validation reports.</span></li>
-                <li><strong>Source comparison</strong><span>The agent reopens the relevant code paths before turning packet readings into human-facing review work.</span></li>
-              </ul>
-            </section>
-            <section id="returns" class="article-section">
-              <h2>What the agent returns</h2>
-              <p>The useful result is not a raw score. It is a review queue that says what changed structurally, why it matters, and what should happen next.</p>
-              <ul class="status-list">
-                <li><strong>Findings</strong><span>Architecture issues or pressure points with code refs and the reason they matter for the selected review.</span></li>
-                <li><strong>Repair candidates</strong><span>Possible moves such as restoring a boundary, separating a workflow contract, adding an adapter, or collecting missing evidence first.</span></li>
-                <li><strong>Confirmation checks</strong><span>Tests, docs, traces, ownership rules, policy decisions, or source refs needed before the team trusts the reading.</span></li>
-                <li><strong>Trend summary</strong><span>Where pressure is concentrating, what responsibilities are drifting, and which parts of the codebase keep attracting review attention.</span></li>
-              </ul>
-            </section>
-            <section id="improve" class="article-section">
-              <h2>Improve the request</h2>
-              <p>Ask sharper questions when the first reading is too broad. ArchSig works best when the review goal is explicit.</p>
+            <section id="own-repo" class="article-section">
+              <h2>Your own repository</h2>
+              <p>The demo ships its evidence files ready-made. On your own code, those inputs get authored — normally by your agent, with your approval at the scope step. That authoring path (ArchMap survey, policy selection, validation) is the subject of <a href="../contracts/">Contracts</a>.</p>
               <ul class="chapter-list">
-                <li><strong>Broad inspection</strong><span>Find architecture pressure across a subsystem and rank what reviewers should inspect first.</span></li>
-                <li><strong>PR-local inspection</strong><span>Check whether one PR moved responsibility, crossed a boundary, or introduced hidden coupling.</span></li>
-                <li><strong>Boundary-focused inspection</strong><span>Ask whether a feature reaches into another feature, service, adapter, provider, or cache boundary.</span></li>
-                <li><strong>Path-focused inspection</strong><span>Ask whether two implementation paths preserve the same visible behavior or whether operation order matters.</span></li>
+                <li><a href="../contracts/">Contracts</a><span>How the input artifacts get written for your repository, and which validator checks each one.</span></li>
+                <li><a href="../manual/">Manual</a><span>How to read every output artifact, and the CI / PR-review / repair recipes.</span></li>
+                <li><a href="../concepts/">Concepts</a><span>What the verdict words mean and what ArchSig refuses to claim.</span></li>
               </ul>
             </section>
-            <section id="manual" class="article-section">
-              <h2>When to open the manual</h2>
-              <p>Open the manual when you need to reproduce a run, inspect packet detail, debug coverage gaps, compare schema versions, or understand exactly which measurement family produced a finding.</p>
-            </section>
-            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../"><span>Previous</span><strong>Overview</strong></a><a class="page-nav-next" href="../analyses/"><span>Next</span><strong>Analyses</strong></a></nav>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../"><span>Previous</span><strong>Overview</strong></a><a class="page-nav-next" href="../concepts/"><span>Next</span><strong>Concepts</strong></a></nav>
           </div>
         </div>
       </section>

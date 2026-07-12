@@ -11,3 +11,5 @@
 /aat/dynamics-and-geometry/ /aat/evolution-geometry/ 301
 /aat/representations-and-effects/ /aat/representations-periods/ 301
 /aat/canonical-examples-and-readings/ /aat/appendix/ 301
+# ArchSig manual restructuring (v0.5.0 product manual)
+/archsig/examples/ /archsig/getting-started/ 301
