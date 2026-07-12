@@ -173,6 +173,10 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         ("camel-coherent", "ag.globalCoherent"),
         ("snake-zero", "ag.measured_zero"),
         ("nsdepth", "ag.nsdepth"),
+        ("risk", "ag.risk"),
+        ("debt", "ag.debt"),
+        ("unsafe", "ag.unsafe"),
+        ("failure", "ag.failure"),
         ("verdict", "ag.verdict"),
     ] {
         let mut shortcut_input = read_json(&input);
@@ -515,6 +519,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     );
 
     let mut mismatched_evaluator = read_json(&input);
+    mismatched_evaluator["laws"][1]["conditionType"] = json!("open");
     mismatched_evaluator["laws"][1]["evaluatorRef"] = json!("ag.square-free-repair");
     let mismatched_evaluator_path = out_dir.join("mismatched-evaluator.json");
     fs::write(
@@ -538,6 +543,20 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         read_json(&mismatched_evaluator_report)["summary"]["result"],
         "fail"
     );
+
+    let mut open_section = read_json(&input);
+    open_section["laws"][1]["conditionType"] = json!("open");
+    let open_section_path = out_dir.join("open-section.json");
+    fs::write(
+        &open_section_path,
+        serde_json::to_vec_pretty(&open_section).expect("open section fixture serializes"),
+    )
+    .expect("open section fixture writes");
+    run_sig0(&[
+        "law-surface",
+        "--law-surface",
+        open_section_path.to_str().expect("path is utf-8"),
+    ]);
 
     let mut unknown = read_json(&input);
     unknown["laws"][0]["verdict"] = json!("measured_zero");
@@ -2151,6 +2170,36 @@ fn cli_measurement_profile_finite_bounds_cap_and_effective_lowering() {
     assert_eq!(
         check_by_id(
             &read_json(&reserved_profile_report),
+            "measurement-profile-schema050-reserved-fields"
+        )["result"],
+        "fail"
+    );
+
+    let mut null_reserved_profile = read_json(&root.join("measurement_profile_ag.json"));
+    null_reserved_profile["diagnosticCeiling"] = Value::Null;
+    let null_reserved_profile_path = out_dir.join("measurement_profile_reserved_null.json");
+    fs::write(
+        &null_reserved_profile_path,
+        serde_json::to_vec_pretty(&null_reserved_profile)
+            .expect("null reserved profile serializes"),
+    )
+    .expect("null reserved profile writes");
+    let null_reserved_profile_report = out_dir.join("reserved-profile-null-report.json");
+    run_sig0_expect_code(
+        &[
+            "measurement-profile",
+            "--measurement-profile",
+            null_reserved_profile_path.to_str().expect("path is utf-8"),
+            "--out",
+            null_reserved_profile_report
+                .to_str()
+                .expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&null_reserved_profile_report),
             "measurement-profile-schema050-reserved-fields"
         )["result"],
         "fail"

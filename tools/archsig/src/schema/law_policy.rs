@@ -44,9 +44,20 @@ pub struct MeasurementProfileV1 {
     pub non_zero_predicate: String,
     pub cert_selector: String,
     pub verdict_discipline: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub diagnostic_ceiling: Option<Value>,
+    #[serde(
+        default,
+        deserialize_with = "deserialize_present_value",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub diagnostic_ceiling: Option<Option<Value>>,
     pub finite_bounds: MeasurementProfileFiniteBoundsV1,
+}
+
+fn deserialize_present_value<'de, D>(deserializer: D) -> Result<Option<Option<Value>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(Some(Option::<Value>::deserialize(deserializer)?))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -132,6 +143,8 @@ pub struct LawEvaluatorRegistryV1 {
 pub struct LawEvaluatorManifestV1 {
     pub evaluator_id: String,
     pub law_id: String,
+    #[serde(default)]
+    pub condition_types: Vec<String>,
     pub required_atom_constructors: Vec<String>,
     pub required_predicates: Vec<String>,
     pub required_molecule_condition: String,

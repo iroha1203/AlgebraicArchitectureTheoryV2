@@ -47,20 +47,15 @@ pub fn is_known_evaluator(evaluator: &str) -> bool {
 }
 
 pub fn is_compatible_evaluator_condition(evaluator: &str, condition_type: &str) -> bool {
-    match evaluator {
-        "ag.cech-obstruction"
-        | "ag.coherence-obstruction"
-        | "ag.restriction-compatibility"
-        | "ag.section-factorization"
-        | "ag.boundary-residue"
-        | "ag.saga-descent" => condition_type == "descent",
-        "ag.period-stokes" | "ag.period-stokes-audit" => condition_type == "temporal",
-        "ag.square-free-repair"
-        | "ag.law-conflict-tor"
-        | "ag.sheaf-laplacian"
-        | "ag.support-transfer" => condition_type == "constructible",
-        _ => false,
-    }
+    evaluator_manifests()
+        .iter()
+        .find(|manifest| manifest.evaluator_id == evaluator)
+        .is_some_and(|manifest| {
+            manifest
+                .condition_types
+                .iter()
+                .any(|candidate| candidate == condition_type)
+        })
 }
 
 fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
@@ -94,6 +89,14 @@ mod tests {
                 "section-factorization.witnessAssignment".to_string(),
             ]
         );
+        assert!(is_compatible_evaluator_condition(
+            "ag.section-factorization",
+            "open"
+        ));
+        assert!(!is_compatible_evaluator_condition(
+            "ag.section-factorization",
+            "temporal"
+        ));
         assert_eq!(
             section_manifest.typed_result_schema,
             "archsig-measurement-packet/v0.5.0"

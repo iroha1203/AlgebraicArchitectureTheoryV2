@@ -20,7 +20,7 @@ const CONDITION_TYPES: [&str; 6] = [
     "stacky",
 ];
 
-const CONCLUSION_TOKENS: [&str; 14] = [
+const CONCLUSION_TOKENS: [&str; 18] = [
     "boundary",
     "certificate",
     "globalcoherent",
@@ -33,6 +33,10 @@ const CONCLUSION_TOKENS: [&str; 14] = [
     "nsdepth",
     "nonzero",
     "obstruction",
+    "risk",
+    "debt",
+    "unsafe",
+    "failure",
     "verdict",
     "violation",
 ];
