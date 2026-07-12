@@ -28,6 +28,7 @@ import ResearchLean.AG.QualitySurface.LawGeneratedLargeCoefficientCech
 import ResearchLean.AG.QualitySurface.LawGeneratedLargeCoefficientH0
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerLiftedSheafification
 import ResearchLean.AG.QualitySurface.LawGeneratedConormalIdealSheaf
+import ResearchLean.AG.QualitySurface.LawGeneratedConormalComparison
 import ResearchLean.AG.QualitySurface.LawGeneratedRingSheaf
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerSequence
 import ResearchLean.AG.QualitySurface.LawGeneratedIdealPowerShortExact
