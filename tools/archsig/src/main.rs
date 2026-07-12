@@ -985,7 +985,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "archsig-run-manifest.json",
                     ]);
                     let analysis_failure = serde_json::json!({
-                        "schema": "archsig-analysis-validation/v0.5.0",
+                        "schema": "archsig-measurement-packet-validation-report/v0.5.0",
+                        "packetSchema": "archsig-measurement-packet/v0.5.0",
                         "checks": [{
                             "id": "analysis-execution-plan",
                             "result": "fail",
