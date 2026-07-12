@@ -14,7 +14,7 @@
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Getting Started</span></nav>
           <p class="eyebrow">The guaranteed first fifteen minutes</p>
           <h1>Measure a real defect, block it, repair it, pass.</h1>
-          <p class="lede">This page is one copy-paste path from a fresh clone to a blocked PR and its measured repair. Every command below was run as written against v0.5.0; the expected output is printed next to it. If you prefer to supervise an agent instead, the first section is all you need.</p>
+          <p class="lede">This page is one copy-paste path from a fresh clone to a blocked PR and its measured repair. Every command below was run as written against v0.5.1, with a fixed law-policy / law-surface / measurement-profile bundle; the expected output is printed next to it. If you prefer to supervise an agent instead, the first section is all you need.</p>
         </div>
       </section>
       <section class="section-band">
@@ -74,15 +74,23 @@ RECONCILIATION MISMATCH: psp captured +1 cents against the displayed total</code
               <p>Three modules speak three money conventions — grand-total half-up in checkout, per-line half-to-even in the payment adapter, exact ten-thousandths in the new settlement ledger. Each is locally correct under its own spec. On the loop they cannot all be right, and ArchSig measures exactly that.</p>
               <p>Note the two different comparison outcomes. Base→head is <em>not comparable</em>: the PR added a settlement context, so the measurement site itself changed, and ArchSig refuses to pretend the two runs measure the same thing — the gate blocks on the head run's own verdict instead. Head→repaired keeps the same site, so the comparison is row-comparable and records that the measured obstruction is no longer recorded. Why ArchSig is this strict is explained in <a href="../concepts/#comparability">Concepts</a>.</p>
             </section>
-            <section id="by-hand" class="article-section">
+              <section id="by-hand" class="article-section">
               <h2>The same acts by hand</h2>
-              <p>Every step of the script is an ordinary CLI call over three declared inputs: an evidence file (ArchMap), a policy (LawPolicy), and a measurement regime (MeasurementProfile). Here is the head measurement, the gate, and the repair, exactly as the script runs them.</p>
+              <p>Every step of the script is an ordinary CLI call over declared inputs: an evidence file (ArchMap) and a fixed policy bundle containing LawPolicy, law-equation-surface, and MeasurementProfile. Here is the head measurement, the gate, and the repair, exactly as the script runs them.</p>
+              <figure class="code-panel">
+                <figcaption>0. Fix the policy components for the run</figcaption>
+                <pre><code>mkdir -p .tmp/archsig-demo
+cargo run --manifest-path tools/archsig/Cargo.toml -- policy-bundle \
+  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v051.json \
+  --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
+  --out .tmp/archsig-demo/policy-bundle.json</code></pre>
+              </figure>
               <figure class="code-panel">
                 <figcaption>1. Measure the PR under review</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap_head.json \
-  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
-  --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
+  --policy-bundle .tmp/archsig-demo/policy-bundle.json \
   --out-dir .tmp/archsig-demo/head</code></pre>
               </figure>
               <p>The run directory now holds ten artifacts — packet, summary, insight report, viewer data, validation reports, manifest. Start with the summary's <code>readThisFirst</code> block:</p>
@@ -108,8 +116,7 @@ RECONCILIATION MISMATCH: psp captured +1 cents against the displayed total</code
                 <figcaption>3. Measure the repaired PR, compare, gate again</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap_repaired.json \
-  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
-  --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
+  --policy-bundle .tmp/archsig-demo/policy-bundle.json \
   --out-dir .tmp/archsig-demo/repaired
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- compare \

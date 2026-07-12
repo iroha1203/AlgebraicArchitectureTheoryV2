@@ -13,10 +13,12 @@ Use this skill when asked to run ArchSig-assisted PR review.
 - Head run directory containing `archsig-measurement-packet.json`.
 - Gate policy JSON.
 - Source diff or PR checkout for human review.
+- Prefer an `archsig-policy-bundle/v0.5.1` for both base and head runs when
+  the policy, law surface, and profile are intended to remain fixed.
 
 ## Workflow
 
-1. Run `archsig analyze` for the base and head contexts when run directories are not already supplied.
+1. Run `archsig analyze` for the base and head contexts when run directories are not already supplied; use `--policy-bundle` when the bundle is supplied and confirm the three component fingerprints.
 2. Run `archsig compare --base-run <base> --head-run <head> --out-dir <compare>`.
 3. Run `archsig gate --packet <head>/archsig-measurement-packet.json --policy <policy> --comparison <compare>/archsig-comparison-report.json --out <gate-report>`.
 4. Read the comparison report, gate report, summary, insight report, and changed source.

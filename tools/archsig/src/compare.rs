@@ -1,8 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
+use std::fmt;
 use std::fs::File;
 use std::path::Path;
 
+use serde::de::{DeserializeSeed, MapAccess, SeqAccess, Visitor};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
@@ -34,6 +36,10 @@ pub fn build_comparison_artifacts_v1(
         ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
         "head run manifest",
     )?;
+    validate_run_manifest_shape(&base_manifest, "base run manifest")?;
+    validate_run_manifest_shape(&head_manifest, "head run manifest")?;
+    validate_component_fingerprints(&base_manifest, "base run manifest")?;
+    validate_component_fingerprints(&head_manifest, "head run manifest")?;
     let base_normalized = read_run_json(base_run, "normalized-archmap.json")?;
     let head_normalized = read_run_json(head_run, "normalized-archmap.json")?;
     require_schema(
@@ -143,9 +149,26 @@ fn comparability(base: &Value, head: &Value) -> Value {
     let same_profile =
         digest_at(base, "profileFingerprint") == digest_at(head, "profileFingerprint");
     let same_cover = digest_at(base, "siteCoverDigest") == digest_at(head, "siteCoverDigest");
-    let level = if same_tool && same_archmap && same_law_policy && same_profile {
+    let same_component_fingerprints = component_fingerprints_at(base)
+        .zip(component_fingerprints_at(head))
+        .is_some_and(|(base, head)| base == head);
+    let same_law_surface = component_fingerprints_at(base).is_some()
+        && component_fingerprints_at(head).is_some()
+        && component_fingerprint_at(base, "lawSurface")
+            == component_fingerprint_at(head, "lawSurface");
+    let level = if same_tool
+        && same_archmap
+        && same_law_policy
+        && same_profile
+        && same_component_fingerprints
+    {
         "identical"
-    } else if same_tool && same_profile && same_cover {
+    } else if same_tool
+        && same_profile
+        && same_cover
+        && same_law_surface
+        && same_component_fingerprints
+    {
         "verdict-row"
     } else {
         "not-comparable"
@@ -156,8 +179,10 @@ fn comparability(base: &Value, head: &Value) -> Value {
         "sameArchmapDigest": same_archmap,
         "sameLawPolicyDigest": same_law_policy,
         "sameProfileFingerprint": same_profile,
+        "sameComponentFingerprints": same_component_fingerprints,
+        "sameLawSurfaceFingerprint": same_law_surface,
         "sameSiteCoverDigest": same_cover,
-        "basis": "identical requires archmap and LawPolicy digests, profile fingerprint, and tool version equality; verdict-row requires profile fingerprint, site cover digest, and tool version equality"
+        "basis": "identical requires archmap, LawPolicy, law-surface, and MeasurementProfile component fingerprints plus tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, and tool version equality"
     })
 }
 
@@ -469,6 +494,7 @@ fn run_digest(run: &Path, manifest: &Value) -> Value {
         "archmap": manifest["inputDigests"]["archmap"],
         "lawPolicy": manifest["inputDigests"]["lawPolicy"],
         "profileFingerprint": manifest["inputDigests"]["profileFingerprint"],
+        "componentFingerprints": manifest["componentFingerprints"],
         "siteCoverDigest": manifest["inputDigests"]["siteCoverDigest"],
         "measurementPacket": {
             "path": artifact_ref(run, "archsig-measurement-packet.json"),
@@ -509,6 +535,67 @@ fn text_at(value: &Value, path: &[&str]) -> Option<String> {
     current.as_str().map(str::to_string)
 }
 
+fn component_fingerprints_at(value: &Value) -> Option<&Value> {
+    value
+        .get("componentFingerprints")
+        .filter(|value| value.is_object())
+}
+
+fn component_fingerprint_at<'a>(value: &'a Value, component: &str) -> Option<&'a str> {
+    component_fingerprints_at(value)?.get(component)?.as_str()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{comparability, validate_component_fingerprints};
+    use serde_json::json;
+
+    fn manifest(law_surface: &str) -> serde_json::Value {
+        json!({
+            "toolVersion": "0.5.1",
+            "inputDigests": {
+                "archmap": {"sha256": "same-archmap"},
+                "lawPolicy": {"sha256": "same-policy"},
+                "profileFingerprint": {"sha256": "same-profile"},
+                "siteCoverDigest": {"sha256": "same-cover"}
+            },
+            "componentFingerprints": {
+                "lawPolicy": "sha256:same-policy",
+                "lawSurface": law_surface,
+                "measurementProfile": "sha256:same-profile"
+            }
+        })
+    }
+
+    #[test]
+    fn law_surface_fingerprint_change_blocks_identical_and_row_comparability() {
+        let base = manifest("sha256:surface-a");
+        let head = manifest("sha256:surface-b");
+        let result = comparability(&base, &head);
+        assert_eq!(result["level"], "not-comparable");
+        assert_eq!(result["sameComponentFingerprints"], false);
+        assert_eq!(result["sameLawSurfaceFingerprint"], false);
+    }
+
+    #[test]
+    fn law_policy_fingerprint_change_blocks_row_comparability() {
+        let mut base = manifest("sha256:surface-a");
+        let mut head = manifest("sha256:surface-a");
+        base["componentFingerprints"]["lawPolicy"] = json!("sha256:policy-a");
+        head["componentFingerprints"]["lawPolicy"] = json!("sha256:policy-b");
+        let result = comparability(&base, &head);
+        assert_eq!(result["level"], "not-comparable");
+        assert_eq!(result["sameComponentFingerprints"], false);
+    }
+
+    #[test]
+    fn malformed_component_fingerprints_are_rejected() {
+        let mut value = manifest("sha256:surface-a");
+        value["componentFingerprints"] = json!({});
+        assert!(validate_component_fingerprints(&value, "test manifest").is_err());
+    }
+}
+
 fn require_schema(value: &Value, expected: &str, label: &str) -> Result<(), Box<dyn Error>> {
     if value.get("schema").and_then(Value::as_str) != Some(expected) {
         return Err(format!("{label} must have schema {expected}").into());
@@ -517,7 +604,287 @@ fn require_schema(value: &Value, expected: &str, label: &str) -> Result<(), Box<
 }
 
 fn read_run_json(run: &Path, name: &str) -> Result<Value, Box<dyn Error>> {
-    Ok(serde_json::from_reader(File::open(run.join(name))?)?)
+    let text = std::fs::read_to_string(run.join(name))?;
+    reject_duplicate_keys(&text)?;
+    Ok(serde_json::from_str(&text)?)
+}
+
+fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), Box<dyn Error>> {
+    let object = manifest
+        .get("componentFingerprints")
+        .and_then(Value::as_object)
+        .ok_or_else(|| format!("{label} requires componentFingerprints"))?;
+    let expected = BTreeSet::from([
+        "lawPolicy".to_string(),
+        "lawSurface".to_string(),
+        "measurementProfile".to_string(),
+    ]);
+    let actual = object.keys().cloned().collect::<BTreeSet<_>>();
+    if actual != expected {
+        return Err(format!(
+            "{label} componentFingerprints keys must be lawPolicy, lawSurface, measurementProfile"
+        )
+        .into());
+    }
+    for (component, value) in object {
+        let fingerprint = value
+            .as_str()
+            .ok_or_else(|| format!("{label} componentFingerprints.{component} must be a string"))?;
+        if fingerprint.len() != 71
+            || !fingerprint.starts_with("sha256:")
+            || !fingerprint[7..]
+                .bytes()
+                .all(|byte| byte.is_ascii_hexdigit())
+        {
+            return Err(format!(
+                "{label} componentFingerprints.{component} must be sha256:<64 hex chars>"
+            )
+            .into());
+        }
+    }
+    let input_digests = manifest
+        .get("inputDigests")
+        .and_then(Value::as_object)
+        .ok_or_else(|| format!("{label} requires inputDigests object"))?;
+    let required_digest_keys = BTreeSet::from([
+        "archmap",
+        "lawPolicy",
+        "lawSurface",
+        "measurementProfile",
+        "profileFingerprint",
+        "siteCoverDigest",
+    ]);
+    let allowed_digest_keys = BTreeSet::from([
+        "archmap",
+        "lawPolicy",
+        "lawSurface",
+        "measurementProfile",
+        "profileFingerprint",
+        "residualPacket",
+        "siteCoverDigest",
+    ]);
+    let actual_digest_keys = input_digests
+        .keys()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if actual_digest_keys
+        .difference(&allowed_digest_keys)
+        .next()
+        .is_some()
+    {
+        return Err(format!("{label} inputDigests contains unknown keys").into());
+    }
+    if required_digest_keys
+        .difference(&actual_digest_keys)
+        .next()
+        .is_some()
+    {
+        return Err(format!("{label} inputDigests is missing required keys").into());
+    }
+    for key in &actual_digest_keys {
+        let entry = input_digests
+            .get(*key)
+            .and_then(Value::as_object)
+            .ok_or_else(|| format!("{label} inputDigests.{key} must be an object"))?;
+        let digest = entry
+            .get("sha256")
+            .and_then(Value::as_str)
+            .ok_or_else(|| format!("{label} inputDigests.{key}.sha256 is required"))?;
+        if digest.len() != 64 || !digest.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            return Err(format!("{label} inputDigests.{key}.sha256 must be 64 hex chars").into());
+        }
+        let expected_entry_keys = match *key {
+            "profileFingerprint" => BTreeSet::from(["basis", "sha256"]),
+            "siteCoverDigest" => BTreeSet::from(["basis", "sha256", "status"]),
+            _ => BTreeSet::from(["path", "sha256"]),
+        };
+        let actual_entry_keys = entry.keys().map(String::as_str).collect::<BTreeSet<_>>();
+        if actual_entry_keys
+            .difference(&expected_entry_keys)
+            .next()
+            .is_some()
+            || expected_entry_keys
+                .difference(&actual_entry_keys)
+                .next()
+                .is_some()
+        {
+            return Err(format!("{label} inputDigests.{key} has invalid fields").into());
+        }
+        for field in expected_entry_keys {
+            if field != "sha256" && !entry.get(field).is_some_and(Value::is_string) {
+                return Err(format!("{label} inputDigests.{key}.{field} must be a string").into());
+            }
+        }
+    }
+    for (component, digest_key) in [
+        ("lawPolicy", "lawPolicy"),
+        ("lawSurface", "lawSurface"),
+        ("measurementProfile", "measurementProfile"),
+    ] {
+        let digest = input_digests
+            .get(digest_key)
+            .and_then(|value| value.get("sha256"))
+            .and_then(Value::as_str)
+            .ok_or_else(|| format!("{label} requires inputDigests.{digest_key}.sha256"))?;
+        if fingerprint_value(object, component) != Some(digest) {
+            return Err(format!(
+                "{label} componentFingerprints.{component} must match inputDigests.{digest_key}.sha256"
+            )
+            .into());
+        }
+    }
+    Ok(())
+}
+
+fn fingerprint_value<'a>(
+    object: &'a serde_json::Map<String, Value>,
+    component: &str,
+) -> Option<&'a str> {
+    object
+        .get(component)
+        .and_then(Value::as_str)
+        .and_then(|value| value.strip_prefix("sha256:"))
+}
+
+fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<dyn Error>> {
+    let object = manifest
+        .as_object()
+        .ok_or_else(|| format!("{label} must be a JSON object"))?;
+    let allowed = BTreeSet::from([
+        "schema",
+        "toolVersion",
+        "runId",
+        "inputDigests",
+        "componentFingerprints",
+        "commandName",
+        "mode",
+        "conclusionCode",
+        "archmapInputPath",
+        "lawPolicyInputPath",
+        "lawSurfaceInputPath",
+        "measurementProfileInputPath",
+        "repairPlanInputPath",
+        "rawArtifactRetention",
+        "generatedArtifacts",
+        "omittedArtifacts",
+        "artifactLinks",
+        "validationReports",
+        "rawArtifactPaths",
+        "validationResultSummary",
+        "nonConclusions",
+    ]);
+    let required = BTreeSet::from([
+        "schema",
+        "toolVersion",
+        "runId",
+        "inputDigests",
+        "componentFingerprints",
+        "commandName",
+        "mode",
+        "conclusionCode",
+        "archmapInputPath",
+        "lawPolicyInputPath",
+        "rawArtifactRetention",
+        "generatedArtifacts",
+        "omittedArtifacts",
+        "artifactLinks",
+        "validationReports",
+        "validationResultSummary",
+        "nonConclusions",
+    ]);
+    let actual = object.keys().map(String::as_str).collect::<BTreeSet<_>>();
+    if actual.difference(&allowed).next().is_some() {
+        return Err(format!("{label} contains unknown top-level manifest fields").into());
+    }
+    if required.difference(&actual).next().is_some() {
+        return Err(format!("{label} is missing required top-level manifest fields").into());
+    }
+    Ok(())
+}
+
+fn reject_duplicate_keys(text: &str) -> Result<(), Box<dyn Error>> {
+    let mut deserializer = serde_json::Deserializer::from_str(text);
+    serde::de::Deserializer::deserialize_any(&mut deserializer, DuplicateKeyVisitor)?;
+    Ok(())
+}
+
+struct DuplicateKeySeed;
+
+impl<'de> DeserializeSeed<'de> for DuplicateKeySeed {
+    type Value = ();
+
+    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(DuplicateKeyVisitor)
+    }
+}
+
+struct DuplicateKeyVisitor;
+
+impl<'de> Visitor<'de> for DuplicateKeyVisitor {
+    type Value = ();
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a JSON value without duplicate object keys")
+    }
+
+    fn visit_bool<E>(self, _: bool) -> Result<Self::Value, E> {
+        Ok(())
+    }
+    fn visit_i64<E>(self, _: i64) -> Result<Self::Value, E> {
+        Ok(())
+    }
+    fn visit_u64<E>(self, _: u64) -> Result<Self::Value, E> {
+        Ok(())
+    }
+    fn visit_f64<E>(self, _: f64) -> Result<Self::Value, E> {
+        Ok(())
+    }
+    fn visit_str<E>(self, _: &str) -> Result<Self::Value, E> {
+        Ok(())
+    }
+    fn visit_string<E>(self, _: String) -> Result<Self::Value, E> {
+        Ok(())
+    }
+    fn visit_none<E>(self) -> Result<Self::Value, E> {
+        Ok(())
+    }
+    fn visit_unit<E>(self) -> Result<Self::Value, E> {
+        Ok(())
+    }
+
+    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(DuplicateKeyVisitor)
+    }
+
+    fn visit_seq<A>(self, mut sequence: A) -> Result<Self::Value, A::Error>
+    where
+        A: SeqAccess<'de>,
+    {
+        while sequence.next_element_seed(DuplicateKeySeed)?.is_some() {}
+        Ok(())
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: MapAccess<'de>,
+    {
+        let mut keys = BTreeSet::new();
+        while let Some(key) = map.next_key::<String>()? {
+            if !keys.insert(key.clone()) {
+                return Err(serde::de::Error::custom(format!(
+                    "duplicate JSON object key: {key}"
+                )));
+            }
+            map.next_value_seed(DuplicateKeySeed)?;
+        }
+        Ok(())
+    }
 }
 
 fn artifact_ref(run: &Path, name: &str) -> String {

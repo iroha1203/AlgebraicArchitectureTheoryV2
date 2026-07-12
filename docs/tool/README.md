@@ -1,7 +1,7 @@
 # Tool Docs
 
-`docs/tool/` describes current ArchMap / LawPolicy / MeasurementProfile /
-ArchSig / FieldSig artifact contracts. It is not the source of truth for AAT
+`docs/tool/` describes current ArchMap / LawPolicy / law-equation-surface /
+MeasurementProfile / policy-bundle / ArchSig / FieldSig artifact contracts. It is not the source of truth for AAT
 mathematics.
 
 Historical tool documents are archived under:
@@ -14,6 +14,9 @@ Current source-of-truth boundaries:
 - ArchMap records source-grounded Atom evidence with finite-poset contexts and
   selected covers.
 - LawPolicy selects evaluators, basis refs, scope, and severity.
+- law-equation-surface declares the selected law universe and witness variables.
+- policy-bundle fixes LawPolicy, law-equation-surface, and MeasurementProfile
+  with canonical component fingerprints for one run.
 - MeasurementProfile selects the concrete finite measurement regime.
 - RepairPlan (`archsig-repair-plan/v0.5.1`) is the SAGA Stage 1 input side:
   `repair-plan` validates it, and `analyze --repair-plan` consumes it when

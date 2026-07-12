@@ -73,3 +73,22 @@ with `restrictsTo` edges from each local context into the shared context.
 Bad: a cover contains unrelated contexts with no shared atom, shared boundary,
 or restriction convergence. That cut usually degenerates for Cech-style
 measurement.
+
+## Stage 2 support-atom meaning
+
+Good: a support atom records an observed cooccurrence in a selected context,
+while the law surface declares the witness variables and forbidden supports.
+
+```json
+{
+  "kind": "relation",
+  "axis": "square-free",
+  "predicate": "support",
+  "object": "x_checkout,x_inventory",
+  "refs": ["src:src/checkout.rs:42"]
+}
+```
+
+Bad: adding or removing a support atom to change the law universe. The law
+surface remains the sole source of `I_Ob` generators; ArchMap support atoms
+only report which declared cooccurrences were observed.

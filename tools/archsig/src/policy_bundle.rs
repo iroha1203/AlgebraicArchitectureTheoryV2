@@ -325,7 +325,17 @@ fn component_ref(path: &Path, bundle_output: Option<&Path>) -> String {
         return input_ref(path);
     };
     let base = bundle_output.parent().unwrap_or_else(|| Path::new("."));
-    relative_path(base, path)
+    relative_path(&absolute_path(base), &absolute_path(path))
+}
+
+fn absolute_path(path: &Path) -> PathBuf {
+    if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .join(path)
+    }
 }
 
 fn relative_path(base: &Path, target: &Path) -> String {
@@ -363,7 +373,7 @@ fn resolve_ref(bundle_path: &Path, reference: &str) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use super::{canonical_json_bytes, canonical_json_file_digest};
+    use super::{canonical_json_bytes, canonical_json_file_digest, component_ref};
     use serde_json::json;
     use std::fs;
     use std::path::PathBuf;
@@ -405,5 +415,21 @@ mod tests {
             canonical_json_file_digest(&right_path).unwrap()
         );
         fs::remove_dir_all(dir).expect("canonical test directory removes");
+    }
+
+    #[test]
+    fn component_refs_are_stable_for_mixed_absolute_and_relative_paths() {
+        let component = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/ag_measurement/law_policy_ag.json");
+        let bundle = PathBuf::from("target/policy-bundle-mixed/bundle.json");
+        let reference = component_ref(&component, Some(&bundle));
+        assert!(reference.starts_with("../"));
+        std::fs::create_dir_all(bundle.parent().expect("bundle parent creates"))
+            .expect("bundle parent creates");
+        let resolved = bundle.parent().expect("bundle parent").join(&reference);
+        assert_eq!(
+            std::fs::canonicalize(resolved).expect("mixed path resolves"),
+            std::fs::canonicalize(component).expect("component resolves")
+        );
     }
 }

@@ -1,7 +1,7 @@
 # ArchSig Analyze E2E Workflow
 
 This document fixes the current end-to-end workflow for ArchMap /
-LawPolicy / MeasurementProfile / ArchSig `analyze`. It is an implementation
+LawPolicy / law-equation-surface / MeasurementProfile / ArchSig `analyze`. It is an implementation
 transcript, not a new theory document.
 
 ## Flow
@@ -9,7 +9,7 @@ transcript, not a new theory document.
 ```text
 source artifacts
   -> supplied ArchMap finite-poset-site evidence
-  -> selected LawPolicy + MeasurementProfile
+  -> selected LawPolicy + law-equation-surface + MeasurementProfile (preferably a policy-bundle)
   -> archsig-measurement-packet.json
   -> archsig-analysis-summary.json
   -> archsig-atom-viewer-data.json + ArchView

@@ -34,6 +34,17 @@ Ask only what is needed to select evaluator manifests.
   period, and transfer use `R`, `analytic-zero@1`,
   `analytic-positive@1`, and `analytic-reading@1`.
 
+## Law surface and policy bundle
+
+- Which `law-equation-surface/v0.5.1` id supplies the selected laws and witness
+  variables?
+- Does every `policies[].law` resolve to that supplied surface, with the
+  evaluator and binding pair accepted by the registry manifest?
+- Should the three validated artifacts be fixed in an
+  `archsig-policy-bundle/v0.5.1` for this run?
+- Is the bundle output kept beside the run so `componentFingerprints` can be
+  checked during reproduction?
+
 ## Basis
 
 - Which docs, ADRs, standards, or direct user decisions justify the policy?

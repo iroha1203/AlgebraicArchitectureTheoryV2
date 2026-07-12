@@ -2,7 +2,7 @@
 {
   "layout": "base.njk",
   "title": "ArchSig — Measured Architecture Analysis",
-  "description": "ArchSig v0.5.0 measures whether locally correct modules still glue into a consistent whole. Run it through LLM Skills or the CLI, block bad PRs in CI, and see the result in ArchView.",
+  "description": "ArchSig v0.5.1 measures whether locally correct modules still glue into a consistent whole. Run it through LLM Skills or the CLI, block bad PRs in CI, and see the result in ArchView.",
   "order": 36,
   "llmsLabel": "ArchSig overview",
   "navSection": "archsig"
@@ -12,7 +12,7 @@
       <section class="article-hero section-band">
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Home</a><span>ArchSig</span></nav>
-          <p class="hero-version-badge">ArchSig v0.5.0</p>
+          <p class="hero-version-badge">ArchSig v0.5.1</p>
           <p class="eyebrow">Architecture measurement for fast-moving code</p>
           <h1>Every module is correct. The system still overcharges by one cent.</h1>
           <p class="lede">ArchSig measures the one thing file-by-file review cannot see: whether a set of individually correct modules still glues into a consistent whole. It reads declared evidence, computes a bounded verdict, and blocks the PR in CI with the exact modules that carry the mismatch.</p>
@@ -43,7 +43,7 @@
               <h2>Three tools, one contract</h2>
               <p>The tool layer has three components with one shared discipline: measurement first, and no component speaks beyond its inputs.</p>
               <ul class="status-list">
-                <li><strong>ArchSig measures</strong><span>A Rust CLI that reads declared architecture evidence (ArchMap), a selected policy (LawPolicy + MeasurementProfile), and computes bounded structural verdicts. <code>analyze</code> is the primary workflow; <code>compare</code> and <code>gate</code> are the PR / CI decision surfaces.</span></li>
+                <li><strong>ArchSig measures</strong><span>A Rust CLI that reads declared architecture evidence (ArchMap), a selected policy bundle (LawPolicy + law-equation-surface + MeasurementProfile), and computes bounded structural verdicts. <code>analyze</code> is the primary workflow; <code>compare</code> and <code>gate</code> are the PR / CI decision surfaces.</span></li>
                 <li><strong>ArchView projects</strong><span>A no-build 3D viewer that renders the measured geometry — patches, overlaps, and the exact seams that fail to glue. It adds no new verdict; it shows what ArchSig measured. <a href="archview/">Open the live demo</a>.</span></li>
                 <li><strong>FieldSig previews evolution</strong><span>An evolution-measurement layer that reads ArchSig measurement packets as bounded input for software-evolution analysis. It is not part of this manual; it grows with <a href="../sft/">SFT</a>.</span></li>
               </ul>
@@ -52,11 +52,11 @@
               <h2>Five Skills: the agent operates, you supervise</h2>
               <p>ArchSig is Skill-first: the primary operator is an LLM agent, and the release bundle ships the Skill documents the agent follows. You do not need to learn the input schemas — you ask for an analysis, approve the scope, and read the returned findings.</p>
               <ul class="status-list">
-                <li><strong><code>archmap-creater</code></strong><span>Surveys your repository in two independent passes and builds a source-grounded <code>archmap/v0.5.0</code> evidence file, with a scope manifest you approve first.</span></li>
-                <li><strong><code>law-policy-creater</code></strong><span>Selects evaluators from the registry and writes <code>law-policy/v0.5.0</code> and <code>measurement-profile/v0.5.0</code> files. If evidence does not justify a selector, it asks instead of guessing.</span></li>
+                <li><strong><code>archmap-creater</code></strong><span>Surveys your repository in two independent passes and builds a source-grounded <code>archmap/v0.5.1</code> evidence file, with a scope manifest you approve first.</span></li>
+                <li><strong><code>law-policy-creater</code></strong><span>Selects evaluators from the registry, authors <code>law-policy/v0.5.1</code>, <code>law-equation-surface/v0.5.1</code>, and <code>measurement-profile/v0.5.1</code>, then fixes them with an <code>archsig-policy-bundle/v0.5.1</code>. If evidence does not justify a selector, it asks instead of guessing.</span></li>
                 <li><strong><code>archsig-reader</code></strong><span>Runs <code>analyze</code>, reads every output artifact, checks the cited source, and returns bounded review findings.</span></li>
                 <li><strong><code>archsig-pr-reviewer</code></strong><span>Runs base/head measurement, <code>compare</code>, and <code>gate</code>, then turns the result into source-first review questions for the PR.</span></li>
-                <li><strong><code>repair-plan-creater</code></strong><span>Authors <code>archsig-repair-plan/v0.5.0</code> artifacts for SAGA descent runs — the measured path from "blocked" to "repaired".</span></li>
+                <li><strong><code>repair-plan-creater</code></strong><span>Authors <code>archsig-repair-plan/v0.5.1</code> artifacts for SAGA descent runs — the measured path from "blocked" to "repaired".</span></li>
               </ul>
               <figure class="code-panel">
                 <figcaption>Skill request shape</figcaption>
@@ -81,7 +81,7 @@ Return findings with code refs and repair candidates.</code></pre>
               <h2>Install</h2>
               <p>Download the release bundle for your platform, or build from source. The bundle ships the CLI, the five Skills, the command docs, and ArchView.</p>
               <figure class="code-panel">
-                <figcaption>Release bundle layout (archsig-v0.5.0-&lt;platform&gt;.tar.gz)</figcaption>
+                <figcaption>Release bundle layout (archsig-v0.5.1-&lt;platform&gt;.tar.gz)</figcaption>
                 <pre><code>bin/archsig          # the CLI
 skills/              # the five Skill documents your agent follows
 docs/                # commands.md, artifacts-and-boundaries.md
@@ -97,10 +97,10 @@ archview/            # archview.html + README</code></pre>
               <ul class="chapter-list">
                 <li><a href="getting-started/">Getting Started</a><span>Reproduce the one-cent drift — analyze, block, repair, pass — in fifteen minutes.</span></li>
                 <li><a href="concepts/">Concepts</a><span>The three-layer input contract, the five-valued verdict vocabulary, and why observation never contains judgment.</span></li>
-                <li><a href="contracts/">Contracts</a><span>How ArchMap, LawPolicy, MeasurementProfile, gate policy, and repair plans get written for your repository.</span></li>
+                <li><a href="contracts/">Contracts</a><span>How ArchMap, LawPolicy, law-equation-surface, MeasurementProfile, policy bundles, gate policy, and repair plans get written for your repository.</span></li>
                 <li><a href="analyses/">Analyses</a><span>The evaluator catalog: ten structural measurements, each with its theory anchor.</span></li>
                 <li><a href="manual/">Manual</a><span>How to read every output artifact, plus task recipes for CI gating, PR review, and repair planning.</span></li>
-                <li><a href="reference/">Reference</a><span>All ten CLI commands, exit codes, schema catalog, compatibility policy, and troubleshooting.</span></li>
+                <li><a href="reference/">Reference</a><span>All twelve CLI commands, exit codes, schema catalog, compatibility policy, and troubleshooting.</span></li>
                 <li><a href="archview/">ArchView</a><span>The live 3D projection of the one-cent drift: watch the seam ignite and the repaired sheet close.</span></li>
               </ul>
             </section>

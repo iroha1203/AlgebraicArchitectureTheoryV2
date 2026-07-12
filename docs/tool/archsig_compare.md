@@ -27,8 +27,11 @@ Outputs:
 
 ## Comparability
 
-`identical` requires matching ArchMap digest, LawPolicy digest, profile fingerprint, and tool version.
-`verdict-row` requires matching profile fingerprint, site cover digest, and tool version.
+`identical` requires matching ArchMap digest, LawPolicy, law-surface, and
+MeasurementProfile component fingerprints, plus tool version.
+`verdict-row` requires matching LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover
+digest, and tool version. A policy-bundle component change is therefore
+explicitly recorded as `not-comparable`.
 Other pairs are `not-comparable`; the report records both independent run conclusions and emits a typed boundary.
 
 Cover or context changes are boundary data. They are not architecture degradation claims.

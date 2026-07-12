@@ -111,7 +111,7 @@ pub(crate) fn contract_profile_fingerprint(
     let canonical = canonical_json_bytes(&profile)?;
     Ok(serde_json::json!({
         "sha256": sha256_hex(&canonical),
-        "basis": "archmap shape + selected LawPolicy profile ref and external MeasurementProfile artifact"
+        "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact"
     }))
 }
 

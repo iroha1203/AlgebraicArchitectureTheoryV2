@@ -324,6 +324,11 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
     let packet_json = serde_json::json!({
         "schema": "archsig-measurement-packet/v0.5.1",
         "packetId": "measurement:test-handoff",
+        "componentFingerprints": {
+            "lawPolicy": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+            "lawSurface": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+            "measurementProfile": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+        },
         "profile": {
             "schema": "measurement-profile/v0.5.1",
             "profileId": "profile:test-handoff",
@@ -494,6 +499,40 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
     assert_eq!(rejected.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&rejected.stderr).contains("witnessFamily"));
 
+    for (case, fingerprints) in [
+        ("missing-component-fingerprints", serde_json::Value::Null),
+        (
+            "partial-component-fingerprints",
+            serde_json::json!({"lawPolicy": "sha256:1111111111111111111111111111111111111111111111111111111111111111"}),
+        ),
+    ] {
+        let mut invalid_packet = packet_json.clone();
+        invalid_packet["componentFingerprints"] = fingerprints;
+        let invalid_packet_path = out_dir.join(format!("archsig-measurement-packet-{case}.json"));
+        fs::write(
+            &invalid_packet_path,
+            serde_json::to_string_pretty(&invalid_packet).expect("invalid packet serializes"),
+        )
+        .expect("invalid packet fixture is written");
+        let rejected = run_sig0_output(&[
+            "archsig-analysis-sft-input",
+            "--measurement-packet",
+            invalid_packet_path
+                .to_str()
+                .expect("invalid packet path is utf-8"),
+            "--out",
+            out_dir
+                .join(format!("{case}-estimate.json"))
+                .to_str()
+                .expect("invalid estimate path is utf-8"),
+        ]);
+        assert_eq!(rejected.status.code(), Some(2), "{case} must be rejected");
+        assert!(
+            String::from_utf8_lossy(&rejected.stderr).contains("componentFingerprints"),
+            "{case} rejection must identify component fingerprint provenance"
+        );
+    }
+
     run_sig0(&[
         "archsig-analysis-sft-input",
         "--measurement-packet",
@@ -512,6 +551,10 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
     ]);
 
     let estimate_json = read_json(&estimate);
+    assert_eq!(
+        packet_json["componentFingerprints"]["lawSurface"],
+        "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    );
     assert_eq!(estimate_json["schema"], "operation-support-estimate/v0.5.0");
     assert_eq!(
         estimate_json["descriptorRef"]["artifactKind"],
@@ -524,6 +567,15 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             .iter()
             .any(|source| source == "archsigMeasurementPacket:measurement:test-handoff"),
         "FieldSig must retain the measurement packet id as a handoff source ref"
+    );
+    assert!(
+        estimate_json["descriptorRef"]["sourceRefIds"]
+            .as_array()
+            .expect("source refs are array")
+            .iter()
+            .any(|source| source
+                == "archsigMeasurementComponentFingerprint:lawSurface:sha256:2222222222222222222222222222222222222222222222222222222222222222"),
+        "FieldSig must retain policy-bundle component fingerprint provenance"
     );
     assert!(
         estimate_json["candidateOperationFamilies"]
@@ -670,6 +722,11 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
     let packet_json = serde_json::json!({
         "schema": "archsig-measurement-packet/v0.5.1",
         "packetId": "measurement:capacity-not-cert",
+        "componentFingerprints": {
+            "lawPolicy": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+            "lawSurface": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+            "measurementProfile": "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+        },
         "profile": {
             "schema": "measurement-profile/v0.5.1",
             "profileId": "profile:capacity-not-cert",
@@ -866,6 +923,11 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     let valid_measurement_packet = serde_json::json!({
         "schema": "archsig-measurement-packet/v0.5.1",
         "packetId": "measurement:semantic-validation",
+        "componentFingerprints": {
+            "lawPolicy": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+            "lawSurface": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+            "measurementProfile": "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+        },
         "profile": {
             "schema": "measurement-profile/v0.5.1",
             "profileId": "profile:semantic-validation"

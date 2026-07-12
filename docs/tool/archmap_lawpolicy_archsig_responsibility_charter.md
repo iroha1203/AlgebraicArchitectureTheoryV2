@@ -19,7 +19,7 @@
 
 ArchMap が書くのは **"X is the case"(世界がこうなっている)** だけである。
 **"X is good / bad / violation / mismatch / nonzero"(あるべきと照らした評価)** は一語も書かない。
-後者は必ず `ArchMap × LawPolicy → ArchSig` の計算でのみ生まれる。
+後者は必ず `ArchMap × (LawPolicy + law-equation-surface + MeasurementProfile) → ArchSig` の計算でのみ生まれる。再現可能な run では三つの選択 artifact を policy-bundle で固定する。
 
 第I部 **公理 A6(Observation Non-Generation)** は
 「観測・測定・報告・検査・記録は Atom の成立を生成しない。それらは Atom family に対する読みを与えるが、生成元ではない」と述べる。
@@ -86,6 +86,11 @@ ArchMap が書かないもの:
 LawPolicy は、明示した law / evaluator / basis / scope / severity を **選ぶ** selector である。退役した policy pack selector は受理しない。
 加えて、何が forbidden か(law universe)を指定する。第III部は「law は atom を生成しない、coordinate を生成しない、law は loci を切り出す」と述べる。
 law は存在の根拠ではなく、どの witness ideal / defect representative を読むかを指定する装置であり、witness variables と signature axis は supplied law-equation-surface と evaluator registry で解決される。
+
+`law-equation-surface/v0.5.1` は、制度選択が参照する law universe と witness
+variables を宣言する一次artifactである。`policy-bundle` はLawPolicy、law
+surface、MeasurementProfileをcanonical JSON fingerprint付きで同じrunへ固定し、
+run manifestとmeasurement packetにcomponentFingerprintsを残す。
 
 LawPolicy が書かないもの: witness predicate の手書き、signature axis の手書き、score formula、obstruction circuit 定義、measurement profile 本体。
 これらは supplied law-equation-surface、evaluator registry、または MeasurementProfile の責務である。

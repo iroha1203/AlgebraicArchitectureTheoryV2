@@ -27,10 +27,10 @@
           <div class="article-main">
             <section id="layers" class="article-section">
               <h2>Three layers, three responsibilities</h2>
-              <p>Every ArchSig run is the same computation: <code>ArchMap × (LawPolicy + MeasurementProfile) → measurement</code>. The three inputs are deliberately separate layers, because when a conclusion turns out wrong you need to know <em>which layer</em> was wrong — the observation, the selection, or the computation.</p>
+              <p>Every ArchSig run is the same computation: <code>ArchMap × (LawPolicy + law-equation-surface + MeasurementProfile) → measurement</code>. For reproducible runs, <code>policy-bundle</code> fixes the three selected policy components with canonical fingerprints; individual component flags are the equivalent direct-input form. The observation, law selection, and measurement regime remain separate layers, because when a conclusion turns out wrong you need to know which supplied layer was wrong.</p>
               <ul class="status-list">
                 <li><strong>ArchMap observes</strong><span>A source-grounded record of what is the case: components, relations, declared section values, contexts, and the selected cover, each backed by source refs. It contains no evaluation of any kind.</span></li>
-                <li><strong>LawPolicy + MeasurementProfile select</strong><span>Which evaluators run, over which scope, at which severity, against which basis documents — and the concrete finite regime: the cover, the coefficient, the witness family, the bounds. Selection is an institutional act, and it is recorded as one.</span></li>
+                <li><strong>LawPolicy + law surface + MeasurementProfile select</strong><span>Which evaluators and law universe run, over which scope, at which severity, against which basis documents — and the concrete finite regime: the cover, the coefficient, the predicates, and the bounds. Witness variables come from the supplied law surface; the profile records the measurement regime. Selection is an institutional act, and it is recorded as one.</span></li>
                 <li><strong>ArchSig computes</strong><span>The CLI turns evidence plus selection into bounded verdicts and invariants, deterministically. It never adds evidence, never extends scope, and never softens a verdict.</span></li>
               </ul>
               <p>Because the layers are separate, a bad reading has a findable owner: a wrong observation is fixed in the ArchMap, a wrong selection in the policy, a wrong computation in ArchSig itself. Mixing the layers would make that attribution impossible — which is why the validators reject inputs that try.</p>
@@ -67,8 +67,8 @@
               <h2>Comparability: when two runs may be compared</h2>
               <p><code>archsig compare</code> juxtaposes two runs at record level, and it grades how comparable they are before saying anything about transitions:</p>
               <ul class="status-list">
-                <li><strong><code>identical</code></strong><span>Same ArchMap digest, LawPolicy digest, profile fingerprint, and tool version.</span></li>
-                <li><strong><code>verdict-row</code></strong><span>Same profile fingerprint, site cover digest, and tool version — verdict rows can be matched one-to-one even though the evidence changed. This is the normal PR case.</span></li>
+                <li><strong><code>identical</code></strong><span>Same ArchMap digest, LawPolicy, law-surface, and MeasurementProfile component fingerprints, plus tool version.</span></li>
+                <li><strong><code>verdict-row</code></strong><span>Same policy-bundle component fingerprints, site cover digest, and tool version — verdict rows can be matched one-to-one even though the evidence changed. This is the normal PR case.</span></li>
                 <li><strong><code>not-comparable</code></strong><span>The site itself changed — for example the PR added a context, as the one-cent drift head does. The report records both independent conclusions and a typed boundary, and refuses row-level claims.</span></li>
               </ul>
               <p>Compare never claims that an obstruction was "introduced by" or "fixed by" a change, never transports a cohomology class across runs, and never decides causality. Those readings are left to the humans and agents looking at the juxtaposition — with the gate acting on each run's own verdicts, which is why a not-comparable head run can still be blocked on its absolute rule.</p>
