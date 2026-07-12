@@ -46,6 +46,23 @@ pub fn is_known_evaluator(evaluator: &str) -> bool {
         .any(|manifest| manifest.evaluator_id == evaluator)
 }
 
+pub fn is_compatible_evaluator_condition(evaluator: &str, condition_type: &str) -> bool {
+    match evaluator {
+        "ag.cech-obstruction"
+        | "ag.coherence-obstruction"
+        | "ag.restriction-compatibility"
+        | "ag.section-factorization"
+        | "ag.boundary-residue"
+        | "ag.saga-descent" => condition_type == "descent",
+        "ag.period-stokes" | "ag.period-stokes-audit" => condition_type == "temporal",
+        "ag.square-free-repair"
+        | "ag.law-conflict-tor"
+        | "ag.sheaf-laplacian"
+        | "ag.support-transfer" => condition_type == "constructible",
+        _ => false,
+    }
+}
+
 fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
     let mut manifests = Vec::new();
     manifests.extend(ag::ag_evaluator_manifests());

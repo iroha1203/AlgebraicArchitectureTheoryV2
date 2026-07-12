@@ -514,6 +514,31 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
             })
     );
 
+    let mut mismatched_evaluator = read_json(&input);
+    mismatched_evaluator["laws"][1]["evaluatorRef"] = json!("ag.square-free-repair");
+    let mismatched_evaluator_path = out_dir.join("mismatched-evaluator.json");
+    fs::write(
+        &mismatched_evaluator_path,
+        serde_json::to_vec_pretty(&mismatched_evaluator)
+            .expect("mismatched evaluator fixture serializes"),
+    )
+    .expect("mismatched evaluator fixture writes");
+    let mismatched_evaluator_report = out_dir.join("mismatched-evaluator-report.json");
+    run_sig0_expect_code(
+        &[
+            "law-surface",
+            "--law-surface",
+            mismatched_evaluator_path.to_str().expect("path is utf-8"),
+            "--out",
+            mismatched_evaluator_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&mismatched_evaluator_report)["summary"]["result"],
+        "fail"
+    );
+
     let mut unknown = read_json(&input);
     unknown["laws"][0]["verdict"] = json!("measured_zero");
     let unknown_path = out_dir.join("unknown.json");
@@ -2101,6 +2126,33 @@ fn cli_measurement_profile_finite_bounds_cap_and_effective_lowering() {
     let cap_json = read_json(&cap_report);
     assert_eq!(
         check_by_id(&cap_json, "measurement-profile-schema050-finite-bounds")["result"],
+        "fail"
+    );
+
+    let mut reserved_profile = read_json(&root.join("measurement_profile_ag.json"));
+    reserved_profile["diagnosticCeiling"] = json!({"reserved": true});
+    let reserved_profile_path = out_dir.join("measurement_profile_reserved.json");
+    fs::write(
+        &reserved_profile_path,
+        serde_json::to_vec_pretty(&reserved_profile).expect("reserved profile serializes"),
+    )
+    .expect("reserved profile writes");
+    let reserved_profile_report = out_dir.join("reserved-profile-report.json");
+    run_sig0_expect_code(
+        &[
+            "measurement-profile",
+            "--measurement-profile",
+            reserved_profile_path.to_str().expect("path is utf-8"),
+            "--out",
+            reserved_profile_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&reserved_profile_report),
+            "measurement-profile-schema050-reserved-fields"
+        )["result"],
         "fail"
     );
 

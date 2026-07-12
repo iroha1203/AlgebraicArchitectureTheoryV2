@@ -279,15 +279,16 @@ fn check_evaluator_refs(surface: &LawEquationSurfaceV1) -> ValidationCheck {
     let mut examples = Vec::new();
     for (index, law) in surface.laws.iter().enumerate() {
         if let Some(evaluator_ref) = law.evaluator_ref.as_deref()
-            && !registry
+            && (!registry
                 .evaluators
                 .iter()
                 .any(|manifest| manifest.evaluator_id == evaluator_ref)
+                || !crate::is_compatible_evaluator_condition(evaluator_ref, &law.condition_type))
         {
             examples.push(generic_validation_example(
                 &format!("laws[{index}].evaluatorRef"),
                 evaluator_ref,
-                "evaluatorRef must resolve to the versioned law evaluator registry",
+                "evaluatorRef must resolve to the registry and match conditionType",
             ));
         }
     }

@@ -44,6 +44,8 @@ pub struct MeasurementProfileV1 {
     pub non_zero_predicate: String,
     pub cert_selector: String,
     pub verdict_discipline: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diagnostic_ceiling: Option<Value>,
     pub finite_bounds: MeasurementProfileFiniteBoundsV1,
 }
 
