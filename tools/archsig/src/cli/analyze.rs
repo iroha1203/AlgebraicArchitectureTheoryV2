@@ -10,6 +10,7 @@ pub(crate) struct AnalyzeRunContract {
     pub tool_version: String,
     pub run_id: String,
     pub input_digests: Value,
+    pub component_fingerprints: Option<Value>,
 }
 
 impl AnalyzeRunContract {
@@ -21,6 +22,7 @@ impl AnalyzeRunContract {
         residual_packet: Option<&Path>,
         profile_fingerprint: Value,
         site_cover_digest: Value,
+        component_fingerprints: Option<Value>,
         stamp: bool,
     ) -> Result<Self, Box<dyn Error>> {
         let archmap_digest = canonical_json_file_digest(archmap)?;
@@ -88,6 +90,7 @@ impl AnalyzeRunContract {
             tool_version,
             run_id,
             input_digests,
+            component_fingerprints,
         })
     }
 }
@@ -306,6 +309,12 @@ pub(crate) fn attach_run_contract(value: &mut Value, contract: &AnalyzeRunContra
         );
         object.insert("runId".to_string(), Value::String(contract.run_id.clone()));
         object.insert("inputDigests".to_string(), contract.input_digests.clone());
+        if let Some(component_fingerprints) = &contract.component_fingerprints {
+            object.insert(
+                "componentFingerprints".to_string(),
+                component_fingerprints.clone(),
+            );
+        }
     }
 }
 

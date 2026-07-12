@@ -9898,6 +9898,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "aat-atom-vocabulary-binding/v0.5.1",
             "law-equation-surface/v0.5.1",
             "law-policy/v0.5.1",
+            "archsig-policy-bundle/v0.5.1",
             "measurement-profile/v0.5.1",
             "archsig-repair-plan/v0.5.1",
             "law-evaluator-registry/v0.5.1",
@@ -10018,6 +10019,118 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
         }),
         "schema catalog must register analyze conclusionCode values"
     );
+}
+
+#[test]
+fn cli_policy_bundle_fingerprints_and_analyze_handoff_are_fail_closed() {
+    let out_dir = temp_dir("policy-bundle");
+    let root = ag_measurement_root();
+    let law_policy = out_dir.join("law_policy_ag.json");
+    let law_surface = out_dir.join("law_surface_ag_v051.json");
+    let measurement_profile = out_dir.join("measurement_profile_ag.json");
+    fs::copy(root.join("law_policy_ag.json"), &law_policy).expect("policy copies");
+    fs::copy(root.join("law_surface_ag_v051.json"), &law_surface).expect("surface copies");
+    fs::copy(
+        root.join("measurement_profile_ag.json"),
+        &measurement_profile,
+    )
+    .expect("profile copies");
+    let bundle = out_dir.join("policy_bundle.json");
+    run_sig0(&[
+        "policy-bundle",
+        "--law-policy",
+        law_policy.to_str().expect("policy path is utf-8"),
+        "--law-surface",
+        law_surface.to_str().expect("surface path is utf-8"),
+        "--measurement-profile",
+        measurement_profile.to_str().expect("profile path is utf-8"),
+        "--out",
+        bundle.to_str().expect("bundle path is utf-8"),
+    ]);
+    let bundle_json = read_json(&bundle);
+    assert_eq!(bundle_json["schema"], "archsig-policy-bundle/v0.5.1");
+    assert!(
+        bundle_json["componentFingerprints"]["lawPolicy"]
+            .as_str()
+            .is_some_and(|value| value.starts_with("sha256:"))
+    );
+
+    let validation = out_dir.join("policy-bundle-validation.json");
+    run_sig0(&[
+        "policy-bundle",
+        "--policy-bundle",
+        bundle.to_str().expect("bundle path is utf-8"),
+        "--out",
+        validation.to_str().expect("validation path is utf-8"),
+    ]);
+    assert_eq!(read_json(&validation)["summary"]["result"], "pass");
+
+    let analyze_dir = out_dir.join("analyze");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--policy-bundle",
+        bundle.to_str().expect("bundle path is utf-8"),
+        "--out-dir",
+        analyze_dir.to_str().expect("analyze path is utf-8"),
+    ]);
+    assert_eq!(
+        read_json(&analyze_dir.join("archsig-measurement-packet.json"))["componentFingerprints"],
+        bundle_json["componentFingerprints"]
+    );
+    assert_eq!(
+        read_json(&analyze_dir.join("archsig-run-manifest.json"))["componentFingerprints"],
+        bundle_json["componentFingerprints"]
+    );
+
+    let mut mismatched = bundle_json.clone();
+    mismatched["componentFingerprints"]["lawPolicy"] = json!("sha256:wrong");
+    let mismatched_path = out_dir.join("policy_bundle_mismatched.json");
+    fs::write(
+        &mismatched_path,
+        serde_json::to_vec_pretty(&mismatched).expect("mismatched bundle serializes"),
+    )
+    .expect("mismatched bundle writes");
+    let mismatched_output = run_sig0_raw_output(&[
+        "policy-bundle",
+        "--policy-bundle",
+        mismatched_path.to_str().expect("mismatched path is utf-8"),
+        "--out",
+        out_dir
+            .join("mismatched-validation.json")
+            .to_str()
+            .expect("mismatched validation path is utf-8"),
+    ]);
+    assert_eq!(mismatched_output.status.code(), Some(1));
+
+    let mut unknown_policy = read_json(&law_policy);
+    unknown_policy["unexpected"] = json!(true);
+    let unknown_policy_path = out_dir.join("law_policy_unknown.json");
+    fs::write(
+        &unknown_policy_path,
+        serde_json::to_vec_pretty(&unknown_policy).expect("unknown policy serializes"),
+    )
+    .expect("unknown policy writes");
+    let unknown_output = run_sig0_raw_output(&[
+        "policy-bundle",
+        "--law-policy",
+        unknown_policy_path
+            .to_str()
+            .expect("unknown policy path is utf-8"),
+        "--law-surface",
+        law_surface.to_str().expect("surface path is utf-8"),
+        "--measurement-profile",
+        measurement_profile.to_str().expect("profile path is utf-8"),
+        "--out",
+        out_dir
+            .join("unknown-policy-bundle.json")
+            .to_str()
+            .expect("unknown bundle path is utf-8"),
+    ]);
+    assert_eq!(unknown_output.status.code(), Some(2));
 }
 
 #[test]

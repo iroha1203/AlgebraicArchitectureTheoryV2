@@ -43,12 +43,13 @@ are not measured zeros.
 | ArchMap validation and authoring | `archmap` | ArchMap records source-grounded Atom observations over the finite-poset-site contract. Removed helper fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not positive input. Complete-first authoring should collect source support before handoff. ArchMap does not select laws or output obstruction circuits. |
 | ArchMap authoring support | `scope-manifest`, `extraction-diff` | `scope-manifest` builds the deterministic authoring worklist (paths, hashes, approved globs) that ArchMap surveys start from. `extraction-diff` compares two survey passes' candidate packets by authoring atom-match-key; it leaves adoption adjudication to the integrator and never auto-adopts. |
 | Interpretation profile | `law-policy` | LawPolicy selects evaluator manifests, basis refs, selected laws, measurement profiles, and non-conclusions. It is an evaluator selector, not AAT itself. |
+| Policy bundle | `policy-bundle` | Fixes LawPolicy, law-equation-surface, and MeasurementProfile references with canonical component fingerprints for one analyze run. |
 | MeasurementProfile validation | `measurement-profile` | Validates a standalone `measurement-profile/v0.5.1` artifact, including finite bounds against evaluator registry hard caps. |
 | RepairPlan validation | `repair-plan` | Validates the supplied `archsig-repair-plan/v0.5.1` SAGA Stage 1 input side. Generated conclusion tokens and reserved future fields fail closed. |
 | AG measurement | `analyze` | When `law-policy/v0.5.1` selects `measurementProfileRef` and the input is finite-poset-site `archmap/v0.5.1`, `analyze` emits `archsig-measurement-packet/v0.5.1`, conclusion-first summary, insight report, viewer data, and run manifest. `ag.saga-descent` can additionally consume a checked RepairPlan via `--repair-plan`; without it the row is `not_computed` with `silence_by_design`. |
 | Compare | `compare` | Compares two current `analyze` output directories and computes `archmap-diff/v0.5.1` plus `archsig-comparison-report/v0.5.1`. The diff is computed by ArchSig, not authored as a separate input artifact. |
 | Gate | `gate` | Applies `archsig-gate-policy/v0.5.1` to a measurement packet and optional comparison report. This is the CI decision surface. |
-| Schema | `schema-catalog` | The catalog lists current ArchMap, LawPolicy, RepairPlan, measurement, gate, compare, manifest, and viewer artifacts. |
+| Schema | `schema-catalog` | The catalog lists current ArchMap, law-equation-surface, LawPolicy, policy-bundle, RepairPlan, measurement, gate, compare, manifest, and viewer artifacts. |
 
 `archsig-analysis-summary.json` is the preferred first reading surface. It
 reports the conclusion, structural verdict summary, dominant findings, action
@@ -132,6 +133,9 @@ This writes:
 - `.archsig/analyze/archsig-insight-brief.md`
 - `.archsig/analyze/archsig-atom-viewer-data.json`
 - `.archsig/analyze/archsig-run-manifest.json`
+
+When a policy bundle is supplied, the measurement packet and run manifest also
+record `componentFingerprints` for the three selected policy components.
 
 Use `archsig-analysis-summary.json` as the LLM-readable first pass and
 `archsig-atom-viewer-data.json` with ArchView for human visual review. Viewer

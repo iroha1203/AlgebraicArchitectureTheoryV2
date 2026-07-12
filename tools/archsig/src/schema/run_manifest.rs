@@ -9,6 +9,8 @@ pub struct ArchSigRunManifestV1 {
     pub tool_version: String,
     pub run_id: String,
     pub input_digests: Value,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub component_fingerprints: Option<Value>,
     pub command_name: String,
     pub mode: String,
     pub conclusion_code: Option<String>,
