@@ -33,7 +33,7 @@
                 <table>
                   <thead><tr><th scope="col">Command</th><th scope="col">Does</th><th scope="col">Key flags</th></tr></thead>
                   <tbody>
-                    <tr><td><code>analyze</code></td><td>The primary workflow: validates all inputs, normalizes the evidence, runs the selected evaluators, writes the ten run artifacts.</td><td><code>--archmap</code> plus either <code>--policy-bundle</code> or the three component flags, <code>--out-dir</code>, optional <code>--repair-plan</code></td></tr>
+                    <tr><td><code>analyze</code></td><td>The primary workflow: validates all inputs, normalizes the evidence, runs the selected evaluators, writes the eleven run artifacts.</td><td><code>--archmap</code> plus either <code>--policy-bundle</code> or the three component flags, <code>--out-dir</code>, optional <code>--repair-plan</code></td></tr>
                     <tr><td><code>compare</code></td><td>Juxtaposes two run directories at record level; emits <code>archsig-comparison-report.json</code> and <code>archmap-diff.json</code>.</td><td><code>--base-run</code> <code>--head-run</code> <code>--out-dir</code></td></tr>
                     <tr><td><code>gate</code></td><td>Maps a packet's verdicts to pass / pass_with_boundary / block under your policy. The CI decision surface.</td><td><code>--packet</code> <code>--policy</code> <code>--out</code>, optional <code>--comparison</code></td></tr>
                   </tbody>

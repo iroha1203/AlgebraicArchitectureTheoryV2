@@ -1,0 +1,19 @@
+{
+  "schema": "law-policy/v0.5.1",
+  "id": "ag-cech-forest-policy",
+  "lawSurfaceRef": "law-surface:cech-forest-v051",
+  "measurementProfileRef": "profile:ag-default@1",
+  "policies": [{
+    "law": "surface:cech-surface-v051",
+    "evaluator": "ag.cech-obstruction",
+    "basis": ["policy-basis:layering"],
+    "scope": ["src/"],
+    "severity": "high"
+  }],
+  "basisLedger": [{
+    "basisId": "policy-basis:layering",
+    "kind": "repo-document",
+    "path": "docs/aat/algebraic_geometric_theory/README.md",
+    "revision": "aat-ag-current"
+  }]
+}
