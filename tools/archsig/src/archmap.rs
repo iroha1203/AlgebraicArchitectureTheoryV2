@@ -161,6 +161,24 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
             ));
         }
     }
+    for axis in &vocabulary.axes {
+        if !required_axes.contains(&axis.as_str()) {
+            examples.push(generic_validation_example(
+                "aatAtomBindingVocabulary.axes",
+                axis,
+                "the shared binding manifest must reject axes outside the Stage 2 contract",
+            ));
+        }
+    }
+    for predicate in &vocabulary.predicates {
+        if !required_predicates.contains(&predicate.as_str()) {
+            examples.push(generic_validation_example(
+                "aatAtomBindingVocabulary.predicates",
+                predicate,
+                "the shared binding manifest must reject predicates outside the Stage 2 contract",
+            ));
+        }
+    }
     for (axis, predicate) in required_pairs {
         let present = vocabulary
             .axis_predicate_pairs

@@ -182,6 +182,15 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
         ("failing", "ag.failing"),
         ("obstructive", "ag.obstructive"),
         ("risky", "ag.risky"),
+        ("certificate", "ag.certificate"),
+        ("h1zero", "ag.h1zero"),
+        ("lawful", "ag.lawful"),
+        ("mismatch", "ag.mismatch"),
+        ("minimal-forbidden-supports", "ag.minimalForbiddenSupports"),
+        ("measured-nonzero", "ag.measuredNonzero"),
+        ("nonzero", "ag.nonzero"),
+        ("obstruction", "ag.obstruction"),
+        ("violation", "ag.violation"),
         ("verdict", "ag.verdict"),
     ] {
         let mut shortcut_input = read_json(&input);
