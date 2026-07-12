@@ -1350,3 +1350,84 @@ Identify every non-cardinality-three raw conormal value with the common
 are equivalences.  Use pair overlaps to glue a compatible three-chart family
 over `selectedSieve`; combine that single gluing theorem with this cycle's
 precoverage classification to prove full-topology raw sheafness.
+
+## Cycle 20 — raw conormal sheafness on the full generated topology
+
+- decision: approve
+- result type: target-proof-checkpoint
+- Lean file:
+  `research/lean/ResearchLean/AG/QualitySurface/LawGeneratedBooleanCircleRawConormalSheaf.lean`
+- checkpoint spine:
+  - `active_toCotangent_injective`
+  - `activeIdealEquiv`
+  - `activeValue`
+  - `conormalRestrict_activeValue`
+  - `active_pair_compatible`
+  - `raw_selectedCover_isSheafFor`
+  - `raw_selectedSieve_isSheafFor`
+  - `rawConormalType_isSheaf`
+  - `squareZeroRawConormal_isSheaf`
+  - `idempotentRawConormal_isSheaf`
+
+### Checkpoint delta
+
+For the square-zero core, every obstruction ideal has square zero.  The
+quotient map from the ideal to its cotangent is therefore injective as well as
+surjective.  `activeIdealEquiv` and `activeValue` recover the unique ambient
+ring representative of every raw conormal class without choosing a section.
+On a non-cardinality-three source, restriction is identity on that
+representative.
+
+The three chart values of a compatible family have equal active
+representatives: compatibility is evaluated on the actual union context of
+each pair of singleton charts, and both restrictions are identity there.  The
+chart-zero representative belongs to the base obstruction ideal by the
+computed `span {j}` equalities, so it constructs an actual base conormal
+section.  Active-value injectivity proves both its restriction to every chart
+and its uniqueness.
+
+This gives the sheaf condition first for the actual cover presieve and then
+for `selectedSieve`.  Cycle 19 reduces every generator pullback of the full
+admissible precoverage to `selectedSieve` or top, yielding full-topology
+type-valued sheafness.  Universe lift, concrete forgetful reflection, and
+type-valued sheafness then prove the actual `AddCommGrpCat`-valued raw conormal
+sheaf theorem.  The idempotent core is also proved a raw conormal sheaf from
+its previously computed zero section types.
+
+### Premise delta
+
+- discharged: unique active representatives; non-deep restriction
+  compatibility; pair-overlap equality; actual selected-cover gluing and
+  uniqueness; selected-sieve sheafness; full-topology square-zero raw conormal
+  sheafness; full-topology idempotent raw conormal sheafness.
+- remaining: universe-lifted raw conormal to canonical sheafification
+  isomorphisms and restriction naturality; canonical tuple coefficient
+  formulas; explicit cocycle and period non-coboundary; the sheafified
+  zero/nonzero `H¹` pair; primitive lawful-reading atlas; semantic
+  specialization; torsor/H0; final package; and global `H¹`-vanishing.
+
+### Audits
+
+- focused raw-conormal-sheaf elaboration: pass (20 declarations)
+- module-wide standard-axiom assertion: pass
+- proof-use: ideal-square zero proves representative uniqueness; actual pair
+  overlaps prove chart compatibility; actual gluing feeds the full
+  precoverage classification; category-valued sheafness uses universe lift and
+  forgetful reflection
+- provenance: the gluing section is constructed from a chart value and the
+  generated ideal equalities; no glue, sheaf condition, or comparison is
+  supplied
+- supplied-field audit: no sheaf certificate, amalgamation, coefficient iso,
+  cocycle, class, or vanishing result is accepted as input
+- four independent review lanes: No major findings
+- target classification: raw conormal sheaf effectivity is discharged; the
+  canonical sheafification comparison and D2 `H¹` pair remain
+
+### Next obligation
+
+Lift both concrete raw conormal sheaves through `AddCommGrpCat.uliftFunctor`.
+Generate the canonical isomorphisms from each lifted raw coefficient to
+`sheafifiedShortComplex.X₁.val` using `site.topology.isoSheafify`, expose their
+sectionwise additive equivalences, and prove restriction naturality.  Then the
+explicit canonical tuple calculation can be performed directly on raw active
+representatives and transported without a supplied comparison.
