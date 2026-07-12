@@ -1,10 +1,10 @@
 # ArchSig
 
 `archsig` is the ArchMap -> ArchSig structural analysis CLI. The current
-runtime reads supplied `archmap/v0.5.0` evidence and a selected
-`law-policy/v0.5.0` profile. The AG measurement path reads finite-poset-site
-ArchMap shape plus a selected `measurement-profile/v0.5.0` and emits
-`archsig-measurement-packet/v0.5.0`.
+runtime reads supplied `archmap/v0.5.1` evidence and a selected
+`law-policy/v0.5.1` profile. The AG measurement path reads finite-poset-site
+ArchMap shape plus a selected `measurement-profile/v0.5.1` and emits
+`archsig-measurement-packet/v0.5.1`.
 
 ArchSig is an LLM-native tool. The intended product interface is the bundled
 LLM skills in `tools/archsig/skills`, not a human manually reading internal JSON.
@@ -43,11 +43,11 @@ are not measured zeros.
 | ArchMap validation and authoring | `archmap` | ArchMap records source-grounded Atom observations over the finite-poset-site contract. Removed helper fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not positive input. Complete-first authoring should collect source support before handoff. ArchMap does not select laws or output obstruction circuits. |
 | ArchMap authoring support | `scope-manifest`, `extraction-diff` | `scope-manifest` builds the deterministic authoring worklist (paths, hashes, approved globs) that ArchMap surveys start from. `extraction-diff` compares two survey passes' candidate packets by authoring atom-match-key; it leaves adoption adjudication to the integrator and never auto-adopts. |
 | Interpretation profile | `law-policy` | LawPolicy selects evaluator manifests, basis refs, selected laws, measurement profiles, and non-conclusions. It is an evaluator selector, not AAT itself. |
-| MeasurementProfile validation | `measurement-profile` | Validates a standalone `measurement-profile/v0.5.0` artifact, including finite bounds against evaluator registry hard caps. |
-| RepairPlan validation | `repair-plan` | Validates the supplied `archsig-repair-plan/v0.5.0` SAGA Stage 1 input side. Generated conclusion tokens and reserved future fields fail closed. |
-| AG measurement | `analyze` | When `law-policy/v0.5.0` selects `measurementProfileRef` and the input is finite-poset-site `archmap/v0.5.0`, `analyze` emits `archsig-measurement-packet/v0.5.0`, conclusion-first summary, insight report, viewer data, and run manifest. `ag.saga-descent` can additionally consume a checked RepairPlan via `--repair-plan`; without it the row is `not_computed` with `silence_by_design`. |
-| Compare | `compare` | Compares two current `analyze` output directories and computes `archmap-diff/v0.5.0` plus `archsig-comparison-report/v0.5.0`. The diff is computed by ArchSig, not authored as a separate input artifact. |
-| Gate | `gate` | Applies `archsig-gate-policy/v0.5.0` to a measurement packet and optional comparison report. This is the CI decision surface. |
+| MeasurementProfile validation | `measurement-profile` | Validates a standalone `measurement-profile/v0.5.1` artifact, including finite bounds against evaluator registry hard caps. |
+| RepairPlan validation | `repair-plan` | Validates the supplied `archsig-repair-plan/v0.5.1` SAGA Stage 1 input side. Generated conclusion tokens and reserved future fields fail closed. |
+| AG measurement | `analyze` | When `law-policy/v0.5.1` selects `measurementProfileRef` and the input is finite-poset-site `archmap/v0.5.1`, `analyze` emits `archsig-measurement-packet/v0.5.1`, conclusion-first summary, insight report, viewer data, and run manifest. `ag.saga-descent` can additionally consume a checked RepairPlan via `--repair-plan`; without it the row is `not_computed` with `silence_by_design`. |
+| Compare | `compare` | Compares two current `analyze` output directories and computes `archmap-diff/v0.5.1` plus `archsig-comparison-report/v0.5.1`. The diff is computed by ArchSig, not authored as a separate input artifact. |
+| Gate | `gate` | Applies `archsig-gate-policy/v0.5.1` to a measurement packet and optional comparison report. This is the CI decision surface. |
 | Schema | `schema-catalog` | The catalog lists current ArchMap, LawPolicy, RepairPlan, measurement, gate, compare, manifest, and viewer artifacts. |
 
 `archsig-analysis-summary.json` is the preferred first reading surface. It
@@ -57,7 +57,7 @@ unmeasured / not-computed support is not measured zero.
 
 Large ArchMaps may be authored in shards for review and parallel generation,
 but current commands consume the exported monolithic
-`archmap/v0.5.0` artifact.
+`archmap/v0.5.1` artifact.
 
 Pre-Atom, v0 packet-builder, and v1 compatibility commands were removed instead
 of kept as shims. `llm-native-workflow`, `north-star-workflow`,
@@ -72,7 +72,7 @@ Git history is the archive for those workflows.
 | Legacy lightweight PR review command | `compare` for measurement comparison, followed by `gate` for CI policy. |
 | Legacy strict distance flag | `gate` policy rules over measurement and comparison reports. |
 | Raw handoff artifact | `archsig-measurement-packet.json` for FieldSig handoff. |
-| Authored delta artifact | `compare` computes `archmap-diff/v0.5.0` from two run directories. |
+| Authored delta artifact | `compare` computes `archmap-diff/v0.5.1` from two run directories. |
 | Legacy derived distance chain | Measurement packet, summary, insight report, viewer data, and run manifest. |
 
 ## Install From GitHub Release
@@ -146,7 +146,7 @@ Open it in a browser through a local HTTP server next to an
 `archsig analyze` output directory, or copy it beside
 `archsig-atom-viewer-data.json` so same-directory fetch can load the packet.
 ArchView also supports file picker / drag-and-drop and sequence mode through
-`archview-sequence/v0.5.0`. It uses CDN Three.js and projects measured AAT geometry
+`archview-sequence/v0.5.1`. It uses CDN Three.js and projects measured AAT geometry
 without creating new structural verdicts.
 
 For a production-shaped, end-to-end demonstration — a realistic Rust service
@@ -178,11 +178,11 @@ language.
 
 | Skill | Purpose |
 | --- | --- |
-| `archmap-creater` | Create bounded `archmap/v0.5.0` artifacts from repository evidence. It keeps ArchMap as source-grounded Atom observations, not law-relative analysis or removed v0 helper fields. |
-| `law-policy-creater` | Create project-specific `law-policy/v0.5.0` profiles from repository coding conventions, architecture rules, and user decisions. If docs do not define the evaluator universe, ask the user before selecting laws. |
+| `archmap-creater` | Create bounded `archmap/v0.5.1` artifacts from repository evidence. It keeps ArchMap as source-grounded Atom observations, not law-relative analysis or removed v0 helper fields. |
+| `law-policy-creater` | Create project-specific `law-policy/v0.5.1` profiles from repository coding conventions, architecture rules, and user decisions. If docs do not define the evaluator universe, ask the user before selecting laws. |
 | `archsig-reader` | Run an ArchMap with a selected LawPolicy, read summary / viewer report / manifest first, compare high-priority readings with source evidence, and propose bounded improvements. It does not silently use a generic LawPolicy as project analysis. |
 | `archsig-pr-reviewer` | Use `analyze`, `compare`, and `gate`, then read the changed code and explain review focus in human code-review language. It stops if the base measurement context is missing. |
-| `repair-plan-creater` | Author `archsig-repair-plan/v0.5.0` artifacts for SAGA descent runs, validated through `repair-plan` and consumed through `analyze --repair-plan`. |
+| `repair-plan-creater` | Author `archsig-repair-plan/v0.5.1` artifacts for SAGA descent runs, validated through `repair-plan` and consumed through `analyze --repair-plan`. |
 
 Typical use:
 
@@ -195,7 +195,7 @@ Typical use:
    compare selected detail refs with source evidence before proposing
    improvements.
 5. When a measured obstruction needs a repair route, use `repair-plan-creater`
-   to author `archsig-repair-plan/v0.5.0`, validate it with `repair-plan`, and
+   to author `archsig-repair-plan/v0.5.1`, validate it with `repair-plan`, and
    re-run `analyze` with `--repair-plan`.
 
 For pull requests, run current base and head measurements, compare the two run
@@ -218,8 +218,8 @@ existing tag. The workflow uploads:
 Each binary archive contains the `archsig` executable, the repository license,
 the ArchSig README / command guide, and the ArchSig skills directory.
 
-Use version-only tags such as `v0.5.0` or prerelease tags such as
-`v0.5.0-rc.1`. Do not include `archsig` in the tag name; asset names already
+Use version-only tags such as `v0.5.1` or prerelease tags such as
+`v0.5.1-rc.1`. Do not include `archsig` in the tag name; asset names already
 carry the `archsig-` prefix.
 
 ## Docs

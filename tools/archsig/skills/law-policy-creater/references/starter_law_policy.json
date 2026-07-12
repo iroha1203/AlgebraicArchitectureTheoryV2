@@ -1,10 +1,11 @@
 {
-  "schema": "law-policy/v0.5.0",
+  "schema": "law-policy/v0.5.1",
   "id": "project-ag-law-policy",
+  "lawSurfaceRef": "law-surface:<law-surface-id>",
   "measurementProfileRef": "profile:ag-default@1",
   "policies": [
     {
-      "law": "ag.cech-obstruction",
+      "law": "surface:cech-surface-v051",
       "evaluator": "ag.cech-obstruction",
       "basis": [
         "policy-basis:layering"

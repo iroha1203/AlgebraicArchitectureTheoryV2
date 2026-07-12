@@ -38,7 +38,7 @@ pub fn build_repair_plan_validation_report_v1(
     let failed_check_count = checks.iter().filter(|check| check.result == "fail").count();
     let warning_check_count = checks.iter().filter(|check| check.result == "warn").count();
     serde_json::json!({
-        "schema": "archsig-repair-plan-validation-report/v0.5.0",
+        "schema": "archsig-repair-plan-validation-report/v0.5.1",
         "input": {
             "schema": plan.schema,
             "path": input_path,
@@ -64,7 +64,7 @@ pub fn build_repair_plan_validation_report_v1(
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
         "repair-plan-schema050-schema",
-        "RepairPlan uses the v0.5.0 schema discriminator",
+        "RepairPlan uses the v0.5.1 schema discriminator",
         if plan.schema == ARCHSIG_REPAIR_PLAN_V1_SCHEMA {
             "pass"
         } else {

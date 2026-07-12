@@ -213,9 +213,9 @@ pub fn build_operation_support_estimate_from_archsig_measurement_packet(
         .or_else(|| packet.get("schema"))
         .and_then(|value| value.as_str())
         .unwrap_or_default();
-    if schema_version != "archsig-measurement-packet/v0.5.0" {
+    if schema_version != "archsig-measurement-packet/v0.5.1" {
         return Err(format!(
-            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.0, got {schema_version}"
+            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.1, got {schema_version}"
         )
         .into());
     }
@@ -291,8 +291,8 @@ pub fn build_operation_support_estimate_from_archsig_measurement_packet(
                 "ArchSig measurement packet statuses are selected finite-measurement evidence, not probability"
                     .to_string(),
             evidence_kinds: vec![
-                "archsig-measurement-packet/v0.5.0".to_string(),
-                "measurement-profile/v0.5.0".to_string(),
+                "archsig-measurement-packet/v0.5.1".to_string(),
+                "measurement-profile/v0.5.1".to_string(),
                 "structural-verdict".to_string(),
                 "computed-invariant".to_string(),
                 "analytic-reading".to_string(),
@@ -331,9 +331,9 @@ fn validate_archsig_measurement_packet_handoff_shape(
         .get("schema")
         .and_then(|value| value.as_str())
         .unwrap_or_default();
-    if schema != "archsig-measurement-packet/v0.5.0" {
+    if schema != "archsig-measurement-packet/v0.5.1" {
         return Err(
-            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.0"
+            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.1"
                 .into(),
         );
     }
@@ -348,6 +348,19 @@ fn validate_archsig_measurement_packet_handoff_shape(
         .get("profile")
         .and_then(|value| value.as_object())
         .ok_or("FieldSig ArchSig measurement handoff requires profile object")?;
+    if profile.get("schema").and_then(|value| value.as_str()) != Some("measurement-profile/v0.5.1")
+    {
+        return Err(
+            "FieldSig ArchSig measurement handoff requires profile schema measurement-profile/v0.5.1"
+                .into(),
+        );
+    }
+    if profile.contains_key("witnessFamily") {
+        return Err(
+            "FieldSig ArchSig measurement handoff rejects profile witnessFamily; use the law-equation-surface input"
+                .into(),
+        );
+    }
     let profile_id = profile
         .get("profileId")
         .and_then(|value| value.as_str())

@@ -15,7 +15,7 @@ Current source-of-truth boundaries:
   selected covers.
 - LawPolicy selects evaluators, basis refs, scope, and severity.
 - MeasurementProfile selects the concrete finite measurement regime.
-- RepairPlan (`archsig-repair-plan/v0.5.0`) is the SAGA Stage 1 input side:
+- RepairPlan (`archsig-repair-plan/v0.5.1`) is the SAGA Stage 1 input side:
   `repair-plan` validates it, and `analyze --repair-plan` consumes it when
   `ag.saga-descent` is selected. Without it the row stays `not_computed` with
   `silence_by_design`.

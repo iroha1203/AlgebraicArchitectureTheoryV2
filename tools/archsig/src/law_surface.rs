@@ -50,8 +50,22 @@ const CONCLUSION_TOKENS: [&str; 27] = [
     "violating",
 ];
 
-const BINDING_AXES: [&str; 3] = ["cech", "square-free", "section-factorization"];
-const BINDING_PREDICATES: [&str; 3] = ["support", "cooccurrence", "sectionValue"];
+const BINDING_AXES: [&str; 6] = [
+    "cech",
+    "square-free",
+    "section-factorization",
+    "laplacian",
+    "period",
+    "transfer",
+];
+const BINDING_PREDICATES: [&str; 6] = [
+    "support",
+    "cooccurrence",
+    "sectionValue",
+    "cellularCochain",
+    "periodIntegral",
+    "transferPairing",
+];
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -709,6 +723,9 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
         ("square-free", "cooccurrence"),
         ("section-factorization", "support"),
         ("section-factorization", "cooccurrence"),
+        ("laplacian", "cellularCochain"),
+        ("period", "periodIntegral"),
+        ("transfer", "transferPairing"),
     ];
     for pair in &vocabulary.axis_predicate_pairs {
         if !BINDING_AXES.contains(&pair.axis.as_str()) {

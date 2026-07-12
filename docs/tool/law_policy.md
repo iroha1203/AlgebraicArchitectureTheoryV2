@@ -9,21 +9,24 @@ Current ArchSig `analyze` reads:
 ArchMap finite-poset-site evidence
   + LawPolicy evaluator selection
   + MeasurementProfile selected regime
-  -> archsig-measurement-packet/v0.5.0
+  -> archsig-measurement-packet/v0.5.1
 ```
 
 LawPolicy JSON selects evaluator ids, basis refs, scope, severity, and a
-`measurementProfileRef`. The selected profile is supplied as a separate
-`measurement-profile/v0.5.0` artifact through `--measurement-profile`; LawPolicy
+`measurementProfileRef`. `lawSurfaceRef` is required and must match the supplied
+`law-equation-surface/v0.5.1` id. The selected profile is supplied as a separate
+`measurement-profile/v0.5.1` artifact through `--measurement-profile`; LawPolicy
 does not embed `measurementProfiles[]`.
 
 `basisLedger[]` declares the basis ids used by `policies[].basis`. ArchSig checks
 that policy basis refs resolve inside the ledger, but it does not check that
-ledger paths exist. `lawSurfaceRef` and `policies[].profileRef` are reserved
-for later law-surface / multi-profile stages and fail closed when present.
+ledger paths exist. Each `policies[].law` must resolve to a law declared by the
+supplied law surface, and its evaluator/condition/axis combination must match
+the registry mapping.
 
-MeasurementProfile owns the selected cover, coefficient, witness family,
-predicates, certificate selector, verdict discipline, and `finiteBounds`.
+MeasurementProfile owns the selected cover, coefficient, predicates, certificate
+selector, verdict discipline, and `finiteBounds`. Witness variables belong to
+the law surface and are projected into the execution plan only after validation.
 `finiteBounds` may lower ArchSig registry hard caps; cap exceedance is a
 validation failure. LawPolicy does not embed witness rules, distance profiles,
 operation costs, coverage DSLs, repair recipes, or Lean proof assumptions.
@@ -40,7 +43,7 @@ external MeasurementProfile.
 | selected site `X_M` | `MeasurementProfile.siteRef` | 非空文字列を要求する。参照先の内容はArchMap側で扱う。 |
 | selected cover `U_M` | `MeasurementProfile.coverRef` | 非空文字列を要求し、ArchMapのsite/cover digestとともにrun契約へ入れる。 |
 | coefficient / effective coefficient | `MeasurementProfile.coefficient`, `effCoeff` | 非空文字列を要求する。有限計算に使う実装はevaluator registryが所有する。 |
-| selected witness family / predicates | `witnessFamily`, `zeroPredicate`, `nonZeroPredicate` | witnessの`law` / `variable`と判定predicateの非空を検査する。 |
+| selected witness variables / predicates | `law-equation-surface.witnessVariables[]`, `zeroPredicate`, `nonZeroPredicate` | witness変数は供給済みlaw surfaceから解決し、profileは計測手段と判定predicateだけを持つ。 |
 | verdict discipline | `verdictDiscipline` | `five-valued-structural-verdict@1`を要求し、`measured_zero`等を他の語へ縮約しない。 |
 | finite site / cover / effective computation | `finiteBounds` と `MeasurementProfile`全体 | 各boundを正数かつregistry hard cap以下に制限する。 |
 | law universe と選択されたreading | `LawPolicy.policies[]` の `law`, `evaluator`, `basis`, `scope`, `severity` | LawPolicyは選択だけを持ち、predicateや計算結果を入力に埋め込まない。 |

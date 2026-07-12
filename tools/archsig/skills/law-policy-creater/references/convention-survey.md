@@ -39,10 +39,10 @@ Then inspect likely config and architecture surfaces:
 | repeated but undocumented pattern | question to user, not policy yet |
 
 Do not translate evidence into witness rules, signature axes, coverage
-requirements, exactness assumptions, or distance profiles. Those are evaluator
-registry responsibilities in the current surface. For AG, put selected cover, coefficient,
-witness family, resolution selector, predicates, certificate selector, and
-verdict discipline in the separate `measurement-profile/v0.5.0` artifact.
+requirements, exactness assumptions, or distance profiles. Those are law-equation-surface
+and evaluator registry responsibilities in the current surface. For AG, put selected cover, coefficient,
+resolution selector, predicates, certificate selector, and
+verdict discipline in the separate `measurement-profile/v0.5.1` artifact.
 
 ## Survey Output
 

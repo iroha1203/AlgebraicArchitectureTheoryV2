@@ -37,6 +37,7 @@ for state in base:archmap.json head:archmap_head.json; do
     --archmap "$EXAMPLE/archmap/$archmap" \
     --law-policy "$EXAMPLE/law_policy/law_policy.json" \
     --measurement-profile "$EXAMPLE/law_policy/measurement_profile.json" \
+    --law-surface "$EXAMPLE/law_policy/law_surface.json" \
     --law-surface "$law_surface" \
     --out-dir "$OUT/$name" >/dev/null
   conclusion "$OUT/$name/archsig-analysis-summary.json" "analyze $name" conclusion
@@ -62,6 +63,7 @@ echo "=== Act 4: measure, compare, and gate the repaired state ==="
   --archmap "$EXAMPLE/archmap/archmap_repaired.json" \
   --law-policy "$EXAMPLE/law_policy/law_policy.json" \
   --measurement-profile "$EXAMPLE/law_policy/measurement_profile.json" \
+  --law-surface "$EXAMPLE/law_policy/law_surface.json" \
   --law-surface "$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v051.json" \
   --out-dir "$OUT/repaired" >/dev/null
 conclusion "$OUT/repaired/archsig-analysis-summary.json" "analyze repaired" conclusion

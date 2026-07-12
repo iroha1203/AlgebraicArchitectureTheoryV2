@@ -5,7 +5,7 @@ use crate::{
 
 pub mod ag;
 
-const REGISTRY_SCHEMA: &str = "law-evaluator-registry/v0.5.0";
+const REGISTRY_SCHEMA: &str = "law-evaluator-registry/v0.5.1";
 
 pub fn static_law_evaluator_registry_v1() -> LawEvaluatorRegistryV1 {
     LawEvaluatorRegistryV1 {
@@ -58,6 +58,10 @@ pub fn is_compatible_evaluator_condition(evaluator: &str, condition_type: &str) 
         })
 }
 
+pub fn binding_axes_for(evaluator: &str) -> &'static [&'static str] {
+    ag::binding_axes_for(evaluator)
+}
+
 fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
     let mut manifests = Vec::new();
     manifests.extend(ag::ag_evaluator_manifests());
@@ -99,14 +103,14 @@ mod tests {
         ));
         assert_eq!(
             section_manifest.typed_result_schema,
-            "archsig-measurement-packet/v0.5.0"
+            "archsig-measurement-packet/v0.5.1"
         );
     }
 
     #[test]
     fn expansion_ignores_retired_pack_selectors() {
         let policy = LawPolicyDocumentV1 {
-            schema: "law-policy/v0.5.0".to_string(),
+            schema: "law-policy/v0.5.1".to_string(),
             id: "policy:test".to_string(),
             law_surface_ref: None,
             measurement_profile_ref: None,

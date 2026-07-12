@@ -5,7 +5,7 @@ This checklist records the current tooling boundary:
 ```text
 source artifacts
   -> ArchMap finite-poset-site atoms / contexts / covers
-  -> LawPolicy + MeasurementProfile
+  -> LawPolicy + law-equation-surface + MeasurementProfile
   -> ArchSig measurement packet
   -> FieldSig SFT boundary
 ```
@@ -18,9 +18,9 @@ source artifacts
 - Missing support is reported as `blocked`, `unknown`, `unmeasured`, or
   `not_computed`; it is not rounded to measured zero.
 - LawPolicy selects evaluator ids, basis refs, scope, and severity.
-- MeasurementProfile selects coefficient, cover, witness family, resolution
-  selector, and verdict discipline.
-- ArchSig validates inputs and emits `archsig-measurement-packet/v0.5.0`,
+- MeasurementProfile selects coefficient, cover, resolution selector, and verdict
+  discipline. Witness variables are supplied by the referenced law-equation-surface.
+- ArchSig validates inputs and emits `archsig-measurement-packet/v0.5.1`,
   summary, viewer data, and run manifest.
 
 ## Lean AAT Surface

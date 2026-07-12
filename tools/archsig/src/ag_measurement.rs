@@ -14,9 +14,10 @@ use crate::{
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, AgAnalyticReadingV1,
     AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
     ArchSigMeasurementPacketV1, BoundaryStatementV1, LawEquationSurfaceV1, LawPolicyDocumentV1,
-    MeasurementProfileV1, NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2,
-    NormalizedCoverV2, RepairPlanDocumentV1, SuppliedDataLedgerEntryV1, ValidationCheck,
-    ValidationExample, analytic_claim_status, analytic_fidelity, assumption_id_for_schema,
+    MeasurementProfileV1, MeasurementProfileWitnessV1, NormalizedArchMapV2, NormalizedAtomV2,
+    NormalizedContextV2, NormalizedCoverV2, RepairPlanDocumentV1, SuppliedDataLedgerEntryV1,
+    ValidationCheck, ValidationExample, analytic_claim_status, analytic_fidelity,
+    assumption_id_for_schema,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -243,6 +244,53 @@ pub fn selected_measurement_profile_v1<'a>(
     (measurement_profile.profile_id == profile_ref).then_some(measurement_profile)
 }
 
+fn profile_with_law_surface_witnesses(
+    policy: &LawPolicyDocumentV1,
+    profile: &MeasurementProfileV1,
+    law_surface: &LawEquationSurfaceV1,
+) -> Result<MeasurementProfileV1, String> {
+    let mut execution_profile = profile.clone();
+    let mut witnesses = BTreeSet::new();
+    for entry in policy.policies.iter().filter(|entry| {
+        entry
+            .evaluator
+            .as_deref()
+            .is_some_and(|evaluator| evaluator.starts_with("ag."))
+    }) {
+        let evaluator = entry.evaluator.as_deref().unwrap_or_default();
+        let laws = if evaluator == "ag.law-conflict-tor" {
+            law_surface
+                .laws
+                .iter()
+                .filter(|law| {
+                    law.law_id.starts_with("law:")
+                        && law
+                            .witness_variables
+                            .iter()
+                            .all(|witness| witness.binding.axis.as_deref() == Some("square-free"))
+                })
+                .collect::<Vec<_>>()
+        } else {
+            entry
+                .law
+                .as_deref()
+                .and_then(|law_id| law_surface.laws.iter().find(|law| law.law_id == law_id))
+                .into_iter()
+                .collect::<Vec<_>>()
+        };
+        for law in laws {
+            for witness in &law.witness_variables {
+                witnesses.insert((evaluator.to_string(), witness.variable.clone()));
+            }
+        }
+    }
+    execution_profile.witness_family = witnesses
+        .into_iter()
+        .map(|(law, variable)| MeasurementProfileWitnessV1 { law, variable })
+        .collect();
+    Ok(execution_profile)
+}
+
 fn boundary_statements_for_measurement_packet(
     packet: &ArchSigMeasurementPacketV1,
 ) -> Vec<BoundaryStatementV1> {
@@ -458,9 +506,13 @@ pub fn build_foundation_measurement_packet_v1(
                 .to_string(),
         );
     }
-    let profile = selected_measurement_profile_v1(policy, measurement_profile)
+    let selected_profile = selected_measurement_profile_v1(policy, measurement_profile)
         .ok_or_else(|| "AG measurement packet requires measurementProfileRef".to_string())?
         .clone();
+    let law_surface = law_surface.ok_or_else(|| {
+        "AG measurement packet requires --law-surface; witness variables are supplied only by the law surface".to_string()
+    })?;
+    let profile = profile_with_law_surface_witnesses(policy, &selected_profile, law_surface)?;
     validate_profile_refs(&profile, normalized)?;
     let mut structural_verdict = Vec::new();
     let mut computed_invariants = vec![json!({
@@ -518,7 +570,7 @@ pub fn build_foundation_measurement_packet_v1(
         });
         let execution_plan = build_law_execution_plan(
             normalized,
-            law_surface,
+            Some(law_surface),
             entry.law.as_deref(),
             evaluator,
             selected_contexts_for_plan.as_ref(),
@@ -642,7 +694,7 @@ pub fn build_foundation_measurement_packet_v1(
             });
         } else if evaluator == "ag.square-free-repair" {
             let law_id = entry.law.as_deref().unwrap_or(evaluator);
-            let law = resolve_closed_law(law_surface, law_id, evaluator)?;
+            let law = resolve_closed_law(Some(law_surface), law_id, evaluator)?;
             let (witness_variables, archmap_aliases, binding_axis, binding_predicate) =
                 law_witness_bindings(law)?;
             validate_square_free_profile_v1(&profile, &witness_variables)?;
@@ -677,7 +729,7 @@ pub fn build_foundation_measurement_packet_v1(
                 reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.law-conflict-tor" {
-            let tor_laws = resolve_tor_laws(law_surface, evaluator)?;
+            let tor_laws = resolve_tor_laws(Some(law_surface), evaluator)?;
             let witness_variables = merged_law_witness_bindings(&tor_laws)?;
             validate_tor_profile_v1(&profile, &witness_variables)?;
             let measurement =
@@ -828,7 +880,7 @@ pub fn build_foundation_measurement_packet_v1(
 
     let non_conclusions = vec![
         format!(
-            "ArchSig v0.5.0 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
+            "ArchSig v0.5.1 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
         ),
         "Unmeasured AG evaluator rows are schema handoff rows, not measured zero.".to_string(),
         "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
@@ -871,21 +923,21 @@ fn supplied_data_ledger(
             "supplied:archmap",
             "archmap",
             archmap_ref,
-            "archmap/v0.5.0-validation",
+            "archmap/v0.5.1-validation",
             "validated",
         ),
         supplied_data_entry(
             "supplied:law-policy",
             "law-policy",
             law_policy_ref,
-            "law-policy/v0.5.0-validation",
+            "law-policy/v0.5.1-validation",
             "validated",
         ),
         supplied_data_entry(
             "supplied:measurement-profile",
             "measurement-profile",
             measurement_profile_ref,
-            "measurement-profile/v0.5.0-validation",
+            "measurement-profile/v0.5.1-validation",
             "validated",
         ),
     ];
@@ -903,7 +955,7 @@ fn supplied_data_ledger(
             "supplied:repair-plan",
             "repair-plan",
             repair_plan_ref,
-            "repair-plan/v0.5.0-validation",
+            "repair-plan/v0.5.1-validation",
             "validated",
         ));
     }
@@ -912,7 +964,7 @@ fn supplied_data_ledger(
             "supplied:residual-packet",
             "residual-packet",
             residual_packet_ref,
-            "residual-packet/v0.5.0-validation",
+            "residual-packet/v0.5.1-validation",
             "validated",
         ));
     }
@@ -1585,7 +1637,13 @@ fn resolve_tor_laws<'a>(
     let laws = surface
         .laws
         .iter()
-        .filter(|law| law.law_id.starts_with("law:"))
+        .filter(|law| {
+            law.law_id.starts_with("law:")
+                && law
+                    .witness_variables
+                    .iter()
+                    .all(|witness| witness.binding.axis.as_deref() == Some("square-free"))
+        })
         .collect::<Vec<_>>();
     if laws.is_empty() {
         return Err(format!(
@@ -1956,12 +2014,11 @@ fn evaluate_square_free_repair_v1(
         assumptions: vec![
             AgAssumptionLedgerEntryV1 {
                 theorem_ref: "part8/5.1".to_string(),
-                assumption: "square-free witness variables selected by MeasurementProfile"
+                assumption: "square-free witness variables selected by supplied law-equation-surface"
                     .to_string(),
                 status: "checked".to_string(),
                 checked_by: Some(format!(
-                    "measurement-profile:{}.witnessFamily",
-                    profile.profile_id
+                    "law-surface:provided-law-equation-surface"
                 )),
                 assumed_by: None,
             },
@@ -3825,7 +3882,7 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
     };
     let translation_rule = summary_translation_rule(conclusion);
     json!({
-        "schema": "archsig-analysis-summary/v0.5.0",
+        "schema": "archsig-analysis-summary/v0.5.1",
         "conclusion": conclusion,
         "translationRule": active_summary_translation_rule_json(&translation_rule, packet),
         "translationRuleTable": ARCHSIG_ANALYSIS_CONCLUSION_CODES
@@ -3931,7 +3988,7 @@ pub fn build_insight_report_v1(
         })
     });
     json!({
-        "schema": "archsig-insight-report/v0.5.0",
+        "schema": "archsig-insight-report/v0.5.1",
         "reportId": format!("insight:{}", packet.packet_id),
         "sourcePacketRef": "archsig-measurement-packet.json",
         "generatedAt": "deterministic-run-artifact",
@@ -3985,7 +4042,7 @@ pub fn build_insight_report_v1(
             "monodromyVerdictGenerated": false
         },
         "nonConclusions": [
-            "Insight report is a projection of archsig-measurement-packet/v0.5.0 and does not generate new measurement claims.",
+            "Insight report is a projection of archsig-measurement-packet/v0.5.1 and does not generate new measurement claims.",
             "Repair candidates are next inspection cues, not automatic fixes.",
             "Viewer scenes are visual projections, not structural verdict derivations."
         ]
@@ -4988,7 +5045,7 @@ fn attach_gluing_scene_geometry(mut scene: Value, gluing_geometry: &Value) -> Va
         "source": "renderer sceneAxisPosition reads these metric keys from each gluing geometry object"
     });
     scene["projectionBoundary"] = json!(
-        "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.0 and archsig-insight-report/v0.5.0; it does not create a new structural verdict."
+        "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.1 and archsig-insight-report/v0.5.1; it does not create a new structural verdict."
     );
     scene["visualEncodingLegend"] = visual_encoding_legend_v1();
     if scene_id == "cech-h1-mismatch" {
@@ -5237,7 +5294,7 @@ fn gluing_geometry_projection_v1(
         })
         .collect::<Vec<_>>();
     json!({
-        "schema": "archsig-viewer-gluing-geometry/v0.5.0",
+        "schema": "archsig-viewer-gluing-geometry/v0.5.1",
         "sourcePacketRef": "archsig-measurement-packet.json",
         "sourceInsightReportRef": "archsig-insight-report.json",
         "projectionBoundary": "This geometry translates measured packet and ArchMap cover support into viewer objects. It adds no structural verdict or monodromy verdict; H2 coherence color appears only when projected from ag.coherence-obstruction packet verdicts.",
@@ -5585,7 +5642,7 @@ fn analytic_overlay_bundle_projection(packet: &ArchSigMeasurementPacketV1) -> Va
         .collect::<Vec<_>>();
 
     json!({
-        "schema": "archsig-analytic-overlay-bundle/v0.5.0",
+        "schema": "archsig-analytic-overlay-bundle/v0.5.1",
         "allowlist": [
             "strict-period-pairing@1",
             "support-localized-transfer@1",
@@ -5684,7 +5741,7 @@ fn period_stokes_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
         .filter(|invariant| invariant["evaluator"] == "ag.period-stokes-audit")
         .count();
     json!({
-        "schema": "archsig-period-stokes-meter/v0.5.0",
+        "schema": "archsig-period-stokes-meter/v0.5.1",
         "sourceEvaluator": "ag.period-stokes-audit",
         "sourceAnalyticReadingKind": "strict-period-pairing@1",
         "colorRole": "analytic_reading",
@@ -5711,7 +5768,7 @@ fn spectrum_landscape_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     });
     let Some(reading) = hodge_reading else {
         return json!({
-            "schema": "archsig-spectrum-landscape/v0.5.0",
+            "schema": "archsig-spectrum-landscape/v0.5.1",
             "status": "silent",
             "measurementStatus": "not_projected",
             "colorRole": "analytic_reading",
@@ -5800,7 +5857,7 @@ fn spectrum_landscape_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     let spectral_radius_numeric = spectrum_numeric_value(&spectral_radius_value);
 
     json!({
-        "schema": "archsig-spectrum-landscape/v0.5.0",
+        "schema": "archsig-spectrum-landscape/v0.5.1",
         "status": "needsReview",
         "measurementStatus": "proxy",
         "sourceReadingRef": reading.reading_id,
@@ -7444,8 +7501,7 @@ fn validate_cech_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String
         .any(|witness| witness.law == "ag.cech-obstruction")
     {
         return Err(format!(
-            "ag.cech-obstruction requires MeasurementProfile {} witnessFamily law ag.cech-obstruction",
-            profile.profile_id
+            "ag.cech-obstruction requires law-surface witness variables for law ag.cech-obstruction",
         ));
     }
     Ok(())
@@ -7499,7 +7555,7 @@ fn validate_restriction_profile_v1(profile: &MeasurementProfileV1) -> Result<(),
         .any(|witness| witness.law == "ag.restriction-compatibility")
     {
         return Err(
-            "ag.restriction-compatibility requires MeasurementProfile witnessFamily law ag.restriction-compatibility"
+            "ag.restriction-compatibility requires law-surface witness variables for law ag.restriction-compatibility"
                 .to_string(),
         );
     }
@@ -7550,7 +7606,7 @@ fn validate_section_profile_v1(profile: &MeasurementProfileV1) -> Result<(), Str
     }
     if section_witness_variables(profile).is_empty() {
         return Err(
-            "ag.section-factorization requires MeasurementProfile witnessFamily law ag.section-factorization"
+            "ag.section-factorization requires law-surface witness variables for law ag.section-factorization"
                 .to_string(),
         );
     }
@@ -7611,8 +7667,7 @@ fn validate_coherence_profile_v1(profile: &MeasurementProfileV1) -> Result<(), S
         .any(|witness| witness.law == "ag.coherence-obstruction")
     {
         return Err(format!(
-            "ag.coherence-obstruction requires MeasurementProfile {} witnessFamily law ag.coherence-obstruction",
-            profile.profile_id
+            "ag.coherence-obstruction requires law-surface witness variables for law ag.coherence-obstruction",
         ));
     }
     Ok(())
@@ -7662,8 +7717,7 @@ fn validate_boundary_residue_profile_v1(profile: &MeasurementProfileV1) -> Resul
     }
     if boundary_residue_witness_variables(profile).is_empty() {
         return Err(format!(
-            "ag.boundary-residue requires MeasurementProfile {} witnessFamily law ag.boundary-residue",
-            profile.profile_id
+            "ag.boundary-residue requires law-surface witness variables for law ag.boundary-residue",
         ));
     }
     if boundary_residue_witness_variables(profile).len() > MAX_BOUNDARY_RESIDUE_VARIABLES {
@@ -7839,8 +7893,7 @@ fn validate_laplacian_profile_v1(profile: &MeasurementProfileV1) -> Result<(), S
     }
     if laplacian_witness_variables(profile).is_empty() {
         return Err(format!(
-            "ag.sheaf-laplacian requires MeasurementProfile {} witnessFamily law ag.sheaf-laplacian",
-            profile.profile_id
+            "ag.sheaf-laplacian requires law-surface witness variables for law ag.sheaf-laplacian",
         ));
     }
     if laplacian_witness_variables(profile).len() > MAX_LAPLACIAN_CELLS {
@@ -7895,8 +7948,7 @@ fn validate_period_profile_v1(profile: &MeasurementProfileV1) -> Result<(), Stri
     }
     if period_witness_cycles(profile).is_empty() {
         return Err(format!(
-            "ag.period-stokes requires MeasurementProfile {} witnessFamily law ag.period-stokes",
-            profile.profile_id
+            "ag.period-stokes requires law-surface witness variables for law ag.period-stokes",
         ));
     }
     if period_witness_cycles(profile).len() > MAX_PERIOD_CYCLES {
@@ -7962,8 +8014,7 @@ fn validate_period_audit_profile_v1(profile: &MeasurementProfileV1) -> Result<()
     }
     if period_audit_witness_cycles(profile).is_empty() {
         return Err(format!(
-            "ag.period-stokes-audit requires MeasurementProfile {} witnessFamily law ag.period-stokes-audit",
-            profile.profile_id
+            "ag.period-stokes-audit requires law-surface witness variables for law ag.period-stokes-audit",
         ));
     }
     if period_audit_witness_cycles(profile).len() > MAX_PERIOD_CYCLES {
@@ -8018,8 +8069,7 @@ fn validate_transfer_profile_v1(profile: &MeasurementProfileV1) -> Result<(), St
     }
     if transfer_witness_targets(profile).is_empty() {
         return Err(format!(
-            "ag.support-transfer requires MeasurementProfile {} witnessFamily law ag.support-transfer",
-            profile.profile_id
+            "ag.support-transfer requires law-surface witness variables for law ag.support-transfer",
         ));
     }
     if transfer_witness_targets(profile).len() > MAX_TRANSFER_TARGETS {
@@ -8095,7 +8145,7 @@ fn laplacian_cells(
     {
         if !witness_set.contains(&atom.subject) {
             return Err(format!(
-                "ag.sheaf-laplacian cochain {} uses cell outside witnessFamily: {}",
+                "ag.sheaf-laplacian cochain {} uses cell outside law-surface witness variables: {}",
                 atom.normalized_atom_id, atom.subject
             ));
         }
@@ -8196,7 +8246,7 @@ fn period_integrals(
         )?;
         if !cycle_set.contains(&cycle_id) {
             return Err(format!(
-                "ag.period-stokes period integral {} uses cycle outside witnessFamily: {}",
+                "ag.period-stokes period integral {} uses cycle outside law-surface witness variables: {}",
                 atom.normalized_atom_id, cycle_id
             ));
         }
@@ -8485,7 +8535,7 @@ fn transfer_pairings(
         )?;
         if !target_set.contains(&target_id) {
             return Err(format!(
-                "ag.support-transfer transfer pairing {} uses target outside witnessFamily: {}",
+                "ag.support-transfer transfer pairing {} uses target outside law-surface witness variables: {}",
                 atom.normalized_atom_id, target_id
             ));
         }
@@ -8551,7 +8601,7 @@ fn transfer_repair_paths(
             .collect::<Vec<_>>();
         if !unknown_support_targets.is_empty() {
             return Err(format!(
-                "ag.support-transfer repair path {} uses support targets outside witnessFamily: {}",
+                "ag.support-transfer repair path {} uses support targets outside law-surface witness variables: {}",
                 atom.normalized_atom_id,
                 unknown_support_targets.join(",")
             ));
@@ -8582,7 +8632,7 @@ fn transfer_ground_costs(
     {
         if !target_set.contains(&atom.subject) {
             return Err(format!(
-                "ag.support-transfer ground cost {} uses target outside witnessFamily: {}",
+                "ag.support-transfer ground cost {} uses target outside law-surface witness variables: {}",
                 atom.normalized_atom_id, atom.subject
             ));
         }
@@ -8778,11 +8828,12 @@ fn laplacian_assumptions(
     vec![
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/8.1".to_string(),
-            assumption: "finite cellular measurement model selected by MeasurementProfile"
-                .to_string(),
+            assumption:
+                "finite cellular measurement model selected by supplied law-equation-surface"
+                    .to_string(),
             status: cellular_model_status.to_string(),
             checked_by: (cellular_model_status == "checked")
-                .then(|| format!("measurement-profile:{}.witnessFamily", profile.profile_id)),
+                .then(|| "law-surface:provided-law-equation-surface".to_string()),
             assumed_by: (cellular_model_status != "checked")
                 .then(|| format!("measurement-profile:{}", profile.profile_id)),
         },
@@ -8810,10 +8861,11 @@ fn period_assumptions(
     vec![
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part7/5.2A".to_string(),
-            assumption: "finite poset period model selected by MeasurementProfile".to_string(),
+            assumption: "finite poset period model selected by supplied law-equation-surface"
+                .to_string(),
             status: period_model_status.to_string(),
             checked_by: (period_model_status == "checked")
-                .then(|| format!("measurement-profile:{}.witnessFamily", profile.profile_id)),
+                .then(|| "law-surface:provided-law-equation-surface".to_string()),
             assumed_by: (period_model_status != "checked")
                 .then(|| format!("measurement-profile:{}", profile.profile_id)),
         },
@@ -8873,11 +8925,12 @@ fn transfer_assumptions(
     vec![
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/10.1".to_string(),
-            assumption: "finite support-localized transfer model selected by MeasurementProfile"
-                .to_string(),
+            assumption:
+                "finite support-localized transfer model selected by supplied law-equation-surface"
+                    .to_string(),
             status: transfer_model_status.to_string(),
             checked_by: (transfer_model_status == "checked")
-                .then(|| format!("measurement-profile:{}.witnessFamily", profile.profile_id)),
+                .then(|| "law-surface:provided-law-equation-surface".to_string()),
             assumed_by: (transfer_model_status != "checked")
                 .then(|| format!("measurement-profile:{}", profile.profile_id)),
         },
@@ -9362,8 +9415,7 @@ fn tor_assumptions(
             status: square_free_status.to_string(),
             checked_by: match square_free_status {
                 "checked" => Some(format!(
-                    "measurement-profile:{}.witnessFamily",
-                    profile.profile_id
+                    "law-surface:provided-law-equation-surface"
                 )),
                 "violated" => Some("ag.law-conflict-tor.squareFreeGeneratorCheck".to_string()),
                 _ => None,
@@ -9440,7 +9492,7 @@ fn restriction_generators(
             .collect::<Vec<_>>();
         if !unknown.is_empty() {
             return Err(format!(
-                "ag.restriction-compatibility generator {} contains variables outside witnessFamily: {}",
+                "ag.restriction-compatibility generator {} contains variables outside law-surface witness variables: {}",
                 atom.normalized_atom_id,
                 unknown.join(",")
             ));
@@ -9536,7 +9588,7 @@ fn restriction_assumptions(
             }
             .to_string(),
             checked_by: (method_status != "restriction_generator_missing")
-                .then(|| format!("measurement-profile:{}.witnessFamily", profile.profile_id)),
+                .then(|| "law-surface:provided-law-equation-surface".to_string()),
             assumed_by: (method_status == "restriction_generator_missing")
                 .then(|| format!("measurement-profile:{}", profile.profile_id)),
         },
@@ -9605,7 +9657,7 @@ fn section_forbidden_supports(
             .collect::<Vec<_>>();
         if !unknown.is_empty() {
             return Err(format!(
-                "ag.section-factorization raw support {} contains variables outside witnessFamily: {}",
+                "ag.section-factorization raw support {} contains variables outside law-surface witness variables: {}",
                 atom.normalized_atom_id,
                 unknown.join(",")
             ));
@@ -9734,7 +9786,7 @@ fn section_assignment(
         let variable = variable.trim().to_string();
         if !witness_set.contains(&variable) {
             return Err(format!(
-                "ag.section-factorization witnessAssignment {} contains variable outside witnessFamily: {}",
+                "ag.section-factorization witnessAssignment {} contains variable outside law-surface witness variables: {}",
                 atom.normalized_atom_id, variable
             ));
         }
@@ -10093,7 +10145,7 @@ fn boundary_residue_atom_support(
         .collect::<Vec<_>>();
     if !unknown.is_empty() {
         return Err(format!(
-            "ag.boundary-residue atom {} contains variables outside witnessFamily: {}",
+            "ag.boundary-residue atom {} contains variables outside law-surface witness variables: {}",
             atom.normalized_atom_id,
             unknown.join(",")
         ));
@@ -10206,7 +10258,7 @@ fn boundary_residue_assumptions(
                     .to_string(),
             status: if matrix_checked { "checked" } else { "violated" }.to_string(),
             checked_by: matrix_checked
-                .then(|| format!("measurement-profile:{}.witnessFamily", profile.profile_id)),
+                .then(|| "law-surface:provided-law-equation-surface".to_string()),
             assumed_by: (!matrix_checked).then(|| format!("measurement-profile:{}", profile.profile_id)),
         },
         AgAssumptionLedgerEntryV1 {
@@ -11308,7 +11360,7 @@ fn cover_nerve_projection_v1(
         "vertices": vertices,
         "edges": edge_rows,
         "faces": faces,
-        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.0; not inferred by the viewer",
+        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.1; not inferred by the viewer",
         "h2CoherenceVisualized": false
     })
 }
@@ -11563,7 +11615,7 @@ pub fn build_measurement_viewer_data_v1(
         .map(|scenes| insight_omitted_detail_counts_v1(normalized, scenes))
         .unwrap_or_else(|| insight_omitted_detail_counts_v1(normalized, &[]));
     json!({
-        "schema": "archsig-atom-viewer-data/v0.5.0",
+        "schema": "archsig-atom-viewer-data/v0.5.1",
         "sourceArtifactRefs": {
             "normalizedArchMap": "normalized-archmap.json",
             "measurementPacket": "archsig-measurement-packet.json",
@@ -11586,7 +11638,7 @@ pub fn build_measurement_viewer_data_v1(
         "guidedTours": insight_report["guidedTours"],
         "copyBlocks": insight_report["copyBlocks"],
         "aatGeometryOverlays": {
-            "schema": "archsig-aat-geometry-overlays/v0.5.0",
+            "schema": "archsig-aat-geometry-overlays/v0.5.1",
             "projectionBoundary": "bounded viewer projection of measured ArchSig AG geometry; visual richness is not a new verdict",
             "gluingGeometry": insight_report["gluingGeometry"],
             "nerve": insight_report["gluingGeometry"]["nerve"],
@@ -12014,7 +12066,6 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             "coverRef",
             "coefficient",
             "effCoeff",
-            "witnessFamily",
             "resolutionSelector",
             "domain",
             "zeroPredicate",
@@ -12039,19 +12090,6 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         ],
         &mut examples,
     );
-    for (index, witness) in packet_value["profile"]["witnessFamily"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .enumerate()
-    {
-        check_object_keys(
-            witness,
-            &format!("profile.witnessFamily[{index}]"),
-            &["law", "variable"],
-            &mut examples,
-        );
-    }
     // This is the union of the normalized schema fields and the evaluator-specific
     // fields emitted by the current measurement packet producers.
     const COMPUTED_INVARIANT_FIELDS: &[&str] = &[
@@ -12332,7 +12370,7 @@ fn check_object_keys(
 fn check_packet_schema(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
     let mut check = validation_check(
         "measurement-packet-schema050-schema",
-        "measurement packet uses archsig-measurement-packet/v0.5.0",
+        "measurement packet uses archsig-measurement-packet/v0.5.1",
         if packet.schema == ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA {
             "pass"
         } else {
@@ -12363,7 +12401,7 @@ fn check_structural_verdict_values(packet: &ArchSigMeasurementPacketV1) -> Valid
         .collect::<Vec<_>>();
     check_examples(
         "measurement-packet-schema050-five-verdict-values",
-        "structural verdicts are limited to the five v0.5.0 values",
+        "structural verdicts are limited to the five v0.5.1 values",
         examples,
     )
 }
@@ -12756,7 +12794,7 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
                 examples.push(generic_validation_example(
                     &label,
                     kind,
-                    "computed invariant kind must be one of the closed measurement packet v0.5.0 kinds",
+                    "computed invariant kind must be one of the closed measurement packet v0.5.1 kinds",
                 ));
             }
         }
@@ -13151,7 +13189,7 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
             examples.push(generic_validation_example(
                 &statement.id,
                 &statement.kind,
-                "boundary statement kind must be one of the v0.5.0 boundary kinds",
+                "boundary statement kind must be one of the v0.5.1 boundary kinds",
             ));
         }
         if statement.reason.trim().is_empty() {
@@ -13327,16 +13365,15 @@ mod tests {
 
     fn packet_fixture() -> ArchSigMeasurementPacketV1 {
         let mut packet: ArchSigMeasurementPacketV1 = serde_json::from_value(json!({
-            "schema": "archsig-measurement-packet/v0.5.0",
+            "schema": "archsig-measurement-packet/v0.5.1",
             "packetId": "measurement:test",
             "profile": {
-                "schema": "measurement-profile/v0.5.0",
+                "schema": "measurement-profile/v0.5.1",
                 "profileId": "profile:test",
                 "siteRef": "archmap:/contexts",
                 "coverRef": "cover:test",
                 "coefficient": "F2",
                 "effCoeff": "finite-linear-algebra@1",
-                "witnessFamily": [],
                 "resolutionSelector": "taylor@1",
                 "domain": "finite-poset-site",
                 "zeroPredicate": "rank-zero@1",
@@ -13384,7 +13421,7 @@ mod tests {
                 "sourceArtifactRef": "input:archmap.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "archmap/v0.5.0-validation"
+                    "checkRef": "archmap/v0.5.1-validation"
                 }
             }, {
                 "suppliedId": "supplied:law-policy",
@@ -13392,7 +13429,7 @@ mod tests {
                 "sourceArtifactRef": "input:law-policy.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "law-policy/v0.5.0-validation"
+                    "checkRef": "law-policy/v0.5.1-validation"
                 }
             }, {
                 "suppliedId": "supplied:measurement-profile",
@@ -13400,7 +13437,7 @@ mod tests {
                 "sourceArtifactRef": "input:measurement-profile.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "measurement-profile/v0.5.0-validation"
+                    "checkRef": "measurement-profile/v0.5.1-validation"
                 }
             }],
             "nonConclusions": ["test fixture"]
@@ -13412,7 +13449,7 @@ mod tests {
 
     fn normalized_fixture() -> NormalizedArchMapV2 {
         serde_json::from_value(json!({
-            "schema": "archmap-normalized/v0.5.0",
+            "schema": "archmap-normalized/v0.5.1",
             "normalizerId": "test-normalizer",
             "sourceArchmapRef": "archmap:test",
             "sourceArchmapId": "archmap:test",
@@ -13843,7 +13880,8 @@ mod tests {
         packet.structural_verdict[0].depends_on_assumptions = vec![finite_site_assumption.clone()];
         let square_free_assumption = AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/5.1".to_string(),
-            assumption: "square-free witness variables selected by MeasurementProfile".to_string(),
+            assumption: "square-free witness variables selected by supplied law-equation-surface"
+                .to_string(),
             status: "checked".to_string(),
             checked_by: Some("test".to_string()),
             assumed_by: None,

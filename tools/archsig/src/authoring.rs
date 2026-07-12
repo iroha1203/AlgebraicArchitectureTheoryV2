@@ -20,10 +20,10 @@ use crate::{
     ArchmapScopeManifestWorklistEntryV1, ValidationCheck, ValidationExample,
 };
 
-pub const ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA: &str = "archmap-scope-manifest/v0.5.0";
-pub const ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA: &str = "archmap-candidate-packet/v0.5.0";
-pub const ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA: &str = "archmap-extraction-consistency/v0.5.0";
-pub const ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA: &str = "archmap-coverage-ledger/v0.5.0";
+pub const ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA: &str = "archmap-scope-manifest/v0.5.1";
+pub const ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA: &str = "archmap-candidate-packet/v0.5.1";
+pub const ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA: &str = "archmap-extraction-consistency/v0.5.1";
+pub const ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA: &str = "archmap-coverage-ledger/v0.5.1";
 pub const ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY: &str = "Rows record the authoring survey of the selected scope at the recorded revision. They do not assert extraction completeness.";
 const EXCLUSION_REASONS: [&str; 5] = [
     "user-excluded",
