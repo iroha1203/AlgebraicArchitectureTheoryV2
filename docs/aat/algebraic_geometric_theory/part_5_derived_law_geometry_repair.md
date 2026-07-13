@@ -704,7 +704,7 @@ section-level comparison から誘導される。
 
 ```text
 ideal-order repair:
-  s'^* I_U subsetneq s^* I_U at the section level.
+  s'^*_{ideal} I_U subsetneq s^*_{ideal} I_U at the section level.
 
 valuation repair:
   nu_U(s') < nu_U(s).
@@ -713,7 +713,7 @@ rank repair:
   rank Ob_U(s') < rank Ob_U(s).
 
 support repair:
-  Supp(s'^* I_U) subsetneq Supp(s^* I_U).
+  Supp(s'^*_{ideal} I_U) subsetneq Supp(s^*_{ideal} I_U).
 ```
 
 比較を一般に
@@ -756,17 +756,19 @@ s : T -> X
 が固定されている場合は、section-level comparison として次を使う。
 
 ```text
-(r circ s)^* I'_U
+(r circ s)^*_{ideal} I'_U
   <=_{P_U}
-s^* I_U
+s^*_{ideal} I_U
 ```
+
+`(-)^*_{ideal}` は第III部定義5.2Bのextension ideal sheafを表し、module pullbackとは区別する。
 
 したがって repair の改善は、少なくとも次の二種類に分けて読む。
 
 ```text
 Internal repair:
   same X 上の section deformation s -> s'。
-  obstruction comparison is s'^* I_U <=_{P_U} s^* I_U.
+  obstruction comparison is s'^*_{ideal} I_U <=_{P_U} s^*_{ideal} I_U.
 
 Geometric repair:
   architecture geometry morphism r : X -> X'。
@@ -841,9 +843,9 @@ s' prec^{sec}_{P_U} s
 または、
 
 ```text
-s'^* I_U
+s'^*_{ideal} I_U
   is smaller than
-s^* I_U
+s^*_{ideal} I_U
 under P_U
 ```
 

@@ -798,9 +798,12 @@ f^{-1} O_X -> O_X'
 pullback ideals を
 
 ```text
-I_U' = f^* I_U
-I_V' = f^* I_V
+I_U' = f^*_{ideal} I_U
+I_V' = f^*_{ideal} I_V
 ```
+
+ここの `f^*_{ideal}` は `f^{-1}I` が `O_X'` の中で生成する extension ideal sheaf である。
+下の `f^* Tor_i` は module pullback であり、両者の記号を区別する。
 
 と置く。
 このとき、標準的な Tor base change により、

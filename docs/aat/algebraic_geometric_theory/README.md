@@ -6,20 +6,30 @@ Algebraic Architecture Theory, AAT は、ソフトウェアアーキテクチャ
 Atom から生成され、law によって切り出され、obstruction sheaf と
 cohomology によって局所から大域への不整合を読む幾何対象として扱う理論である。
 
-AAT の対象は、裸のコードベースそのものではない。Atom vocabulary、law universe、
-coverage topology、coefficient ring を固定したときに構成される、相対的なアーキテクチャ幾何である。
+AAT の対象は、source と admissible core reading から生成される architecture object に、
+coverage topology と coefficient ring を固定して構成する相対的なアーキテクチャ幾何である。
 
 ```text
 C : Codebase
-V : AtomVocabulary
-U : LawUniverse
+At : AtomUniverse
+S : AtomAxiomSystem(At)
+r : CoreRead(At), with source C
+    including extraction doctrine, Atom vocabulary,
+    finite composition, object / law / circuit semantics,
+    signature / operation readings
 J : CoverageTopology
 k : coefficient ring
 
-X_C^{V,U,J,k} : AATGeometry
+X_C^{r,J,k} : AATGeometry
 ```
 
-係数環を明示しない場合、`X_C^{V,U,J}` は `k` を固定済みとする省略記法である。
+`S` は Atom carrier の primitive existence と coordinate stability を認証し、`r` はその carrier 上の
+extraction・composition・law・operation reading を選ぶ。両者は core package で統合するが、
+reading を使われない axiom parameter に添字付けない。
+
+core reading のうち source、extraction doctrine、object reading、operation reading を固定し、
+Atom vocabulary `V` と law universe `U` を表示する場合は、従来どおり
+`X_C^{V,U,J,k}` と略記する。係数環を明示しない `X_C^{V,U,J}` は `k` を固定済みとする。
 
 この本文では、AAT を「代数幾何的アーキテクチャ論」として定式化する。
 Atom は primitive architectural fact として公理化される。law は Atom を生成せず、
@@ -30,8 +40,11 @@ cohomology class として現れる。
 中心図式は次である。
 
 ```text
-Atom
-  -> Atom family
+(Atom universe At, axiom system S, core reading r)
+  -> Atom family F_r
+  -> configuration C_r
+  -> architecture object A_r
+  -> operation-closed object algebra Core_At(r)
   -> Architecture context category
   -> AAT site
   -> Sheaves
@@ -70,9 +83,11 @@ representation、measurement profile、trace category、semantic repair-gluing c
 ```text
 連立方程式系:
   現実のアーキテクチャは複数の law が同時に効き、同時に成立するか同時に破れる。
-  代数幾何は連立方程式の数学である。law failure は obstruction ideal に集められ、
-  lawful locus はその共通零点 Flat_U(X) = V(I_Ob^U) であり、
+  代数幾何は連立方程式の数学である。selected closed-equational law failure は
+  obstruction ideal に集められ、それらの ideal-theoretic lawful locus は共通零点
+  Flat_U(X) = V(I_Ob^U) であり、
   law の相互作用はイデアルの演算になる。
+  open、constructible、descent、temporal、stacky law は対応する幾何条件として読む。
 
 貼り合わせの障害:
   「各モジュールは正しいのに全体が壊れる」は descent 問題である。
