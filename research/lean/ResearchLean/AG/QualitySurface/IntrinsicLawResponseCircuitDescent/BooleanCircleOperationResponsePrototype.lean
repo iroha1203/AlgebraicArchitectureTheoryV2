@@ -1,0 +1,391 @@
+import ResearchLean.AG.QualitySurface.LawGeneratedBooleanCircleLawCore
+import ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.LabeledConormalGeneration
+import ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.DerivationCoefficientSheaf
+
+/-!
+# Boolean-circle operation response prototype
+
+The existing three-patch Boolean-circle cover is paired with a G-08-specific
+three-component principal-localization ring layer.  Its first component is a
+dual-number factor carrying a square-zero law generator; the other two
+components make the three principal chart opens genuinely distinct.  A
+concrete operation derivation detects the selected required conormal class on
+the AAT patch carrying its support Atom.
+-/
+
+noncomputable section
+
+namespace ResearchLean.AG.QualitySurface
+namespace IntrinsicLawResponseCircuitDescent
+namespace BooleanCircleOperationResponsePrototype
+
+open AAT.AG AAT.AG.LawAlgebra
+open LawGeneratedBooleanCircleSite
+open LawGeneratedBooleanCircleLawCore
+
+abbrev ResponseField := ZMod 2
+abbrev ResponseDual := TrivSqZeroExt ResponseField ResponseField
+abbrev ResponseRing := ResponseDual × ResponseField × ResponseField
+
+/-- The G-08 square-zero law generator in the first product component. -/
+def responseGenerator : ResponseRing :=
+  (TrivSqZeroExt.inr 1, 0, 0)
+
+/-- The derivative value of the square-zero generator. -/
+def responseValue : ResponseRing :=
+  (TrivSqZeroExt.inl 1, 0, 0)
+
+theorem responseGenerator_sq : responseGenerator ^ 2 = 0 := by
+  ext <;> simp [pow_two, responseGenerator]
+
+theorem responseGenerator_ne_zero : responseGenerator ≠ 0 := by
+  intro h
+  have hsnd := congrArg (fun x : ResponseRing ↦ x.1.snd) h
+  norm_num [responseGenerator] at hsnd
+
+/-- The derivative of the nilpotent coordinate, valued in the constant
+coordinate of the same dual-number component. -/
+def epsilonDerivative :
+    Derivation ResponseField ResponseRing ResponseRing where
+  toFun x := (TrivSqZeroExt.inl x.1.snd, 0, 0)
+  map_add' x y := by ext <;> simp
+  map_smul' c x := by ext <;> simp
+  map_one_eq_zero' := by ext <;> simp
+  leibniz' x y := by
+    rcases x with ⟨⟨x₁, xε⟩, x₂, x₃⟩
+    rcases y with ⟨⟨y₁, yε⟩, y₂, y₃⟩
+    ext <;> simp
+    · exact mul_comm _ _
+    · rw [mul_comm yε xε]
+      exact (CharTwo.add_self_eq_zero (xε * yε)).symm
+
+@[simp] theorem epsilonDerivative_responseGenerator :
+    epsilonDerivative responseGenerator = responseValue := by
+  rfl
+
+/-- The constant square-zero law core on the three-patch Boolean-circle site. -/
+noncomputable def responseCore : SemanticLawEquationWitnessIdealCore site where
+  Observable _ := ResponseRing
+  observableCommRing _ := inferInstance
+  restrict _ := RingHom.id ResponseRing
+  restrict_id _ _ := rfl
+  restrict_comp _ _ _ := rfl
+  violationWitness _ _ _ := responseGenerator
+  violationWitness_restrict _ _ _ := rfl
+  supportAtom := FiniteModel.FiniteAtom.componentA
+  supportLawIndex := PUnit.unit
+  supportLawIndex_required := FiniteModel.lawUniverse_required PUnit.unit
+
+local instance responseCoreAlgebra :
+    Algebra ResponseField (responseCore.Observable base) :=
+  inferInstanceAs (Algebra ResponseField ResponseRing)
+
+theorem response_lawWitnessIdeal (W : site.category)
+    (lawIndex : site.lawUniverse.Index) :
+    responseCore.lawWitnessIdeal W lawIndex = Ideal.span {responseGenerator} := by
+  rw [SemanticLawEquationWitnessIdealCore.lawWitnessIdeal]
+  change Ideal.span (Set.range (fun _ : FiniteModel.carrier.Atom ↦
+    responseGenerator)) = _
+  congr 1
+  ext x
+  constructor
+  · rintro ⟨atom, rfl⟩
+    rfl
+  · intro hx
+    rw [Set.mem_singleton_iff] at hx
+    subst x
+    exact ⟨FiniteModel.FiniteAtom.componentA, rfl⟩
+
+theorem response_obstructionIdeal (W : site.category) :
+    responseCore.obstructionIdeal W = Ideal.span {responseGenerator} := by
+  rw [obstructionIdeal_eq_lawWitnessIdeal responseCore W PUnit.unit,
+    response_lawWitnessIdeal]
+
+theorem responseValue_not_mem_obstructionIdeal :
+    responseValue ∉ responseCore.obstructionIdeal base := by
+  rw [response_obstructionIdeal]
+  intro h
+  rw [Ideal.mem_span_singleton'] at h
+  obtain ⟨r, hr⟩ := h
+  have hconstant := congrArg (fun x : ResponseRing ↦ x.1.fst) hr
+  norm_num [responseValue, responseGenerator] at hconstant
+
+/-- A finite selected repair-operation schema.  Algebraic response data remain
+in the external typed presentation below. -/
+def prototypeProofObligation : Formal.Arch.ProofObligation Unit Unit where
+  formalUniverse := True
+  requiredLaws := True
+  invariantFamily _ := True
+  witnessUniverse _ := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  operationPreconditions := True
+  conclusion := True
+  nonConclusions := True
+
+def prototypeOperation : Formal.Arch.ArchitectureOperation Unit Unit Unit where
+  kind := .repair
+  source := Unit.unit
+  target := Unit.unit
+  precondition := True
+  generatedProofObligation :=
+    Formal.Arch.OperationProofObligation.repair
+      prototypeProofObligation True True
+  generatedProofObligationKind := rfl
+  sourceWitness _ := True
+  targetWitness _ := True
+  witnessMap _ := Unit.unit
+  witnessMappingSound _ _ := trivial
+  nonConclusion := True
+
+def presentation : ArchitectureOperationPresentation ResponseField
+    (responseCore.Observable base) Unit Unit Unit Unit where
+  operation _ := prototypeOperation
+  ambientDerivation _ := epsilonDerivative
+
+theorem presentation_realizesFirstOrder :
+    presentation.RealizesFirstOrder Unit.unit prototypeOperation
+      epsilonDerivative :=
+  presentation.realizesFirstOrder Unit.unit
+
+/-- Three orthogonal idempotents, one for each existing AAT cover patch. -/
+def denominator (i : Fin 3) : ResponseRing :=
+  if i = 0 then (1, 0, 0) else if i = 1 then (0, 1, 0) else (0, 0, 1)
+
+def geometry : TypedLocalizationGeometry ResponseField
+    (responseCore.Observable base) (Fin 3) where
+  denominator := denominator
+
+@[simp] theorem denominator_zero : geometry.denominator 0 = (1, 0, 0) := by
+  simp [geometry, denominator]
+
+@[simp] theorem denominator_one : geometry.denominator 1 = (0, 1, 0) := by
+  simp [geometry, denominator]
+
+@[simp] theorem denominator_two : geometry.denominator 2 = (0, 0, 1) := by
+  simp [geometry, denominator]
+
+theorem denominator_injective : Function.Injective geometry.denominator := by
+  intro i j h
+  fin_cases i <;> fin_cases j
+  all_goals try rfl
+  · change ((1, 0, 0) : ResponseRing) = (0, 1, 0) at h
+    have := congrArg (fun x : ResponseRing ↦ x.1.fst) h
+    norm_num at this
+  · change ((1, 0, 0) : ResponseRing) = (0, 0, 1) at h
+    have := congrArg (fun x : ResponseRing ↦ x.1.fst) h
+    norm_num at this
+  · change ((0, 1, 0) : ResponseRing) = (1, 0, 0) at h
+    have := congrArg (fun x : ResponseRing ↦ x.1.fst) h
+    norm_num at this
+  · change ((0, 1, 0) : ResponseRing) = (0, 0, 1) at h
+    have := congrArg (fun x : ResponseRing ↦ x.2.1) h
+    norm_num at this
+  · change ((0, 0, 1) : ResponseRing) = (1, 0, 0) at h
+    have := congrArg (fun x : ResponseRing ↦ x.1.fst) h
+    norm_num at this
+  · change ((0, 0, 1) : ResponseRing) = (0, 1, 0) at h
+    have := congrArg (fun x : ResponseRing ↦ x.2.1) h
+    norm_num at this
+
+theorem denominator_span_eq_top :
+    Ideal.span (Set.range geometry.denominator) =
+      (⊤ : Ideal (responseCore.Observable base)) := by
+  apply (Ideal.eq_top_iff_one _).mpr
+  have h₀ : geometry.denominator 0 ∈ Ideal.span (Set.range geometry.denominator) :=
+    Ideal.subset_span ⟨0, rfl⟩
+  have h₁ : geometry.denominator 1 ∈ Ideal.span (Set.range geometry.denominator) :=
+    Ideal.subset_span ⟨1, rfl⟩
+  have h₂ : geometry.denominator 2 ∈ Ideal.span (Set.range geometry.denominator) :=
+    Ideal.subset_span ⟨2, rfl⟩
+  have hone : geometry.denominator 0 + geometry.denominator 1 +
+      geometry.denominator 2 = (1 : ResponseRing) := by
+    change denominator 0 + denominator 1 + denominator 2 = (1 : ResponseRing)
+    ext <;> simp [denominator]
+  rw [← hone]
+  exact Ideal.add_mem _ (Ideal.add_mem _ h₀ h₁) h₂
+
+/-- Typed charts and the existing admissible AAT cover use the same index. -/
+def chartEquivCoverIndex : Fin 3 ≃ cover.Index := Equiv.refl (Fin 3)
+
+def aatPatch (i : Fin 3) : site.category :=
+  Site.ContextCategoryObject.of contextPreorder
+    (cover.patch (chartEquivCoverIndex i))
+
+theorem aatPatch_injective : Function.Injective aatPatch := by
+  intro i j hij
+  apply chartEquivCoverIndex.injective
+  apply cover_patch_injective
+  exact Site.ContextCategoryObject.mk.inj hij
+
+def aatPatchInclusion (i : Fin 3) : aatPatch i ⟶ base :=
+  CategoryTheory.homOfLE (cover.inclusion (chartEquivCoverIndex i))
+
+theorem aatCover_admissible :
+    Site.AdmissibleCover coverageRequirements contextOverlap
+      cover.toCoverageFamily :=
+  cover.admissible
+
+/-- The three distinct principal opens cover the full lawful affine scheme. -/
+theorem lawfulOpen_eq_top :
+    geometry.lawfulOpen (responseCore.obstructionIdeal base) = ⊤ := by
+  change (⨆ i, PrimeSpectrum.basicOpen
+    (Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+      (geometry.denominator i))) = ⊤
+  rw [PrimeSpectrum.iSup_basicOpen_eq_top_iff]
+  apply (Ideal.eq_top_iff_one _).mpr
+  have h₀ := Ideal.subset_span (show Ideal.Quotient.mk
+    (responseCore.obstructionIdeal base) (geometry.denominator 0) ∈
+      Set.range (fun i ↦ Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+        (geometry.denominator i)) from ⟨0, rfl⟩)
+  have h₁ := Ideal.subset_span (show Ideal.Quotient.mk
+    (responseCore.obstructionIdeal base) (geometry.denominator 1) ∈
+      Set.range (fun i ↦ Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+        (geometry.denominator i)) from ⟨1, rfl⟩)
+  have h₂ := Ideal.subset_span (show Ideal.Quotient.mk
+    (responseCore.obstructionIdeal base) (geometry.denominator 2) ∈
+      Set.range (fun i ↦ Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+        (geometry.denominator i)) from ⟨2, rfl⟩)
+  have hone : geometry.denominator 0 + geometry.denominator 1 +
+      geometry.denominator 2 = (1 : ResponseRing) := by
+    change denominator 0 + denominator 1 + denominator 2 = (1 : ResponseRing)
+    ext <;> simp [denominator]
+  rw [← map_one (Ideal.Quotient.mk (responseCore.obstructionIdeal base)),
+    ← hone, map_add, map_add]
+  exact Ideal.add_mem _ (Ideal.add_mem _ h₀ h₁) h₂
+
+/-- Localization of chart `0` maps canonically back to the dual-number factor. -/
+noncomputable def chartZeroToDual : geometry.chartRing 0 →+* ResponseDual :=
+  IsLocalization.Away.lift (S := geometry.chartRing 0) (P := ResponseDual)
+    (geometry.denominator 0)
+    (g := RingHom.fst ResponseDual (ResponseField × ResponseField)) (by
+      change IsUnit (1 : ResponseDual)
+      exact isUnit_one)
+
+@[simp] theorem chartZeroToDual_algebraMap (a : ResponseRing) :
+    chartZeroToDual
+      (algebraMap (responseCore.Observable base) (geometry.chartRing 0) a) =
+        a.1 := by
+  rw [chartZeroToDual, IsLocalization.Away.lift_eq]
+  rfl
+
+def dualSquareZeroIdeal : Ideal ResponseDual :=
+  Ideal.span {TrivSqZeroExt.inr 1}
+
+theorem dualConstant_not_mem_squareZeroIdeal :
+    TrivSqZeroExt.inl (1 : ResponseField) ∉ dualSquareZeroIdeal := by
+  intro h
+  rw [dualSquareZeroIdeal, Ideal.mem_span_singleton'] at h
+  obtain ⟨r, hr⟩ := h
+  have hconstant := congrArg (fun x : ResponseDual ↦ x.fst) hr
+  norm_num at hconstant
+
+theorem map_fst_obstructionIdeal_le_dualSquareZeroIdeal :
+    Ideal.map (RingHom.fst ResponseDual (ResponseField × ResponseField))
+        (responseCore.obstructionIdeal base) ≤ dualSquareZeroIdeal := by
+  rw [response_obstructionIdeal, Ideal.map_span]
+  apply Ideal.span_le.mpr
+  rintro x ⟨y, hy, rfl⟩
+  simp only [Set.mem_singleton_iff] at hy
+  subst y
+  change TrivSqZeroExt.inr 1 ∈ dualSquareZeroIdeal
+  exact Ideal.subset_span rfl
+
+theorem responseValue_not_mem_chartZeroLawIdeal :
+    algebraMap (responseCore.Observable base) (geometry.chartRing 0)
+        responseValue ∉
+      geometry.chartLawIdeal (responseCore.obstructionIdeal base) 0 := by
+  intro h
+  apply dualConstant_not_mem_squareZeroIdeal
+  have hle : geometry.chartLawIdeal (responseCore.obstructionIdeal base) 0 ≤
+      Ideal.comap chartZeroToDual dualSquareZeroIdeal := by
+    change Ideal.map
+      (algebraMap (responseCore.Observable base) (geometry.chartRing 0))
+        (responseCore.obstructionIdeal base) ≤
+          Ideal.comap chartZeroToDual dualSquareZeroIdeal
+    rw [Ideal.map_le_iff_le_comap]
+    intro x hx
+    change chartZeroToDual
+      (algebraMap (responseCore.Observable base) (geometry.chartRing 0) x) ∈
+        dualSquareZeroIdeal
+    rw [chartZeroToDual_algebraMap]
+    exact map_fst_obstructionIdeal_le_dualSquareZeroIdeal
+      (Ideal.mem_map_of_mem
+        (RingHom.fst ResponseDual (ResponseField × ResponseField)) hx)
+  have hh := hle h
+  change chartZeroToDual
+      (algebraMap (responseCore.Observable base) (geometry.chartRing 0)
+        responseValue) ∈ dualSquareZeroIdeal at hh
+  rw [chartZeroToDual_algebraMap] at hh
+  exact hh
+
+/-- The existing required law paired with the support Atom selected by the
+prototype core. -/
+def selectedLabel : LawGeneratedLabeledConormal.RequiredGeneratorLabel site :=
+  (⟨PUnit.unit, FiniteModel.lawUniverse_required PUnit.unit⟩,
+    FiniteModel.FiniteAtom.componentA)
+
+@[simp] theorem selected_requiredGeneratorWitness_value :
+    (LawGeneratedLabeledConormal.requiredGeneratorWitness
+      responseCore base selectedLabel : responseCore.Observable base) =
+      responseGenerator := by
+  rfl
+
+noncomputable def ambientQuotientDerivative :
+    Derivation ResponseField ResponseRing
+      (ResponseRing ⧸ responseCore.obstructionIdeal base) :=
+  QuotientValuedDerivation.quotientDerivation
+    (responseCore.obstructionIdeal base) epsilonDerivative
+
+theorem ambient_selected_response_ne_zero :
+    QuotientValuedDerivation.conormalResponse
+        (responseCore.obstructionIdeal base) ambientQuotientDerivative
+        (LawGeneratedLabeledConormal.requiredGeneratorConormal
+          responseCore base selectedLabel) ≠ 0 := by
+  rw [LawGeneratedLabeledConormal.requiredGeneratorConormal_toCotangent,
+    QuotientValuedDerivation.conormalResponse_toCotangent,
+    ambientQuotientDerivative,
+    QuotientValuedDerivation.quotientDerivation_apply,
+    selected_requiredGeneratorWitness_value]
+  change Ideal.Quotient.mk (responseCore.obstructionIdeal base) responseValue ≠ 0
+  intro hz
+  exact responseValue_not_mem_obstructionIdeal
+    (Ideal.Quotient.eq_zero_iff_mem.mp hz)
+
+noncomputable def chartZeroDerivative :
+    Derivation ResponseField (geometry.chartRing 0)
+      (geometry.chartLawQuotient (responseCore.obstructionIdeal base) 0) :=
+  presentation.chartQuotientDerivation geometry
+    (responseCore.obstructionIdeal base) Unit.unit 0
+
+/-- The AAT patch carrying the selected support Atom detects a nonzero required
+conormal response on its genuinely distinct principal chart. -/
+theorem selectedSupportPatch_response_ne_zero :
+    geometry.chartConormalJacobian (responseCore.obstructionIdeal base) 0
+        chartZeroDerivative
+        (LawGeneratedLabeledConormal.chartLabeledConormal
+          responseCore base geometry selectedLabel 0) ≠ 0 := by
+  change chartZeroDerivative
+      (LawGeneratedLabeledConormal.chartRequiredGeneratorWitness
+        responseCore base geometry selectedLabel 0 :
+          geometry.chartLawIdeal (responseCore.obstructionIdeal base) 0).1 ≠ 0
+  rw [show (LawGeneratedLabeledConormal.chartRequiredGeneratorWitness
+      responseCore base geometry selectedLabel 0).1 =
+        algebraMap (responseCore.Observable base) (geometry.chartRing 0)
+          responseGenerator by rfl]
+  rw [chartZeroDerivative,
+    ArchitectureOperationPresentation.chartQuotientDerivation_algebraMap]
+  change Ideal.Quotient.mk
+      (geometry.chartLawIdeal (responseCore.obstructionIdeal base) 0)
+      (algebraMap (responseCore.Observable base) (geometry.chartRing 0)
+        responseValue) ≠ 0
+  intro hz
+  exact responseValue_not_mem_chartZeroLawIdeal
+    ((Submodule.Quotient.mk_eq_zero _).mp hz)
+
+#assert_standard_axioms_only
+  ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.BooleanCircleOperationResponsePrototype
+
+end BooleanCircleOperationResponsePrototype
+end IntrinsicLawResponseCircuitDescent
+end ResearchLean.AG.QualitySurface
