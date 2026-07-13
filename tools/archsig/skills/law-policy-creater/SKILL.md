@@ -1,13 +1,13 @@
 ---
 name: law-policy-creater
-description: Create law-policy/v0.5.1 files for current ArchSig measurement runs.
+description: Create law-policy/v0.5.2 files for current ArchSig measurement runs.
 ---
 
 # LawPolicy Creater
 
-Use this skill to create a `law-policy/v0.5.1` file, a separate
-`measurement-profile/v0.5.1` file, and a `law-equation-surface/v0.5.1` /
-`archsig-policy-bundle/v0.5.1` input set for an AG run.
+Use this skill to create a `law-policy/v0.5.2` file, a separate
+`measurement-profile/v0.5.2` file, and a `law-equation-surface/v0.5.2` /
+`archsig-policy-bundle/v0.5.2` input set for an AG run.
 
 ## Workflow
 

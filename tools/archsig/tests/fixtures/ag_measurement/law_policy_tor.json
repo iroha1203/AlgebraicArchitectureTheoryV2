@@ -1,5 +1,5 @@
 {
-  "schema": "law-policy/v0.5.1",
+  "schema": "law-policy/v0.5.2",
   "id": "ag-law-conflict-tor-policy",
   "lawSurfaceRef": "law-surface:ag-measurement-v051",
   "measurementProfileRef": "profile:ag-law-conflict-tor@1",

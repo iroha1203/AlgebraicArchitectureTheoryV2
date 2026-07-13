@@ -33,7 +33,7 @@ pub struct ArchMapExtractionDoctrineRefV2 {
 pub fn canonical_archmap_extraction_doctrine_ref_v2() -> ArchMapExtractionDoctrineRefV2 {
     ArchMapExtractionDoctrineRefV2 {
         doctrine_id: "doctrine:aat-canonical@1".to_string(),
-        fingerprint: "sha256:aat-canonical-doctrine-schema050".to_string(),
+        fingerprint: "sha256:aat-canonical-doctrine-schema052".to_string(),
         components: ["V", "Gamma", "R", "rho", "E", "N"]
             .into_iter()
             .map(str::to_string)

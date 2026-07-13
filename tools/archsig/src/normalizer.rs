@@ -6,7 +6,7 @@ use crate::{
     NormalizedCoverV2,
 };
 
-const NORMALIZER_V2_ID: &str = "archmap-schema050-finite-poset-site@1";
+const NORMALIZER_V2_ID: &str = "archmap-schema052-finite-poset-site@1";
 
 pub fn normalize_archmap_v2(document: &ArchMapDocumentV2, input_path: &str) -> NormalizedArchMapV2 {
     let mut context_memberships: BTreeMap<String, Vec<String>> = BTreeMap::new();

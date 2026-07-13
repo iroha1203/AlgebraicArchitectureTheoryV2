@@ -133,7 +133,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 .to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec![enumeration_assumption_id],
+            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
             reason: Some(if boundary.in_b1 {
                 "residual is covered, but semantic projection is not faithful for the selected RepairPlan complex".to_string()
             } else {
@@ -142,32 +142,33 @@ pub(crate) fn evaluate_saga_descent_v1(
         });
     }
 
+    let computed_invariants = vec![
+        json!({
+            "invariantId": "saga-descent:boundary-membership",
+            "evaluator": "ag.saga-descent",
+            "boundaryMembership": {
+                "inB1": boundary.in_b1,
+                "witnessPrimitiveCombination": boundary.witness_chart_assignment,
+                "residualSupport": boundary.residual_support
+            }
+        }),
+        json!({
+            "invariantId": "saga-descent:closure-diagnostics",
+            "evaluator": "ag.saga-descent",
+            "closureDiagnostics": {
+                "residualComponentCovered": closure.residual_component_covered,
+                "residualComponentFaithful": closure.residual_component_faithful,
+                "aliasWitnesses": closure.alias_witnesses
+            },
+            "faithfulnessBasis": {
+                "mode": plan.faithfulness.mode,
+                "completeSupportPrimitiveCount": plan.primitives.iter().filter(|primitive| primitive.support.kind == "complete").count()
+            }
+        }),
+    ];
     SagaDescentMeasurementV1 {
         structural_verdict,
-        computed_invariants: vec![
-            json!({
-                "invariantId": "saga-descent:boundary-membership",
-                "evaluator": "ag.saga-descent",
-                "boundaryMembership": {
-                    "inB1": boundary.in_b1,
-                    "witnessPrimitiveCombination": boundary.witness_chart_assignment,
-                    "residualSupport": boundary.residual_support
-                }
-            }),
-            json!({
-                "invariantId": "saga-descent:closure-diagnostics",
-                "evaluator": "ag.saga-descent",
-                "closureDiagnostics": {
-                    "residualComponentCovered": closure.residual_component_covered,
-                    "residualComponentFaithful": closure.residual_component_faithful,
-                    "aliasWitnesses": closure.alias_witnesses
-                },
-                "faithfulnessBasis": {
-                    "mode": plan.faithfulness.mode,
-                    "completeSupportPrimitiveCount": plan.primitives.iter().filter(|primitive| primitive.support.kind == "complete").count()
-                }
-            }),
-        ],
+        computed_invariants,
         assumptions: vec![enumeration_assumption],
     }
 }

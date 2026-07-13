@@ -1,5 +1,5 @@
 {
-  "schema": "archmap/v0.5.1",
+  "schema": "archmap/v0.5.2",
   "id": "ag-measurement-square-free-repair-unobserved-fixture",
   "sources": {
     "src:checkout": {

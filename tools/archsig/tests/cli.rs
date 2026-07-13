@@ -43,7 +43,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     assert_eq!(json["summary"]["result"], "pass");
     assert_eq!(
         json["schema"],
-        "law-equation-surface-validation-report/v0.5.1"
+        "law-equation-surface-validation-report/v0.5.2"
     );
 
     let mut reserved = read_json(&input);
@@ -621,7 +621,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     let duplicate_key_path = out_dir.join("duplicate-key.json");
     fs::write(
         &duplicate_key_path,
-        r#"{"schema":"law-equation-surface/v0.5.1","id":"law-surface:duplicate","laws":[{"lawId":"law:first","lawId":"law:second","conditionType":"descent","evaluatorRef":"ag.section-factorization"}]}"#,
+        r#"{"schema":"law-equation-surface/v0.5.2","id":"law-surface:duplicate","laws":[{"lawId":"law:first","lawId":"law:second","conditionType":"descent","evaluatorRef":"ag.section-factorization"}]}"#,
     )
     .expect("duplicate key fixture writes");
     let duplicate_key_output = run_sig0_output(&[
@@ -688,7 +688,7 @@ fn cli_law_policy_ag_evaluator_requires_measurement_profile() {
     assert_eq!(json["summary"]["result"], "fail");
     assert!(
         json["checks"].as_array().unwrap().iter().any(|check| {
-            check["id"] == "law-policy-schema051-ag-evaluator-profile-required"
+            check["id"] == "law-policy-schema052-ag-evaluator-profile-required"
                 && check["result"] == "fail"
         }),
         "AG evaluator execution must fail closed without MeasurementProfile"
@@ -724,7 +724,7 @@ fn cli_law_policy_registry_keeps_ag_evaluator_after_split() {
     assert!(
         json["checks"].as_array().is_some_and(|checks| {
             checks.iter().any(|check| {
-                check["id"] == "law-policy-schema051-registry-vocabulary"
+                check["id"] == "law-policy-schema052-registry-vocabulary"
                     && check["result"] == "pass"
             })
         }),
@@ -779,7 +779,7 @@ fn cli_law_policy_rejects_retired_pack_selector() {
     let report = read_json(&report_path);
     assert_eq!(report["summary"]["result"], "fail");
     assert!(report["checks"].as_array().unwrap().iter().any(|check| {
-        check["id"] == "law-policy-schema051-registry-vocabulary" && check["result"] == "fail"
+        check["id"] == "law-policy-schema052-registry-vocabulary" && check["result"] == "fail"
     }));
 }
 
@@ -819,12 +819,12 @@ fn cli_law_policy_stage1_reserved_fields_fail_closed_and_basis_ledger_resolves()
     assert_eq!(
         check_by_id(
             &reserved_json,
-            "law-policy-schema051-law-surface-resolution"
+            "law-policy-schema052-law-surface-resolution"
         )["result"],
         "fail"
     );
     assert_eq!(
-        check_by_id(&reserved_json, "law-policy-schema051-entry-shape")["result"],
+        check_by_id(&reserved_json, "law-policy-schema052-entry-shape")["result"],
         "fail"
     );
 
@@ -856,7 +856,7 @@ fn cli_law_policy_stage1_reserved_fields_fail_closed_and_basis_ledger_resolves()
     );
     let unresolved_json = read_json(&unresolved_report);
     assert_eq!(
-        check_by_id(&unresolved_json, "law-policy-schema051-basis-recorded")["result"],
+        check_by_id(&unresolved_json, "law-policy-schema052-basis-recorded")["result"],
         "fail"
     );
 
@@ -884,7 +884,7 @@ fn cli_law_policy_stage1_reserved_fields_fail_closed_and_basis_ledger_resolves()
     ]);
     let declared_json = read_json(&declared_report);
     assert_eq!(
-        check_by_id(&declared_json, "law-policy-schema051-basis-recorded")["result"],
+        check_by_id(&declared_json, "law-policy-schema052-basis-recorded")["result"],
         "pass",
         "basisLedger path is declarative and is not checked for filesystem existence"
     );
@@ -911,16 +911,36 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     let valid = read_json(&valid_report);
     assert_eq!(valid["summary"]["result"], "warn");
     assert_eq!(
-        check_by_id(&valid, "repair-plan-schema050-complete-support-cross-check")["result"],
+        check_by_id(&valid, "repair-plan-schema052-complete-support-cross-check")["result"],
         "pass"
     );
     assert_eq!(
-        check_by_id(&valid, "repair-plan-schema050-overlap-primitive-bijection")["result"],
+        check_by_id(&valid, "repair-plan-schema052-overlap-primitive-bijection")["result"],
         "pass"
     );
     assert_eq!(
         valid["assumptionLedger"][0]["assumedBy"], "repair-plan author",
         "enumerationComplete is recorded as author assumption, not verified"
+    );
+
+    let supplied_path = root.join("repair_plan_supplied_faithfulness.json");
+    let supplied_report = out_dir.join("repair-plan-supplied-valid.json");
+    run_sig0(&[
+        "repair-plan",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--repair-plan",
+        supplied_path.to_str().expect("path is utf-8"),
+        "--out",
+        supplied_report.to_str().expect("path is utf-8"),
+    ]);
+    let supplied = read_json(&supplied_report);
+    assert_eq!(supplied["summary"]["result"], "warn");
+    assert_eq!(
+        check_by_id(&supplied, "repair-plan-schema052-supplied-slots")["result"],
+        "pass"
     );
 
     let mut measured_residual = read_json(&repair_plan_path);
@@ -963,7 +983,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert_eq!(
         check_by_id(
             &read_json(&missing_residual_report),
-            "repair-plan-schema050-measured-residual-binding"
+            "repair-plan-schema052-measured-residual-binding"
         )["result"],
         "fail"
     );
@@ -984,7 +1004,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert_eq!(
         check_by_id(
             &read_json(&supplied_residual_report),
-            "repair-plan-schema050-measured-residual-binding"
+            "repair-plan-schema052-measured-residual-binding"
         )["result"],
         "pass"
     );
@@ -1088,7 +1108,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert_eq!(
         check_by_id(
             &missing_primitive_json,
-            "repair-plan-schema050-overlap-primitive-bijection"
+            "repair-plan-schema052-overlap-primitive-bijection"
         )["result"],
         "fail"
     );
@@ -1125,7 +1145,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert_eq!(
         check_by_id(
             &duplicate_primitive_json,
-            "repair-plan-schema050-overlap-primitive-bijection"
+            "repair-plan-schema052-overlap-primitive-bijection"
         )["result"],
         "fail"
     );
@@ -1156,7 +1176,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     );
     let reserved_json = read_json(&reserved_report);
     assert_eq!(
-        check_by_id(&reserved_json, "repair-plan-schema050-reserved-fields")["result"],
+        check_by_id(&reserved_json, "repair-plan-schema052-supplied-slots")["result"],
         "fail"
     );
 
@@ -1187,7 +1207,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         assert_eq!(
             check_by_id(
                 &read_json(&reserved_field_report),
-                "repair-plan-schema050-reserved-fields"
+                "repair-plan-schema052-supplied-slots"
             )["result"],
             "fail",
             "reserved field {field} must be rejected independently"
@@ -1223,7 +1243,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert_eq!(
         check_by_id(
             &read_json(&supplied_faithfulness_report),
-            "repair-plan-schema050-reserved-fields"
+            "repair-plan-schema052-supplied-slots"
         )["result"],
         "fail"
     );
@@ -1275,7 +1295,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert_eq!(
         check_by_id(
             &conclusion_json,
-            "repair-plan-schema050-no-conclusion-tokens"
+            "repair-plan-schema052-no-conclusion-tokens"
         )["result"],
         "fail"
     );
@@ -1307,7 +1327,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert_eq!(
         check_by_id(
             &partial_json,
-            "repair-plan-schema050-complete-support-cross-check"
+            "repair-plan-schema052-complete-support-cross-check"
         )["result"],
         "fail"
     );
@@ -1338,7 +1358,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     );
     let unresolved_json = read_json(&unresolved_report);
     assert_eq!(
-        check_by_id(&unresolved_json, "repair-plan-schema050-archmap-bindings")["result"],
+        check_by_id(&unresolved_json, "repair-plan-schema052-archmap-bindings")["result"],
         "fail"
     );
 }
@@ -2299,7 +2319,7 @@ fn cli_measurement_profile_finite_bounds_cap_and_effective_lowering() {
     );
     let cap_json = read_json(&cap_report);
     assert_eq!(
-        check_by_id(&cap_json, "measurement-profile-schema051-finite-bounds")["result"],
+        check_by_id(&cap_json, "measurement-profile-schema052-finite-bounds")["result"],
         "fail"
     );
 
@@ -2325,7 +2345,7 @@ fn cli_measurement_profile_finite_bounds_cap_and_effective_lowering() {
     assert_eq!(
         check_by_id(
             &read_json(&reserved_profile_report),
-            "measurement-profile-schema051-reserved-fields"
+            "measurement-profile-schema052-reserved-fields"
         )["result"],
         "fail"
     );
@@ -2355,7 +2375,7 @@ fn cli_measurement_profile_finite_bounds_cap_and_effective_lowering() {
     assert_eq!(
         check_by_id(
             &read_json(&null_reserved_profile_report),
-            "measurement-profile-schema051-reserved-fields"
+            "measurement-profile-schema052-reserved-fields"
         )["result"],
         "fail"
     );
@@ -2465,14 +2485,14 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     ]);
 
     let normalized = read_json(&out_dir.join("normalized-archmap.json"));
-    assert_eq!(normalized["schema"], "normalized-archmap/v0.5.1");
+    assert_eq!(normalized["schema"], "normalized-archmap/v0.5.2");
     assert_eq!(
         normalized["summary"]["doctrineFingerprint"],
-        "sha256:aat-canonical-doctrine-schema050"
+        "sha256:aat-canonical-doctrine-schema052"
     );
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(packet["schema"], "archsig-measurement-packet/v0.5.1");
+    assert_eq!(packet["schema"], "archsig-measurement-packet/v0.5.2");
     assert!(packet["profile"].is_object());
     assert!(packet["structuralVerdict"].is_array());
     assert!(packet["computedInvariants"].is_array());
@@ -2604,7 +2624,7 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     assert_eq!(validation["summary"]["result"], "pass");
 
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.1");
+    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.2");
     assert_eq!(
         viewer["sourceArtifactRefs"]["measurementPacket"],
         "archsig-measurement-packet.json"
@@ -2848,7 +2868,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             },
             "reason": "finite F2 Cech 1-cocycle is not a coboundary on the selected cover"
         }),
-        "ledger transparency must keep the Cech structural verdict payload stable apart from the v0.5.1 target/evidence additions"
+        "ledger transparency must keep the Cech structural verdict payload stable apart from the v0.5.2 target/evidence additions"
     );
     let cech_fixture_path = "input:archmap_v2_cech_h1_visible.json";
     let computed_without_capacity = Value::Array(
@@ -2881,7 +2901,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "atomCount": 6,
                 "contextCount": 4,
                 "coverCount": 1,
-                "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema050",
+                "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
                 "invariantId": "finite-poset-site-shape",
                 "evaluator": "ag.foundation"
             },
@@ -2929,7 +2949,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                             "value": 0
                         }
                     ],
-                    "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.1; not inferred by the viewer",
+                    "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.2; not inferred by the viewer",
                     "faces": [],
                     "h2CoherenceVisualized": false,
                     "vertices": [
@@ -3033,7 +3053,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "sourceArtifactRef": "input:archmap_v2_cech_h1_visible.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "archmap/v0.5.1-validation",
+                    "checkRef": "archmap/v0.5.2-validation",
                     "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
                 }
             },
@@ -3043,7 +3063,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "sourceArtifactRef": "input:law_policy_cech_h1.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "law-policy/v0.5.1-validation",
+                    "checkRef": "law-policy/v0.5.2-validation",
                     "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
                 }
             },
@@ -3053,7 +3073,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "sourceArtifactRef": "input:measurement_profile_ag.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "measurement-profile/v0.5.1-validation",
+                    "checkRef": "measurement-profile/v0.5.2-validation",
                     "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
                 }
             },
@@ -3063,7 +3083,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "sourceArtifactRef": "input:law_surface_cech_h1_v051.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "law-equation-surface/v0.5.1-validation",
+                    "checkRef": "law-equation-surface/v0.5.2-validation",
                     "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
                 }
             }
@@ -3609,7 +3629,7 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
     );
     assert_eq!(
         cech["coverNerveProjection"]["faceSource"],
-        "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.1; not inferred by the viewer"
+        "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.2; not inferred by the viewer"
     );
     let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
     assert_eq!(
@@ -5128,7 +5148,7 @@ fn cli_analyze_v2_emits_insight_report_brief_and_viewer_scene_contract() {
     let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
         .expect("insight brief is generated");
 
-    assert_eq!(report["schema"], "archsig-insight-report/v0.5.1");
+    assert_eq!(report["schema"], "archsig-insight-report/v0.5.2");
     assert_eq!(
         report["headline"]["conclusionCode"],
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
@@ -5516,7 +5536,7 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
         .expect("insight report must expose gluing geometry projection");
     assert_eq!(
         gluing_geometry["schema"].as_str(),
-        Some("archsig-viewer-gluing-geometry/v0.5.1"),
+        Some("archsig-viewer-gluing-geometry/v0.5.2"),
         "gluing geometry projection must be typed"
     );
     assert!(
@@ -5926,7 +5946,7 @@ fn cli_analyze_v2_validation_failure_emits_blocking_insight_projection() {
         manifest["conclusionCode"],
         "VALIDATION_FAILED_BEFORE_MEASUREMENT"
     );
-    assert_eq!(manifest["toolVersion"], "0.5.1");
+    assert_eq!(manifest["toolVersion"], "0.5.2");
     assert!(
         manifest["runId"]
             .as_str()
@@ -6547,7 +6567,7 @@ fn cli_analyze_v2_projects_analytic_overlay_bundle_to_viewer_lane() {
     let spectrum_landscape = &laplacian_viewer["aatGeometryOverlays"]["spectrumLandscape"];
     assert_eq!(
         spectrum_landscape["schema"],
-        "archsig-spectrum-landscape/v0.5.1"
+        "archsig-spectrum-landscape/v0.5.2"
     );
     assert_eq!(spectrum_landscape["measurementStatus"], "proxy");
     assert_eq!(spectrum_landscape["colorRole"], "analytic_reading");
@@ -8014,7 +8034,7 @@ fn cli_law_policy_rejects_malformed_tor_law_pairs() {
         assert_eq!(report["summary"]["result"], "fail");
         assert!(report["checks"].as_array().is_some_and(|checks| {
             checks.iter().any(|check| {
-                check["id"] == "law-policy-schema051-entry-shape"
+                check["id"] == "law-policy-schema052-entry-shape"
                     && check["examples"].as_array().is_some_and(|examples| {
                         examples
                             .iter()
@@ -8070,7 +8090,7 @@ fn cli_law_policy_rejects_non_closed_tor_law_surface() {
     let report = read_json(&report_path);
     assert!(report["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "law-policy-schema051-law-surface-resolution"
+            check["id"] == "law-policy-schema052-law-surface-resolution"
                 && check["result"] == "fail"
         })
     }));
@@ -8111,7 +8131,7 @@ fn cli_analyze_v2_square_free_requires_explicit_law() {
     let report = read_json(&report_path);
     assert!(report["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "law-policy-schema051-entry-shape"
+            check["id"] == "law-policy-schema052-entry-shape"
                 && check["examples"].as_array().is_some_and(|examples| {
                     examples.iter().any(|example| {
                         example["evidence"]
@@ -8929,7 +8949,7 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
         let period_stokes = &viewer["aatGeometryOverlays"]["periodStokes"];
         assert_eq!(
             period_stokes["schema"],
-            "archsig-period-stokes-meter/v0.5.1"
+            "archsig-period-stokes-meter/v0.5.2"
         );
         assert_eq!(period_stokes["sourceEvaluator"], "ag.period-stokes-audit");
         assert_eq!(period_stokes["modelRelative"], Value::Bool(true));
@@ -10152,7 +10172,7 @@ fn cli_rejects_archmap_v2_context_restriction_cycle() {
     let json = read_json(&report);
     assert!(
         json["checks"].as_array().unwrap().iter().any(|check| {
-            check["id"] == "archmap-schema050-context-poset-refs" && check["result"] == "fail"
+            check["id"] == "archmap-schema052-context-poset-refs" && check["result"] == "fail"
         }),
         "context restriction cycle must fail finite-poset validation"
     );
@@ -10278,7 +10298,7 @@ fn practical_rust_service_example_runs_current_analyze() {
     assert_eq!(archmap_validation["summary"]["result"], "pass");
 
     let normalized = read_json(&out_dir.join("normalized-archmap.json"));
-    assert_eq!(normalized["schema"], "normalized-archmap/v0.5.1");
+    assert_eq!(normalized["schema"], "normalized-archmap/v0.5.2");
     assert_eq!(normalized["summary"]["normalizedAtomCount"], 67);
     assert_eq!(normalized["summary"]["contextCount"], 7);
     assert_eq!(normalized["summary"]["coverCount"], 1);
@@ -10286,11 +10306,11 @@ fn practical_rust_service_example_runs_current_analyze() {
     let measurement_packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     assert_eq!(
         measurement_packet["schema"],
-        "archsig-measurement-packet/v0.5.1"
+        "archsig-measurement-packet/v0.5.2"
     );
     assert_eq!(
         measurement_packet["packetId"],
-        "measurement:practical-rust-commerce-fulfillment/v0.5.1"
+        "measurement:practical-rust-commerce-fulfillment/v0.5.2"
     );
     assert!(
         measurement_packet["structuralVerdict"]
@@ -10312,7 +10332,7 @@ fn practical_rust_service_example_runs_current_analyze() {
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
     let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
-    assert_eq!(summary["schema"], "archsig-analysis-summary/v0.5.1");
+    assert_eq!(summary["schema"], "archsig-analysis-summary/v0.5.2");
     assert_eq!(
         summary["conclusion"],
         "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
@@ -10320,7 +10340,7 @@ fn practical_rust_service_example_runs_current_analyze() {
     assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 1);
     assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 0);
 
-    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.1");
+    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.2");
     assert_eq!(viewer["atomNodes"].as_array().map(Vec::len), Some(67));
     assert_eq!(viewer["moleculeGroups"].as_array().map(Vec::len), Some(7));
     assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(85));
@@ -10342,9 +10362,9 @@ fn practical_rust_service_example_runs_current_analyze() {
         "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     );
 
-    assert_eq!(manifest["schema"], "archsig-run-manifest/v0.5.1");
+    assert_eq!(manifest["schema"], "archsig-run-manifest/v0.5.2");
     assert_eq!(manifest["mode"], "measurement");
-    assert_eq!(manifest["toolVersion"], "0.5.1");
+    assert_eq!(manifest["toolVersion"], "0.5.2");
     assert!(
         manifest["runId"]
             .as_str()
@@ -10498,23 +10518,23 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     }
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
-    assert_eq!(manifest["toolVersion"], "0.5.1");
-    assert_eq!(manifest["runId"], "run:0f166bdbad8d");
+    assert_eq!(manifest["toolVersion"], "0.5.2");
+    assert_eq!(manifest["runId"], "run:5e0478f23f40");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
-        "ae4ff70181f17ad5f5cf1942815dbcdda752e7fb7d841587c5cf1afd48cf2e1e"
+        "d59347b0524bbab8d2f23fa1c2c0a813f0c9dd851e98c6f427014f9833ec7f1c"
     );
     assert_eq!(
         manifest["inputDigests"]["lawPolicy"]["sha256"],
-        "7be4ae59036c5af2027a35a27e3a79aa0b9c1ae8e728ff3947b14dda3b79dbf6"
+        "51735660988fcb44c89f9c3ba5500545a86bcb0ecf3a7b1f34bfc3db4ddc697f"
     );
     assert_eq!(
         manifest["inputDigests"]["measurementProfile"]["sha256"],
-        "5409ebe4d9fec65c100fc22395168a801d87f9d542be47189d3f6ccb5fe6c42f"
+        "f6459cc94d87d5df8594fe33191770f19668689c9225d21156479d6cc4b25cd0"
     );
     assert_eq!(
         manifest["inputDigests"]["profileFingerprint"]["sha256"],
-        "5f429f9b294efdec80715872d3c3715ee2082abae4cf4dd4f71be79a5a013ccb"
+        "5ce635da680d5fc3a3e83c8eb2493317eb4f9dca805d918ba9ab62297479258a"
     );
     assert_eq!(
         manifest["inputDigests"]["siteCoverDigest"]["sha256"],
@@ -10666,7 +10686,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:0f166bdbad8d-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:5e0478f23f40-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -10847,44 +10867,44 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
         ids,
         vec![
             "archmap-current",
-            "aat-atom-vocabulary/v0.5.1",
-            "archmap-scope-manifest/v0.5.1",
-            "archmap-candidate-packet/v0.5.1",
-            "archmap-extraction-consistency/v0.5.1",
-            "archmap-coverage-ledger/v0.5.1",
-            "aat-atom-vocabulary-binding/v0.5.1",
-            "law-equation-surface/v0.5.1",
-            "law-policy/v0.5.1",
-            "archsig-policy-bundle/v0.5.1",
-            "measurement-profile/v0.5.1",
-            "archsig-repair-plan/v0.5.1",
-            "law-evaluator-registry/v0.5.1",
+            "aat-atom-vocabulary/v0.5.2",
+            "archmap-scope-manifest/v0.5.2",
+            "archmap-candidate-packet/v0.5.2",
+            "archmap-extraction-consistency/v0.5.2",
+            "archmap-coverage-ledger/v0.5.2",
+            "aat-atom-vocabulary-binding/v0.5.2",
+            "law-equation-surface/v0.5.2",
+            "law-policy/v0.5.2",
+            "archsig-policy-bundle/v0.5.2",
+            "measurement-profile/v0.5.2",
+            "archsig-repair-plan/v0.5.2",
+            "law-evaluator-registry/v0.5.2",
             "normalized-archmap-current",
-            "archsig-measurement-packet/v0.5.1",
-            "archsig-boundary-statement/v0.5.1",
-            "archsig-gate-policy/v0.5.1",
-            "archsig-gate-report/v0.5.1",
-            "archmap-diff/v0.5.1",
-            "archsig-comparison-report/v0.5.1",
-            "archsig-run-manifest/v0.5.1",
-            "archsig-atom-viewer-data/v0.5.1",
+            "archsig-measurement-packet/v0.5.2",
+            "archsig-boundary-statement/v0.5.2",
+            "archsig-gate-policy/v0.5.2",
+            "archsig-gate-report/v0.5.2",
+            "archmap-diff/v0.5.2",
+            "archsig-comparison-report/v0.5.2",
+            "archsig-run-manifest/v0.5.2",
+            "archsig-atom-viewer-data/v0.5.2",
         ]
     );
     for entry in artifacts {
         let artifact_id = entry["artifactId"].as_str().expect("artifact id");
         let expected_role = match artifact_id {
-            "archmap-scope-manifest/v0.5.1"
-            | "archmap-candidate-packet/v0.5.1"
-            | "archmap-extraction-consistency/v0.5.1"
-            | "archmap-coverage-ledger/v0.5.1"
-            | "aat-atom-vocabulary-binding/v0.5.1" => "authoring",
+            "archmap-scope-manifest/v0.5.2"
+            | "archmap-candidate-packet/v0.5.2"
+            | "archmap-extraction-consistency/v0.5.2"
+            | "archmap-coverage-ledger/v0.5.2"
+            | "aat-atom-vocabulary-binding/v0.5.2" => "authoring",
             _ => "primary",
         };
         assert_eq!(entry["artifactRole"].as_str(), Some(expected_role));
     }
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "aat-atom-vocabulary/v0.5.1"
+            entry["artifactId"] == "aat-atom-vocabulary/v0.5.2"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -10905,8 +10925,8 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-boundary-statement/v0.5.1"
-                && entry["schemaName"] == "archsig-boundary-statement/v0.5.1"
+            entry["artifactId"] == "archsig-boundary-statement/v0.5.2"
+                && entry["schemaName"] == "archsig-boundary-statement/v0.5.2"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -10926,7 +10946,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-measurement-packet/v0.5.1"
+            entry["artifactId"] == "archsig-measurement-packet/v0.5.2"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -10939,7 +10959,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-gate-report/v0.5.1"
+            entry["artifactId"] == "archsig-gate-report/v0.5.2"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -10952,7 +10972,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-comparison-report/v0.5.1"
+            entry["artifactId"] == "archsig-comparison-report/v0.5.2"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -10965,7 +10985,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-run-manifest/v0.5.1"
+            entry["artifactId"] == "archsig-run-manifest/v0.5.2"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -11005,7 +11025,7 @@ fn cli_policy_bundle_fingerprints_and_analyze_handoff_are_fail_closed() {
         bundle.to_str().expect("bundle path is utf-8"),
     ]);
     let bundle_json = read_json(&bundle);
-    assert_eq!(bundle_json["schema"], "archsig-policy-bundle/v0.5.1");
+    assert_eq!(bundle_json["schema"], "archsig-policy-bundle/v0.5.2");
     assert!(
         bundle_json["componentFingerprints"]["lawPolicy"]
             .as_str()
@@ -11735,7 +11755,7 @@ fn cli_gate_rejects_supplied_vacuous_measured_zero_packet() {
             .unwrap()
             .iter()
             .any(|check| {
-                check["id"] == "measurement-packet-schema050-structural-verdict-new-shape"
+                check["id"] == "measurement-packet-schema052-structural-verdict-new-shape"
                     && check["result"] == "fail"
             })
     );
@@ -11750,7 +11770,7 @@ fn cli_gate_rejects_plain_pass_for_non_terminal_and_missing_mapping() {
     fs::write(
         &policy_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-gate-policy/v0.5.1",
+            "schema": "archsig-gate-policy/v0.5.2",
             "policyId": "gate-policy:bad@1",
             "rules": [{
                 "ruleId": "absolute-bad",
@@ -11806,7 +11826,7 @@ fn cli_gate_rejects_plain_pass_for_non_terminal_and_missing_mapping() {
     fs::write(
         &introduced_policy_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-gate-policy/v0.5.1",
+            "schema": "archsig-gate-policy/v0.5.2",
             "policyId": "gate-policy:bad-introduced@1",
             "rules": [{
                 "ruleId": "introduced-bad",
@@ -11923,7 +11943,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &malformed_packet,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-measurement-packet/v0.5.1",
+            "schema": "archsig-measurement-packet/v0.5.2",
             "packetId": "measurement:malformed",
             "structuralVerdict": []
         }))
@@ -11949,7 +11969,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &bad_minimal_packet,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-measurement-packet/v0.5.1",
+            "schema": "archsig-measurement-packet/v0.5.2",
             "packetId": "measurement:bad-minimal",
             "profile": {},
             "structuralVerdict": [{
@@ -11982,7 +12002,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-pr-review-report/v0.5.1"
+            "schema": "archsig-pr-review-report/v0.5.2"
         }))
         .expect("comparison serializes"),
     )
@@ -12013,7 +12033,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &empty_comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-comparison-report/v0.5.1",
+            "schema": "archsig-comparison-report/v0.5.2",
             "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
             "comparability": { "level": "identical" },
             "verdictTransitions": []
@@ -12045,7 +12065,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &unknown_category_comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-comparison-report/v0.5.1",
+            "schema": "archsig-comparison-report/v0.5.2",
             "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
             "comparability": { "level": "identical" },
             "verdictTransitions": [{
@@ -12100,7 +12120,7 @@ fn cli_gate_records_applied_mapping_and_exit_codes_without_fail_vocab() {
         pass_report.to_str().expect("path is utf-8"),
     ]);
     let pass_json = read_json(&pass_report);
-    assert_eq!(pass_json["schema"], "archsig-gate-report/v0.5.1");
+    assert_eq!(pass_json["schema"], "archsig-gate-report/v0.5.2");
     assert_eq!(pass_json["decision"], "PASS_WITHIN_GATE_POLICY");
     assert_eq!(
         pass_json["ruleOutcomes"][0]["appliedMapping"][0]["verdict"],
@@ -12185,7 +12205,7 @@ fn cli_gate_rejects_duplicate_json_and_input_output_aliases() {
     let duplicate_packet = out_dir.join("duplicate-packet.json");
     fs::write(
         &duplicate_packet,
-        r#"{"schema":"archsig-measurement-packet/v0.5.1","schema":"duplicate"}"#,
+        r#"{"schema":"archsig-measurement-packet/v0.5.2","schema":"duplicate"}"#,
     )
     .expect("duplicate packet writes");
     let duplicate_output = run_sig0_output(&[
@@ -12576,7 +12596,7 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
         ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
         ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ]);
-    assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.1");
+    assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.2");
     assert_eq!(
         comparison["discipline"],
         "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim class transport, causal repair, semantic equivalence, or preserved obstruction identity."
@@ -12624,7 +12644,7 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
     );
 
     let diff = read_json(&compare_a.join("archmap-diff.json"));
-    assert_eq!(diff["schema"], "archmap-diff/v0.5.1");
+    assert_eq!(diff["schema"], "archmap-diff/v0.5.2");
     assert!(
         diff["contexts"]["added"]
             .as_array()
@@ -12644,7 +12664,7 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
     fs::write(
         &gate_policy_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-gate-policy/v0.5.1",
+            "schema": "archsig-gate-policy/v0.5.2",
             "policyId": "gate-policy:introduced@1",
             "rules": [{
                 "ruleId": "introduced-change",
@@ -12757,7 +12777,7 @@ fn cli_compare_rejects_malformed_measurement_packet_runs() {
     fs::write(
         head_run.join("archsig-measurement-packet.json"),
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-measurement-packet/v0.5.1",
+            "schema": "archsig-measurement-packet/v0.5.2",
             "packetId": "measurement:malformed",
             "structuralVerdict": []
         }))
@@ -12840,10 +12860,10 @@ fn write_gate_packet(path: &Path, verdict: &str) {
     fs::write(
         path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-measurement-packet/v0.5.1",
+            "schema": "archsig-measurement-packet/v0.5.2",
             "packetId": "measurement:gate-test",
             "profile": {
-                "schema": "measurement-profile/v0.5.1",
+                "schema": "measurement-profile/v0.5.2",
                 "profileId": "profile:gate-test@1",
                 "siteRef": "site:gate-test",
                 "coverRef": "cover:gate-test",
@@ -12911,7 +12931,7 @@ fn write_gate_packet(path: &Path, verdict: &str) {
                 "sourceArtifactRef": "input:archmap.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "archmap/v0.5.1-validation"
+                    "checkRef": "archmap/v0.5.2-validation"
                 }
             }, {
                 "suppliedId": "supplied:law-policy",
@@ -12919,7 +12939,7 @@ fn write_gate_packet(path: &Path, verdict: &str) {
                 "sourceArtifactRef": "input:law-policy.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "law-policy/v0.5.1-validation"
+                    "checkRef": "law-policy/v0.5.2-validation"
                 }
             }, {
                 "suppliedId": "supplied:measurement-profile",
@@ -12927,7 +12947,7 @@ fn write_gate_packet(path: &Path, verdict: &str) {
                 "sourceArtifactRef": "input:measurement-profile.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "measurement-profile/v0.5.1-validation"
+                    "checkRef": "measurement-profile/v0.5.2-validation"
                 }
             }],
             "boundaryStatements": [{
@@ -13088,7 +13108,7 @@ fn test_measurement_profile_path(policy_path: &Path) -> PathBuf {
 }
 
 fn write_test_policy_and_profile(policy_path: &Path, mut policy: Value, profile: Value) {
-    policy["schema"] = json!("law-policy/v0.5.1");
+    policy["schema"] = json!("law-policy/v0.5.2");
     if policy.get("lawSurfaceRef").is_none() {
         policy["lawSurfaceRef"] = json!("law-surface:ag-measurement-v051");
     }
@@ -13176,7 +13196,7 @@ fn write_test_policy_and_profile(policy_path: &Path, mut policy: Value, profile:
         fs::write(
             &surface_path,
             serde_json::to_vec_pretty(&json!({
-                "schema": "law-equation-surface/v0.5.1",
+                "schema": "law-equation-surface/v0.5.2",
                 "id": "law-surface:ag-measurement-v051",
                 "laws": surface_laws
             }))
@@ -13190,7 +13210,7 @@ fn write_test_policy_and_profile(policy_path: &Path, mut policy: Value, profile:
     )
     .expect("test law policy can be written");
     let mut profile = profile;
-    profile["schema"] = json!("measurement-profile/v0.5.1");
+    profile["schema"] = json!("measurement-profile/v0.5.2");
     profile
         .as_object_mut()
         .map(|object| object.remove("witnessFamily"));
@@ -13652,7 +13672,7 @@ fn assert_common_structural_verdict_discipline(packet: &Value, evaluator: &str) 
 
 fn restriction_policy() -> Value {
     json!({
-        "schema": "law-policy/v0.5.1",
+        "schema": "law-policy/v0.5.2",
         "id": "ag-restriction-policy",
         "measurementProfileRef": "profile:ag-restriction@1",
         "policies": [{
@@ -13667,7 +13687,7 @@ fn restriction_policy() -> Value {
 
 fn restriction_profile() -> Value {
     json!({
-        "schema": "measurement-profile/v0.5.1",
+        "schema": "measurement-profile/v0.5.2",
         "profileId": "profile:ag-restriction@1",
         "siteRef": "archmap:/contexts",
         "coverRef": "cover:restriction",
@@ -13688,7 +13708,7 @@ fn restriction_profile() -> Value {
 
 fn boundary_residue_policy() -> Value {
     json!({
-        "schema": "law-policy/v0.5.1",
+        "schema": "law-policy/v0.5.2",
         "id": "ag-boundary-residue-policy",
         "measurementProfileRef": "profile:ag-boundary-residue@1",
         "policies": [{
@@ -13703,7 +13723,7 @@ fn boundary_residue_policy() -> Value {
 
 fn boundary_residue_profile() -> Value {
     json!({
-        "schema": "measurement-profile/v0.5.1",
+        "schema": "measurement-profile/v0.5.2",
         "profileId": "profile:ag-boundary-residue@1",
         "siteRef": "archmap:/contexts",
         "coverRef": "cover:boundary-residue",
@@ -13724,7 +13744,7 @@ fn boundary_residue_profile() -> Value {
 
 fn section_policy() -> Value {
     json!({
-        "schema": "law-policy/v0.5.1",
+        "schema": "law-policy/v0.5.2",
         "id": "ag-section-policy",
         "measurementProfileRef": "profile:ag-section@1",
         "policies": [{
@@ -13739,7 +13759,7 @@ fn section_policy() -> Value {
 
 fn section_profile() -> Value {
     json!({
-        "schema": "measurement-profile/v0.5.1",
+        "schema": "measurement-profile/v0.5.2",
         "profileId": "profile:ag-section@1",
         "siteRef": "archmap:/contexts",
         "coverRef": "cover:section",
@@ -13823,7 +13843,7 @@ fn restriction_archmap(case: &str) -> Value {
         target_atoms.push(atom_id);
     }
     json!({
-        "schema": "archmap/v0.5.1",
+        "schema": "archmap/v0.5.2",
         "id": format!("ag-restriction-fixture-{case}"),
         "sources": {
             "src:source": {"kind": "rust", "path": "src/source.rs", "symbol": "Source", "line": 1},
@@ -14027,7 +14047,7 @@ fn boundary_residue_archmap(case: &str) -> Value {
         .collect::<Vec<_>>();
 
     json!({
-        "schema": "archmap/v0.5.1",
+        "schema": "archmap/v0.5.2",
         "id": format!("ag-boundary-residue-fixture-{case}"),
         "sources": {
             "src:core": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 core patch"},
@@ -14130,7 +14150,7 @@ fn section_archmap(case: &str) -> Value {
         context_atoms.push(atom_id);
     }
     json!({
-        "schema": "archmap/v0.5.1",
+        "schema": "archmap/v0.5.2",
         "id": format!("ag-section-fixture-{case}"),
         "sources": {
             "src:section-carrier": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 section"},
@@ -14176,7 +14196,7 @@ fn coherence_policy(_coefficient: &str, include_cech: bool) -> Value {
         );
     }
     json!({
-        "schema": "law-policy/v0.5.1",
+        "schema": "law-policy/v0.5.2",
         "id": "ag-coherence-policy",
         "measurementProfileRef": "profile:ag-coherence@1",
         "policies": policies
@@ -14195,7 +14215,7 @@ fn coherence_profile(coefficient: &str, include_cech: bool) -> Value {
         }));
     }
     json!({
-        "schema": "measurement-profile/v0.5.1",
+        "schema": "measurement-profile/v0.5.2",
         "profileId": "profile:ag-coherence@1",
         "siteRef": "archmap:/contexts",
         "coverRef": "cover:coherence",
@@ -14620,7 +14640,7 @@ fn archmap_with_contexts(atoms: Vec<Value>, contexts: Vec<Value>) -> Value {
         .filter_map(|context| context["id"].as_str())
         .collect::<Vec<_>>();
     json!({
-        "schema": "archmap/v0.5.1",
+        "schema": "archmap/v0.5.2",
         "id": "ag-coherence-fixture",
         "sources": {
             "src:a": {"kind": "rust", "path": "src/a.rs", "symbol": "A", "line": 1},

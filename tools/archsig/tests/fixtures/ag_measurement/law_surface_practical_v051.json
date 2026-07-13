@@ -1,5 +1,5 @@
 {
-  "schema": "law-equation-surface/v0.5.1",
+  "schema": "law-equation-surface/v0.5.2",
   "id": "law-surface:practical-rust-v051",
   "laws": [
     {

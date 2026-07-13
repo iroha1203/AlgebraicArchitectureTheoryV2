@@ -13,7 +13,7 @@ Use this skill when asked to run ArchSig-assisted PR review.
 - Head run directory containing `archsig-measurement-packet.json`.
 - Gate policy JSON.
 - Source diff or PR checkout for human review.
-- Prefer an `archsig-policy-bundle/v0.5.1` for both base and head runs when
+- Prefer an `archsig-policy-bundle/v0.5.2` for both base and head runs when
   the policy, law surface, and profile are intended to remain fixed.
 
 ## Workflow

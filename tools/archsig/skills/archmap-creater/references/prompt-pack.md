@@ -5,7 +5,7 @@ Use this prompt shape for each reading-pass chunk.
 ## System Task
 
 Read the assigned worklist rows and emit one
-`archmap-candidate-packet/v0.5.1`. You are not producing the final ArchMap. You are
+`archmap-candidate-packet/v0.5.2`. You are not producing the final ArchMap. You are
 not allowed to use generated inventories as final atoms. Every candidate must
 be source-grounded.
 
@@ -25,7 +25,7 @@ Do not read the other pass's candidate packets.
 
 ```json
 {
-  "schema": "archmap-candidate-packet/v0.5.1",
+  "schema": "archmap-candidate-packet/v0.5.2",
   "id": "candidates:pass-a:chunk-01",
   "scopeManifestRef": "scope:orders-service",
   "passId": "pass-a",

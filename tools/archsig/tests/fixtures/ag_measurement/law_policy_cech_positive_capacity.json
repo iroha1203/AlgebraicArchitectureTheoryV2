@@ -1,5 +1,5 @@
 {
-  "schema": "law-policy/v0.5.1",
+  "schema": "law-policy/v0.5.2",
   "id": "ag-cech-positive-capacity-policy",
   "lawSurfaceRef": "law-surface:cech-positive-capacity-v051",
   "measurementProfileRef": "profile:ag-default@1",

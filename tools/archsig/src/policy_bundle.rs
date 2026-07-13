@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
 
-pub const ARCHSIG_POLICY_BUNDLE_V1_SCHEMA: &str = "archsig-policy-bundle/v0.5.1";
+pub const ARCHSIG_POLICY_BUNDLE_V1_SCHEMA: &str = "archsig-policy-bundle/v0.5.2";
 pub const ARCHSIG_POLICY_BUNDLE_VALIDATION_REPORT_SCHEMA: &str =
-    "archsig-policy-bundle-validation-report/v0.5.1";
+    "archsig-policy-bundle-validation-report/v0.5.2";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

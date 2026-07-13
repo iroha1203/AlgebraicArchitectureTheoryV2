@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-viewer-gluing-geometry-golden-ux/v0.5.1",
+  "schema": "archsig-viewer-gluing-geometry-golden-ux/v0.5.2",
   "designRef": "docs/tool/archview_gluing_geometry_contract.md",
   "description": "Golden UX regression manifest for ArchView gluing geometry projections.",
   "cases": [

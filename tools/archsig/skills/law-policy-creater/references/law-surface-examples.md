@@ -1,6 +1,6 @@
 # Law-surface examples
 
-These examples are small review fixtures for `law-equation-surface/v0.5.1`.
+These examples are small review fixtures for `law-equation-surface/v0.5.2`.
 They are intentionally paired with the validator's fail-closed rules.
 
 ## Good: closed equation with an accepted binding

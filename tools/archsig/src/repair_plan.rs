@@ -14,7 +14,7 @@ pub fn validate_repair_plan_v1_checks(
 ) -> Vec<ValidationCheck> {
     vec![
         check_schema(plan),
-        check_reserved_fields(plan),
+        check_supplied_slots(plan),
         check_conclusion_tokens(plan),
         check_references(plan),
         check_archmap_bindings(plan, archmap),
@@ -38,7 +38,7 @@ pub fn build_repair_plan_validation_report_v1(
     let failed_check_count = checks.iter().filter(|check| check.result == "fail").count();
     let warning_check_count = checks.iter().filter(|check| check.result == "warn").count();
     serde_json::json!({
-        "schema": "archsig-repair-plan-validation-report/v0.5.1",
+        "schema": "archsig-repair-plan-validation-report/v0.5.2",
         "input": {
             "schema": plan.schema,
             "path": input_path,
@@ -63,8 +63,8 @@ pub fn build_repair_plan_validation_report_v1(
 
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
-        "repair-plan-schema050-schema",
-        "RepairPlan uses the v0.5.1 schema discriminator",
+        "repair-plan-schema052-schema",
+        "RepairPlan uses the v0.5.2 schema discriminator",
         if plan.schema == ARCHSIG_REPAIR_PLAN_V1_SCHEMA {
             "pass"
         } else {
@@ -80,29 +80,55 @@ fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     check
 }
 
-fn check_reserved_fields(plan: &RepairPlanDocumentV1) -> ValidationCheck {
+fn check_supplied_slots(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut examples = Vec::new();
-    for (path, present) in [
-        (
-            "trueSheafCertificate",
-            plan.true_sheaf_certificate.is_some(),
-        ),
-        ("gluingData", plan.gluing_data.is_some()),
-        ("comparison", plan.comparison.is_some()),
-        ("grounding", plan.grounding.is_some()),
-        ("faithfulness.mode", plan.faithfulness.mode == "supplied"),
+    if plan.faithfulness.mode == "supplied" {
+        match &plan.faithfulness.supplied {
+            Some(supplied)
+                if !supplied.zero_primitive_ref.is_empty()
+                    && !supplied.residual_support_predicate.is_empty()
+                    && !supplied.faithfulness_law.is_empty() => {}
+            Some(_) => examples.push(generic_validation_example(
+                "faithfulness.supplied",
+                "incomplete",
+                "supplied faithfulness requires zeroPrimitiveRef, residualSupportPredicate, and faithfulnessLaw",
+            )),
+            None => examples.push(generic_validation_example(
+                "faithfulness.supplied",
+                "missing",
+                "faithfulness.mode=supplied requires the three definition 4.6 data points",
+            )),
+        }
+    } else if plan.faithfulness.supplied.is_some() {
+        examples.push(generic_validation_example(
+            "faithfulness.supplied",
+            "present-without-supplied-mode",
+            "supplied faithfulness data is only active when faithfulness.mode is supplied",
+        ));
+    }
+    for (path, value) in [
+        ("trueSheafCertificate", plan.true_sheaf_certificate.as_ref()),
+        ("gluingData", plan.gluing_data.as_ref()),
+        ("comparison", plan.comparison.as_ref()),
+        ("grounding", plan.grounding.as_ref()),
     ] {
-        if present {
+        if value.is_some_and(Value::is_null) {
             examples.push(generic_validation_example(
                 path,
-                "reserved-stage2-field",
-                "field is reserved for a later SAGA stage and fails closed in Stage 1",
+                "null",
+                "optional supplied artifact must be an object when present",
+            ));
+        } else if value.is_some() {
+            examples.push(generic_validation_example(
+                path,
+                "reserved-before-stage-2",
+                "Stage 2 supplied artifacts are rejected until their validators are implemented",
             ));
         }
     }
     examples_check(
-        "repair-plan-schema050-reserved-fields",
-        "Stage 2 repair-plan declarations fail closed",
+        "repair-plan-schema052-supplied-slots",
+        "Stage 2 supplied slots are explicit and checked before evaluator use",
         examples,
     )
 }
@@ -112,7 +138,7 @@ fn check_conclusion_tokens(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut hits = Vec::new();
     collect_conclusion_tokens(&value, "$", &mut hits);
     examples_check(
-        "repair-plan-schema050-no-conclusion-tokens",
+        "repair-plan-schema052-no-conclusion-tokens",
         "RepairPlan input does not supply theorem conclusion tokens",
         hits.into_iter()
             .map(|path| {
@@ -167,7 +193,7 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
         }
     }
     examples_check(
-        "repair-plan-schema050-reference-resolution",
+        "repair-plan-schema052-reference-resolution",
         "RepairPlan chart, overlap, primitive, and triple references resolve",
         examples,
     )
@@ -263,7 +289,7 @@ fn check_archmap_bindings(
         }
     }
     examples_check(
-        "repair-plan-schema050-archmap-bindings",
+        "repair-plan-schema052-archmap-bindings",
         "RepairPlan charts and semantic projection resolve against the supplied ArchMap",
         examples,
     )
@@ -318,7 +344,7 @@ fn check_measured_residual(
         }
     }
     examples_check(
-        "repair-plan-schema050-measured-residual-binding",
+        "repair-plan-schema052-measured-residual-binding",
         "Measured residuals are bound to supplied packet evidence",
         examples,
     )
@@ -343,15 +369,23 @@ fn check_stage1_mode_and_coefficient(plan: &RepairPlanDocumentV1) -> ValidationC
             "Stage 1 RepairPlan faithfulness.mode must be complete-support or none; supplied is reserved fail-closed",
         ));
     }
-    if plan.coefficient != "f2-additive" {
+    if !plan.coefficient.is_f2_additive()
+        && plan.coefficient.supplied().is_none_or(|coefficient| {
+            coefficient.kind != "f2-additive"
+                || coefficient.characteristic != 2
+                || !coefficient.additive
+                || !coefficient.delta_one_after_delta_zero
+                || !coefficient.zero_maps_to_zero
+        })
+    {
         examples.push(generic_validation_example(
             "coefficient",
-            &plan.coefficient,
-            "Stage 1 RepairPlan coefficient must be f2-additive",
+            &serde_json::to_string(&plan.coefficient).unwrap_or_default(),
+            "RepairPlan coefficient must be f2-additive or a checked characteristic-two additive supplied coefficient",
         ));
     }
     examples_check(
-        "repair-plan-schema050-stage1-regime",
+        "repair-plan-schema052-stage1-regime",
         "RepairPlan uses the Stage 1 residual, faithfulness, and coefficient vocabulary",
         examples,
     )
@@ -371,7 +405,7 @@ fn check_restriction_difference_rule(plan: &RepairPlanDocumentV1) -> ValidationC
         }
     }
     examples_check(
-        "repair-plan-schema050-restriction-difference-rule",
+        "repair-plan-schema052-restriction-difference-rule",
         "Supplied primitives satisfy the restriction-difference rule before use",
         examples,
     )
@@ -417,7 +451,7 @@ fn check_overlap_primitive_bijection(plan: &RepairPlanDocumentV1) -> ValidationC
         }
     }
     examples_check(
-        "repair-plan-schema050-overlap-primitive-bijection",
+        "repair-plan-schema052-overlap-primitive-bijection",
         "Every complex overlap is represented by exactly one primitive before SAGA evaluation",
         examples,
     )
@@ -452,7 +486,7 @@ fn check_delta_cocycle(plan: &RepairPlanDocumentV1) -> ValidationCheck {
         }
     }
     examples_check(
-        "repair-plan-schema050-delta-cocycle",
+        "repair-plan-schema052-delta-cocycle",
         "Supplied residual satisfies delta1(delta0)=0 and delta1(r)=0 checks",
         examples,
     )
@@ -472,7 +506,7 @@ fn check_complete_support(plan: &RepairPlanDocumentV1) -> ValidationCheck {
         }
     }
     examples_check(
-        "repair-plan-schema050-complete-support-cross-check",
+        "repair-plan-schema052-complete-support-cross-check",
         "Complete-support mode cross-checks every primitive support declaration",
         examples,
     )
@@ -480,7 +514,7 @@ fn check_complete_support(plan: &RepairPlanDocumentV1) -> ValidationCheck {
 
 fn check_enumeration_assumption(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
-        "repair-plan-schema050-enumeration-assumption",
+        "repair-plan-schema052-enumeration-assumption",
         "Enumeration completeness is recorded as an author assumption, not verified",
         "warn",
     );

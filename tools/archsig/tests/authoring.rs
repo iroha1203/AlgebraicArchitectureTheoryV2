@@ -64,7 +64,7 @@ fn scope_manifest_cli_is_deterministic_for_selected_sources() {
         fs::read(&first).expect("first manifest reads"),
         fs::read(&second).expect("second manifest reads")
     );
-    assert_eq!(read_json(&first)["schema"], "archmap-scope-manifest/v0.5.1");
+    assert_eq!(read_json(&first)["schema"], "archmap-scope-manifest/v0.5.2");
 }
 
 #[test]
@@ -132,7 +132,7 @@ fn archmap_cli_rejects_diagnostic_shortcut_atom_id() {
             .as_array()
             .expect("checks are array")
             .iter()
-            .find(|check| check["id"] == "archmap-schema050-no-diagnostic-shortcuts")
+            .find(|check| check["id"] == "archmap-schema052-no-diagnostic-shortcuts")
             .expect("diagnostic shortcut check exists")["result"],
         "fail"
     );
@@ -170,7 +170,7 @@ fn archmap_cli_rejects_noncanonical_extraction_doctrine() {
             .as_array()
             .expect("checks are array")
             .iter()
-            .find(|check| check["id"] == "archmap-schema050-extraction-doctrine-ref")
+            .find(|check| check["id"] == "archmap-schema052-extraction-doctrine-ref")
             .expect("extraction doctrine check exists")["result"],
         "fail"
     );
@@ -180,7 +180,7 @@ fn archmap_cli_rejects_noncanonical_extraction_doctrine() {
 fn archmap_cli_runs_minimal_authoring_audit() {
     let out_dir = temp_dir("archmap-authoring-audit");
     let archmap = json!({
-        "schema": "archmap/v0.5.1",
+        "schema": "archmap/v0.5.2",
         "id": "archmap:authoring-audit",
         "sources": {
             "src:src/a.rs": { "kind": "file", "path": "src/a.rs" }
@@ -198,7 +198,7 @@ fn archmap_cli_runs_minimal_authoring_audit() {
         "covers": []
     });
     let scope = json!({
-        "schema": "archmap-scope-manifest/v0.5.1",
+        "schema": "archmap-scope-manifest/v0.5.2",
         "id": "scope:test",
         "repository": {
             "root": ".",
@@ -224,7 +224,7 @@ fn archmap_cli_runs_minimal_authoring_audit() {
         "exclusions": []
     });
     let candidate = json!({
-        "schema": "archmap-candidate-packet/v0.5.1",
+        "schema": "archmap-candidate-packet/v0.5.2",
         "id": "candidates:pass-a",
         "scopeManifestRef": "scope:test",
         "passId": "pass-a",
@@ -259,7 +259,7 @@ fn archmap_cli_runs_minimal_authoring_audit() {
         }
     });
     let ledger = json!({
-        "schema": "archmap-coverage-ledger/v0.5.1",
+        "schema": "archmap-coverage-ledger/v0.5.2",
         "id": "coverage:test",
         "scopeManifestRef": "scope:test",
         "archmapRef": "archmap:authoring-audit",

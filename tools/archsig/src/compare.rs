@@ -120,7 +120,7 @@ fn build_archmap_diff(
     Ok(json!({
         "schema": ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA,
         "toolVersion": env!("CARGO_PKG_VERSION"),
-        "basis": "deterministic JSON comparison of normalized-archmap/v0.5.1 sources, atoms, contexts, and covers",
+        "basis": "deterministic JSON comparison of normalized-archmap/v0.5.2 sources, atoms, contexts, and covers",
         "inputDigests": {
             "baseNormalizedArchmap": {
                 "path": artifact_ref(base_run, "normalized-archmap.json"),
@@ -552,7 +552,7 @@ mod tests {
 
     fn manifest(law_surface: &str) -> serde_json::Value {
         json!({
-            "toolVersion": "0.5.1",
+            "toolVersion": "0.5.2",
             "inputDigests": {
                 "archmap": {"sha256": "same-archmap"},
                 "lawPolicy": {"sha256": "same-policy"},
