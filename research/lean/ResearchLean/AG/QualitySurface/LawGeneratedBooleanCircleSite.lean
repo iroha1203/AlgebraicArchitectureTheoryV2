@@ -35,8 +35,8 @@ def context (s : ContextIndex) : Site.ArchCtx FiniteModel.object where
     Support := PUnit
     Axis := PUnit
     Observable := PUnit
-    supportReads := fun _ _ => True
-    supportReads_objectFamily := fun _ => trivial
+    supportReads := fun _ atom => FiniteModel.object.configuration.family.mem atom
+    supportReads_objectFamily := fun h => h
     axisReads := fun _ => True
     observableReads := fun _ => True
   }
@@ -257,28 +257,39 @@ def chartContextIndex (i : Fin 3) : ContextIndex := {i}
 /-- Requirements forcing every admissible family to contain the three chart patches. -/
 def coverageRequirements : Site.CoverageRequirements FiniteModel.object
     FiniteModel.lawUniverse FiniteModel.signature where
-  selectedReading := FiniteModel.lawUniverse.selectedReading
-  requiredSupport := fun _ atom =>
+  requiredSupport := fun atom =>
     atom = FiniteModel.FiniteAtom.componentA ∨
     atom = FiniteModel.FiniteAtom.componentB ∨
-    atom = FiniteModel.FiniteAtom.componentC
-  requiredWitness := fun _ _ => False
-  requiredAxis := fun _ _ => False
+    atom = FiniteModel.FiniteAtom.dependsAB
+  requiredWitness := fun _ => False
+  requiredAxis := fun _ => False
   supportVisibleOn := fun W atom =>
-    (W = context (chartContextIndex 0) ∧ atom = FiniteModel.FiniteAtom.componentA) ∨
-    (W = context (chartContextIndex 1) ∧ atom = FiniteModel.FiniteAtom.componentB) ∨
-    (W = context (chartContextIndex 2) ∧ atom = FiniteModel.FiniteAtom.componentC)
+    (W = context (chartContextIndex 0) ∧ atom = FiniteModel.FiniteAtom.componentA ∧
+      ∃ support : W.minimal.Support, W.minimal.supportReads support atom) ∨
+    (W = context (chartContextIndex 1) ∧ atom = FiniteModel.FiniteAtom.componentB ∧
+      ∃ support : W.minimal.Support, W.minimal.supportReads support atom) ∨
+    (W = context (chartContextIndex 2) ∧ atom = FiniteModel.FiniteAtom.dependsAB ∧
+      ∃ support : W.minimal.Support, W.minimal.supportReads support atom)
   witnessVisibleOn := fun _ _ => False
   axisReadableOn := fun _ _ => False
   boundaryVisibleOn := fun _ _ => True
 
-/-- The AAT site on the selected Boolean-lattice context preorder. -/
-noncomputable def site : Site.AATSite FiniteModel.object where
+/-- The generated-core geometry on the selected Boolean-lattice context preorder. -/
+noncomputable def selectedGeometryReading :
+    Site.SelectedGeometryReading FiniteModel.corePackage where
   contextPreorder := contextPreorder
-  lawUniverse := FiniteModel.lawUniverse
-  signature := FiniteModel.signature
   requirements := coverageRequirements
   overlap := contextOverlap
+
+/-- The AAT site generated from the selected Boolean-lattice geometry. -/
+noncomputable def site : Site.AATSite FiniteModel.corePackage.object :=
+  selectedGeometryReading.toAATSite
+
+/-- The three-patch topology is generated from the core-typed coverage. -/
+theorem site_topology_eq_generated :
+    site.topology =
+      Site.AATGrothendieckTopology coverageRequirements contextOverlap :=
+  Site.SelectedGeometryReading.topology_eq_generated selectedGeometryReading
 
 /-- The empty-index context serving as the selected cover base. -/
 def base : site.category :=
@@ -295,9 +306,12 @@ noncomputable def cover :
     atomSupportCoverage := by
       intro atom h
       rcases h with rfl | rfl | rfl
-      · exact ⟨0, Or.inl ⟨rfl, rfl⟩⟩
-      · exact ⟨1, Or.inr (Or.inl ⟨rfl, rfl⟩)⟩
-      · exact ⟨2, Or.inr (Or.inr ⟨rfl, rfl⟩)⟩
+      · exact ⟨0, Or.inl ⟨rfl, rfl, PUnit.unit,
+          FiniteModel.allFamily_mem _ (by simp)⟩⟩
+      · exact ⟨1, Or.inr (Or.inl
+          ⟨rfl, rfl, PUnit.unit, FiniteModel.allFamily_mem _ (by simp)⟩)⟩
+      · exact ⟨2, Or.inr (Or.inr
+          ⟨rfl, rfl, PUnit.unit, FiniteModel.allFamily_mem _ (by simp)⟩)⟩
     lawWitnessCoverage := by simp [coverageRequirements]
     signatureAxisCoverage := by simp [coverageRequirements]
     boundaryCoverage := by simp [coverageRequirements]
@@ -320,15 +334,21 @@ theorem cover_patch_ne_base (i : cover.Index) : cover.patch i ≠ context ∅ :=
   have hindex : chartContextIndex i = (∅ : ContextIndex) := context_injective h
   simp [chartContextIndex] at hindex
 
+/-- The actual three-patch cover belongs to the generated core topology. -/
+theorem cover_topologyCover :
+    Sieve.generate cover.presieve ∈ site.topology base := by
+  rw [site_topology_eq_generated]
+  exact Site.AATGrothendieckTopology.generate_mem cover
+
 /-- Trivial witness-ideal adequacy requirements for the coefficient-free geometry. -/
 def adequacyRequirements :
     Site.UAdequacyRequirements contextPreorder coverageRequirements where
-  selectedWitnessIdeal := fun _ _ => True
+  selectedWitnessIdeal := fun _ => True
   witnessIdealPreservedBy := fun _ _ => trivial
 
 theorem cover_uAdequate :
     Site.UAdequateCover adequacyRequirements cover where
-  topologyCover := Site.AATGrothendieckTopology.generate_mem cover
+  topologyCover := cover_topologyCover
   requiredSupportCovered := cover.admissible.atomSupportCoverage
   requiredWitnessesVisible := cover.admissible.lawWitnessCoverage
   requiredAxesReadable := cover.admissible.signatureAxisCoverage

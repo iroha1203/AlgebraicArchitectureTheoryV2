@@ -1083,6 +1083,27 @@ def sd1FiniteComponentAPresentDatumMatches :=
 def sd1FiniteCompleteCode := FiniteModel.completeCircuitReading_code
 def sd1FiniteCoreDetectorCode := FiniteModel.coreReading_circuit_code
 
+/- SD2 selected geometry and generated topology declarations. -/
+def sd2SelectedGeometryExt := @Site.SelectedGeometryReading.ext
+def sd2SiteArchitectureObject :=
+  @Site.SelectedGeometryReading.toAATSite_architectureObject
+def sd2SiteContextPreorder :=
+  @Site.SelectedGeometryReading.toAATSite_contextPreorder
+def sd2SiteLawUniverse := @Site.SelectedGeometryReading.toAATSite_lawUniverse
+def sd2SiteSignature := @Site.SelectedGeometryReading.toAATSite_signature
+def sd2SiteRequirements := @Site.SelectedGeometryReading.toAATSite_requirements
+def sd2SiteOverlap := @Site.SelectedGeometryReading.toAATSite_overlap
+def sd2TopologyGenerated := @Site.SelectedGeometryReading.topology_eq_generated
+def sd2FiniteLawUniverse := FiniteModel.site_lawUniverse_eq_core
+def sd2FiniteSignature := FiniteModel.site_signature_eq_core
+def sd2FiniteTopologyGenerated := FiniteModel.site_topology_eq_generated
+def sd2FiniteSingletonTopologyCover := FiniteModel.siteSingletonCover_topologyCover
+def sd2FiniteTwoPatchTopologyGenerated :=
+  FiniteModel.twoPatchSite_topology_eq_generated
+def sd2FiniteTwoPatchTopologyCover := FiniteModel.twoPatchCover_topologyCover
+def sd2CircleTopologyGenerated :=
+  Examples.SemanticRepairPart10.circleSite_topology_eq_generated
+
 theorem finiteSeedWitnessClosureAdmissible :
     Site.AdmissibleCover FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap
       FiniteModel.siteSeedWitnessClosureCover.toAATCoverageFamily.toCoverageFamily :=

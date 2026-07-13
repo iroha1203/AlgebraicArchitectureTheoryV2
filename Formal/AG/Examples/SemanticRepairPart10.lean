@@ -310,6 +310,7 @@ def generatedF2QuotientPresheaf : Site.AATPresheaf FiniteModel.site where
 theorem finiteSiteTopology_cover_eq_top {base : FiniteModel.site.category}
     {cover : Sieve base} (hcover : cover ∈ FiniteModel.site.topology base) :
     cover = ⊤ := by
+  rw [FiniteModel.site_topology_eq_generated] at hcover
   change
     (Site.admissiblePrecoverage FiniteModel.siteCoverageRequirements
       FiniteModel.siteOverlap).Saturate base cover at hcover
@@ -1188,22 +1189,32 @@ the generated topology is the top-only witness topology used for the concrete
 def circleCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
       FiniteModel.lawUniverse FiniteModel.signature where
-  selectedReading := FiniteModel.lawUniverse.selectedReading
-  requiredSupport := fun _ _ => True
-  requiredWitness := fun _ _ => False
-  requiredAxis := fun _ _ => False
+  requiredSupport := fun _ => True
+  requiredWitness := fun _ => False
+  requiredAxis := fun _ => False
   supportVisibleOn := fun _ _ => False
   witnessVisibleOn := fun _ _ => False
   axisReadableOn := fun _ _ => False
   boundaryVisibleOn := fun _ _ => False
 
-/-- X.例9.2: selected witness site for the circle-nerve nonzero class. -/
-def circleSite : Site.AATSite FiniteModel.object where
+/-- X.例9.2: generated-core geometry for the selected circle witness site. -/
+noncomputable def circleSelectedGeometryReading :
+    Site.SelectedGeometryReading FiniteModel.corePackage where
   contextPreorder := FiniteModel.siteContextPreorder
-  lawUniverse := FiniteModel.lawUniverse
-  signature := FiniteModel.signature
   requirements := circleCoverageRequirements
   overlap := FiniteModel.siteOverlap
+
+/-- X.例9.2: selected witness site for the circle-nerve nonzero class. -/
+noncomputable def circleSite : Site.AATSite FiniteModel.corePackage.object :=
+  circleSelectedGeometryReading.toAATSite
+
+/-- X.例9.2: the circle witness topology is generated from its selected coverage. -/
+theorem circleSite_topology_eq_generated :
+    circleSite.topology =
+      Site.AATGrothendieckTopology circleCoverageRequirements
+        FiniteModel.siteOverlap :=
+  Site.SelectedGeometryReading.topology_eq_generated
+    circleSelectedGeometryReading
 
 /-- X.例9.2: base object for the selected circle witness site. -/
 def circleSiteBase : circleSite.category :=
@@ -1223,6 +1234,7 @@ theorem circleCoverageFamily_impossible {base : circleSite.category}
 theorem circleSiteTopology_cover_eq_top {base : circleSite.category}
     {cover : Sieve base} (hcover : cover ∈ circleSite.topology base) :
     cover = ⊤ := by
+  rw [circleSite_topology_eq_generated] at hcover
   change
     (Site.admissiblePrecoverage circleCoverageRequirements
       FiniteModel.siteOverlap).Saturate base cover at hcover

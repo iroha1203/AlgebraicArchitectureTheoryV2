@@ -2679,7 +2679,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Site.CoverageFamily.base /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageFamily.Index /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageFamily.patch /- definition missing documentation string -/
-#check @AAT.AG.Site.CoverageRequirements.selectedReading /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageRequirements.requiredSupport /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageRequirements.requiredWitness /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageRequirements.requiredAxis /- definition missing documentation string -/

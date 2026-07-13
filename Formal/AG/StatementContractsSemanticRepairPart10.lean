@@ -1,4 +1,5 @@
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
+import Formal.AG.Examples.SemanticRepairPart10
 
 /-!
 Executable elaboration contracts for the Part X theorem-7.5 finite-free route.
@@ -18,6 +19,13 @@ universe v w x
 variable {Ulaw : AtomCarrier.{x}}
 variable {Alaw : ArchitectureObject Ulaw}
 variable {Slaw : Site.AATSite.{x} Alaw}
+
+example :
+    AAT.AG.Examples.SemanticRepairPart10.circleSite.topology =
+      Site.AATGrothendieckTopology
+        AAT.AG.Examples.SemanticRepairPart10.circleCoverageRequirements
+        FiniteModel.siteOverlap :=
+  AAT.AG.Examples.SemanticRepairPart10.circleSite_topology_eq_generated
 
 /-- Contract for the law-independent conclusions 4--10. -/
 example
