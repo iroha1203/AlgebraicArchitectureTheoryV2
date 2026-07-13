@@ -259,17 +259,7 @@ fn profile_with_law_surface_witnesses(
     }) {
         let evaluator = entry.evaluator.as_deref().unwrap_or_default();
         let laws = if evaluator == "ag.law-conflict-tor" {
-            law_surface
-                .laws
-                .iter()
-                .filter(|law| {
-                    law.law_id.starts_with("law:")
-                        && law
-                            .witness_variables
-                            .iter()
-                            .all(|witness| witness.binding.axis.as_deref() == Some("square-free"))
-                })
-                .collect::<Vec<_>>()
+            resolve_tor_laws(Some(law_surface), entry.law_pair.as_deref(), evaluator)?
         } else {
             entry
                 .law
@@ -752,7 +742,9 @@ pub fn build_foundation_measurement_packet_v1(
                 reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.square-free-repair" {
-            let law_id = entry.law.as_deref().unwrap_or(evaluator);
+            let law_id = entry.law.as_deref().ok_or_else(|| {
+                "ag.square-free-repair requires an explicit law selector".to_string()
+            })?;
             let law = resolve_closed_law(Some(law_surface), law_id, evaluator)?;
             let (witness_variables, archmap_aliases, binding_axis, binding_predicate) =
                 law_witness_bindings(law)?;
@@ -772,10 +764,7 @@ pub fn build_foundation_measurement_packet_v1(
             assumptions.extend(measurement.assumptions);
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
-                law: entry
-                    .law
-                    .clone()
-                    .unwrap_or_else(|| "ag.square-free-repair".to_string()),
+                law: entry.law.clone().unwrap_or_else(|| law_id.to_string()),
                 verdict: measurement.verdict,
                 verdict_data: AgVerdictDataV1 {
                     in_scope: true,
@@ -788,7 +777,8 @@ pub fn build_foundation_measurement_packet_v1(
                 reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.law-conflict-tor" {
-            let tor_laws = resolve_tor_laws(Some(law_surface), evaluator)?;
+            let tor_laws =
+                resolve_tor_laws(Some(law_surface), entry.law_pair.as_deref(), evaluator)?;
             let witness_variables = merged_law_witness_bindings(&tor_laws)?;
             validate_tor_profile_v1(&profile, &witness_variables)?;
             let measurement =
@@ -1686,6 +1676,7 @@ fn resolve_closed_law<'a>(
 
 fn resolve_tor_laws<'a>(
     law_surface: Option<&'a LawEquationSurfaceV1>,
+    law_pair: Option<&[String]>,
     evaluator: &str,
 ) -> Result<Vec<&'a crate::LawEquationV1>, String> {
     let surface = law_surface.ok_or_else(|| {
@@ -1693,30 +1684,28 @@ fn resolve_tor_laws<'a>(
             "{evaluator} requires --law-surface; no registry or MeasurementProfile fallback is permitted"
         )
     })?;
-    let laws = surface
-        .laws
-        .iter()
-        .filter(|law| {
-            law.law_id.starts_with("law:")
-                && law
-                    .witness_variables
-                    .iter()
-                    .all(|witness| witness.binding.axis.as_deref() == Some("square-free"))
-        })
-        .collect::<Vec<_>>();
-    if laws.is_empty() {
+    let law_pair = law_pair.ok_or_else(|| {
+        format!(
+            "{evaluator} requires an explicit lawPair declaration; lawId naming conventions are not selectors"
+        )
+    })?;
+    let unique_laws = law_pair.iter().collect::<BTreeSet<_>>();
+    if law_pair.len() != 2 || unique_laws.len() != 2 {
         return Err(format!(
-            "{evaluator} requires law:*-named closed laws in supplied law surface {}",
-            surface.id
+            "{evaluator} lawPair must contain exactly two distinct law ids"
         ));
     }
-    if laws
+    let laws = law_pair
         .iter()
-        .any(|law| law.condition_type != "closed-equational")
-    {
+        .map(|law_id| resolve_closed_law(Some(surface), law_id, evaluator))
+        .collect::<Result<Vec<_>, _>>()?;
+    if laws.iter().any(|law| {
+        law.witness_variables
+            .iter()
+            .any(|witness| witness.binding.axis.as_deref() != Some("square-free"))
+    }) {
         return Err(format!(
-            "{evaluator} law declarations in supplied law surface {} must be closed-equational",
-            surface.id
+            "{evaluator} lawPair declarations must use square-free witness bindings"
         ));
     }
     Ok(laws)

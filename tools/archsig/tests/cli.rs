@@ -7835,6 +7835,111 @@ fn cli_analyze_v2_law_conflict_tor_uses_law_surface_witnesses() {
 }
 
 #[test]
+fn cli_analyze_v2_law_conflict_tor_selects_only_declared_law_pair() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-explicit-law-pair");
+    let root = ag_measurement_root();
+    let (policy, profile) = read_fixture_policy_profile(&root.join("law_policy_tor.json"));
+    let policy_path = out_dir.join("law_policy_tor.json");
+    let surface_path = out_dir.join("law_surface_with_unselected_law.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+
+    let mut surface = read_json(&root.join("law_surface_ag_v051.json"));
+    surface["laws"].as_array_mut().unwrap().push(json!({
+        "lawId": "law:shipping",
+        "conditionType": "closed-equational",
+        "witnessVariables": [{
+            "variable": "x_shipping",
+            "binding": {
+                "archmapVariable": "x_shipping",
+                "axis": "square-free",
+                "predicate": "support"
+            }
+        }],
+        "forbiddenSupportGenerators": [{"support": ["x_shipping"]}]
+    }));
+    fs::write(
+        &surface_path,
+        serde_json::to_vec_pretty(&surface).expect("law surface serializes"),
+    )
+    .expect("law surface is written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_law_conflict_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-surface",
+        surface_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    assert!(
+        tor["witnessVariables"]
+            .as_array()
+            .expect("Tor witness variables are an array")
+            .iter()
+            .all(|variable| variable != "x_shipping"),
+        "an unselected law declared with a law: prefix must not enter the Tor witness family"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_square_free_requires_explicit_law() {
+    let out_dir = temp_dir("ag-measurement-square-free-missing-law");
+    let root = ag_measurement_root();
+    let (mut policy, profile) =
+        read_fixture_policy_profile(&root.join("law_policy_square_free.json"));
+    policy["policies"][0]
+        .as_object_mut()
+        .expect("policy entry is an object")
+        .remove("law");
+    let policy_path = out_dir.join("law_policy_square_free_missing_law.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+
+    let report_path = out_dir.join("law-policy-validation.json");
+    run_sig0_expect_code(
+        &[
+            "law-policy",
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--measurement-profile",
+            root.join("measurement_profile_square_free.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-surface",
+            root.join("law_surface_ag_v051.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let report = read_json(&report_path);
+    assert!(report["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-policy-schema051-entry-shape"
+                && check["examples"].as_array().is_some_and(|examples| {
+                    examples.iter().any(|example| {
+                        example["evidence"]
+                            == "ag.square-free-repair requires an explicit law selector"
+                    })
+                })
+        })
+    }));
+}
+
+#[test]
 fn cli_analyze_v2_law_conflict_tor_rejects_unsupported_resolution_selector() {
     let out_dir = temp_dir("ag-measurement-law-conflict-tor-bad-resolution");
     let root = ag_measurement_root();

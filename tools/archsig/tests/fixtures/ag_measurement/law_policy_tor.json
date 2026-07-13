@@ -5,7 +5,10 @@
   "measurementProfileRef": "profile:ag-law-conflict-tor@1",
   "policies": [
     {
-      "law": "law:checkout",
+      "lawPair": [
+        "law:checkout",
+        "law:inventory"
+      ],
       "evaluator": "ag.law-conflict-tor",
       "basis": [
         "policy-basis:layering"

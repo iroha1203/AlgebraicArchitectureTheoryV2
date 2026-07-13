@@ -23,7 +23,9 @@ does not embed `measurementProfiles[]`.
 that policy basis refs resolve inside the ledger, but it does not check that
 ledger paths exist. Each `policies[].law` must resolve to a law declared by the
 supplied law surface, and its evaluator/condition/axis combination must match
-the registry mapping.
+the registry mapping. The `ag.law-conflict-tor` evaluator uses an explicit
+`policies[].lawPair` containing exactly two law ids; law-id naming conventions
+do not select Tor participants.
 
 MeasurementProfile owns the selected cover, coefficient, predicates, certificate
 selector, verdict discipline, and `finiteBounds`. Witness variables belong to
@@ -53,7 +55,7 @@ bundle flag.
 | selected witness variables / predicates | `law-equation-surface.witnessVariables[]`, `zeroPredicate`, `nonZeroPredicate` | witness変数は供給済みlaw surfaceから解決し、profileは計測手段と判定predicateだけを持つ。 |
 | verdict discipline | `verdictDiscipline` | `five-valued-structural-verdict@1`を要求し、`measured_zero`等を他の語へ縮約しない。 |
 | finite site / cover / effective computation | `finiteBounds` と `MeasurementProfile`全体 | 各boundを正数かつregistry hard cap以下に制限する。 |
-| law universe と選択されたreading | `LawPolicy.policies[]` の `law`, `evaluator`, `basis`, `scope`, `severity` | LawPolicyは選択だけを持ち、predicateや計算結果を入力に埋め込まない。 |
+| law universe と選択されたreading | `LawPolicy.policies[]` の `law` / `lawPair`, `evaluator`, `basis`, `scope`, `severity` | LawPolicyは選択だけを持ち、predicateや計算結果を入力に埋め込まない。Torのlaw pairは明示列挙する。 |
 
 この対応表は、profileが指定した有限site・cover・係数計算の範囲でのみ
 measurementを読むという契約を固定する。`basisLedger[].path`や`siteRef` /

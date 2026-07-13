@@ -26,11 +26,23 @@ pub fn expand_law_policy_v1(policy: &LawPolicyDocumentV1) -> Vec<ExpandedLawPoli
         .iter()
         .enumerate()
         .filter_map(|(index, entry)| {
-            let (law, evaluator) = (entry.law.as_deref()?, entry.evaluator.as_deref()?);
+            let evaluator = entry.evaluator.as_deref()?;
+            let (source_selector, law, law_pair) = if let Some(law) = entry.law.as_deref() {
+                (law.to_string(), law.to_string(), None)
+            } else if let Some(law_pair) = entry.law_pair.as_ref() {
+                (
+                    law_pair.join(","),
+                    law_pair.join(","),
+                    Some(law_pair.clone()),
+                )
+            } else {
+                return None;
+            };
             Some(ExpandedLawPolicyEntryV1 {
                 source_policy_index: index,
-                source_selector: law.to_string(),
-                law: law.to_string(),
+                source_selector,
+                law,
+                law_pair,
                 evaluator: evaluator.to_string(),
                 basis: entry.basis.clone(),
                 scope: entry.scope.clone(),
@@ -119,6 +131,7 @@ mod tests {
                 crate::LawPolicyEntryV1 {
                     pack: Some("retired-pack".to_string()),
                     law: None,
+                    law_pair: None,
                     evaluator: None,
                     basis: vec![],
                     profile_ref: None,
@@ -128,6 +141,7 @@ mod tests {
                 crate::LawPolicyEntryV1 {
                     pack: None,
                     law: Some("ag.cech-obstruction".to_string()),
+                    law_pair: None,
                     evaluator: Some("ag.cech-obstruction".to_string()),
                     basis: vec![],
                     profile_ref: None,
