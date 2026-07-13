@@ -698,8 +698,8 @@ premise_delta:
     - main theorem package and independent final gate
 certificate_provenance:
   discharged:
-    - required-law membership and support Atom from the existing law core
-    - response witness from the existing square-zero violationWitness
+    - required-law membership and support Atom from the G-08 response core
+    - response witness from the response core's generated square-zero violationWitness
     - chart transport from canonical algebra maps and localization maps to the dual-number factor
   unresolved:
     - circuit minimality, support comparison, descent, and certified witness pair
