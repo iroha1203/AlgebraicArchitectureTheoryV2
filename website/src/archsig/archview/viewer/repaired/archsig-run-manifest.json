@@ -68,7 +68,7 @@
   "repairPlanInputPath": null,
   "runId": "run:986155f42857",
   "schema": "archsig-run-manifest/v0.5.2",
-  "toolVersion": "0.5.1",
+  "toolVersion": "0.5.2",
   "validationReports": {
     "analysis": "archsig-analysis-validation.json",
     "archmap": "archmap-validation.json",

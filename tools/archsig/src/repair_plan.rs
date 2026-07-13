@@ -190,21 +190,35 @@ fn check_supplied_slots(
                         .get("coverRef")
                         .and_then(Value::as_str)
                         .unwrap_or_default();
-                    let members = object
-                        .get("memberCharts")
-                        .and_then(Value::as_array)
-                        .map(|items| items.iter().filter_map(Value::as_str).collect::<Vec<_>>())
-                        .unwrap_or_default();
+                    let members = object.get("memberCharts").and_then(Value::as_array);
                     let global_condition = object
                         .get("globalCondition")
                         .and_then(Value::as_str)
                         .unwrap_or_default();
+                    let expected_members = archmap
+                        .covers
+                        .iter()
+                        .find(|cover| cover.id == cover_ref)
+                        .map(|cover| {
+                            cover
+                                .contexts
+                                .iter()
+                                .map(String::as_str)
+                                .collect::<BTreeSet<_>>()
+                        })
+                        .unwrap_or_default();
+                    let members_valid = members.is_some_and(|items| {
+                        let parsed = items.iter().map(Value::as_str).collect::<Option<Vec<_>>>();
+                        parsed.as_ref().is_some_and(|members| {
+                            !members.is_empty()
+                                && members.len() == expected_members.len()
+                                && members.iter().copied().collect::<BTreeSet<_>>()
+                                    == expected_members
+                        })
+                    });
                     if !archmap.covers.iter().any(|cover| cover.id == cover_ref)
-                        || members.is_empty()
-                        || members
-                            .iter()
-                            .any(|chart| !plan.complex.charts.iter().any(|item| item == chart))
-                        || !matches!(global_condition, "assumed" | "discharged-by-finite-model")
+                        || !members_valid
+                        || !matches!(global_condition, "assumed")
                     {
                         examples.push(generic_validation_example(
                             path,

@@ -1054,6 +1054,50 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         "fail"
     );
 
+    for (case, mutation) in [
+        (
+            "discharged-without-finite-model",
+            json!("discharged-by-finite-model"),
+        ),
+        (
+            "non-string-member-chart",
+            json!(["ctx:order", 42, "ctx:shared"]),
+        ),
+    ] {
+        let mut candidate = read_json(&root.join("repair_plan_true_sheaf.json"));
+        if case == "discharged-without-finite-model" {
+            candidate["trueSheafCertificate"]["globalCondition"] = mutation;
+        } else {
+            candidate["trueSheafCertificate"]["memberCharts"] = mutation;
+        }
+        let path = out_dir.join(format!("repair_plan_invalid_true_sheaf_{case}.json"));
+        fs::write(
+            &path,
+            serde_json::to_vec_pretty(&candidate).expect("invalid true-sheaf plan serializes"),
+        )
+        .expect("invalid true-sheaf plan writes");
+        let report = out_dir.join(format!("repair-plan-invalid-true-sheaf-{case}.json"));
+        run_sig0_expect_code(
+            &[
+                "repair-plan",
+                "--archmap",
+                root.join("archmap_v2.json")
+                    .to_str()
+                    .expect("path is utf-8"),
+                "--repair-plan",
+                path.to_str().expect("path is utf-8"),
+                "--out",
+                report.to_str().expect("path is utf-8"),
+            ],
+            1,
+        );
+        assert_eq!(
+            check_by_id(&read_json(&report), "repair-plan-schema052-supplied-slots")["result"],
+            "fail",
+            "malformed true-sheaf input {case} must fail closed"
+        );
+    }
+
     let mut invalid_gluing = read_json(&root.join("repair_plan_gluing_data.json"));
     invalid_gluing["gluingData"]["sectionRefs"]
         .as_array_mut()

@@ -64,7 +64,7 @@
     "rowCount": 1,
     "unmeasuredCount": 0
   },
-  "toolVersion": "0.5.1",
+  "toolVersion": "0.5.2",
   "translationRule": {
     "boundary": "Supply a selected nonzero cocycle support or different profile before claiming an H1 obstruction.",
     "conclusionCode": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",

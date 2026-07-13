@@ -8972,7 +8972,7 @@
     "normalizedArchMap": "normalized-archmap.json",
     "summary": "archsig-analysis-summary.json"
   },
-  "toolVersion": "0.5.1",
+  "toolVersion": "0.5.2",
   "viewerVisualScenes": [
     {
       "axisMapping": {

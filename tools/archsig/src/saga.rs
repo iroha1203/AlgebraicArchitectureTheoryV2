@@ -292,9 +292,7 @@ fn class_supply_is_checked(archmap: &ArchMapDocumentV2, plan: &RepairPlanDocumen
                 && certificate
                     .get("globalCondition")
                     .and_then(Value::as_str)
-                    .is_some_and(|condition| {
-                        matches!(condition, "assumed" | "discharged-by-finite-model")
-                    })
+                    .is_some_and(|condition| matches!(condition, "assumed"))
                 && certificate
                     .get("coverRef")
                     .and_then(Value::as_str)
@@ -309,6 +307,12 @@ fn class_supply_is_checked(archmap: &ArchMapDocumentV2, plan: &RepairPlanDocumen
                                     plan.complex.charts.iter().any(|item| item == chart)
                                 })
                             })
+                            && members
+                                .iter()
+                                .filter_map(Value::as_str)
+                                .collect::<BTreeSet<_>>()
+                                .len()
+                                == members.len()
                     })
         });
     let gluing_ok = plan
