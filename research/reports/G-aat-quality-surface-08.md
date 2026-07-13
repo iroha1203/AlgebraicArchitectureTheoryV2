@@ -10,11 +10,11 @@ Issue #3282.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 8
+- latest reviewed cycle: 9
 - completion candidate: no
 - tracking Issue: #3282
 - current phase: Phase 0 — Semantic Operation Foundation
-- next obligation: J5a ideal-preserving full conormal-response kernel characterization
+- next obligation: J5b labeled conormal generation
 
 ## Cycle 1 — BC0 statement and API compatibility
 
@@ -569,6 +569,7 @@ next_obligation: J1b ambient derivation localization and restriction compatibili
 completion_candidate: false
 tracking_issue_closed: false
 ```
+
 
 ## Cycle 4 — J1b ambient derivation localization
 
@@ -1419,6 +1420,138 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: J5a ideal-preserving full conormal-response kernel characterization
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 9 — J5a full conormal-response kernel characterization
+
+- decision: approve
+- result type: proof-obligation-discharged
+- proof obligation: characterize ideal-preserving ambient directions as exactly
+  the kernel of the full conormal response
+- base merge SHA: `2ea3760053802ff7696cd73d14c5e1e5b6179e75`
+- PR: pending
+
+### Construction
+
+`ConormalResponseKernel.lean` proves for an arbitrary ideal `I` and ambient
+derivation `d : Der_k(A, A)` that
+
+```text
+Set.MapsTo d I I <-> conormalResponse I (quotientDerivation I d) = 0.
+```
+
+The forward implication evaluates the response on every conormal class and
+uses preservation to show that the quotient coefficient is zero. The reverse
+implication evaluates the vanishing full response at `I.toCotangent <x, hx>`
+and recovers `d x in I` from the quotient zero criterion. Surjectivity of
+`I.toCotangent` supplies the full-domain extensionality; no finite generator,
+labeled response, or preservation certificate is an input.
+
+The generic equivalence is instantiated on both J1b localized ambient
+derivations. After identifying the J2 quotient-valued derivations and the J4
+full Jacobians by definition, the chart and overlap theorems state that their
+respective transported law ideals are preserved exactly when the corresponding
+full conormal Jacobian value vanishes.
+
+### Premise delta and audit
+
+- discharged material obligations:
+  - generic ideal-preserving ambient direction iff full-response vanishing;
+  - chart localized derivation iff chart full-Jacobian kernel membership;
+  - overlap localized derivation iff overlap full-Jacobian kernel membership.
+- fixed ambient inputs: base field, commutative ambient algebra, ideal, and
+  ambient derivation; typed corollaries additionally use the existing J0/J1
+  presentation and geometry.
+- certificate provenance: ideal membership is recovered directly from
+  `Ideal.Quotient.eq_zero_iff_mem`; full response evaluation uses
+  `conormalResponse_toCotangent`.
+- proof use: `Ideal.toCotangent_surjective`, both directions of the quotient
+  zero criterion, J2 `quotientDerivation`, and J4 `conormalResponse` occur in
+  proof terms.
+- structure-field escape: none. Ideal preservation is the left side of the
+  proved equivalence and is not stored in the operation presentation.
+- route integrity: pass. The theorem uses the full `I / I^2` response; no
+  labeled-generation claim is used before J5b.
+
+Labeled conormal generation, typed nonzero response, cover adequacy, and
+witness nonvacuity remain later obligations.
+
+### Verification
+
+```text
+cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ConormalResponseKernel.lean
+axiom audit: 1 declaration under QuotientValuedDerivation, standard axioms only
+axiom audit: 2 declarations under ArchitectureOperationPresentation, standard axioms only
+lake build
+Build completed successfully (7718 jobs).
+```
+
+### Next obligation
+
+Implement J5b: prove that the required `(lawIndex, atom)` conormal classes
+generate the transported law conormal modules, using the existing witness
+provenance and without accepting a generator family as input.
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-aat-quality-surface-08
+target_theorem: Intrinsic Law-Response Circuit–Descent Theorem
+cycle: 9
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: J5a full conormal-response kernel characterization
+proof_obligation_delta: ideal preservation is derived exactly as full-response vanishing
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ConormalResponseKernel.lean
+    declarations:
+      - QuotientValuedDerivation.mapsTo_iff_conormalResponse_quotientDerivation_eq_zero
+      - ArchitectureOperationPresentation.chartDerivation_mapsTo_iff_conormalJacobian_eq_zero
+      - ArchitectureOperationPresentation.overlapDerivation_mapsTo_iff_conormalJacobian_eq_zero
+premise_delta:
+  discharged:
+    - generic ideal-preserving direction iff full conormal-response vanishing
+    - typed chart and overlap full-Jacobian kernel characterizations
+  remaining:
+    - J5b labeled conormal generation
+    - J6 typed nonzero response, cover adequacy, and witness nonvacuity
+    - L0 finite repair and support-minimal circuit theorem
+    - C0 kernel base change, support comparison, and fiber circuit locus
+    - D0-D2 image sequence, Cech instance, actual gluing, and zero iff global normalized section
+    - E-pre local-circuit and pure-descent witness pair
+    - N0 strict labeled presentation naturality and unit rescaling transport
+    - M0 finite measurement chain map and effective certificate
+    - E-cert certified witness pair
+    - main theorem package and independent final gate
+certificate_provenance:
+  discharged:
+    - ideal membership recovered from quotient zero
+    - full response evaluated on canonical conormal classes
+  unresolved:
+    - labeled generation, descent, and witness nonvacuity
+proof_use_audit:
+  used_material_premises:
+    - J1b localized ambient derivations
+    - J2 quotient-valued derivations
+    - J4 full conormal response and chart / overlap Jacobians
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns:
+    - labeled generation remains J5b
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: J5b labeled conormal generation
 completion_candidate: false
 tracking_issue_closed: false
 ```
