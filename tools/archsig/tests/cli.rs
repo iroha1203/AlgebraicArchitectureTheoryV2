@@ -994,6 +994,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         ("comparison-identity-fingerprint", json!("sha256:wrong")),
         ("comparison-explicit-false-premise", json!(false)),
         ("comparison-unknown-field", json!("forged")),
+        ("comparison-unresolved-reference", json!("complex:forged")),
     ] {
         let mut invalid = explicit_comparison.clone();
         if case == "comparison-identity-fingerprint" {
@@ -1009,6 +1010,8 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             });
         } else if case == "comparison-explicit-false-premise" {
             invalid["comparison"]["h1ComparisonData"]["differencePreserving"] = mutation;
+        } else if case == "comparison-unresolved-reference" {
+            invalid["comparison"]["incidenceBridge"]["sourceComplexRef"] = mutation;
         } else {
             invalid["comparison"]["incidenceBridge"]["forgedField"] = mutation;
         }
@@ -1039,6 +1042,13 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             "fail",
             "invalid comparison case {case} must fail closed"
         );
+        if case == "comparison-unresolved-reference" {
+            assert_eq!(
+                check_by_id(&report_json, "repair-plan-schema052-reference-resolution")["result"],
+                "fail",
+                "unresolved comparison references must fail the reference-resolution check"
+            );
+        }
         assert!(
             json_contains_substring(&report_json, "COMPARISON_DATA_CONTRACT_VIOLATION"),
             "invalid comparison case {case} must retain the comparison contract violation code"

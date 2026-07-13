@@ -8,6 +8,10 @@ use crate::{
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, RepairPlanDocumentV1, ValidationCheck,
 };
 
+const COMPARISON_SOURCE_COMPLEX_REF: &str = "complex:repair";
+const COMPARISON_TARGET_COMPLEX_REF: &str = "complex:cech";
+const COMPARISON_COCHAIN_MAP_REF: &str = "comparison:cochain-map";
+
 pub fn validate_repair_plan_v1_checks(
     plan: &RepairPlanDocumentV1,
     archmap: &ArchMapDocumentV2,
@@ -410,12 +414,10 @@ fn check_supplied_slots(
                                     })
                                 }
                                 Some("explicit") => {
-                                    ["sourceComplexRef", "targetComplexRef"].iter().all(|key| {
-                                        bridge
-                                            .get(*key)
-                                            .and_then(Value::as_str)
-                                            .is_some_and(|value| !value.is_empty())
-                                    })
+                                    bridge.get("sourceComplexRef").and_then(Value::as_str)
+                                        == Some(COMPARISON_SOURCE_COMPLEX_REF)
+                                        && bridge.get("targetComplexRef").and_then(Value::as_str)
+                                            == Some(COMPARISON_TARGET_COMPLEX_REF)
                                 }
                                 _ => false,
                             }
@@ -440,10 +442,8 @@ fn check_supplied_slots(
                                     ];
                                     h1.get("schema").and_then(Value::as_str)
                                         == Some("h1-comparison-data/v0.5.2")
-                                        && h1
-                                            .get("cochainMapRef")
-                                            .and_then(Value::as_str)
-                                            .is_some_and(|value| !value.is_empty())
+                                        && h1.get("cochainMapRef").and_then(Value::as_str)
+                                            == Some(COMPARISON_COCHAIN_MAP_REF)
                                         && bool_keys
                                             .iter()
                                             .all(|key| h1.get(*key) == Some(&Value::Bool(true)))
@@ -533,9 +533,46 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
             }
         }
     }
+    if let Some(comparison) = plan.comparison.as_ref() {
+        if comparison.get("kind").and_then(Value::as_str) == Some("saga-comparison") {
+            if let Some(bridge) = comparison.get("incidenceBridge") {
+                if bridge.get("kind").and_then(Value::as_str) == Some("explicit") {
+                    for (field, expected) in [
+                        ("sourceComplexRef", COMPARISON_SOURCE_COMPLEX_REF),
+                        ("targetComplexRef", COMPARISON_TARGET_COMPLEX_REF),
+                    ] {
+                        let actual = bridge.get(field).and_then(Value::as_str);
+                        if actual != Some(expected) {
+                            examples.push(generic_validation_example(
+                                &format!("comparison.incidenceBridge.{field}"),
+                                actual.unwrap_or("<missing>"),
+                                &format!(
+                                    "explicit comparison reference must resolve to {expected}"
+                                ),
+                            ));
+                        }
+                    }
+                }
+            }
+            if let Some(h1) = comparison.get("h1ComparisonData") {
+                if h1.get("kind").and_then(Value::as_str) == Some("explicit")
+                    && h1.get("cochainMapRef").and_then(Value::as_str)
+                        != Some(COMPARISON_COCHAIN_MAP_REF)
+                {
+                    examples.push(generic_validation_example(
+                        "comparison.h1ComparisonData.cochainMapRef",
+                        h1.get("cochainMapRef")
+                            .and_then(Value::as_str)
+                            .unwrap_or("<missing>"),
+                        "explicit comparison cochain map reference must resolve to comparison:cochain-map",
+                    ));
+                }
+            }
+        }
+    }
     examples_check(
         "repair-plan-schema052-reference-resolution",
-        "RepairPlan chart, overlap, primitive, and triple references resolve",
+        "RepairPlan chart, overlap, primitive, triple, and comparison references resolve",
         examples,
     )
 }
