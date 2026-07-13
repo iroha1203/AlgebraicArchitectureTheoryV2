@@ -1,7 +1,8 @@
 # 第II部 Architecture Geometry・Site・Sheaf
 
-第I部では、AAT が Atom 公理系から Atom family、configuration、molecule、
-architecture object、invariant、law、obstruction、signature、operation を構成することを見た。
+第I部では、Atom 公理系と admissible core reading から Atom family、configuration、
+architecture object、law universe、obstruction circuit family、signature、operation family を
+相対的に構成した。
 
 第II部の目的は、この architecture object を局所-大域構造を持つ幾何対象へ持ち上げることである。
 
@@ -36,20 +37,25 @@ Grothendieck 的な幾何へ進む。
 第I部の architecture object は、Atom configuration から生成される。
 
 ```text
-F_S^V
-  -> Config(F_S^V)
-  -> A_S^V
+(s,D,R_obj)
+  -> F_s^D = Atomize_D(s)
+  -> Config(F_s^D)
+  -> A_s^{D,R_obj}
 ```
 
 ここで、
 
 ```text
-S : source
-V : AtomVocabulary
-A_S^V : ArchitectureObject
+s : source
+D : ExtractionDoctrine
+R_obj : object reading
+A_s^{D,R_obj} : ArchitectureObject
 ```
 
 である。
+
+`D` と `R_obj` が固定されている場合、従来どおり `F_s^V`、`A_s^V` と略記する。
+ここで vocabulary `V` は `D` の成分である。
 
 architecture object は、
 component-local view、feature-local view、semantic slice、runtime slice、boundary slice など、
@@ -58,32 +64,37 @@ component-local view、feature-local view、semantic slice、runtime slice、bou
 この局所-大域構造を付加した対象を architecture geometry と呼ぶ。
 
 ```text
-X_S^{V,U,J}
+X_s^{r,J}
 ```
 
 ここで、
 
 ```text
-U : LawUniverse
+S : Atom axiom system on At
+r : CoreRead(At), with D_r = D, object reading R_obj, and LawUniverse U_r
 J : CoverageTopology
 ```
 
-である。
+`S` は `At` の axiom certificate、`r` は `At` 上の構成 reading である。
+両者は core package で同じ provenance にまとめるが、`r` の field は `S` の値に依存しない。
+
+core reading のうち source、composition、object / operation / signature reading が固定され、
+Atom vocabulary `V` と law universe `U` を表示する場合は `X_s^{V,U,J}` と略記する。
 
 中心図式は次である。
 
 ```text
-source S
-  -> AtomFamily F_S^V
+source s + Atom axiom system S + core reading r
+  -> AtomFamily F_s^r
   -> AtomConfiguration
-  -> ArchitectureObject A_S^V
-  -> ArchitectureContextCategory ArchCtx(A_S^V)
-  -> AATSite(A_S^V, U, J)
-  -> ArchitectureGeometry X_S^{V,U,J}
+  -> ArchitectureObject A_s^r
+  -> ArchitectureContextCategory ArchCtx(A_s^r)
+  -> AATSite(A_s^r, U_r, J)
+  -> ArchitectureGeometry X_s^{r,J}
 ```
 
-`X_S^{V,U,J}` は、Atom vocabulary、law universe、
-coverage topology に相対化された、局所-大域的な architecture geometry である。
+`X_s^{r,J}` は、extraction doctrine、object reading、law universe、operation / signature
+reading、coverage topology に相対化された、局所-大域的な architecture geometry である。
 
 ## 2. Architecture Geometry
 
@@ -91,31 +102,32 @@ Architecture geometry は、architecture object に context category と coverag
 
 ### 定義 2.1 Architecture Geometry
 
-source `S`、Atom vocabulary `V`、law universe `U`、coverage topology `J` に対して、
+source `s`、Atom axiom system `S`、core reading `r : CoreRead(At)`、law universe `U_r`、
+coverage topology `J` に対して、
 architecture geometry を次のデータとして置く。
 
 ```text
-X_S^{V,U,J}
+X_s^{r,J}
   =
-  (A_S^V, ArchCtx(A_S^V), J_U)
+  (A_s^r, ArchCtx(A_s^r), J_{U_r})
 ```
 
 ここで、
 
 ```text
-A_S^V
-  = Atom family F_S^V から生成される architecture object
+A_s^r
+  = core reading r の Atom family F_s^r から生成される architecture object
 
-ArchCtx(A_S^V)
-  = A_S^V の局所 context category
+ArchCtx(A_s^r)
+  = A_s^r の局所 context category
 
-J_U
-  = law universe U に相対化された coverage topology
+J_{U_r}
+  = law universe U_r に相対化された coverage topology
 ```
 
 である。
 
-`X_S^{V,U,J}` は、以後の章で次の構造を受け取る。
+`X_s^{r,J}` は、以後の章で次の構造を受け取る。
 
 ```text
 At_X       : Atom sheaf
@@ -136,22 +148,24 @@ obstruction cohomology は第IV部で扱う。
 Architecture geometry は次に相対化される。
 
 ```text
-source S
-AtomVocabulary V
-LawUniverse U
+source s
+AtomAxiomSystem S
+CoreRead(At) member r
+LawUniverse U_r
 CoverageTopology J
 ```
 
-したがって、同じ source `S` でも、vocabulary、law universe、coverage topology が異なれば、
+したがって、同じ source `s` でも、extraction doctrine、object / law / operation / signature reading、
+law universe、coverage topology が異なれば、
 異なる architecture geometry が得られる。
 
 ```text
-X_S^{V,U,J} != X_S^{W,U,J}  in general
-X_S^{V,U,J} != X_S^{V,U',J} in general
-X_S^{V,U,J} != X_S^{V,U,J'} in general
+X_s^{r,J} != X_s^{r',J} in general
+X_s^{r,J} != X_s^{r,J'} in general
 ```
 
-どの語彙で Atom を構成し、どの law を選び、どの cover で局所性を読むかを
+どの doctrine と object reading で Atom-origin object を構成し、どの law を選び、
+どの cover で局所性を読むかを
 明示することで、AAT は語れることだけを語る。
 
 ## 3. Architecture Context

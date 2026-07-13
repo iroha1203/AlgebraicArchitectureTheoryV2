@@ -1,14 +1,15 @@
 # 第IV部 Obstruction Cohomology
 
 第III部では、architecture geometry `X` の上に可換環の層 `O_X^U` を置き、
-selected law defect が生成する obstruction ideal sheaf `I_Ob^U` を定義した。
+selected required law defect が生成する obstruction ideal sheaf `I_Ob^U` を定義した。
 
 ```text
 I_Ob^U subset O_X^U
 Flat_U(X) = V(I_Ob^U)
 ```
 
-これにより、lawfulness は obstruction ideal の零点集合として読めるようになった。
+Part III の required law ごとの closed-equationality と law-ideal exactness、および selected
+ringed / scheme regime の下で、semantic lawfulness は obstruction ideal の零点集合として読める。
 
 しかし、局所的に lawful であることは、ただちに大域的な lawfulness を意味しない。
 
@@ -49,18 +50,22 @@ The gap is obstruction cohomology.
 
 ## 1. Part3 から Part4 へ
 
-第III部の Lawfulness-Ideal Correspondence は、選ばれた law universe、witness family、signature axes、
-coverage、descent、exactness の下で次を与える。
+第III部の Lawfulness-Ideal Correspondence は、required law ごとの closed-equationality と
+law-ideal exactness、extension-ideal compatibility、selected ringed / scheme regime の下で次を与える。
 
 ```text
-Lawful_U(s)
+SemanticLawful_U(s)
   iff
-s^* I_Ob^U = 0
+IdealLawful_U(s)
+  iff
+s^*_{ideal} I_Ob^U = 0
   iff
 s factors through Flat_U(X)
 ```
 
 これは、一つの architecture section が lawful locus を通る条件である。
+以下で local lawful section と書くときは、この `IdealLawful_U` を指す。
+`SemanticLawful_U` との交換は上の correspondence 仮定を伴う。
 
 第IV部では、cover
 
@@ -68,7 +73,7 @@ s factors through Flat_U(X)
 𝒰 = { W_i -> W }_{i in I}
 ```
 
-の上で、各 local section が lawful であるとき、
+の上で、各 local section が ideal-lawful であるとき、
 
 ```text
 s_i : W_i -> X
@@ -124,6 +129,99 @@ signature residue
 semantic mismatch residue
 runtime interaction residue
 descent failure witness
+```
+
+### 定義 2.1A Circuit-to-Coefficient Realization
+
+Part III の `Circ_U^loc(A,L;W)` は restriction-stable な local circuit の型であり、
+
+```text
+real_{L,W}^{circ}
+  :
+Circ_U^loc(A,L;W) -> Viol_L(W)
+```
+
+によって law ideal の generator `x_{real(c)} in I_L(W)` へ写る。
+一方、`Ob_U(W)` は cohomology、torsor、derived deformation に使う coefficient object である。
+両者の provenance を保つ circuit-to-coefficient realization は、まず natural additive morphism、
+または selected module structure に対する module morphism
+
+```text
+rho_{L,W}
+  :
+I_L(W) -> Ob_U(W)
+```
+
+を持ち、次の合成として定義する。
+
+```text
+kappa_{L,W}(c)
+  :=
+rho_{L,W}(x_{real_{L,W}^{circ}(c)})
+```
+
+すなわち次の図式が定義で可換である。
+
+```text
+Circ_U^loc(A,L;W)  --real^{circ}-->  Viol_L(W)
+        |                                  |
+        | kappa                            | generator
+        v                                  v
+      Ob_U(W)          <--rho_{L,W}--     I_L(W)
+```
+
+context morphism `j : W' -> W` に対し、`rho` は ideal restriction と coefficient restriction に
+関して natural である。
+
+```text
+res_j(rho_{L,W}(z))
+  =
+rho_{L,W'}(res_j(z))
+
+res_j(kappa_{L,W}(c))
+  =
+kappa_{L,W'}(res_j(c)).
+```
+
+この family が与えられるとき、local circuit realization は law ideal sheaf を経由して
+obstruction coefficient presheaf、さらに sheafification 後の `Ob_U` へ接続する。
+ideal realization と無関係な独立の map `Circ -> Ob_U` だけでは、
+law equation から coefficient への provenance は得られない。
+
+abelian group sheaf または module sheaf としての `Ob_U(W)` は zero section を持つため、
+その underlying type の非空性は law failure を表さない。law failure を読むのは、selected defect
+section、valuation、または `kappa_{L,W}(c)` の nonzero / positive reading である。
+
+```text
+circuit-detecting realization:
+  for every selected circuit c,
+  kappa_{L,W}(c) is nonzero or positive
+  in the selected coefficient reading.
+
+coefficient-complete realization:
+  every selected required law failure produces a circuit c
+  whose image kappa_{L,W}(c) is nonzero or positive.
+```
+
+no-cancellation、witness coverage、effectivity は、この nonzero / positive reading を
+law failure と結び付ける条件として明示する。
+
+`rho` の由来は coefficient regime ごとに固定する。
+
+```text
+conormal regime:
+  I_L -> I_L / I_L^2
+  is the quotient map, followed by the canonical or selected morphism into Ob_U
+  after source and target are placed in the same sheaf category.
+  This morphism is not assumed to be injective; injectivity is a separate condition.
+
+torsor regime:
+  a torsor mismatch is first sent to the selected abelianization;
+  a circuit coefficient is claimed only when an explicit natural rho from I_L is also given.
+
+selected coefficient regime:
+  rho is named as part of the coefficient reading and its additivity,
+  module compatibility, and restriction naturality are proved.
 ```
 
 ### 定義 2.2 Coefficient Type
@@ -192,7 +290,8 @@ i : Flat_U(X) -> X
 I_U = I_Ob^U subset O_X^U
 ```
 
-によって切り出されている場合、標準 obstruction package を次で置く。
+によって切り出され、selected scheme regime で `i` が closed immersion である場合、
+標準 obstruction package を次で置く。
 ここでは、`I_U/I_U^2` は lawful locus 上の conormal sheaf として読む。
 すなわち、係数圏は `O_{Flat_U(X)}`-modules である。
 
@@ -222,7 +321,8 @@ Ext^1(L_{Flat_U(X)/X}, M)
 i_* ConDef_U
 ```
 
-として読む。lawful locus 上へ制限して読む場合は、`i^* I_U / i^* I_U^2` ではなく、
+として読む。lawful locus 上へ制限して読む場合は、
+extension ideal を再度取った `i^*_{ideal} I_U / i^*_{ideal} I_U^2` ではなく、
 closed immersion の conormal sheaf としての `(I_U/I_U^2)|_{Flat_U(X)}` を使う。
 cohomology group を書く前に、どちらの圏で扱うかを固定する。
 
@@ -509,7 +609,7 @@ s_i factors through Flat_U(X)
 すなわち、
 
 ```text
-s_i^* I_Ob^U = 0
+s_i^*_{ideal} I_Ob^U = 0
 ```
 
 がすべての `i` について成り立つ。
@@ -567,7 +667,7 @@ gluing mismatch を標準的に扱う最も強い形は、local lawful sections 
 `G_U` の pseudo-torsor をなす場合である。
 
 ```text
-Lawful_U(W_i) is a G_U(W_i)-pseudo-torsor.
+IdealLawful_U(W_i) is a G_U(W_i)-pseudo-torsor.
 ```
 
 このとき、overlap 上の差は
@@ -844,17 +944,27 @@ coverage mismatch
 
 ### 定義 8.3 Boundary Connecting Homomorphism
 
-obstruction sheaf が `C' = C_core union F` 上の一つの coefficient object の制限として与えられ、
-`B = C_core intersection F` への restriction と extension-by-zero が標準的に定義される場合、
-Mayer-Vietoris triangle により、derived category 上で次が得られる。
+`C_core`と`F`が`C'`のopen subobject、`B`がそのfiber-product intersectionであるとする。
+包含を
+
+```text
+j_core : C_core -> C'
+j_F    : F -> C'
+j_B    : B -> C'
+```
+
+と書く。obstruction sheafが`C'`上の一つのcoefficient object `Ob_C'`の制限として与えられる場合、
+`D(C')`の中でMayer-Vietoris triangleは次の形を持つ。
 
 ```text
 Ob_C'
-  -> Ob_core direct_sum Ob_F
-  -> Ob_B
+  -> Rj_core,* j_core^* Ob_C' direct_sum Rj_F,* j_F^* Ob_C'
+  -> Rj_B,* j_B^* Ob_C'
   -> Ob_C'[1]
 ```
 
+対応するdirect imageがexactであるregimeでは`R`を省略する。
+`Ob_core := j_core^* Ob_C'`、`Ob_F := j_F^* Ob_C'`、`Ob_B := j_B^* Ob_C'`と略記する。
 この場合、distinguished triangle は追加の architecture 仮定ではなく、選ばれた coefficient object に
 対する Mayer-Vietoris の標準形である。
 `Ob_core`、`Ob_F`、`Ob_B` を互いに独立に選ぶ場合は、この triangle の存在を別途仮定する。
@@ -952,8 +1062,8 @@ boundary exactness と effective descent により、`delta(b_U)=0` なら local
 `NoHigherBoundaryObstruction(C', Ob_C')` は、この判定が boundary class だけで完備になるための仮定である。
 
 ```text
-s_core^* I_Ob^U = 0
-s_F^* I_Ob^U = 0
+s_core^*_{ideal} I_Ob^U = 0
+s_F^*_{ideal} I_Ob^U = 0
 ```
 
 boundary-exact coefficient を固定しているため、global flatness の残りは
@@ -1003,8 +1113,8 @@ C_0 intersection C_1 = B_sync disjoint_union B_async
 local lawful sections
 
 ```text
-s_0 in Lawful_U(C_0)
-s_1 in Lawful_U(C_1)
+s_0 in IdealLawful_U(C_0)
+s_1 in IdealLawful_U(C_1)
 ```
 
 の差を、二つの boundary channel 上で
