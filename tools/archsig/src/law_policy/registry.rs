@@ -168,7 +168,10 @@ mod tests {
             policies: vec![crate::LawPolicyEntryV1 {
                 pack: None,
                 law: None,
-                law_pair: Some(vec!["law:checkout".to_string(), "law:inventory".to_string()]),
+                law_pair: Some(vec![
+                    "law:checkout".to_string(),
+                    "law:inventory".to_string(),
+                ]),
                 evaluator: Some("ag.law-conflict-tor".to_string()),
                 basis: vec![],
                 profile_ref: None,
@@ -186,7 +189,10 @@ mod tests {
         );
         assert_eq!(
             expanded[0].law_pair,
-            Some(vec!["law:checkout".to_string(), "law:inventory".to_string()])
+            Some(vec![
+                "law:checkout".to_string(),
+                "law:inventory".to_string()
+            ])
         );
     }
 }

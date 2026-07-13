@@ -202,7 +202,7 @@ fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     }
     check_examples(
         "law-policy-schema051-entry-shape",
-        "policy entries select pack or law and carry scope / severity",
+        "policy entries select pack, law, or lawPair and carry scope / severity",
         examples,
     )
 }

@@ -215,6 +215,25 @@ fn summary_concrete_support_refs(
                 })
             })
             .collect(),
+        ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE => {
+            let mut refs = Vec::new();
+            if let Some(invariant) = packet
+                .computed_invariants
+                .iter()
+                .find(|invariant| invariant["evaluator"] == "ag.law-conflict-tor")
+            {
+                collect_json_string_leaves(&invariant["commonAmbient"]["sourceRefs"], &mut refs);
+                if let Some(conflicts) = invariant["lawConflicts"].as_array() {
+                    for conflict in conflicts {
+                        collect_json_string_leaves(&conflict["sourceRefs"], &mut refs);
+                        collect_json_string_leaves(&conflict["contextRefs"], &mut refs);
+                    }
+                }
+            }
+            refs.sort();
+            refs.dedup();
+            refs
+        }
         _ => Vec::new(),
     }
 }
@@ -561,6 +580,18 @@ pub fn build_foundation_measurement_packet_v1(
     let law_surface = law_surface.ok_or_else(|| {
         "AG measurement packet requires --law-surface; witness variables are supplied only by the law surface".to_string()
     })?;
+    let law_policy_report = crate::validate_law_policy_v1_report(
+        policy,
+        law_policy_ref,
+        Some(&selected_profile),
+        Some(law_surface),
+    );
+    if law_policy_report.summary.result == "fail" {
+        return Err(
+            "AG measurement packet requires a law-policy selector that passes validation"
+                .to_string(),
+        );
+    }
     let profile = profile_with_law_surface_witnesses(policy, &selected_profile, law_surface)?;
     validate_profile_refs(&profile, normalized)?;
     let mut structural_verdict = Vec::new();
@@ -2980,10 +3011,7 @@ fn tor_partial_observation_measurement(
 }
 
 fn tor_certificate_ref(profile: &MeasurementProfileV1) -> String {
-    format!(
-        "computedInvariants/law-conflict-tor:{}",
-        profile.profile_id
-    )
+    format!("computedInvariants/law-conflict-tor:{}", profile.profile_id)
 }
 
 fn hilbert_interference_reading(

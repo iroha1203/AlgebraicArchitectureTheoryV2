@@ -82,7 +82,9 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
 ```
 
 `law-policy` validates a `law-policy/v0.5.1` selector artifact against its
-selected measurement profile and supplied law-equation surface.
+selected measurement profile and supplied law-equation surface. A single law
+uses `policies[].law`; `ag.law-conflict-tor` uses an explicit
+`policies[].lawPair` containing exactly two distinct law ids.
 
 ## Policy Bundle
 

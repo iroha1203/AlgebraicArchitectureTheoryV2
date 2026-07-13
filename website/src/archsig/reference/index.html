@@ -45,7 +45,7 @@
                   <thead><tr><th scope="col">Command</th><th scope="col">Validates</th></tr></thead>
                   <tbody>
                     <tr><td><code>archmap</code></td><td>An <code>archmap/v0.5.1</code> observation artifact; with <code>--scope-manifest</code> / <code>--candidate-packets</code> / <code>--extraction-consistency</code> / <code>--coverage-ledger</code>, also the authoring provenance (see <a href="../contracts/#archmap">Contracts</a>).</td></tr>
-                    <tr><td><code>law-policy</code></td><td>A <code>law-policy/v0.5.1</code> selector against its measurement profile.</td></tr>
+                    <tr><td><code>law-policy</code></td><td>A <code>law-policy/v0.5.1</code> selector against its measurement profile; single laws use <code>policies[].law</code>, while Tor uses an explicit two-item <code>policies[].lawPair</code>.</td></tr>
                     <tr><td><code>law-surface</code></td><td>A <code>law-equation-surface/v0.5.1</code> declaration of the selected law universe and witness variables.</td></tr>
                     <tr><td><code>measurement-profile</code></td><td>A standalone <code>measurement-profile/v0.5.1</code> artifact, including finite bounds against registry hard caps.</td></tr>
                     <tr><td><code>policy-bundle</code></td><td>Creates or validates an <code>archsig-policy-bundle/v0.5.1</code> with canonical component fingerprints.</td></tr>

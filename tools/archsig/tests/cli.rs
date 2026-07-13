@@ -7267,7 +7267,12 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
 
     let validation = read_json(&out_dir.join("law-policy-validation.json"));
     let expanded = &validation["expandedPolicies"][0];
-    assert_eq!(expanded["law"], Value::Null);
+    assert!(
+        !expanded
+            .as_object()
+            .expect("expanded policy is an object")
+            .contains_key("law")
+    );
     assert_eq!(
         expanded["lawPair"],
         json!(["law:checkout", "law:inventory"])
@@ -7313,6 +7318,20 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
         "Hilbert interference reading must not add a structural verdict row"
     );
     let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert!(
+        summary["translationRule"]["concreteSupportRefs"]
+            .as_array()
+            .is_some_and(|refs| {
+                refs.iter().any(|reference| reference == "src:ambient")
+                    && refs
+                        .iter()
+                        .any(|reference| reference == "src:checkout-policy")
+                    && refs
+                        .iter()
+                        .any(|reference| reference == "ctx:tor-common-ambient")
+            })
+    );
     assert_eq!(tor["method"], "finite-monomial-tor-taylor@1");
     assert_eq!(
         tor["claimScope"],
@@ -7903,23 +7922,48 @@ fn cli_analyze_v2_law_conflict_tor_selects_only_declared_law_pair() {
             .all(|variable| variable != "x_shipping"),
         "an unselected law declared with a law: prefix must not enter the Tor witness family"
     );
+    assert_eq!(
+        tor["witnessVariables"],
+        json!(["x_checkout", "x_inventory", "x_payment"])
+    );
+    assert_eq!(
+        tor["lawIdeals"]
+            .as_array()
+            .expect("Tor law ideals are an array")
+            .iter()
+            .map(|ideal| ideal["law"].clone())
+            .collect::<Vec<_>>(),
+        vec![json!("law:checkout"), json!("law:inventory")]
+    );
 }
 
 #[test]
 fn cli_law_policy_rejects_malformed_tor_law_pairs() {
     let root = ag_measurement_root();
-    for (name, pair, evaluator) in [
-        ("missing", None, Some("ag.law-conflict-tor")),
-        ("one", Some(vec!["law:checkout"]), Some("ag.law-conflict-tor")),
+    for (name, pair, evaluator, expected_evidence) in [
+        (
+            "missing",
+            None,
+            Some("ag.law-conflict-tor"),
+            "ag.law-conflict-tor requires an explicit lawPair declaration",
+        ),
+        (
+            "one",
+            Some(vec!["law:checkout"]),
+            Some("ag.law-conflict-tor"),
+            "lawPair must contain exactly two distinct non-empty law ids",
+        ),
         (
             "duplicate",
             Some(vec!["law:checkout", "law:checkout"]),
             Some("ag.law-conflict-tor"),
+            "lawPair must contain exactly two distinct non-empty law ids",
         ),
         (
             "wrong-evaluator",
             Some(vec!["law:checkout", "law:inventory"]),
             Some("ag.square-free-repair"),
+            "lawPair is reserved for the ag.law-conflict-tor evaluator",
         ),
     ] {
         let out_dir = temp_dir(&format!("ag-law-policy-tor-pair-{name}"));
@@ -7952,9 +7996,9 @@ fn cli_law_policy_rejects_malformed_tor_law_pairs() {
                 "--law-policy",
                 policy_path.to_str().expect("policy path is utf-8"),
                 "--measurement-profile",
-                test_measurement_profile_path(
-                    Path::new(policy_path.to_str().expect("policy path is utf-8")),
-                )
+                test_measurement_profile_path(Path::new(
+                    policy_path.to_str().expect("policy path is utf-8"),
+                ))
                 .to_str()
                 .expect("profile path is utf-8"),
                 "--law-surface",
@@ -7966,7 +8010,18 @@ fn cli_law_policy_rejects_malformed_tor_law_pairs() {
             ],
             1,
         );
-        assert_eq!(read_json(&report_path)["summary"]["result"], "fail");
+        let report = read_json(&report_path);
+        assert_eq!(report["summary"]["result"], "fail");
+        assert!(report["checks"].as_array().is_some_and(|checks| {
+            checks.iter().any(|check| {
+                check["id"] == "law-policy-schema051-entry-shape"
+                    && check["examples"].as_array().is_some_and(|examples| {
+                        examples
+                            .iter()
+                            .any(|example| example["evidence"] == expected_evidence)
+                    })
+            })
+        }));
     }
 }
 
@@ -11114,9 +11169,7 @@ fn cli_tor_policy_bundle_preserves_explicit_law_pair() {
         "--law-surface",
         law_surface.to_str().expect("surface path is utf-8"),
         "--measurement-profile",
-        measurement_profile
-            .to_str()
-            .expect("profile path is utf-8"),
+        measurement_profile.to_str().expect("profile path is utf-8"),
         "--out",
         bundle.to_str().expect("bundle path is utf-8"),
     ]);
@@ -11140,12 +11193,17 @@ fn cli_tor_policy_bundle_preserves_explicit_law_pair() {
         validation["expandedPolicies"][0]["lawPair"],
         json!(["law:checkout", "law:inventory"])
     );
-    assert_eq!(validation["expandedPolicies"][0]["law"], Value::Null);
+    assert!(
+        !validation["expandedPolicies"][0]
+            .as_object()
+            .expect("expanded policy is an object")
+            .contains_key("law")
+    );
 
     let packet = read_json(&analyze_dir.join("archsig-measurement-packet.json"));
     assert_eq!(
-        invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1")
-            ["commonAmbient"]["lawPair"],
+        invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1")["commonAmbient"]
+            ["lawPair"],
         json!(["law:checkout", "law:inventory"])
     );
 }

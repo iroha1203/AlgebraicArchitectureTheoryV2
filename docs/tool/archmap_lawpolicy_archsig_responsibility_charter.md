@@ -83,7 +83,7 @@ ArchMap が書かないもの:
 
 ## LawPolicy は何か —— 制度選択層
 
-LawPolicy は、明示した law / evaluator / basis / scope / severity を **選ぶ** selector である。退役した policy pack selector は受理しない。
+LawPolicy は、明示した law / lawPair / evaluator / basis / scope / severity を **選ぶ** selector である。退役した policy pack selector は受理しない。
 加えて、何が forbidden か(law universe)を指定する。第III部は「law は atom を生成しない、coordinate を生成しない、law は loci を切り出す」と述べる。
 law は存在の根拠ではなく、どの witness ideal / defect representative を読むかを指定する装置であり、witness variables と signature axis は supplied law-equation-surface と evaluator registry で解決される。
 

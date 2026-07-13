@@ -520,6 +520,15 @@ fn validate_archsig_measurement_packet_structural_verdicts(
                 )
                 .into());
             }
+            if let Some(invariant_evaluator) =
+                archsig_measurement_computed_invariant_evaluator(packet, computed_ref)
+                && invariant_evaluator != evaluator
+            {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence.computedInvariantRefs entry {computed_ref} has evaluator {invariant_evaluator}, expected {evaluator}"
+                )
+                .into());
+            }
         }
         evidence
             .get("sourceRefs")
@@ -576,6 +585,34 @@ fn validate_archsig_measurement_packet_structural_verdicts(
                     "FieldSig ArchSig measurement handoff structuralVerdict[{index}] measured_nonzero target.classRef {class_ref} does not resolve to computed invariant evidence"
                 )
                 .into());
+            }
+            let class_ref_id = class_ref
+                .strip_prefix("computedInvariants/")
+                .unwrap_or(class_ref);
+            if let Some(invariant_evaluator) =
+                archsig_measurement_computed_invariant_evaluator(packet, class_ref_id)
+                && invariant_evaluator != evaluator
+            {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] target.classRef has evaluator {invariant_evaluator}, expected {evaluator}"
+                )
+                .into());
+            }
+        }
+        if matches!(verdict, "measured_zero" | "measured_nonzero") {
+            if let Some(cert_ref) = data.get("certRef").and_then(|value| value.as_str()) {
+                let cert_ref_id = cert_ref
+                    .strip_prefix("computedInvariants/")
+                    .unwrap_or(cert_ref);
+                if let Some(invariant_evaluator) =
+                    archsig_measurement_computed_invariant_evaluator(packet, cert_ref_id)
+                    && invariant_evaluator != evaluator
+                {
+                    return Err(format!(
+                        "FieldSig ArchSig measurement handoff structuralVerdict[{index}] certRef has evaluator {invariant_evaluator}, expected {evaluator}"
+                    )
+                    .into());
+                }
             }
         }
         if matches!(verdict, "measured_zero" | "measured_nonzero")
@@ -745,6 +782,28 @@ fn archsig_measurement_computed_invariant_ids(
                         .filter(|value| !value.is_empty())
                 })
         })
+}
+
+fn archsig_measurement_computed_invariant_evaluator(
+    packet: &serde_json::Value,
+    reference: &str,
+) -> Option<String> {
+    packet
+        .get("computedInvariants")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .find(|invariant| {
+            ["invariantId", "readingId", "id"].iter().any(|key| {
+                invariant
+                    .get(*key)
+                    .and_then(|value| value.as_str())
+                    .is_some_and(|value| value == reference)
+            })
+        })
+        .and_then(|invariant| invariant.get("evaluator"))
+        .and_then(|value| value.as_str())
+        .map(ToOwned::to_owned)
 }
 
 fn archsig_measurement_certificate_invariant_prefixes(
