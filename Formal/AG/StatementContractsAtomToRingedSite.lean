@@ -571,10 +571,12 @@ example :
 example : FiniteModel.completeCircuitReading.RequiredComplete :=
   FiniteModel.completeCircuitReading_requiredComplete
 
-example (A : ArchitectureObject FiniteModel.carrier) :
-    ¬ (FiniteModel.alwaysFailingLawUniverse.law PUnit.unit).holds A ∧
-      Nonempty (FiniteModel.completeCircuitReading.Circuit A PUnit.unit) :=
-  FiniteModel.completeCircuitReading_nonvacuous A
+example :
+    ¬ (FiniteModel.componentAAbsentLawUniverse.law PUnit.unit).holds
+        FiniteModel.corePackage.object ∧
+      Nonempty (FiniteModel.completeCircuitReading.Circuit
+        FiniteModel.corePackage.object PUnit.unit) :=
+  FiniteModel.completeCircuitReading_nonvacuous
 
 example :
     FiniteModel.coreReading.lawReading.circuits.accepts PUnit.unit ⟨[]⟩ = false :=

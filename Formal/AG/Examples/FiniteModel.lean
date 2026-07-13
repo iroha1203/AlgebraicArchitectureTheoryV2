@@ -904,14 +904,14 @@ theorem rejectingCircuitReading_not_requiredComplete :
   have hfalse : false = true := hreject.symm.trans circuit.2.2
   exact Bool.noConfusion hfalse
 
-/-- R10: a law whose semantic predicate fails on every architecture object. -/
-def alwaysFailingLaw : Law carrier where
-  holds _ := False
+/-- R10: the selected law holds exactly when component A is absent. -/
+def componentAAbsentLaw : Law carrier where
+  holds A := ¬ A.configuration.family.mem FiniteAtom.componentA
 
 /-- R10: a singleton required-law universe for the complete detector example. -/
-def alwaysFailingLawUniverse : LawUniverse carrier where
+def componentAAbsentLawUniverse : LawUniverse carrier where
   Index := PUnit
-  law _ := alwaysFailingLaw
+  law _ := componentAAbsentLaw
   role _ := LawRole.required
   witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
   SelectedReading := PUnit
@@ -919,53 +919,77 @@ def alwaysFailingLawUniverse : LawUniverse carrier where
   coverageAssumptions := True
   exactnessAssumptions := True
 
-/-- R10: the always-failing law genuinely fails on every architecture object. -/
-theorem alwaysFailingLaw_failure (A : ArchitectureObject carrier) :
-    ¬ (alwaysFailingLawUniverse.law PUnit.unit).holds A := by
-  intro hholds
-  exact hholds
+/-- R10: the component-A absence law holds on the concrete empty-family object. -/
+theorem componentAAbsentLaw_holds_unreachableEmptyObject :
+    (componentAAbsentLawUniverse.law PUnit.unit).holds unreachableEmptyObject := by
+  intro hmem
+  exact hmem
 
-/-- R10: the empty signed query datum used by the complete exact detector. -/
-def emptyCircuitDatum : FiniteCircuitDatum carrier where
-  queries := []
+/-- R10: the component-A absence law fails on the generated core object. -/
+theorem componentAAbsentLaw_failure_core :
+    ¬ (componentAAbsentLawUniverse.law PUnit.unit).holds corePackage.object :=
+  fun habsent => habsent corePackage_componentA_mem
 
-/-- R10: the empty signed query datum matches every architecture object. -/
-theorem emptyCircuitDatum_matches (A : ArchitectureObject carrier) :
-    emptyCircuitDatum.Matches A := by
-  intro query expected hmem
-  simp [emptyCircuitDatum] at hmem
+/-- R10: the positive component-A query used by the complete exact detector. -/
+def componentAPresentDatum : FiniteCircuitDatum carrier where
+  queries := [(.atomPresent FiniteAtom.componentA, true)]
 
-/-- R10: an exact empty-datum detector for the always-failing required law. -/
+/-- R10: the signed datum matches exactly when component A is present. -/
+theorem componentAPresentDatum_matches_iff (A : ArchitectureObject carrier) :
+    componentAPresentDatum.Matches A ↔
+      A.configuration.family.mem FiniteAtom.componentA := by
+  constructor
+  · intro hmatches
+    exact (CircuitQuery.atomPresent_holds_iff _ _).mp
+      ((FiniteCircuitDatum.holds_iff_of_matches hmatches
+        (by simp [componentAPresentDatum])).mpr rfl)
+  · intro hmem query expected hquery
+    simp only [componentAPresentDatum, List.mem_singleton] at hquery
+    cases hquery
+    constructor
+    · intro _hholds
+      rfl
+    · intro _htrue
+      exact (CircuitQuery.atomPresent_holds_iff _ _).mpr hmem
+
+/-- R10: an exact positive-query detector for the component-A absence law. -/
 noncomputable def completeCircuitReading :
-    CircuitReading alwaysFailingLawUniverse where
-  code _ := .exact emptyCircuitDatum
+    CircuitReading componentAAbsentLawUniverse where
+  code _ := .exact componentAPresentDatum
   sound := by
-    intro i A Q _hmatches _haccepts
+    intro i A Q hmatches haccepts
     cases i
-    exact alwaysFailingLaw_failure A
+    have hdatum : componentAPresentDatum = Q :=
+      (CircuitDetectorCode.eval_exact_eq_true_iff componentAPresentDatum Q).mp haccepts
+    subst Q
+    exact fun habsent => habsent ((componentAPresentDatum_matches_iff A).mp hmatches)
 
-/-- R10: the complete detector selects the exact empty datum at every index. -/
-theorem completeCircuitReading_code (i : alwaysFailingLawUniverse.Index) :
-    completeCircuitReading.code i = .exact emptyCircuitDatum := by
+/-- R10: the complete detector selects the positive component-A datum. -/
+theorem completeCircuitReading_code (i : componentAAbsentLawUniverse.Index) :
+    completeCircuitReading.code i = .exact componentAPresentDatum := by
   cases i
   rfl
 
-/-- R10: every actual failure has the accepted matching empty circuit datum. -/
+/-- R10: every actual failure has the accepted matching component-A datum. -/
 theorem completeCircuitReading_requiredComplete :
     completeCircuitReading.RequiredComplete := by
-  intro A i _hrequired _hfailure
-  exact ⟨⟨emptyCircuitDatum, emptyCircuitDatum_matches A,
+  intro A i _hrequired hfailure
+  cases i
+  have hmem : A.configuration.family.mem FiniteAtom.componentA := by
+    by_contra habsent
+    exact hfailure habsent
+  exact ⟨⟨componentAPresentDatum, (componentAPresentDatum_matches_iff A).mpr hmem,
     (CircuitReading.accepts_eq_true_iff_of_code_exact
-      completeCircuitReading i emptyCircuitDatum emptyCircuitDatum
-      (completeCircuitReading_code i)).mpr rfl⟩⟩
+      completeCircuitReading PUnit.unit componentAPresentDatum componentAPresentDatum
+      (completeCircuitReading_code PUnit.unit)).mpr rfl⟩⟩
 
-/-- R10: required completeness fires on an explicit semantic law failure. -/
-theorem completeCircuitReading_nonvacuous (A : ArchitectureObject carrier) :
-    ¬ (alwaysFailingLawUniverse.law PUnit.unit).holds A ∧
-      Nonempty (completeCircuitReading.Circuit A PUnit.unit) :=
-  ⟨alwaysFailingLaw_failure A,
-    completeCircuitReading_requiredComplete A PUnit.unit rfl
-      (alwaysFailingLaw_failure A)⟩
+/-- R10: required completeness fires on the generated component-A object. -/
+theorem completeCircuitReading_nonvacuous :
+    ¬ (componentAAbsentLawUniverse.law PUnit.unit).holds corePackage.object ∧
+      Nonempty (completeCircuitReading.Circuit corePackage.object PUnit.unit) :=
+  ⟨componentAAbsentLaw_failure_core,
+    completeCircuitReading_requiredComplete corePackage.object PUnit.unit rfl
+      componentAAbsentLaw_failure_core⟩
 
 /-- R10: the main core reading selects the exact cycle detector template. -/
 theorem coreReading_circuit_code (i : lawUniverse.Index) :

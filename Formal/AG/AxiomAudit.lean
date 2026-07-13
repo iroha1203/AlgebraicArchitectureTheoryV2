@@ -1074,8 +1074,12 @@ def sd1FiniteObjectRelationIff := FiniteModel.corePackage_object_relation_iff
 def sd1FiniteReachableFamilyNonempty := @FiniteModel.reachable_object_family_nonempty
 def sd1FiniteUnreachableObject := FiniteModel.unreachableEmptyObject_not_reachable
 def sd1FiniteRejectingCode := FiniteModel.rejectingCircuitReading_code
-def sd1FiniteAlwaysFailingLaw := @FiniteModel.alwaysFailingLaw_failure
-def sd1FiniteEmptyDatumMatches := @FiniteModel.emptyCircuitDatum_matches
+def sd1FiniteComponentAAbsentLawful :=
+  FiniteModel.componentAAbsentLaw_holds_unreachableEmptyObject
+def sd1FiniteComponentAAbsentFailure :=
+  FiniteModel.componentAAbsentLaw_failure_core
+def sd1FiniteComponentAPresentDatumMatches :=
+  @FiniteModel.componentAPresentDatum_matches_iff
 def sd1FiniteCompleteCode := FiniteModel.completeCircuitReading_code
 def sd1FiniteCoreDetectorCode := FiniteModel.coreReading_circuit_code
 
