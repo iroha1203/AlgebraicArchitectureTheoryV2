@@ -15,6 +15,8 @@ pub(crate) struct LawExecutionPlanV1 {
     pub(crate) section_witness_variables: Option<Vec<String>>,
     pub(crate) section_variable_aliases: Option<BTreeMap<String, String>>,
     pub(crate) section_forbidden_supports: Option<Vec<Vec<String>>>,
+    pub(crate) grounded_variable_aliases: Option<BTreeMap<String, String>>,
+    pub(crate) grounded_forbidden_supports: Option<Vec<Vec<String>>>,
     pub(crate) stage3_skeleton: Option<Vec<LawSkeletonSimplexV1>>,
     pub(crate) stage3_defect_source: Option<LawDefectSourceV1>,
     pub(crate) stage3_quotient_sheaf_condition: Option<LawQuotientSheafConditionV1>,
@@ -191,6 +193,51 @@ pub(crate) fn build_law_execution_plan(
     } else {
         None
     };
+    let (grounded_variable_aliases, grounded_forbidden_supports) = if evaluator
+        == "ag.saga-grounded"
+    {
+        let mut aliases = BTreeMap::new();
+        for witness in &selected_law.witness_variables {
+            let alias = witness
+                .binding
+                .archmap_variable
+                .clone()
+                .unwrap_or_else(|| witness.variable.clone());
+            if aliases.insert(witness.variable.clone(), alias).is_some() {
+                return Err(format!(
+                    "{evaluator} law {} contains duplicate witness variable {}",
+                    selected_law.law_id, witness.variable
+                ));
+            }
+        }
+        if aliases.is_empty() || selected_law.forbidden_support_generators.is_empty() {
+            return Err(format!(
+                "{evaluator} law {} must declare witnessVariables and forbiddenSupportGenerators",
+                selected_law.law_id
+            ));
+        }
+        let supports = selected_law
+            .forbidden_support_generators
+            .iter()
+            .map(|generator| {
+                if generator.support.is_empty()
+                    || generator
+                        .support
+                        .iter()
+                        .any(|variable| !aliases.contains_key(variable))
+                {
+                    return Err(format!(
+                        "{evaluator} law {} has forbidden support outside witnessVariables",
+                        selected_law.law_id
+                    ));
+                }
+                Ok(generator.support.clone())
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        (Some(aliases), Some(supports))
+    } else {
+        (None, None)
+    };
     let stage3_defect_source = surface
         .defect_sources
         .as_ref()
@@ -211,6 +258,8 @@ pub(crate) fn build_law_execution_plan(
         section_variable_aliases: (!section_variable_aliases.is_empty())
             .then_some(section_variable_aliases),
         section_forbidden_supports,
+        grounded_variable_aliases,
+        grounded_forbidden_supports,
         stage3_skeleton: surface.skeleton.clone(),
         stage3_defect_source,
         stage3_quotient_sheaf_condition: surface.quotient_sheaf_condition.clone(),

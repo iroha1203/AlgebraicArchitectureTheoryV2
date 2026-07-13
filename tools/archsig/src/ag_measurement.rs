@@ -13300,6 +13300,7 @@ fn validate_saga_grounded_packet_shape(
     }
     if quotient["coefficient"].as_str() != Some("F2")
         || quotient["finiteBoundChecked"].as_bool() != Some(true)
+        || quotient["finiteBound"].as_u64().is_none()
     {
         examples.push(generic_validation_example(
             &format!("{label}.generatedQuotient"),
@@ -13307,12 +13308,166 @@ fn validate_saga_grounded_packet_shape(
             "generated quotient must record F2 and a checked finite bound",
         ));
     }
+    let Some(ambient_basis) = quotient["ambient"]["basis"].as_array() else {
+        examples.push(generic_validation_example(
+            &format!("{label}.generatedQuotient.ambient.basis"),
+            "not-array",
+            "generated quotient ambient basis must be an array of strings",
+        ));
+        return;
+    };
+    let ambient_basis = ambient_basis
+        .iter()
+        .filter_map(Value::as_str)
+        .collect::<BTreeSet<_>>();
+    if ambient_basis.is_empty() {
+        examples.push(generic_validation_example(
+            &format!("{label}.generatedQuotient.ambient.basis"),
+            "empty",
+            "generated quotient ambient basis must contain the supplied witness variables",
+        ));
+    }
+    if quotient["ambient"]["relations"].as_array().is_none() {
+        examples.push(generic_validation_example(
+            &format!("{label}.generatedQuotient.ambient.relations"),
+            "missing",
+            "generated quotient ambient relations must be recorded",
+        ));
+    }
+    let Some(generators) = quotient["obstructionIdeal"]["generators"].as_array() else {
+        examples.push(generic_validation_example(
+            &format!("{label}.generatedQuotient.obstructionIdeal.generators"),
+            "not-array",
+            "generated obstruction ideal generators must be an array",
+        ));
+        return;
+    };
+    for (index, generator) in generators.iter().enumerate() {
+        let generator_label =
+            format!("{label}.generatedQuotient.obstructionIdeal.generators[{index}]");
+        for field in ["generatorId", "support", "supportAtomRefs"] {
+            if generator[field].is_null() {
+                examples.push(generic_validation_example(
+                    &generator_label,
+                    field,
+                    "generated obstruction ideal generators must expose typed support fields",
+                ));
+            }
+        }
+        if generator["generatorId"].as_str().is_none_or(str::is_empty)
+            || generator["support"].as_array().is_none_or(|support| {
+                support.is_empty()
+                    || support.iter().any(|variable| {
+                        variable
+                            .as_str()
+                            .is_none_or(|variable| !ambient_basis.contains(variable))
+                    })
+            })
+            || generator["supportAtomRefs"]
+                .as_array()
+                .is_none_or(|refs| refs.iter().any(|reference| reference.as_str().is_none()))
+        {
+            examples.push(generic_validation_example(
+                &generator_label,
+                "support",
+                "generated obstruction ideal support must be nonempty and contained in the ambient basis",
+            ));
+        }
+    }
+    let Some(representative) = quotient["representative"].as_object() else {
+        examples.push(generic_validation_example(
+            &format!("{label}.generatedQuotient.representative"),
+            "missing",
+            "generated quotient representative must be an object",
+        ));
+        return;
+    };
+    let support = representative.get("support").and_then(Value::as_array);
+    let normal_form = representative.get("normalForm").and_then(Value::as_array);
+    if support.is_none()
+        || normal_form.is_none()
+        || support != normal_form
+        || support.is_some_and(|support| {
+            support.iter().any(|variable| {
+                variable
+                    .as_str()
+                    .is_none_or(|variable| !ambient_basis.contains(variable))
+            })
+        })
+    {
+        examples.push(generic_validation_example(
+            &format!("{label}.generatedQuotient.representative"),
+            "support/normalForm",
+            "generated quotient representative must be a normalized ambient-basis support",
+        ));
+    }
+    let Some(interpretation) = quotient["interpretation"].as_object() else {
+        examples.push(generic_validation_example(
+            &format!("{label}.generatedQuotient.interpretation"),
+            "missing",
+            "generated quotient interpretation must be an object",
+        ));
+        return;
+    };
+    if !matches!(
+        interpretation.get("class").and_then(Value::as_str),
+        Some("zero" | "nonzero")
+    ) || interpretation
+        .get("map")
+        .and_then(Value::as_array)
+        .is_none()
+        || interpretation
+            .get("representative")
+            .and_then(Value::as_array)
+            .is_none()
+    {
+        examples.push(generic_validation_example(
+            &format!("{label}.generatedQuotient.interpretation"),
+            "map/class/representative",
+            "generated quotient interpretation must expose a typed map, class, and representative",
+        ));
+    }
+    if let Some(map) = interpretation.get("map").and_then(Value::as_array) {
+        if map.len() != ambient_basis.len()
+            || map.iter().any(|entry| {
+                let Some(entry) = entry.as_object() else {
+                    return true;
+                };
+                entry
+                    .get("variable")
+                    .and_then(Value::as_str)
+                    .is_none_or(|variable| !ambient_basis.contains(variable))
+                    || entry.get("image").and_then(Value::as_str).is_none()
+                    || entry.get("observed").and_then(Value::as_bool).is_none()
+            })
+        {
+            examples.push(generic_validation_example(
+                &format!("{label}.generatedQuotient.interpretation.map"),
+                "invalid",
+                "generated quotient interpretation map must cover each ambient witness variable",
+            ));
+        }
+    }
     if !invariant["detectorFindings"].is_array() {
         examples.push(generic_validation_example(
             &format!("{label}.detectorFindings"),
             "not-array",
             "detectorFindings must be an array",
         ));
+    } else if let Some(findings) = invariant["detectorFindings"].as_array() {
+        for (index, finding) in findings.iter().enumerate() {
+            let finding_label = format!("{label}.detectorFindings[{index}]");
+            if ["chart", "law", "interpretationClass", "reading"]
+                .iter()
+                .any(|field| finding[*field].as_str().is_none_or(str::is_empty))
+            {
+                examples.push(generic_validation_example(
+                    &finding_label,
+                    "typed-fields",
+                    "detector findings must identify chart, law, interpretation class, and reading",
+                ));
+            }
+        }
     }
 }
 
