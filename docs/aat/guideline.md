@@ -42,7 +42,9 @@
   全 runtime、全 semantic universe、source extraction completeness、tooling validation completeness を
   AAT theorem package のスコープに入れない。
 - `docs/aat/algebraic_geometric_theory/` は現行 AAT 数学本文の正典である。Lean status、Issue 番号、実装済み API の進捗管理は本文に混ぜない。
-- `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書である。ユーザーの明示的な指示なしに更新しない。
+- `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書である。更新は、人間の明示的な編集指示、
+  実装者以外の LLM によるレビュー、人間による差分確認と merge の3条件がすべて揃う場合に限る
+  (正本は AGENTS.md「作業規律」)。
 - Lean status とIssueとの対応は、Lean source、GOAL、GitHub Issues、PRDを直接確認する。
 
 ## Lean 形式化方針
