@@ -7265,6 +7265,23 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
         out_dir.to_str().expect("path is utf-8"),
     ]);
 
+    let validation = read_json(&out_dir.join("law-policy-validation.json"));
+    let expanded = &validation["expandedPolicies"][0];
+    assert!(
+        !expanded
+            .as_object()
+            .expect("expanded policy is an object")
+            .contains_key("law")
+    );
+    assert_eq!(
+        expanded["lawPair"],
+        json!(["law:checkout", "law:inventory"])
+    );
+    assert_eq!(
+        expanded["sourceSelector"],
+        "lawPair:law:checkout,law:inventory"
+    );
+
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     assert_eq!(
         packet["structuralVerdict"][0]["evaluator"],
@@ -7280,7 +7297,7 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdictData"]["certRef"],
-        "atom:tor-common-ambient"
+        "computedInvariants/law-conflict-tor:profile:ag-law-conflict-tor@1"
     );
     assert!(
         packet["structuralVerdict"][0]["dependsOnAssumptions"]
@@ -7301,6 +7318,20 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
         "Hilbert interference reading must not add a structural verdict row"
     );
     let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert!(
+        summary["translationRule"]["concreteSupportRefs"]
+            .as_array()
+            .is_some_and(|refs| {
+                refs.iter().any(|reference| reference == "src:ambient")
+                    && refs
+                        .iter()
+                        .any(|reference| reference == "src:checkout-policy")
+                    && refs
+                        .iter()
+                        .any(|reference| reference == "ctx:tor-common-ambient")
+            })
+    );
     assert_eq!(tor["method"], "finite-monomial-tor-taylor@1");
     assert_eq!(
         tor["claimScope"],
@@ -7832,6 +7863,263 @@ fn cli_analyze_v2_law_conflict_tor_uses_law_surface_witnesses() {
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
     ]);
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_selects_only_declared_law_pair() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-explicit-law-pair");
+    let root = ag_measurement_root();
+    let (policy, profile) = read_fixture_policy_profile(&root.join("law_policy_tor.json"));
+    let policy_path = out_dir.join("law_policy_tor.json");
+    let surface_path = out_dir.join("law_surface_with_unselected_law.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+
+    let mut surface = read_json(&root.join("law_surface_ag_v051.json"));
+    surface["laws"].as_array_mut().unwrap().push(json!({
+        "lawId": "law:shipping",
+        "conditionType": "closed-equational",
+        "witnessVariables": [{
+            "variable": "x_shipping",
+            "binding": {
+                "archmapVariable": "x_shipping",
+                "axis": "square-free",
+                "predicate": "support"
+            }
+        }],
+        "forbiddenSupportGenerators": [{"support": ["x_shipping"]}]
+    }));
+    fs::write(
+        &surface_path,
+        serde_json::to_vec_pretty(&surface).expect("law surface serializes"),
+    )
+    .expect("law surface is written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_law_conflict_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-surface",
+        surface_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    assert!(
+        tor["witnessVariables"]
+            .as_array()
+            .expect("Tor witness variables are an array")
+            .iter()
+            .all(|variable| variable != "x_shipping"),
+        "an unselected law declared with a law: prefix must not enter the Tor witness family"
+    );
+    assert_eq!(
+        tor["witnessVariables"],
+        json!(["x_checkout", "x_inventory", "x_payment"])
+    );
+    assert_eq!(
+        tor["lawIdeals"]
+            .as_array()
+            .expect("Tor law ideals are an array")
+            .iter()
+            .map(|ideal| ideal["law"].clone())
+            .collect::<Vec<_>>(),
+        vec![json!("law:checkout"), json!("law:inventory")]
+    );
+}
+
+#[test]
+fn cli_law_policy_rejects_malformed_tor_law_pairs() {
+    let root = ag_measurement_root();
+    for (name, pair, evaluator, expected_evidence) in [
+        (
+            "missing",
+            None,
+            Some("ag.law-conflict-tor"),
+            "ag.law-conflict-tor requires an explicit lawPair declaration",
+        ),
+        (
+            "one",
+            Some(vec!["law:checkout"]),
+            Some("ag.law-conflict-tor"),
+            "lawPair must contain exactly two distinct non-empty law ids",
+        ),
+        (
+            "duplicate",
+            Some(vec!["law:checkout", "law:checkout"]),
+            Some("ag.law-conflict-tor"),
+            "lawPair must contain exactly two distinct non-empty law ids",
+        ),
+        (
+            "wrong-evaluator",
+            Some(vec!["law:checkout", "law:inventory"]),
+            Some("ag.square-free-repair"),
+            "lawPair is reserved for the ag.law-conflict-tor evaluator",
+        ),
+    ] {
+        let out_dir = temp_dir(&format!("ag-law-policy-tor-pair-{name}"));
+        let mut policy = read_json(&root.join("law_policy_tor.json"));
+        let entry = policy["policies"][0]
+            .as_object_mut()
+            .expect("Tor policy entry is an object");
+        if let Some(pair) = pair {
+            entry.insert("lawPair".to_string(), json!(pair));
+        } else {
+            entry.remove("lawPair");
+        }
+        entry.insert("evaluator".to_string(), json!(evaluator));
+        let policy_path = out_dir.join("law_policy.json");
+        fs::write(
+            &policy_path,
+            serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+        )
+        .expect("policy writes");
+        fs::write(
+            out_dir.join("measurement_profile.json"),
+            fs::read(root.join("measurement_profile_tor.json")).expect("profile reads"),
+        )
+        .expect("profile writes");
+        let report_path = out_dir.join("law-policy-validation.json");
+
+        run_sig0_expect_code(
+            &[
+                "law-policy",
+                "--law-policy",
+                policy_path.to_str().expect("policy path is utf-8"),
+                "--measurement-profile",
+                test_measurement_profile_path(Path::new(
+                    policy_path.to_str().expect("policy path is utf-8"),
+                ))
+                .to_str()
+                .expect("profile path is utf-8"),
+                "--law-surface",
+                root.join("law_surface_ag_v051.json")
+                    .to_str()
+                    .expect("surface path is utf-8"),
+                "--out",
+                report_path.to_str().expect("report path is utf-8"),
+            ],
+            1,
+        );
+        let report = read_json(&report_path);
+        assert_eq!(report["summary"]["result"], "fail");
+        assert!(report["checks"].as_array().is_some_and(|checks| {
+            checks.iter().any(|check| {
+                check["id"] == "law-policy-schema051-entry-shape"
+                    && check["examples"].as_array().is_some_and(|examples| {
+                        examples
+                            .iter()
+                            .any(|example| example["evidence"] == expected_evidence)
+                    })
+            })
+        }));
+    }
+}
+
+#[test]
+fn cli_law_policy_rejects_non_closed_tor_law_surface() {
+    let out_dir = temp_dir("ag-law-policy-tor-non-closed");
+    let root = ag_measurement_root();
+    let mut surface = read_json(&root.join("law_surface_ag_v051.json"));
+    for law_id in ["law:checkout", "law:inventory"] {
+        surface["laws"]
+            .as_array_mut()
+            .expect("law surface laws are an array")
+            .iter_mut()
+            .find(|law| law["lawId"] == law_id)
+            .expect("Tor law exists")
+            .as_object_mut()
+            .expect("Tor law is an object")
+            .insert("conditionType".to_string(), json!("constructible"));
+    }
+    let surface_path = out_dir.join("law_surface_non_closed.json");
+    fs::write(
+        &surface_path,
+        serde_json::to_vec_pretty(&surface).expect("surface serializes"),
+    )
+    .expect("surface writes");
+    let report_path = out_dir.join("law-policy-validation.json");
+
+    run_sig0_expect_code(
+        &[
+            "law-policy",
+            "--law-policy",
+            root.join("law_policy_tor.json")
+                .to_str()
+                .expect("policy path is utf-8"),
+            "--measurement-profile",
+            root.join("measurement_profile_tor.json")
+                .to_str()
+                .expect("profile path is utf-8"),
+            "--law-surface",
+            surface_path.to_str().expect("surface path is utf-8"),
+            "--out",
+            report_path.to_str().expect("report path is utf-8"),
+        ],
+        1,
+    );
+    let report = read_json(&report_path);
+    assert!(report["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-policy-schema051-law-surface-resolution"
+                && check["result"] == "fail"
+        })
+    }));
+}
+
+#[test]
+fn cli_analyze_v2_square_free_requires_explicit_law() {
+    let out_dir = temp_dir("ag-measurement-square-free-missing-law");
+    let root = ag_measurement_root();
+    let (mut policy, profile) =
+        read_fixture_policy_profile(&root.join("law_policy_square_free.json"));
+    policy["policies"][0]
+        .as_object_mut()
+        .expect("policy entry is an object")
+        .remove("law");
+    let policy_path = out_dir.join("law_policy_square_free_missing_law.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+
+    let report_path = out_dir.join("law-policy-validation.json");
+    run_sig0_expect_code(
+        &[
+            "law-policy",
+            "--law-policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--measurement-profile",
+            root.join("measurement_profile_square_free.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-surface",
+            root.join("law_surface_ag_v051.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let report = read_json(&report_path);
+    assert!(report["checks"].as_array().is_some_and(|checks| {
+        checks.iter().any(|check| {
+            check["id"] == "law-policy-schema051-entry-shape"
+                && check["examples"].as_array().is_some_and(|examples| {
+                    examples.iter().any(|example| {
+                        example["evidence"]
+                            == "ag.square-free-repair requires an explicit law selector"
+                    })
+                })
+        })
+    }));
 }
 
 #[test]
@@ -10856,6 +11144,68 @@ fn cli_policy_bundle_fingerprints_and_analyze_handoff_are_fail_closed() {
         measurement_profile.to_str().expect("profile path is utf-8"),
     ]);
     assert_eq!(stdout_creation.status.code(), Some(2));
+}
+
+#[test]
+fn cli_tor_policy_bundle_preserves_explicit_law_pair() {
+    let out_dir = temp_dir("policy-bundle-tor");
+    let root = ag_measurement_root();
+    let law_policy = out_dir.join("law_policy_tor.json");
+    let law_surface = out_dir.join("law_surface_ag_v051.json");
+    let measurement_profile = out_dir.join("measurement_profile_tor.json");
+    fs::copy(root.join("law_policy_tor.json"), &law_policy).expect("policy copies");
+    fs::copy(root.join("law_surface_ag_v051.json"), &law_surface).expect("surface copies");
+    fs::copy(
+        root.join("measurement_profile_tor.json"),
+        &measurement_profile,
+    )
+    .expect("profile copies");
+    let bundle = out_dir.join("policy_bundle_tor.json");
+
+    run_sig0(&[
+        "policy-bundle",
+        "--law-policy",
+        law_policy.to_str().expect("policy path is utf-8"),
+        "--law-surface",
+        law_surface.to_str().expect("surface path is utf-8"),
+        "--measurement-profile",
+        measurement_profile.to_str().expect("profile path is utf-8"),
+        "--out",
+        bundle.to_str().expect("bundle path is utf-8"),
+    ]);
+
+    let analyze_dir = out_dir.join("analyze");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_law_conflict_tor.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--policy-bundle",
+        bundle.to_str().expect("bundle path is utf-8"),
+        "--out-dir",
+        analyze_dir.to_str().expect("analyze path is utf-8"),
+    ]);
+
+    let validation = read_json(&analyze_dir.join("law-policy-validation.json"));
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert_eq!(
+        validation["expandedPolicies"][0]["lawPair"],
+        json!(["law:checkout", "law:inventory"])
+    );
+    assert!(
+        !validation["expandedPolicies"][0]
+            .as_object()
+            .expect("expanded policy is an object")
+            .contains_key("law")
+    );
+
+    let packet = read_json(&analyze_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1")["commonAmbient"]
+            ["lawPair"],
+        json!(["law:checkout", "law:inventory"])
+    );
 }
 
 #[test]

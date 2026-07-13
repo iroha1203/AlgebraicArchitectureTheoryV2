@@ -215,6 +215,25 @@ fn summary_concrete_support_refs(
                 })
             })
             .collect(),
+        ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE => {
+            let mut refs = Vec::new();
+            if let Some(invariant) = packet
+                .computed_invariants
+                .iter()
+                .find(|invariant| invariant["evaluator"] == "ag.law-conflict-tor")
+            {
+                collect_json_string_leaves(&invariant["commonAmbient"]["sourceRefs"], &mut refs);
+                if let Some(conflicts) = invariant["lawConflicts"].as_array() {
+                    for conflict in conflicts {
+                        collect_json_string_leaves(&conflict["sourceRefs"], &mut refs);
+                        collect_json_string_leaves(&conflict["contextRefs"], &mut refs);
+                    }
+                }
+            }
+            refs.sort();
+            refs.dedup();
+            refs
+        }
         _ => Vec::new(),
     }
 }
@@ -259,17 +278,7 @@ fn profile_with_law_surface_witnesses(
     }) {
         let evaluator = entry.evaluator.as_deref().unwrap_or_default();
         let laws = if evaluator == "ag.law-conflict-tor" {
-            law_surface
-                .laws
-                .iter()
-                .filter(|law| {
-                    law.law_id.starts_with("law:")
-                        && law
-                            .witness_variables
-                            .iter()
-                            .all(|witness| witness.binding.axis.as_deref() == Some("square-free"))
-                })
-                .collect::<Vec<_>>()
+            resolve_tor_laws(Some(law_surface), entry.law_pair.as_deref(), evaluator)?
         } else {
             entry
                 .law
@@ -571,6 +580,18 @@ pub fn build_foundation_measurement_packet_v1(
     let law_surface = law_surface.ok_or_else(|| {
         "AG measurement packet requires --law-surface; witness variables are supplied only by the law surface".to_string()
     })?;
+    let law_policy_report = crate::validate_law_policy_v1_report(
+        policy,
+        law_policy_ref,
+        Some(&selected_profile),
+        Some(law_surface),
+    );
+    if law_policy_report.summary.result == "fail" {
+        return Err(
+            "AG measurement packet requires a law-policy selector that passes validation"
+                .to_string(),
+        );
+    }
     let profile = profile_with_law_surface_witnesses(policy, &selected_profile, law_surface)?;
     validate_profile_refs(&profile, normalized)?;
     let mut structural_verdict = Vec::new();
@@ -752,7 +773,9 @@ pub fn build_foundation_measurement_packet_v1(
                 reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.square-free-repair" {
-            let law_id = entry.law.as_deref().unwrap_or(evaluator);
+            let law_id = entry.law.as_deref().ok_or_else(|| {
+                "ag.square-free-repair requires an explicit law selector".to_string()
+            })?;
             let law = resolve_closed_law(Some(law_surface), law_id, evaluator)?;
             let (witness_variables, archmap_aliases, binding_axis, binding_predicate) =
                 law_witness_bindings(law)?;
@@ -772,10 +795,7 @@ pub fn build_foundation_measurement_packet_v1(
             assumptions.extend(measurement.assumptions);
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
-                law: entry
-                    .law
-                    .clone()
-                    .unwrap_or_else(|| "ag.square-free-repair".to_string()),
+                law: entry.law.clone().unwrap_or_else(|| law_id.to_string()),
                 verdict: measurement.verdict,
                 verdict_data: AgVerdictDataV1 {
                     in_scope: true,
@@ -788,7 +808,8 @@ pub fn build_foundation_measurement_packet_v1(
                 reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.law-conflict-tor" {
-            let tor_laws = resolve_tor_laws(Some(law_surface), evaluator)?;
+            let tor_laws =
+                resolve_tor_laws(Some(law_surface), entry.law_pair.as_deref(), evaluator)?;
             let witness_variables = merged_law_witness_bindings(&tor_laws)?;
             validate_tor_profile_v1(&profile, &witness_variables)?;
             let measurement =
@@ -1686,6 +1707,7 @@ fn resolve_closed_law<'a>(
 
 fn resolve_tor_laws<'a>(
     law_surface: Option<&'a LawEquationSurfaceV1>,
+    law_pair: Option<&[String]>,
     evaluator: &str,
 ) -> Result<Vec<&'a crate::LawEquationV1>, String> {
     let surface = law_surface.ok_or_else(|| {
@@ -1693,30 +1715,28 @@ fn resolve_tor_laws<'a>(
             "{evaluator} requires --law-surface; no registry or MeasurementProfile fallback is permitted"
         )
     })?;
-    let laws = surface
-        .laws
-        .iter()
-        .filter(|law| {
-            law.law_id.starts_with("law:")
-                && law
-                    .witness_variables
-                    .iter()
-                    .all(|witness| witness.binding.axis.as_deref() == Some("square-free"))
-        })
-        .collect::<Vec<_>>();
-    if laws.is_empty() {
+    let law_pair = law_pair.ok_or_else(|| {
+        format!(
+            "{evaluator} requires an explicit lawPair declaration; lawId naming conventions are not selectors"
+        )
+    })?;
+    let unique_laws = law_pair.iter().collect::<BTreeSet<_>>();
+    if law_pair.len() != 2 || unique_laws.len() != 2 {
         return Err(format!(
-            "{evaluator} requires law:*-named closed laws in supplied law surface {}",
-            surface.id
+            "{evaluator} lawPair must contain exactly two distinct law ids"
         ));
     }
-    if laws
+    let laws = law_pair
         .iter()
-        .any(|law| law.condition_type != "closed-equational")
-    {
+        .map(|law_id| resolve_closed_law(Some(surface), law_id, evaluator))
+        .collect::<Result<Vec<_>, _>>()?;
+    if laws.iter().any(|law| {
+        law.witness_variables
+            .iter()
+            .any(|witness| witness.binding.axis.as_deref() != Some("square-free"))
+    }) {
         return Err(format!(
-            "{evaluator} law declarations in supplied law surface {} must be closed-equational",
-            surface.id
+            "{evaluator} lawPair declarations must use square-free witness bindings"
         ));
     }
     Ok(laws)
@@ -2811,7 +2831,7 @@ fn evaluate_law_conflict_tor_v1(
             zero: false,
             non_zero: false,
             method_status: "non_square_free_monomial".to_string(),
-            cert_ref: Some(ambient.atom_ref.clone()),
+            cert_ref: Some(tor_certificate_ref(profile)),
             reason: "selected law ideal generator contains a non-square-free monomial; finite square-free Taylor regime is not measured".to_string(),
             computed_invariants: vec![json!({
                 "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
@@ -2886,7 +2906,7 @@ fn evaluate_law_conflict_tor_v1(
         zero: !has_conflict,
         non_zero: has_conflict,
         method_status: "finite_monomial_tor_taylor_computed".to_string(),
-        cert_ref: Some(ambient.atom_ref.clone()),
+        cert_ref: Some(tor_certificate_ref(profile)),
         reason: if has_conflict {
             "finite monomial Taylor resolution found degree-1 Tor classes under the supplied common ambient"
                 .to_string()
@@ -2988,6 +3008,10 @@ fn tor_partial_observation_measurement(
         analytic_readings: Vec::new(),
         assumptions: tor_assumptions(profile, Some(ambient), "violated", "checked"),
     }
+}
+
+fn tor_certificate_ref(profile: &MeasurementProfileV1) -> String {
+    format!("computedInvariants/law-conflict-tor:{}", profile.profile_id)
 }
 
 fn hilbert_interference_reading(

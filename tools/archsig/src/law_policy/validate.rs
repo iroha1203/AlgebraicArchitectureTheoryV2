@@ -61,7 +61,7 @@ pub fn validate_law_policy_v1_report(
             explicit_law_entry_count: policy
                 .policies
                 .iter()
-                .filter(|entry| entry.law.is_some())
+                .filter(|entry| entry.law.is_some() || entry.law_pair.is_some())
                 .count(),
             failed_check_count,
             warning_check_count,
@@ -120,19 +120,55 @@ fn check_v1_identity(policy: &LawPolicyDocumentV1) -> ValidationCheck {
 fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     let mut examples = Vec::new();
     for (index, entry) in policy.policies.iter().enumerate() {
-        let selector_count = usize::from(entry.pack.is_some()) + usize::from(entry.law.is_some());
+        let selector_count = usize::from(entry.pack.is_some())
+            + usize::from(entry.law.is_some())
+            + usize::from(entry.law_pair.is_some());
         if selector_count != 1 {
             examples.push(generic_validation_example(
                 &format!("policies[{index}]"),
                 "selector",
-                "policy entry must select exactly one of pack or law",
+                "policy entry must select exactly one of pack, law, or lawPair",
             ));
         }
-        if entry.law.is_some() && entry.evaluator.is_none() {
+        if (entry.law.is_some() || entry.law_pair.is_some()) && entry.evaluator.is_none() {
             examples.push(generic_validation_example(
                 &format!("policies[{index}].evaluator"),
                 "missing",
                 "explicit law entry must name evaluator id / version",
+            ));
+        }
+        if let Some(law_pair) = entry.law_pair.as_ref() {
+            let unique_laws = law_pair.iter().collect::<BTreeSet<_>>();
+            if law_pair.len() != 2
+                || unique_laws.len() != 2
+                || law_pair.iter().any(|law| law.trim().is_empty())
+            {
+                examples.push(generic_validation_example(
+                    &format!("policies[{index}].lawPair"),
+                    "invalid",
+                    "lawPair must contain exactly two distinct non-empty law ids",
+                ));
+            }
+            if entry.evaluator.as_deref() != Some("ag.law-conflict-tor") {
+                examples.push(generic_validation_example(
+                    &format!("policies[{index}].lawPair"),
+                    entry.evaluator.as_deref().unwrap_or("missing"),
+                    "lawPair is reserved for the ag.law-conflict-tor evaluator",
+                ));
+            }
+        }
+        if entry.evaluator.as_deref() == Some("ag.law-conflict-tor") && entry.law_pair.is_none() {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].lawPair"),
+                "missing",
+                "ag.law-conflict-tor requires an explicit lawPair declaration",
+            ));
+        }
+        if entry.evaluator.as_deref() == Some("ag.square-free-repair") && entry.law.is_none() {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].law"),
+                "missing",
+                "ag.square-free-repair requires an explicit law selector",
             ));
         }
         if entry.pack.is_some() && entry.evaluator.is_some() {
@@ -166,7 +202,7 @@ fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     }
     check_examples(
         "law-policy-schema051-entry-shape",
-        "policy entries select pack or law and carry scope / severity",
+        "policy entries select pack, law, or lawPair and carry scope / severity",
         examples,
     )
 }
@@ -293,53 +329,70 @@ fn check_v1_law_surface_resolution(
         ));
     }
     for (index, entry) in policy.policies.iter().enumerate() {
-        let Some(law_id) = entry.law.as_deref() else {
-            continue;
-        };
-        let Some(law) = surface.laws.iter().find(|law| law.law_id == law_id) else {
-            examples.push(generic_validation_example(
-                &format!("policies[{index}].law"),
-                law_id,
-                "policies[].law must resolve exactly to a lawId declared by the supplied law surface",
-            ));
-            continue;
+        let selected_laws = if let Some(law_pair) = entry.law_pair.as_ref() {
+            law_pair
+                .iter()
+                .enumerate()
+                .map(|(law_index, law_id)| {
+                    (
+                        format!("policies[{index}].lawPair[{law_index}]"),
+                        law_id.as_str(),
+                    )
+                })
+                .collect::<Vec<_>>()
+        } else if let Some(law_id) = entry.law.as_deref() {
+            vec![(format!("policies[{index}].law"), law_id)]
+        } else {
+            Vec::new()
         };
         let Some(evaluator) = entry.evaluator.as_deref() else {
             continue;
         };
-        if law
-            .evaluator_ref
-            .as_deref()
-            .is_some_and(|declared| declared != evaluator)
-        {
-            examples.push(generic_validation_example(
-                &format!("policies[{index}].evaluator"),
-                evaluator,
-                "policy evaluator must match the law surface evaluatorRef",
-            ));
-        }
-        if !is_compatible_evaluator_condition(evaluator, &law.condition_type) {
-            examples.push(generic_validation_example(
-                &format!("policies[{index}].evaluator"),
-                evaluator,
-                "policy evaluator must be registered for the law surface conditionType",
-            ));
-        }
-        let expected_axes = binding_axes_for(evaluator);
-        if !expected_axes.is_empty() {
-            for (witness_index, witness) in law.witness_variables.iter().enumerate() {
-                let actual_axis = witness.binding.axis.as_deref().unwrap_or("missing");
-                if !expected_axes.contains(&actual_axis) {
-                    examples.push(generic_validation_example(
-                        &format!(
-                            "policies[{index}].law.witnessVariables[{witness_index}].binding.axis"
-                        ),
-                        actual_axis,
-                        &format!(
-                            "policy evaluator {evaluator} requires registry axis in [{}]",
-                            expected_axes.join(", ")
-                        ),
-                    ));
+        for (law_path, law_id) in selected_laws {
+            let Some(law) = surface.laws.iter().find(|law| law.law_id == law_id) else {
+                examples.push(generic_validation_example(
+                    &law_path,
+                    law_id,
+                    if law_path.contains(".lawPair[") {
+                        "selected policy law must resolve exactly to a lawId declared by the supplied law surface"
+                    } else {
+                        "policies[].law must resolve exactly to a lawId declared by the supplied law surface"
+                    },
+                ));
+                continue;
+            };
+            if law
+                .evaluator_ref
+                .as_deref()
+                .is_some_and(|declared| declared != evaluator)
+            {
+                examples.push(generic_validation_example(
+                    &format!("policies[{index}].evaluator"),
+                    evaluator,
+                    "policy evaluator must match the law surface evaluatorRef",
+                ));
+            }
+            if !is_compatible_evaluator_condition(evaluator, &law.condition_type) {
+                examples.push(generic_validation_example(
+                    &format!("policies[{index}].evaluator"),
+                    evaluator,
+                    "policy evaluator must be registered for the law surface conditionType",
+                ));
+            }
+            let expected_axes = binding_axes_for(evaluator);
+            if !expected_axes.is_empty() {
+                for (witness_index, witness) in law.witness_variables.iter().enumerate() {
+                    let actual_axis = witness.binding.axis.as_deref().unwrap_or("missing");
+                    if !expected_axes.contains(&actual_axis) {
+                        examples.push(generic_validation_example(
+                            &format!("{law_path}.witnessVariables[{witness_index}].binding.axis"),
+                            actual_axis,
+                            &format!(
+                                "policy evaluator {evaluator} requires registry axis in [{}]",
+                                expected_axes.join(", ")
+                            ),
+                        ));
+                    }
                 }
             }
         }

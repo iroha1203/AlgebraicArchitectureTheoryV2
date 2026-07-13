@@ -21,6 +21,8 @@ Use this skill to create a `law-policy/v0.5.1` file, a separate
 
 For the executable fixture workflow, use
 `references/schema-guide.md` and `references/law-surface-examples.md`.
+For `ag.law-conflict-tor`, use an explicit `policies[].lawPair` with exactly two
+distinct law ids; law-id naming conventions are not selectors.
 The bundle is the reproducibility record: its three component references and
 canonical fingerprints must be preserved with the run.
 

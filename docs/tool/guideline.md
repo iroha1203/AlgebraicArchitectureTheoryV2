@@ -9,7 +9,7 @@
   law algebra / obstruction ideal / lawful locus へ持ち上げる代数幾何的アーキテクチャ論である。
   ArchMap / extractor は source code から Atom evidence や AAT measurement input を提示・検査する
   実測 surface であり、AAT の定理や完了条件を定義しない。
-- LawPolicy selector は明示した law / evaluator / basis / scope / severity と `lawSurfaceRef` を選ぶ `law-policy/v0.5.1` artifact である。退役した policy pack selector は受理しない。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v0.5.1` を選ぶ。cover、coefficient、resolution、witness variables、exactness assumption、distance rule は supplied law-equation-surface、evaluator registry、または MeasurementProfile の責務である。AAT そのものではない。
+- LawPolicy selector は明示した law / lawPair / evaluator / basis / scope / severity と `lawSurfaceRef` を選ぶ `law-policy/v0.5.1` artifact である。退役した policy pack selector は受理しない。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v0.5.1` を選ぶ。cover、coefficient、resolution、witness variables、exactness assumption、distance rule は supplied law-equation-surface、evaluator registry、または MeasurementProfile の責務である。AAT そのものではない。
 - ArchSig v0.5.1 は、ArchMap + LawPolicy + supplied law-equation-surface + MeasurementProfile の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.1` を作る AG measurement layer である。Rust と Lean の対応を tooling contract として要求しない。
   再現可能な run では `policy-bundle` が三つの選択済み policy component と canonical fingerprint を固定し、個別 flag は同じ入力を直接渡す形である。
 - ArchView は ArchSig が emitted した measurement / viewer artifact を AAT 代数幾何の幾何として投影する可視化レイヤーである。ArchView は新しい structural verdict を作らず、`archsig-atom-viewer-data.json`、同一ディレクトリの summary / manifest、または `archview-sequence/v0.5.1` の実測フレーム列だけを表示する。

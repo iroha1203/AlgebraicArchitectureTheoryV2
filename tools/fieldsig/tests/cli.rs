@@ -995,6 +995,50 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         "nonConclusions": []
     });
 
+    let mismatched_evaluator_packet = out_dir.join("mismatched-evaluator-measurement-packet.json");
+    let mut mismatched_evaluator_json = valid_measurement_packet.clone();
+    mismatched_evaluator_json["structuralVerdict"][0]["evaluator"] =
+        serde_json::json!("ag.cech-obstruction");
+    mismatched_evaluator_json["structuralVerdict"][0]["target"]["classRef"] =
+        serde_json::json!("computedInvariants/cech-obstruction:profile:semantic-validation");
+    mismatched_evaluator_json["structuralVerdict"][0]["evidence"]["computedInvariantRefs"] =
+        serde_json::json!(["cech-obstruction:profile:semantic-validation"]);
+    mismatched_evaluator_json["computedInvariants"]
+        .as_array_mut()
+        .expect("computed invariants are an array")
+        .push(serde_json::json!({
+            "invariantId": "cech-obstruction:profile:semantic-validation",
+            "kind": "minimal-forbidden-supports",
+            "evaluator": "ag.cech-obstruction",
+            "status": "computed",
+            "value": [],
+            "representation": {}
+        }));
+    fs::write(
+        &mismatched_evaluator_packet,
+        serde_json::to_string_pretty(&mismatched_evaluator_json)
+            .expect("mismatched evaluator packet serializes"),
+    )
+    .expect("mismatched evaluator packet fixture is written");
+    let mismatched_evaluator = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        mismatched_evaluator_packet
+            .to_str()
+            .expect("mismatched evaluator packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("mismatched-evaluator.json")
+            .to_str()
+            .expect("mismatched evaluator output path is utf-8"),
+    ]);
+    assert!(!mismatched_evaluator.status.success());
+    assert!(
+        String::from_utf8_lossy(&mismatched_evaluator.stderr)
+            .contains("certRef has evaluator ag.square-free-repair, expected ag.cech-obstruction"),
+        "measurement-packet handoff must reject cross-evaluator cert refs"
+    );
+
     let invalid_verdict_packet = out_dir.join("invalid-verdict-measurement-packet.json");
     let mut invalid_verdict_json = valid_measurement_packet.clone();
     invalid_verdict_json["structuralVerdict"][0]["verdict"] = serde_json::json!("measured_unknown");
