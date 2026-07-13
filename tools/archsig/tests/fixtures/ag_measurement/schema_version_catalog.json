@@ -287,7 +287,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "MeasurementProfile v0.5.2 declares selected site, cover, coefficient, EffCoeff procedure, resolution selector, Dom/Zero/NonZero/Cert predicates, and five-valued verdict discipline. Witness variables are supplied by the referenced law-equation-surface.",
+        "fieldMappingPolicy": "MeasurementProfile v0.5.2 declares selected site, cover, coefficient, EffCoeff procedure, resolution selector, Dom/Zero/NonZero/Cert predicates, optional analytic innerProduct / weights / costModel declarations, and five-valued verdict discipline. Witness variables are supplied by the referenced law-equation-surface.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

@@ -41,7 +41,7 @@ const STRUCTURAL_VERDICT_EVALUATORS: [&str; 12] = [
     "ag.saga-comparison",
     "ag.saga-grounded",
 ];
-const COMPUTED_INVARIANT_KINDS: [&str; 18] = [
+const COMPUTED_INVARIANT_KINDS: [&str; 19] = [
     "measurement-invariant",
     "cech-h1-rank",
     "minimal-forbidden-supports",
@@ -60,6 +60,7 @@ const COMPUTED_INVARIANT_KINDS: [&str; 18] = [
     "topological-debt-capacity",
     "h1-comparison-transfer",
     "saga-grounded-conclusions",
+    "harmonic-debt",
 ];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_COHERENCE_CONTEXTS: usize = 12;
@@ -970,6 +971,11 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
+        } else if evaluator == "ag.harmonic-debt" {
+            let measurement = evaluate_harmonic_debt_v1(normalized, &profile)?;
+            computed_invariants.extend(measurement.computed_invariants);
+            analytic_readings.extend(measurement.analytic_readings);
+            assumptions.extend(measurement.assumptions);
         } else if evaluator == "ag.period-stokes" {
             validate_period_profile_v1(&profile)?;
             let measurement = evaluate_period_stokes_v1(normalized, &profile)?;
@@ -1481,6 +1487,12 @@ struct LaplacianMeasurementV1 {
     method_status: String,
     cert_ref: Option<String>,
     reason: String,
+    computed_invariants: Vec<Value>,
+    analytic_readings: Vec<AgAnalyticReadingV1>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+struct HarmonicDebtMeasurementV1 {
     computed_invariants: Vec<Value>,
     analytic_readings: Vec<AgAnalyticReadingV1>,
     assumptions: Vec<AgAssumptionLedgerEntryV1>,
@@ -3461,6 +3473,174 @@ fn evaluate_sheaf_laplacian_v1(
             },
         ],
         assumptions: laplacian_assumptions(profile, "checked"),
+    })
+}
+
+fn evaluate_harmonic_debt_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Result<HarmonicDebtMeasurementV1, String> {
+    let analytic = profile
+        .analytic
+        .as_ref()
+        .and_then(Value::as_object)
+        .ok_or_else(|| {
+            format!(
+                "ag.harmonic-debt requires MeasurementProfile analytic declaration for {}",
+                profile.profile_id
+            )
+        })?;
+    let inner_product = analytic
+        .get("innerProduct")
+        .and_then(Value::as_object)
+        .ok_or_else(|| "ag.harmonic-debt analytic.innerProduct is required".to_string())?;
+    if inner_product.get("kind").and_then(Value::as_str) != Some("diagonal") {
+        return Err("ag.harmonic-debt analytic.innerProduct.kind must be diagonal".to_string());
+    }
+    let weights = inner_product
+        .get("weights")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "ag.harmonic-debt analytic.innerProduct.weights is required".to_string())?
+        .iter()
+        .map(|weight| {
+            let value = weight
+                .as_f64()
+                .ok_or_else(|| "harmonic inner-product weights must be numeric".to_string())?;
+            if value.is_finite() && value > 0.0 {
+                Ok(value)
+            } else {
+                Err("harmonic inner-product weights must be finite and positive".to_string())
+            }
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    if weights.len() != laplacian_witness_variables(profile).len() {
+        return Err(format!(
+            "ag.harmonic-debt inner-product weights must match {} witness cells",
+            laplacian_witness_variables(profile).len()
+        ));
+    }
+    let laplacian = evaluate_sheaf_laplacian_v1(normalized, profile)?;
+    let Some(proxy) = laplacian
+        .analytic_readings
+        .iter()
+        .find(|reading| reading.evaluator == "ag.sheaf-laplacian")
+    else {
+        return Ok(HarmonicDebtMeasurementV1 {
+            computed_invariants: vec![json!({
+                "invariantId": format!("harmonic-debt:{}", profile.profile_id),
+                "kind": "harmonic-debt",
+                "evaluator": "ag.harmonic-debt",
+                "status": "silence_by_design",
+                "reason": "cellular_model_missing"
+            })],
+            analytic_readings: Vec::new(),
+            assumptions: laplacian.assumptions,
+        });
+    };
+    let harmonic = proxy
+        .value
+        .get("hodgeDecomposition")
+        .and_then(|value| value.get("harmonic"))
+        .and_then(Value::as_array)
+        .ok_or_else(|| "ag.harmonic-debt requires harmonic decomposition output".to_string())?
+        .iter()
+        .map(|value| {
+            value
+                .as_f64()
+                .ok_or_else(|| "harmonic values must be numeric".to_string())
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    if harmonic.len() != weights.len() {
+        return Err("harmonic decomposition and inner-product dimensions differ".to_string());
+    }
+    let harmonic_debt_norm = harmonic
+        .iter()
+        .zip(weights.iter())
+        .map(|(value, weight)| weight * value * value)
+        .sum::<f64>()
+        .sqrt();
+    let cost_model = if let Some(raw_cost_model) = analytic.get("costModel") {
+        let model = raw_cost_model
+            .as_object()
+            .ok_or_else(|| "harmonic costModel must be an object".to_string())?;
+        if model.get("kind").and_then(Value::as_str) != Some("lipschitz-harmonic-resolution") {
+            return Err(
+                "harmonic costModel.kind must be lipschitz-harmonic-resolution".to_string(),
+            );
+        }
+        let lipschitz = model
+            .get("lipschitzConstant")
+            .and_then(Value::as_f64)
+            .ok_or_else(|| "harmonic costModel.lipschitzConstant is required".to_string())?;
+        let resolution = model
+            .get("harmonicResolution")
+            .and_then(Value::as_str)
+            .filter(|resolution| !resolution.trim().is_empty())
+            .ok_or_else(|| "harmonic costModel.harmonicResolution is required".to_string())?;
+        if !lipschitz.is_finite() || lipschitz <= 0.0 {
+            return Err(
+                "harmonic costModel.lipschitzConstant must be finite and positive".to_string(),
+            );
+        }
+        Some((lipschitz, resolution.to_string()))
+    } else {
+        None
+    };
+    let mut assumptions = laplacian.assumptions;
+    let (lower_bound, lower_bound_status) = if let Some((lipschitz, resolution)) = cost_model {
+        assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/8.7".to_string(),
+            assumption: format!("cost model is {lipschitz}-Lipschitz with {resolution}"),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        });
+        (Some(harmonic_debt_norm / lipschitz), "cost_model_supplied")
+    } else {
+        (None, "cost_model_not_supplied")
+    };
+    let mut invariant = json!({
+        "invariantId": format!("harmonic-debt:{}", profile.profile_id),
+        "kind": "harmonic-debt",
+        "evaluator": "ag.harmonic-debt",
+        "schema": "archsig-measurement-packet/v0.5.2",
+        "selectedCoverRef": profile.cover_ref,
+        "harmonicDebtNorm": round_f64(harmonic_debt_norm),
+        "essentialRepairLowerBound": lower_bound.map(round_f64),
+        "lowerBoundStatus": lower_bound_status,
+        "sourceProxyReading": proxy.reading_id,
+        "nonConclusion": "harmonic debt is an analytic reading and does not establish lawfulness or synthesize a repair"
+    });
+    let mut reading = json!({
+        "readingKind": "harmonic-debt@1",
+        "selectedCoverRef": profile.cover_ref,
+        "harmonicDebtNorm": round_f64(harmonic_debt_norm),
+        "essentialRepairLowerBound": lower_bound.map(round_f64),
+        "lowerBoundStatus": lower_bound_status,
+        "sourceProxyReadingKind": "graph-laplacian-hodge-proxy@1",
+        "certificate": lower_bound.is_some().then(|| "local adjustment cannot reduce repair cost below ||h(g)||/L under the supplied cost model"),
+        "nonConclusion": "analytic harmonic debt is not a structural lawfulness verdict"
+    });
+    if lower_bound.is_none() {
+        invariant
+            .as_object_mut()
+            .expect("harmonic debt invariant is object")
+            .remove("essentialRepairLowerBound");
+        reading
+            .as_object_mut()
+            .expect("harmonic debt reading is object")
+            .remove("essentialRepairLowerBound");
+    }
+    Ok(HarmonicDebtMeasurementV1 {
+        computed_invariants: vec![invariant],
+        analytic_readings: vec![AgAnalyticReadingV1 {
+            reading_id: format!("analytic:harmonic-debt:{}", profile.profile_id),
+            evaluator: "ag.harmonic-debt".to_string(),
+            value: reading,
+            regime: Some("analytic-measurement".to_string()),
+            structural_verdict_ref: None,
+        }],
+        assumptions,
     })
 }
 
@@ -8364,7 +8544,12 @@ fn laplacian_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> {
     profile
         .witness_family
         .iter()
-        .filter(|witness| witness.law == "ag.sheaf-laplacian")
+        .filter(|witness| {
+            matches!(
+                witness.law.as_str(),
+                "ag.sheaf-laplacian" | "ag.harmonic-debt"
+            )
+        })
         .map(|witness| witness.variable.clone())
         .collect::<BTreeSet<_>>()
         .into_iter()
@@ -12352,6 +12537,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             "certSelector",
             "verdictDiscipline",
             "diagnosticCeiling",
+            "analytic",
             "finiteBounds",
         ],
         &mut examples,
@@ -12500,6 +12686,11 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "degreeZeroLawContribution",
         "generatedQuotient",
         "detectorFindings",
+        "harmonicDebtNorm",
+        "essentialRepairLowerBound",
+        "lowerBoundStatus",
+        "sourceProxyReading",
+        "nonConclusion",
     ];
     for (index, invariant) in packet_value["computedInvariants"]
         .as_array()

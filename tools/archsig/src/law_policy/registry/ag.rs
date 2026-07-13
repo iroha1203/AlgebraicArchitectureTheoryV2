@@ -15,6 +15,7 @@ pub fn ag_evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
         ag_manifest("ag.support-transfer", "ag.support-transfer"),
         ag_saga_descent_manifest(),
         ag_saga_grounded_manifest(),
+        ag_harmonic_debt_manifest(),
     ]
 }
 
@@ -31,6 +32,7 @@ pub fn binding_axes_for(evaluator_id: &str) -> &'static [&'static str] {
         "ag.sheaf-laplacian" => &["laplacian"],
         "ag.period-stokes" | "ag.period-stokes-audit" => &["period"],
         "ag.support-transfer" => &["transfer"],
+        "ag.harmonic-debt" => &["laplacian"],
         _ => &[],
     }
 }
@@ -101,6 +103,40 @@ fn ag_saga_grounded_manifest() -> LawEvaluatorManifestV1 {
         detail_output_refs: vec![
             "/assumptions".to_string(),
             "/computedInvariants".to_string(),
+        ],
+        negative_fixtures: Vec::new(),
+    }
+}
+
+fn ag_harmonic_debt_manifest() -> LawEvaluatorManifestV1 {
+    LawEvaluatorManifestV1 {
+        evaluator_id: "ag.harmonic-debt".to_string(),
+        law_id: "ag.harmonic-debt".to_string(),
+        condition_types: vec!["closed-equational".to_string()],
+        required_atom_constructors: Vec::new(),
+        required_predicates: Vec::new(),
+        required_molecule_condition:
+            "measurement-profile/v0.5.2 analytic innerProduct weights plus finite cellular Laplacian witnesses"
+                .to_string(),
+        scope_filtering_rule:
+            "selected finite cover and profile-relative finite cochain cells".to_string(),
+        missing_blocker_rule:
+            "missing analytic declaration or cellular model is silence_by_design; missing costModel suppresses only the repair lower-bound row"
+                .to_string(),
+        pass_criteria:
+            "finite weighted harmonic debt norm is computed in the declared inner-product regime"
+                .to_string(),
+        violation_criteria:
+            "malformed innerProduct, non-positive weight, or invalid Lipschitz cost model fails validation before measurement"
+                .to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.2".to_string(),
+        distance_contribution:
+            "harmonic debt remains an analytic reading and never generates a structural lawfulness verdict"
+                .to_string(),
+        summary_output_refs: vec!["/analyticReadings".to_string()],
+        detail_output_refs: vec![
+            "/computedInvariants".to_string(),
+            "/assumptions".to_string(),
         ],
         negative_fixtures: Vec::new(),
     }
