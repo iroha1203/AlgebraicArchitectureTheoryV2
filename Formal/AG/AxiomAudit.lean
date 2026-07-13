@@ -1857,6 +1857,24 @@ noncomputable def ringedAATSiteUnderlyingTypeSheaf :=
 def ringedAATSiteUnderlyingTypeSheafVal :=
   @LawAlgebra.RingedAATSite.underlyingTypeSheaf_val
 
+noncomputable def generateRingedAATSite :=
+  @LawAlgebra.generateRingedAATSite
+
+def generateRingedAATSiteSite :=
+  @LawAlgebra.generateRingedAATSite_site
+
+def generateRingedAATSiteRaw :=
+  @LawAlgebra.generateRingedAATSite_raw
+
+def generateRingedAATSiteStructureSheaf :=
+  @LawAlgebra.generateRingedAATSite_structureSheaf
+
+def generateRingedAATSiteCanonical :=
+  @LawAlgebra.generateRingedAATSite_canonical
+
+def generateRingedAATSiteArchitectureObject :=
+  @LawAlgebra.generateRingedAATSite_architectureObject
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
