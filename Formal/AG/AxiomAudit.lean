@@ -1812,6 +1812,45 @@ def rawPresheafFiniteRestrictionChangesCoordinate :=
 def rawPresheafFiniteRestrictionFixesCoefficient :=
   LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_C
 
+def ringedAATSiteConstructor :=
+  @LawAlgebra.RingedAATSite.mk
+
+def ringedAATSiteSite :=
+  @LawAlgebra.RingedAATSite.site
+
+def ringedAATSiteArchitectureObject :=
+  @LawAlgebra.RingedAATSite.architectureObject
+
+def ringedAATSiteExt :=
+  @LawAlgebra.RingedAATSite.ext
+
+noncomputable def ringedAATSiteOfMathlibSheafification :=
+  @LawAlgebra.RingedAATSite.ofMathlibSheafification
+
+noncomputable def ringedAATSiteStructureSheaf :=
+  @LawAlgebra.RingedAATSite.structureSheaf
+
+noncomputable def ringedAATSiteCanonical :=
+  @LawAlgebra.RingedAATSite.canonical
+
+def ringedAATSiteStructureSheafEqSheafify :=
+  @LawAlgebra.RingedAATSite.structureSheaf_eq_sheafify
+
+def ringedAATSiteCanonicalEqToSheafify :=
+  @LawAlgebra.RingedAATSite.canonical_eq_toSheafify
+
+def ringedAATSiteLiftUnique :=
+  @LawAlgebra.RingedAATSite.lift_unique
+
+def aatCommAlgToType :=
+  @LawAlgebra.AATCommAlgToType
+
+noncomputable def ringedAATSiteUnderlyingTypeSheaf :=
+  @LawAlgebra.RingedAATSite.underlyingTypeSheaf
+
+def ringedAATSiteUnderlyingTypeSheafVal :=
+  @LawAlgebra.RingedAATSite.underlyingTypeSheaf_val
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

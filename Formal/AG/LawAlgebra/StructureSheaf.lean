@@ -2,6 +2,7 @@ import Formal.AG.LawAlgebra.StructuralRelation
 import Formal.AG.Site.Descent
 import Mathlib.Algebra.Category.Ring.Under.Basic
 import Mathlib.CategoryTheory.Sites.Sheafification
+import Mathlib.CategoryTheory.Sites.Whiskering
 
 namespace AAT.AG
 namespace LawAlgebra
@@ -411,6 +412,134 @@ theorem ofMathlibSheafification_canonical {U : AtomCarrier.{u}}
   rfl
 
 end LawAlgebraSheafificationBridge
+
+/-! ### Ringed AAT site presentation -/
+
+/--
+SD4: an AAT site together with the raw algebra-valued presheaf whose Mathlib
+sheafification supplies the structure sheaf.
+-/
+structure RingedAATSite {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (S : Site.AATSite A) (k : Type v) [CommRing k] where
+  /-- The typed raw algebra presheaf on the selected site. -/
+  raw : AlgebraValuedAATPresheaf S k
+
+namespace RingedAATSite
+
+/-- The selected AAT site underlying a ringed presentation. -/
+def site {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (_R : RingedAATSite S k) : Site.AATSite A :=
+  S
+
+/-- The architecture object carried by the selected site. -/
+def architectureObject {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (_R : RingedAATSite S k) : ArchitectureObject U :=
+  S.architectureObject
+
+/-- Ringed presentations agree when their raw algebra presheaves agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R T : RingedAATSite S k) (hraw : R.raw = T.raw) : R = T := by
+  cases R
+  cases T
+  cases hraw
+  rfl
+
+/-- Construct the ringed presentation whose structure sheaf is Mathlib sheafification. -/
+noncomputable def ofMathlibSheafification
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (raw : AlgebraValuedAATPresheaf S k) : RingedAATSite S k where
+  raw := raw
+
+/-- The actual commutative-algebra-valued structure sheaf. -/
+noncomputable def structureSheaf
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    LawAlgebraSheaf S k :=
+  (CategoryTheory.presheafToSheaf S.topology (AATCommAlgCat k)).obj R.raw
+
+/-- The canonical unit from raw sections to the structure sheaf. -/
+noncomputable def canonical
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    R.raw ⟶ R.structureSheaf.val :=
+  CategoryTheory.toSheafify S.topology R.raw
+
+/-- The structure sheaf is exactly Mathlib sheafification. -/
+@[simp]
+theorem structureSheaf_eq_sheafify
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    R.structureSheaf =
+      (CategoryTheory.presheafToSheaf S.topology (AATCommAlgCat k)).obj R.raw :=
+  rfl
+
+/-- The canonical map is exactly Mathlib's sheafification unit. -/
+@[simp]
+theorem canonical_eq_toSheafify
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    R.canonical = CategoryTheory.toSheafify S.topology R.raw :=
+  rfl
+
+/-- The Mathlib structure sheaf satisfies the sheafification universal property. -/
+theorem lift_unique
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (F : LawAlgebraSheaf S k) (η : R.raw ⟶ F.val) :
+    ∃! lift : R.structureSheaf.val ⟶ F.val, R.canonical ≫ lift = η :=
+  LawAlgebraSheafificationBridge.mathlib_sheafification_lift_unique R.raw F η
+
+end RingedAATSite
+
+/-- Forget a commutative `k`-algebra to its underlying type. -/
+def AATCommAlgToType (k : Type v) [CommRing k] :
+    AATCommAlgCat.{u, v} k ⥤ Type (max u v) :=
+  CategoryTheory.Under.forget
+      (CommRingCat.of (ULift.{max u v, v} k)) ⋙
+    CategoryTheory.forget CommRingCat
+
+namespace RingedAATSite
+
+/-- The underlying Type-valued sheaf obtained by forgetting algebra structure. -/
+noncomputable def underlyingTypeSheaf
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    [S.topology.HasSheafCompose (AATCommAlgToType k)] :
+    CategoryTheory.Sheaf S.topology (Type (max u v)) :=
+  (CategoryTheory.sheafCompose S.topology (AATCommAlgToType k)).obj
+    R.structureSheaf
+
+/-- The underlying sheaf is the forgetful image of the structure sheaf. -/
+@[simp]
+theorem underlyingTypeSheaf_val
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    [S.topology.HasSheafCompose (AATCommAlgToType k)] :
+    R.underlyingTypeSheaf.val =
+      R.structureSheaf.val ⋙ AATCommAlgToType k :=
+  rfl
+
+end RingedAATSite
 
 /--
 III.条件4.5: selected presentation data at a context.
