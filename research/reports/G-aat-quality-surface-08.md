@@ -10,11 +10,11 @@ Issue #3282.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 4
+- latest reviewed cycle: 5
 - completion candidate: no
 - tracking Issue: #3282
 - current phase: Phase 0 — Semantic Operation Foundation
-- next obligation: J2 quotient-valued derivation and square-zero adapter
+- next obligation: J3a derivation coefficient sheaf
 
 ## Cycle 1 — BC0 statement and API compatibility
 
@@ -707,6 +707,175 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: J2 quotient-valued derivation and square-zero adapter
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 5 — J2 quotient-valued derivation and square-zero adapter
+
+- decision: approve
+- result type: proof-obligation-discharged
+- proof obligation: derive chart and overlap law quotients from one ambient law
+  ideal, construct the quotient-valued operation derivations and both
+  restriction laws, and connect the selected family to mathlib's square-zero
+  lift equivalence
+- Lean artifact:
+  `research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/SemanticOperationDerivation.lean`
+- completion candidate: no
+
+### Construction
+
+For an arbitrary ambient ideal `I₀ : Ideal A₀`, `chartLawIdeal` and
+`overlapLawIdeal` are its images in the J1a chart and overlap algebras. The
+cycle proves that the two canonical chart-to-overlap maps send the chart ideal
+onto the overlap ideal. `Ideal.quotientMapₐ` therefore generates the two
+quotient restrictions, together with representative and composition laws.
+
+`quotientDerivation` pushes the coefficient module of a derivation through the
+canonical quotient map. Applying it to the J1b chart and overlap derivations
+constructs `q_W ∘ rho_W` for every operation label. The left and right
+naturality theorems are proved on every chart element from the J1b naturality
+theorems and the generated quotient maps.
+
+For a coefficient algebra `B`, `TrivialSquareZeroOperation.extensionIdeal` is
+the kernel of the first projection from `TrivSqZeroExt B B`. Its square is
+proved to be zero, and the second summand gives a linear equivalence from `B`
+to that ideal. `derivationEquivLift` composes this coefficient equivalence
+directly with mathlib's `derivationToSquareZeroEquivLift`. The selected chart
+and overlap operations are obtained by applying that equivalence to the
+quotient-valued derivations; their first projections are the law quotient maps,
+their second projections are the derivations, and the inverse equivalence
+recovers the original derivations.
+
+No ideal-preservation premise is added. Chart ideals, overlap ideals,
+restriction compatibility, quotient-valued derivations, naturality proofs, and
+square-zero lifts are generated rather than supplied as fields or
+certificates.
+
+### Premise delta and audit
+
+- discharged material obligations:
+  - chart and overlap law ideals and quotient algebras generated from one
+    ambient ideal;
+  - left and right ideal transport and induced quotient restrictions;
+  - chart and overlap quotient-valued derivation families;
+  - left and right quotient-valued restriction naturality;
+  - square-zero lift equivalence, selected lifts, projection laws, and
+    derivation recovery.
+- fixed ambient inputs: base field, common ambient algebra, one ambient law
+  ideal, J0 operation presentation, finite operation/chart labels, and J1a/J1b
+  constructions.
+- certificate provenance: ideal compatibility follows from `Ideal.map_map` and
+  the J1a restriction maps; quotient restrictions come from
+  `Ideal.quotientMapₐ`; semantic lifts come from
+  `derivationToSquareZeroEquivLift`.
+- proof use: `I₀`, both J1a restrictions, both J1b naturality theorems, every
+  quotient map, and the square-zero kernel equivalence occur in the
+  corresponding definitions or proof terms.
+- structure-field escape: none. This cycle adds no structure and receives no
+  chartwise ideal family, compatibility law, ideal-preservation proof,
+  quotient derivation, or lift as input.
+- route integrity: pass. The construction is generic in `I₀`; it does not
+  select a zero ideal, zero derivation, or special chart to fit a later
+  response claim.
+- independent T3 audit: approve / proof-obligation-discharged.
+
+The connection from `I₀` to the required law / atom-indexed obstruction ideal,
+derivation coefficient sheaf, operation image sheaf, conormal response,
+generated-cover adequacy, nonzero response, and witness nonvacuity remain later
+obligations.
+
+### Verification
+
+```text
+cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/SemanticOperationDerivation.lean
+axiom audit: 2 declarations under QuotientValuedDerivation, standard axioms only
+axiom audit: 14 declarations under TypedLocalizationGeometry, standard axioms only
+axiom audit: 12 declarations under TrivialSquareZeroOperation, standard axioms only
+axiom audit: 14 declarations under ArchitectureOperationPresentation, standard axioms only
+cd research/lean && lake build
+full build: pass (4102 jobs)
+```
+
+`git diff --check`, hidden / bidirectional Unicode scan, placeholder scan,
+private-path scan, and Research import-direction scan are clean.
+
+### Next obligation
+
+Implement J3a: construct the derivation coefficient sheaf from the generated
+chart / overlap quotient-valued derivation modules and restriction maps.
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-aat-quality-surface-08
+target_theorem: Intrinsic Law-Response Circuit–Descent Theorem
+cycle: 5
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: J2 quotient-valued derivation and square-zero adapter
+proof_obligation_delta: law quotient response and semantic square-zero operation generated
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/SemanticOperationDerivation.lean
+    declarations:
+      - TypedLocalizationGeometry.chartLawIdeal
+      - TypedLocalizationGeometry.overlapLawIdeal
+      - TypedLocalizationGeometry.leftChartLawIdeal_map
+      - TypedLocalizationGeometry.rightChartLawIdeal_map
+      - TypedLocalizationGeometry.leftLawQuotientRestriction
+      - TypedLocalizationGeometry.rightLawQuotientRestriction
+      - ArchitectureOperationPresentation.chartQuotientDerivation
+      - ArchitectureOperationPresentation.overlapQuotientDerivation
+      - ArchitectureOperationPresentation.leftQuotientDerivation_natural
+      - ArchitectureOperationPresentation.rightQuotientDerivation_natural
+      - TrivialSquareZeroOperation.extensionIdeal_sq
+      - TrivialSquareZeroOperation.derivationEquivLift
+      - ArchitectureOperationPresentation.chartSemanticFirstOrderOperation
+      - ArchitectureOperationPresentation.overlapSemanticFirstOrderOperation
+      - ArchitectureOperationPresentation.chartSemanticFirstOrderOperation_fst
+      - ArchitectureOperationPresentation.overlapSemanticFirstOrderOperation_fst
+      - ArchitectureOperationPresentation.chartSemanticFirstOrderOperation_snd
+      - ArchitectureOperationPresentation.overlapSemanticFirstOrderOperation_snd
+premise_delta:
+  discharged:
+    - ambient law ideal localization to all selected charts and overlaps
+    - generated quotient restrictions and their representative laws
+    - quotient-valued derivation families and left/right naturality
+    - square-zero lift projection and derivation recovery
+  remaining:
+    - J3a derivation coefficient sheaf
+    - J3b operation image sheaf
+    - conormal response and ideal-preserving kernel characterization
+    - generated law provenance, cover adequacy, and witness nonvacuity
+certificate_provenance:
+  discharged:
+    - ideal transport from Ideal.map and canonical J1a restrictions
+    - quotient restrictions from Ideal.quotientMapₐ
+    - semantic lifts from derivationToSquareZeroEquivLift
+  unresolved:
+    - sheaf, conormal response, descent, and witness provenance
+proof_use_audit:
+  used_material_premises:
+    - ambient ideal I₀
+    - J1a left and right overlap restrictions
+    - J1b chart and overlap derivations and naturality
+    - canonical quotient maps
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns:
+    - operation and sheaf row remains incomplete until J3a and J3b
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: J3a derivation coefficient sheaf
 completion_candidate: false
 tracking_issue_closed: false
 ```
