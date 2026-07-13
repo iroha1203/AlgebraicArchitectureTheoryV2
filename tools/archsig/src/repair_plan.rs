@@ -500,6 +500,8 @@ fn check_supplied_slots(
                                     h1.get("schema").and_then(Value::as_str)
                                         == Some("h1-comparison-data/v0.5.2")
                                         && fingerprints_ok
+                                        && target_fingerprint.as_deref()
+                                            == Some(source_complex_fingerprint.as_str())
                                         && target_complex.as_ref().is_some_and(|complex| {
                                             comparison_target_cochain_support_matches(complex, h1)
                                         })

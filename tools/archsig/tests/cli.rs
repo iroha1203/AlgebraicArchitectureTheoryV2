@@ -1016,6 +1016,10 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
 
     for (case, mutation) in [
         ("comparison-identity-fingerprint", json!("sha256:wrong")),
+        (
+            "comparison-identity-target-fingerprint",
+            json!("sha256:target-wrong"),
+        ),
         ("comparison-explicit-false-premise", json!(false)),
         ("comparison-unknown-field", json!("forged")),
         ("comparison-unresolved-reference", json!("complex:forged")),
@@ -1033,6 +1037,19 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
                 "kind": "identity",
                 "sourceComplexFingerprint": mutation,
                 "targetComplexFingerprint": explicit_fingerprint,
+                "targetCochainSupport": explicit_target_support
+            });
+        } else if case == "comparison-identity-target-fingerprint" {
+            invalid["comparison"]["incidenceBridge"]["kind"] = json!("chart-indexed");
+            invalid["comparison"]["incidenceBridge"]["repairChartRefs"] =
+                json!(["ctx:order", "ctx:inventory", "ctx:shared"]);
+            invalid["comparison"]["incidenceBridge"]["cechChartRefs"] =
+                json!(["ctx:order", "ctx:inventory", "ctx:shared"]);
+            invalid["comparison"]["h1ComparisonData"] = json!({
+                "schema": "h1-comparison-data/v0.5.2",
+                "kind": "identity",
+                "sourceComplexFingerprint": explicit_fingerprint,
+                "targetComplexFingerprint": mutation,
                 "targetCochainSupport": explicit_target_support
             });
         } else if case == "comparison-explicit-false-premise" {
