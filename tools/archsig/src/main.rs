@@ -298,7 +298,7 @@ enum Command {
         measurement_profile: Option<PathBuf>,
 
         /// Bundle identifier for a newly created bundle.
-        #[arg(long, default_value = "policy-bundle:archsig-v051")]
+        #[arg(long, default_value = "policy-bundle:archsig-v052")]
         id: String,
 
         /// Output bundle or validation report path. If omitted, JSON is written to stdout.

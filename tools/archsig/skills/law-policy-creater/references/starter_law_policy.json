@@ -5,7 +5,7 @@
   "measurementProfileRef": "profile:ag-default@1",
   "policies": [
     {
-      "law": "surface:cech-surface-v051",
+      "law": "surface:cech-surface-v052",
       "evaluator": "ag.cech-obstruction",
       "basis": [
         "policy-basis:layering"

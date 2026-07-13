@@ -102,7 +102,7 @@ pub fn resolve_and_verify_policy_bundle(
             .map(String::as_str)
             .unwrap_or("missing");
         checks.push(serde_json::json!({
-            "id": format!("policy-bundle-v051-{component}-fingerprint"),
+            "id": format!("policy-bundle-v052-{component}-fingerprint"),
             "result": if expected == found { "pass" } else { "fail" },
             "component": component,
             "expected": expected,

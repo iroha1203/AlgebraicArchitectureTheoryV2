@@ -9,7 +9,7 @@ measurement path also uses LawPolicy to select a first-class MeasurementProfile.
 {
   "schema": "law-policy/v0.5.2",
   "id": "policy-id",
-  "lawSurfaceRef": "law-surface:ag-default-v051",
+  "lawSurfaceRef": "law-surface:ag-default-v052",
   "measurementProfileRef": "profile:ag-default@1",
   "basisLedger": [],
   "policies": []
@@ -41,7 +41,7 @@ authoring surface.
 
 ```json
 {
-  "law": "surface:cech-surface-v051",
+  "law": "surface:cech-surface-v052",
   "evaluator": "ag.cech-obstruction",
   "basis": ["policy-basis:layering"],
   "scope": ["domain."],

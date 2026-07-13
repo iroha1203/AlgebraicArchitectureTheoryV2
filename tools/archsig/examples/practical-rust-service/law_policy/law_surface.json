@@ -1,9 +1,9 @@
 {
   "schema": "law-equation-surface/v0.5.2",
-  "id": "law-surface:practical-rust-v051",
+  "id": "law-surface:practical-rust-v052",
   "laws": [
     {
-      "lawId": "surface:cech-surface-v051",
+      "lawId": "surface:cech-surface-v052",
       "conditionType": "closed-equational",
       "witnessVariables": [
         {

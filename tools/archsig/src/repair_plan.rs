@@ -233,6 +233,10 @@ fn check_supplied_slots(
                                 .collect::<BTreeSet<_>>()
                         })
                         .unwrap_or_default();
+                    let overlap_count = object
+                        .get("overlapRefs")
+                        .and_then(Value::as_array)
+                        .map_or(0, Vec::len);
                     let expected = plan
                         .complex
                         .overlaps
@@ -254,7 +258,27 @@ fn check_supplied_slots(
                                 .collect::<BTreeSet<_>>()
                         })
                         .unwrap_or_default();
-                    if overlap_refs != expected || section_refs != expected {
+                    let section_ids = object
+                        .get("sectionRefs")
+                        .and_then(Value::as_array)
+                        .map(|items| {
+                            items
+                                .iter()
+                                .filter_map(Value::as_object)
+                                .filter_map(|item| item.get("sectionRef")?.as_str())
+                                .collect::<BTreeSet<_>>()
+                        })
+                        .unwrap_or_default();
+                    let section_count = object
+                        .get("sectionRefs")
+                        .and_then(Value::as_array)
+                        .map_or(0, Vec::len);
+                    if overlap_refs != expected
+                        || overlap_count != expected.len()
+                        || section_refs != expected
+                        || section_count != expected.len()
+                        || section_ids.len() != expected.len()
+                    {
                         examples.push(generic_validation_example(
                             path,
                             "overlap-section-membership-invalid",

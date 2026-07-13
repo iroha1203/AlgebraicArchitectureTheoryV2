@@ -1,6 +1,6 @@
 {
   "schema": "law-equation-surface/v0.5.2",
-  "id": "law-surface:ag-measurement-v051",
+  "id": "law-surface:ag-measurement-v052",
   "laws": [
     {
       "lawId": "ag.square-free-repair",
@@ -103,7 +103,7 @@
       ]
     },
     {
-      "lawId": "surface:cech-surface-v051",
+      "lawId": "surface:cech-surface-v052",
       "conditionType": "closed-equational",
       "witnessVariables": [
         {

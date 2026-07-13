@@ -1,11 +1,11 @@
 {
   "schema": "law-policy/v0.5.2",
   "id": "practical-rust-commerce-fulfillment-policy",
-  "lawSurfaceRef": "law-surface:practical-rust-v051",
+  "lawSurfaceRef": "law-surface:practical-rust-v052",
   "measurementProfileRef": "profile:commerce-fulfillment@1",
   "policies": [
     {
-      "law": "surface:cech-surface-v051",
+      "law": "surface:cech-surface-v052",
       "evaluator": "ag.cech-obstruction",
       "basis": [
         "policy-basis:layering"

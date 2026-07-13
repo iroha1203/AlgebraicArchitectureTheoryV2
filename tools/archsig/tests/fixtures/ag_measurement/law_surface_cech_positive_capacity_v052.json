@@ -1,9 +1,9 @@
 {
   "schema": "law-equation-surface/v0.5.2",
-  "id": "law-surface:cech-positive-capacity-v051",
+  "id": "law-surface:cech-positive-capacity-v052",
   "laws": [
     {
-      "lawId": "surface:cech-surface-v051",
+      "lawId": "surface:cech-surface-v052",
       "conditionType": "closed-equational",
       "witnessVariables": [
         { "variable": "e_top_left", "binding": { "edge": ["ctx:top", "ctx:left"], "axis": "cech", "predicate": "sectionValue" } },

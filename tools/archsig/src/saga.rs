@@ -45,6 +45,18 @@ pub(crate) fn evaluate_saga_descent_v1(
                         assumed_by: Some("trueSheafCertificate author".to_string()),
                     })
             });
+    let faithfulness_assumption =
+        (plan.faithfulness.mode == "supplied").then(|| AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/4.6".to_string(),
+            assumption: format!("faithfulness law supplied for {}", plan.id),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some("RepairPlan author".to_string()),
+        });
+    let mut evaluator_assumption_ids = vec![enumeration_assumption_id.clone()];
+    if let Some(assumption) = faithfulness_assumption.as_ref() {
+        evaluator_assumption_ids.push(assumption_id_for_schema(assumption));
+    }
     let mut structural_verdict = Vec::new();
     let boundary_verdict = if boundary.in_b1 {
         "measured_zero"
@@ -67,7 +79,7 @@ pub(crate) fn evaluate_saga_descent_v1(
             .to_string(),
             cert_ref: Some("computedInvariants/saga-descent:boundary-membership".to_string()),
         },
-        depends_on_assumptions: vec![enumeration_assumption_id.clone()],
+        depends_on_assumptions: evaluator_assumption_ids.clone(),
         reason: Some(if boundary.in_b1 {
             "supplied residual lies in B1 for the selected RepairPlan complex".to_string()
         } else {
@@ -107,7 +119,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 method_status: "complete_support_global_coherent".to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
+            depends_on_assumptions: evaluator_assumption_ids.clone(),
             reason: Some(
                 "residual is a B1 boundary inside the complete-support RepairPlan regime"
                     .to_string(),
@@ -125,7 +137,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 method_status: "residual_not_covered".to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
+            depends_on_assumptions: evaluator_assumption_ids.clone(),
             reason: Some(
                 "residual is a B1 boundary, but semantic projection does not cover every residual component for the selected RepairPlan complex".to_string(),
             ),
@@ -147,7 +159,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 .to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
+            depends_on_assumptions: evaluator_assumption_ids.clone(),
             reason: Some(if boundary.in_b1 {
                 "residual is covered, but semantic projection is not faithful for the selected RepairPlan complex".to_string()
             } else {
@@ -200,7 +212,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 .to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:residual-class".to_string()),
             },
-            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
+            depends_on_assumptions: evaluator_assumption_ids.clone(),
             reason: Some(if class_nonzero {
                 format!("{ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS}: supplied Z1 representative is not in B1")
             } else {
@@ -214,7 +226,15 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "basis": "Z1/B1",
                 "representative": boundary.residual_support,
                 "nonZero": class_nonzero,
-                "quotient": "Z1/B1"
+                "quotient": "Z1/B1",
+                "cocycle": {
+                    "checked": true,
+                    "deltaOne": "zero",
+                    "tripleOverlapRefs": plan.complex.triple_overlaps.iter().map(|triple| json!({
+                        "tripleRef": triple.id,
+                        "overlapRefs": triple.overlap_refs
+                    })).collect::<Vec<_>>()
+                }
             },
             "suppliedSlots": [
                 "complex.tripleOverlaps",
@@ -227,6 +247,9 @@ pub(crate) fn evaluate_saga_descent_v1(
     let mut assumptions = vec![enumeration_assumption];
     if let Some(sheaf_assumption) = sheaf_assumption {
         assumptions.push(sheaf_assumption);
+    }
+    if let Some(faithfulness_assumption) = faithfulness_assumption {
+        assumptions.push(faithfulness_assumption);
     }
     SagaDescentMeasurementV1 {
         structural_verdict,
@@ -298,24 +321,31 @@ fn class_supply_is_checked(archmap: &ArchMapDocumentV2, plan: &RepairPlanDocumen
                     .get("overlapRefs")
                     .and_then(Value::as_array)
                     .is_some_and(|refs| {
-                        refs.iter()
-                            .filter_map(Value::as_str)
-                            .collect::<BTreeSet<_>>()
-                            == overlap_ids
+                        refs.len() == overlap_ids.len()
+                            && refs
+                                .iter()
+                                .filter_map(Value::as_str)
+                                .collect::<BTreeSet<_>>()
+                                == overlap_ids
                     })
                 && gluing
                     .get("sectionRefs")
                     .and_then(Value::as_array)
                     .is_some_and(|refs| {
-                        refs.iter()
+                        let overlaps = refs
+                            .iter()
                             .filter_map(Value::as_object)
-                            .filter_map(|item| {
-                                let overlap = item.get("overlapRef")?.as_str()?;
-                                let section = item.get("sectionRef")?.as_str()?;
-                                (!section.is_empty()).then_some(overlap)
-                            })
-                            .collect::<BTreeSet<_>>()
-                            == overlap_ids
+                            .filter_map(|item| item.get("overlapRef")?.as_str())
+                            .collect::<BTreeSet<_>>();
+                        let sections = refs
+                            .iter()
+                            .filter_map(Value::as_object)
+                            .filter_map(|item| item.get("sectionRef")?.as_str())
+                            .filter(|section| !section.is_empty())
+                            .collect::<BTreeSet<_>>();
+                        refs.len() == overlap_ids.len()
+                            && overlaps == overlap_ids
+                            && sections.len() == overlap_ids.len()
                     })
         });
     triple_ok && coefficient_ok && certificate_ok && gluing_ok

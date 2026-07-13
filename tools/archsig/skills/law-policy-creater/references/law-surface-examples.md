@@ -7,7 +7,7 @@ They are intentionally paired with the validator's fail-closed rules.
 
 ```json
 {
-  "lawId": "surface:checkout-v051",
+  "lawId": "surface:checkout-v052",
   "conditionType": "closed-equational",
   "witnessVariables": [{
     "variable": "x_checkout",

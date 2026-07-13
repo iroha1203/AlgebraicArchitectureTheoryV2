@@ -27,10 +27,10 @@ fn ag_measurement_root() -> PathBuf {
 }
 
 #[test]
-fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
-    let out_dir = temp_dir("law-surface-v051");
+fn cli_law_surface_v052_validates_contract_and_rejects_shortcuts() {
+    let out_dir = temp_dir("law-surface-v052");
     let root = ag_measurement_root();
-    let input = root.join("law_surface_v051.json");
+    let input = root.join("law_surface_v052.json");
     let report = out_dir.join("law-surface-validation.json");
 
     run_sig0(&[
@@ -70,7 +70,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     assert_eq!(reserved_json["summary"]["result"], "fail");
     assert!(reserved_json["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "law-equation-surface-v051-reserved-fields" && check["result"] == "fail"
+            check["id"] == "law-equation-surface-v052-reserved-fields" && check["result"] == "fail"
         })
     }));
 
@@ -146,7 +146,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     assert_eq!(weakened_json["summary"]["result"], "fail");
     assert!(weakened_json["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "law-equation-surface-v051-shape-rules" && check["result"] == "fail"
+            check["id"] == "law-equation-surface-v052-shape-rules" && check["result"] == "fail"
         })
     }));
 
@@ -409,7 +409,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
     let wrong_pair_json = read_json(&wrong_pair_report);
     assert!(wrong_pair_json["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "law-equation-surface-v051-bindings" && check["result"] == "fail"
+            check["id"] == "law-equation-surface-v052-bindings" && check["result"] == "fail"
         })
     }));
 
@@ -557,7 +557,7 @@ fn cli_law_surface_v051_validates_contract_and_rejects_shortcuts() {
             .as_array()
             .is_some_and(|checks| {
                 checks.iter().any(|check| {
-                    check["id"] == "law-equation-surface-v051-evaluator-refs"
+                    check["id"] == "law-equation-surface-v052-evaluator-refs"
                         && check["result"] == "fail"
                 })
             })
@@ -734,7 +734,7 @@ fn cli_law_policy_registry_keeps_ag_evaluator_after_split() {
     assert!(
         json["expandedPolicies"].as_array().is_some_and(|entries| {
             entries.iter().any(|entry| {
-                entry["law"] == "surface:cech-surface-v051"
+                entry["law"] == "surface:cech-surface-v052"
                     && entry["evaluator"] == "ag.cech-obstruction"
             })
         }),
@@ -1049,6 +1049,43 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert_eq!(
         check_by_id(
             &read_json(&invalid_certificate_report),
+            "repair-plan-schema052-supplied-slots"
+        )["result"],
+        "fail"
+    );
+
+    let mut invalid_gluing = read_json(&root.join("repair_plan_gluing_data.json"));
+    invalid_gluing["gluingData"]["sectionRefs"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({
+            "overlapRef": "overlap:order-inventory",
+            "sectionRef": "section:duplicate"
+        }));
+    let invalid_gluing_path = out_dir.join("repair_plan_invalid_gluing.json");
+    fs::write(
+        &invalid_gluing_path,
+        serde_json::to_vec_pretty(&invalid_gluing).expect("invalid gluing serializes"),
+    )
+    .expect("invalid gluing writes");
+    let invalid_gluing_report = out_dir.join("repair-plan-invalid-gluing.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            invalid_gluing_path.to_str().expect("path is utf-8"),
+            "--out",
+            invalid_gluing_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&invalid_gluing_report),
             "repair-plan-schema052-supplied-slots"
         )["result"],
         "fail"
@@ -1758,6 +1795,14 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         .expect("residual class invariant");
     assert_eq!(invariant["kind"], "residual-class-support");
     assert_eq!(invariant["residualClassSupport"]["quotient"], "Z1/B1");
+    assert_eq!(
+        invariant["residualClassSupport"]["cocycle"]["checked"],
+        true
+    );
+    assert_eq!(
+        invariant["residualClassSupport"]["cocycle"]["deltaOne"],
+        "zero"
+    );
     let closure = packet["computedInvariants"]
         .as_array()
         .unwrap()
@@ -1765,6 +1810,13 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         .find(|row| row["invariantId"] == "saga-descent:closure-diagnostics")
         .expect("closure diagnostics invariant");
     assert_eq!(closure["faithfulnessBasis"]["basis"], "supplied-data");
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| { row["theoremRef"] == "part4/4.6" && row["status"] == "assumed" })
+    );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],
@@ -2427,14 +2479,14 @@ fn cli_analyze_contract_fixture_locks_are_byte_deterministic() {
         "saga-contract-cech-b8-a",
         "archmap_v2_cech_b8_toy.json",
         "law_policy_cech_b8.json",
-        "law_surface_cech_b8_v051.json",
+        "law_surface_cech_b8_v052.json",
         None,
     );
     let cech_b = run_analyze_fixture_lock(
         "saga-contract-cech-b8-b",
         "archmap_v2_cech_b8_toy.json",
         "law_policy_cech_b8.json",
-        "law_surface_cech_b8_v051.json",
+        "law_surface_cech_b8_v052.json",
         None,
     );
     assert_byte_identical_analysis_artifacts(&cech_a, &cech_b);
@@ -2851,7 +2903,7 @@ fn cli_r9_numeric_locks_preserve_ag_measurement_values_and_verdicts() {
         "r9-pseudo-circle-h1",
         "archmap_v2_cech_h1_visible.json",
         "law_policy_cech_h1.json",
-        "law_surface_cech_h1_v051.json",
+        "law_surface_cech_h1_v052.json",
         None,
     );
     let pseudo_circle_packet = read_json(&pseudo_circle.join("archsig-measurement-packet.json"));
@@ -2870,14 +2922,14 @@ fn cli_r9_numeric_locks_preserve_ag_measurement_values_and_verdicts() {
         "r9-circle-nerve-a",
         "archmap_v2_cech_b8_toy.json",
         "law_policy_cech_b8.json",
-        "law_surface_cech_b8_v051.json",
+        "law_surface_cech_b8_v052.json",
         None,
     );
     let circle_nerve_b = run_analyze_fixture_lock_with_surface(
         "r9-circle-nerve-b",
         "archmap_v2_cech_b8_toy.json",
         "law_policy_cech_b8.json",
-        "law_surface_cech_b8_v051.json",
+        "law_surface_cech_b8_v052.json",
         None,
     );
     assert_byte_identical_analysis_artifacts(&circle_nerve_a, &circle_nerve_b);
@@ -2965,7 +3017,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_h1_v051.json")
+        root.join("law_surface_cech_h1_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -3048,9 +3100,9 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     assert_eq!(
         stable_cech_row,
         json!({
-            "verdictRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v051/finite-f2-cech-computed",
+            "verdictRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/finite-f2-cech-computed",
             "evaluator": "ag.cech-obstruction",
-            "law": "surface:cech-surface-v051",
+            "law": "surface:cech-surface-v052",
             "target": {
                 "kind": "cover-relative-cech-h1-class",
                 "coverRef": "cover:order-inventory",
@@ -3288,7 +3340,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             {
                 "suppliedId": "supplied:law-surface",
                 "kind": "law-equation-surface",
-                "sourceArtifactRef": "input:law_surface_cech_h1_v051.json",
+                "sourceArtifactRef": "input:law_surface_cech_h1_v052.json",
                 "conformance": {
                     "status": "validated",
                     "checkRef": "law-equation-surface/v0.5.2-validation",
@@ -3458,7 +3510,7 @@ fn cli_analyze_v2_cech_effectivity_ledger_checks_forest_no_triple_only() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_forest_v051.json")
+        root.join("law_surface_cech_forest_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -3644,7 +3696,7 @@ fn cli_analyze_v2_cech_surjectivity_witness_requires_edge_coverage() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_forest_v051.json")
+        root.join("law_surface_cech_forest_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -3730,7 +3782,7 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_h1_v051.json")
+        root.join("law_surface_cech_h1_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -3782,7 +3834,7 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_positive_capacity_v051.json")
+        root.join("law_surface_cech_positive_capacity_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -5342,7 +5394,7 @@ fn cli_analyze_v2_emits_insight_report_brief_and_viewer_scene_contract() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_h1_v051.json")
+        root.join("law_surface_cech_h1_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -5971,7 +6023,7 @@ fn cli_analyze_v2_insight_viewer_truncates_large_background_projection() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_h1_v051.json")
+        root.join("law_surface_cech_h1_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -6071,7 +6123,7 @@ fn cli_analyze_v2_insight_artifacts_redact_local_source_refs() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_h1_v051.json")
+        root.join("law_surface_cech_h1_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -6122,7 +6174,7 @@ fn cli_analyze_v2_validation_failure_emits_blocking_insight_projection() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_h1_v051.json")
+        root.join("law_surface_cech_h1_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -6205,7 +6257,7 @@ fn cli_analyze_v2_cech_requires_matching_witness_family() {
     let (policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
     let policy_path = out_dir.join("law_policy_missing_cech_witness.json");
     let mut policy = policy;
-    policy["lawSurfaceRef"] = json!("law-surface:cech-h1-v051");
+    policy["lawSurfaceRef"] = json!("law-surface:cech-h1-v052");
     write_test_policy_and_profile(&policy_path, policy, profile);
 
     run_sig0(&[
@@ -6221,7 +6273,7 @@ fn cli_analyze_v2_cech_requires_matching_witness_family() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_h1_v051.json")
+        root.join("law_surface_cech_h1_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -6255,7 +6307,7 @@ fn cli_analyze_v2_cech_ignores_unanchored_mismatch_support() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_h1_v051.json")
+        root.join("law_surface_cech_h1_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -6312,7 +6364,7 @@ fn cli_analyze_v2_topological_debt_capacity_does_not_claim_h1_class() {
             .to_str()
             .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_cech_positive_capacity_v051.json")
+        root.join("law_surface_cech_positive_capacity_v052.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -10727,14 +10779,14 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.2");
-    assert_eq!(manifest["runId"], "run:5e0478f23f40");
+    assert_eq!(manifest["runId"], "run:550f9e7a16a3");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "d59347b0524bbab8d2f23fa1c2c0a813f0c9dd851e98c6f427014f9833ec7f1c"
     );
     assert_eq!(
         manifest["inputDigests"]["lawPolicy"]["sha256"],
-        "51735660988fcb44c89f9c3ba5500545a86bcb0ecf3a7b1f34bfc3db4ddc697f"
+        "eae70c304cf051095e8cb0eaed58cf42281c09b3701dcf2f69fdc33440d3ada6"
     );
     assert_eq!(
         manifest["inputDigests"]["measurementProfile"]["sha256"],
@@ -10894,7 +10946,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:5e0478f23f40-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:550f9e7a16a3-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -11440,10 +11492,10 @@ fn cli_tor_policy_bundle_preserves_explicit_law_pair() {
 fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
     let root = ag_measurement_root();
     let root_out = temp_dir("ag-measurement-cech-execution-plan");
-    let surface_path = root.join("law_surface_cech_section_v051.json");
+    let surface_path = root.join("law_surface_cech_section_v052.json");
     let (mut law_policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
-    law_policy["lawSurfaceRef"] = json!("law-surface:cech-section-v051");
-    law_policy["policies"][0]["law"] = json!("surface:cech-surface-v051");
+    law_policy["lawSurfaceRef"] = json!("law-surface:cech-section-v052");
+    law_policy["policies"][0]["law"] = json!("surface:cech-surface-v052");
     let policy_path = root_out.join("law_policy_cech_execution_plan.json");
     write_test_policy_and_profile(&policy_path, law_policy, profile);
 
@@ -11472,7 +11524,7 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
     );
     assert_eq!(
         top_left_packet["structuralVerdict"][0]["law"],
-        "surface:cech-surface-v051"
+        "surface:cech-surface-v052"
     );
     let top_left_manifest = read_json(&root_out.join("top-left/archsig-run-manifest.json"));
     assert_eq!(
@@ -11546,7 +11598,7 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
     .expect("section archmap is written");
     let section_policy_path = section_out.join("law_policy.json");
     let mut section_policy_value = section_policy();
-    section_policy_value["lawSurfaceRef"] = json!("law-surface:cech-section-v051");
+    section_policy_value["lawSurfaceRef"] = json!("law-surface:cech-section-v052");
     write_test_policy_and_profile(
         &section_policy_path,
         section_policy_value,
@@ -13318,7 +13370,7 @@ fn test_measurement_profile_path(policy_path: &Path) -> PathBuf {
 fn write_test_policy_and_profile(policy_path: &Path, mut policy: Value, profile: Value) {
     policy["schema"] = json!("law-policy/v0.5.2");
     if policy.get("lawSurfaceRef").is_none() {
-        policy["lawSurfaceRef"] = json!("law-surface:ag-measurement-v051");
+        policy["lawSurfaceRef"] = json!("law-surface:ag-measurement-v052");
     }
     if policy.get("basisLedger").is_none() {
         policy["basisLedger"] = json!([{
@@ -13405,7 +13457,7 @@ fn write_test_policy_and_profile(policy_path: &Path, mut policy: Value, profile:
             &surface_path,
             serde_json::to_vec_pretty(&json!({
                 "schema": "law-equation-surface/v0.5.2",
-                "id": "law-surface:ag-measurement-v051",
+                "id": "law-surface:ag-measurement-v052",
                 "laws": surface_laws
             }))
             .expect("generated law surface serializes"),
@@ -14395,7 +14447,7 @@ fn coherence_policy(_coefficient: &str, include_cech: bool) -> Value {
         policies.insert(
             0,
             json!({
-                "law": "surface:cech-surface-v051",
+                "law": "surface:cech-surface-v052",
                 "evaluator": "ag.cech-obstruction",
                 "basis": ["policy-basis:layering"],
                 "scope": ["src/"],

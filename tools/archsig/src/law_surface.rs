@@ -218,7 +218,7 @@ pub fn validate_law_surface_v1_report(
 
 fn check_schema(surface: &LawEquationSurfaceV1) -> ValidationCheck {
     let mut check = validation_check(
-        "law-equation-surface-v051-schema",
+        "law-equation-surface-v052-schema",
         "law-equation-surface uses the v0.5.2 schema discriminator",
         if surface.schema == LAW_EQUATION_SURFACE_V1_SCHEMA {
             "pass"
@@ -252,7 +252,7 @@ fn check_identity(surface: &LawEquationSurfaceV1) -> ValidationCheck {
         ));
     }
     check_examples(
-        "law-equation-surface-v051-identity",
+        "law-equation-surface-v052-identity",
         "surface identity and law declarations are present",
         examples,
     )
@@ -277,7 +277,7 @@ fn check_law_ids(surface: &LawEquationSurfaceV1) -> ValidationCheck {
         }
     }
     check_examples(
-        "law-equation-surface-v051-law-ids",
+        "law-equation-surface-v052-law-ids",
         "law identifiers are non-empty and unique",
         examples,
     )
@@ -295,7 +295,7 @@ fn check_condition_types(surface: &LawEquationSurfaceV1) -> ValidationCheck {
         }
     }
     check_examples(
-        "law-equation-surface-v051-condition-types",
+        "law-equation-surface-v052-condition-types",
         "conditionType uses the six declared law condition types",
         examples,
     )
@@ -320,7 +320,7 @@ fn check_evaluator_refs(surface: &LawEquationSurfaceV1) -> ValidationCheck {
         }
     }
     check_examples(
-        "law-equation-surface-v051-evaluator-refs",
+        "law-equation-surface-v052-evaluator-refs",
         "non-closed evaluator references resolve through the law evaluator registry",
         examples,
     )
@@ -380,7 +380,7 @@ fn check_shape_rules(surface: &LawEquationSurfaceV1, raw: &Value) -> ValidationC
         }
     }
     check_examples(
-        "law-equation-surface-v051-shape-rules",
+        "law-equation-surface-v052-shape-rules",
         "conditionType controls equation-surface fields",
         examples,
     )
@@ -519,7 +519,7 @@ fn check_bindings(
         }
     }
     check_examples(
-        "law-equation-surface-v051-bindings",
+        "law-equation-surface-v052-bindings",
         "binding declarations resolve through the shared vocabulary manifest",
         examples,
     )
@@ -586,7 +586,7 @@ fn check_forbidden_supports(surface: &LawEquationSurfaceV1) -> ValidationCheck {
         }
     }
     check_examples(
-        "law-equation-surface-v051-support-generators",
+        "law-equation-surface-v052-support-generators",
         "forbidden support generators are square-free declarations over witness variables",
         examples,
     )
@@ -604,7 +604,7 @@ fn check_reserved_fields(raw: &Value) -> ValidationCheck {
         }
     }
     check_examples(
-        "law-equation-surface-v051-reserved-fields",
+        "law-equation-surface-v052-reserved-fields",
         "Stage 3 reservation fields fail closed when written",
         examples,
     )
@@ -641,7 +641,7 @@ fn check_conclusion_tokens(surface: &LawEquationSurfaceV1) -> ValidationCheck {
         }
     }
     check_examples(
-        "law-equation-surface-v051-no-conclusion-shortcuts",
+        "law-equation-surface-v052-no-conclusion-shortcuts",
         "law identifiers and witness variable names contain no conclusion shortcuts",
         examples,
     )
@@ -769,7 +769,7 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
         }
     }
     check_examples(
-        "law-equation-surface-v051-binding-vocabulary",
+        "law-equation-surface-v052-binding-vocabulary",
         "law surface and authoring use a non-empty versioned binding vocabulary",
         examples,
     )

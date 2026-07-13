@@ -20,7 +20,7 @@
       "sha256": "7be4ae59036c5af2027a35a27e3a79aa0b9c1ae8e728ff3947b14dda3b79dbf6"
     },
     "lawSurface": {
-      "path": "input:law_surface_practical_v051.json",
+      "path": "input:law_surface_practical_v052.json",
       "sha256": "9533c27219861a1e3b3e23c510b4be8c4872b3ba70d51973275f7e2e87f5bc72"
     },
     "measurementProfile": {
@@ -42,7 +42,7 @@
     "insightReport": "archsig-insight-report.json",
     "viewerData": "archsig-atom-viewer-data.json"
   },
-  "measurementPacketSchema": "archsig-measurement-packet/v0.5.1",
+  "measurementPacketSchema": "archsig-measurement-packet/v0.5.2",
   "nonConclusions": [
     "Summary conclusion is relative to MeasurementProfile and assumption ledger.",
     "Schema foundation rows do not claim completed AG invariant computation."
@@ -57,7 +57,7 @@
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
   "runId": "run:02000103301e",
-  "schema": "archsig-analysis-summary/v0.5.1",
+  "schema": "archsig-analysis-summary/v0.5.2",
   "structuralVerdictSummary": {
     "measuredNonzeroCount": 1,
     "nonTerminalCount": 0,

@@ -6,10 +6,10 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 観測(atoms / contexts / covers) | PRD R1 / 第X部 (A) | `archmap/v0.5.2` | ArchMap R1-R3 | `tests/fixtures/ag_measurement/archmap_v2.json` | 層 B の生値 | PR-1済 |
 | repair primitives(C⁰ / δ⁰ / supp) | PRD R1 / 定義3.1 (B) | `archsig-repair-plan/v0.5.2` | restriction-difference / overlap bijection | `tests/fixtures/ag_measurement/repair_plan_complete_support.json` | 境界所属 | PR-1済 |
-| faithfulness data(zero primitive / Q / faithfulness law) | PRD R2 / 定義4.6 | RepairPlan `faithfulness.mode=supplied` | 3点参照整合 + Q(r) | `tests/fixtures/ag_measurement/repair_plan_supplied_faithfulness.json` | complete-support 以外の肯定的大域整合 | PR-1済 |
+| faithfulness data(zero primitive / Q / faithfulness law) | PRD R2 / 定義4.6 | RepairPlan `faithfulness.mode=supplied` | 3点参照整合 + finite support Q(r) 集合整合 | `tests/fixtures/ag_measurement/repair_plan_supplied_faithfulness.json` | complete-support 以外の肯定的大域整合 | PR-1済 |
 | triple + additive 係数 | PRD R3 / 定義4.2 / 補題4.5 | RepairPlan `complex.tripleOverlaps` + `coefficient` | additive / δ¹∘δ⁰=0 / δ¹(0)=0 | `tests/fixtures/ag_measurement/repair_plan_supplied_coefficient.json` | 層 C の class 語彙 | PR-1済 |
 | true sheaf certificate | PRD R3 / 定義4.7 | RepairPlan `trueSheafCertificate` | cover membership + global condition の assumption 記録 | `tests/fixtures/ag_measurement/repair_plan_true_sheaf.json` | 定理4.8 package 読み | PR-1済 |
-| gluing data | PRD R3 / 第X部 定理7.3 | RepairPlan `gluingData` | overlap 適合検査 | `tests/fixtures/ag_measurement/repair_plan_gluing_data.json` | grounded global gluing package | PR-1済 |
+| gluing data | PRD R3 / 第X部 定理7.3 | RepairPlan `gluingData` | selected overlap 集合 + sectionRef の一対一対応検査 | `tests/fixtures/ag_measurement/repair_plan_gluing_data.json` | grounded global gluing refs | PR-1済 |
 | comparison data(incidence bridge + H¹ comparison) | PRD R4 / 定義7.1 / 定理6.4 | RepairPlan `comparison` + `h1-comparison-data/v0.5.2` | 両側逆・差保存・zero保存・微分可換 | `tests/fixtures/ag_measurement/repair_plan_comparison.json` | 層 D の転送 | PR-2予定 |
 | law equation grounded surface | PRD R5 / 定義5.1 / 定義11.3 | `law-equation-surface/v0.5.2` | 5点組適合 + 単元 context 検査 | `tests/fixtures/ag_measurement/law_surface_ag_v052.json` | 層 E の10結論 | PR-3予定 |
 | cost model(Lipschitz L + harmonic resolution) | PRD R7 / 第VIII部 系8.7 | `measurement-profile/v0.5.2` analytic 宣言 | 宣言検査 + assumption ledger | `tests/fixtures/ag_measurement/measurement_profile_harmonic_debt.json` | repair 下界行 | PR-5予定 |

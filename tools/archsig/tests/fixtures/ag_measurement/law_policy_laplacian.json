@@ -1,7 +1,7 @@
 {
   "schema": "law-policy/v0.5.2",
   "id": "ag-sheaf-laplacian-policy",
-  "lawSurfaceRef": "law-surface:ag-measurement-v051",
+  "lawSurfaceRef": "law-surface:ag-measurement-v052",
   "measurementProfileRef": "profile:ag-sheaf-laplacian@1",
   "policies": [
     {

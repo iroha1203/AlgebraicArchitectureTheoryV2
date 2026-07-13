@@ -162,7 +162,7 @@ mod tests {
         let policy = LawPolicyDocumentV1 {
             schema: "law-policy/v0.5.2".to_string(),
             id: "tor-policy".to_string(),
-            law_surface_ref: Some("law-surface:ag-measurement-v051".to_string()),
+            law_surface_ref: Some("law-surface:ag-measurement-v052".to_string()),
             measurement_profile_ref: None,
             basis_ledger: vec![],
             policies: vec![crate::LawPolicyEntryV1 {

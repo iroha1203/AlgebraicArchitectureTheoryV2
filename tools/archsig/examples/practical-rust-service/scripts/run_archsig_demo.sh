@@ -42,15 +42,15 @@ echo "=== Act 2: measure base and head ==="
 mkdir -p "$OUT"
 "${ARCHSIG[@]}" policy-bundle \
   --law-policy "$EXAMPLE/law_policy/law_policy.json" \
-  --law-surface "$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v051.json" \
+  --law-surface "$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v052.json" \
   --measurement-profile "$EXAMPLE/law_policy/measurement_profile.json" \
   --out "$OUT/policy-bundle.json" >/dev/null
 for state in base:archmap.json head:archmap_head.json; do
   name="${state%%:*}"
   archmap="${state##*:}"
-  law_surface="$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v051.json"
+  law_surface="$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v052.json"
   if [ "$name" = "base" ]; then
-    law_surface="$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_base_v051.json"
+    law_surface="$ROOT/tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_base_v052.json"
   fi
   mkdir -p "$OUT/$name"
   if [ "$name" = "head" ]; then

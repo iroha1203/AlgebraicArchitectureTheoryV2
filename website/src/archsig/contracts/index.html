@@ -27,18 +27,18 @@
           <div class="article-main">
             <section id="overview" class="article-section">
               <h2>The input surface</h2>
-              <p>An <code>analyze</code> run takes ArchMap plus LawPolicy, law-equation-surface, and MeasurementProfile; the CI surface adds a gate policy and repair measurement adds a repair plan. Each has a single current schema version (<code>…/v0.5.1</code>) and a dedicated validator or consuming command.</p>
+              <p>An <code>analyze</code> run takes ArchMap plus LawPolicy, law-equation-surface, and MeasurementProfile; the CI surface adds a gate policy and repair measurement adds a repair plan. Each has a single current schema version (<code>…/v0.5.2</code>) and a dedicated validator or consuming command.</p>
               <div class="article-table">
                 <table>
                   <thead><tr><th scope="col">Artifact</th><th scope="col">Schema</th><th scope="col">Authored by</th><th scope="col">Validator</th></tr></thead>
                   <tbody>
-                    <tr><td>ArchMap</td><td><code>archmap/v0.5.1</code></td><td>Agent via <code>archmap-creater</code>, you approve scope</td><td><code>archsig archmap</code></td></tr>
-                    <tr><td>LawPolicy</td><td><code>law-policy/v0.5.1</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig law-policy</code></td></tr>
-                    <tr><td>Law surface</td><td><code>law-equation-surface/v0.5.1</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig law-surface</code></td></tr>
-                    <tr><td>MeasurementProfile</td><td><code>measurement-profile/v0.5.1</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig measurement-profile</code></td></tr>
-                    <tr><td>Policy bundle</td><td><code>archsig-policy-bundle/v0.5.1</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig policy-bundle</code></td></tr>
-                    <tr><td>Gate policy</td><td><code>archsig-gate-policy/v0.5.1</code></td><td>Your CI owner, by hand</td><td>checked by <code>archsig gate</code></td></tr>
-                    <tr><td>Repair plan</td><td><code>archsig-repair-plan/v0.5.1</code></td><td>Agent via <code>repair-plan-creater</code></td><td><code>archsig repair-plan</code></td></tr>
+                    <tr><td>ArchMap</td><td><code>archmap/v0.5.2</code></td><td>Agent via <code>archmap-creater</code>, you approve scope</td><td><code>archsig archmap</code></td></tr>
+                    <tr><td>LawPolicy</td><td><code>law-policy/v0.5.2</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig law-policy</code></td></tr>
+                    <tr><td>Law surface</td><td><code>law-equation-surface/v0.5.2</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig law-surface</code></td></tr>
+                    <tr><td>MeasurementProfile</td><td><code>measurement-profile/v0.5.2</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig measurement-profile</code></td></tr>
+                    <tr><td>Policy bundle</td><td><code>archsig-policy-bundle/v0.5.2</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig policy-bundle</code></td></tr>
+                    <tr><td>Gate policy</td><td><code>archsig-gate-policy/v0.5.2</code></td><td>Your CI owner, by hand</td><td>checked by <code>archsig gate</code></td></tr>
+                    <tr><td>Repair plan</td><td><code>archsig-repair-plan/v0.5.2</code></td><td>Agent via <code>repair-plan-creater</code></td><td><code>archsig repair-plan</code></td></tr>
                   </tbody>
                 </table>
               </div>
@@ -72,9 +72,9 @@
               <figure class="code-panel">
                 <figcaption>A minimal LawPolicy (the shipped fixture's shape, with your repo's basis document)</figcaption>
                 <pre><code>{
-  "schema": "law-policy/v0.5.1",
+  "schema": "law-policy/v0.5.2",
   "id": "ag-measurement-policy",
-  "lawSurfaceRef": "law-surface:ag-measurement-v051",
+  "lawSurfaceRef": "law-surface:ag-measurement-v052",
   "measurementProfileRef": "profile:ag-default@1",
   "policies": [
     {
@@ -152,7 +152,7 @@ archsig analyze \
 archsig law-policy --law-policy law_policy.json --measurement-profile profile.json --law-surface law_surface.json --out policy-validation.json
 archsig policy-bundle --policy-bundle .archsig/policy-bundle.json --out bundle-validation.json</code></pre>
               </figure>
-              <p>Two properties make the validators trustworthy inputs to CI. Acceptance is exact: only the current contract version <code>&lt;name&gt;/v0.5.1</code> is accepted, and there is no compatibility window (see <a href="../reference/#compatibility">Reference</a>). And rejection is loud: retired forms and unknown fields fail as ordinary validation errors instead of being silently coerced.</p>
+              <p>Two properties make the validators trustworthy inputs to CI. Acceptance is exact: only the current contract version <code>&lt;name&gt;/v0.5.2</code> is accepted, and there is no compatibility window (see <a href="../reference/#compatibility">Reference</a>). And rejection is loud: retired forms and unknown fields fail as ordinary validation errors instead of being silently coerced.</p>
             </section>
             <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../concepts/"><span>Previous</span><strong>Concepts</strong></a><a class="page-nav-next" href="../analyses/"><span>Next</span><strong>Analyses</strong></a></nav>
           </div>
