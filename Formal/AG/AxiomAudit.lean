@@ -1963,7 +1963,7 @@ def r6FiniteLeftNeBase :=
 def r6FiniteRawRelationVanishes :=
   LawAlgebra.FiniteExamples.RingedSite.FiniteModel.raw_relation_vanishes
 
-def r6FiniteRawSystem :=
+noncomputable def r6FiniteRawSystem :=
   LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem
 
 def r6FiniteRawSystemCoordFamily :=
