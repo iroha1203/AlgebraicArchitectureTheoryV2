@@ -49,6 +49,23 @@ authoring surface.
 }
 ```
 
+For `ag.law-conflict-tor`, declare the selected pair explicitly. The array must
+contain exactly two distinct law ids; both ids must resolve against the supplied
+law surface and use the evaluator's accepted witness binding.
+
+```json
+{
+  "lawPair": ["law:checkout", "law:inventory"],
+  "evaluator": "ag.law-conflict-tor",
+  "basis": ["policy-basis:layering"],
+  "scope": ["domain."],
+  "severity": "high"
+}
+```
+
+`lawPair` is the selector for Tor. Do not infer Tor participants from law-id
+prefixes or from every law present in the supplied surface.
+
 `policies[].profileRef` is reserved for multi-profile selection and fails closed
 when present.
 

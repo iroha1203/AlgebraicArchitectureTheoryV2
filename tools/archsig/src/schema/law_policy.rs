@@ -189,7 +189,8 @@ pub struct LawPolicyBasisManifestV1 {
 pub struct ExpandedLawPolicyEntryV1 {
     pub source_policy_index: usize,
     pub source_selector: String,
-    pub law: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub law: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub law_pair: Option<Vec<String>>,
     pub evaluator: String,

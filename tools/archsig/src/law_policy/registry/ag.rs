@@ -286,7 +286,10 @@ fn ag_manifest(evaluator_id: &str, law_id: &str) -> LawEvaluatorManifestV1 {
 fn condition_types_for(evaluator_id: &str) -> Vec<String> {
     let condition_types = match evaluator_id {
         "ag.cech-obstruction" => ["descent", "closed-equational"].as_slice(),
-        "ag.square-free-repair" | "ag.law-conflict-tor" | "ag.sheaf-laplacian" => {
+        "ag.square-free-repair" | "ag.law-conflict-tor" => {
+            ["closed-equational"].as_slice()
+        }
+        "ag.sheaf-laplacian" => {
             ["constructible", "closed-equational"].as_slice()
         }
         "ag.period-stokes" => ["temporal", "closed-equational"].as_slice(),

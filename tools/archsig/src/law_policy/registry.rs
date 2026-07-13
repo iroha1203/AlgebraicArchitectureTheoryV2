@@ -28,11 +28,11 @@ pub fn expand_law_policy_v1(policy: &LawPolicyDocumentV1) -> Vec<ExpandedLawPoli
         .filter_map(|(index, entry)| {
             let evaluator = entry.evaluator.as_deref()?;
             let (source_selector, law, law_pair) = if let Some(law) = entry.law.as_deref() {
-                (law.to_string(), law.to_string(), None)
+                (law.to_string(), Some(law.to_string()), None)
             } else if let Some(law_pair) = entry.law_pair.as_ref() {
                 (
-                    law_pair.join(","),
-                    law_pair.join(","),
+                    format!("lawPair:{}", law_pair.join(",")),
+                    None,
                     Some(law_pair.clone()),
                 )
             } else {
@@ -155,5 +155,38 @@ mod tests {
         assert_eq!(expanded.len(), 1);
         assert_eq!(expanded[0].source_policy_index, 1);
         assert_eq!(expanded[0].source_selector, "ag.cech-obstruction");
+    }
+
+    #[test]
+    fn expanded_tor_policy_keeps_pair_structured() {
+        let policy = LawPolicyDocumentV1 {
+            schema: "law-policy/v0.5.1".to_string(),
+            id: "tor-policy".to_string(),
+            law_surface_ref: Some("law-surface:ag-measurement-v051".to_string()),
+            measurement_profile_ref: None,
+            basis_ledger: vec![],
+            policies: vec![crate::LawPolicyEntryV1 {
+                pack: None,
+                law: None,
+                law_pair: Some(vec!["law:checkout".to_string(), "law:inventory".to_string()]),
+                evaluator: Some("ag.law-conflict-tor".to_string()),
+                basis: vec![],
+                profile_ref: None,
+                scope: vec![],
+                severity: "high".to_string(),
+            }],
+        };
+
+        let expanded = expand_law_policy_v1(&policy);
+        assert_eq!(expanded.len(), 1);
+        assert_eq!(expanded[0].law, None);
+        assert_eq!(
+            expanded[0].source_selector,
+            "lawPair:law:checkout,law:inventory"
+        );
+        assert_eq!(
+            expanded[0].law_pair,
+            Some(vec!["law:checkout".to_string(), "law:inventory".to_string()])
+        );
     }
 }

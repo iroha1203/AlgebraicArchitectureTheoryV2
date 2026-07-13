@@ -38,8 +38,11 @@ Ask only what is needed to select evaluator manifests.
 
 - Which `law-equation-surface/v0.5.1` id supplies the selected laws and witness
   variables?
-- Does every `policies[].law` resolve to that supplied surface, with the
-  evaluator and binding pair accepted by the registry manifest?
+- Does every `policies[].law` or `policies[].lawPair[]` resolve to that supplied
+  surface, with the evaluator and binding pair accepted by the registry
+  manifest?
+- If `ag.law-conflict-tor` is selected, are exactly two distinct law ids
+  declared in `policies[].lawPair`?
 - Should the three validated artifacts be fixed in an
   `archsig-policy-bundle/v0.5.1` for this run?
 - Is the bundle output kept beside the run so `componentFingerprints` can be

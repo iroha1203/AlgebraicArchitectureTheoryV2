@@ -13,7 +13,7 @@ Current source-of-truth boundaries:
 
 - ArchMap records source-grounded Atom evidence with finite-poset contexts and
   selected covers.
-- LawPolicy selects evaluators, basis refs, scope, and severity.
+- LawPolicy selects explicit law / lawPair entries, evaluators, basis refs, scope, and severity.
 - law-equation-surface declares the selected law universe and witness variables.
 - policy-bundle fixes LawPolicy, law-equation-surface, and MeasurementProfile
   with canonical component fingerprints for one run.

@@ -21,11 +21,12 @@ does not embed `measurementProfiles[]`.
 
 `basisLedger[]` declares the basis ids used by `policies[].basis`. ArchSig checks
 that policy basis refs resolve inside the ledger, but it does not check that
-ledger paths exist. Each `policies[].law` must resolve to a law declared by the
-supplied law surface, and its evaluator/condition/axis combination must match
-the registry mapping. The `ag.law-conflict-tor` evaluator uses an explicit
-`policies[].lawPair` containing exactly two law ids; law-id naming conventions
-do not select Tor participants.
+ledger paths exist. Each `policies[].law` or `policies[].lawPair[]` entry must
+resolve to a law declared by the supplied law surface, and its
+evaluator/condition/axis combination must match the registry mapping. The
+`ag.law-conflict-tor` evaluator uses an explicit `policies[].lawPair` containing
+exactly two distinct law ids; law-id naming conventions do not select Tor
+participants.
 
 MeasurementProfile owns the selected cover, coefficient, predicates, certificate
 selector, verdict discipline, and `finiteBounds`. Witness variables belong to

@@ -2800,7 +2800,7 @@ fn evaluate_law_conflict_tor_v1(
             zero: false,
             non_zero: false,
             method_status: "non_square_free_monomial".to_string(),
-            cert_ref: Some(ambient.atom_ref.clone()),
+            cert_ref: Some(tor_certificate_ref(profile)),
             reason: "selected law ideal generator contains a non-square-free monomial; finite square-free Taylor regime is not measured".to_string(),
             computed_invariants: vec![json!({
                 "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
@@ -2875,7 +2875,7 @@ fn evaluate_law_conflict_tor_v1(
         zero: !has_conflict,
         non_zero: has_conflict,
         method_status: "finite_monomial_tor_taylor_computed".to_string(),
-        cert_ref: Some(ambient.atom_ref.clone()),
+        cert_ref: Some(tor_certificate_ref(profile)),
         reason: if has_conflict {
             "finite monomial Taylor resolution found degree-1 Tor classes under the supplied common ambient"
                 .to_string()
@@ -2977,6 +2977,13 @@ fn tor_partial_observation_measurement(
         analytic_readings: Vec::new(),
         assumptions: tor_assumptions(profile, Some(ambient), "violated", "checked"),
     }
+}
+
+fn tor_certificate_ref(profile: &MeasurementProfileV1) -> String {
+    format!(
+        "computedInvariants/law-conflict-tor:{}",
+        profile.profile_id
+    )
 }
 
 fn hilbert_interference_reading(
