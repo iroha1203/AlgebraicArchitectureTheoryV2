@@ -1,0 +1,73 @@
+{
+  "schema": "archmap/v0.5.1",
+  "id": "ag-measurement-square-free-repair-unobserved-fixture",
+  "sources": {
+    "src:checkout": {
+      "kind": "rust",
+      "path": "src/checkout.rs",
+      "symbol": "CheckoutContext",
+      "line": 1
+    },
+    "src:inventory": {
+      "kind": "rust",
+      "path": "src/inventory.rs",
+      "symbol": "InventoryContext",
+      "line": 1
+    },
+    "src:payment": {
+      "kind": "rust",
+      "path": "src/payment.rs",
+      "symbol": "PaymentContext",
+      "line": 1
+    },
+    "src:cover": {
+      "kind": "policy",
+      "path": "docs/tool/ag_measurement_evidence_contract.md",
+      "section": "R4"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:checkout",
+      "kind": "component",
+      "subject": "src:checkout",
+      "axis": "static",
+      "predicate": "component",
+      "refs": ["src:checkout"]
+    },
+    {
+      "id": "atom:inventory",
+      "kind": "component",
+      "subject": "src:inventory",
+      "axis": "static",
+      "predicate": "component",
+      "refs": ["src:inventory"]
+    },
+    {
+      "id": "atom:payment",
+      "kind": "component",
+      "subject": "src:payment",
+      "axis": "static",
+      "predicate": "component",
+      "refs": ["src:payment"]
+    }
+  ],
+  "contexts": [
+    {
+      "id": "ctx:square-free-local",
+      "atoms": [
+        "atom:checkout",
+        "atom:inventory",
+        "atom:payment"
+      ],
+      "refs": ["src:cover"]
+    }
+  ],
+  "covers": [
+    {
+      "id": "cover:square-free-repair",
+      "contexts": ["ctx:square-free-local"],
+      "refs": ["src:cover"]
+    }
+  ]
+}
