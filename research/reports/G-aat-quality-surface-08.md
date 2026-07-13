@@ -82,7 +82,8 @@ It then elaborates concrete typed `example`s for the operation obligation and
 witness fields, principal localization and its Kähler base-change map,
 ambient-to-quotient derivation push-forward, square-zero lift production,
 the kernel ideal of the `TrivSqZeroExt` projection, its square-zero proof, the
-coefficient-to-ideal linear equivalence, the induced lift, sheaf-image instance synthesis under an explicit
+coefficient-to-ideal linear equivalence, the induced lift and first-projection
+comparison, sheaf-image instance synthesis under an explicit
 `HasSheafify` requirement, and quotient factorization. These examples establish
 the component adapters needed to enter J0; they do not claim their full J0-J3
 composition or discharge any target material premise.
@@ -247,14 +248,28 @@ noncomputable def trivialExtensionIdealEquiv :
   LinearEquiv.ofBijective (inrToTrivialExtensionIdeal B)
     (inrToTrivialExtensionIdeal_bijective B)
 
+noncomputable def trivialExtensionLift (d : Derivation R A B) :
+    A →ₐ[R] TrivSqZeroExt B B :=
+  (derivationToSquareZeroEquivLift (trivialExtensionIdeal B)
+    (trivialExtensionIdeal_sq B)
+    (((trivialExtensionIdealEquiv B).toLinearMap.restrictScalars A).compDer d)).1
+
+theorem trivialExtensionLift_fst (d : Derivation R A B) :
+    (TrivSqZeroExt.fstHom R B B).comp (trivialExtensionLift R A B d) =
+      IsScalarTower.toAlgHom R A B := by
+  ext a
+  simp [trivialExtensionLift, inrToTrivialExtensionIdeal,
+    trivialExtensionIdealEquiv, TrivSqZeroExt.algebraMap_eq_inl']
+
 noncomputable example (d : Derivation R A B) :
     { lift : A →ₐ[R] TrivSqZeroExt B B //
       (Ideal.Quotient.mkₐ R (trivialExtensionIdeal B)).comp lift =
         IsScalarTower.toAlgHom R A
           (TrivSqZeroExt B B ⧸ trivialExtensionIdeal B) } :=
-  derivationToSquareZeroEquivLift (trivialExtensionIdeal B)
-    (trivialExtensionIdeal_sq B)
-    (((trivialExtensionIdealEquiv B).toLinearMap.restrictScalars A).compDer d)
+  ⟨trivialExtensionLift R A B d,
+    (derivationToSquareZeroEquivLift (trivialExtensionIdeal B)
+      (trivialExtensionIdeal_sq B)
+      (((trivialExtensionIdealEquiv B).toLinearMap.restrictScalars A).compDer d)).2⟩
 
 example (b : B) :
     TrivSqZeroExt.inr b * TrivSqZeroExt.inr b =
