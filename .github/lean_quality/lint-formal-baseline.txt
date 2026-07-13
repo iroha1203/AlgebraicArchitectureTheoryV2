@@ -78,19 +78,18 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.AATCorePackage.configuration /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.object /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.lawUniverse /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.obstructionLaw /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.obstructionCircuit /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.signature /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.algebra /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.algebraObject /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.algebraOperation /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.algebraObstruction /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.AtomTowerRealization.familyToken /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.AtomTowerRealization.configurationToken /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.AtomTowerRealization.familyOf /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.AtomTowerRealization.configurationOf /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.AtomTowerRealization.family /- definition missing documentation string -/
 #check @AAT.AG.AATCorePackage.AtomTowerRealization.configuration /- definition missing documentation string -/
+#check @AAT.AG.ObstructedAATCorePackage.lawIndex /- definition missing documentation string -/
+#check @AAT.AG.ObstructedAATCorePackage.circuit /- definition missing documentation string -/
 
 -- Formal.AG.Atom.ArchitectureObject
 #check @AAT.AG.ArchitectureObject.configuration /- definition missing documentation string -/

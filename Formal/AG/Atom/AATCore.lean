@@ -393,9 +393,12 @@ core object.
 -/
 structure ObstructedAATCorePackage {U : AtomCarrier.{u}}
     (core : AATCorePackage U) where
+  /-- Index of the selected law in the core law universe. -/
   lawIndex : core.lawUniverse.Index
+  /-- Actual finite-support circuit witnessing failure of the selected law. -/
   circuit :
     ObstructionCircuit (core.lawUniverse.law lawIndex) core.object
+  /-- Concrete list-finiteness required independently of the legacy marker. -/
   circuit_listFinite : circuit.ListFinite
 
 namespace ObstructedAATCorePackage

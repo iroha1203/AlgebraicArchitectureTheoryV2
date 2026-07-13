@@ -1012,8 +1012,6 @@ Ob_L(A)
 ### 定義 8.2 Obstruction Circuit
 
 Obstruction circuit は、Atom と relation の有限配置であり、ある law failure を引き起こす。
-architecture object `A` と law `L` に対する circuit は、`L(A)` の失敗を前提に持つ
-dependent な構成である。
 
 ```text
 O = (F_O, R_O, L)
@@ -1028,15 +1026,6 @@ not L(A)
 ```
 
 が成り立つ。
-
-したがって、law universe を固定しただけで obstruction circuit が無条件に存在するのではない。
-選ばれた law index `i`、finite Atom family `F_O`、その上にsupportを持つrelation `R_O`、および
-
-```text
-not L_i(A)
-```
-
-が与えられたとき、その失敗を保持する circuit を構成する。
 
 ### 例 8.3 Cycle Obstruction
 
@@ -1254,20 +1243,9 @@ Atom
   -> Configuration
   -> ArchitectureObject
   -> LawUniverse
+  -> ObstructionCircuit
   -> ArchitectureSignature
-  -> ObjectAlgebra
 ```
 
-これは obstruction の有無によらず生成される AAT core である。さらに、生成された
-law universe の index `i`、選ばれたfinite Atom family内にsupportを持つcircuit data、
-その law が生成された architecture object 上で失敗する証明
-
-```text
-h_i : not L_i(A)
-```
-
-が与えられたとき、定義8.2の `ObstructionCircuit(L_i, A)` を持つ
-obstructed AAT core を dependent extension として構成できる。
-
-したがって、AAT は Atom 公理系の上で architecture object、law、signature、operation を
-無条件に生成し、選ばれた生成済みlawの失敗から obstruction を保持する純粋な理論として立ち上がる。
+したがって、AAT は Atom 公理系の上で architecture object、law、obstruction、
+signature、operation を持つ純粋な理論として立ち上がる。
