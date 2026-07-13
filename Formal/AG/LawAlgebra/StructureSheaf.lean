@@ -34,6 +34,185 @@ abbrev AlgebraValuedAATPresheaf {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (S : Site.AATSite A) (k : Type v) [CommRing k] :=
   S.categoryᵒᵖ ⥤ AATCommAlgCat k
 
+/-! ### Typed raw ambient restriction systems -/
+
+/--
+III.R3: typed polynomial restriction data on every morphism of the selected
+AAT site, with identity and composition coherence before quotienting.
+-/
+structure RawAmbientRestrictionSystem {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} (S : Site.AATSite A)
+    (k : Type v) [CommRing k] where
+  /-- The typed coordinate family assigned to each selected site object. -/
+  coordFamily : (W : S.category) -> CoordinateFamily W.ctx
+  /-- The structural equations imposed on the coordinates of each object. -/
+  relationFamily : (W : S.category) ->
+    StructuralRelationFamily (coordFamily W) k
+  /-- Restriction data together with preservation of the structural ideal. -/
+  restrictionStable : ∀ {X Y : S.category} (f : X ⟶ Y),
+    RestrictionStableStructuralRelations
+      (relationFamily X) (relationFamily Y)
+      (S.contextPreorder.morphism (CategoryTheory.leOfHom f))
+  identity_polynomialMap : ∀ X : S.category,
+    (restrictionStable (𝟙 X)).restriction.polynomialMap =
+      RingHom.id (FreeTypedCommAlg (coordFamily X) k)
+  composition_polynomialMap :
+    ∀ {X Y Z : S.category} (f : X ⟶ Y) (g : Y ⟶ Z),
+      (restrictionStable (f ≫ g)).restriction.polynomialMap =
+        ((restrictionStable f).restriction.polynomialMap).comp
+          ((restrictionStable g).restriction.polynomialMap)
+
+namespace RawAmbientRestrictionSystem
+
+/-- Two restriction systems agree when their three data-bearing fields agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B C : RawAmbientRestrictionSystem S k)
+    (hcoord : B.coordFamily = C.coordFamily)
+    (hrelation : HEq B.relationFamily C.relationFamily)
+    (hrestriction : HEq
+      (@RawAmbientRestrictionSystem.restrictionStable U A S k _ B)
+      (@RawAmbientRestrictionSystem.restrictionStable U A S k _ C)) :
+    B = C := by
+  cases B with
+  | mk Bcoord Brelation Brestriction Bid Bcomp =>
+      cases C with
+      | mk Ccoord Crelation Crestriction Cid Ccomp =>
+          cases hcoord
+          cases hrelation
+          cases hrestriction
+          rfl
+
+/-- III.R3: the structural quotient assigned to a site object. -/
+abbrev rawAlgebra {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : RawAmbientRestrictionSystem S k) (W : S.category) :
+    Type (max u v) :=
+  (B.relationFamily W).RawAmbientLawAlgebra
+
+end RawAmbientRestrictionSystem
+
+/-- Typed polynomial restrictions fix coefficients. -/
+theorem TypedCoordinateRestriction.polynomialMap_C
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : CoordinateFamily source}
+    {targetFamily : CoordinateFamily target}
+    {k : Type v} [CommRing k]
+    {f : Site.ContextMorphism source target}
+    (rho : TypedCoordinateRestriction sourceFamily targetFamily k f)
+    (x : k) :
+    rho.polynomialMap (MvPolynomial.C x) = MvPolynomial.C x := by
+  simp [TypedCoordinateRestriction.polynomialMap]
+
+/-- Descended structural restrictions fix coefficient classes. -/
+theorem RestrictionStableStructuralRelations.quotientDesc_C
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : CoordinateFamily source}
+    {targetFamily : CoordinateFamily target}
+    {k : Type v} [CommRing k]
+    {sourceRelations : StructuralRelationFamily sourceFamily k}
+    {targetRelations : StructuralRelationFamily targetFamily k}
+    {f : Site.ContextMorphism source target}
+    (h : RestrictionStableStructuralRelations sourceRelations targetRelations f)
+    (x : k) :
+    h.quotientDesc (targetRelations.quotientMap (MvPolynomial.C x)) =
+      sourceRelations.quotientMap (MvPolynomial.C x) := by
+  rw [h.quotientDesc_mk, h.restriction.polynomialMap_C]
+
+namespace RawAmbientRestrictionSystem
+
+/-- Quotient descent inherits identity from polynomial restriction. -/
+theorem quotientDesc_id {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : RawAmbientRestrictionSystem S k) (X : S.category) :
+    (B.restrictionStable (𝟙 X)).quotientDesc =
+      RingHom.id (B.rawAlgebra X) := by
+  apply Ideal.Quotient.ringHom_ext
+  apply RingHom.ext
+  intro p
+  change (B.restrictionStable (𝟙 X)).quotientDesc
+      ((B.relationFamily X).quotientMap p) =
+    (B.relationFamily X).quotientMap p
+  rw [
+    RestrictionStableStructuralRelations.quotientDesc_mk,
+    B.identity_polynomialMap]
+  rfl
+
+/-- Quotient descent inherits composition from polynomial restriction. -/
+theorem quotientDesc_comp {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : RawAmbientRestrictionSystem S k)
+    {X Y Z : S.category} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    (B.restrictionStable (f ≫ g)).quotientDesc =
+      ((B.restrictionStable f).quotientDesc).comp
+        ((B.restrictionStable g).quotientDesc) := by
+  apply Ideal.Quotient.ringHom_ext
+  apply RingHom.ext
+  intro p
+  change (B.restrictionStable (f ≫ g)).quotientDesc
+      ((B.relationFamily Z).quotientMap p) =
+    (B.restrictionStable f).quotientDesc
+      ((B.restrictionStable g).quotientDesc
+        ((B.relationFamily Z).quotientMap p))
+  rw [
+    RestrictionStableStructuralRelations.quotientDesc_mk,
+    RestrictionStableStructuralRelations.quotientDesc_mk,
+    RestrictionStableStructuralRelations.quotientDesc_mk,
+    B.composition_polynomialMap]
+  rfl
+
+/-- The coefficient structure map for a raw structural quotient. -/
+private noncomputable def algebraObject {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k] (B : RawAmbientRestrictionSystem S k)
+    (W : S.category) : AATCommAlgCat k :=
+  Under.mk (CommRingCat.ofHom
+    (((B.relationFamily W).quotientMap.comp MvPolynomial.C).comp
+      ULift.ringEquiv.toRingHom))
+
+/-- III.R3: the actual algebra-valued presheaf induced by typed restrictions. -/
+noncomputable def toPresheaf {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : RawAmbientRestrictionSystem S k) :
+    AlgebraValuedAATPresheaf S k where
+  obj W := B.algebraObject W.unop
+  map {X Y} f := Under.homMk
+    (CommRingCat.ofHom (B.restrictionStable f.unop).quotientDesc)
+    (by
+      ext x
+      change (B.restrictionStable f.unop).quotientDesc
+          ((B.relationFamily X.unop).quotientMap (MvPolynomial.C x.down)) =
+        (B.relationFamily Y.unop).quotientMap (MvPolynomial.C x.down)
+      rw [RestrictionStableStructuralRelations.quotientDesc_C])
+  map_id X := by
+    apply Under.UnderMorphism.ext
+    exact congrArg CommRingCat.ofHom (B.quotientDesc_id X.unop)
+  map_comp f g := by
+    apply Under.UnderMorphism.ext
+    exact congrArg CommRingCat.ofHom (B.quotientDesc_comp g.unop f.unop)
+
+/-- The presheaf object is definitionally the corresponding raw quotient. -/
+noncomputable def toPresheafObjectIso {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k] (B : RawAmbientRestrictionSystem S k)
+    (W : S.category) :
+    B.rawAlgebra W ≃+* (B.toPresheaf.obj (Opposite.op W)).right :=
+  RingEquiv.refl _
+
+/-- The objectwise identification intertwines descended restriction and map. -/
+theorem toPresheaf_map {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : RawAmbientRestrictionSystem S k)
+    {X Y : S.category} (f : X ⟶ Y) (x : B.rawAlgebra Y) :
+    B.toPresheafObjectIso X ((B.restrictionStable f).quotientDesc x) =
+      (B.toPresheaf.map f.op).right (B.toPresheafObjectIso Y x) :=
+  rfl
+
+end RawAmbientRestrictionSystem
+
 /-- III.定義2.1: a law algebra sheaf is a `k`-algebra-valued sheaf on `J_U`. -/
 abbrev LawAlgebraSheaf {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (S : Site.AATSite A) (k : Type v) [CommRing k] :=

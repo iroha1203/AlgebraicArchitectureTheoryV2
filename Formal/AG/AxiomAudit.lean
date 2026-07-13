@@ -4,6 +4,7 @@ import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.Examples.SingularityMonodromyStackPart6
 import Formal.AG.LawAlgebra.FiniteExamples
+import Formal.AG.LawAlgebra.RawPresheafFiniteExample
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -1753,6 +1754,63 @@ def transportDescentZeroToyModelNonempty :=
 
 def transportDescentNonzeroToyModelNonempty :=
   @FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero
+
+noncomputable def rawAmbientRestrictionSystemToPresheaf :=
+  @LawAlgebra.RawAmbientRestrictionSystem.toPresheaf
+
+def rawAmbientRestrictionSystemExt :=
+  @LawAlgebra.RawAmbientRestrictionSystem.ext
+
+def typedCoordinateRestrictionPolynomialMapC :=
+  @LawAlgebra.TypedCoordinateRestriction.polynomialMap_C
+
+def restrictionStableStructuralRelationsQuotientDescC :=
+  @LawAlgebra.RestrictionStableStructuralRelations.quotientDesc_C
+
+def rawAmbientRestrictionSystemQuotientDescId :=
+  @LawAlgebra.RawAmbientRestrictionSystem.quotientDesc_id
+
+def rawAmbientRestrictionSystemQuotientDescComp :=
+  @LawAlgebra.RawAmbientRestrictionSystem.quotientDesc_comp
+
+def rawAmbientRestrictionSystemToPresheafMap :=
+  @LawAlgebra.RawAmbientRestrictionSystem.toPresheaf_map
+
+def rawPresheafFiniteGaugeSq :=
+  LawAlgebra.FiniteExamples.RawPresheaf.gauge_sq
+
+def rawPresheafFiniteCoordinateRestrictionPolynomialMapX :=
+  @LawAlgebra.FiniteExamples.RawPresheaf.coordinateRestriction_polynomialMap_X
+
+def rawPresheafFiniteSystemRestriction :=
+  @LawAlgebra.FiniteExamples.RawPresheaf.system_restriction
+
+def rawPresheafFiniteLeftToBasePolynomialMapX :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_polynomialMap_X
+
+def rawPresheafFiniteRelationVanishes :=
+  LawAlgebra.FiniteExamples.RawPresheaf.relation_vanishes
+
+def rawPresheafFiniteQuotientMapNotInjective :=
+  LawAlgebra.FiniteExamples.RawPresheaf.quotientMap_not_injective
+
+def rawPresheafFiniteRelationPolynomialNeZero :=
+  LawAlgebra.FiniteExamples.RawPresheaf.relation_polynomial_ne_zero
+
+def rawPresheafFiniteQuotientOneEvalMk :=
+  LawAlgebra.FiniteExamples.RawPresheaf.quotientOneEval_mk
+
+def rawPresheafFiniteQuotientXNeNegX :=
+  LawAlgebra.FiniteExamples.RawPresheaf.quotient_X_ne_neg_X
+
+def rawPresheafFiniteLeftToBaseQuotientDescX :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_X
+
+def rawPresheafFiniteRestrictionChangesCoordinate :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_X_ne_X
+
+def rawPresheafFiniteRestrictionFixesCoefficient :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_C
 
 end AAT.AG.AxiomAudit
 

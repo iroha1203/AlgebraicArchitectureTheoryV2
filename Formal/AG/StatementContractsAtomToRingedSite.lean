@@ -1,4 +1,5 @@
 import Formal.AG.Examples.FiniteModel
+import Formal.AG.LawAlgebra.RawPresheafFiniteExample
 
 noncomputable section
 
@@ -11,7 +12,9 @@ sections extend the same executable contract through SD2--SD5.
 
 namespace AAT.AG
 
-universe u
+universe u v
+
+open CategoryTheory
 
 /-! SD1 fixed definition signatures. -/
 
@@ -680,5 +683,125 @@ example :
     CategoryTheory.Sieve.generate FiniteModel.twoPatchCover.presieve ∈
       FiniteModel.twoPatchSite.topology FiniteModel.twoPatchBase :=
   FiniteModel.twoPatchCover_topologyCover
+
+/-! SD3 fixed typed raw presheaf signatures. -/
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k] :
+    ((coordFamily : (W : S.category) -> LawAlgebra.CoordinateFamily W.ctx) ->
+      (relationFamily : (W : S.category) ->
+        LawAlgebra.StructuralRelationFamily (coordFamily W) k) ->
+      (restrictionStable : ∀ {X Y : S.category} (f : X ⟶ Y),
+        LawAlgebra.RestrictionStableStructuralRelations
+          (relationFamily X) (relationFamily Y)
+          (S.contextPreorder.morphism (CategoryTheory.leOfHom f))) ->
+      (∀ X : S.category,
+        (restrictionStable (𝟙 X)).restriction.polynomialMap =
+          RingHom.id (LawAlgebra.FreeTypedCommAlg (coordFamily X) k)) ->
+      (∀ {X Y Z : S.category} (f : X ⟶ Y) (g : Y ⟶ Z),
+        (restrictionStable (f ≫ g)).restriction.polynomialMap =
+          ((restrictionStable f).restriction.polynomialMap).comp
+            ((restrictionStable g).restriction.polynomialMap)) ->
+      LawAlgebra.RawAmbientRestrictionSystem S k) :=
+  @LawAlgebra.RawAmbientRestrictionSystem.mk U A S k _
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : LawAlgebra.RawAmbientRestrictionSystem S k) (W : S.category) :
+    Type (max u v) :=
+  B.rawAlgebra W
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : LawAlgebra.CoordinateFamily source}
+    {targetFamily : LawAlgebra.CoordinateFamily target}
+    {k : Type v} [CommRing k]
+    {f : Site.ContextMorphism source target}
+    (rho : LawAlgebra.TypedCoordinateRestriction sourceFamily targetFamily k f)
+    (x : k) :
+    rho.polynomialMap (MvPolynomial.C x) = MvPolynomial.C x :=
+  rho.polynomialMap_C x
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : LawAlgebra.CoordinateFamily source}
+    {targetFamily : LawAlgebra.CoordinateFamily target}
+    {k : Type v} [CommRing k]
+    {sourceRelations : LawAlgebra.StructuralRelationFamily sourceFamily k}
+    {targetRelations : LawAlgebra.StructuralRelationFamily targetFamily k}
+    {f : Site.ContextMorphism source target}
+    (h : LawAlgebra.RestrictionStableStructuralRelations
+      sourceRelations targetRelations f) (x : k) :
+    h.quotientDesc (targetRelations.quotientMap (MvPolynomial.C x)) =
+      sourceRelations.quotientMap (MvPolynomial.C x) :=
+  h.quotientDesc_C x
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : LawAlgebra.RawAmbientRestrictionSystem S k) :
+    LawAlgebra.AlgebraValuedAATPresheaf S k :=
+  B.toPresheaf
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : LawAlgebra.RawAmbientRestrictionSystem S k) (W : S.category) :
+    B.rawAlgebra W ≃+* (B.toPresheaf.obj (Opposite.op W)).right :=
+  B.toPresheafObjectIso W
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : LawAlgebra.RawAmbientRestrictionSystem S k) (X : S.category) :
+    (B.restrictionStable (𝟙 X)).quotientDesc =
+      RingHom.id (B.rawAlgebra X) :=
+  B.quotientDesc_id X
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : LawAlgebra.RawAmbientRestrictionSystem S k)
+    {X Y Z : S.category} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    (B.restrictionStable (f ≫ g)).quotientDesc =
+      ((B.restrictionStable f).quotientDesc).comp
+        ((B.restrictionStable g).quotientDesc) :=
+  B.quotientDesc_comp f g
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : LawAlgebra.RawAmbientRestrictionSystem S k)
+    {X Y : S.category} (f : X ⟶ Y) (x : B.rawAlgebra Y) :
+    B.toPresheafObjectIso X ((B.restrictionStable f).quotientDesc x) =
+      (B.toPresheaf.map f.op).right (B.toPresheafObjectIso Y x) :=
+  B.toPresheaf_map f x
+
+example :
+    (LawAlgebra.FiniteExamples.RawPresheaf.system.relationFamily
+      LawAlgebra.FiniteExamples.RawPresheaf.left).quotientMap
+        (MvPolynomial.X () ^ 2 - 1) = 0 :=
+  LawAlgebra.FiniteExamples.RawPresheaf.relation_vanishes
+
+example :
+    ¬ Function.Injective
+      (LawAlgebra.FiniteExamples.RawPresheaf.system.relationFamily
+        LawAlgebra.FiniteExamples.RawPresheaf.left).quotientMap :=
+  LawAlgebra.FiniteExamples.RawPresheaf.quotientMap_not_injective
+
+example :
+    (LawAlgebra.FiniteExamples.RawPresheaf.system.restrictionStable
+      LawAlgebra.FiniteExamples.RawPresheaf.leftToBase).quotientDesc
+        ((LawAlgebra.FiniteExamples.RawPresheaf.system.relationFamily
+          FiniteModel.twoPatchBase).quotientMap (MvPolynomial.X ())) ≠
+      (LawAlgebra.FiniteExamples.RawPresheaf.system.relationFamily
+        LawAlgebra.FiniteExamples.RawPresheaf.left).quotientMap
+          (MvPolynomial.X ()) :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_X_ne_X
+
+example :
+    (LawAlgebra.FiniteExamples.RawPresheaf.system.restrictionStable
+      LawAlgebra.FiniteExamples.RawPresheaf.leftToBase).quotientDesc
+        ((LawAlgebra.FiniteExamples.RawPresheaf.system.relationFamily
+          FiniteModel.twoPatchBase).quotientMap (MvPolynomial.C (2 : Int))) =
+      (LawAlgebra.FiniteExamples.RawPresheaf.system.relationFamily
+        LawAlgebra.FiniteExamples.RawPresheaf.left).quotientMap
+          (MvPolynomial.C (2 : Int)) :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_C
 
 end AAT.AG
