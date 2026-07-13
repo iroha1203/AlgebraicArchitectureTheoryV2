@@ -4,6 +4,267 @@ namespace AAT.AG
 
 universe u
 
+/--
+SD1: semantic obstruction is failure of the selected law on the selected
+architecture object.
+-/
+def SemanticObstruction {U : AtomCarrier.{u}} (L : Law U)
+    (A : ArchitectureObject U) : Prop :=
+  ¬ L.holds A
+
+namespace SemanticObstruction
+
+/-- Semantic obstruction is exactly failure of the selected law. -/
+theorem iff_not_holds {U : AtomCarrier.{u}} (L : Law U)
+    (A : ArchitectureObject U) :
+    SemanticObstruction L A ↔ ¬ L.holds A :=
+  Iff.rfl
+
+end SemanticObstruction
+
+/-- SD1: a finite circuit query over Atom-level configuration data. -/
+inductive CircuitQuery (U : AtomCarrier.{u}) where
+  | atomPresent (a : U.Atom)
+  | relationPresent (a b : U.Atom)
+  | identificationPresent (a b : U.Atom)
+
+/-- SD1: the semantic reading of a circuit query on an architecture object. -/
+def CircuitQuery.Holds {U : AtomCarrier.{u}} (q : CircuitQuery U)
+    (A : ArchitectureObject U) : Prop :=
+  match q with
+  | .atomPresent a => A.configuration.family.mem a
+  | .relationPresent a b =>
+      A.configuration.family.mem a ∧
+      A.configuration.family.mem b ∧
+      A.configuration.relation a b
+  | .identificationPresent a b =>
+      A.configuration.family.mem a ∧
+      A.configuration.family.mem b ∧
+      A.configuration.identification a b
+
+namespace CircuitQuery
+
+/-- An atom-presence query holds exactly when the atom belongs to the object family. -/
+theorem atomPresent_holds_iff {U : AtomCarrier.{u}} (a : U.Atom)
+    (A : ArchitectureObject U) :
+    (CircuitQuery.atomPresent a).Holds A ↔ A.configuration.family.mem a :=
+  Iff.rfl
+
+/-- A relation query exposes its two support memberships and selected relation. -/
+theorem relationPresent_holds_iff {U : AtomCarrier.{u}} (a b : U.Atom)
+    (A : ArchitectureObject U) :
+    (CircuitQuery.relationPresent a b).Holds A ↔
+      A.configuration.family.mem a ∧ A.configuration.family.mem b ∧
+        A.configuration.relation a b :=
+  Iff.rfl
+
+/-- An identification query exposes its support memberships and selected identification. -/
+theorem identificationPresent_holds_iff {U : AtomCarrier.{u}} (a b : U.Atom)
+    (A : ArchitectureObject U) :
+    (CircuitQuery.identificationPresent a b).Holds A ↔
+      A.configuration.family.mem a ∧ A.configuration.family.mem b ∧
+        A.configuration.identification a b :=
+  Iff.rfl
+
+end CircuitQuery
+
+/--
+SD1: a finite signed query pattern for an obstruction circuit.
+
+Implementation notes: signed queries are finite data; matching remains a
+separate predicate on architecture objects.  Storing an object or a law-failure
+proof in the datum was rejected because it would repackage the desired
+semantic conclusion.
+-/
+structure FiniteCircuitDatum (U : AtomCarrier.{u}) where
+  /-- The finite list of queries paired with their expected Boolean polarity. -/
+  queries : List (CircuitQuery U × Bool)
+
+/-- SD1: every signed query in the datum has the expected reading on the object. -/
+def FiniteCircuitDatum.Matches {U : AtomCarrier.{u}}
+    (Q : FiniteCircuitDatum U) (A : ArchitectureObject U) : Prop :=
+  ∀ query expected, (query, expected) ∈ Q.queries ->
+    (query.Holds A ↔ expected = true)
+
+/--
+SD1: finite-template detector syntax. Its constructors contain only finite
+data, exact templates, and finite disjunction.
+-/
+inductive CircuitDetectorCode (U : AtomCarrier.{u}) where
+  | reject
+  | exact (pattern : FiniteCircuitDatum U)
+  | any (left right : CircuitDetectorCode U)
+
+/-- SD1: evaluate finite-template detector syntax on a finite circuit datum. -/
+noncomputable def CircuitDetectorCode.eval {U : AtomCarrier.{u}}
+    (code : CircuitDetectorCode U) (Q : FiniteCircuitDatum U) : Bool := by
+  classical
+  exact match code with
+    | .reject => false
+    | .exact pattern => if pattern = Q then true else false
+    | .any left right => left.eval Q || right.eval Q
+
+namespace CircuitDetectorCode
+
+/-- The rejecting detector evaluates to false on every finite datum. -/
+@[simp]
+theorem eval_reject {U : AtomCarrier.{u}} (Q : FiniteCircuitDatum U) :
+    (CircuitDetectorCode.reject : CircuitDetectorCode U).eval Q = false := by
+  simp [CircuitDetectorCode.eval]
+
+/-- An exact detector accepts precisely its stored finite template. -/
+theorem eval_exact_eq_true_iff {U : AtomCarrier.{u}}
+    (pattern Q : FiniteCircuitDatum U) :
+    (CircuitDetectorCode.exact pattern).eval Q = true ↔ pattern = Q := by
+  classical
+  simp [CircuitDetectorCode.eval]
+
+/-- Finite disjunction accepts precisely when one of its detector branches accepts. -/
+theorem eval_any_eq_true_iff {U : AtomCarrier.{u}}
+    (left right : CircuitDetectorCode U) (Q : FiniteCircuitDatum U) :
+    (CircuitDetectorCode.any left right).eval Q = true ↔
+      left.eval Q = true ∨ right.eval Q = true := by
+  simp [CircuitDetectorCode.eval]
+
+end CircuitDetectorCode
+
+/--
+SD1: law-indexed finite detector code together with semantic soundness.
+
+Implementation notes: law failure is derived by `sound`; it is not stored in
+`CircuitDetectorCode` or `FiniteCircuitDatum`.
+-/
+structure CircuitReading {U : AtomCarrier.{u}} (LU : LawUniverse U) where
+  /-- The finite detector syntax selected for each law. -/
+  code : (i : LU.Index) -> CircuitDetectorCode U
+  sound : ∀ (i : LU.Index) (A : ArchitectureObject U)
+    (Q : FiniteCircuitDatum U),
+      Q.Matches A -> (code i).eval Q = true ->
+        ¬ (LU.law i).holds A
+
+/-- SD1: Boolean acceptance of a finite datum by the selected law detector. -/
+noncomputable def CircuitReading.accepts {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU)
+    (i : LU.Index) (Q : FiniteCircuitDatum U) : Bool :=
+  (R.code i).eval Q
+
+/-- SD1: the type of accepted matching circuit data for an object and law index. -/
+def CircuitReading.Circuit {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    (R : CircuitReading LU) (A : ArchitectureObject U)
+    (i : LU.Index) : Type u :=
+  {Q : FiniteCircuitDatum U // Q.Matches A ∧ R.accepts i Q = true}
+
+/--
+SD1: every failure of a required law has an accepted matching finite circuit.
+This is an additional completeness condition, not a field of `CircuitReading`.
+-/
+def CircuitReading.RequiredComplete {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU) : Prop :=
+  ∀ (A : ArchitectureObject U) (i : LU.Index), LU.Required i ->
+    ¬ (LU.law i).holds A -> Nonempty (R.Circuit A i)
+
+/-- SD1: a selected law universe equipped with its finite circuit reading. -/
+structure LawReading (U : AtomCarrier.{u}) where
+  /-- The selected universe of laws. -/
+  lawUniverse : LawUniverse U
+  /-- The finite circuit detector reading for that universe. -/
+  circuits : CircuitReading lawUniverse
+
+namespace FiniteCircuitDatum
+
+/-- Two finite circuit data are equal when their signed query lists are equal. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {Q R : FiniteCircuitDatum U}
+    (hqueries : Q.queries = R.queries) : Q = R := by
+  cases Q
+  cases R
+  cases hqueries
+  rfl
+
+/-- A matching datum exposes the expected reading of each query it contains. -/
+theorem holds_iff_of_matches {U : AtomCarrier.{u}}
+    {Q : FiniteCircuitDatum U} {A : ArchitectureObject U}
+    (h : Q.Matches A) {query : CircuitQuery U} {expected : Bool}
+    (hquery : (query, expected) ∈ Q.queries) :
+    query.Holds A ↔ expected = true :=
+  h query expected hquery
+
+end FiniteCircuitDatum
+
+namespace CircuitReading
+
+/-- Circuit readings over a fixed law universe are equal when their detector families agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    {R S : CircuitReading LU} (hcode : R.code = S.code) : R = S := by
+  cases R
+  cases S
+  cases hcode
+  rfl
+
+/-- Acceptance is exactly evaluation of the selected finite detector code. -/
+theorem accepts_eq_eval {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    (R : CircuitReading LU) (i : LU.Index) (Q : FiniteCircuitDatum U) :
+    R.accepts i Q = (R.code i).eval Q :=
+  rfl
+
+/-- Acceptance is true exactly when the indexed detector evaluates to true. -/
+theorem accepts_eq_true_iff_eval {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    (R : CircuitReading LU) (i : LU.Index) (Q : FiniteCircuitDatum U) :
+    R.accepts i Q = true ↔ (R.code i).eval Q = true :=
+  Iff.rfl
+
+/-- A rejecting indexed detector accepts no finite datum. -/
+theorem accepts_eq_false_of_code_reject {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU) (i : LU.Index)
+    (Q : FiniteCircuitDatum U) (hcode : R.code i = .reject) :
+    R.accepts i Q = false := by
+  rw [accepts_eq_eval, hcode]
+  exact CircuitDetectorCode.eval_reject Q
+
+/-- An exact indexed detector accepts precisely the selected finite template. -/
+theorem accepts_eq_true_iff_of_code_exact {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU) (i : LU.Index)
+    (pattern Q : FiniteCircuitDatum U) (hcode : R.code i = .exact pattern) :
+    R.accepts i Q = true ↔ pattern = Q := by
+  rw [accepts_eq_eval, hcode]
+  exact CircuitDetectorCode.eval_exact_eq_true_iff pattern Q
+
+/-- A disjunctive indexed detector accepts precisely when either branch accepts. -/
+theorem accepts_eq_true_iff_of_code_any {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU) (i : LU.Index)
+    (left right : CircuitDetectorCode U) (Q : FiniteCircuitDatum U)
+    (hcode : R.code i = .any left right) :
+    R.accepts i Q = true ↔ left.eval Q = true ∨ right.eval Q = true := by
+  rw [accepts_eq_eval, hcode]
+  exact CircuitDetectorCode.eval_any_eq_true_iff left right Q
+
+/-- An accepted matching circuit yields failure of its indexed law. -/
+theorem circuit_sound {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    (R : CircuitReading LU) (A : ArchitectureObject U) (i : LU.Index)
+    (c : R.Circuit A i) : ¬ (LU.law i).holds A :=
+  R.sound i A c.1 c.2.1 c.2.2
+
+end CircuitReading
+
+namespace LawReading
+
+/--
+Law readings are equal when their law universes agree and their dependent
+circuit readings are heterogeneously equal.
+-/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {R S : LawReading U}
+    (huniverse : R.lawUniverse = S.lawUniverse)
+    (hcircuits : HEq R.circuits S.circuits) : R = S := by
+  cases R
+  cases S
+  cases huniverse
+  cases hcircuits
+  rfl
+
+end LawReading
+
 /-- I.定義8.1: an obstruction is a selected witness of law failure. -/
 structure Obstruction {U : AtomCarrier.{u}} (L : Law U)
     (A : ArchitectureObject U) where

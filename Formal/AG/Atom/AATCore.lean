@@ -5,362 +5,443 @@ namespace AAT.AG
 
 universe u
 
-/--
-I.定理10.5: AAT Core package built from the Part I Atom tower.
+/-!
+# AAT core generation
 
-The package records that an Atom carrier satisfying A0-A8 can be read together
-with the R1-R7 components and the R9 object-algebra surface. It does not claim
-that concrete graph/category/algebra/diagram/state-transition instances or
-finite examples have been constructed.
+This module implements the Part I admissible-reading construction fixed by
+`docs/aat/aat_lean_01_atom_to_ringed_site_prd.md`, SD1.  A core stores only the
+Atom axioms and the reading rules.  Its family, configuration, architecture
+object, and operation-closed algebra are derived definitions.
+
+## Implementation notes
+
+The earlier component-assembly package was not retained as the primary
+constructor because it accepted the conclusions of the generation route as
+inputs.  The reachable-object subtype is used for the object algebra so its
+objects are exactly those generated from the base object by the selected
+operation family.
 -/
+
+/-- Part I composition rule acting on every explicitly list-finite Atom family. -/
+structure CompositionReading (U : AtomCarrier.{u}) where
+  /-- Construct a configuration from any explicitly finite Atom family. -/
+  compose : (F : AtomFamily U) -> F.ListFinite -> AtomConfiguration U
+  family_eq : ∀ F hfinite, (compose F hfinite).family = F
+  family_supported : ∀ F hfinite, (compose F hfinite).FamilySupported
+
+/-- Part I object-formation rule acting on every Atom configuration. -/
+structure ObjectReading (U : AtomCarrier.{u}) where
+  /-- Construct an architecture object from any Atom configuration. -/
+  object : AtomConfiguration U -> ArchitectureObject U
+  configuration_eq : ∀ C, (object C).configuration = C
+
+/-- The admissible Part I reading from which the complete core is generated. -/
+structure CoreReading (U : AtomCarrier.{u}) where
+  /-- Source extraction doctrine. -/
+  doctrine : ExtractionDoctrine U
+  /-- Source selected for canonical atomization. -/
+  source : doctrine.Source
+  family_listFinite : (doctrine.atomize source).ListFinite
+  /-- Configuration composition rule. -/
+  composition : CompositionReading U
+  /-- Architecture-object formation rule. -/
+  objectReading : ObjectReading U
+  /-- Law universe and indexed circuit semantics. -/
+  lawReading : LawReading U
+  /-- Invariant reading. -/
+  invariantReading : InvariantFamily U
+  /-- Architecture signature reading. -/
+  signatureReading : ArchitectureSignature U
+  /-- Object-pair-indexed operation reading. -/
+  operationReading : OperationReading U
+
+/-- Part I theorem 10.5 input package: axioms together with an admissible reading. -/
 structure AATCorePackage (U : AtomCarrier.{u}) where
   axioms : AtomAxiomSystem U
-  family : AtomFamily U
-  configuration : AtomConfiguration U
-  object : ArchitectureObject U
-  configuration_family_eq : configuration.family = family
-  object_configuration_eq : object.configuration = configuration
-  lawUniverse : LawUniverse U
-  obstructionLaw : Law U
-  obstructionCircuit : ObstructionCircuit obstructionLaw object
-  signature : ArchitectureSignature U
-  algebra : ObjectAlgebra U
-  algebraObject : algebra.Obj
-  algebraOperation : algebra.Op
-  algebraObstruction : algebra.Ob
-  algebra_object_eq : algebra.object algebraObject = object
-  algebra_operation_source_eq : (algebra.operation algebraOperation).source = object
-  algebra_operation_target_eq : (algebra.operation algebraOperation).target = object
-  algebra_lawUniverse_eq : algebra.lawUniverse = lawUniverse
-  algebra_signature_eq : algebra.signature = signature
+  /-- The admissible reading from which all core components are derived. -/
+  reading : CoreReading U
+
+namespace CompositionReading
+
+/-- Composition readings are equal when their configuration constructors agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {R S : CompositionReading U}
+    (hcompose : R.compose = S.compose) : R = S := by
+  cases R
+  cases S
+  cases hcompose
+  rfl
+
+/-- The composition rule returns a configuration on exactly the supplied family. -/
+theorem compose_family_eq {U : AtomCarrier.{u}} (R : CompositionReading U)
+    (F : AtomFamily U) (hfinite : F.ListFinite) :
+    (R.compose F hfinite).family = F :=
+  R.family_eq F hfinite
+
+/-- The composition rule returns a configuration supported by its supplied family. -/
+theorem compose_familySupported {U : AtomCarrier.{u}} (R : CompositionReading U)
+    (F : AtomFamily U) (hfinite : F.ListFinite) :
+    (R.compose F hfinite).FamilySupported :=
+  R.family_supported F hfinite
+
+end CompositionReading
+
+namespace ObjectReading
+
+/-- Object readings are equal when their object constructors agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {R S : ObjectReading U}
+    (hobject : R.object = S.object) : R = S := by
+  cases R
+  cases S
+  cases hobject
+  rfl
+
+/-- The object-formation rule returns an object on exactly the supplied configuration. -/
+theorem object_configuration_eq {U : AtomCarrier.{u}} (R : ObjectReading U)
+    (C : AtomConfiguration U) : (R.object C).configuration = C :=
+  R.configuration_eq C
+
+end ObjectReading
+
+namespace CoreReading
+
+/--
+Core readings are equal when their doctrine, dependent source, and all
+semantic reading rules agree. The finite-family evidence is proof-irrelevant.
+-/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {R S : CoreReading U}
+    (hdoctrine : R.doctrine = S.doctrine)
+    (hsource : HEq R.source S.source)
+    (hcomposition : R.composition = S.composition)
+    (hobjectReading : R.objectReading = S.objectReading)
+    (hlawReading : R.lawReading = S.lawReading)
+    (hinvariantReading : R.invariantReading = S.invariantReading)
+    (hsignatureReading : R.signatureReading = S.signatureReading)
+    (hoperationReading : R.operationReading = S.operationReading) : R = S := by
+  cases R
+  cases S
+  cases hdoctrine
+  cases hsource
+  cases hcomposition
+  cases hobjectReading
+  cases hlawReading
+  cases hinvariantReading
+  cases hsignatureReading
+  cases hoperationReading
+  rfl
+
+end CoreReading
 
 namespace AATCorePackage
 
-/--
-peer-review hardening I-2: a realization tying the abstract `AtomAxiomSystem` tower to the
-actual Part I Lean tower. The maps are explicit, so later examples can show how
-`S.configurationOf` feeds an `AtomConfiguration` without changing the frozen
-`AtomAxiomSystem` record.
--/
-structure AtomTowerRealization {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) where
-  familyToken : S.Family
-  configurationToken : S.Configuration
-  familyOf : S.Family -> AtomFamily U
-  configurationOf : S.Configuration -> AtomConfiguration U
-  family : AtomFamily U
-  configuration : AtomConfiguration U
-  family_eq : familyOf familyToken = family
-  configuration_eq : configurationOf configurationToken = configuration
-  configurationToken_eq : S.configurationOf familyToken = configurationToken
-  configuration_family_eq : configuration.family = family
+/-- Core packages are equal when their primitive systems and admissible readings agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
+    (haxioms : P.axioms = Q.axioms) (hreading : P.reading = Q.reading) : P = Q := by
+  cases P
+  cases Q
+  cases haxioms
+  cases hreading
+  rfl
 
-namespace AtomTowerRealization
-
-/-- peer-review hardening I-2: the selected configuration is obtained from the selected axiom family token. -/
-theorem realized_configuration_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    (R : AtomTowerRealization S) :
-    R.configurationOf (S.configurationOf R.familyToken) = R.configuration := by
-  rw [R.configurationToken_eq, R.configuration_eq]
-
-/-- peer-review hardening I-2: the selected family is obtained from the selected axiom family token. -/
-theorem realized_family_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    (R : AtomTowerRealization S) :
-    R.familyOf R.familyToken = R.family :=
-  R.family_eq
-
-end AtomTowerRealization
-
-/-- I.定理10.5: the identity operation used by the singleton core algebra. -/
-def identityOperation {U : AtomCarrier.{u}} (A : ArchitectureObject U) :
-    Operation U where
-  source := A
-  target := A
-  Evidence := PUnit
-  evidence := PUnit.unit
-  objectMap := fun source target => source = A ∧ target = A
-  objectMap_holds := ⟨rfl, rfl⟩
-  configurationMap := fun source target =>
-    source = A.configuration ∧ target = A.configuration
-  configurationMap_holds := ⟨rfl, rfl⟩
-
-/--
-I.定理10.5: build the singleton object algebra from the selected Part I
-components.
--/
-def objectAlgebraOfComponents {U : AtomCarrier.{u}}
-    (Inv : InvariantFamily U) (LU : LawUniverse U)
-    (L : Law U) (A : ArchitectureObject U)
-    (O : ObstructionCircuit L A) (Sig : ArchitectureSignature U) :
-    ObjectAlgebra U where
-  Obj := PUnit
-  object := fun _ => A
-  Op := PUnit
-  operation := fun _ => identityOperation A
-  operationSource := fun _ => PUnit.unit
-  operationTarget := fun _ => PUnit.unit
-  operation_source_eq := by
-    intro op
-    cases op
-    rfl
-  operation_target_eq := by
-    intro op
-    cases op
-    rfl
-  Inv := Inv
-  lawUniverse := LU
-  Ob := PUnit
-  obstructionLaw := fun _ => L
-  obstructionObject := fun _ => A
-  obstructionCircuit := fun _ => O
-  signature := Sig
-
-/-- I.定理10.5: construct the AAT Core package from the Part I tower. -/
-def ofComponents {U : AtomCarrier.{u}}
-    (S : AtomAxiomSystem U) (F : AtomFamily U)
-    (C : AtomConfiguration U) (A : ArchitectureObject U)
-    (hconfiguration : C.family = F)
-    (hobject : A.configuration = C)
-    (Inv : InvariantFamily U) (LU : LawUniverse U)
-    (L : Law U) (O : ObstructionCircuit L A)
-    (Sig : ArchitectureSignature U) : AATCorePackage U where
+/-- Construct the core input package from its two independent inputs. -/
+def generate {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (r : CoreReading U) : AATCorePackage U where
   axioms := S
-  family := F
-  configuration := C
-  object := A
-  configuration_family_eq := hconfiguration
-  object_configuration_eq := hobject
-  lawUniverse := LU
-  obstructionLaw := L
-  obstructionCircuit := O
-  signature := Sig
-  algebra := objectAlgebraOfComponents Inv LU L A O Sig
-  algebraObject := PUnit.unit
-  algebraOperation := PUnit.unit
-  algebraObstruction := PUnit.unit
-  algebra_object_eq := rfl
-  algebra_operation_source_eq := rfl
-  algebra_operation_target_eq := rfl
-  algebra_lawUniverse_eq := rfl
-  algebra_signature_eq := rfl
+  reading := r
 
-/--
-peer-review hardening I-2: construct the core package from an explicit realization of the
-`AtomAxiomSystem` tower. This additive constructor makes the use of `S` visible
-through `AtomTowerRealization`, while preserving the original constructor for
-Research imports.
--/
-def ofAxiomRealization {U : AtomCarrier.{u}} (S : AtomAxiomSystem U)
-    (R : AtomTowerRealization S)
-    (A : ArchitectureObject U)
-    (hobject : A.configuration = R.configuration)
-    (Inv : InvariantFamily U) (LU : LawUniverse U)
-    (L : Law U) (O : ObstructionCircuit L A)
-    (Sig : ArchitectureSignature U) : AATCorePackage U :=
-  ofComponents S R.family R.configuration A R.configuration_family_eq hobject
-    Inv LU L O Sig
+/-- The canonical Atom family extracted by the core reading. -/
+def family {U : AtomCarrier.{u}} (core : AATCorePackage U) : AtomFamily U :=
+  core.reading.doctrine.atomize core.reading.source
 
-/-- I.定理10.5: an AAT Core package exists for any selected Part I tower. -/
-theorem exists_ofComponents {U : AtomCarrier.{u}}
-    (S : AtomAxiomSystem U) (F : AtomFamily U)
-    (C : AtomConfiguration U) (A : ArchitectureObject U)
-    (hconfiguration : C.family = F)
-    (hobject : A.configuration = C)
-    (Inv : InvariantFamily U) (LU : LawUniverse U)
-    (L : Law U) (O : ObstructionCircuit L A)
-    (Sig : ArchitectureSignature U) :
-    ∃ core : AATCorePackage U,
-      core.axioms = S ∧
-        core.family = F ∧
-          core.configuration = C ∧
-            core.object = A ∧
-              core.configuration.family = core.family ∧
-                core.object.configuration = core.configuration ∧
-                  core.lawUniverse = LU ∧
-                    core.obstructionLaw = L ∧
-                      HEq core.obstructionCircuit O ∧
-                        core.signature = Sig :=
-  ⟨ofComponents S F C A hconfiguration hobject Inv LU L O Sig,
-    rfl, rfl, rfl, rfl, hconfiguration, hobject, rfl, rfl, HEq.rfl, rfl⟩
+/-- The configuration obtained by applying the composition rule to the canonical family. -/
+def configuration {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) : AtomConfiguration U :=
+  core.reading.composition.compose core.family core.reading.family_listFinite
 
-/--
-peer-review hardening I-2: HEq-free existence statement for the selected Part I tower. The
-dependent obstruction-circuit equality remains available through the frozen
-`exists_ofComponents`; reviewers can use this theorem when they only need the
-core tower components.
--/
-theorem exists_ofComponents_noHEq {U : AtomCarrier.{u}}
-    (S : AtomAxiomSystem U) (F : AtomFamily U)
-    (C : AtomConfiguration U) (A : ArchitectureObject U)
-    (hconfiguration : C.family = F)
-    (hobject : A.configuration = C)
-    (Inv : InvariantFamily U) (LU : LawUniverse U)
-    (L : Law U) (O : ObstructionCircuit L A)
-    (Sig : ArchitectureSignature U) :
-    ∃ core : AATCorePackage U,
-      core.axioms = S ∧
-        core.family = F ∧
-          core.configuration = C ∧
-            core.object = A ∧
-              core.configuration.family = core.family ∧
-                core.object.configuration = core.configuration ∧
-                  core.lawUniverse = LU ∧
-                    core.obstructionLaw = L ∧
-                      core.signature = Sig :=
-  ⟨ofComponents S F C A hconfiguration hobject Inv LU L O Sig,
-    rfl, rfl, rfl, rfl, hconfiguration, hobject, rfl, rfl, rfl⟩
+/-- The architecture object obtained from the generated configuration. -/
+def object {U : AtomCarrier.{u}} (core : AATCorePackage U) : ArchitectureObject U :=
+  core.reading.objectReading.object core.configuration
 
-/--
-peer-review hardening I-2: HEq-free existence statement from an explicit axiom-system
-realization.
--/
-theorem exists_ofAxiomRealization_noHEq {U : AtomCarrier.{u}}
-    (S : AtomAxiomSystem U) (R : AtomTowerRealization S)
-    (A : ArchitectureObject U)
-    (hobject : A.configuration = R.configuration)
-    (Inv : InvariantFamily U) (LU : LawUniverse U)
-    (L : Law U) (O : ObstructionCircuit L A)
-    (Sig : ArchitectureSignature U) :
-    ∃ core : AATCorePackage U,
-      core.axioms = S ∧
-        core.family = R.family ∧
-          core.configuration = R.configuration ∧
-            core.object = A ∧
-              core.configuration.family = core.family ∧
-                core.object.configuration = core.configuration ∧
-                  core.lawUniverse = LU ∧
-                    core.obstructionLaw = L ∧
-                      core.signature = Sig :=
-  exists_ofComponents_noHEq S R.family R.configuration A R.configuration_family_eq
-    hobject Inv LU L O Sig
+/-- The operation-closed object algebra generated from the base object. -/
+def algebra {U : AtomCarrier.{u}} (core : AATCorePackage U) : ObjectAlgebra U where
+  Obj := {A : ArchitectureObject U //
+    core.reading.operationReading.Reachable core.object A}
+  object A := A.1
+  Op A B := core.reading.operationReading.Op A.1 B.1
+  configurationMap op := core.reading.operationReading.configurationMap op
+  invariantReading := core.reading.invariantReading
+  lawReading := core.reading.lawReading
+  signatureReading := core.reading.signatureReading
 
-/-- I.定理10.5: read the selected Atom A0-A8 system. -/
-theorem axioms_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    {F : AtomFamily U} {C : AtomConfiguration U}
-    {A : ArchitectureObject U} {Inv : InvariantFamily U}
-    {hconfiguration : C.family = F} {hobject : A.configuration = C}
-    {LU : LawUniverse U} {L : Law U} {O : ObstructionCircuit L A}
-    {Sig : ArchitectureSignature U} :
-    (ofComponents S F C A hconfiguration hobject Inv LU L O Sig).axioms = S :=
+/-- The generated object as the distinguished base member of the reachable algebra. -/
+def baseObject {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) : core.algebra.Obj :=
+  ⟨core.object, OperationReading.Reachable.base⟩
+
+/-- The canonical family of any core satisfies its extraction doctrine. -/
+theorem family_atomizes {U : AtomCarrier.{u}} (core : AATCorePackage U) :
+    core.reading.doctrine.Atomizes core.reading.source core.family :=
+  core.reading.doctrine.atomize_holds core.reading.source
+
+/-- Membership in the generated family is exactly extraction from the core source. -/
+theorem family_mem_iff_extracts {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (atom : U.Atom) :
+    core.family.mem atom ↔
+      core.reading.doctrine.extracts core.reading.source atom :=
+  core.family_atomizes atom
+
+/-- The generated configuration is exactly the composition result selected by the reading. -/
+theorem configuration_eq_compose {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) :
+    core.configuration =
+      core.reading.composition.compose core.family core.reading.family_listFinite :=
   rfl
 
-/-- I.定理10.5: read the selected Atom family component. -/
-theorem family_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    {F : AtomFamily U} {C : AtomConfiguration U}
-    {A : ArchitectureObject U} {Inv : InvariantFamily U}
-    {hconfiguration : C.family = F} {hobject : A.configuration = C}
-    {LU : LawUniverse U} {L : Law U} {O : ObstructionCircuit L A}
-    {Sig : ArchitectureSignature U} :
-    (ofComponents S F C A hconfiguration hobject Inv LU L O Sig).family = F :=
-  rfl
-
-/-- I.定理10.5: read the selected configuration component. -/
-theorem configuration_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    {F : AtomFamily U} {C : AtomConfiguration U}
-    {A : ArchitectureObject U} {Inv : InvariantFamily U}
-    {hconfiguration : C.family = F} {hobject : A.configuration = C}
-    {LU : LawUniverse U} {L : Law U} {O : ObstructionCircuit L A}
-    {Sig : ArchitectureSignature U} :
-    (ofComponents S F C A hconfiguration hobject Inv LU L O Sig).configuration = C :=
-  rfl
-
-/-- I.定理10.5: read the selected architecture object component. -/
-theorem object_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    {F : AtomFamily U} {C : AtomConfiguration U}
-    {A : ArchitectureObject U} {Inv : InvariantFamily U}
-    {hconfiguration : C.family = F} {hobject : A.configuration = C}
-    {LU : LawUniverse U} {L : Law U} {O : ObstructionCircuit L A}
-    {Sig : ArchitectureSignature U} :
-    (ofComponents S F C A hconfiguration hobject Inv LU L O Sig).object = A :=
-  rfl
-
-/-- I.定理10.5: the selected configuration belongs to the selected family. -/
-theorem configuration_family {U : AtomCarrier.{u}} (core : AATCorePackage U) :
+/-- The configuration of any core has exactly its canonical family. -/
+theorem configuration_family_eq {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) :
     core.configuration.family = core.family :=
-  core.configuration_family_eq
+  core.reading.composition.family_eq _ _
 
-/-- I.定理10.5: the selected object is built over the selected configuration. -/
-theorem object_configuration {U : AtomCarrier.{u}} (core : AATCorePackage U) :
+/-- Configuration-family membership is exactly extraction from the core source. -/
+theorem configuration_family_mem_iff_extracts {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (atom : U.Atom) :
+    core.configuration.family.mem atom ↔
+      core.reading.doctrine.extracts core.reading.source atom := by
+  rw [core.configuration_family_eq]
+  exact core.family_mem_iff_extracts atom
+
+/-- The generated relation is exactly the relation returned by the composition rule. -/
+theorem configuration_relation_iff_compose {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (a b : U.Atom) :
+    core.configuration.relation a b ↔
+      (core.reading.composition.compose core.family
+        core.reading.family_listFinite).relation a b :=
+  Iff.rfl
+
+/-- The generated identification is exactly the one returned by the composition rule. -/
+theorem configuration_identification_iff_compose {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (a b : U.Atom) :
+    core.configuration.identification a b ↔
+      (core.reading.composition.compose core.family
+        core.reading.family_listFinite).identification a b :=
+  Iff.rfl
+
+/-- Relations and identifications of any generated configuration are family-supported. -/
+theorem configuration_familySupported {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) : core.configuration.FamilySupported :=
+  core.reading.composition.family_supported _ _
+
+/-- The object-formation rule preserves the generated configuration. -/
+theorem object_configuration_eq {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) :
     core.object.configuration = core.configuration :=
-  core.object_configuration_eq
+  core.reading.objectReading.configuration_eq _
 
-/-- I.定理10.5: read the selected law universe component. -/
-theorem lawUniverse_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    {F : AtomFamily U} {C : AtomConfiguration U}
-    {A : ArchitectureObject U} {Inv : InvariantFamily U}
-    {hconfiguration : C.family = F} {hobject : A.configuration = C}
-    {LU : LawUniverse U} {L : Law U} {O : ObstructionCircuit L A}
-    {Sig : ArchitectureSignature U} :
-    (ofComponents S F C A hconfiguration hobject Inv LU L O Sig).lawUniverse = LU :=
+/-- Membership in the generated object's family is exactly source extraction. -/
+theorem object_family_mem_iff_extracts {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (atom : U.Atom) :
+    core.object.configuration.family.mem atom ↔
+      core.reading.doctrine.extracts core.reading.source atom := by
+  rw [core.object_configuration_eq]
+  exact core.configuration_family_mem_iff_extracts atom
+
+/-- The generated algebra retains the core reading's selected law reading. -/
+theorem algebra_lawReading_eq {U : AtomCarrier.{u}} (core : AATCorePackage U) :
+    core.algebra.lawReading = core.reading.lawReading :=
   rfl
 
-/-- I.定理10.5: read the selected obstruction circuit component. -/
-theorem obstructionLaw_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    {F : AtomFamily U} {C : AtomConfiguration U}
-    {A : ArchitectureObject U} {Inv : InvariantFamily U}
-    {hconfiguration : C.family = F} {hobject : A.configuration = C}
-    {LU : LawUniverse U} {L : Law U} {O : ObstructionCircuit L A}
-    {Sig : ArchitectureSignature U} :
-    (ofComponents S F C A hconfiguration hobject Inv LU L O Sig).obstructionLaw =
-      L :=
-  rfl
-
-/-- I.定理10.5: read the selected obstruction circuit component. -/
-theorem obstructionCircuit_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    {F : AtomFamily U} {C : AtomConfiguration U}
-    {A : ArchitectureObject U} {Inv : InvariantFamily U}
-    {hconfiguration : C.family = F} {hobject : A.configuration = C}
-    {LU : LawUniverse U} {L : Law U} {O : ObstructionCircuit L A}
-    {Sig : ArchitectureSignature U} :
-    (ofComponents S F C A hconfiguration hobject Inv LU L O Sig).obstructionCircuit = O :=
-  rfl
-
-/-- I.定理10.5: read the selected architecture signature component. -/
-theorem signature_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    {F : AtomFamily U} {C : AtomConfiguration U}
-    {A : ArchitectureObject U} {Inv : InvariantFamily U}
-    {hconfiguration : C.family = F} {hobject : A.configuration = C}
-    {LU : LawUniverse U} {L : Law U} {O : ObstructionCircuit L A}
-    {Sig : ArchitectureSignature U} :
-    (ofComponents S F C A hconfiguration hobject Inv LU L O Sig).signature = Sig :=
-  rfl
-
-/-- I.定理10.5: read the selected object algebra component. -/
-theorem algebra_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
-    {F : AtomFamily U} {C : AtomConfiguration U}
-    {A : ArchitectureObject U} {Inv : InvariantFamily U}
-    {hconfiguration : C.family = F} {hobject : A.configuration = C}
-    {LU : LawUniverse U} {L : Law U} {O : ObstructionCircuit L A}
-    {Sig : ArchitectureSignature U} :
-    (ofComponents S F C A hconfiguration hobject Inv LU L O Sig).algebra =
-      objectAlgebraOfComponents Inv LU L A O Sig :=
-  rfl
-
-/-- I.定理10.5: the generated object algebra contains the selected object. -/
-theorem algebra_object {U : AtomCarrier.{u}} (core : AATCorePackage U) :
-    core.algebra.object core.algebraObject = core.object :=
-  core.algebra_object_eq
-
-/-- I.定理10.5: the generated object algebra contains the selected law universe. -/
-theorem algebra_lawUniverse {U : AtomCarrier.{u}} (core : AATCorePackage U) :
-    core.algebra.lawUniverse = core.lawUniverse :=
-  core.algebra_lawUniverse_eq
-
-/-- I.定理10.5: the generated object algebra contains the selected signature. -/
-theorem algebra_signature {U : AtomCarrier.{u}} (core : AATCorePackage U) :
-    core.algebra.signature = core.signature :=
-  core.algebra_signature_eq
-
-/-- I.定理10.5: the generated object algebra contains a selected operation. -/
-theorem algebra_operation_source {U : AtomCarrier.{u}}
+/-- The generated algebra retains the core reading's indexed circuit reading. -/
+theorem algebra_circuitReading_eq {U : AtomCarrier.{u}}
     (core : AATCorePackage U) :
-    (core.algebra.operation core.algebraOperation).source = core.object :=
-  core.algebra_operation_source_eq
+    core.algebra.lawReading.circuits = core.reading.lawReading.circuits :=
+  rfl
 
-/-- I.定理10.5: the selected operation targets the selected object. -/
-theorem algebra_operation_target {U : AtomCarrier.{u}}
-    (core : AATCorePackage U) :
-    (core.algebra.operation core.algebraOperation).target = core.object :=
-  core.algebra_operation_target_eq
+/-- The generated algebra uses the detector code selected by the core reading. -/
+theorem algebra_detectorCode_eq {U : AtomCarrier.{u}}
+    (core : AATCorePackage U)
+    (i : core.reading.lawReading.lawUniverse.Index) :
+    core.algebra.lawReading.circuits.code i =
+      core.reading.lawReading.circuits.code i :=
+  rfl
+
+/-- Generated circuit acceptance computes by the core reading's selected detector. -/
+theorem algebra_accepts_eq_detector_eval {U : AtomCarrier.{u}}
+    (core : AATCorePackage U)
+    (i : core.reading.lawReading.lawUniverse.Index)
+    (Q : FiniteCircuitDatum U) :
+    core.algebra.lawReading.circuits.accepts i Q =
+      (core.reading.lawReading.circuits.code i).eval Q :=
+  rfl
+
+/--
+An architecture object occurs in the generated algebra exactly when it is
+reachable from the generated base object by the selected operation reading.
+-/
+theorem algebra_object_nonempty_iff_reachable {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (A : ArchitectureObject U) :
+    Nonempty {a : core.algebra.Obj // core.algebra.object a = A} ↔
+      core.reading.operationReading.Reachable core.object A := by
+  constructor
+  · rintro ⟨a, ha⟩
+    rw [← ha]
+    exact a.2
+  · intro hreachable
+    exact ⟨⟨⟨A, hreachable⟩, rfl⟩⟩
+
+/--
+The generated algebra's circuit fiber is inhabited exactly when its indexed
+finite detector accepts a datum matching the selected generated object.
+-/
+theorem algebra_circuit_nonempty_iff {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (A : core.algebra.Obj)
+    (i : core.algebra.lawReading.lawUniverse.Index) :
+    Nonempty (core.algebra.Circuit A i) ↔
+      ∃ Q : FiniteCircuitDatum U,
+        Q.Matches (core.algebra.object A) ∧
+          core.algebra.lawReading.circuits.accepts i Q = true := by
+  constructor
+  · rintro ⟨c⟩
+    exact ⟨c.1, c.2⟩
+  · rintro ⟨Q, hmatches, haccepts⟩
+    exact ⟨⟨Q, hmatches, haccepts⟩⟩
+
+/-- `generate` retains the supplied Atom axioms. -/
+theorem generate_axioms {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (r : CoreReading U) :
+    (AATCorePackage.generate S r).axioms = S :=
+  rfl
+
+/-- `generate` retains the supplied admissible reading. -/
+theorem generate_reading {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (r : CoreReading U) :
+    (AATCorePackage.generate S r).reading = r :=
+  rfl
+
+/-- The generated family is definitionally the doctrine's canonical atomization. -/
+theorem generate_family_eq_atomize {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (r : CoreReading U) :
+    (AATCorePackage.generate S r).family = r.doctrine.atomize r.source :=
+  rfl
+
+/-- The generated family satisfies the atom-level extraction characterization. -/
+theorem generate_family_atomizes {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (r : CoreReading U) :
+    r.doctrine.Atomizes r.source (AATCorePackage.generate S r).family :=
+  r.doctrine.atomize_holds r.source
+
+/-- The generated family carries the concrete finite-list evidence supplied by the reading. -/
+theorem generate_family_listFinite {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (r : CoreReading U) :
+    (AATCorePackage.generate S r).family.ListFinite :=
+  r.family_listFinite
+
+/-- Any family with the same doctrine/source characterization is the generated family. -/
+theorem generate_family_unique {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (r : CoreReading U)
+    {F : AtomFamily U} (hF : r.doctrine.Atomizes r.source F) :
+    F = (AATCorePackage.generate S r).family :=
+  r.doctrine.eq_atomize r.source hF
+
+/-- The generated configuration is supported on exactly the generated family. -/
+theorem generate_configuration_family_eq
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U) :
+    (AATCorePackage.generate S r).configuration.family =
+      (AATCorePackage.generate S r).family :=
+  r.composition.family_eq _ _
+
+/-- The composition rule supplies relation and identification support. -/
+theorem generate_configuration_familySupported
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U) :
+    (AATCorePackage.generate S r).configuration.FamilySupported :=
+  r.composition.family_supported _ _
+
+/-- Object formation preserves the generated configuration. -/
+theorem generate_object_configuration_eq
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U) :
+    (AATCorePackage.generate S r).object.configuration =
+      (AATCorePackage.generate S r).configuration :=
+  r.objectReading.configuration_eq _
+
+/-- The generated algebra uses the reading's law/circuit family. -/
+theorem generate_lawReading_eq {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (r : CoreReading U) :
+    (AATCorePackage.generate S r).algebra.lawReading = r.lawReading :=
+  rfl
+
+/-- The distinguished algebra object is the generated architecture object. -/
+theorem generate_algebra_base_object
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U) :
+    (AATCorePackage.generate S r).algebra.object
+      (AATCorePackage.generate S r).baseObject =
+        (AATCorePackage.generate S r).object :=
+  rfl
+
+/-- An indexed algebra operation has the source encoded by its first index. -/
+theorem generate_algebra_operation_source
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U)
+    {A B : (AATCorePackage.generate S r).algebra.Obj}
+    (op : (AATCorePackage.generate S r).algebra.Op A B) :
+    ((AATCorePackage.generate S r).algebra.operation op).source =
+      (AATCorePackage.generate S r).algebra.object A :=
+  rfl
+
+/-- An indexed algebra operation has the target encoded by its second index. -/
+theorem generate_algebra_operation_target
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U)
+    {A B : (AATCorePackage.generate S r).algebra.Obj}
+    (op : (AATCorePackage.generate S r).algebra.Op A B) :
+    ((AATCorePackage.generate S r).algebra.operation op).target =
+      (AATCorePackage.generate S r).algebra.object B :=
+  rfl
+
+/-- Every generated circuit proves failure through the reading's soundness theorem. -/
+theorem generate_circuit_sound
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U)
+    (A : (AATCorePackage.generate S r).algebra.Obj)
+    (i : (AATCorePackage.generate S r).algebra.lawReading.lawUniverse.Index)
+    (c : (AATCorePackage.generate S r).algebra.Circuit A i) :
+    ¬ ((AATCorePackage.generate S r).algebra.lawReading.lawUniverse.law i).holds
+      ((AATCorePackage.generate S r).algebra.object A) :=
+  r.lawReading.circuits.sound i A.1 c.1 c.2.1 c.2.2
+
+/-- Generated operations transport family membership through their actual atom map. -/
+theorem generate_algebra_operation_maps_family
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U)
+    {A B : (AATCorePackage.generate S r).algebra.Obj}
+    (op : (AATCorePackage.generate S r).algebra.Op A B)
+    {a : U.Atom}
+    (ha : ((AATCorePackage.generate S r).algebra.object A).configuration.family.mem a) :
+    ((AATCorePackage.generate S r).algebra.object B).configuration.family.mem
+      (((AATCorePackage.generate S r).algebra.configurationMap op).atomMap a) :=
+  ((AATCorePackage.generate S r).algebra.configurationMap op).maps_family ha
+
+/-- Generated operations transport configuration relations. -/
+theorem generate_algebra_operation_maps_relation
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U)
+    {A B : (AATCorePackage.generate S r).algebra.Obj}
+    (op : (AATCorePackage.generate S r).algebra.Op A B)
+    {a b : U.Atom}
+    (hab : ((AATCorePackage.generate S r).algebra.object A).configuration.relation a b) :
+    ((AATCorePackage.generate S r).algebra.object B).configuration.relation
+      (((AATCorePackage.generate S r).algebra.configurationMap op).atomMap a)
+      (((AATCorePackage.generate S r).algebra.configurationMap op).atomMap b) :=
+  ((AATCorePackage.generate S r).algebra.configurationMap op).maps_relation hab
+
+/-- Generated operations transport configuration identifications. -/
+theorem generate_algebra_operation_maps_identification
+    {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U)
+    {A B : (AATCorePackage.generate S r).algebra.Obj}
+    (op : (AATCorePackage.generate S r).algebra.Op A B)
+    {a b : U.Atom}
+    (hab : ((AATCorePackage.generate S r).algebra.object A).configuration.identification a b) :
+    ((AATCorePackage.generate S r).algebra.object B).configuration.identification
+      (((AATCorePackage.generate S r).algebra.configurationMap op).atomMap a)
+      (((AATCorePackage.generate S r).algebra.configurationMap op).atomMap b) :=
+  ((AATCorePackage.generate S r).algebra.configurationMap op).maps_identification hab
 
 end AATCorePackage
 

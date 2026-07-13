@@ -891,18 +891,197 @@ theorem finiteCyclicConcreteThreeReadingFires :
           FiniteModel.concreteNoCycleSignatureAxes :=
   FiniteModel.object_concreteThreeReadingAgreement_fires
 
-theorem finiteCorePackageFromAxiomRealizationNoHEq :
-    ∃ core : AATCorePackage FiniteModel.carrier,
-      core.axioms = FiniteModel.axiomSystem ∧
-        core.family = FiniteModel.allFamily ∧
-          core.configuration = FiniteModel.configuration ∧
-            core.object = FiniteModel.object ∧
-              core.configuration.family = core.family ∧
-                core.object.configuration = core.configuration ∧
-                  core.lawUniverse = FiniteModel.lawUniverse ∧
-                    core.obstructionLaw = FiniteModel.noCycleLaw ∧
-                      core.signature = FiniteModel.signature :=
-  FiniteModel.corePackageFromAxiomRealization_exists_noHEq
+theorem finiteCoreGeneratedFamilyAtomizes :
+    FiniteModel.coreReading.doctrine.Atomizes
+      FiniteModel.coreReading.source FiniteModel.corePackage.family :=
+  FiniteModel.corePackage.family_atomizes
+
+theorem finiteCoreNonidentityReachableOperation :
+    ∃ A B : FiniteModel.corePackage.algebra.Obj,
+      A ≠ B ∧ Nonempty (FiniteModel.corePackage.algebra.Op A B) :=
+  FiniteModel.nonidentity_reachable_operation_fires
+
+theorem finiteCoreGeneratedCircuitSound :
+    ¬ (FiniteModel.corePackage.algebra.lawReading.lawUniverse.law PUnit.unit).holds
+      (FiniteModel.corePackage.algebra.object FiniteModel.corePackage.baseObject) :=
+  FiniteModel.generatedCycleCircuit_sound
+
+def extractionDoctrineAtomizeHolds :=
+  @ExtractionDoctrine.atomize_holds
+
+def extractionDoctrineAtomizeUnique :=
+  @ExtractionDoctrine.atomize_unique
+
+def extractionDoctrineEqAtomize :=
+  @ExtractionDoctrine.eq_atomize
+
+def generatedCoreAxioms :=
+  @AATCorePackage.generate_axioms
+
+def generatedCoreReading :=
+  @AATCorePackage.generate_reading
+
+def generatedCoreFamilyAtomizes :=
+  @AATCorePackage.generate_family_atomizes
+
+def generatedCoreFamilyUnique :=
+  @AATCorePackage.generate_family_unique
+
+def generatedCoreConfigurationSupported :=
+  @AATCorePackage.generate_configuration_familySupported
+
+def generatedCoreObjectConfiguration :=
+  @AATCorePackage.generate_object_configuration_eq
+
+def generatedCoreCircuitSound :=
+  @AATCorePackage.generate_circuit_sound
+
+def generatedCoreOperationMapsFamily :=
+  @AATCorePackage.generate_algebra_operation_maps_family
+
+def generatedCoreOperationMapsRelation :=
+  @AATCorePackage.generate_algebra_operation_maps_relation
+
+def generatedCoreOperationMapsIdentification :=
+  @AATCorePackage.generate_algebra_operation_maps_identification
+
+/- SD1 target and finite-firing declarations added by the core-generation slice. -/
+
+def sd1AtomFamilyExt := @AtomFamily.ext
+def sd1AtomConfigurationExt := @AtomConfiguration.ext
+def sd1CompositionReadingExt := @CompositionReading.ext
+def sd1CompositionComposeFamilyEq := @CompositionReading.compose_family_eq
+def sd1CompositionComposeFamilySupported := @CompositionReading.compose_familySupported
+def sd1ObjectReadingExt := @ObjectReading.ext
+def sd1ObjectReadingConfigurationEq := @ObjectReading.object_configuration_eq
+def sd1CoreReadingExt := @CoreReading.ext
+def sd1CorePackageExt := @AATCorePackage.ext
+def sd1CoreFamilyAtomizes := @AATCorePackage.family_atomizes
+def sd1CoreConfigurationFamilyEq := @AATCorePackage.configuration_family_eq
+def sd1CoreConfigurationSupported := @AATCorePackage.configuration_familySupported
+def sd1CoreObjectConfigurationEq := @AATCorePackage.object_configuration_eq
+def sd1CoreAlgebraObjectReachable := @AATCorePackage.algebra_object_nonempty_iff_reachable
+def sd1CoreAlgebraCircuitNonempty := @AATCorePackage.algebra_circuit_nonempty_iff
+def sd1GenerateAxioms := @AATCorePackage.generate_axioms
+def sd1GenerateReading := @AATCorePackage.generate_reading
+def sd1GenerateFamilyEqAtomize := @AATCorePackage.generate_family_eq_atomize
+def sd1GenerateFamilyAtomizes := @AATCorePackage.generate_family_atomizes
+def sd1GenerateFamilyListFinite := @AATCorePackage.generate_family_listFinite
+def sd1GenerateFamilyUnique := @AATCorePackage.generate_family_unique
+def sd1GenerateConfigurationFamilyEq := @AATCorePackage.generate_configuration_family_eq
+def sd1GenerateConfigurationSupported := @AATCorePackage.generate_configuration_familySupported
+def sd1GenerateObjectConfigurationEq := @AATCorePackage.generate_object_configuration_eq
+def sd1GenerateLawReadingEq := @AATCorePackage.generate_lawReading_eq
+def sd1GenerateAlgebraBaseObject := @AATCorePackage.generate_algebra_base_object
+def sd1GenerateOperationSource := @AATCorePackage.generate_algebra_operation_source
+def sd1GenerateOperationTarget := @AATCorePackage.generate_algebra_operation_target
+def sd1GenerateCircuitSound := @AATCorePackage.generate_circuit_sound
+def sd1GenerateOperationMapsFamily := @AATCorePackage.generate_algebra_operation_maps_family
+def sd1GenerateOperationMapsRelation := @AATCorePackage.generate_algebra_operation_maps_relation
+def sd1GenerateOperationMapsIdentification :=
+  @AATCorePackage.generate_algebra_operation_maps_identification
+
+def sd1ConfigurationHomExt := @ConfigurationHom.ext
+def sd1OperationReadingExt := @OperationReading.ext
+def sd1OperationReadingSource := @OperationReading.operation_source
+def sd1OperationReadingTarget := @OperationReading.operation_target
+def sd1OperationReadingConfigurationMap := @OperationReading.operation_configurationMap
+def sd1ObjectAlgebraExt := @ObjectAlgebra.ext
+def sd1ObjectAlgebraOperationSource := @ObjectAlgebra.operation_source
+def sd1ObjectAlgebraOperationTarget := @ObjectAlgebra.operation_target
+def sd1ObjectAlgebraConfigurationMap := @ObjectAlgebra.operation_configurationMap
+def sd1ObjectAlgebraCircuitSound := @ObjectAlgebra.circuit_sound
+def sd1ObjectAlgebraCircuitNonempty := @ObjectAlgebra.circuit_nonempty_iff
+
+def sd1FiniteCircuitDatumExt := @FiniteCircuitDatum.ext
+def sd1FiniteCircuitHoldsIff := @FiniteCircuitDatum.holds_iff_of_matches
+def sd1CircuitReadingExt := @CircuitReading.ext
+def sd1CircuitAcceptsEqEval := @CircuitReading.accepts_eq_eval
+def sd1CircuitSound := @CircuitReading.circuit_sound
+def sd1LawReadingExt := @LawReading.ext
+
+def sd1ObservationCanonicalFamilyUnique := @A9Example.canonical_family_unique
+
+def sd1FiniteAllFamilyMem := FiniteModel.allFamily_mem
+def sd1FiniteComponentAExtracted := FiniteModel.componentA_extracted_withoutComponentC
+def sd1FiniteComponentCNotExtracted :=
+  FiniteModel.componentC_not_extracted_withoutComponentC
+def sd1FiniteAllFamilyAtomizes := FiniteModel.allFamily_atomizes
+def sd1FiniteEmptyFamilyNotAtomizes := FiniteModel.emptyFamily_not_atomizes
+def sd1FiniteSystem := FiniteModel.axiomSystem
+def sd1FiniteCoreObject := FiniteModel.corePackage_object
+def sd1FiniteCollapsedReachable := FiniteModel.collapsedObject_reachable
+def sd1FiniteCollapseNonidentity := FiniteModel.collapseOperation_atomMap_nonidentity
+def sd1FiniteCoreFamilyMem := FiniteModel.corePackage_family_mem
+def sd1FiniteCoreComponentAMem := FiniteModel.corePackage_componentA_mem
+def sd1FiniteCoreComponentCNotMem := FiniteModel.corePackage_componentC_not_mem
+def sd1FiniteCycleRelationOne := FiniteModel.corePackage_cycle_relation
+def sd1FiniteCycleRelationTwo := FiniteModel.corePackage_cycle_relation_two
+def sd1FiniteCycleRelationThree := FiniteModel.corePackage_cycle_relation_three
+def sd1FiniteIdentification := FiniteModel.corePackage_componentA_identified_componentB
+def sd1FiniteTransportFamily := FiniteModel.collapseOperation_transports_family
+def sd1FiniteTransportRelation := FiniteModel.collapseOperation_transports_relation
+def sd1FiniteTransportIdentification :=
+  FiniteModel.collapseOperation_transports_identification
+def sd1FiniteDistinctObjects := FiniteModel.baseObject_ne_collapsedObject
+def sd1FiniteOperationFires := FiniteModel.nonidentity_reachable_operation_fires
+def sd1FiniteDatumMatches := FiniteModel.cycleQueryDatum_matches_core
+def sd1FiniteDatumNotMatches := FiniteModel.componentAAbsentDatum_not_matches_core
+def sd1FiniteRequiredCompleteNegative :=
+  FiniteModel.rejectingCircuitReading_not_requiredComplete
+def sd1FiniteRequiredCompletePositive :=
+  FiniteModel.completeCircuitReading_requiredComplete
+def sd1FiniteRequiredCompleteNonvacuous :=
+  @FiniteModel.completeCircuitReading_nonvacuous
+def sd1FiniteDatumAccepted := FiniteModel.cycleQueryDatum_accepted
+def sd1FiniteDatumRejected := FiniteModel.emptyQueryDatum_rejected
+def sd1FiniteGeneratedCircuitSound := FiniteModel.generatedCycleCircuit_sound
+
+/- SD1 no-unfold characterizations and nontrivial negative instances. -/
+def sd1ExtractsIff := @ExtractionDoctrine.extracts_iff
+def sd1AtomizeMemIff := @ExtractionDoctrine.atomize_mem_iff
+def sd1AtomizesMemIff := @ExtractionDoctrine.mem_iff_extracts_of_atomizes
+def sd1SemanticObstructionIff := @SemanticObstruction.iff_not_holds
+def sd1AtomPresentHoldsIff := @CircuitQuery.atomPresent_holds_iff
+def sd1RelationPresentHoldsIff := @CircuitQuery.relationPresent_holds_iff
+def sd1IdentificationPresentHoldsIff := @CircuitQuery.identificationPresent_holds_iff
+def sd1DetectorReject := @CircuitDetectorCode.eval_reject
+def sd1DetectorExact := @CircuitDetectorCode.eval_exact_eq_true_iff
+def sd1DetectorAny := @CircuitDetectorCode.eval_any_eq_true_iff
+def sd1CircuitAcceptsEval := @CircuitReading.accepts_eq_true_iff_eval
+def sd1CircuitAcceptsReject := @CircuitReading.accepts_eq_false_of_code_reject
+def sd1CircuitAcceptsExact := @CircuitReading.accepts_eq_true_iff_of_code_exact
+def sd1CircuitAcceptsAny := @CircuitReading.accepts_eq_true_iff_of_code_any
+def sd1CoreFamilyMemIff := @AATCorePackage.family_mem_iff_extracts
+def sd1CoreConfigurationEqCompose := @AATCorePackage.configuration_eq_compose
+def sd1CoreConfigurationFamilyMemIff :=
+  @AATCorePackage.configuration_family_mem_iff_extracts
+def sd1CoreConfigurationRelationIff := @AATCorePackage.configuration_relation_iff_compose
+def sd1CoreConfigurationIdentificationIff :=
+  @AATCorePackage.configuration_identification_iff_compose
+def sd1CoreObjectFamilyMemIff := @AATCorePackage.object_family_mem_iff_extracts
+def sd1CoreAlgebraLawReadingEq := @AATCorePackage.algebra_lawReading_eq
+def sd1CoreAlgebraCircuitReadingEq := @AATCorePackage.algebra_circuitReading_eq
+def sd1CoreAlgebraDetectorCodeEq := @AATCorePackage.algebra_detectorCode_eq
+def sd1CoreAlgebraAcceptsEq := @AATCorePackage.algebra_accepts_eq_detector_eval
+def sd1FiniteSemanticObstruction := FiniteModel.object_semanticObstruction
+def sd1FiniteNoSemanticObstruction := FiniteModel.acyclicObject_not_semanticObstruction
+def sd1FiniteAtomPresentHolds := FiniteModel.componentA_atomPresent_holds_core
+def sd1FiniteAtomPresentNotHolds := FiniteModel.componentC_atomPresent_not_holds_core
+def sd1FiniteExtractsIffSelected := FiniteModel.extractionDoctrine_extracts_iff_selected
+def sd1FiniteConfigurationRelationIff := FiniteModel.corePackage_configuration_relation_iff
+def sd1FiniteObjectRelationIff := FiniteModel.corePackage_object_relation_iff
+def sd1FiniteReachableFamilyNonempty := @FiniteModel.reachable_object_family_nonempty
+def sd1FiniteUnreachableObject := FiniteModel.unreachableEmptyObject_not_reachable
+def sd1FiniteRejectingCode := FiniteModel.rejectingCircuitReading_code
+def sd1FiniteComponentAAbsentLawful :=
+  FiniteModel.componentAAbsentLaw_holds_unreachableEmptyObject
+def sd1FiniteComponentAAbsentFailure :=
+  FiniteModel.componentAAbsentLaw_failure_core
+def sd1FiniteComponentAPresentDatumMatches :=
+  @FiniteModel.componentAPresentDatum_matches_iff
+def sd1FiniteCompleteCode := FiniteModel.completeCircuitReading_code
+def sd1FiniteCoreDetectorCode := FiniteModel.coreReading_circuit_code
 
 theorem finiteSeedWitnessClosureAdmissible :
     Site.AdmissibleCover FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap

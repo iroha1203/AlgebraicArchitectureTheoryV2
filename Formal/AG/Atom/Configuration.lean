@@ -12,6 +12,23 @@ structure AtomConfiguration (U : AtomCarrier.{u}) where
 
 namespace AtomConfiguration
 
+/-- Extensionality of configurations by family, relation, and identification. -/
+@[ext] theorem ext {U : AtomCarrier.{u}} {C D : AtomConfiguration U}
+    (hfamily : C.family = D.family)
+    (hrelation : ∀ a b, C.relation a b ↔ D.relation a b)
+    (hidentification : ∀ a b, C.identification a b ↔ D.identification a b) :
+    C = D := by
+  cases C with
+  | mk familyC relationC identificationC =>
+      cases D with
+      | mk familyD relationD identificationD =>
+          cases hfamily
+          congr 1
+          · funext a b
+            exact propext (hrelation a b)
+          · funext a b
+            exact propext (hidentification a b)
+
 /-- I.定義4.4: configuration inclusion on family, relation, and identification data. -/
 def Subconfiguration {U : AtomCarrier.{u}}
     (C' C : AtomConfiguration U) : Prop :=

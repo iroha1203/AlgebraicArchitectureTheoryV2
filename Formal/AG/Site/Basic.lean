@@ -26,12 +26,12 @@ def architectureObject (P : PartIPrerequisites.{u}) :
 /-- II.R0: read the selected LawUniverse supplied by Part I. -/
 def lawUniverse (P : PartIPrerequisites.{u}) :
     LawUniverse P.carrier :=
-  P.core.lawUniverse
+  P.core.algebra.lawReading.lawUniverse
 
 /-- II.R0: read the selected ArchitectureSignature supplied by Part I. -/
 def signature (P : PartIPrerequisites.{u}) :
     ArchitectureSignature P.carrier :=
-  P.core.signature
+  P.core.algebra.signatureReading
 
 /--
 II.R0: the Part I object still carries the configuration packaged by the

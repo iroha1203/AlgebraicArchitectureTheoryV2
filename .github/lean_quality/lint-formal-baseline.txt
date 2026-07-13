@@ -72,26 +72,6 @@ INCORRECT DEF/LEMMA: -/
 
 /- The `docBlame` linter reports:
 DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
--- Formal.AG.Atom.AATCore
-#check @AAT.AG.AATCorePackage.axioms /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.family /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.configuration /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.object /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.lawUniverse /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.obstructionLaw /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.obstructionCircuit /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.signature /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.algebra /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.algebraObject /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.algebraOperation /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.algebraObstruction /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.AtomTowerRealization.familyToken /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.AtomTowerRealization.configurationToken /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.AtomTowerRealization.familyOf /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.AtomTowerRealization.configurationOf /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.AtomTowerRealization.family /- definition missing documentation string -/
-#check @AAT.AG.AATCorePackage.AtomTowerRealization.configuration /- definition missing documentation string -/
-
 -- Formal.AG.Atom.ArchitectureObject
 #check @AAT.AG.ArchitectureObject.configuration /- definition missing documentation string -/
 #check @AAT.AG.ArchitectureObject.StructureMaps /- definition missing documentation string -/
@@ -126,21 +106,7 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.ExtractionDoctrine.Resolution /- definition missing documentation string -/
 #check @AAT.AG.ExtractionDoctrine.sourceSemantics /- definition missing documentation string -/
 #check @AAT.AG.ExtractionDoctrine.normalize /- definition missing documentation string -/
-#check @AAT.AG.ExtractionDoctrine.atomize /- definition missing documentation string -/
 #check @AAT.AG.CoarseProjection.pi /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.singleFact /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.Family /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.Configuration /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.compose /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.Law /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.lawHolds /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.ObservationDomain /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.Observation /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.observe /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.Operation /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.operate /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.Doctrine /- definition missing documentation string -/
-#check @AAT.AG.AtomAxiomSystem.doctrine /- definition missing documentation string -/
 
 -- Formal.AG.Atom.Configuration
 #check @AAT.AG.AtomConfiguration.family /- definition missing documentation string -/
@@ -180,9 +146,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 -- Formal.AG.Atom.ObjectAlgebra
 #check @AAT.AG.Operation.source /- definition missing documentation string -/
 #check @AAT.AG.Operation.target /- definition missing documentation string -/
-#check @AAT.AG.Operation.Evidence /- definition missing documentation string -/
-#check @AAT.AG.Operation.evidence /- definition missing documentation string -/
-#check @AAT.AG.Operation.objectMap /- definition missing documentation string -/
 #check @AAT.AG.Operation.configurationMap /- definition missing documentation string -/
 #check @AAT.AG.ArchitectureSignature.Axis /- definition missing documentation string -/
 #check @AAT.AG.ArchitectureSignature.Coordinate /- definition missing documentation string -/
@@ -191,16 +154,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.ObjectAlgebra.Obj /- definition missing documentation string -/
 #check @AAT.AG.ObjectAlgebra.object /- definition missing documentation string -/
 #check @AAT.AG.ObjectAlgebra.Op /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.operation /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.operationSource /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.operationTarget /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.Inv /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.lawUniverse /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.Ob /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.obstructionLaw /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.obstructionObject /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.obstructionCircuit /- definition missing documentation string -/
-#check @AAT.AG.ObjectAlgebra.signature /- definition missing documentation string -/
 
 -- Formal.AG.Atom.Observation
 #check @AAT.AG.ObservationModel.observe /- definition missing documentation string -/
@@ -2998,6 +2951,7 @@ UNUSED ARGUMENTS. -/
 
 -- Formal.AG.Examples.FiniteModel
 #check AAT.AG.FiniteModel.noCycleOmega /- argument 1 _L : AAT.AG.Law AAT.AG.FiniteModel.carrier -/
+#check AAT.AG.FiniteModel.collapseAtom /- argument 1 _atom : AAT.AG.FiniteModel.carrier.Atom -/
 #check AAT.AG.FiniteModel.siteContextOf /- argument 1 _i : AAT.AG.FiniteModel.SiteContextIndex -/
 #check AAT.AG.FiniteModel.siteContextMeet /- argument 1 _i : AAT.AG.FiniteModel.SiteContextIndex, argument 2 _j : AAT.AG.FiniteModel.SiteContextIndex -/
 #check @AAT.AG.FiniteModel.siteContextLe_sound /- argument 3 _h : True -/

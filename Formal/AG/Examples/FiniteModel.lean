@@ -41,6 +41,12 @@ theorem mem_all (atom : FiniteAtom) : atom ∈ all := by
 
 end FiniteAtom
 
+/-- R10: source modes for the primary finite extraction doctrine. -/
+inductive ExtractionSource where
+  | all
+  | withoutComponentC
+  deriving DecidableEq
+
 /-- R10: finite Atom carrier with identity coordinate readings. -/
 def carrier : AtomCarrier where
   AtomKind := FiniteAtom
@@ -55,9 +61,69 @@ def carrier : AtomCarrier where
   predicate := id
   payload := id
 
+/-- R10: the selected source-to-Atom extraction doctrine for the finite model. -/
+def extractionDoctrine : ExtractionDoctrine carrier where
+  Source := ExtractionSource
+  Vocabulary := PUnit
+  SemanticReading := PUnit
+  Resolution := PUnit
+  vocabulary := PUnit.unit
+  semanticReading := PUnit.unit
+  resolution := PUnit.unit
+  vocabularyAllows := fun _ _ => True
+  semanticAllows := fun _ source atom =>
+    source = ExtractionSource.all ∨ atom ≠ FiniteAtom.componentC
+  resolutionAllows := fun _ _ _ => True
+  sourceSemantics := fun _ _ => True
+  normalize := id
+
 /-- R10: the finite family containing all selected atoms. -/
-def allFamily : AtomFamily carrier where
-  mem _ := True
+def allFamily : AtomFamily carrier :=
+  extractionDoctrine.atomize ExtractionSource.withoutComponentC
+
+/-- Every atom admitted by the selected vocabulary belongs to the extracted family. -/
+theorem allFamily_mem (atom : carrier.Atom)
+    (hselected : atom ≠ FiniteAtom.componentC) : allFamily.mem atom := by
+  apply (extractionDoctrine.atomize_mem_iff
+    ExtractionSource.withoutComponentC atom).mpr
+  apply (extractionDoctrine.extracts_iff
+    ExtractionSource.withoutComponentC atom).mpr
+  exact ⟨trivial, Or.inr hselected, trivial, trivial⟩
+
+/-- The primary doctrine extracts a concrete atom from its selective source. -/
+theorem componentA_extracted_withoutComponentC :
+    extractionDoctrine.extracts ExtractionSource.withoutComponentC
+      FiniteAtom.componentA := by
+  apply (extractionDoctrine.extracts_iff
+    ExtractionSource.withoutComponentC FiniteAtom.componentA).mpr
+  exact ⟨trivial, Or.inr (by simp), trivial, trivial⟩
+
+/-- The primary doctrine rejects a concrete atom from its selective source. -/
+theorem componentC_not_extracted_withoutComponentC :
+    ¬ extractionDoctrine.extracts ExtractionSource.withoutComponentC
+      FiniteAtom.componentC := by
+  intro h
+  have hread := (extractionDoctrine.extracts_iff
+    ExtractionSource.withoutComponentC FiniteAtom.componentC).mp h
+  exact hread.2.1.resolve_left (by decide) rfl
+
+/-- The generated family is a positive `Atomizes` instance for the primary doctrine. -/
+theorem allFamily_atomizes :
+    extractionDoctrine.Atomizes ExtractionSource.withoutComponentC allFamily :=
+  extractionDoctrine.atomize_holds ExtractionSource.withoutComponentC
+
+/-- An empty family used to witness failure of the primary atomization predicate. -/
+def emptyFamily : AtomFamily carrier where
+  mem _ := False
+
+/-- The empty family is a negative `Atomizes` instance for the primary doctrine. -/
+theorem emptyFamily_not_atomizes :
+    ¬ extractionDoctrine.Atomizes ExtractionSource.withoutComponentC
+      emptyFamily := by
+  intro h
+  have hextracted : extractionDoctrine.extracts ExtractionSource.withoutComponentC
+      FiniteAtom.componentA := componentA_extracted_withoutComponentC
+  exact (h FiniteAtom.componentA).mpr hextracted
 
 /-- peer-review hardening I-3: the selected finite family has an explicit list cover. -/
 theorem allFamily_listFinite : allFamily.ListFinite :=
@@ -77,11 +143,27 @@ def substitutionRelation : carrier.Atom -> carrier.Atom -> Prop
   | FiniteAtom.substitutesImplBase, FiniteAtom.contractBase => True
   | _, _ => False
 
+/-- R10: composition on every finite family, retaining supported selected relations. -/
+def compositionReading : CompositionReading carrier where
+  compose F _ := {
+    family := F
+    relation := fun a b =>
+      (cycleRelation a b ∨ substitutionRelation a b) ∧ F.mem a ∧ F.mem b
+    identification := fun a b =>
+      a = FiniteAtom.componentA ∧ b = FiniteAtom.componentB ∧ F.mem a ∧ F.mem b
+  }
+  family_eq := by intros; rfl
+  family_supported := by
+    intro F _
+    constructor
+    · intro a b h
+      exact ⟨h.2.1, h.2.2⟩
+    · intro a b h
+      exact ⟨h.2.2.1, h.2.2.2⟩
+
 /-- R10: finite configuration containing the selected example atoms. -/
-def configuration : AtomConfiguration carrier where
-  family := allFamily
-  relation a b := cycleRelation a b ∨ substitutionRelation a b
-  identification _ _ := False
+def configuration : AtomConfiguration carrier :=
+  compositionReading.compose allFamily allFamily_listFinite
 
 /-- peer-review hardening I-1/I-3: acyclic finite configuration over the same nonempty atom family. -/
 def acyclicConfiguration : AtomConfiguration carrier where
@@ -92,32 +174,29 @@ def acyclicConfiguration : AtomConfiguration carrier where
 /-- R10: the finite configuration relation is supported by the finite family. -/
 theorem configuration_familySupported :
     AtomConfiguration.FamilySupported configuration := by
-  constructor
-  · intro a b _h
-    exact ⟨trivial, trivial⟩
-  · intro a b h
-    exact False.elim h
-
-/-- R10: finite architecture object over the selected configuration. -/
-def object : ArchitectureObject carrier where
-  configuration := configuration
-  StructureMaps := PUnit
-  SelectedQuantities := PUnit
-  structureMaps := PUnit.unit
-  selectedQuantities := PUnit.unit
-
-/-- peer-review hardening I-1: acyclic finite architecture object used for concrete three-reading firing. -/
-def acyclicObject : ArchitectureObject carrier where
-  configuration := acyclicConfiguration
-  StructureMaps := PUnit
-  SelectedQuantities := PUnit
-  structureMaps := PUnit.unit
-  selectedQuantities := PUnit.unit
+  exact compositionReading.family_supported allFamily allFamily_listFinite
 
 /-- R10: build a finite architecture object over any selected finite configuration. -/
 def objectOfConfiguration (C : AtomConfiguration carrier) :
     ArchitectureObject carrier where
   configuration := C
+  StructureMaps := PUnit
+  SelectedQuantities := PUnit
+  structureMaps := PUnit.unit
+  selectedQuantities := PUnit.unit
+
+/-- R10: object formation over every selected finite configuration. -/
+def objectReading : ObjectReading carrier where
+  object := objectOfConfiguration
+  configuration_eq := by intros; rfl
+
+/-- R10: finite architecture object over the selected configuration. -/
+def object : ArchitectureObject carrier :=
+  objectReading.object configuration
+
+/-- peer-review hardening I-1: acyclic finite architecture object used for concrete three-reading firing. -/
+def acyclicObject : ArchitectureObject carrier where
+  configuration := acyclicConfiguration
   StructureMaps := PUnit
   SelectedQuantities := PUnit
   structureMaps := PUnit.unit
@@ -174,11 +253,68 @@ def signature : ArchitectureSignature carrier where
   selected _ := True
   coordinate _ _ := 0
 
+/-- R10: the concrete signed query pattern detecting the selected 3-cycle. -/
+def cycleQueryDatum : FiniteCircuitDatum carrier where
+  queries := [
+    (.relationPresent FiniteAtom.dependsAB FiniteAtom.dependsBC, true),
+    (.relationPresent FiniteAtom.dependsBC FiniteAtom.dependsCA, true),
+    (.relationPresent FiniteAtom.dependsCA FiniteAtom.dependsAB, true)]
+
+/-- R10: the finite-template circuit reading for the required NoCycle law. -/
+noncomputable def circuitReading : CircuitReading lawUniverse where
+  code _ := .exact cycleQueryDatum
+  sound := by
+    intro i A Q hmatches haccepts
+    cases i
+    have hdatum : cycleQueryDatum = Q :=
+      (CircuitDetectorCode.eval_exact_eq_true_iff cycleQueryDatum Q).mp haccepts
+    subst Q
+    have hab :
+        A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC :=
+      ((hmatches
+        (.relationPresent FiniteAtom.dependsAB FiniteAtom.dependsBC) true
+        (by simp [cycleQueryDatum])).mpr rfl).2.2
+    have hbc :
+        A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA :=
+      ((hmatches
+        (.relationPresent FiniteAtom.dependsBC FiniteAtom.dependsCA) true
+        (by simp [cycleQueryDatum])).mpr rfl).2.2
+    have hca :
+        A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB :=
+      ((hmatches
+        (.relationPresent FiniteAtom.dependsCA FiniteAtom.dependsAB) true
+        (by simp [cycleQueryDatum])).mpr rfl).2.2
+    intro hLaw
+    exact hLaw ⟨hab, hbc, hca⟩
+
+/-- R10: law and circuit semantics used by the generated core. -/
+noncomputable def lawReading : LawReading carrier where
+  lawUniverse := lawUniverse
+  circuits := circuitReading
+
+/-- R10: all actual configuration homomorphisms form the operation reading. -/
+def operationReading : OperationReading carrier where
+  Op A B := ConfigurationHom A.configuration B.configuration
+  configurationMap op := op
+
+/-- R10: admissible reading that generates the finite Part I core. -/
+noncomputable def coreReading : CoreReading carrier where
+  doctrine := extractionDoctrine
+  source := ExtractionSource.withoutComponentC
+  family_listFinite := by
+    refine ⟨FiniteAtom.all, ?_⟩
+    intro atom _
+    exact FiniteAtom.mem_all atom
+  composition := compositionReading
+  objectReading := objectReading
+  lawReading := lawReading
+  invariantReading := invariantFamily
+  signatureReading := signature
+  operationReading := operationReading
+
 /-- R10: Atom A0-A8 system for the finite model. -/
-def axiomSystem : AtomAxiomSystem carrier where
+theorem axiomSystem : AtomAxiomSystem carrier where
   primitiveExistence := ⟨FiniteAtom.componentA⟩
-  singleFact _ := True
-  singleFact_holds _ := trivial
   predicateStability := by
     intro a b
     constructor
@@ -187,21 +323,6 @@ def axiomSystem : AtomAxiomSystem carrier where
     · intro h
       cases h
       simp [SameCoordinates, carrier]
-  Family := PUnit
-  Configuration := PUnit
-  compose := fun _ => PUnit.unit
-  Law := PUnit
-  lawHolds := fun _ _ => True
-  ObservationDomain := PUnit
-  Observation := PUnit
-  observe _ := PUnit.unit
-  Operation := PUnit
-  operate _ F := F
-  Doctrine := PUnit
-  doctrine _ :=
-    { Source := PUnit, Vocabulary := PUnit, SemanticReading := PUnit,
-      Resolution := PUnit, sourceSemantics := fun _ => PUnit,
-      normalize := id, atomize := fun _ => PUnit.unit }
 
 /-- R10: A0 non-emptiness for the finite Atom universe. -/
 theorem finite_atom_exists : ∃ _atom : carrier.Atom, True :=
@@ -227,14 +348,26 @@ def cycleObstructionCircuit : ObstructionCircuit noCycleLaw object where
   family := allFamily
   relation := cycleRelation
   relation_supported := by
-    intro a b _h
-    exact ⟨trivial, trivial⟩
+    intro a b hrelation
+    constructor
+    · apply allFamily_mem
+      intro ha
+      subst a
+      simp [cycleRelation] at hrelation
+    · apply allFamily_mem
+      intro hb
+      subst b
+      simp [cycleRelation] at hrelation
   finite := ∀ atom : carrier.Atom, atom ∈ FiniteAtom.all
   finite_holds := FiniteAtom.mem_all
   law_failure := by
     intro h
-    exact h ⟨Or.inl cycle_dependsAB_BC,
-      Or.inl cycle_dependsBC_CA, Or.inl cycle_dependsCA_AB⟩
+    exact h ⟨⟨Or.inl cycle_dependsAB_BC, allFamily_mem _ (by simp),
+      allFamily_mem _ (by simp)⟩,
+      ⟨Or.inl cycle_dependsBC_CA, allFamily_mem _ (by simp),
+        allFamily_mem _ (by simp)⟩,
+      ⟨Or.inl cycle_dependsCA_AB, allFamily_mem _ (by simp),
+        allFamily_mem _ (by simp)⟩⟩
 
 /-- peer-review hardening I-3: the cycle obstruction circuit has explicit finite support. -/
 theorem cycleObstructionCircuit_listFinite :
@@ -262,14 +395,24 @@ def substitutionObstructionCircuit :
   family := allFamily
   relation := substitutionRelation
   relation_supported := by
-    intro a b _h
-    exact ⟨trivial, trivial⟩
+    intro a b hrelation
+    constructor
+    · apply allFamily_mem
+      intro ha
+      subst a
+      simp [substitutionRelation] at hrelation
+    · apply allFamily_mem
+      intro hb
+      subst b
+      simp [substitutionRelation] at hrelation
   finite := ∀ atom : carrier.Atom, atom ∈ FiniteAtom.all
   finite_holds := FiniteAtom.mem_all
   law_failure := by
     intro h
-    exact h ⟨Or.inr substitution_contract_impl_base,
-      Or.inr substitution_impl_base⟩
+    exact h ⟨⟨Or.inr substitution_contract_impl_base,
+      allFamily_mem _ (by simp), allFamily_mem _ (by simp)⟩,
+      ⟨Or.inr substitution_impl_base, allFamily_mem _ (by simp),
+        allFamily_mem _ (by simp)⟩⟩
 
 /-- peer-review hardening I-3: the substitution obstruction circuit has explicit finite support. -/
 theorem substitutionObstructionCircuit_listFinite :
@@ -284,14 +427,31 @@ def hasCycleWitness (A : ArchitectureObject carrier) : Prop :=
 
 /-- R10: the finite object has the selected 3-cycle witness. -/
 theorem object_hasCycleWitness : hasCycleWitness object :=
-  ⟨Or.inl cycle_dependsAB_BC,
-    Or.inl cycle_dependsBC_CA, Or.inl cycle_dependsCA_AB⟩
+  ⟨⟨Or.inl cycle_dependsAB_BC, allFamily_mem _ (by simp),
+      allFamily_mem _ (by simp)⟩,
+    ⟨Or.inl cycle_dependsBC_CA, allFamily_mem _ (by simp),
+      allFamily_mem _ (by simp)⟩,
+    ⟨Or.inl cycle_dependsCA_AB, allFamily_mem _ (by simp),
+      allFamily_mem _ (by simp)⟩⟩
 
 /-- peer-review hardening I-1: the acyclic finite object satisfies the selected NoCycle law. -/
 theorem acyclic_noCycleLaw_holds :
     noCycleLaw.holds acyclicObject := by
   intro hcycle
   exact hcycle.1
+
+/-- R10: the cyclic finite object has a nonempty semantic obstruction. -/
+theorem object_semanticObstruction :
+    SemanticObstruction noCycleLaw object :=
+  (SemanticObstruction.iff_not_holds noCycleLaw object).mpr
+    cycle_obstruction_law_failure
+
+/-- R10: the lawful acyclic finite object has no semantic obstruction. -/
+theorem acyclicObject_not_semanticObstruction :
+    ¬ SemanticObstruction noCycleLaw acyclicObject := by
+  intro hobstruction
+  exact (SemanticObstruction.iff_not_holds noCycleLaw acyclicObject).mp
+    hobstruction acyclic_noCycleLaw_holds
 
 /-- peer-review hardening I-1: the acyclic finite object is semantically lawful. -/
 theorem acyclic_lawfulness :
@@ -415,49 +575,458 @@ theorem finite_lawfulness_iff_omega_zero :
           exact noCycleComplete)
     object
 
-/-- R10: the finite model feeds the AAT Core theorem package. -/
-def corePackage : AATCorePackage carrier :=
-  AATCorePackage.ofComponents axiomSystem allFamily configuration object rfl rfl
-    invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit signature
+/-- R10: the finite model generates its Part I core from axioms and reading rules. -/
+noncomputable def corePackage : AATCorePackage carrier :=
+  AATCorePackage.generate axiomSystem coreReading
 
-/-- peer-review hardening I-2: the finite model realizes the abstract A0-A8 family/configuration tower. -/
-def atomTowerRealization : AATCorePackage.AtomTowerRealization axiomSystem where
-  familyToken := PUnit.unit
-  configurationToken := PUnit.unit
-  familyOf _ := allFamily
-  configurationOf _ := configuration
-  family := allFamily
-  configuration := configuration
-  family_eq := rfl
-  configuration_eq := rfl
-  configurationToken_eq := rfl
-  configuration_family_eq := rfl
-
-/-- peer-review hardening I-2: finite model core package using the axiom-system realization bridge. -/
-def corePackageFromAxiomRealization : AATCorePackage carrier :=
-  AATCorePackage.ofAxiomRealization axiomSystem atomTowerRealization object rfl
-    invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit signature
-
-/-- peer-review hardening I-2: the finite realization theorem has no HEq in its conclusion. -/
-theorem corePackageFromAxiomRealization_exists_noHEq :
-    ∃ core : AATCorePackage carrier,
-      core.axioms = axiomSystem ∧
-        core.family = allFamily ∧
-          core.configuration = configuration ∧
-            core.object = object ∧
-              core.configuration.family = core.family ∧
-                core.object.configuration = core.configuration ∧
-                  core.lawUniverse = lawUniverse ∧
-                    core.obstructionLaw = noCycleLaw ∧
-                      core.signature = signature :=
-  AATCorePackage.exists_ofAxiomRealization_noHEq axiomSystem atomTowerRealization
-    object rfl invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit
-    signature
-
-/-- R10: the finite core package contains the selected finite object. -/
-theorem corePackage_object :
-    corePackage.object = object :=
+/-- R10: the generated core object is the selected finite architecture object. -/
+theorem corePackage_object : corePackage.object = object := by
   rfl
+
+/--
+R10: a nonidentity atom map used by the generated operation example.
+
+The input is intentionally ignored: this constant collapse gives a minimal
+explicit nonidentity map whose direct-image configuration makes family and
+relation transport observable.
+-/
+def collapseAtom (_atom : carrier.Atom) : carrier.Atom :=
+  FiniteAtom.componentB
+
+/-- R10: direct image of a configuration along the selected atom map. -/
+def mappedConfiguration (C : AtomConfiguration carrier) : AtomConfiguration carrier where
+  family.mem atom := ∃ source, C.family.mem source ∧ collapseAtom source = atom
+  relation a b := ∃ source target,
+    C.relation source target ∧ collapseAtom source = a ∧ collapseAtom target = b
+  identification a b := ∃ source target,
+    C.identification source target ∧ collapseAtom source = a ∧ collapseAtom target = b
+
+/-- R10: the direct-image construction supplies an actual configuration homomorphism. -/
+def collapseConfigurationHom (C : AtomConfiguration carrier) :
+    ConfigurationHom C (mappedConfiguration C) where
+  atomMap := collapseAtom
+  maps_family h := ⟨_, h, rfl⟩
+  maps_relation h := ⟨_, _, h, rfl, rfl⟩
+  maps_identification h := ⟨_, _, h, rfl, rfl⟩
+
+/-- R10: a second architecture object reached by the nonidentity atom map. -/
+def collapsedObject : ArchitectureObject carrier :=
+  objectOfConfiguration (mappedConfiguration corePackage.object.configuration)
+
+/-- R10: the collapsed object belongs to the operation closure of the generated object. -/
+theorem collapsedObject_reachable :
+    coreReading.operationReading.Reachable corePackage.object collapsedObject :=
+  OperationReading.Reachable.step OperationReading.Reachable.base
+    (collapseConfigurationHom corePackage.object.configuration)
+
+/-- R10: the reached object as an index of the generated object algebra. -/
+def collapsedAlgebraObject : corePackage.algebra.Obj :=
+  ⟨collapsedObject, collapsedObject_reachable⟩
+
+/-- R10: the actual nonidentity operation between the two reachable indices. -/
+def collapseOperation :
+    corePackage.algebra.Op corePackage.baseObject collapsedAlgebraObject :=
+  collapseConfigurationHom corePackage.object.configuration
+
+/-- R10: the operation's atom map is visibly nonidentity. -/
+theorem collapseOperation_atomMap_nonidentity :
+    (corePackage.algebra.configurationMap collapseOperation).atomMap
+      FiniteAtom.componentA = FiniteAtom.componentB ∧
+      FiniteAtom.componentA ≠ FiniteAtom.componentB := by
+  exact ⟨rfl, by decide⟩
+
+/-- R10: extraction from the selected source is exactly exclusion of component C. -/
+theorem extractionDoctrine_extracts_iff_selected (atom : carrier.Atom) :
+    extractionDoctrine.extracts ExtractionSource.withoutComponentC atom ↔
+      atom ≠ FiniteAtom.componentC := by
+  rw [extractionDoctrine.extracts_iff]
+  simp [extractionDoctrine]
+
+/-- R10: generated-family membership is exactly the selected extraction predicate. -/
+theorem corePackage_family_mem (atom : carrier.Atom) :
+    atom ≠ FiniteAtom.componentC -> corePackage.family.mem atom := by
+  intro hselected
+  exact (corePackage.family_mem_iff_extracts atom).mpr
+    ((extractionDoctrine_extracts_iff_selected atom).mpr hselected)
+
+/-- R10: the generated main core contains a concretely selected atom. -/
+theorem corePackage_componentA_mem :
+    corePackage.family.mem FiniteAtom.componentA :=
+  corePackage_family_mem _ (by simp)
+
+/-- R10: the generated main core excludes the atom rejected by its source reading. -/
+theorem corePackage_componentC_not_mem :
+    ¬ corePackage.family.mem FiniteAtom.componentC := by
+  intro h
+  exact (extractionDoctrine_extracts_iff_selected FiniteAtom.componentC).mp
+    ((corePackage.family_mem_iff_extracts FiniteAtom.componentC).mp h) rfl
+
+/-- R10: configuration relations are the two selected relations on generated-family atoms. -/
+theorem corePackage_configuration_relation_iff (a b : carrier.Atom) :
+    corePackage.configuration.relation a b ↔
+      (cycleRelation a b ∨ substitutionRelation a b) ∧
+        corePackage.family.mem a ∧ corePackage.family.mem b := by
+  rw [corePackage.configuration_relation_iff_compose]
+  rfl
+
+/-- R10: object relations are characterized through the generated configuration API. -/
+theorem corePackage_object_relation_iff (a b : carrier.Atom) :
+    corePackage.object.configuration.relation a b ↔
+      (cycleRelation a b ∨ substitutionRelation a b) ∧
+        corePackage.family.mem a ∧ corePackage.family.mem b := by
+  rw [corePackage.object_configuration_eq]
+  exact corePackage_configuration_relation_iff a b
+
+/-- R10: the generated base configuration contains the first cycle relation. -/
+theorem corePackage_cycle_relation :
+    corePackage.object.configuration.relation
+      FiniteAtom.dependsAB FiniteAtom.dependsBC :=
+  (corePackage_object_relation_iff _ _).mpr
+    ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
+      corePackage_family_mem _ (by simp)⟩
+
+/-- R10: the generated base configuration contains the second cycle relation. -/
+theorem corePackage_cycle_relation_two :
+    corePackage.object.configuration.relation
+      FiniteAtom.dependsBC FiniteAtom.dependsCA :=
+  (corePackage_object_relation_iff _ _).mpr
+    ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
+      corePackage_family_mem _ (by simp)⟩
+
+/-- R10: the generated base configuration contains the third cycle relation. -/
+theorem corePackage_cycle_relation_three :
+    corePackage.object.configuration.relation
+      FiniteAtom.dependsCA FiniteAtom.dependsAB :=
+  (corePackage_object_relation_iff _ _).mpr
+    ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
+      corePackage_family_mem _ (by simp)⟩
+
+/-- R10: the generated base configuration contains a concrete identification. -/
+theorem corePackage_componentA_identified_componentB :
+    corePackage.object.configuration.identification
+      FiniteAtom.componentA FiniteAtom.componentB := by
+  rw [corePackage.object_configuration_eq]
+  exact ⟨rfl, rfl, corePackage_family_mem _ (by simp),
+    corePackage_family_mem _ (by simp)⟩
+
+/-- R10: the nonidentity operation transports concrete family membership. -/
+theorem collapseOperation_transports_family :
+    collapsedObject.configuration.family.mem
+      ((corePackage.algebra.configurationMap collapseOperation).atomMap
+        FiniteAtom.componentA) :=
+  (corePackage.algebra.configurationMap collapseOperation).maps_family
+    ((corePackage.object_family_mem_iff_extracts FiniteAtom.componentA).mpr
+      ((extractionDoctrine_extracts_iff_selected FiniteAtom.componentA).mpr (by simp)))
+
+/-- R10: the nonidentity operation transports an actual relation. -/
+theorem collapseOperation_transports_relation :
+    collapsedObject.configuration.relation
+      ((corePackage.algebra.configurationMap collapseOperation).atomMap
+        FiniteAtom.dependsAB)
+      ((corePackage.algebra.configurationMap collapseOperation).atomMap
+        FiniteAtom.dependsBC) :=
+  (corePackage.algebra.configurationMap collapseOperation).maps_relation
+    corePackage_cycle_relation
+
+/-- R10: the nonidentity operation transports a concrete identification. -/
+theorem collapseOperation_transports_identification :
+    collapsedObject.configuration.identification
+      ((corePackage.algebra.configurationMap collapseOperation).atomMap
+        FiniteAtom.componentA)
+      ((corePackage.algebra.configurationMap collapseOperation).atomMap
+        FiniteAtom.componentB) :=
+  (corePackage.algebra.configurationMap collapseOperation).maps_identification
+    corePackage_componentA_identified_componentB
+
+/-- R10: the reached object differs from the generated base object. -/
+theorem baseObject_ne_collapsedObject :
+    corePackage.baseObject ≠ collapsedAlgebraObject := by
+  intro h
+  have hobject : corePackage.object = collapsedObject :=
+    congrArg (fun index : corePackage.algebra.Obj => index.1) h
+  have hbase :
+      corePackage.object.configuration.family.mem FiniteAtom.componentA := by
+    rw [corePackage.object_configuration_eq, corePackage.configuration_family_eq]
+    exact corePackage_family_mem _ (by simp)
+  have hmem : collapsedObject.configuration.family.mem FiniteAtom.componentA := by
+    rw [← hobject]
+    exact hbase
+  rcases hmem with ⟨source, _hsource, hsource⟩
+  cases source <;> cases hsource
+
+/-- R10: the generated algebra has two distinct reachable objects and an operation between them. -/
+theorem nonidentity_reachable_operation_fires :
+    ∃ A B : corePackage.algebra.Obj,
+      A ≠ B ∧ Nonempty (corePackage.algebra.Op A B) :=
+  ⟨corePackage.baseObject, collapsedAlgebraObject,
+    baseObject_ne_collapsedObject, ⟨collapseOperation⟩⟩
+
+/-- R10: an empty configuration used to refute universal reachability. -/
+def unreachableEmptyConfiguration : AtomConfiguration carrier where
+  family := emptyFamily
+  relation _ _ := False
+  identification _ _ := False
+
+/-- R10: an architecture object whose Atom family is empty. -/
+def unreachableEmptyObject : ArchitectureObject carrier :=
+  objectOfConfiguration unreachableEmptyConfiguration
+
+/-- R10: every object reachable from the generated base retains an Atom witness. -/
+theorem reachable_object_family_nonempty
+    {A : ArchitectureObject carrier}
+    (hreachable : coreReading.operationReading.Reachable corePackage.object A) :
+    Nonempty {atom : carrier.Atom // A.configuration.family.mem atom} := by
+  induction hreachable with
+  | base =>
+      exact ⟨⟨FiniteAtom.componentA, by
+        rw [corePackage.object_configuration_eq,
+          corePackage.configuration_family_eq]
+        exact corePackage_componentA_mem⟩⟩
+  | step hsource op ih =>
+      obtain ⟨⟨atom, hatom⟩⟩ := ih
+      exact ⟨⟨op.atomMap atom, op.maps_family hatom⟩⟩
+
+/-- R10: the empty-family object is not in the generated operation closure. -/
+theorem unreachableEmptyObject_not_reachable :
+    ¬ coreReading.operationReading.Reachable corePackage.object
+      unreachableEmptyObject := by
+  intro hreachable
+  obtain ⟨⟨atom, hatom⟩⟩ := reachable_object_family_nonempty hreachable
+  exact hatom
+
+/-- R10: the selected cycle datum matches the generated core object. -/
+theorem cycleQueryDatum_matches_core :
+    cycleQueryDatum.Matches corePackage.object := by
+  intro query expected hmem
+  simp [cycleQueryDatum] at hmem
+  rcases hmem with h | h | h
+  · rcases h with ⟨rfl, rfl⟩
+    constructor
+    · intro _; rfl
+    · intro _
+      exact ⟨by simpa [corePackage.object_configuration_eq,
+        corePackage.configuration_family_eq] using
+          corePackage_family_mem FiniteAtom.dependsAB (by simp),
+        by simpa [corePackage.object_configuration_eq,
+          corePackage.configuration_family_eq] using
+            corePackage_family_mem FiniteAtom.dependsBC (by simp),
+        corePackage_cycle_relation⟩
+  · rcases h with ⟨rfl, rfl⟩
+    constructor
+    · intro _; rfl
+    · intro _
+      exact ⟨by simpa [corePackage.object_configuration_eq,
+        corePackage.configuration_family_eq] using
+          corePackage_family_mem FiniteAtom.dependsBC (by simp),
+        by simpa [corePackage.object_configuration_eq,
+          corePackage.configuration_family_eq] using
+            corePackage_family_mem FiniteAtom.dependsCA (by simp),
+        corePackage_cycle_relation_two⟩
+  · rcases h with ⟨rfl, rfl⟩
+    constructor
+    · intro _; rfl
+    · intro _
+      exact ⟨by simpa [corePackage.object_configuration_eq,
+        corePackage.configuration_family_eq] using
+          corePackage_family_mem FiniteAtom.dependsCA (by simp),
+        by simpa [corePackage.object_configuration_eq,
+          corePackage.configuration_family_eq] using
+            corePackage_family_mem FiniteAtom.dependsAB (by simp),
+        corePackage_cycle_relation_three⟩
+
+/-- R10: an opposite signed query that does not match the generated core object. -/
+def componentAAbsentDatum : FiniteCircuitDatum carrier where
+  queries := [(.atomPresent FiniteAtom.componentA, false)]
+
+/-- R10: the component-A presence query holds on the generated core object. -/
+theorem componentA_atomPresent_holds_core :
+    (CircuitQuery.atomPresent FiniteAtom.componentA).Holds
+      corePackage.object :=
+  (CircuitQuery.atomPresent_holds_iff _ _).mpr
+    ((corePackage.object_family_mem_iff_extracts FiniteAtom.componentA).mpr
+      componentA_extracted_withoutComponentC)
+
+/-- R10: the component-C presence query does not hold on the generated core object. -/
+theorem componentC_atomPresent_not_holds_core :
+    ¬ (CircuitQuery.atomPresent FiniteAtom.componentC).Holds
+      corePackage.object := by
+  intro hholds
+  exact componentC_not_extracted_withoutComponentC
+    ((corePackage.object_family_mem_iff_extracts FiniteAtom.componentC).mp
+      ((CircuitQuery.atomPresent_holds_iff _ _).mp hholds))
+
+/-- R10: matching is nontrivial on the generated finite object. -/
+theorem componentAAbsentDatum_not_matches_core :
+    ¬ componentAAbsentDatum.Matches corePackage.object := by
+  intro hmatches
+  have hiff := hmatches (.atomPresent FiniteAtom.componentA) false
+    (by simp [componentAAbsentDatum])
+  exact Bool.noConfusion (hiff.mp componentA_atomPresent_holds_core)
+
+/--
+R10: the reject-only detector is not required-complete.
+
+A positive `RequiredComplete` instance is intentionally not asserted for the
+unrestricted `ArchitectureObject` quantifier: a law failure alone does not
+imply the family-support hypotheses needed by relation queries.  Completeness
+therefore remains the explicit additional condition fixed by SD1.
+-/
+noncomputable def rejectingCircuitReading : CircuitReading lawUniverse where
+  code _ := .reject
+  sound := by
+    intro i A Q _hmatches haccepts
+    have hfalse : false = true :=
+      (CircuitDetectorCode.eval_reject Q).symm.trans haccepts
+    exact False.elim (Bool.noConfusion hfalse)
+
+/-- R10: the reject-only detector selects the public reject code at every index. -/
+theorem rejectingCircuitReading_code (i : lawUniverse.Index) :
+    rejectingCircuitReading.code i = .reject := by
+  cases i
+  rfl
+
+/-- R10: the reject-only detector misses the concrete required-law failure. -/
+theorem rejectingCircuitReading_not_requiredComplete :
+    ¬ rejectingCircuitReading.RequiredComplete := by
+  intro hcomplete
+  have hfailure :
+      ¬ (lawUniverse.law PUnit.unit).holds corePackage.object := by
+    intro hLaw
+    exact hLaw ⟨corePackage_cycle_relation, corePackage_cycle_relation_two,
+      corePackage_cycle_relation_three⟩
+  obtain ⟨circuit⟩ := hcomplete corePackage.object PUnit.unit rfl
+    hfailure
+  have hreject :
+      rejectingCircuitReading.accepts PUnit.unit circuit.1 = false :=
+    CircuitReading.accepts_eq_false_of_code_reject
+      rejectingCircuitReading PUnit.unit circuit.1
+      (rejectingCircuitReading_code PUnit.unit)
+  have hfalse : false = true := hreject.symm.trans circuit.2.2
+  exact Bool.noConfusion hfalse
+
+/-- R10: the selected law holds exactly when component A is absent. -/
+def componentAAbsentLaw : Law carrier where
+  holds A := ¬ A.configuration.family.mem FiniteAtom.componentA
+
+/-- R10: a singleton required-law universe for the complete detector example. -/
+def componentAAbsentLawUniverse : LawUniverse carrier where
+  Index := PUnit
+  law _ := componentAAbsentLaw
+  role _ := LawRole.required
+  witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
+  SelectedReading := PUnit
+  selectedReading := PUnit.unit
+  coverageAssumptions := True
+  exactnessAssumptions := True
+
+/-- R10: the component-A absence law holds on the concrete empty-family object. -/
+theorem componentAAbsentLaw_holds_unreachableEmptyObject :
+    (componentAAbsentLawUniverse.law PUnit.unit).holds unreachableEmptyObject := by
+  intro hmem
+  exact hmem
+
+/-- R10: the component-A absence law fails on the generated core object. -/
+theorem componentAAbsentLaw_failure_core :
+    ¬ (componentAAbsentLawUniverse.law PUnit.unit).holds corePackage.object :=
+  fun habsent => habsent corePackage_componentA_mem
+
+/-- R10: the positive component-A query used by the complete exact detector. -/
+def componentAPresentDatum : FiniteCircuitDatum carrier where
+  queries := [(.atomPresent FiniteAtom.componentA, true)]
+
+/-- R10: the signed datum matches exactly when component A is present. -/
+theorem componentAPresentDatum_matches_iff (A : ArchitectureObject carrier) :
+    componentAPresentDatum.Matches A ↔
+      A.configuration.family.mem FiniteAtom.componentA := by
+  constructor
+  · intro hmatches
+    exact (CircuitQuery.atomPresent_holds_iff _ _).mp
+      ((FiniteCircuitDatum.holds_iff_of_matches hmatches
+        (by simp [componentAPresentDatum])).mpr rfl)
+  · intro hmem query expected hquery
+    simp only [componentAPresentDatum, List.mem_singleton] at hquery
+    cases hquery
+    constructor
+    · intro _hholds
+      rfl
+    · intro _htrue
+      exact (CircuitQuery.atomPresent_holds_iff _ _).mpr hmem
+
+/-- R10: an exact positive-query detector for the component-A absence law. -/
+noncomputable def completeCircuitReading :
+    CircuitReading componentAAbsentLawUniverse where
+  code _ := .exact componentAPresentDatum
+  sound := by
+    intro i A Q hmatches haccepts
+    cases i
+    have hdatum : componentAPresentDatum = Q :=
+      (CircuitDetectorCode.eval_exact_eq_true_iff componentAPresentDatum Q).mp haccepts
+    subst Q
+    exact fun habsent => habsent ((componentAPresentDatum_matches_iff A).mp hmatches)
+
+/-- R10: the complete detector selects the positive component-A datum. -/
+theorem completeCircuitReading_code (i : componentAAbsentLawUniverse.Index) :
+    completeCircuitReading.code i = .exact componentAPresentDatum := by
+  cases i
+  rfl
+
+/-- R10: every actual failure has the accepted matching component-A datum. -/
+theorem completeCircuitReading_requiredComplete :
+    completeCircuitReading.RequiredComplete := by
+  intro A i _hrequired hfailure
+  cases i
+  have hmem : A.configuration.family.mem FiniteAtom.componentA := by
+    by_contra habsent
+    exact hfailure habsent
+  exact ⟨⟨componentAPresentDatum, (componentAPresentDatum_matches_iff A).mpr hmem,
+    (CircuitReading.accepts_eq_true_iff_of_code_exact
+      completeCircuitReading PUnit.unit componentAPresentDatum componentAPresentDatum
+      (completeCircuitReading_code PUnit.unit)).mpr rfl⟩⟩
+
+/-- R10: required completeness fires on the generated component-A object. -/
+theorem completeCircuitReading_nonvacuous :
+    ¬ (componentAAbsentLawUniverse.law PUnit.unit).holds corePackage.object ∧
+      Nonempty (completeCircuitReading.Circuit corePackage.object PUnit.unit) :=
+  ⟨componentAAbsentLaw_failure_core,
+    completeCircuitReading_requiredComplete corePackage.object PUnit.unit rfl
+      componentAAbsentLaw_failure_core⟩
+
+/-- R10: the main core reading selects the exact cycle detector template. -/
+theorem coreReading_circuit_code (i : lawUniverse.Index) :
+    coreReading.lawReading.circuits.code i = .exact cycleQueryDatum := by
+  cases i
+  rfl
+
+/-- R10: the finite-template detector accepts the concrete cycle datum. -/
+theorem cycleQueryDatum_accepted :
+    coreReading.lawReading.circuits.accepts PUnit.unit cycleQueryDatum = true :=
+  (CircuitReading.accepts_eq_true_iff_of_code_exact
+    coreReading.lawReading.circuits PUnit.unit cycleQueryDatum cycleQueryDatum
+    (coreReading_circuit_code PUnit.unit)).mpr rfl
+
+/-- R10: a distinct empty datum is rejected by the finite-template detector. -/
+theorem emptyQueryDatum_rejected :
+    coreReading.lawReading.circuits.accepts PUnit.unit ⟨[]⟩ = false := by
+  apply Bool.eq_false_of_not_eq_true
+  intro haccepts
+  have heq : cycleQueryDatum = ⟨[]⟩ :=
+    (CircuitReading.accepts_eq_true_iff_of_code_exact
+      coreReading.lawReading.circuits PUnit.unit cycleQueryDatum ⟨[]⟩
+      (coreReading_circuit_code PUnit.unit)).mp haccepts
+  have hqueries := congrArg FiniteCircuitDatum.queries heq
+  simp [cycleQueryDatum] at hqueries
+
+/-- R10: the accepted datum is an element of the generated indexed circuit family. -/
+def generatedCycleCircuit :
+    corePackage.algebra.Circuit corePackage.baseObject PUnit.unit :=
+  ⟨cycleQueryDatum, cycleQueryDatum_matches_core, cycleQueryDatum_accepted⟩
+
+/-- R10: law failure is derived from detector soundness, not stored in the datum. -/
+theorem generatedCycleCircuit_sound :
+    ¬ (corePackage.algebra.lawReading.lawUniverse.law PUnit.unit).holds
+      (corePackage.algebra.object corePackage.baseObject) :=
+  AATCorePackage.generate_circuit_sound axiomSystem coreReading
+    corePackage.baseObject PUnit.unit generatedCycleCircuit
 
 /-!
 ## Part II finite site example
@@ -473,8 +1042,8 @@ def siteContext : Site.ArchCtx object where
     Support := PUnit
     Axis := PUnit
     Observable := PUnit
-    supportReads := fun _ _ => True
-    supportReads_objectFamily := fun _h => trivial
+    supportReads := fun _ atom => atom ≠ FiniteAtom.componentC
+    supportReads_objectFamily := fun hselected => allFamily_mem _ hselected
     axisReads := fun _ => True
     observableReads := fun _ => True
   }
@@ -585,7 +1154,11 @@ base contract observable.
 -/
 def siteComponentAProfile : SiteMinimalContextProfile where
   support := {FiniteAtom.componentA}
-  support_le_object := fun {_atom} _h => trivial
+  support_le_object := by
+    intro atom h
+    have hatom : atom = FiniteAtom.componentA := Set.mem_singleton_iff.mp h
+    subst atom
+    exact allFamily_mem _ (by simp)
   axis := {FiniteAtom.componentA}
   observable := {FiniteAtom.contractBase}
 
@@ -595,7 +1168,11 @@ profile, used to fire representative independence.
 -/
 def siteComponentAProfileCopy : SiteMinimalContextProfile where
   support := {FiniteAtom.componentA}
-  support_le_object := fun {_atom} _h => trivial
+  support_le_object := by
+    intro atom h
+    have hatom : atom = FiniteAtom.componentA := Set.mem_singleton_iff.mp h
+    subst atom
+    exact allFamily_mem _ (by simp)
   axis := {FiniteAtom.componentA}
   observable := {FiniteAtom.contractBase}
 
@@ -605,7 +1182,11 @@ and the implementation-contract observable.
 -/
 def siteComponentBProfile : SiteMinimalContextProfile where
   support := {FiniteAtom.componentB}
-  support_le_object := fun {_atom} _h => trivial
+  support_le_object := by
+    intro atom h
+    have hatom : atom = FiniteAtom.componentB := Set.mem_singleton_iff.mp h
+    subst atom
+    exact allFamily_mem _ (by simp)
   axis := {FiniteAtom.componentB}
   observable := {FiniteAtom.contractImpl}
 
@@ -618,7 +1199,7 @@ abbrev SiteRawMinimalContextProfile :=
 def siteComponentARawProfileOne : SiteRawMinimalContextProfile where
   SupportIndex := PUnit
   supportRead := fun _ => FiniteAtom.componentA
-  supportRead_objectFamily := fun _ => trivial
+  supportRead_objectFamily := fun _ => allFamily_mem _ (by simp)
   AxisIndex := PUnit
   axisRead := fun _ => FiniteAtom.componentA
   ObservableIndex := PUnit
@@ -631,7 +1212,7 @@ same extensional component-A readings.
 def siteComponentARawProfileTwo : SiteRawMinimalContextProfile where
   SupportIndex := Bool
   supportRead := fun _ => FiniteAtom.componentA
-  supportRead_objectFamily := fun _ => trivial
+  supportRead_objectFamily := fun _ => allFamily_mem _ (by simp)
   AxisIndex := Bool
   axisRead := fun _ => FiniteAtom.componentA
   ObservableIndex := Bool
@@ -891,7 +1472,8 @@ def siteSingletonCover :
     lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
     signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
     boundaryCoverage := fun _i _j => trivial
-    nonGeneration := fun _i {_support} {_atom} _h => trivial
+    nonGeneration := fun _i {_support} {_atom} hselected =>
+      allFamily_mem _ hselected
   }
 
 /-- R11 / II.AC16: selected witness ideal requirements for the finite site. -/
@@ -1006,7 +1588,8 @@ noncomputable instance siteAdmissiblePrecoverage_stableUnderBaseChange :
         lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
         signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
         boundaryCoverage := fun _i _j => trivial
-        nonGeneration := fun _i {_support} {_atom} _h => trivial
+        nonGeneration := fun _i {_support} {_atom} hread =>
+          Y.ctx.minimal.supportReads_objectFamily hread
       }
     }, ?_⟩
     exact siteContextPresieve_ofArrows_eq_unit P p₁
@@ -1380,8 +1963,8 @@ def twoPatchContext (i : TwoPatchContextIndex) : Site.ArchCtx object where
     Support := PUnit
     Axis := PUnit
     Observable := PUnit
-    supportReads := fun _ _ => True
-    supportReads_objectFamily := fun _h => trivial
+    supportReads := fun _ atom => atom ≠ FiniteAtom.componentC
+    supportReads_objectFamily := fun hselected => allFamily_mem _ hselected
     axisReads := fun _ => True
     observableReads := fun _ => True
   }
@@ -1521,8 +2104,8 @@ noncomputable def twoPatchCover :
           twoPatchCoverageRequirements]⟩
     boundaryCoverage := fun _i _j => trivial
     nonGeneration := by
-      intro _i _support _atom _h
-      exact trivial
+      intro _i _support _atom hselected
+      exact allFamily_mem _ hselected
   }
 
 /-- peer-review hardening II-5: the generated two-patch cover is a topology cover. -/

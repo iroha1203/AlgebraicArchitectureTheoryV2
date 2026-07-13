@@ -1,4 +1,4 @@
-import Formal.AG.Atom.Atom
+import Formal.AG.Atom.Family
 
 namespace AAT.AG
 
@@ -13,33 +13,135 @@ def SameCoordinates (U : AtomCarrier.{u}) (a b : U.Atom) : Prop :=
     U.payload a = U.payload b
 
 /--
-I.公理A8 Essential Uniqueness.
+I.公理A8 Essential Uniqueness: the data used to read atoms from a source.
 
-An extraction doctrine is a typed source reading together with a canonical
-`atomize` function into the selected family carrier. The source-side fields are
-opaque at Part I/R1 level; later implementation steps can refine them without changing the
-uniqueness theorem below.
+The selected vocabulary, semantic reading, resolution, and normalized source
+semantics all contribute to `ExtractionDoctrine.extracts`.
+
+Implementation notes: this structure records the inputs and admissibility
+relations of Part I, Definitions 10.1 and 10.4A. It deliberately does not store
+an atom family or an `atomize` function: the canonical family is constructed
+extensionally from `extracts`, so essential uniqueness is proved rather than
+supplied as data. The former presentation with an abstract family carrier was
+rejected because it did not produce an actual `AtomFamily U` and reduced A8 to
+equality with a preselected output.
 -/
-structure ExtractionDoctrine (U : AtomCarrier.{u}) (Family : Type u) where
+structure ExtractionDoctrine (U : AtomCarrier.{u}) where
   Source : Type u
   Vocabulary : Type u
   SemanticReading : Type u
   Resolution : Type u
-  sourceSemantics : Source -> Type u
+  /-- The selected vocabulary value. -/
+  vocabulary : Vocabulary
+  /-- The selected semantic reading value. -/
+  semanticReading : SemanticReading
+  /-- The selected extraction resolution. -/
+  resolution : Resolution
+  /-- Vocabulary-level admission of an atom. -/
+  vocabularyAllows : Vocabulary -> U.Atom -> Prop
+  /-- Semantic admission of an atom from a normalized source. -/
+  semanticAllows : SemanticReading -> Source -> U.Atom -> Prop
+  /-- Resolution-level admission of an atom from a normalized source. -/
+  resolutionAllows : Resolution -> Source -> U.Atom -> Prop
+  sourceSemantics : Source -> U.Atom -> Prop
   normalize : Source -> Source
-  atomize : Source -> Family
 
 namespace ExtractionDoctrine
 
 /--
-I.公理A8: the canonical family selected by a doctrine is unique because
-`atomize` is a function.
+I.定義10.4A: an atom is extracted exactly when every selected reading admits it.
+
+Implementation notes: this conjunction exposes every material component of an
+extraction doctrine to proof use. An opaque relation field was rejected because
+it would leave vocabulary, semantic, resolution, and normalization data
+mathematically inert.
 -/
-theorem atomize_unique {U : AtomCarrier.{u}} {Family : Type u}
-    (D : ExtractionDoctrine U Family) (source : D.Source)
-    {F G : Family}
-    (hF : F = D.atomize source) (hG : G = D.atomize source) : F = G := by
-  rw [hF, hG]
+def extracts {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source) (atom : U.Atom) : Prop :=
+  D.vocabularyAllows D.vocabulary atom ∧
+    D.semanticAllows D.semanticReading (D.normalize source) atom ∧
+    D.resolutionAllows D.resolution (D.normalize source) atom ∧
+    D.sourceSemantics (D.normalize source) atom
+
+/--
+Extraction is exactly simultaneous admission by the selected vocabulary,
+semantic reading, resolution, and normalized source semantics.
+-/
+theorem extracts_iff {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source) (atom : U.Atom) :
+    D.extracts source atom ↔
+      D.vocabularyAllows D.vocabulary atom ∧
+        D.semanticAllows D.semanticReading (D.normalize source) atom ∧
+        D.resolutionAllows D.resolution (D.normalize source) atom ∧
+        D.sourceSemantics (D.normalize source) atom :=
+  Iff.rfl
+
+/--
+I.定義10.4A: construct the canonical atom family extracted from a source.
+
+Implementation notes: the family is the characteristic predicate `extracts`.
+Selecting an opaque family and separately asserting its correctness was
+rejected because correctness and uniqueness would then be stored premises.
+-/
+def atomize {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source) : AtomFamily U where
+  mem atom := D.extracts source atom
+
+/-- Membership in the canonical atomization is exactly source extraction. -/
+theorem atomize_mem_iff {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source) (atom : U.Atom) :
+    (D.atomize source).mem atom ↔ D.extracts source atom :=
+  Iff.rfl
+
+/--
+I.定義10.4A: a family realizes the extraction relation for a source.
+
+Implementation notes: the pointwise biconditional is the extensional
+presentation appropriate to predicate-valued `AtomFamily`. Equality with the
+canonical family was rejected as the primitive relation because it would make
+essential uniqueness a restatement of the relation's definition.
+-/
+def Atomizes {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source)
+    (family : AtomFamily U) : Prop :=
+  ∀ atom, family.mem atom ↔ D.extracts source atom
+
+/-- Any realizing family has membership exactly when the doctrine extracts the atom. -/
+theorem mem_iff_extracts_of_atomizes {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source) (family : AtomFamily U)
+    (h : D.Atomizes source family) (atom : U.Atom) :
+    family.mem atom ↔ D.extracts source atom :=
+  h atom
+
+/-- I.定理10.5: the canonical family realizes its source extraction relation. -/
+theorem atomize_holds {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source) :
+    D.Atomizes source (D.atomize source) := by
+  intro atom
+  rfl
+
+/--
+I.定理10.5 Essential Uniqueness: two families realizing one source are equal.
+-/
+theorem atomize_unique {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source)
+    {F G : AtomFamily U}
+    (hF : D.Atomizes source F) (hG : D.Atomizes source G) :
+    F = G := by
+  cases F with
+  | mk f =>
+      cases G with
+      | mk g =>
+          congr 1
+          funext atom
+          exact propext ((hF atom).trans (hG atom).symm)
+
+/-- I.定理10.5: every realizing family equals the canonical atomization. -/
+theorem eq_atomize {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source)
+    {F : AtomFamily U} (hF : D.Atomizes source F) :
+    F = D.atomize source :=
+  D.atomize_unique source hF (D.atomize_holds source)
 
 end ExtractionDoctrine
 
@@ -48,30 +150,20 @@ structure CoarseProjection (Family CoarseFamily : Type u) where
   pi : Family -> CoarseFamily
 
 /--
-I.公理A0-A8 as a parameterized package over an AG Atom carrier.
+I.公理A0-A3 as the primitive foundation package over an AG Atom carrier.
 
-The package records the extra carriers needed by the Part I tower without
-importing Classic AAT. Law and observation fields have no map returning
-`U.Atom`, while operations act on families and therefore preserve atom-origin
-at the type level.
+Implementation notes: the package retains only primitive existence and the
+five-coordinate extensionality principle. Family extraction, composition,
+operations, laws, and observations belong to the separate core reading that
+constructs the Part I tower. The former abstract tower carriers were rejected
+because they did not provide the actual `AtomFamily`, configuration, and object
+required by downstream generation. A `singleFact` predicate was also rejected:
+with a proof for every atom it carried no information beyond the atom's typed
+coordinate tuple.
 -/
 structure AtomAxiomSystem (U : AtomCarrier.{u}) where
   primitiveExistence : Nonempty U.Atom
-  singleFact : U.Atom -> Prop
-  singleFact_holds : ∀ atom, singleFact atom
   predicateStability : ∀ a b, SameCoordinates U a b ↔ a = b
-  Family : Type u
-  Configuration : Type u
-  compose : Family -> Configuration
-  Law : Type u
-  lawHolds : Law -> Configuration -> Prop
-  ObservationDomain : Type u
-  Observation : Type u
-  observe : ObservationDomain -> Observation
-  Operation : Type u
-  operate : Operation -> Family -> Family
-  Doctrine : Type u
-  doctrine : Doctrine -> ExtractionDoctrine U Family
 
 namespace AtomAxiomSystem
 
@@ -109,24 +201,6 @@ theorem eq_iff_sameCoordinates {U : AtomCarrier.{u}} (S : AtomAxiomSystem U)
 theorem ext {U : AtomCarrier.{u}} (S : AtomAxiomSystem U)
     {a b : U.Atom} (h : SameCoordinates U a b) : a = b :=
   (S.predicateStability a b).mp h
-
-/-- I.公理A4: composition is the configured map from families to configurations. -/
-def configurationOf {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) :
-    S.Family -> S.Configuration :=
-  S.compose
-
-/-- I.公理A7: operations preserve atom-origin by returning another family. -/
-def operateFamily {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) :
-    S.Operation -> S.Family -> S.Family :=
-  S.operate
-
-/-- I.公理A8: doctrine-specific canonical family uniqueness. -/
-theorem doctrine_family_unique {U : AtomCarrier.{u}} (S : AtomAxiomSystem U)
-    (doctrine : S.Doctrine) (source : (S.doctrine doctrine).Source)
-    {F G : S.Family}
-    (hF : F = (S.doctrine doctrine).atomize source)
-    (hG : G = (S.doctrine doctrine).atomize source) : F = G :=
-  ExtractionDoctrine.atomize_unique (S.doctrine doctrine) source hF hG
 
 end AtomAxiomSystem
 
