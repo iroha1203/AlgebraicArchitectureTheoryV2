@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-vocabulary-catalog-ag-lint/v0.5.1",
+  "schema": "archsig-vocabulary-catalog-ag-lint/v0.5.2",
   "agConsumedAxes": [
     "boundary-residue",
     "cech",

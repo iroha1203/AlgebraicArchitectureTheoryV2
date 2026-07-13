@@ -7,7 +7,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --out-dir .archsig/analyze
 ```
 
@@ -23,7 +23,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --repair-plan tools/archsig/tests/fixtures/ag_measurement/repair_plan_complete_support.json \
   --out-dir .archsig/analyze-saga
 ```
@@ -40,7 +40,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
   --out .archsig/archmap-validation.json
 ```
 
-`archmap` validates a supplied `archmap/v0.5.1` observation artifact. With the
+`archmap` validates a supplied `archmap/v0.5.2` observation artifact. With the
 optional `--scope-manifest`, `--candidate-packets`, `--extraction-consistency`,
 and `--coverage-ledger` inputs it also audits authoring survey traceability and
 adjudicated provenance closure.
@@ -77,11 +77,11 @@ adjudicate; it never auto-adopts candidates.
 cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --out .archsig/law-policy-validation.json
 ```
 
-`law-policy` validates a `law-policy/v0.5.1` selector artifact against its
+`law-policy` validates a `law-policy/v0.5.2` selector artifact against its
 selected measurement profile and supplied law-equation surface. A single law
 uses `policies[].law`; `ag.law-conflict-tor` uses an explicit
 `policies[].lawPair` containing exactly two distinct law ids.
@@ -94,7 +94,7 @@ JSON SHA-256 fingerprints:
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- policy-bundle \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
   --out .archsig/policy-bundle.json
 ```
@@ -118,7 +118,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- measurement-profile \
   --out .archsig/measurement-profile-validation.json
 ```
 
-`measurement-profile` validates a standalone `measurement-profile/v0.5.1`
+`measurement-profile` validates a standalone `measurement-profile/v0.5.2`
 artifact, including finite bounds against evaluator registry hard caps.
 
 ## Repair Plan
@@ -130,10 +130,12 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- repair-plan \
   --out .archsig/repair-plan-validation.json
 ```
 
-`repair-plan` validates the supplied SAGA Stage 1 input side. Reserved future
-fields, generated conclusion tokens, unresolved refs, restriction-difference
-violations, cocycle parity violations, and complete-support inconsistencies
-fail closed. `enumerationComplete` is recorded as an author assumption.
+`repair-plan` validates the supplied SAGA Stage 1 input side. Faithfulness,
+true-sheaf, gluing, and coefficient slots are checked. Still-reserved
+comparison/grounding fields, generated conclusion tokens, unresolved refs,
+restriction-difference violations, cocycle parity violations, and
+complete-support inconsistencies fail closed. `enumerationComplete` is recorded
+as an author assumption.
 
 ## Compare
 
@@ -167,4 +169,4 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- schema-catalog \
   --out .archsig/schema-version-catalog.json
 ```
 
-The catalog lists current ArchSig v0.5.1 artifact contracts.
+The catalog lists current ArchSig v0.5.2 artifact contracts.

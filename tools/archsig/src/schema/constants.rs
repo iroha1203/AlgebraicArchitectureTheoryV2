@@ -1,17 +1,17 @@
-pub const AAT_ATOM_VOCABULARY_V1_SCHEMA: &str = "aat-atom-vocabulary/v0.5.1";
-pub const ARCHMAP_V2_SCHEMA: &str = "archmap/v0.5.1";
-pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report/v0.5.1";
-pub const LAW_POLICY_V1_SCHEMA: &str = "law-policy/v0.5.1";
-pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-validation-report/v0.5.1";
-pub const NORMALIZED_ARCHMAP_V2_SCHEMA: &str = "normalized-archmap/v0.5.1";
-pub const MEASUREMENT_PROFILE_V1_SCHEMA: &str = "measurement-profile/v0.5.1";
-pub const ARCHSIG_REPAIR_PLAN_V1_SCHEMA: &str = "archsig-repair-plan/v0.5.1";
-pub const ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA: &str = "archsig-boundary-statement/v0.5.1";
-pub const ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA: &str = "archsig-measurement-packet/v0.5.1";
-pub const ARCHSIG_GATE_POLICY_V1_SCHEMA: &str = "archsig-gate-policy/v0.5.1";
-pub const ARCHSIG_GATE_REPORT_V1_SCHEMA: &str = "archsig-gate-report/v0.5.1";
-pub const ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA: &str = "archmap-diff/v0.5.1";
-pub const ARCHSIG_COMPARISON_REPORT_V1_SCHEMA: &str = "archsig-comparison-report/v0.5.1";
+pub const AAT_ATOM_VOCABULARY_V1_SCHEMA: &str = "aat-atom-vocabulary/v0.5.2";
+pub const ARCHMAP_V2_SCHEMA: &str = "archmap/v0.5.2";
+pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report/v0.5.2";
+pub const LAW_POLICY_V1_SCHEMA: &str = "law-policy/v0.5.2";
+pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-validation-report/v0.5.2";
+pub const NORMALIZED_ARCHMAP_V2_SCHEMA: &str = "normalized-archmap/v0.5.2";
+pub const MEASUREMENT_PROFILE_V1_SCHEMA: &str = "measurement-profile/v0.5.2";
+pub const ARCHSIG_REPAIR_PLAN_V1_SCHEMA: &str = "archsig-repair-plan/v0.5.2";
+pub const ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA: &str = "archsig-boundary-statement/v0.5.2";
+pub const ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA: &str = "archsig-measurement-packet/v0.5.2";
+pub const ARCHSIG_GATE_POLICY_V1_SCHEMA: &str = "archsig-gate-policy/v0.5.2";
+pub const ARCHSIG_GATE_REPORT_V1_SCHEMA: &str = "archsig-gate-report/v0.5.2";
+pub const ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA: &str = "archmap-diff/v0.5.2";
+pub const ARCHSIG_COMPARISON_REPORT_V1_SCHEMA: &str = "archsig-comparison-report/v0.5.2";
 pub const ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED: &str =
     "NO_NEW_MEASURED_OBSTRUCTION_RECORDED";
 pub const ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE: &str =
@@ -37,6 +37,7 @@ pub const ARCHSIG_GATE_REPORT_DECISIONS: [&str; 3] = [
 pub const ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX: &str =
     "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX";
 pub const ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL: &str = "MEASURED_NONGLUING_RESIDUAL";
+pub const ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS: &str = "MEASURED_NONGLUING_RESIDUAL_CLASS";
 pub const ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION: &str =
     "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION";
 pub const ARCHSIG_REPAIR_TARGETS_IDENTIFIED: &str = "REPAIR_TARGETS_IDENTIFIED";
@@ -50,8 +51,9 @@ pub const ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE: &str =
     "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE";
 pub const ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT: &str =
     "VALIDATION_FAILED_BEFORE_MEASUREMENT";
-pub const ARCHSIG_ANALYSIS_CONCLUSION_CODES: [&str; 9] = [
+pub const ARCHSIG_ANALYSIS_CONCLUSION_CODES: [&str; 10] = [
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
     ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
@@ -61,13 +63,14 @@ pub const ARCHSIG_ANALYSIS_CONCLUSION_CODES: [&str; 9] = [
     ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE,
     ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT,
 ];
-pub const ARCHSIG_SAGA_CONCLUSION_CODES: [&str; 4] = [
+pub const ARCHSIG_SAGA_CONCLUSION_CODES: [&str; 5] = [
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
     ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
     ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
 ];
-pub const ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION: &str = "archsig-run-manifest/v0.5.1";
-pub const ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION: &str = "archsig-atom-viewer-data/v0.5.1";
-pub const SCHEMA_VERSION_CATALOG_SCHEMA_VERSION: &str = "schema-version-catalog/v0.5.1";
-pub const SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION: &str = "schema-compatibility-policy/v0.5.1";
+pub const ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION: &str = "archsig-run-manifest/v0.5.2";
+pub const ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION: &str = "archsig-atom-viewer-data/v0.5.2";
+pub const SCHEMA_VERSION_CATALOG_SCHEMA_VERSION: &str = "schema-version-catalog/v0.5.2";
+pub const SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION: &str = "schema-compatibility-policy/v0.5.2";

@@ -1,23 +1,23 @@
 {
-  "schema": "schema-version-catalog/v0.5.1",
+  "schema": "schema-version-catalog/v0.5.2",
   "catalogId": "archsig-llm-atom-schema-version-catalog",
-  "catalogVersion": "llm-atom-archmap/v0.5.1",
+  "catalogVersion": "llm-atom-archmap/v0.5.2",
   "phase": "LLM Atom ArchMap primary workflow",
   "artifacts": [
     {
       "artifactId": "archmap-current",
       "artifactName": "ArchMap current input artifact",
-      "schemaName": "archmap/v0.5.1",
+      "schemaName": "archmap/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
       "primaryDocs": [
         "archsig-contract:archmap-minimal-observation",
-        "archsig-contract:v0.5.1-ag-measurement"
+        "archsig-contract:v0.5.2-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchMap v0.5.1 records source-grounded architecture observations. Finite-poset-site inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. They reject legacy v0 root fields, unknown atom kinds or predicates, and unresolved source refs before analysis.",
+        "fieldMappingPolicy": "ArchMap v0.5.2 records source-grounded architecture observations. Finite-poset-site inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. They reject legacy v0 root fields, unknown atom kinds or predicates, and unresolved source refs before analysis.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -33,18 +33,18 @@
       }
     },
     {
-      "artifactId": "aat-atom-vocabulary/v0.5.1",
-      "artifactName": "AAT atom vocabulary v0.5.1",
-      "schemaName": "aat-atom-vocabulary/v0.5.1",
+      "artifactId": "aat-atom-vocabulary/v0.5.2",
+      "artifactName": "AAT atom vocabulary v0.5.2",
+      "schemaName": "aat-atom-vocabulary/v0.5.2",
       "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.1 Algebraic Geometry Measurement",
+      "ownerPhase": "ArchSig v0.5.2 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.1-improvement"
+        "archsig-contract:v0.5.2-improvement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "AAT atom vocabulary v0.5.1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atoms[].kind membership.",
+        "fieldMappingPolicy": "AAT atom vocabulary v0.5.2 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atoms[].kind membership.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -60,18 +60,18 @@
       }
     },
     {
-      "artifactId": "archmap-scope-manifest/v0.5.1",
+      "artifactId": "archmap-scope-manifest/v0.5.2",
       "artifactName": "ArchMap authoring scope manifest",
-      "schemaName": "archmap-scope-manifest/v0.5.1",
+      "schemaName": "archmap-scope-manifest/v0.5.2",
       "artifactRole": "authoring",
-      "ownerPhase": "ArchSig v0.5.1 ArchMap authoring",
+      "ownerPhase": "ArchSig v0.5.2 ArchMap authoring",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:archmap-authoring-v0.5.1"
+        "archsig-contract:archmap-authoring-v0.5.2"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Scope manifest v0.5.1 records the selected authoring scope, repository revision, deterministic worklist, content hashes, exclusions, and author-supplied evidence files before reading begins.",
+        "fieldMappingPolicy": "Scope manifest v0.5.2 records the selected authoring scope, repository revision, deterministic worklist, content hashes, exclusions, and author-supplied evidence files before reading begins.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -87,18 +87,18 @@
       }
     },
     {
-      "artifactId": "archmap-candidate-packet/v0.5.1",
+      "artifactId": "archmap-candidate-packet/v0.5.2",
       "artifactName": "ArchMap authoring candidate packet",
-      "schemaName": "archmap-candidate-packet/v0.5.1",
+      "schemaName": "archmap-candidate-packet/v0.5.2",
       "artifactRole": "authoring",
-      "ownerPhase": "ArchSig v0.5.1 ArchMap authoring",
+      "ownerPhase": "ArchSig v0.5.2 ArchMap authoring",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:archmap-authoring-v0.5.1"
+        "archsig-contract:archmap-authoring-v0.5.2"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Candidate packet v0.5.1 records one reading pass chunk: reviewed sources, candidate observations, survey rows, unavailable notes, and self-review gates.",
+        "fieldMappingPolicy": "Candidate packet v0.5.2 records one reading pass chunk: reviewed sources, candidate observations, survey rows, unavailable notes, and self-review gates.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -114,18 +114,18 @@
       }
     },
     {
-      "artifactId": "archmap-extraction-consistency/v0.5.1",
+      "artifactId": "archmap-extraction-consistency/v0.5.2",
       "artifactName": "ArchMap authoring extraction consistency report",
-      "schemaName": "archmap-extraction-consistency/v0.5.1",
+      "schemaName": "archmap-extraction-consistency/v0.5.2",
       "artifactRole": "authoring",
-      "ownerPhase": "ArchSig v0.5.1 ArchMap authoring",
+      "ownerPhase": "ArchSig v0.5.2 ArchMap authoring",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:archmap-authoring-v0.5.1"
+        "archsig-contract:archmap-authoring-v0.5.2"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Extraction consistency v0.5.1 records atom-match-key comparison between reading passes, unmatched queues, matchRate, context differences, and integrator adjudications.",
+        "fieldMappingPolicy": "Extraction consistency v0.5.2 records atom-match-key comparison between reading passes, unmatched queues, matchRate, context differences, and integrator adjudications.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -141,18 +141,18 @@
       }
     },
     {
-      "artifactId": "archmap-coverage-ledger/v0.5.1",
+      "artifactId": "archmap-coverage-ledger/v0.5.2",
       "artifactName": "ArchMap authoring coverage ledger",
-      "schemaName": "archmap-coverage-ledger/v0.5.1",
+      "schemaName": "archmap-coverage-ledger/v0.5.2",
       "artifactRole": "authoring",
-      "ownerPhase": "ArchSig v0.5.1 ArchMap authoring",
+      "ownerPhase": "ArchSig v0.5.2 ArchMap authoring",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:archmap-authoring-v0.5.1"
+        "archsig-contract:archmap-authoring-v0.5.2"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Coverage ledger v0.5.1 records selected-scope survey rows and the fixed claim boundary for authoring provenance.",
+        "fieldMappingPolicy": "Coverage ledger v0.5.2 records selected-scope survey rows and the fixed claim boundary for authoring provenance.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -168,14 +168,14 @@
       }
     },
     {
-      "artifactId": "aat-atom-vocabulary-binding/v0.5.1",
-      "artifactName": "AAT atom binding vocabulary manifest v0.5.1",
-      "schemaName": "aat-atom-vocabulary-binding/v0.5.1",
+      "artifactId": "aat-atom-vocabulary-binding/v0.5.2",
+      "artifactName": "AAT atom binding vocabulary manifest v0.5.2",
+      "schemaName": "aat-atom-vocabulary-binding/v0.5.2",
       "artifactRole": "authoring",
-      "ownerPhase": "ArchSig v0.5.1 LawPolicy Stage 2",
+      "ownerPhase": "ArchSig v0.5.2 LawPolicy Stage 2",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.1-law-equation-surface"
+        "archsig-contract:v0.5.2-law-equation-surface"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -195,18 +195,18 @@
       }
     },
     {
-      "artifactId": "law-equation-surface/v0.5.1",
-      "artifactName": "Law equation surface v0.5.1 author declaration",
-      "schemaName": "law-equation-surface/v0.5.1",
+      "artifactId": "law-equation-surface/v0.5.2",
+      "artifactName": "Law equation surface v0.5.2 author declaration",
+      "schemaName": "law-equation-surface/v0.5.2",
       "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.1 LawPolicy Stage 2",
+      "ownerPhase": "ArchSig v0.5.2 LawPolicy Stage 2",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.1-law-equation-surface"
+        "archsig-contract:v0.5.2-law-equation-surface"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Law equation surface v0.5.1 records the authoring input contract for law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
+        "fieldMappingPolicy": "Law equation surface v0.5.2 records the authoring input contract for law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -222,9 +222,9 @@
       }
     },
     {
-      "artifactId": "law-policy/v0.5.1",
-      "artifactName": "LawPolicy v0.5.1 selector artifact",
-      "schemaName": "law-policy/v0.5.1",
+      "artifactId": "law-policy/v0.5.2",
+      "artifactName": "LawPolicy v0.5.2 selector artifact",
+      "schemaName": "law-policy/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
@@ -233,7 +233,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "LawPolicy v0.5.1 selects explicit law/evaluator pairs with registry-owned basis, scope, and severity. Retired policy pack selectors, unknown evaluators, unresolved basis refs, and DSL-style witness rules are rejected before analysis.",
+        "fieldMappingPolicy": "LawPolicy v0.5.2 selects explicit law/evaluator pairs with registry-owned basis, scope, and severity. Retired policy pack selectors, unknown evaluators, unresolved basis refs, and DSL-style witness rules are rejected before analysis.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -243,24 +243,24 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "LawPolicy v0.5.1 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
+          "LawPolicy v0.5.2 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
           "LawPolicy validation does not run the evaluator pipeline."
         ]
       }
     },
     {
-      "artifactId": "archsig-policy-bundle/v0.5.1",
-      "artifactName": "ArchSig policy bundle v0.5.1",
-      "schemaName": "archsig-policy-bundle/v0.5.1",
+      "artifactId": "archsig-policy-bundle/v0.5.2",
+      "artifactName": "ArchSig policy bundle v0.5.2",
+      "schemaName": "archsig-policy-bundle/v0.5.2",
       "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.1 LawPolicy Stage 2",
+      "ownerPhase": "ArchSig v0.5.2 LawPolicy Stage 2",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.1-law-equation-surface"
+        "archsig-contract:v0.5.2-law-equation-surface"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Policy bundle v0.5.1 fixes LawPolicy, law-equation-surface, and MeasurementProfile references together with canonical JSON SHA-256 component fingerprints for one analyze run.",
+        "fieldMappingPolicy": "Policy bundle v0.5.2 fixes LawPolicy, law-equation-surface, and MeasurementProfile references together with canonical JSON SHA-256 component fingerprints for one analyze run.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -276,18 +276,18 @@
       }
     },
     {
-      "artifactId": "measurement-profile/v0.5.1",
-      "artifactName": "MeasurementProfile v0.5.1 AG evaluator selector",
-      "schemaName": "measurement-profile/v0.5.1",
+      "artifactId": "measurement-profile/v0.5.2",
+      "artifactName": "MeasurementProfile v0.5.2 AG evaluator selector",
+      "schemaName": "measurement-profile/v0.5.2",
       "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.1 Algebraic Geometry Measurement",
+      "ownerPhase": "ArchSig v0.5.2 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.1-ag-measurement"
+        "archsig-contract:v0.5.2-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "MeasurementProfile v0.5.1 declares selected site, cover, coefficient, EffCoeff procedure, resolution selector, Dom/Zero/NonZero/Cert predicates, and five-valued verdict discipline. Witness variables are supplied by the referenced law-equation-surface.",
+        "fieldMappingPolicy": "MeasurementProfile v0.5.2 declares selected site, cover, coefficient, EffCoeff procedure, resolution selector, Dom/Zero/NonZero/Cert predicates, and five-valued verdict discipline. Witness variables are supplied by the referenced law-equation-surface.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -303,18 +303,18 @@
       }
     },
     {
-      "artifactId": "archsig-repair-plan/v0.5.1",
-      "artifactName": "ArchSig RepairPlan v0.5.1 SAGA supplied input artifact",
-      "schemaName": "archsig-repair-plan/v0.5.1",
+      "artifactId": "archsig-repair-plan/v0.5.2",
+      "artifactName": "ArchSig RepairPlan v0.5.2 SAGA supplied input artifact",
+      "schemaName": "archsig-repair-plan/v0.5.2",
       "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.1 SAGA Stage 1",
+      "ownerPhase": "ArchSig v0.5.2 SAGA Stage 1",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:saga-stage1-v0.5.1"
+        "archsig-contract:saga-stage1-v0.5.2"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "RepairPlan v0.5.1 supplies the checked SAGA descent input side: residual refs, finite complex, primitive restriction differences, semantic projection, faithfulness regime, and F2-additive coefficient.",
+        "fieldMappingPolicy": "RepairPlan v0.5.2 supplies the checked SAGA descent input side: residual refs, finite complex, primitive restriction differences, semantic projection, faithfulness regime, and F2-additive coefficient.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -331,9 +331,9 @@
       }
     },
     {
-      "artifactId": "law-evaluator-registry/v0.5.1",
-      "artifactName": "Law evaluator registry v0.5.1",
-      "schemaName": "law-evaluator-registry/v0.5.1",
+      "artifactId": "law-evaluator-registry/v0.5.2",
+      "artifactName": "Law evaluator registry v0.5.2",
+      "schemaName": "law-evaluator-registry/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
@@ -342,7 +342,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Law evaluator registry v0.5.1 owns evaluator manifests, basis refs, missing blocker rules, pass / violation criteria, and output refs. LawPolicy v0.5.1 selects entries from this registry.",
+        "fieldMappingPolicy": "Law evaluator registry v0.5.2 owns evaluator manifests, basis refs, missing blocker rules, pass / violation criteria, and output refs. LawPolicy v0.5.2 selects entries from this registry.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -353,24 +353,24 @@
         ],
         "nonConclusions": [
           "Evaluator registry manifest is an ArchSig computation contract, not a Lean theorem proof.",
-          "LawPolicy v0.5.1 cannot override witness rules, axis rules, distance formula, pass criteria, or violation criteria."
+          "LawPolicy v0.5.2 cannot override witness rules, axis rules, distance formula, pass criteria, or violation criteria."
         ]
       }
     },
     {
       "artifactId": "normalized-archmap-current",
       "artifactName": "Normalized ArchMap current computation artifact",
-      "schemaName": "normalized-archmap/v0.5.1",
+      "schemaName": "normalized-archmap/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
       "primaryDocs": [
         "archsig-contract:archmap-minimal-observation",
-        "archsig-contract:v0.5.1-ag-measurement"
+        "archsig-contract:v0.5.2-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Normalized ArchMap v0.5.1 is generated by the ArchSig normalizer without rereading the source repository. Finite-poset-site output records deterministic context, cover, and selected-site presentation under the fixed AAT canonical doctrine fingerprint.",
+        "fieldMappingPolicy": "Normalized ArchMap v0.5.2 is generated by the ArchSig normalizer without rereading the source repository. Finite-poset-site output records deterministic context, cover, and selected-site presentation under the fixed AAT canonical doctrine fingerprint.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -386,18 +386,18 @@
       }
     },
     {
-      "artifactId": "archsig-measurement-packet/v0.5.1",
-      "artifactName": "ArchSig measurement packet v0.5.1",
-      "schemaName": "archsig-measurement-packet/v0.5.1",
+      "artifactId": "archsig-measurement-packet/v0.5.2",
+      "artifactName": "ArchSig measurement packet v0.5.2",
+      "schemaName": "archsig-measurement-packet/v0.5.2",
       "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.1 Algebraic Geometry Measurement",
+      "ownerPhase": "ArchSig v0.5.2 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.1-ag-measurement"
+        "archsig-contract:v0.5.2-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchSig measurement packet v0.5.1 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, and REPAIR_TARGETS_IDENTIFIED.",
+        "fieldMappingPolicy": "ArchSig measurement packet v0.5.2 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, and REPAIR_TARGETS_IDENTIFIED.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -416,18 +416,18 @@
       }
     },
     {
-      "artifactId": "archsig-boundary-statement/v0.5.1",
-      "artifactName": "ArchSig BoundaryStatement v0.5.1",
-      "schemaName": "archsig-boundary-statement/v0.5.1",
+      "artifactId": "archsig-boundary-statement/v0.5.2",
+      "artifactName": "ArchSig BoundaryStatement v0.5.2",
+      "schemaName": "archsig-boundary-statement/v0.5.2",
       "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.1 Algebraic Geometry Measurement",
+      "ownerPhase": "ArchSig v0.5.2 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:v0.5.1-improvement"
+        "archsig-contract:v0.5.2-improvement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "BoundaryStatement v0.5.1 is the typed scoped qualifier contract for measurement packet boundaries. It records id, kind, scopeRefs, reason, and text while preserving nonConclusions as a compatibility view.",
+        "fieldMappingPolicy": "BoundaryStatement v0.5.2 is the typed scoped qualifier contract for measurement packet boundaries. It records id, kind, scopeRefs, reason, and text while preserving nonConclusions as a compatibility view.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -443,18 +443,18 @@
       }
     },
     {
-      "artifactId": "archsig-gate-policy/v0.5.1",
-      "artifactName": "ArchSig gate policy v0.5.1",
-      "schemaName": "archsig-gate-policy/v0.5.1",
+      "artifactId": "archsig-gate-policy/v0.5.2",
+      "artifactName": "ArchSig gate policy v0.5.2",
+      "schemaName": "archsig-gate-policy/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:artifact-ci-v0.5.1"
+        "archsig-contract:artifact-ci-v0.5.2"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Gate policy v0.5.1 records institutional verdict-to-action mappings for absolute and introduced-by-change rules. Absolute rules must map measured_zero, measured_nonzero, unmeasured, unknown, not_computed, and violated_assumption_dependency; introduced-by-change rules must map new, cleared, preexisting, removed, and other.",
+        "fieldMappingPolicy": "Gate policy v0.5.2 records institutional verdict-to-action mappings for absolute and introduced-by-change rules. Absolute rules must map measured_zero, measured_nonzero, unmeasured, unknown, not_computed, and violated_assumption_dependency; introduced-by-change rules must map new, cleared, preexisting, removed, and other.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -471,18 +471,18 @@
       }
     },
     {
-      "artifactId": "archsig-gate-report/v0.5.1",
-      "artifactName": "ArchSig gate report v0.5.1",
-      "schemaName": "archsig-gate-report/v0.5.1",
+      "artifactId": "archsig-gate-report/v0.5.2",
+      "artifactName": "ArchSig gate report v0.5.2",
+      "schemaName": "archsig-gate-report/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:artifact-ci-v0.5.1"
+        "archsig-contract:artifact-ci-v0.5.2"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Gate report v0.5.1 records PASS_WITHIN_GATE_POLICY, BLOCKED_BY_GATE_POLICY, and NOT_EVALUABLE together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
+        "fieldMappingPolicy": "Gate report v0.5.2 records PASS_WITHIN_GATE_POLICY, BLOCKED_BY_GATE_POLICY, and NOT_EVALUABLE together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -499,18 +499,18 @@
       }
     },
     {
-      "artifactId": "archmap-diff/v0.5.1",
+      "artifactId": "archmap-diff/v0.5.2",
       "artifactName": "ArchSig deterministic normalized ArchMap diff",
-      "schemaName": "archmap-diff/v0.5.1",
+      "schemaName": "archmap-diff/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:artifact-ci-v0.5.1"
+        "archsig-contract:artifact-ci-v0.5.2"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchMap diff v0.5.1 records deterministic added, removed, and modified sources, atoms, contexts, and covers computed from two normalized-archmap/v0.5.1 artifacts.",
+        "fieldMappingPolicy": "ArchMap diff v0.5.2 records deterministic added, removed, and modified sources, atoms, contexts, and covers computed from two normalized-archmap/v0.5.2 artifacts.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -526,18 +526,18 @@
       }
     },
     {
-      "artifactId": "archsig-comparison-report/v0.5.1",
-      "artifactName": "ArchSig comparison report v0.5.1",
-      "schemaName": "archsig-comparison-report/v0.5.1",
+      "artifactId": "archsig-comparison-report/v0.5.2",
+      "artifactName": "ArchSig comparison report v0.5.2",
+      "schemaName": "archsig-comparison-report/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:artifact-ci-v0.5.1"
+        "archsig-contract:artifact-ci-v0.5.2"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Comparison report v0.5.1 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions and archmap-diff intersections. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
+        "fieldMappingPolicy": "Comparison report v0.5.2 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions and archmap-diff intersections. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -554,9 +554,9 @@
       }
     },
     {
-      "artifactId": "archsig-run-manifest/v0.5.1",
+      "artifactId": "archsig-run-manifest/v0.5.2",
       "artifactName": "ArchSig analyze run manifest",
-      "schemaName": "archsig-run-manifest/v0.5.1",
+      "schemaName": "archsig-run-manifest/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / Viewer workflow",
       "status": "implemented",
@@ -566,7 +566,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run. Registered analyze conclusionCode values are MEASURED_NONGLUING_RESIDUAL, REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, REPAIR_TARGETS_IDENTIFIED, MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, and VALIDATION_FAILED_BEFORE_MEASUREMENT.",
+        "fieldMappingPolicy": "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run. Registered analyze conclusionCode values are MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, REPAIR_TARGETS_IDENTIFIED, MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, and VALIDATION_FAILED_BEFORE_MEASUREMENT.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -582,9 +582,9 @@
       }
     },
     {
-      "artifactId": "archsig-atom-viewer-data/v0.5.1",
+      "artifactId": "archsig-atom-viewer-data/v0.5.2",
       "artifactName": "ArchSig viewer bounded projection data",
-      "schemaName": "archsig-atom-viewer-data/v0.5.1",
+      "schemaName": "archsig-atom-viewer-data/v0.5.2",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / Viewer workflow",
       "status": "implemented",
@@ -612,10 +612,10 @@
     }
   ],
   "compatibilityPolicy": {
-    "schema": "schema-compatibility-policy/v0.5.1",
+    "schema": "schema-compatibility-policy/v0.5.2",
     "policyId": "archsig-llm-atom-schema-compatibility-policy",
-    "policyVersion": "llm-atom-archmap/v0.5.1",
-    "appliesToCatalogVersion": "llm-atom-archmap/v0.5.1",
+    "policyVersion": "llm-atom-archmap/v0.5.2",
+    "appliesToCatalogVersion": "llm-atom-archmap/v0.5.2",
     "dimensions": [
       {
         "dimension": "schema-version",

@@ -42,7 +42,7 @@ fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
         required_atom_constructors: Vec::new(),
         required_predicates: Vec::new(),
         required_molecule_condition:
-            "archmap/v0.5.1 selected finite cover plus a checked archsig-repair-plan/v0.5.1 artifact"
+            "archmap/v0.5.2 selected finite cover plus a checked archsig-repair-plan/v0.5.2 artifact"
                 .to_string(),
         scope_filtering_rule:
             "selected finite cover from MeasurementProfile and supplied RepairPlan complex"
@@ -56,7 +56,7 @@ fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
         violation_criteria:
             "supplied residual is not a B1 boundary, or complete-support semantic projection exposes an alias witness"
                 .to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.1".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.2".to_string(),
         distance_contribution:
             "SAGA descent emits selected-complex-relative boundary-membership and global-coherence verdicts without consuming conclusion tokens from input"
                 .to_string(),
@@ -78,7 +78,7 @@ fn ag_coherence_manifest() -> LawEvaluatorManifestV1 {
         required_atom_constructors: Vec::new(),
         required_predicates: vec!["cech.sectionValue".to_string()],
         required_molecule_condition:
-            "archmap/v0.5.1 contexts and selected cover triple-overlap 2-skeleton".to_string(),
+            "archmap/v0.5.2 contexts and selected cover triple-overlap 2-skeleton".to_string(),
         scope_filtering_rule:
             "selected finite poset site and cover from MeasurementProfile".to_string(),
         missing_blocker_rule:
@@ -90,7 +90,7 @@ fn ag_coherence_manifest() -> LawEvaluatorManifestV1 {
         violation_criteria:
             "selected-cover banded abelian F2 H2 coherence cocycle has a representative outside im d1"
                 .to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.1".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.2".to_string(),
         distance_contribution: "structural H2 coherence verdict remains cover-relative and F2-banded"
             .to_string(),
         summary_output_refs: vec!["/structuralVerdict".to_string()],
@@ -114,7 +114,7 @@ fn ag_boundary_residue_manifest() -> LawEvaluatorManifestV1 {
             "boundary-residue.sectionValue".to_string(),
         ],
         required_molecule_condition:
-            "archmap/v0.5.1 selected cover with core, feature, and boundary patch roles plus finite F2 restriction columns"
+            "archmap/v0.5.2 selected cover with core, feature, and boundary patch roles plus finite F2 restriction columns"
                 .to_string(),
         scope_filtering_rule:
             "selected finite cover and witness variables from the supplied law surface".to_string(),
@@ -127,7 +127,7 @@ fn ag_boundary_residue_manifest() -> LawEvaluatorManifestV1 {
         violation_criteria:
             "selected boundary mismatch section is outside the F2 image of Mayer-Vietoris d0"
                 .to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.1".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.2".to_string(),
         distance_contribution:
             "structural boundary residue verdict remains selected-cover and F2-relative"
                 .to_string(),
@@ -151,7 +151,7 @@ fn ag_period_stokes_audit_manifest() -> LawEvaluatorManifestV1 {
             "period.boundaryPeriod".to_string(),
         ],
         required_molecule_condition:
-            "archmap/v0.5.1 selected cover with supplied dOmegaIntegral and boundaryPeriod audit values"
+            "archmap/v0.5.2 selected cover with supplied dOmegaIntegral and boundaryPeriod audit values"
                 .to_string(),
         scope_filtering_rule:
             "selected finite cover and fixed coefficient MeasurementProfile".to_string(),
@@ -162,7 +162,7 @@ fn ag_period_stokes_audit_manifest() -> LawEvaluatorManifestV1 {
             "all supplied fixed-coefficient Stokes audit residuals are zero".to_string(),
         violation_criteria:
             "at least one supplied fixed-coefficient Stokes audit residual is nonzero".to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.1".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.2".to_string(),
         distance_contribution:
             "structural verdict is scoped to supplied independent Stokes accounting values only"
                 .to_string(),
@@ -191,7 +191,7 @@ fn ag_section_manifest() -> LawEvaluatorManifestV1 {
             "section-factorization.witnessAssignment".to_string(),
         ],
         required_molecule_condition:
-            "archmap/v0.5.1 selected cover, finite forbidden supports, and one selected Boolean section"
+            "archmap/v0.5.2 selected cover, finite forbidden supports, and one selected Boolean section"
                 .to_string(),
         scope_filtering_rule:
             "selected finite poset site and witness family from MeasurementProfile".to_string(),
@@ -203,7 +203,7 @@ fn ag_section_manifest() -> LawEvaluatorManifestV1 {
                 .to_string(),
         violation_criteria: "selected section active support contains a minimal forbidden support"
             .to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.1".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.2".to_string(),
         distance_contribution:
             "structural section factorization verdict remains selected-section relative".to_string(),
         summary_output_refs: vec!["/structuralVerdict".to_string()],
@@ -225,7 +225,7 @@ fn ag_restriction_manifest() -> LawEvaluatorManifestV1 {
             "restriction-compatibility.restrictionIdealGenerator".to_string(),
         ],
         required_molecule_condition:
-            "archmap/v0.5.1 contexts, selected cover restriction edges, and finite ideal generator supports"
+            "archmap/v0.5.2 contexts, selected cover restriction edges, and finite ideal generator supports"
                 .to_string(),
         scope_filtering_rule:
             "selected finite poset site and cover from MeasurementProfile".to_string(),
@@ -237,7 +237,7 @@ fn ag_restriction_manifest() -> LawEvaluatorManifestV1 {
         violation_criteria:
             "some selected restriction edge has a source generator with no target generator dividing its support"
                 .to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.1".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.2".to_string(),
         distance_contribution:
             "structural restriction compatibility verdict remains selected-cover and presentation-relative"
                 .to_string(),
@@ -258,7 +258,7 @@ fn ag_manifest(evaluator_id: &str, law_id: &str) -> LawEvaluatorManifestV1 {
         required_atom_constructors: Vec::new(),
         required_predicates: Vec::new(),
         required_molecule_condition:
-            "archmap/v0.5.1 contexts and covers replace molecule primary input".to_string(),
+            "archmap/v0.5.2 contexts and covers replace molecule primary input".to_string(),
         scope_filtering_rule: "selected finite poset site from MeasurementProfile".to_string(),
         missing_blocker_rule:
             "missing MeasurementProfile fails validation before evaluator execution".to_string(),
@@ -266,7 +266,7 @@ fn ag_manifest(evaluator_id: &str, law_id: &str) -> LawEvaluatorManifestV1 {
             .to_string(),
         violation_criteria:
             "schema foundation only; concrete AG evaluator verdicts are follow-up work".to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.1".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.2".to_string(),
         distance_contribution: "structural verdict and analytic readings remain separated"
             .to_string(),
         summary_output_refs: vec![

@@ -9,15 +9,15 @@ use crate::{
     ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
     ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
     ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
-    ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, AgAnalyticReadingV1,
-    AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
-    ArchSigMeasurementPacketV1, BoundaryStatementV1, LawEquationSurfaceV1, LawPolicyDocumentV1,
-    MeasurementProfileV1, MeasurementProfileWitnessV1, NormalizedArchMapV2, NormalizedAtomV2,
-    NormalizedContextV2, NormalizedCoverV2, RepairPlanDocumentV1, SuppliedDataLedgerEntryV1,
-    ValidationCheck, ValidationExample, analytic_claim_status, analytic_fidelity,
-    assumption_id_for_schema,
+    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
+    AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
+    ArchMapDocumentV2, ArchSigMeasurementPacketV1, BoundaryStatementV1, LawEquationSurfaceV1,
+    LawPolicyDocumentV1, MeasurementProfileV1, MeasurementProfileWitnessV1, NormalizedArchMapV2,
+    NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanDocumentV1,
+    SuppliedDataLedgerEntryV1, ValidationCheck, ValidationExample, analytic_claim_status,
+    analytic_fidelity, assumption_id_for_schema,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -39,13 +39,14 @@ const STRUCTURAL_VERDICT_EVALUATORS: [&str; 10] = [
     "ag.period-stokes-audit",
     "ag.saga-descent",
 ];
-const COMPUTED_INVARIANT_KINDS: [&str; 15] = [
+const COMPUTED_INVARIANT_KINDS: [&str; 16] = [
     "measurement-invariant",
     "cech-h1-rank",
     "minimal-forbidden-supports",
     "tor1-class-support",
     "boundary-residue-rank",
     "residual-boundary-membership",
+    "residual-class-support",
     "selected-cover-edge-support",
     "coherence-obstruction-count",
     "restriction-compatibility-rank",
@@ -104,6 +105,13 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             principal_text: "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
             boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
             generated_discipline: "generated complete-support boundary-membership detection",
+        },
+        ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
+            theorem_ref: Some("part10/4.5"),
+            principal_text: "The selected supplied finite complex contains a measured non-gluing residual class in Z1/B1.",
+            boundary: "The class reading is relative to the supplied triple overlaps, additive coefficient, sheaf certificate, and gluing data.",
+            generated_discipline: "generated supplied class representative detection",
         },
         ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION => SummaryTranslationRule {
             conclusion_code: ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
@@ -185,6 +193,18 @@ fn summary_concrete_support_refs(
                 .map(|invariant| &invariant["boundaryMembership"]["residualSupport"])
             {
                 collect_json_string_leaves(residual_support, &mut refs);
+            }
+            refs
+        }
+        ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS => {
+            let mut refs = Vec::new();
+            if let Some(support) = packet
+                .computed_invariants
+                .iter()
+                .find(|invariant| invariant["invariantId"] == "saga-descent:residual-class")
+                .map(|invariant| &invariant["residualClassSupport"]["representative"])
+            {
+                collect_json_string_leaves(support, &mut refs);
             }
             refs
         }
@@ -562,12 +582,6 @@ pub fn build_foundation_measurement_packet_v1(
     repair_plan_ref: Option<&str>,
     residual_packet_ref: Option<&str>,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
-    if repair_plan.is_some_and(|plan| plan.faithfulness.mode == "supplied") {
-        return Err(
-            "Stage 1 measurement packet builder rejects faithfulness.mode=supplied; use complete-support or none"
-            .to_string(),
-        );
-    }
     if policy.policies.iter().any(|entry| entry.pack.is_some()) {
         return Err(
             "Stage 1 measurement packet builder rejects retired LawPolicy pack selectors; use explicit law/evaluator entries"
@@ -618,7 +632,7 @@ pub fn build_foundation_measurement_packet_v1(
             theorem_ref: "part8/4.2".to_string(),
             assumption: "finite site".to_string(),
             status: "checked".to_string(),
-            checked_by: Some("archmap-schema050-validation.contexts-finite".to_string()),
+            checked_by: Some("archmap-schema052-validation.contexts-finite".to_string()),
             assumed_by: None,
         },
         AgAssumptionLedgerEntryV1 {
@@ -960,7 +974,7 @@ pub fn build_foundation_measurement_packet_v1(
 
     let non_conclusions = vec![
         format!(
-            "ArchSig v0.5.1 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
+            "ArchSig v0.5.2 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
         ),
         "Unmeasured AG evaluator rows are schema handoff rows, not measured zero.".to_string(),
         "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
@@ -1003,21 +1017,21 @@ fn supplied_data_ledger(
             "supplied:archmap",
             "archmap",
             archmap_ref,
-            "archmap/v0.5.1-validation",
+            "archmap/v0.5.2-validation",
             "validated",
         ),
         supplied_data_entry(
             "supplied:law-policy",
             "law-policy",
             law_policy_ref,
-            "law-policy/v0.5.1-validation",
+            "law-policy/v0.5.2-validation",
             "validated",
         ),
         supplied_data_entry(
             "supplied:measurement-profile",
             "measurement-profile",
             measurement_profile_ref,
-            "measurement-profile/v0.5.1-validation",
+            "measurement-profile/v0.5.2-validation",
             "validated",
         ),
     ];
@@ -1026,7 +1040,7 @@ fn supplied_data_ledger(
             "supplied:law-surface",
             "law-equation-surface",
             law_surface_ref,
-            "law-equation-surface/v0.5.1-validation",
+            "law-equation-surface/v0.5.2-validation",
             "validated",
         ));
     }
@@ -1035,7 +1049,7 @@ fn supplied_data_ledger(
             "supplied:repair-plan",
             "repair-plan",
             repair_plan_ref,
-            "repair-plan/v0.5.1-validation",
+            "repair-plan/v0.5.2-validation",
             "validated",
         ));
     }
@@ -1044,7 +1058,7 @@ fn supplied_data_ledger(
             "supplied:residual-packet",
             "residual-packet",
             residual_packet_ref,
-            "residual-packet/v0.5.1-validation",
+            "residual-packet/v0.5.2-validation",
             "validated",
         ));
     }
@@ -2116,7 +2130,7 @@ fn evaluate_square_free_repair_v1(
                 theorem_ref: "part8/5.2".to_string(),
                 assumption: "finite support family for Alexander dual enumeration".to_string(),
                 status: "checked".to_string(),
-                checked_by: Some("archmap-schema050-validation.contexts-finite".to_string()),
+                checked_by: Some("archmap-schema052-validation.contexts-finite".to_string()),
                 assumed_by: None,
             },
             AgAssumptionLedgerEntryV1 {
@@ -3950,12 +3964,19 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             && verdict.law == "saga.residual-boundary-membership"
             && verdict.verdict == "measured_nonzero"
     });
+    let saga_class_nonzero = packet.structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.saga-descent"
+            && verdict.law == "saga.residual-class"
+            && verdict.verdict == "measured_nonzero"
+    });
     let saga_glues = packet.structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
             && verdict.law == "saga.global-coherence"
             && verdict.verdict == "measured_zero"
     });
-    let conclusion = if saga_non_gluing {
+    let conclusion = if saga_class_nonzero {
+        ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
+    } else if saga_non_gluing {
         ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL
     } else if saga_glues {
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
@@ -3978,11 +3999,15 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
     };
     let translation_rule = summary_translation_rule(conclusion);
     json!({
-        "schema": "archsig-analysis-summary/v0.5.1",
+        "schema": "archsig-analysis-summary/v0.5.2",
         "conclusion": conclusion,
         "translationRule": active_summary_translation_rule_json(&translation_rule, packet),
         "translationRuleTable": ARCHSIG_ANALYSIS_CONCLUSION_CODES
             .iter()
+            .filter(|candidate| {
+                **candidate != ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
+                    || conclusion == ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
+            })
             .map(|conclusion| summary_translation_rule_json(&summary_translation_rule(conclusion)))
             .collect::<Vec<_>>(),
         "readThisFirst": {
@@ -4084,7 +4109,7 @@ pub fn build_insight_report_v1(
         })
     });
     json!({
-        "schema": "archsig-insight-report/v0.5.1",
+        "schema": "archsig-insight-report/v0.5.2",
         "reportId": format!("insight:{}", packet.packet_id),
         "sourcePacketRef": "archsig-measurement-packet.json",
         "generatedAt": "deterministic-run-artifact",
@@ -4138,7 +4163,7 @@ pub fn build_insight_report_v1(
             "monodromyVerdictGenerated": false
         },
         "nonConclusions": [
-            "Insight report is a projection of archsig-measurement-packet/v0.5.1 and does not generate new measurement claims.",
+            "Insight report is a projection of archsig-measurement-packet/v0.5.2 and does not generate new measurement claims.",
             "Repair candidates are next inspection cues, not automatic fixes.",
             "Viewer scenes are visual projections, not structural verdict derivations."
         ]
@@ -5141,7 +5166,7 @@ fn attach_gluing_scene_geometry(mut scene: Value, gluing_geometry: &Value) -> Va
         "source": "renderer sceneAxisPosition reads these metric keys from each gluing geometry object"
     });
     scene["projectionBoundary"] = json!(
-        "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.1 and archsig-insight-report/v0.5.1; it does not create a new structural verdict."
+        "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict."
     );
     scene["visualEncodingLegend"] = visual_encoding_legend_v1();
     if scene_id == "cech-h1-mismatch" {
@@ -5390,7 +5415,7 @@ fn gluing_geometry_projection_v1(
         })
         .collect::<Vec<_>>();
     json!({
-        "schema": "archsig-viewer-gluing-geometry/v0.5.1",
+        "schema": "archsig-viewer-gluing-geometry/v0.5.2",
         "sourcePacketRef": "archsig-measurement-packet.json",
         "sourceInsightReportRef": "archsig-insight-report.json",
         "projectionBoundary": "This geometry translates measured packet and ArchMap cover support into viewer objects. It adds no structural verdict or monodromy verdict; H2 coherence color appears only when projected from ag.coherence-obstruction packet verdicts.",
@@ -5735,7 +5760,7 @@ fn analytic_overlay_bundle_projection(packet: &ArchSigMeasurementPacketV1) -> Va
         .collect::<Vec<_>>();
 
     json!({
-        "schema": "archsig-analytic-overlay-bundle/v0.5.1",
+        "schema": "archsig-analytic-overlay-bundle/v0.5.2",
         "allowlist": [
             "strict-period-pairing@1",
             "support-localized-transfer@1",
@@ -5834,7 +5859,7 @@ fn period_stokes_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
         .filter(|invariant| invariant["evaluator"] == "ag.period-stokes-audit")
         .count();
     json!({
-        "schema": "archsig-period-stokes-meter/v0.5.1",
+        "schema": "archsig-period-stokes-meter/v0.5.2",
         "sourceEvaluator": "ag.period-stokes-audit",
         "sourceAnalyticReadingKind": "strict-period-pairing@1",
         "colorRole": "analytic_reading",
@@ -5861,7 +5886,7 @@ fn spectrum_landscape_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     });
     let Some(reading) = hodge_reading else {
         return json!({
-            "schema": "archsig-spectrum-landscape/v0.5.1",
+            "schema": "archsig-spectrum-landscape/v0.5.2",
             "status": "silent",
             "measurementStatus": "not_projected",
             "colorRole": "analytic_reading",
@@ -5950,7 +5975,7 @@ fn spectrum_landscape_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     let spectral_radius_numeric = spectrum_numeric_value(&spectral_radius_value);
 
     json!({
-        "schema": "archsig-spectrum-landscape/v0.5.1",
+        "schema": "archsig-spectrum-landscape/v0.5.2",
         "status": "needsReview",
         "measurementStatus": "proxy",
         "sourceReadingRef": reading.reading_id,
@@ -5967,7 +5992,7 @@ fn spectrum_landscape_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
         "spectralRadius": spectral_radius_value,
         "spectralRadiusNumeric": spectral_radius_numeric.map(round_f64),
         "axisPlacement": "axisRef-deterministic",
-        "forbiddenFieldRefs": ["legacy-schema050-curvature-status"],
+        "forbiddenFieldRefs": ["legacy-schema052-curvature-status"],
         "nonClaim": "Spectrum landscape is an analytic proxy reading; lawful plain and hotspots are not structural verdicts.",
         "projectionBoundary": "spectrumLandscape carries M10/M14 packet readings only; no legacy v0 status field is read and no structural verdict is created."
     })
@@ -11437,7 +11462,7 @@ fn cover_nerve_projection_v1(
         "vertices": vertices,
         "edges": edge_rows,
         "faces": faces,
-        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.1; not inferred by the viewer",
+        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.2; not inferred by the viewer",
         "h2CoherenceVisualized": false
     })
 }
@@ -11692,7 +11717,7 @@ pub fn build_measurement_viewer_data_v1(
         .map(|scenes| insight_omitted_detail_counts_v1(normalized, scenes))
         .unwrap_or_else(|| insight_omitted_detail_counts_v1(normalized, &[]));
     json!({
-        "schema": "archsig-atom-viewer-data/v0.5.1",
+        "schema": "archsig-atom-viewer-data/v0.5.2",
         "sourceArtifactRefs": {
             "normalizedArchMap": "normalized-archmap.json",
             "measurementPacket": "archsig-measurement-packet.json",
@@ -11715,7 +11740,7 @@ pub fn build_measurement_viewer_data_v1(
         "guidedTours": insight_report["guidedTours"],
         "copyBlocks": insight_report["copyBlocks"],
         "aatGeometryOverlays": {
-            "schema": "archsig-aat-geometry-overlays/v0.5.1",
+            "schema": "archsig-aat-geometry-overlays/v0.5.2",
             "projectionBoundary": "bounded viewer projection of measured ArchSig AG geometry; visual richness is not a new verdict",
             "gluingGeometry": insight_report["gluingGeometry"],
             "nerve": insight_report["gluingGeometry"]["nerve"],
@@ -12081,7 +12106,7 @@ pub fn validate_measurement_packet_value_v1(packet_value: &Value) -> Vec<Validat
             Ok(packet) => packet,
             Err(error) => {
                 let mut check = validation_check(
-                    "measurement-packet-schema050-typed-shape",
+                    "measurement-packet-schema052-typed-shape",
                     "measurement packet parses as ArchSigMeasurementPacketV1",
                     "fail",
                 );
@@ -12270,6 +12295,8 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "repairPathAtomRefs",
         "repairPlanRef",
         "representative",
+        "residualClassSupport",
+        "suppliedSlots",
         "resolutionSelector",
         "restrictionMatrix",
         "sectionAssignment",
@@ -12419,7 +12446,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         );
     }
     check_examples(
-        "measurement-packet-schema050-unknown-fields",
+        "measurement-packet-schema052-unknown-fields",
         "measurement packet objects reject unknown fields",
         examples,
     )
@@ -12447,8 +12474,8 @@ fn check_object_keys(
 
 fn check_packet_schema(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
     let mut check = validation_check(
-        "measurement-packet-schema050-schema",
-        "measurement packet uses archsig-measurement-packet/v0.5.1",
+        "measurement-packet-schema052-schema",
+        "measurement packet uses archsig-measurement-packet/v0.5.2",
         if packet.schema == ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA {
             "pass"
         } else {
@@ -12478,8 +12505,8 @@ fn check_structural_verdict_values(packet: &ArchSigMeasurementPacketV1) -> Valid
         })
         .collect::<Vec<_>>();
     check_examples(
-        "measurement-packet-schema050-five-verdict-values",
-        "structural verdicts are limited to the five v0.5.1 values",
+        "measurement-packet-schema052-five-verdict-values",
+        "structural verdicts are limited to the five v0.5.2 values",
         examples,
     )
 }
@@ -12498,7 +12525,7 @@ fn check_structural_verdict_evaluators(packet: &ArchSigMeasurementPacketV1) -> V
         })
         .collect::<Vec<_>>();
     check_examples(
-        "measurement-packet-schema050-structural-verdict-evaluators",
+        "measurement-packet-schema052-structural-verdict-evaluators",
         "structural verdict rows are limited to registered AG measurement evaluators",
         examples,
     )
@@ -12555,7 +12582,7 @@ fn check_structural_verdict_data(packet: &ArchSigMeasurementPacketV1) -> Validat
         }
     }
     check_examples(
-        "measurement-packet-schema050-verdict-data-boundary",
+        "measurement-packet-schema052-verdict-data-boundary",
         "VerdictData keeps zero, nonzero, unmeasured, unknown, and not_computed separate",
         examples,
     )
@@ -12811,7 +12838,7 @@ fn check_structural_verdict_new_shape_value(packet_value: &Value) -> ValidationC
         }
     }
     check_examples(
-        "measurement-packet-schema050-structural-verdict-new-shape",
+        "measurement-packet-schema052-structural-verdict-new-shape",
         "structural verdict rows carry target and computed invariant evidence",
         examples,
     )
@@ -12872,7 +12899,7 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
                 examples.push(generic_validation_example(
                     &label,
                     kind,
-                    "computed invariant kind must be one of the closed measurement packet v0.5.1 kinds",
+                    "computed invariant kind must be one of the closed measurement packet v0.5.2 kinds",
                 ));
             }
         }
@@ -12973,7 +13000,7 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
         }
     }
     check_examples(
-        "measurement-packet-schema050-computed-invariants-typed",
+        "measurement-packet-schema052-computed-invariants-typed",
         "computed invariants expose invariantId, kind, value, and representation",
         examples,
     )
@@ -13085,7 +13112,7 @@ fn check_analytic_regime_boundary(
         }
     }
     check_examples(
-        "measurement-packet-schema050-theorem-candidate-analytic-only",
+        "measurement-packet-schema052-theorem-candidate-analytic-only",
         "theorem-candidate readings are flagged analytic readings and do not generate structural verdicts",
         examples,
     )
@@ -13197,7 +13224,7 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
         }
     }
     check_examples(
-        "measurement-packet-schema050-supplied-data-ledger",
+        "measurement-packet-schema052-supplied-data-ledger",
         "suppliedData ledger is present and typed when entries exist",
         examples,
     )
@@ -13272,7 +13299,7 @@ fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationChe
         }
     }
     check_examples(
-        "measurement-packet-schema050-assumption-ledger",
+        "measurement-packet-schema052-assumption-ledger",
         "assumption ledger records checked / assumed / violated and row-level verdict dependencies",
         examples,
     )
@@ -13355,7 +13382,7 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
             examples.push(generic_validation_example(
                 &statement.id,
                 &statement.kind,
-                "boundary statement kind must be one of the v0.5.1 boundary kinds",
+                "boundary statement kind must be one of the v0.5.2 boundary kinds",
             ));
         }
         if statement.reason.trim().is_empty() {
@@ -13413,7 +13440,7 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
     }
 
     check_examples(
-        "measurement-packet-schema050-boundary-statements",
+        "measurement-packet-schema052-boundary-statements",
         "boundaryStatements provide typed, scoped non-conclusion qualifiers with nonConclusions compatibility",
         examples,
     )
@@ -13531,10 +13558,10 @@ mod tests {
 
     fn packet_fixture() -> ArchSigMeasurementPacketV1 {
         let mut packet: ArchSigMeasurementPacketV1 = serde_json::from_value(json!({
-            "schema": "archsig-measurement-packet/v0.5.1",
+            "schema": "archsig-measurement-packet/v0.5.2",
             "packetId": "measurement:test",
             "profile": {
-                "schema": "measurement-profile/v0.5.1",
+                "schema": "measurement-profile/v0.5.2",
                 "profileId": "profile:test",
                 "siteRef": "archmap:/contexts",
                 "coverRef": "cover:test",
@@ -13587,7 +13614,7 @@ mod tests {
                 "sourceArtifactRef": "input:archmap.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "archmap/v0.5.1-validation"
+                    "checkRef": "archmap/v0.5.2-validation"
                 }
             }, {
                 "suppliedId": "supplied:law-policy",
@@ -13595,7 +13622,7 @@ mod tests {
                 "sourceArtifactRef": "input:law-policy.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "law-policy/v0.5.1-validation"
+                    "checkRef": "law-policy/v0.5.2-validation"
                 }
             }, {
                 "suppliedId": "supplied:measurement-profile",
@@ -13603,7 +13630,7 @@ mod tests {
                 "sourceArtifactRef": "input:measurement-profile.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "measurement-profile/v0.5.1-validation"
+                    "checkRef": "measurement-profile/v0.5.2-validation"
                 }
             }],
             "nonConclusions": ["test fixture"]
@@ -13615,13 +13642,13 @@ mod tests {
 
     fn normalized_fixture() -> NormalizedArchMapV2 {
         serde_json::from_value(json!({
-            "schema": "archmap-normalized/v0.5.1",
+            "schema": "archmap-normalized/v0.5.2",
             "normalizerId": "test-normalizer",
             "sourceArchmapRef": "archmap:test",
             "sourceArchmapId": "archmap:test",
             "extractionDoctrineRef": {
                 "doctrineId": "doctrine:aat-canonical@1",
-                "fingerprint": "sha256:aat-canonical-doctrine-schema050",
+                "fingerprint": "sha256:aat-canonical-doctrine-schema052",
                 "components": ["V", "Gamma", "R", "rho", "E", "N"]
             },
             "atoms": [
@@ -13700,7 +13727,7 @@ mod tests {
                 "normalizedAtomCount": 3,
                 "contextCount": 3,
                 "coverCount": 1,
-                "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema050"
+                "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052"
             },
             "nonConclusions": []
         }))
@@ -13713,7 +13740,7 @@ mod tests {
         packet.structural_verdict[0].verdict = "blocked".to_string();
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-five-verdict-values" && check.result == "fail"
+            check.id == "measurement-packet-schema052-five-verdict-values" && check.result == "fail"
         }));
     }
 
@@ -13723,7 +13750,7 @@ mod tests {
         packet.structural_verdict[0].evaluator = "ag.synthetic-new-verdict".to_string();
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-structural-verdict-evaluators"
+            check.id == "measurement-packet-schema052-structural-verdict-evaluators"
                 && check.result == "fail"
         }));
     }
@@ -13739,7 +13766,7 @@ mod tests {
         }));
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-computed-invariants-typed"
+            check.id == "measurement-packet-schema052-computed-invariants-typed"
                 && check.result == "fail"
         }));
     }
@@ -13750,7 +13777,7 @@ mod tests {
         packet.supplied_data.clear();
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-supplied-data-ledger"
+            check.id == "measurement-packet-schema052-supplied-data-ledger"
                 && check.result == "fail"
         }));
     }
@@ -13762,7 +13789,7 @@ mod tests {
         packet.structural_verdict[0].verdict_data.non_zero = true;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-verdict-data-boundary"
+            check.id == "measurement-packet-schema052-verdict-data-boundary"
                 && check.result == "fail"
         }));
     }
@@ -13775,7 +13802,7 @@ mod tests {
         packet.structural_verdict[0].verdict_data.in_scope = false;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-verdict-data-boundary"
+            check.id == "measurement-packet-schema052-verdict-data-boundary"
                 && check.result == "fail"
         }));
 
@@ -13785,7 +13812,7 @@ mod tests {
         packet.structural_verdict[0].verdict_data.non_zero = true;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-verdict-data-boundary"
+            check.id == "measurement-packet-schema052-verdict-data-boundary"
                 && check.result == "fail"
         }));
     }
@@ -13801,7 +13828,7 @@ mod tests {
         packet.assumptions[0].checked_by = None;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-assumption-ledger" && check.result == "fail"
+            check.id == "measurement-packet-schema052-assumption-ledger" && check.result == "fail"
         }));
     }
 
@@ -13818,7 +13845,7 @@ mod tests {
 
         let checks = validate_measurement_packet_value_v1(&raw);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-structural-verdict-new-shape"
+            check.id == "measurement-packet-schema052-structural-verdict-new-shape"
                 && check.result == "fail"
         }));
     }
@@ -13833,7 +13860,7 @@ mod tests {
             .remove("evidence");
         let checks = validate_measurement_packet_value_v1(&missing_evidence);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-structural-verdict-new-shape"
+            check.id == "measurement-packet-schema052-structural-verdict-new-shape"
                 && check.result == "fail"
         }));
 
@@ -13841,7 +13868,7 @@ mod tests {
         non_string_ref["structuralVerdict"][0]["evidence"]["computedInvariantRefs"] = json!([123]);
         let checks = validate_measurement_packet_value_v1(&non_string_ref);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-structural-verdict-new-shape"
+            check.id == "measurement-packet-schema052-structural-verdict-new-shape"
                 && check.result == "fail"
         }));
     }
@@ -13873,24 +13900,24 @@ mod tests {
         raw["suppliedData"][1]["suppliedId"] = json!("supplied:archmap");
         let checks = validate_measurement_packet_value_v1(&raw);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-unknown-fields" && check.result == "fail"
+            check.id == "measurement-packet-schema052-unknown-fields" && check.result == "fail"
         }));
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-unknown-fields"
+            check.id == "measurement-packet-schema052-unknown-fields"
                 && check.examples.iter().any(|example| {
                     example.source.as_deref() == Some("computedInvariants[0].forgedField")
                 })
         }));
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-computed-invariants-typed"
+            check.id == "measurement-packet-schema052-computed-invariants-typed"
                 && check.result == "fail"
         }));
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-supplied-data-ledger"
+            check.id == "measurement-packet-schema052-supplied-data-ledger"
                 && check.result == "fail"
         }));
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+            check.id == "measurement-packet-schema052-theorem-candidate-analytic-only"
                 && check.result == "fail"
         }));
         raw["analyticReadings"][0]["regime"] = json!("certified");
@@ -13898,7 +13925,7 @@ mod tests {
         raw["analyticReadings"][0]["structuralVerdictRef"] = json!("structuralVerdict/missing");
         let certified_checks = validate_measurement_packet_value_v1(&raw);
         assert!(certified_checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+            check.id == "measurement-packet-schema052-theorem-candidate-analytic-only"
                 && check.result == "fail"
         }));
     }
@@ -13912,11 +13939,11 @@ mod tests {
 
         let checks = validate_measurement_packet_value_v1(&raw);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+            check.id == "measurement-packet-schema052-theorem-candidate-analytic-only"
                 && check.result == "fail"
         }));
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+            check.id == "measurement-packet-schema052-theorem-candidate-analytic-only"
                 && check.result == "fail"
         }));
     }
@@ -13944,7 +13971,7 @@ mod tests {
 
         let checks = validate_measurement_packet_value_v1(&raw);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-structural-verdict-new-shape"
+            check.id == "measurement-packet-schema052-structural-verdict-new-shape"
                 && check.result == "fail"
                 && check
                     .examples
@@ -13961,7 +13988,7 @@ mod tests {
 
         let checks = validate_measurement_packet_value_v1(&raw);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-computed-invariants-typed"
+            check.id == "measurement-packet-schema052-computed-invariants-typed"
                 && check.result == "fail"
         }));
     }
@@ -13977,7 +14004,7 @@ mod tests {
 
         let checks = validate_measurement_packet_value_v1(&raw);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-assumption-ledger"
+            check.id == "measurement-packet-schema052-assumption-ledger"
                 && check.result == "fail"
                 && check
                     .examples
@@ -14000,7 +14027,7 @@ mod tests {
 
         let checks = validate_measurement_packet_value_v1(&raw);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+            check.id == "measurement-packet-schema052-theorem-candidate-analytic-only"
                 && check.result == "fail"
                 && check
                     .examples
@@ -14015,7 +14042,7 @@ mod tests {
         packet.structural_verdict[0].depends_on_assumptions = vec!["missing/theorem".to_string()];
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-assumption-ledger" && check.result == "fail"
+            check.id == "measurement-packet-schema052-assumption-ledger" && check.result == "fail"
         }));
     }
 
@@ -14094,7 +14121,7 @@ mod tests {
             Some("/structuralVerdict/0".to_string());
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
+            check.id == "measurement-packet-schema052-theorem-candidate-analytic-only"
                 && check.result == "fail"
         }));
     }
@@ -14105,7 +14132,7 @@ mod tests {
         let checks = validate_measurement_packet_v1(&packet);
 
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "pass"
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "pass"
         }));
         assert!(packet.non_conclusions.iter().all(|text| {
             packet
@@ -14136,7 +14163,7 @@ mod tests {
         let checks = validate_measurement_packet_v1(&packet);
 
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "fail"
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
         }));
     }
 
@@ -14147,7 +14174,7 @@ mod tests {
         let checks = validate_measurement_packet_v1(&packet);
 
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "fail"
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
         }));
     }
 
@@ -14158,7 +14185,7 @@ mod tests {
         let checks = validate_measurement_packet_v1(&packet);
 
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "fail"
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
         }));
     }
 
@@ -14187,7 +14214,7 @@ mod tests {
         }));
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "pass"
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "pass"
         }));
 
         let mut broken = packet;
@@ -14199,7 +14226,7 @@ mod tests {
         statement.scope_refs = vec!["part8/4.2".to_string()];
         let checks = validate_measurement_packet_v1(&broken);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "fail"
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
         }));
     }
 

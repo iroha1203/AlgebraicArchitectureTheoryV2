@@ -10,13 +10,13 @@ ArchMap finite-poset-site evidence
   + LawPolicy evaluator selection
   + law-equation-surface declaration
   + MeasurementProfile selected regime
-  -> archsig-measurement-packet/v0.5.1
+  -> archsig-measurement-packet/v0.5.2
 ```
 
 LawPolicy JSON selects explicit law / lawPair entries, evaluator ids, basis refs, scope, severity, and a
 `measurementProfileRef`. `lawSurfaceRef` is required and must match the supplied
-`law-equation-surface/v0.5.1` id. The selected profile is supplied as a separate
-`measurement-profile/v0.5.1` artifact through `--measurement-profile`; LawPolicy
+`law-equation-surface/v0.5.2` id. The selected profile is supplied as a separate
+`measurement-profile/v0.5.2` artifact through `--measurement-profile`; LawPolicy
 does not embed `measurementProfiles[]`.
 
 `basisLedger[]` declares the basis ids used by `policies[].basis`. ArchSig checks

@@ -10,7 +10,7 @@ pub struct RepairPlanDocumentV1 {
     pub primitives: Vec<RepairPlanPrimitiveV1>,
     pub semantic_projection: RepairPlanSemanticProjectionV1,
     pub faithfulness: RepairPlanFaithfulnessV1,
-    pub coefficient: String,
+    pub coefficient: RepairPlanCoefficientV1,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub true_sheaf_certificate: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -92,4 +92,53 @@ pub struct RepairPlanProjectionRowV1 {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepairPlanFaithfulnessV1 {
     pub mode: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub supplied: Option<RepairPlanSuppliedFaithfulnessV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum RepairPlanCoefficientV1 {
+    Named(String),
+    Supplied(RepairPlanSuppliedCoefficientV1),
+}
+
+impl RepairPlanCoefficientV1 {
+    pub fn is_f2_additive(&self) -> bool {
+        matches!(self, Self::Named(name) if name == "f2-additive")
+    }
+
+    pub fn supplied(&self) -> Option<&RepairPlanSuppliedCoefficientV1> {
+        match self {
+            Self::Supplied(value) => Some(value),
+            Self::Named(_) => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RepairPlanSuppliedCoefficientV1 {
+    pub kind: String,
+    pub characteristic: u8,
+    pub additive: bool,
+    pub delta_one_after_delta_zero: bool,
+    pub zero_maps_to_zero: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RepairPlanSuppliedFaithfulnessV1 {
+    pub zero_primitive_ref: String,
+    pub residual_support_predicate: RepairPlanSuppliedPredicateV1,
+    pub faithfulness_law: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RepairPlanSuppliedPredicateV1 {
+    pub kind: String,
+    #[serde(default)]
+    pub support_variables: Vec<String>,
+    pub zero_on_zero_primitive: bool,
 }

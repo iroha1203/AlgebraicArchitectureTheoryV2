@@ -556,7 +556,7 @@ enum Command {
 
     /// Project an ArchSig measurement packet into SFT operation-support input.
     ArchsigAnalysisSftInput {
-        /// Input archsig-measurement-packet/v0.5.1 JSON path.
+        /// Input archsig-measurement-packet/v0.5.2 JSON path.
         #[arg(long = "measurement-packet")]
         measurement_packet: PathBuf,
 

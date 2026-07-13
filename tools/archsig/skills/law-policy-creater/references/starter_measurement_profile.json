@@ -1,5 +1,5 @@
 {
-  "schema": "measurement-profile/v0.5.1",
+  "schema": "measurement-profile/v0.5.2",
   "profileId": "profile:ag-default@1",
   "siteRef": "archmap:/contexts",
   "coverRef": "cover:<archmap-cover-id>",

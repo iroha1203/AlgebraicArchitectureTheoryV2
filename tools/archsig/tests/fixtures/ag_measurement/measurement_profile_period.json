@@ -1,5 +1,5 @@
 {
-  "schema": "measurement-profile/v0.5.1",
+  "schema": "measurement-profile/v0.5.2",
   "profileId": "profile:ag-period-stokes@1",
   "siteRef": "archmap:/contexts",
   "coverRef": "cover:period-stokes",

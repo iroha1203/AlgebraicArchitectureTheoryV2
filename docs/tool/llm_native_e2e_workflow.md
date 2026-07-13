@@ -30,7 +30,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2_support_transfer.json \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_transfer.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_transfer.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --out-dir .tmp/archsig-analyze-e2e/archsig
 
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
@@ -60,7 +60,7 @@ archsig-run-manifest.json
 - MeasurementProfile selects the finite measurement regime.
 - ArchSig emits bounded measurement artifacts and does not infer missing
   evidence as measured zero.
-- FieldSig reads `archsig-measurement-packet/v0.5.1` as the current handoff.
+- FieldSig reads `archsig-measurement-packet/v0.5.2` as the current handoff.
 - Raw ArchMap JSON is not a FieldSig handoff input.
 - Compare + gate are the current PR / CI decision surfaces.
 

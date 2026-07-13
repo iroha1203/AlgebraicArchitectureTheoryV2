@@ -1,6 +1,6 @@
 # FieldSig Commands
 
-FieldSig owns SFT software evolution measurement and workflow-evidence artifacts. The current ArchSig handoff is the serialized `archsig-measurement-packet/v0.5.1` with the three selected component fingerprints: FieldSig reads it as current AG measurement state, not as forecast truth, causal correctness, global safety, or PR diff analysis. `archsig-analysis-sft-input` projects that packet into `operation-support-estimate/v0.5.0` while preserving structural verdicts, computed invariants, analytic readings, assumption ledger entries, and non-conclusions as bounded refs / unknown remainder. `archmap-sft-input` remains a legacy bounded projection and must not promote raw ArchMap observations to forecast truth. FieldSig does not share Rust types with ArchSig as a contract; the stable boundary is the serialized artifact ref.
+FieldSig owns SFT software evolution measurement and workflow-evidence artifacts. The current ArchSig handoff is the serialized `archsig-measurement-packet/v0.5.2` with the three selected component fingerprints: FieldSig reads it as current AG measurement state, not as forecast truth, causal correctness, global safety, or PR diff analysis. `archsig-analysis-sft-input` projects that packet into `operation-support-estimate/v0.5.0` while preserving structural verdicts, computed invariants, analytic readings, assumption ledger entries, and non-conclusions as bounded refs / unknown remainder. `archmap-sft-input` remains a legacy bounded projection and must not promote raw ArchMap observations to forecast truth. FieldSig does not share Rust types with ArchSig as a contract; the stable boundary is the serialized artifact ref.
 
 ## Measurement
 
@@ -21,7 +21,7 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-inpu
 
 This command rejects raw ArchMap JSON when it is supplied as the
 measurement-packet input. The accepted ArchSig handoff boundary is
-`archsig-measurement-packet/v0.5.1` with all three component fingerprints.
+`archsig-measurement-packet/v0.5.2` with all three component fingerprints.
 
 The end-to-end command transcript is fixed in
 [`docs/tool/llm_native_e2e_workflow.md`](../../../docs/tool/llm_native_e2e_workflow.md).

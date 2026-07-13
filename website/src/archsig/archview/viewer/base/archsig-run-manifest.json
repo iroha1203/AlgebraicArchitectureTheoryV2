@@ -37,7 +37,7 @@
       "sha256": "8ea157edec4b604e89d65bd38bd2e1da615fb4b5c7f69e5ee7da1b3ca3ebd125"
     },
     "lawSurface": {
-      "path": "input:law_surface_practical_base_v051.json",
+      "path": "input:law_surface_practical_base_v052.json",
       "sha256": "f7131846b456c621bb32992b659a9b7dea480b1d619bb132dde4abc87a59739b"
     },
     "measurementProfile": {
@@ -55,11 +55,11 @@
     }
   },
   "lawPolicyInputPath": "input:law_policy.json",
-  "lawSurfaceInputPath": "input:law_surface_practical_base_v051.json",
+  "lawSurfaceInputPath": "input:law_surface_practical_base_v052.json",
   "measurementProfileInputPath": "input:measurement_profile.json",
   "mode": "measurement",
   "nonConclusions": [
-    "Finite-poset-site run manifest records the v0.5.1 AG measurement foundation artifacts.",
+    "Finite-poset-site run manifest records the v0.5.2 AG measurement foundation artifacts.",
     "Foundation packet rows are not completed AG invariant evaluator computation."
   ],
   "omittedArtifacts": [],
@@ -67,8 +67,8 @@
   "rawArtifactRetention": "omitted",
   "repairPlanInputPath": null,
   "runId": "run:946877d47467",
-  "schema": "archsig-run-manifest/v0.5.1",
-  "toolVersion": "0.5.1",
+  "schema": "archsig-run-manifest/v0.5.2",
+  "toolVersion": "0.5.2",
   "validationReports": {
     "analysis": "archsig-analysis-validation.json",
     "archmap": "archmap-validation.json",

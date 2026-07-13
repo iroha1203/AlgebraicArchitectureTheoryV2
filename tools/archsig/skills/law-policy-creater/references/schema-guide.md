@@ -7,9 +7,9 @@ measurement path also uses LawPolicy to select a first-class MeasurementProfile.
 
 ```json
 {
-  "schema": "law-policy/v0.5.1",
+  "schema": "law-policy/v0.5.2",
   "id": "policy-id",
-  "lawSurfaceRef": "law-surface:ag-default-v051",
+  "lawSurfaceRef": "law-surface:ag-default-v052",
   "measurementProfileRef": "profile:ag-default@1",
   "basisLedger": [],
   "policies": []
@@ -41,7 +41,7 @@ authoring surface.
 
 ```json
 {
-  "law": "surface:cech-surface-v051",
+  "law": "surface:cech-surface-v052",
   "evaluator": "ag.cech-obstruction",
   "basis": ["policy-basis:layering"],
   "scope": ["domain."],
@@ -93,7 +93,7 @@ external `--measurement-profile` artifact's `profileId`.
 
 ```json
 {
-  "schema": "measurement-profile/v0.5.1",
+  "schema": "measurement-profile/v0.5.2",
   "profileId": "profile:ag-default@1",
   "siteRef": "archmap:/contexts",
   "coverRef": "cover:<archmap-cover-id>",
@@ -174,11 +174,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- measurement-profile \
 cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --out .tmp/law-policy-authoring/policy-validation.json
 cargo run --manifest-path tools/archsig/Cargo.toml -- policy-bundle \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
   --out .tmp/law-policy-authoring/policy-bundle.json
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \

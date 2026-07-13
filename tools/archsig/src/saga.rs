@@ -3,8 +3,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::{Value, json};
 
 use crate::{
-    AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
-    RepairPlanDocumentV1, assumption_id_for_schema,
+    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1,
+    AgVerdictDataV1, ArchMapDocumentV2, RepairPlanDocumentV1, assumption_id_for_schema,
 };
 
 #[derive(Debug, Clone)]
@@ -31,6 +31,32 @@ pub(crate) fn evaluate_saga_descent_v1(
         assumed_by: Some("repair-plan author".to_string()),
     };
     let enumeration_assumption_id = assumption_id_for_schema(&enumeration_assumption);
+    let sheaf_assumption =
+        plan.true_sheaf_certificate
+            .as_ref()
+            .and_then(Value::as_object)
+            .and_then(|certificate| {
+                (certificate.get("globalCondition").and_then(Value::as_str) == Some("assumed"))
+                    .then(|| AgAssumptionLedgerEntryV1 {
+                        theorem_ref: "part4/4.7".to_string(),
+                        assumption: format!("global sheaf condition for {}", plan.id),
+                        status: "assumed".to_string(),
+                        checked_by: None,
+                        assumed_by: Some("trueSheafCertificate author".to_string()),
+                    })
+            });
+    let faithfulness_assumption =
+        (plan.faithfulness.mode == "supplied").then(|| AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/4.6".to_string(),
+            assumption: format!("faithfulness law supplied for {}", plan.id),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some("RepairPlan author".to_string()),
+        });
+    let mut evaluator_assumption_ids = vec![enumeration_assumption_id.clone()];
+    if let Some(assumption) = faithfulness_assumption.as_ref() {
+        evaluator_assumption_ids.push(assumption_id_for_schema(assumption));
+    }
     let mut structural_verdict = Vec::new();
     let boundary_verdict = if boundary.in_b1 {
         "measured_zero"
@@ -53,7 +79,7 @@ pub(crate) fn evaluate_saga_descent_v1(
             .to_string(),
             cert_ref: Some("computedInvariants/saga-descent:boundary-membership".to_string()),
         },
-        depends_on_assumptions: vec![enumeration_assumption_id.clone()],
+        depends_on_assumptions: evaluator_assumption_ids.clone(),
         reason: Some(if boundary.in_b1 {
             "supplied residual lies in B1 for the selected RepairPlan complex".to_string()
         } else {
@@ -93,7 +119,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 method_status: "complete_support_global_coherent".to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
+            depends_on_assumptions: evaluator_assumption_ids.clone(),
             reason: Some(
                 "residual is a B1 boundary inside the complete-support RepairPlan regime"
                     .to_string(),
@@ -111,7 +137,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 method_status: "residual_not_covered".to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
+            depends_on_assumptions: evaluator_assumption_ids.clone(),
             reason: Some(
                 "residual is a B1 boundary, but semantic projection does not cover every residual component for the selected RepairPlan complex".to_string(),
             ),
@@ -133,7 +159,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 .to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
             },
-            depends_on_assumptions: vec![enumeration_assumption_id],
+            depends_on_assumptions: evaluator_assumption_ids.clone(),
             reason: Some(if boundary.in_b1 {
                 "residual is covered, but semantic projection is not faithful for the selected RepairPlan complex".to_string()
             } else {
@@ -142,34 +168,209 @@ pub(crate) fn evaluate_saga_descent_v1(
         });
     }
 
+    let mut computed_invariants = vec![
+        json!({
+            "invariantId": "saga-descent:boundary-membership",
+            "evaluator": "ag.saga-descent",
+            "boundaryMembership": {
+                "inB1": boundary.in_b1,
+                "witnessPrimitiveCombination": boundary.witness_chart_assignment,
+                "residualSupport": boundary.residual_support
+            }
+        }),
+        json!({
+            "invariantId": "saga-descent:closure-diagnostics",
+            "evaluator": "ag.saga-descent",
+            "closureDiagnostics": {
+                "residualComponentCovered": closure.residual_component_covered,
+                "residualComponentFaithful": closure.residual_component_faithful,
+                "aliasWitnesses": closure.alias_witnesses
+            },
+            "faithfulnessBasis": {
+                "mode": plan.faithfulness.mode,
+                "basis": if plan.faithfulness.mode == "supplied" { "supplied-data" } else { "complete-support" },
+                "completeSupportPrimitiveCount": plan.primitives.iter().filter(|primitive| primitive.support.kind == "complete").count()
+            }
+        }),
+    ];
+    if class_supply_is_checked(archmap, plan) {
+        let class_nonzero = !boundary.in_b1;
+        structural_verdict.push(AgStructuralVerdictV1 {
+            evaluator: "ag.saga-descent".to_string(),
+            law: "saga.residual-class".to_string(),
+            verdict: if class_nonzero { "measured_nonzero" } else { "measured_zero" }
+                .to_string(),
+            verdict_data: AgVerdictDataV1 {
+                in_scope: true,
+                zero: !class_nonzero,
+                non_zero: class_nonzero,
+                method_status: if class_nonzero {
+                    "nonzero_class_representative"
+                } else {
+                    "zero_class_representative"
+                }
+                .to_string(),
+                cert_ref: Some("computedInvariants/saga-descent:residual-class".to_string()),
+            },
+            depends_on_assumptions: evaluator_assumption_ids.clone(),
+            reason: Some(if class_nonzero {
+                format!("{ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS}: supplied Z1 representative is not in B1")
+            } else {
+                "supplied Z1 representative is zero in Z1/B1".to_string()
+            }),
+        });
+        computed_invariants.push(json!({
+            "invariantId": "saga-descent:residual-class",
+            "evaluator": "ag.saga-descent",
+            "residualClassSupport": {
+                "basis": "Z1/B1",
+                "representative": boundary.residual_support,
+                "nonZero": class_nonzero,
+                "quotient": "Z1/B1",
+                "cocycle": {
+                    "checked": true,
+                    "deltaOne": "zero",
+                    "tripleOverlapRefs": plan.complex.triple_overlaps.iter().map(|triple| json!({
+                        "tripleRef": triple.id,
+                        "overlapRefs": triple.overlap_refs
+                    })).collect::<Vec<_>>()
+                }
+            },
+            "suppliedSlots": [
+                "complex.tripleOverlaps",
+                "coefficient",
+                "trueSheafCertificate",
+                "gluingData"
+            ]
+        }));
+    }
+    let mut assumptions = vec![enumeration_assumption];
+    if let Some(sheaf_assumption) = sheaf_assumption {
+        assumptions.push(sheaf_assumption);
+    }
+    if let Some(faithfulness_assumption) = faithfulness_assumption {
+        assumptions.push(faithfulness_assumption);
+    }
     SagaDescentMeasurementV1 {
         structural_verdict,
-        computed_invariants: vec![
-            json!({
-                "invariantId": "saga-descent:boundary-membership",
-                "evaluator": "ag.saga-descent",
-                "boundaryMembership": {
-                    "inB1": boundary.in_b1,
-                    "witnessPrimitiveCombination": boundary.witness_chart_assignment,
-                    "residualSupport": boundary.residual_support
-                }
-            }),
-            json!({
-                "invariantId": "saga-descent:closure-diagnostics",
-                "evaluator": "ag.saga-descent",
-                "closureDiagnostics": {
-                    "residualComponentCovered": closure.residual_component_covered,
-                    "residualComponentFaithful": closure.residual_component_faithful,
-                    "aliasWitnesses": closure.alias_witnesses
-                },
-                "faithfulnessBasis": {
-                    "mode": plan.faithfulness.mode,
-                    "completeSupportPrimitiveCount": plan.primitives.iter().filter(|primitive| primitive.support.kind == "complete").count()
-                }
-            }),
-        ],
-        assumptions: vec![enumeration_assumption],
+        computed_invariants,
+        assumptions,
     }
+}
+
+fn class_supply_is_checked(archmap: &ArchMapDocumentV2, plan: &RepairPlanDocumentV1) -> bool {
+    let overlap_ids = plan
+        .complex
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let triple_ok = !plan.complex.triple_overlaps.is_empty()
+        && plan.complex.triple_overlaps.iter().all(|triple| {
+            let refs = triple.overlap_refs.iter().collect::<BTreeSet<_>>();
+            triple.overlap_refs.len() == 3
+                && refs.len() == 3
+                && refs
+                    .iter()
+                    .all(|overlap| overlap_ids.contains(overlap.as_str()))
+                && triple_cocycle_is_zero(plan, &triple.overlap_refs)
+        });
+    let coefficient_ok = plan.coefficient.is_f2_additive()
+        || plan.coefficient.supplied().is_some_and(|coefficient| {
+            coefficient.kind == "f2-additive"
+                && coefficient.characteristic == 2
+                && coefficient.additive
+                && coefficient.delta_one_after_delta_zero
+                && coefficient.zero_maps_to_zero
+        });
+    let certificate_ok = plan
+        .true_sheaf_certificate
+        .as_ref()
+        .and_then(Value::as_object)
+        .is_some_and(|certificate| {
+            certificate.get("kind").and_then(Value::as_str) == Some("true-sheaf-certificate")
+                && certificate
+                    .get("globalCondition")
+                    .and_then(Value::as_str)
+                    .is_some_and(|condition| matches!(condition, "assumed"))
+                && certificate
+                    .get("coverRef")
+                    .and_then(Value::as_str)
+                    .is_some_and(|cover| archmap.covers.iter().any(|item| item.id == cover))
+                && certificate
+                    .get("memberCharts")
+                    .and_then(Value::as_array)
+                    .is_some_and(|members| {
+                        !members.is_empty()
+                            && members.iter().all(|member| {
+                                member.as_str().is_some_and(|chart| {
+                                    plan.complex.charts.iter().any(|item| item == chart)
+                                })
+                            })
+                            && members
+                                .iter()
+                                .filter_map(Value::as_str)
+                                .collect::<BTreeSet<_>>()
+                                .len()
+                                == members.len()
+                    })
+        });
+    let gluing_ok = plan
+        .gluing_data
+        .as_ref()
+        .and_then(Value::as_object)
+        .is_some_and(|gluing| {
+            gluing.get("kind").and_then(Value::as_str) == Some("gluing-data")
+                && gluing
+                    .get("overlapRefs")
+                    .and_then(Value::as_array)
+                    .is_some_and(|refs| {
+                        refs.len() == overlap_ids.len()
+                            && refs
+                                .iter()
+                                .filter_map(Value::as_str)
+                                .collect::<BTreeSet<_>>()
+                                == overlap_ids
+                    })
+                && gluing
+                    .get("sectionRefs")
+                    .and_then(Value::as_array)
+                    .is_some_and(|refs| {
+                        let overlaps = refs
+                            .iter()
+                            .filter_map(Value::as_object)
+                            .filter_map(|item| item.get("overlapRef")?.as_str())
+                            .collect::<BTreeSet<_>>();
+                        let sections = refs
+                            .iter()
+                            .filter_map(Value::as_object)
+                            .filter_map(|item| item.get("sectionRef")?.as_str())
+                            .filter(|section| !section.is_empty())
+                            .collect::<BTreeSet<_>>();
+                        refs.len() == overlap_ids.len()
+                            && overlaps == overlap_ids
+                            && sections.len() == overlap_ids.len()
+                    })
+        });
+    triple_ok && coefficient_ok && certificate_ok && gluing_ok
+}
+
+fn triple_cocycle_is_zero(plan: &RepairPlanDocumentV1, overlap_refs: &[String]) -> bool {
+    let primitives = plan
+        .primitives
+        .iter()
+        .map(|primitive| (primitive.overlap_ref.as_str(), primitive))
+        .collect::<BTreeMap<_, _>>();
+    let mut parity = BTreeMap::<&str, usize>::new();
+    for overlap_ref in overlap_refs {
+        let Some(primitive) = primitives.get(overlap_ref.as_str()) else {
+            return false;
+        };
+        for variable in &primitive.support.variables {
+            *parity.entry(variable.as_str()).or_default() += 1;
+        }
+    }
+    parity.values().all(|count| count % 2 == 0)
 }
 
 #[derive(Debug, Clone)]

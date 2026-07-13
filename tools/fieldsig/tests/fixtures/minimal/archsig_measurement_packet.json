@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-measurement-packet/v0.5.1",
+  "schema": "archsig-measurement-packet/v0.5.2",
   "packetId": "archsig-measurement-fixture",
   "componentFingerprints": {
     "lawPolicy": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -7,7 +7,7 @@
     "measurementProfile": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
   },
   "profile": {
-    "schema": "measurement-profile/v0.5.1",
+    "schema": "measurement-profile/v0.5.2",
     "profileId": "profile:fieldsig-fixture",
     "siteRef": "archmap:/contexts",
     "coverRef": "cover:fieldsig-fixture",
@@ -30,7 +30,7 @@
     "sourceArtifactRef": "input:archmap.json",
     "conformance": {
       "status": "validated",
-      "checkRef": "archmap/v0.5.1-validation"
+      "checkRef": "archmap/v0.5.2-validation"
     }
   }],
   "boundaryStatements": [],

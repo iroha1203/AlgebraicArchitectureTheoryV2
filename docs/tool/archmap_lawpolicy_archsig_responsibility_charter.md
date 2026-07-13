@@ -87,7 +87,7 @@ LawPolicy は、明示した law / lawPair / evaluator / basis / scope / severit
 加えて、何が forbidden か(law universe)を指定する。第III部は「law は atom を生成しない、coordinate を生成しない、law は loci を切り出す」と述べる。
 law は存在の根拠ではなく、どの witness ideal / defect representative を読むかを指定する装置であり、witness variables と signature axis は supplied law-equation-surface と evaluator registry で解決される。
 
-`law-equation-surface/v0.5.1` は、制度選択が参照する law universe と witness
+`law-equation-surface/v0.5.2` は、制度選択が参照する law universe と witness
 variables を宣言する一次artifactである。`policy-bundle` はLawPolicy、law
 surface、MeasurementProfileをcanonical JSON fingerprint付きで同じrunへ固定し、
 run manifestとmeasurement packetにcomponentFingerprintsを残す。
@@ -100,7 +100,7 @@ LawPolicy が書かないもの: witness predicate の手書き、signature axis
 
 ## ArchSig は何か —— 計算層
 
-ArchSig は、`ArchMap + LawPolicy + supplied law-equation-surface + MeasurementProfile` の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.1` を作る AG measurement layer である。
+ArchSig は、`ArchMap + LawPolicy + supplied law-equation-surface + MeasurementProfile` の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.2` を作る AG measurement layer である。
 **Lean 証明器ではない。** 神の視点も持たない。
 
 判定はすべてここで生まれる。cech defect の比較、minimal forbidden support の enumeration、obstruction ideal、

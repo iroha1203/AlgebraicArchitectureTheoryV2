@@ -44,7 +44,7 @@
             {
               "kind": "archsig-measurement-packet",
               "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
-              "schema": "archsig-measurement-packet/v0.5.1",
+              "schema": "archsig-measurement-packet/v0.5.2",
               "artifactId": "archsig-measurement-fixture"
             }
           ],
@@ -63,7 +63,7 @@
               {
                 "kind": "archsig-measurement-packet",
                 "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
-                "schema": "archsig-measurement-packet/v0.5.1",
+                "schema": "archsig-measurement-packet/v0.5.2",
                 "artifactId": "archsig-measurement-fixture"
               }
             ],
@@ -213,7 +213,7 @@
             {
               "kind": "archsig-measurement-packet",
               "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
-              "schema": "archsig-measurement-packet/v0.5.1",
+              "schema": "archsig-measurement-packet/v0.5.2",
               "artifactId": "archsig-measurement-fixture"
             }
           ],
@@ -238,7 +238,7 @@
               {
                 "kind": "archsig-measurement-packet",
                 "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
-                "schema": "archsig-measurement-packet/v0.5.1",
+                "schema": "archsig-measurement-packet/v0.5.2",
                 "artifactId": "archsig-measurement-fixture"
               }
             ],
@@ -367,7 +367,7 @@
             {
               "kind": "archsig-measurement-packet",
               "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
-              "schema": "archsig-measurement-packet/v0.5.1",
+              "schema": "archsig-measurement-packet/v0.5.2",
               "artifactId": "archsig-measurement-fixture"
             }
           ],
@@ -392,7 +392,7 @@
               {
                 "kind": "archsig-measurement-packet",
                 "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
-                "schema": "archsig-measurement-packet/v0.5.1",
+                "schema": "archsig-measurement-packet/v0.5.2",
                 "artifactId": "archsig-measurement-fixture"
               }
             ],

@@ -1,7 +1,7 @@
 # ArchSig gate-policy authoring guide
 
-`archsig gate` は `archsig-measurement-packet/v0.5.1` の verdict を、CI 管理者が author した
-`archsig-gate-policy/v0.5.1` で制度的 action に写す。measurement verdict 自体は変更しない。
+`archsig gate` は `archsig-measurement-packet/v0.5.2` の verdict を、CI 管理者が author した
+`archsig-gate-policy/v0.5.2` で制度的 action に写す。measurement verdict 自体は変更しない。
 
 ## Policy shape
 

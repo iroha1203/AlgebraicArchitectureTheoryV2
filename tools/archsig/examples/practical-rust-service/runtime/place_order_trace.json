@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-example-runtime-trace/v0.5.1",
+  "schema": "archsig-example-runtime-trace/v0.5.2",
   "traceId": "runtime-trace:place-order-demo",
   "scenario": "run_demo executes one VIP checkout through CheckoutService and InMemoryCommercePlatform",
   "sourceRefs": [

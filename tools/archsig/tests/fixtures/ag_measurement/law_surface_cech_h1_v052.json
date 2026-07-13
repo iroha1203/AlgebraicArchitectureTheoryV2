@@ -1,9 +1,9 @@
 {
-  "schema": "law-equation-surface/v0.5.1",
-  "id": "law-surface:cech-h1-v051",
+  "schema": "law-equation-surface/v0.5.2",
+  "id": "law-surface:cech-h1-v052",
   "laws": [
     {
-      "lawId": "surface:cech-surface-v051",
+      "lawId": "surface:cech-surface-v052",
       "conditionType": "closed-equational",
       "witnessVariables": [
         {

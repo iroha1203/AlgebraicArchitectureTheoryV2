@@ -185,7 +185,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap_head.json \
   --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
   --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v052.json \
   --out-dir .tmp/archsig-practical-rust-service/head
 ```
 
@@ -194,7 +194,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
 Open `tools/archview/archview.html` and load
 `.tmp/archsig-practical-rust-service/head/archsig-atom-viewer-data.json` to
 see the eight contexts, the settlement cycle, and the mismatch support in
-3D. The viewer data (`archsig-atom-viewer-data/v0.5.1`) is a projection of
+3D. The viewer data (`archsig-atom-viewer-data/v0.5.2`) is a projection of
 the supplied ArchMap, LawPolicy, and measurement packet; it is not a new
 analyzer.
 

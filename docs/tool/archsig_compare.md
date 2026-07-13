@@ -22,8 +22,8 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
 
 Outputs:
 
-- `archmap-diff.json` with schema `archmap-diff/v0.5.1`
-- `archsig-comparison-report.json` with schema `archsig-comparison-report/v0.5.1`
+- `archmap-diff.json` with schema `archmap-diff/v0.5.2`
+- `archsig-comparison-report.json` with schema `archsig-comparison-report/v0.5.2`
 
 ## Comparability
 

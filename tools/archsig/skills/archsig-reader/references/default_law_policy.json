@@ -1,11 +1,11 @@
 {
-  "schema": "law-policy/v0.5.1",
+  "schema": "law-policy/v0.5.2",
   "id": "archsig-reader-smoke-policy",
-  "lawSurfaceRef": "law-surface:ag-measurement-v051",
+  "lawSurfaceRef": "law-surface:ag-measurement-v052",
   "measurementProfileRef": "profile:ag-default@1",
   "policies": [
     {
-      "law": "surface:cech-surface-v051",
+      "law": "surface:cech-surface-v052",
       "evaluator": "ag.cech-obstruction",
       "basis": [
         "policy-basis:ag-cech"
@@ -21,7 +21,7 @@
       "basisId": "policy-basis:ag-cech",
       "kind": "registry",
       "path": "tools/archsig/src/law_policy/registry/ag.rs",
-      "revision": "v0.5.1"
+      "revision": "v0.5.2"
     }
   ]
 }

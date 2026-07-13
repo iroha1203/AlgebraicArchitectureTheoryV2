@@ -62,7 +62,7 @@ pub fn validate_archmap_v2_report(
     };
 
     ArchMapValidationReportV2 {
-        schema_version: "archmap-validation-report/v0.5.1".to_string(),
+        schema_version: "archmap-validation-report/v0.5.2".to_string(),
         archmap_ref: input_path.to_string(),
         input_schema: document.schema.clone(),
         checks,
@@ -157,7 +157,7 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
         examples.push(generic_validation_example(
             "aatAtomBindingVocabulary.schema",
             &vocabulary.schema,
-            "ArchMap authoring and law-surface validation use the v0.5.1 binding manifest",
+            "ArchMap authoring and law-surface validation use the v0.5.2 binding manifest",
         ));
     }
     for axis in required_axes {
@@ -250,7 +250,7 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
         }
     }
     check_from_examples(
-        "archmap-schema050-aat-binding-vocabulary",
+        "archmap-schema052-aat-binding-vocabulary",
         "ArchMap authoring and law-surface validation resolve one versioned binding manifest",
         examples,
     )
@@ -258,7 +258,7 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
 
 fn check_archmap_v2_schema(schema: &str) -> ValidationCheck {
     let mut check = validation_check(
-        "archmap-schema050-schema",
+        "archmap-schema052-schema",
         "ArchMap v2 uses the finite poset site schema discriminator",
         if schema == ARCHMAP_V2_SCHEMA {
             "pass"
@@ -297,7 +297,7 @@ fn check_archmap_v2_doctrine(document: &ArchMapDocumentV2) -> ValidationCheck {
         ));
     }
     check_from_examples(
-        "archmap-schema050-extraction-doctrine-ref",
+        "archmap-schema052-extraction-doctrine-ref",
         "ArchMap v2 uses the fixed AAT canonical doctrine; authors do not select doctrine",
         examples,
     )
@@ -331,7 +331,7 @@ fn check_archmap_v2_sources(document: &ArchMapDocumentV2) -> ValidationCheck {
         }
     }
     check_from_examples(
-        "archmap-schema050-sources-resolve",
+        "archmap-schema052-sources-resolve",
         "sources table is present and internally resolvable",
         examples,
     )
@@ -356,7 +356,7 @@ fn check_archmap_v2_atom_ids(document: &ArchMapDocumentV2) -> ValidationCheck {
             }),
     );
     check_from_examples(
-        "archmap-schema050-atom-ids",
+        "archmap-schema052-atom-ids",
         "atom ids are non-empty and unique",
         examples,
     )
@@ -383,7 +383,7 @@ fn check_archmap_v2_no_diagnostic_shortcuts(document: &ArchMapDocumentV2) -> Val
         }
     }
     check_from_examples(
-        "archmap-schema050-no-diagnostic-shortcuts",
+        "archmap-schema052-no-diagnostic-shortcuts",
         "ArchMap v2 atom id / predicate fields do not pre-author diagnostic conclusions",
         examples,
     )
@@ -485,7 +485,7 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
         evidence: Some("declared AAT atom vocabulary does not contain this token".to_string()),
     }));
     let mut check = check_from_examples(
-        "archmap-schema050-atom-kind-vocabulary",
+        "archmap-schema052-atom-kind-vocabulary",
         "ATOMS_WITHIN_DECLARED_VOCABULARY: atom kinds are members of aat-atom-vocabulary/v1",
         examples,
     );
@@ -538,7 +538,7 @@ fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck
         }
     }
     check_from_examples(
-        "archmap-schema050-atom-subject-axis-refs",
+        "archmap-schema052-atom-subject-axis-refs",
         "atoms carry subject / axis decorations and source refs resolve",
         examples,
     )
@@ -629,7 +629,7 @@ fn check_archmap_v2_contexts(document: &ArchMapDocumentV2) -> ValidationCheck {
         }
     }
     check_from_examples(
-        "archmap-schema050-context-poset-refs",
+        "archmap-schema052-context-poset-refs",
         "contexts form a finite source-grounded poset over atom subfamilies",
         examples,
     )
@@ -703,7 +703,7 @@ fn check_archmap_v2_covers(document: &ArchMapDocumentV2) -> ValidationCheck {
         }
     }
     check_from_examples(
-        "archmap-schema050-cover-refs",
+        "archmap-schema052-cover-refs",
         "covers select finite source-grounded context families",
         examples,
     )
