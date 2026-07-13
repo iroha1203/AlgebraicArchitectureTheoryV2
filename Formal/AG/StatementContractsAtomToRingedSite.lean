@@ -1,5 +1,6 @@
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.LawAlgebra.RawPresheafFiniteExample
+import Formal.AG.LawAlgebra.RingedSiteFiniteExample
 
 noncomputable section
 
@@ -984,5 +985,265 @@ example {U : AtomCarrier.{u}}
       (AATCorePackage.generate S coreReading).object :=
   LawAlgebra.generateRingedAATSite_architectureObject
     S coreReading reading k raw
+
+/-! R6 fixed finite vertical-slice signatures. -/
+
+example :
+    Site.CoverageRequirements FiniteModel.corePackage.object
+      FiniteModel.lawUniverse FiniteModel.signature :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+
+example :
+    Site.SelectedGeometryReading FiniteModel.corePackage :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.selectedGeometryReading
+
+example :
+    LawAlgebra.RawAmbientRestrictionSystem
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site Int :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem
+
+example :
+    Site.AATCoverageFamily
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+      FiniteModel.twoPatchOverlap
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.base :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover
+
+example :
+    ∃ i : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.Index,
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements.supportVisibleOn
+        (LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.patch i)
+        FiniteModel.FiniteAtom.componentA :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_reads_componentA
+
+example :
+    ∃ i : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.Index,
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements.supportVisibleOn
+        (LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.patch i)
+        FiniteModel.FiniteAtom.componentB :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_reads_componentB
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements.axisReadableOn
+      (LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.patch
+        LawAlgebra.FiniteExamples.RingedSite.FiniteModel.CoverIndex.base)
+      PUnit.unit :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_reads_axis_at_base
+
+example
+    (witness : FiniteModel.lawUniverse.witnessFamily.Witness) :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements.witnessVisibleOn
+      (LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.patch
+        LawAlgebra.FiniteExamples.RingedSite.FiniteModel.CoverIndex.left)
+      witness :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_reads_witness_on_left witness
+
+example
+    {X : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.category}
+    (F : Site.AATCoverageFamily
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+      FiniteModel.twoPatchOverlap X) :
+    F.presieve (𝟙 X) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_presieve_identity F
+
+example
+    {X : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.category}
+    (F : Site.AATCoverageFamily
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+      FiniteModel.twoPatchOverlap X) :
+    X.ctx = FiniteModel.twoPatchContext FiniteModel.TwoPatchContextIndex.base :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_base_eq F
+
+example
+    {X : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.category}
+    (F : Site.AATCoverageFamily
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+      FiniteModel.twoPatchOverlap X) :
+    ∃ i : F.Index,
+      F.patch i = FiniteModel.twoPatchContext FiniteModel.TwoPatchContextIndex.base :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_has_base_patch F
+
+example
+    {X : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.category}
+    (F : Site.AATCoverageFamily
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+      FiniteModel.twoPatchOverlap X) :
+    CategoryTheory.Sieve.generate F.presieve = ⊤ :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_generate_eq_top F
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.presieve ∈
+      Site.admissiblePrecoverage
+        LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+        FiniteModel.twoPatchOverlap
+        LawAlgebra.FiniteExamples.RingedSite.FiniteModel.base :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_mem_precoverage
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.topology = ⊥ :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_topology_eq_bot
+
+example :
+    CategoryTheory.HasSheafify
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.topology
+      (LawAlgebra.AATCommAlgCat Int) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.hasSheafify
+
+example :
+    LawAlgebra.RingedAATSite
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site Int :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite.raw =
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.toPresheaf :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_raw
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.toPresheaf =
+      LawAlgebra.FiniteExamples.RawPresheaf.system.toPresheaf :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_toPresheaf_eq_existing
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.coordFamily =
+      LawAlgebra.FiniteExamples.RawPresheaf.system.coordFamily :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_coordFamily
+
+example :
+    HEq LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.relationFamily
+      LawAlgebra.FiniteExamples.RawPresheaf.system.relationFamily :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_relationFamily
+
+example
+    {X Y : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.category}
+    (f : X ⟶ Y) :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.restrictionStable f =
+      LawAlgebra.FiniteExamples.RawPresheaf.system.restrictionStable f :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_restrictionStable f
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite.raw =
+      LawAlgebra.FiniteExamples.RawPresheaf.system.toPresheaf :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_raw_eq_existing
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite.site =
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_site
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite.structureSheaf =
+      (CategoryTheory.presheafToSheaf
+        LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.topology
+        (LawAlgebra.AATCommAlgCat Int)).obj
+          LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.toPresheaf :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_structureSheaf
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite.canonical =
+      CategoryTheory.toSheafify
+        LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.topology
+        LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.toPresheaf :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_canonical
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite.architectureObject =
+      (AATCorePackage.generate FiniteModel.axiomSystem FiniteModel.coreReading).object :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_architectureObject
+
+example : Nontrivial Int :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coefficientNontrivial
+
+example :
+    LawAlgebra.FiniteExamples.RawPresheaf.left ≠
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.base :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.left_ne_base
+
+example :
+    (MvPolynomial.X () ^ 2 - 1 :
+      LawAlgebra.FreeTypedCommAlg
+        (LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.coordFamily
+          LawAlgebra.FiniteExamples.RawPresheaf.left) Int) ≠ 0 :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.raw_relation_polynomial_ne_zero
+
+example :
+    (LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.relationFamily
+      LawAlgebra.FiniteExamples.RawPresheaf.left).quotientMap
+        (MvPolynomial.X () ^ 2 - 1) = 0 :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.raw_relation_vanishes
+
+example :
+    CategoryTheory.Sieve.generate
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.presieve = ⊤ :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_generate_eq_top
+
+example :
+    ¬ Function.Injective
+      (LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.relationFamily
+        LawAlgebra.FiniteExamples.RawPresheaf.left).quotientMap :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.raw_quotientMap_not_injective
+
+example :
+    (LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.restrictionStable
+      LawAlgebra.FiniteExamples.RawPresheaf.leftToBase).quotientDesc
+        ((LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.relationFamily
+          LawAlgebra.FiniteExamples.RingedSite.FiniteModel.base).quotientMap
+            (MvPolynomial.X ())) ≠
+      (LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.relationFamily
+        LawAlgebra.FiniteExamples.RawPresheaf.left).quotientMap (MvPolynomial.X ()) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.raw_leftToBase_quotientDesc_X_ne_X
+
+example :
+    FiniteModel.coreReading.lawReading.circuits.accepts PUnit.unit
+      FiniteModel.cycleQueryDatum = true :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.detector_accepts
+
+example :
+    FiniteModel.coreReading.lawReading.circuits.accepts PUnit.unit ⟨[]⟩ = false :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.detector_rejects
+
+example :
+    ¬ (FiniteModel.corePackage.algebra.lawReading.lawUniverse.law PUnit.unit).holds
+      (FiniteModel.corePackage.algebra.object FiniteModel.corePackage.baseObject) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.detector_sound
+
+example :
+    Nonempty (FiniteModel.completeCircuitReading.Circuit
+      FiniteModel.corePackage.object PUnit.unit) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.second_circuit_fiber_nonempty
+
+example :
+    (FiniteModel.corePackage.algebra.configurationMap
+      FiniteModel.collapseOperation).atomMap FiniteModel.FiniteAtom.componentA =
+        FiniteModel.FiniteAtom.componentB ∧
+      FiniteModel.FiniteAtom.componentA ≠ FiniteModel.FiniteAtom.componentB :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.operation_atomMap_nonidentity
+
+example :
+    FiniteModel.collapsedObject.configuration.relation
+      ((FiniteModel.corePackage.algebra.configurationMap
+        FiniteModel.collapseOperation).atomMap FiniteModel.FiniteAtom.dependsAB)
+      ((FiniteModel.corePackage.algebra.configurationMap
+        FiniteModel.collapseOperation).atomMap FiniteModel.FiniteAtom.dependsBC) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.operation_transports_relation
+
+example :
+    FiniteModel.collapsedObject.configuration.family.mem
+      ((FiniteModel.corePackage.algebra.configurationMap
+        FiniteModel.collapseOperation).atomMap FiniteModel.FiniteAtom.componentA) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.operation_transports_family
+
+example :
+    FiniteModel.collapsedObject.configuration.identification
+      ((FiniteModel.corePackage.algebra.configurationMap
+        FiniteModel.collapseOperation).atomMap FiniteModel.FiniteAtom.componentA)
+      ((FiniteModel.corePackage.algebra.configurationMap
+        FiniteModel.collapseOperation).atomMap FiniteModel.FiniteAtom.componentB) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.operation_transports_identification
+
+example :
+    ∃ A B : FiniteModel.corePackage.algebra.Obj,
+      A ≠ B ∧ Nonempty (FiniteModel.corePackage.algebra.Op A B) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.reachable_nonidentity_operation
 
 end AAT.AG

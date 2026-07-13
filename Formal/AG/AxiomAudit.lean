@@ -5,6 +5,7 @@ import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.Examples.SingularityMonodromyStackPart6
 import Formal.AG.LawAlgebra.FiniteExamples
 import Formal.AG.LawAlgebra.RawPresheafFiniteExample
+import Formal.AG.LawAlgebra.RingedSiteFiniteExample
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -1874,6 +1875,144 @@ def generateRingedAATSiteCanonical :=
 
 def generateRingedAATSiteArchitectureObject :=
   @LawAlgebra.generateRingedAATSite_architectureObject
+
+def r6FiniteAdmissiblePresieveIdentity :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_presieve_identity
+
+def r6FiniteAdmissibleBaseEq :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_base_eq
+
+def r6FiniteAdmissibleHasBasePatch :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_has_base_patch
+
+def r6FiniteAdmissibleGenerateEqTop :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_generate_eq_top
+
+def r6FiniteCoverMemPrecoverage :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_mem_precoverage
+
+def r6FiniteCoverGenerateEqTop :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_generate_eq_top
+
+noncomputable def r6FiniteSelectedGeometryReading :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.selectedGeometryReading
+
+def r6FiniteSupportVisibleOn :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.supportVisibleOn
+
+def r6FiniteCoverageRequirements :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+
+def r6FiniteBase :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.base
+
+def r6FiniteCoverContextIndex :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverContextIndex
+
+def r6FiniteCoverPatch :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverPatch
+
+noncomputable def r6FiniteCover :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover
+
+def r6FiniteCoverReadsComponentA :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_reads_componentA
+
+def r6FiniteCoverReadsComponentB :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_reads_componentB
+
+def r6FiniteCoverReadsAxisAtBase :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_reads_axis_at_base
+
+def r6FiniteCoverReadsWitnessOnLeft :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_reads_witness_on_left
+
+def r6FiniteSiteTopologyEqBot :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_topology_eq_bot
+
+noncomputable def r6FiniteHasSheafify :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.hasSheafify
+
+noncomputable def r6FiniteRingedSite :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite
+
+def r6FiniteRingedSiteSite :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_site
+
+def r6FiniteRingedSiteRaw :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_raw
+
+def r6FiniteRingedSiteRawEqExisting :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_raw_eq_existing
+
+def r6FiniteRingedSiteStructureSheaf :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_structureSheaf
+
+def r6FiniteRingedSiteCanonical :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_canonical
+
+def r6FiniteRingedSiteArchitectureObject :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite_architectureObject
+
+def r6FiniteCoefficientNontrivial :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coefficientNontrivial
+
+def r6FiniteLeftNeBase :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.left_ne_base
+
+def r6FiniteRawRelationVanishes :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.raw_relation_vanishes
+
+noncomputable def r6FiniteRawSystem :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem
+
+def r6FiniteRawSystemCoordFamily :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_coordFamily
+
+def r6FiniteRawSystemRelationFamily :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_relationFamily
+
+def r6FiniteRawSystemRestrictionStable :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_restrictionStable
+
+def r6FiniteRawSystemToPresheafEqExisting :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_toPresheaf_eq_existing
+
+def r6FiniteRawRelationPolynomialNeZero :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.raw_relation_polynomial_ne_zero
+
+def r6FiniteRawQuotientMapNotInjective :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.raw_quotientMap_not_injective
+
+def r6FiniteRawRestrictionNonidentity :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.raw_leftToBase_quotientDesc_X_ne_X
+
+def r6FiniteDetectorAccepts :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.detector_accepts
+
+def r6FiniteDetectorRejects :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.detector_rejects
+
+def r6FiniteDetectorSound :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.detector_sound
+
+def r6FiniteSecondCircuitFiberNonempty :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.second_circuit_fiber_nonempty
+
+def r6FiniteOperationAtomMapNonidentity :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.operation_atomMap_nonidentity
+
+def r6FiniteOperationTransportsFamily :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.operation_transports_family
+
+def r6FiniteOperationTransportsRelation :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.operation_transports_relation
+
+def r6FiniteOperationTransportsIdentification :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.operation_transports_identification
+
+def r6FiniteReachableNonidentityOperation :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.reachable_nonidentity_operation
 
 end AAT.AG.AxiomAudit
 
