@@ -79,6 +79,11 @@ compareのR8契約では、contextsまたはcoversに差分がある場合、pro
 `other_transition`として扱う。差分のある行だけに限定する実装変更は行わず、
 「差分があるprofile行」という要件は、この保守的なrun全体分類を許す注記として読む。
 
+R8 の class-zero reading は、`--refinement` で
+`refinement-comparison/v0.5.2` を供給し、その coarse-to-fine と
+`zeroTransport.checked` を検査した場合だけ追加される。refactor transport は
+`--refactor-morphism refactor-morphism/v0.5.2` と matching witness の両方を必要とする。
+
 The current handoff to FieldSig is the serialized measurement packet. FieldSig
 does not accept old raw analysis packets as the current boundary.
 

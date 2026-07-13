@@ -27,3 +27,11 @@ The bundle is the reproducibility record: its three component references and
 canonical fingerprints must be preserved with the run.
 
 Gate decisions belong in `archsig gate` policy, not in `analyze` flags.
+
+For Stage 3 SAGA laws, author `skeleton`, `defectSources[].holdsCriterion`, and
+`quotientSheafCondition` on the law-equation surface. `ag.saga-grounded` also
+requires the law's `witnessVariables` and `forbiddenSupportGenerators`; these
+generate the finite quotient and cannot be replaced by conclusion fields.
+For refactor transport, author and validate a separate
+`refactor-morphism/v0.5.2` artifact. For compare class-zero transport, author a
+`refinement-comparison/v0.5.2` artifact in the coarse-to-fine direction.

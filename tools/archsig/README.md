@@ -48,10 +48,10 @@ are not measured zeros.
 | Policy bundle | `policy-bundle` | Fixes LawPolicy, law-equation-surface, and MeasurementProfile references with canonical component fingerprints for one analyze run. |
 | MeasurementProfile validation | `measurement-profile` | Validates a standalone `measurement-profile/v0.5.2` artifact, including finite bounds against evaluator registry hard caps. |
 | RepairPlan validation | `repair-plan` | Validates the supplied `archsig-repair-plan/v0.5.2` SAGA input side. Faithfulness, true-sheaf, gluing, coefficient, and comparison slots are checked; generated conclusion tokens and unimplemented transport fields fail closed. |
-| AG measurement | `analyze` | When `law-policy/v0.5.2` selects `measurementProfileRef` and the input is finite-poset-site `archmap/v0.5.2`, `analyze` emits `archsig-measurement-packet/v0.5.2`, conclusion-first summary, insight report, viewer data, and run manifest. `ag.saga-descent` can additionally consume a checked RepairPlan via `--repair-plan`; without it the row is `not_computed` with `silence_by_design`. |
-| Compare | `compare` | Compares two current `analyze` output directories and computes `archmap-diff/v0.5.2` plus `archsig-comparison-report/v0.5.2`. The diff is computed by ArchSig, not authored as a separate input artifact. |
+| AG measurement | `analyze` | When `law-policy/v0.5.2` selects `measurementProfileRef` and the input is finite-poset-site `archmap/v0.5.2`, `analyze` emits `archsig-measurement-packet/v0.5.2`, conclusion-first summary, insight report, viewer data, and run manifest. `ag.saga-descent` can additionally consume a checked RepairPlan via `--repair-plan`; `ag.refactor-transport` consumes a validated `refactor-morphism/v0.5.2` via `--refactor-morphism`. |
+| Compare | `compare` | Compares two current `analyze` output directories and computes `archmap-diff/v0.5.2` plus `archsig-comparison-report/v0.5.2`. Add `--refinement refinement-comparison/v0.5.2` only when the coarse-to-fine class-zero contract is supplied. |
 | Gate | `gate` | Applies `archsig-gate-policy/v0.5.2` to a measurement packet and optional comparison report. This is the CI decision surface. |
-| Schema | `schema-catalog` | The catalog lists current ArchMap, law-equation-surface, LawPolicy, policy-bundle, RepairPlan, measurement, gate, compare, manifest, and viewer artifacts. |
+| Schema | `schema-catalog` | The catalog lists current ArchMap, law-equation-surface, LawPolicy, policy-bundle, RepairPlan, SAGA conclusions, refactor morphism, refinement comparison, measurement, gate, compare, manifest, and viewer artifacts. |
 
 `archsig-analysis-summary.json` is the preferred first reading surface. It
 reports the conclusion, structural verdict summary, dominant findings, action

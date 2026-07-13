@@ -6,11 +6,13 @@ description: Create archsig-repair-plan/v0.5.2 artifacts for ArchSig complete-su
 # RepairPlan Creater
 
 Use this skill to author `archsig-repair-plan/v0.5.2` artifacts for Stage 1
-`ag.saga-descent` runs in complete-support mode.
+`ag.saga-descent` and Stage 2/3 supplied-data SAGA runs.
 
 ## Scope
 
-- Mode is `complete-support` only.
+- Prefer `complete-support`; use `faithfulness.mode = supplied` only when the
+  supplied faithfulness, coefficient, true-sheaf, gluing, and comparison
+  evidence is explicit and independently checkable.
 - Inputs are existing ArchMap evidence, LawPolicy basis refs, and a selected
   MeasurementProfile.
 - Output is a repair-plan artifact that can be mechanically validated and then
@@ -34,11 +36,17 @@ Use this skill to author `archsig-repair-plan/v0.5.2` artifacts for Stage 1
    conclusion. Treat `boundaryStatements` as the source of silence and next
    required supply.
 
+For a grounded Stage 3 run, add the validated supplied slots
+`faithfulness`, `trueSheafCertificate`, `gluingData`, `comparison`, and
+`grounding.kind = saga-grounding`. The law surface remains the source for
+`skeleton`, `defectSources[].holdsCriterion`, and the quotient sheaf condition;
+do not place those equation fields in the RepairPlan.
+
 ## Boundaries
 
-- Do not author `faithfulness.mode = supplied`.
-- Do not author comparison, grounding, true-sheaf, gluingData, lawSurfaceRef, or
-  Stage 2 law-equation surfaces.
+- Do not author a supplied slot from a conclusion value. Comparison, gluing,
+  true-sheaf, and faithfulness fields must be evidence-shaped and validated.
+- Do not author lawSurfaceRef or Stage 2/3 law-equation fields in the RepairPlan.
 - Do not place conclusion tokens such as
   `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` inside the repair-plan input.
 - Do not infer missing support. If complete support cannot be read from
