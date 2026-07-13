@@ -84,14 +84,18 @@ def allFamily : AtomFamily carrier :=
 /-- Every atom admitted by the selected vocabulary belongs to the extracted family. -/
 theorem allFamily_mem (atom : carrier.Atom)
     (hselected : atom ≠ FiniteAtom.componentC) : allFamily.mem atom := by
-  change True ∧ (ExtractionSource.withoutComponentC = ExtractionSource.all ∨
-    atom ≠ FiniteAtom.componentC) ∧ True ∧ True
+  apply (extractionDoctrine.atomize_mem_iff
+    ExtractionSource.withoutComponentC atom).mpr
+  apply (extractionDoctrine.extracts_iff
+    ExtractionSource.withoutComponentC atom).mpr
   exact ⟨trivial, Or.inr hselected, trivial, trivial⟩
 
 /-- The primary doctrine extracts a concrete atom from its selective source. -/
 theorem componentA_extracted_withoutComponentC :
     extractionDoctrine.extracts ExtractionSource.withoutComponentC
       FiniteAtom.componentA := by
+  apply (extractionDoctrine.extracts_iff
+    ExtractionSource.withoutComponentC FiniteAtom.componentA).mpr
   exact ⟨trivial, Or.inr (by simp), trivial, trivial⟩
 
 /-- The primary doctrine rejects a concrete atom from its selective source. -/
@@ -99,7 +103,9 @@ theorem componentC_not_extracted_withoutComponentC :
     ¬ extractionDoctrine.extracts ExtractionSource.withoutComponentC
       FiniteAtom.componentC := by
   intro h
-  simp [ExtractionDoctrine.extracts, extractionDoctrine] at h
+  have hread := (extractionDoctrine.extracts_iff
+    ExtractionSource.withoutComponentC FiniteAtom.componentC).mp h
+  exact hread.2.1.resolve_left (by decide) rfl
 
 /-- The generated family is a positive `Atomizes` instance for the primary doctrine. -/
 theorem allFamily_atomizes :
@@ -260,7 +266,8 @@ noncomputable def circuitReading : CircuitReading lawUniverse where
   sound := by
     intro i A Q hmatches haccepts
     cases i
-    simp [CircuitDetectorCode.eval] at haccepts
+    have hdatum : cycleQueryDatum = Q :=
+      (CircuitDetectorCode.eval_exact_eq_true_iff cycleQueryDatum Q).mp haccepts
     subst Q
     have hab :
         A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC :=
@@ -632,7 +639,8 @@ theorem collapseOperation_atomMap_nonidentity :
 theorem extractionDoctrine_extracts_iff_selected (atom : carrier.Atom) :
     extractionDoctrine.extracts ExtractionSource.withoutComponentC atom ↔
       atom ≠ FiniteAtom.componentC := by
-  simp [ExtractionDoctrine.extracts, extractionDoctrine]
+  rw [extractionDoctrine.extracts_iff]
+  simp [extractionDoctrine]
 
 /-- R10: generated-family membership is exactly the selected extraction predicate. -/
 theorem corePackage_family_mem (atom : carrier.Atom) :
@@ -830,18 +838,30 @@ theorem cycleQueryDatum_matches_core :
 def componentAAbsentDatum : FiniteCircuitDatum carrier where
   queries := [(.atomPresent FiniteAtom.componentA, false)]
 
+/-- R10: the component-A presence query holds on the generated core object. -/
+theorem componentA_atomPresent_holds_core :
+    (CircuitQuery.atomPresent FiniteAtom.componentA).Holds
+      corePackage.object :=
+  (CircuitQuery.atomPresent_holds_iff _ _).mpr
+    ((corePackage.object_family_mem_iff_extracts FiniteAtom.componentA).mpr
+      componentA_extracted_withoutComponentC)
+
+/-- R10: the component-C presence query does not hold on the generated core object. -/
+theorem componentC_atomPresent_not_holds_core :
+    ¬ (CircuitQuery.atomPresent FiniteAtom.componentC).Holds
+      corePackage.object := by
+  intro hholds
+  exact componentC_not_extracted_withoutComponentC
+    ((corePackage.object_family_mem_iff_extracts FiniteAtom.componentC).mp
+      ((CircuitQuery.atomPresent_holds_iff _ _).mp hholds))
+
 /-- R10: matching is nontrivial on the generated finite object. -/
 theorem componentAAbsentDatum_not_matches_core :
     ¬ componentAAbsentDatum.Matches corePackage.object := by
   intro hmatches
   have hiff := hmatches (.atomPresent FiniteAtom.componentA) false
     (by simp [componentAAbsentDatum])
-  have hpresent :
-      (CircuitQuery.atomPresent FiniteAtom.componentA).Holds corePackage.object := by
-    exact (CircuitQuery.atomPresent_holds_iff _ _).mpr
-      ((corePackage.object_family_mem_iff_extracts FiniteAtom.componentA).mpr
-        ((extractionDoctrine_extracts_iff_selected FiniteAtom.componentA).mpr (by simp)))
-  exact Bool.noConfusion ((hiff.mp hpresent))
+  exact Bool.noConfusion (hiff.mp componentA_atomPresent_holds_core)
 
 /--
 R10: the reject-only detector is not required-complete.
@@ -853,7 +873,11 @@ therefore remains the explicit additional condition fixed by SD1.
 -/
 noncomputable def rejectingCircuitReading : CircuitReading lawUniverse where
   code _ := .reject
-  sound := by simp [CircuitDetectorCode.eval]
+  sound := by
+    intro i A Q _hmatches haccepts
+    have hfalse : false = true :=
+      (CircuitDetectorCode.eval_reject Q).symm.trans haccepts
+    exact False.elim (Bool.noConfusion hfalse)
 
 /-- R10: the reject-only detector selects the public reject code at every index. -/
 theorem rejectingCircuitReading_code (i : lawUniverse.Index) :
@@ -861,6 +885,7 @@ theorem rejectingCircuitReading_code (i : lawUniverse.Index) :
   cases i
   rfl
 
+/-- R10: the reject-only detector misses the concrete required-law failure. -/
 theorem rejectingCircuitReading_not_requiredComplete :
     ¬ rejectingCircuitReading.RequiredComplete := by
   intro hcomplete
@@ -878,6 +903,69 @@ theorem rejectingCircuitReading_not_requiredComplete :
       (rejectingCircuitReading_code PUnit.unit)
   have hfalse : false = true := hreject.symm.trans circuit.2.2
   exact Bool.noConfusion hfalse
+
+/-- R10: a law whose semantic predicate fails on every architecture object. -/
+def alwaysFailingLaw : Law carrier where
+  holds _ := False
+
+/-- R10: a singleton required-law universe for the complete detector example. -/
+def alwaysFailingLawUniverse : LawUniverse carrier where
+  Index := PUnit
+  law _ := alwaysFailingLaw
+  role _ := LawRole.required
+  witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
+  SelectedReading := PUnit
+  selectedReading := PUnit.unit
+  coverageAssumptions := True
+  exactnessAssumptions := True
+
+/-- R10: the always-failing law genuinely fails on every architecture object. -/
+theorem alwaysFailingLaw_failure (A : ArchitectureObject carrier) :
+    ¬ (alwaysFailingLawUniverse.law PUnit.unit).holds A := by
+  intro hholds
+  exact hholds
+
+/-- R10: the empty signed query datum used by the complete exact detector. -/
+def emptyCircuitDatum : FiniteCircuitDatum carrier where
+  queries := []
+
+/-- R10: the empty signed query datum matches every architecture object. -/
+theorem emptyCircuitDatum_matches (A : ArchitectureObject carrier) :
+    emptyCircuitDatum.Matches A := by
+  intro query expected hmem
+  simp [emptyCircuitDatum] at hmem
+
+/-- R10: an exact empty-datum detector for the always-failing required law. -/
+noncomputable def completeCircuitReading :
+    CircuitReading alwaysFailingLawUniverse where
+  code _ := .exact emptyCircuitDatum
+  sound := by
+    intro i A Q _hmatches _haccepts
+    cases i
+    exact alwaysFailingLaw_failure A
+
+/-- R10: the complete detector selects the exact empty datum at every index. -/
+theorem completeCircuitReading_code (i : alwaysFailingLawUniverse.Index) :
+    completeCircuitReading.code i = .exact emptyCircuitDatum := by
+  cases i
+  rfl
+
+/-- R10: every actual failure has the accepted matching empty circuit datum. -/
+theorem completeCircuitReading_requiredComplete :
+    completeCircuitReading.RequiredComplete := by
+  intro A i _hrequired _hfailure
+  exact ⟨⟨emptyCircuitDatum, emptyCircuitDatum_matches A,
+    (CircuitReading.accepts_eq_true_iff_of_code_exact
+      completeCircuitReading i emptyCircuitDatum emptyCircuitDatum
+      (completeCircuitReading_code i)).mpr rfl⟩⟩
+
+/-- R10: required completeness fires on an explicit semantic law failure. -/
+theorem completeCircuitReading_nonvacuous (A : ArchitectureObject carrier) :
+    ¬ (alwaysFailingLawUniverse.law PUnit.unit).holds A ∧
+      Nonempty (completeCircuitReading.Circuit A PUnit.unit) :=
+  ⟨alwaysFailingLaw_failure A,
+    completeCircuitReading_requiredComplete A PUnit.unit rfl
+      (alwaysFailingLaw_failure A)⟩
 
 /-- R10: the main core reading selects the exact cycle detector template. -/
 theorem coreReading_circuit_code (i : lawUniverse.Index) :

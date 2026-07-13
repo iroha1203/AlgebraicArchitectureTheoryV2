@@ -1029,11 +1029,16 @@ def sd1FiniteDatumMatches := FiniteModel.cycleQueryDatum_matches_core
 def sd1FiniteDatumNotMatches := FiniteModel.componentAAbsentDatum_not_matches_core
 def sd1FiniteRequiredCompleteNegative :=
   FiniteModel.rejectingCircuitReading_not_requiredComplete
+def sd1FiniteRequiredCompletePositive :=
+  FiniteModel.completeCircuitReading_requiredComplete
+def sd1FiniteRequiredCompleteNonvacuous :=
+  @FiniteModel.completeCircuitReading_nonvacuous
 def sd1FiniteDatumAccepted := FiniteModel.cycleQueryDatum_accepted
 def sd1FiniteDatumRejected := FiniteModel.emptyQueryDatum_rejected
 def sd1FiniteGeneratedCircuitSound := FiniteModel.generatedCycleCircuit_sound
 
 /- SD1 no-unfold characterizations and nontrivial negative instances. -/
+def sd1ExtractsIff := @ExtractionDoctrine.extracts_iff
 def sd1AtomizeMemIff := @ExtractionDoctrine.atomize_mem_iff
 def sd1AtomizesMemIff := @ExtractionDoctrine.mem_iff_extracts_of_atomizes
 def sd1SemanticObstructionIff := @SemanticObstruction.iff_not_holds
@@ -1061,12 +1066,17 @@ def sd1CoreAlgebraDetectorCodeEq := @AATCorePackage.algebra_detectorCode_eq
 def sd1CoreAlgebraAcceptsEq := @AATCorePackage.algebra_accepts_eq_detector_eval
 def sd1FiniteSemanticObstruction := FiniteModel.object_semanticObstruction
 def sd1FiniteNoSemanticObstruction := FiniteModel.acyclicObject_not_semanticObstruction
+def sd1FiniteAtomPresentHolds := FiniteModel.componentA_atomPresent_holds_core
+def sd1FiniteAtomPresentNotHolds := FiniteModel.componentC_atomPresent_not_holds_core
 def sd1FiniteExtractsIffSelected := FiniteModel.extractionDoctrine_extracts_iff_selected
 def sd1FiniteConfigurationRelationIff := FiniteModel.corePackage_configuration_relation_iff
 def sd1FiniteObjectRelationIff := FiniteModel.corePackage_object_relation_iff
 def sd1FiniteReachableFamilyNonempty := @FiniteModel.reachable_object_family_nonempty
 def sd1FiniteUnreachableObject := FiniteModel.unreachableEmptyObject_not_reachable
 def sd1FiniteRejectingCode := FiniteModel.rejectingCircuitReading_code
+def sd1FiniteAlwaysFailingLaw := @FiniteModel.alwaysFailingLaw_failure
+def sd1FiniteEmptyDatumMatches := @FiniteModel.emptyCircuitDatum_matches
+def sd1FiniteCompleteCode := FiniteModel.completeCircuitReading_code
 def sd1FiniteCoreDetectorCode := FiniteModel.coreReading_circuit_code
 
 theorem finiteSeedWitnessClosureAdmissible :

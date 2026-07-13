@@ -64,6 +64,19 @@ def extracts {U : AtomCarrier.{u}}
     D.sourceSemantics (D.normalize source) atom
 
 /--
+Extraction is exactly simultaneous admission by the selected vocabulary,
+semantic reading, resolution, and normalized source semantics.
+-/
+theorem extracts_iff {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source) (atom : U.Atom) :
+    D.extracts source atom ↔
+      D.vocabularyAllows D.vocabulary atom ∧
+        D.semanticAllows D.semanticReading (D.normalize source) atom ∧
+        D.resolutionAllows D.resolution (D.normalize source) atom ∧
+        D.sourceSemantics (D.normalize source) atom :=
+  Iff.rfl
+
+/--
 I.定義10.4A: construct the canonical atom family extracted from a source.
 
 Implementation notes: the family is the characteristic predicate `extracts`.

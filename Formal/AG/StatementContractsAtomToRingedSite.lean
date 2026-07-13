@@ -113,6 +113,16 @@ example {U : AtomCarrier.{u}}
     (code : CircuitDetectorCode U) : motive code :=
   CircuitDetectorCode.rec reject exact any code
 
+example {U : AtomCarrier.{u}} {R : OperationReading U}
+    {base : ArchitectureObject U}
+    {motive : (A : ArchitectureObject U) -> R.Reachable base A -> Prop}
+    (baseCase : motive base .base)
+    (stepCase : ∀ {A B} (reachable : R.Reachable base A) (op : R.Op A B),
+      motive A reachable -> motive B (.step reachable op))
+    {A : ArchitectureObject U} (reachable : R.Reachable base A) :
+    motive A reachable :=
+  OperationReading.Reachable.rec baseCase stepCase reachable
+
 example {U : AtomCarrier.{u}} (L : Law U) (A : ArchitectureObject U) : Prop :=
   SemanticObstruction L A
 
@@ -123,6 +133,15 @@ example {U : AtomCarrier.{u}} (L : Law U) (A : ArchitectureObject U) :
 example {U : AtomCarrier.{u}} (D : ExtractionDoctrine U) :
     D.Source -> U.Atom -> Prop :=
   D.extracts
+
+example {U : AtomCarrier.{u}} (D : ExtractionDoctrine U)
+    (source : D.Source) (atom : U.Atom) :
+    D.extracts source atom ↔
+      D.vocabularyAllows D.vocabulary atom ∧
+        D.semanticAllows D.semanticReading (D.normalize source) atom ∧
+        D.resolutionAllows D.resolution (D.normalize source) atom ∧
+        D.sourceSemantics (D.normalize source) atom :=
+  D.extracts_iff source atom
 
 example {U : AtomCarrier.{u}} (D : ExtractionDoctrine U) :
     D.Source -> AtomFamily U :=
@@ -538,6 +557,24 @@ example : FiniteModel.cycleQueryDatum.Matches FiniteModel.corePackage.object :=
 
 example : ¬ FiniteModel.componentAAbsentDatum.Matches FiniteModel.corePackage.object :=
   FiniteModel.componentAAbsentDatum_not_matches_core
+
+example :
+    (CircuitQuery.atomPresent FiniteModel.FiniteAtom.componentA).Holds
+      FiniteModel.corePackage.object :=
+  FiniteModel.componentA_atomPresent_holds_core
+
+example :
+    ¬ (CircuitQuery.atomPresent FiniteModel.FiniteAtom.componentC).Holds
+      FiniteModel.corePackage.object :=
+  FiniteModel.componentC_atomPresent_not_holds_core
+
+example : FiniteModel.completeCircuitReading.RequiredComplete :=
+  FiniteModel.completeCircuitReading_requiredComplete
+
+example (A : ArchitectureObject FiniteModel.carrier) :
+    ¬ (FiniteModel.alwaysFailingLawUniverse.law PUnit.unit).holds A ∧
+      Nonempty (FiniteModel.completeCircuitReading.Circuit A PUnit.unit) :=
+  FiniteModel.completeCircuitReading_nonvacuous A
 
 example :
     FiniteModel.coreReading.lawReading.circuits.accepts PUnit.unit ⟨[]⟩ = false :=
