@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
 
-use crate::repair_plan::comparison_complex_fingerprint;
+use crate::repair_plan::{comparison_complex_fingerprint, comparison_target_complex};
 use crate::{
     ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
     ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA, AgAssumptionLedgerEntryV1,
@@ -342,6 +342,7 @@ fn comparison_target_class_nonzero(
     plan: &RepairPlanDocumentV1,
     comparison: &Value,
 ) -> Option<bool> {
+    let target_complex = comparison_target_complex(plan, comparison)?;
     let h1 = comparison.get("h1ComparisonData")?.as_object()?;
     let items = h1.get("targetCochainSupport")?.as_array()?;
     let mut support_by_overlap = BTreeMap::<&str, BTreeSet<&str>>::new();
@@ -362,15 +363,16 @@ fn comparison_target_class_nonzero(
             return None;
         }
     }
-    if support_by_overlap.len() != plan.primitives.len()
-        || plan
-            .primitives
+    if support_by_overlap.len() != target_complex.overlaps.len()
+        || target_complex
+            .overlaps
             .iter()
-            .any(|primitive| !support_by_overlap.contains_key(primitive.overlap_ref.as_str()))
+            .any(|overlap| !support_by_overlap.contains_key(overlap.id.as_str()))
     {
         return None;
     }
     let mut target_plan = plan.clone();
+    target_plan.complex = target_complex;
     for primitive in &mut target_plan.primitives {
         primitive.support.variables = support_by_overlap
             .get(primitive.overlap_ref.as_str())?

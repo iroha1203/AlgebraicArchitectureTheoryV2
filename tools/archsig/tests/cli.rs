@@ -970,7 +970,9 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         "incidenceBridge": {
             "kind": "explicit",
             "sourceComplexRef": "complex:repair",
-            "targetComplexRef": "complex:cech"
+            "targetComplexRef": "complex:cech",
+            "targetComplex": serde_json::to_value(&typed_explicit.complex)
+                .expect("explicit target complex serializes")
         },
         "h1ComparisonData": {
             "schema": "h1-comparison-data/v0.5.2",
