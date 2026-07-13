@@ -1,0 +1,20 @@
+{
+  "schema": "refinement-comparison/v0.5.2",
+  "id": "refinement-comparison:ag-contexts",
+  "direction": "coarse-to-fine",
+  "coarse": {
+    "siteRef": "archmap:/contexts",
+    "coverRef": "cover:order-inventory",
+    "complexFingerprint": "sha256:coarse-finite-complex"
+  },
+  "fine": {
+    "siteRef": "archmap:/contexts",
+    "coverRef": "cover:order-inventory",
+    "complexFingerprint": "sha256:fine-finite-complex"
+  },
+  "zeroTransport": {
+    "kind": "class-zero-preservation",
+    "checked": true,
+    "map": "coarse-to-fine-supplied"
+  }
+}

@@ -15,8 +15,38 @@ pub fn ag_evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
         ag_manifest("ag.support-transfer", "ag.support-transfer"),
         ag_saga_descent_manifest(),
         ag_saga_grounded_manifest(),
+        ag_refactor_transport_manifest(),
         ag_harmonic_debt_manifest(),
     ]
+}
+
+fn ag_refactor_transport_manifest() -> LawEvaluatorManifestV1 {
+    LawEvaluatorManifestV1 {
+        evaluator_id: "ag.refactor-transport".to_string(),
+        law_id: "ag.refactor-transport".to_string(),
+        condition_types: vec!["descent".to_string(), "open".to_string()],
+        required_atom_constructors: Vec::new(),
+        required_predicates: vec!["refactor.functorialityWitness".to_string()],
+        required_molecule_condition:
+            "refactor-morphism/v0.5.2 with a validated site/law/coefficient/witness compatibility map"
+                .to_string(),
+        scope_filtering_rule: "selected finite cover and contexts from MeasurementProfile".to_string(),
+        missing_blocker_rule:
+            "missing refactor-morphism artifact or functoriality witness is silence_by_design"
+                .to_string(),
+        pass_criteria:
+            "declared refactor compatibility is checked and an existing structural verdict row is referenced"
+                .to_string(),
+        violation_criteria:
+            "invalid compatibility artifact is rejected before measurement; no transport row is emitted"
+                .to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.2".to_string(),
+        distance_contribution:
+            "analytic-only verdict transport reading with no new structural verdict".to_string(),
+        summary_output_refs: Vec::new(),
+        detail_output_refs: vec!["/analyticReadings".to_string()],
+        negative_fixtures: vec!["refactor_morphism_invalid.json".to_string()],
+    }
 }
 
 pub fn binding_axes_for(evaluator_id: &str) -> &'static [&'static str] {
