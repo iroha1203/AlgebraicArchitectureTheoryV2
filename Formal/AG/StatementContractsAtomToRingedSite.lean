@@ -989,6 +989,11 @@ example {U : AtomCarrier.{u}}
 /-! R6 fixed finite vertical-slice signatures. -/
 
 example :
+    Site.CoverageRequirements FiniteModel.corePackage.object
+      FiniteModel.lawUniverse FiniteModel.signature :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+
+example :
     Site.SelectedGeometryReading FiniteModel.corePackage :=
   LawAlgebra.FiniteExamples.RingedSite.FiniteModel.selectedGeometryReading
 
@@ -996,6 +1001,13 @@ example :
     LawAlgebra.RawAmbientRestrictionSystem
       LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site Int :=
   LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem
+
+example :
+    Site.AATCoverageFamily
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+      FiniteModel.twoPatchOverlap
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.base :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover
 
 example :
     ∃ i : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.Index,
@@ -1034,9 +1046,48 @@ example
     F.presieve (𝟙 X) :=
   LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_presieve_identity F
 
+example
+    {X : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.category}
+    (F : Site.AATCoverageFamily
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+      FiniteModel.twoPatchOverlap X) :
+    X.ctx = FiniteModel.twoPatchContext FiniteModel.TwoPatchContextIndex.base :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_base_eq F
+
+example
+    {X : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.category}
+    (F : Site.AATCoverageFamily
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+      FiniteModel.twoPatchOverlap X) :
+    ∃ i : F.Index,
+      F.patch i = FiniteModel.twoPatchContext FiniteModel.TwoPatchContextIndex.base :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_has_base_patch F
+
+example
+    {X : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.category}
+    (F : Site.AATCoverageFamily
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+      FiniteModel.twoPatchOverlap X) :
+    CategoryTheory.Sieve.generate F.presieve = ⊤ :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.admissible_generate_eq_top F
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover.presieve ∈
+      Site.admissiblePrecoverage
+        LawAlgebra.FiniteExamples.RingedSite.FiniteModel.coverageRequirements
+        FiniteModel.twoPatchOverlap
+        LawAlgebra.FiniteExamples.RingedSite.FiniteModel.base :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.cover_mem_precoverage
+
 example :
     LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.topology = ⊥ :=
   LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_topology_eq_bot
+
+example :
+    CategoryTheory.HasSheafify
+      LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.topology
+      (LawAlgebra.AATCommAlgCat Int) :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.hasSheafify
 
 example :
     LawAlgebra.RingedAATSite
@@ -1052,6 +1103,23 @@ example :
     LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.toPresheaf =
       LawAlgebra.FiniteExamples.RawPresheaf.system.toPresheaf :=
   LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_toPresheaf_eq_existing
+
+example :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.coordFamily =
+      LawAlgebra.FiniteExamples.RawPresheaf.system.coordFamily :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_coordFamily
+
+example :
+    HEq LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.relationFamily
+      LawAlgebra.FiniteExamples.RawPresheaf.system.relationFamily :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_relationFamily
+
+example
+    {X Y : LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site.category}
+    (f : X ⟶ Y) :
+    LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem.restrictionStable f =
+      LawAlgebra.FiniteExamples.RawPresheaf.system.restrictionStable f :=
+  LawAlgebra.FiniteExamples.RingedSite.FiniteModel.rawSystem_restrictionStable f
 
 example :
     LawAlgebra.FiniteExamples.RingedSite.FiniteModel.ringedSite.raw =
