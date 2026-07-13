@@ -110,6 +110,70 @@ structure LawReading (U : AtomCarrier.{u}) where
   /-- The finite circuit detector reading for that universe. -/
   circuits : CircuitReading lawUniverse
 
+namespace FiniteCircuitDatum
+
+/-- Two finite circuit data are equal when their signed query lists are equal. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {Q R : FiniteCircuitDatum U}
+    (hqueries : Q.queries = R.queries) : Q = R := by
+  cases Q
+  cases R
+  cases hqueries
+  rfl
+
+/-- A matching datum exposes the expected reading of each query it contains. -/
+theorem holds_iff_of_matches {U : AtomCarrier.{u}}
+    {Q : FiniteCircuitDatum U} {A : ArchitectureObject U}
+    (h : Q.Matches A) {query : CircuitQuery U} {expected : Bool}
+    (hquery : (query, expected) ∈ Q.queries) :
+    query.Holds A ↔ expected = true :=
+  h query expected hquery
+
+end FiniteCircuitDatum
+
+namespace CircuitReading
+
+/-- Circuit readings over a fixed law universe are equal when their detector families agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    {R S : CircuitReading LU} (hcode : R.code = S.code) : R = S := by
+  cases R
+  cases S
+  cases hcode
+  rfl
+
+/-- Acceptance is exactly evaluation of the selected finite detector code. -/
+theorem accepts_eq_eval {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    (R : CircuitReading LU) (i : LU.Index) (Q : FiniteCircuitDatum U) :
+    R.accepts i Q = (R.code i).eval Q :=
+  rfl
+
+/-- An accepted matching circuit yields failure of its indexed law. -/
+theorem circuit_sound {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    (R : CircuitReading LU) (A : ArchitectureObject U) (i : LU.Index)
+    (c : R.Circuit A i) : ¬ (LU.law i).holds A :=
+  R.sound i A c.1 c.2.1 c.2.2
+
+end CircuitReading
+
+namespace LawReading
+
+/--
+Law readings are equal when their law universes agree and their dependent
+circuit readings are heterogeneously equal.
+-/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {R S : LawReading U}
+    (huniverse : R.lawUniverse = S.lawUniverse)
+    (hcircuits : HEq R.circuits S.circuits) : R = S := by
+  cases R
+  cases S
+  cases huniverse
+  cases hcircuits
+  rfl
+
+end LawReading
+
 /-- I.定義8.1: an obstruction is a selected witness of law failure. -/
 structure Obstruction {U : AtomCarrier.{u}} (L : Law U)
     (A : ArchitectureObject U) where

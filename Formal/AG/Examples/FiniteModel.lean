@@ -41,6 +41,12 @@ theorem mem_all (atom : FiniteAtom) : atom ∈ all := by
 
 end FiniteAtom
 
+/-- R10: source modes for the primary finite extraction doctrine. -/
+inductive ExtractionSource where
+  | all
+  | withoutComponentC
+  deriving DecidableEq
+
 /-- R10: finite Atom carrier with identity coordinate readings. -/
 def carrier : AtomCarrier where
   AtomKind := FiniteAtom
@@ -57,7 +63,7 @@ def carrier : AtomCarrier where
 
 /-- R10: the selected source-to-Atom extraction doctrine for the finite model. -/
 def extractionDoctrine : ExtractionDoctrine carrier where
-  Source := PUnit
+  Source := ExtractionSource
   Vocabulary := PUnit
   SemanticReading := PUnit
   Resolution := PUnit
@@ -65,19 +71,53 @@ def extractionDoctrine : ExtractionDoctrine carrier where
   semanticReading := PUnit.unit
   resolution := PUnit.unit
   vocabularyAllows := fun _ _ => True
-  semanticAllows := fun _ _ _ => True
+  semanticAllows := fun _ source atom =>
+    source = ExtractionSource.all ∨ atom ≠ FiniteAtom.componentC
   resolutionAllows := fun _ _ _ => True
   sourceSemantics := fun _ _ => True
   normalize := id
 
 /-- R10: the finite family containing all selected atoms. -/
 def allFamily : AtomFamily carrier :=
-  extractionDoctrine.atomize PUnit.unit
+  extractionDoctrine.atomize ExtractionSource.withoutComponentC
 
-/-- Every atom of the finite carrier belongs to the extracted family. -/
-theorem allFamily_mem (atom : carrier.Atom) : allFamily.mem atom := by
-  change True ∧ True ∧ True ∧ True
-  exact ⟨trivial, trivial, trivial, trivial⟩
+/-- Every atom admitted by the selected vocabulary belongs to the extracted family. -/
+theorem allFamily_mem (atom : carrier.Atom)
+    (hselected : atom ≠ FiniteAtom.componentC) : allFamily.mem atom := by
+  change True ∧ (ExtractionSource.withoutComponentC = ExtractionSource.all ∨
+    atom ≠ FiniteAtom.componentC) ∧ True ∧ True
+  exact ⟨trivial, Or.inr hselected, trivial, trivial⟩
+
+/-- The primary doctrine extracts a concrete atom from its selective source. -/
+theorem componentA_extracted_withoutComponentC :
+    extractionDoctrine.extracts ExtractionSource.withoutComponentC
+      FiniteAtom.componentA := by
+  exact ⟨trivial, Or.inr (by simp), trivial, trivial⟩
+
+/-- The primary doctrine rejects a concrete atom from its selective source. -/
+theorem componentC_not_extracted_withoutComponentC :
+    ¬ extractionDoctrine.extracts ExtractionSource.withoutComponentC
+      FiniteAtom.componentC := by
+  intro h
+  simp [ExtractionDoctrine.extracts, extractionDoctrine] at h
+
+/-- The generated family is a positive `Atomizes` instance for the primary doctrine. -/
+theorem allFamily_atomizes :
+    extractionDoctrine.Atomizes ExtractionSource.withoutComponentC allFamily :=
+  extractionDoctrine.atomize_holds ExtractionSource.withoutComponentC
+
+/-- An empty family used to witness failure of the primary atomization predicate. -/
+def emptyFamily : AtomFamily carrier where
+  mem _ := False
+
+/-- The empty family is a negative `Atomizes` instance for the primary doctrine. -/
+theorem emptyFamily_not_atomizes :
+    ¬ extractionDoctrine.Atomizes ExtractionSource.withoutComponentC
+      emptyFamily := by
+  intro h
+  have hextracted : extractionDoctrine.extracts ExtractionSource.withoutComponentC
+      FiniteAtom.componentA := componentA_extracted_withoutComponentC
+  exact (h FiniteAtom.componentA).mpr hextracted
 
 /-- peer-review hardening I-3: the selected finite family has an explicit list cover. -/
 theorem allFamily_listFinite : allFamily.ListFinite :=
@@ -103,7 +143,8 @@ def compositionReading : CompositionReading carrier where
     family := F
     relation := fun a b =>
       (cycleRelation a b ∨ substitutionRelation a b) ∧ F.mem a ∧ F.mem b
-    identification := fun _ _ => False
+    identification := fun a b =>
+      a = FiniteAtom.componentA ∧ b = FiniteAtom.componentB ∧ F.mem a ∧ F.mem b
   }
   family_eq := by intros; rfl
   family_supported := by
@@ -112,7 +153,7 @@ def compositionReading : CompositionReading carrier where
     · intro a b h
       exact ⟨h.2.1, h.2.2⟩
     · intro a b h
-      exact False.elim h
+      exact ⟨h.2.2.1, h.2.2.2⟩
 
 /-- R10: finite configuration containing the selected example atoms. -/
 def configuration : AtomConfiguration carrier :=
@@ -252,7 +293,7 @@ def operationReading : OperationReading carrier where
 /-- R10: admissible reading that generates the finite Part I core. -/
 noncomputable def coreReading : CoreReading carrier where
   doctrine := extractionDoctrine
-  source := PUnit.unit
+  source := ExtractionSource.withoutComponentC
   family_listFinite := by
     refine ⟨FiniteAtom.all, ?_⟩
     intro atom _
@@ -300,15 +341,26 @@ def cycleObstructionCircuit : ObstructionCircuit noCycleLaw object where
   family := allFamily
   relation := cycleRelation
   relation_supported := by
-    intro a b _h
-    exact ⟨allFamily_mem a, allFamily_mem b⟩
+    intro a b hrelation
+    constructor
+    · apply allFamily_mem
+      intro ha
+      subst a
+      simp [cycleRelation] at hrelation
+    · apply allFamily_mem
+      intro hb
+      subst b
+      simp [cycleRelation] at hrelation
   finite := ∀ atom : carrier.Atom, atom ∈ FiniteAtom.all
   finite_holds := FiniteAtom.mem_all
   law_failure := by
     intro h
-    exact h ⟨⟨Or.inl cycle_dependsAB_BC, allFamily_mem _, allFamily_mem _⟩,
-      ⟨Or.inl cycle_dependsBC_CA, allFamily_mem _, allFamily_mem _⟩,
-      ⟨Or.inl cycle_dependsCA_AB, allFamily_mem _, allFamily_mem _⟩⟩
+    exact h ⟨⟨Or.inl cycle_dependsAB_BC, allFamily_mem _ (by simp),
+      allFamily_mem _ (by simp)⟩,
+      ⟨Or.inl cycle_dependsBC_CA, allFamily_mem _ (by simp),
+        allFamily_mem _ (by simp)⟩,
+      ⟨Or.inl cycle_dependsCA_AB, allFamily_mem _ (by simp),
+        allFamily_mem _ (by simp)⟩⟩
 
 /-- peer-review hardening I-3: the cycle obstruction circuit has explicit finite support. -/
 theorem cycleObstructionCircuit_listFinite :
@@ -336,15 +388,24 @@ def substitutionObstructionCircuit :
   family := allFamily
   relation := substitutionRelation
   relation_supported := by
-    intro a b _h
-    exact ⟨allFamily_mem a, allFamily_mem b⟩
+    intro a b hrelation
+    constructor
+    · apply allFamily_mem
+      intro ha
+      subst a
+      simp [substitutionRelation] at hrelation
+    · apply allFamily_mem
+      intro hb
+      subst b
+      simp [substitutionRelation] at hrelation
   finite := ∀ atom : carrier.Atom, atom ∈ FiniteAtom.all
   finite_holds := FiniteAtom.mem_all
   law_failure := by
     intro h
     exact h ⟨⟨Or.inr substitution_contract_impl_base,
-      allFamily_mem _, allFamily_mem _⟩,
-      ⟨Or.inr substitution_impl_base, allFamily_mem _, allFamily_mem _⟩⟩
+      allFamily_mem _ (by simp), allFamily_mem _ (by simp)⟩,
+      ⟨Or.inr substitution_impl_base, allFamily_mem _ (by simp),
+        allFamily_mem _ (by simp)⟩⟩
 
 /-- peer-review hardening I-3: the substitution obstruction circuit has explicit finite support. -/
 theorem substitutionObstructionCircuit_listFinite :
@@ -359,9 +420,12 @@ def hasCycleWitness (A : ArchitectureObject carrier) : Prop :=
 
 /-- R10: the finite object has the selected 3-cycle witness. -/
 theorem object_hasCycleWitness : hasCycleWitness object :=
-  ⟨⟨Or.inl cycle_dependsAB_BC, allFamily_mem _, allFamily_mem _⟩,
-    ⟨Or.inl cycle_dependsBC_CA, allFamily_mem _, allFamily_mem _⟩,
-    ⟨Or.inl cycle_dependsCA_AB, allFamily_mem _, allFamily_mem _⟩⟩
+  ⟨⟨Or.inl cycle_dependsAB_BC, allFamily_mem _ (by simp),
+      allFamily_mem _ (by simp)⟩,
+    ⟨Or.inl cycle_dependsBC_CA, allFamily_mem _ (by simp),
+      allFamily_mem _ (by simp)⟩,
+    ⟨Or.inl cycle_dependsCA_AB, allFamily_mem _ (by simp),
+      allFamily_mem _ (by simp)⟩⟩
 
 /-- peer-review hardening I-1: the acyclic finite object satisfies the selected NoCycle law. -/
 theorem acyclic_noCycleLaw_holds :
@@ -553,9 +617,25 @@ theorem collapseOperation_atomMap_nonidentity :
 
 /-- R10: the generated base configuration contains the first cycle relation. -/
 theorem corePackage_family_mem (atom : carrier.Atom) :
-    corePackage.family.mem atom := by
-  change True ∧ True ∧ True ∧ True
-  exact ⟨trivial, trivial, trivial, trivial⟩
+    atom ≠ FiniteAtom.componentC -> corePackage.family.mem atom := by
+  intro hselected
+  change True ∧ (ExtractionSource.withoutComponentC = ExtractionSource.all ∨
+    atom ≠ FiniteAtom.componentC) ∧ True ∧ True
+  exact ⟨trivial, Or.inr hselected, trivial, trivial⟩
+
+/-- R10: the generated main core contains a concretely selected atom. -/
+theorem corePackage_componentA_mem :
+    corePackage.family.mem FiniteAtom.componentA :=
+  corePackage_family_mem _ (by simp)
+
+/-- R10: the generated main core excludes the atom rejected by its source reading. -/
+theorem corePackage_componentC_not_mem :
+    ¬ corePackage.family.mem FiniteAtom.componentC := by
+  intro h
+  change True ∧
+    (ExtractionSource.withoutComponentC = ExtractionSource.all ∨
+      FiniteAtom.componentC ≠ FiniteAtom.componentC) ∧ True ∧ True at h
+  simp at h
 
 /-- R10: the generated base configuration contains the first cycle relation. -/
 theorem corePackage_cycle_relation :
@@ -566,7 +646,8 @@ theorem corePackage_cycle_relation :
     substitutionRelation FiniteAtom.dependsAB FiniteAtom.dependsBC) ∧
       corePackage.family.mem FiniteAtom.dependsAB ∧
         corePackage.family.mem FiniteAtom.dependsBC
-  exact ⟨Or.inl trivial, corePackage_family_mem _, corePackage_family_mem _⟩
+  exact ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
+    corePackage_family_mem _ (by simp)⟩
 
 /-- R10: the generated base configuration contains the second cycle relation. -/
 theorem corePackage_cycle_relation_two :
@@ -577,7 +658,8 @@ theorem corePackage_cycle_relation_two :
     substitutionRelation FiniteAtom.dependsBC FiniteAtom.dependsCA) ∧
       corePackage.family.mem FiniteAtom.dependsBC ∧
         corePackage.family.mem FiniteAtom.dependsCA
-  exact ⟨Or.inl trivial, corePackage_family_mem _, corePackage_family_mem _⟩
+  exact ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
+    corePackage_family_mem _ (by simp)⟩
 
 /-- R10: the generated base configuration contains the third cycle relation. -/
 theorem corePackage_cycle_relation_three :
@@ -588,7 +670,27 @@ theorem corePackage_cycle_relation_three :
     substitutionRelation FiniteAtom.dependsCA FiniteAtom.dependsAB) ∧
       corePackage.family.mem FiniteAtom.dependsCA ∧
         corePackage.family.mem FiniteAtom.dependsAB
-  exact ⟨Or.inl trivial, corePackage_family_mem _, corePackage_family_mem _⟩
+  exact ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
+    corePackage_family_mem _ (by simp)⟩
+
+/-- R10: the generated base configuration contains a concrete identification. -/
+theorem corePackage_componentA_identified_componentB :
+    corePackage.object.configuration.identification
+      FiniteAtom.componentA FiniteAtom.componentB := by
+  rw [corePackage.object_configuration_eq]
+  exact ⟨rfl, rfl, corePackage_family_mem _ (by simp),
+    corePackage_family_mem _ (by simp)⟩
+
+/-- R10: the nonidentity operation transports concrete family membership. -/
+theorem collapseOperation_transports_family :
+    collapsedObject.configuration.family.mem
+      ((corePackage.algebra.configurationMap collapseOperation).atomMap
+        FiniteAtom.componentA) :=
+  (corePackage.algebra.configurationMap collapseOperation).maps_family
+    (by
+      change corePackage.object.configuration.family.mem FiniteAtom.componentA
+      rw [corePackage.object_configuration_eq, corePackage.configuration_family_eq]
+      exact corePackage_family_mem _ (by simp))
 
 /-- R10: the nonidentity operation transports an actual relation. -/
 theorem collapseOperation_transports_relation :
@@ -600,6 +702,16 @@ theorem collapseOperation_transports_relation :
   (corePackage.algebra.configurationMap collapseOperation).maps_relation
     corePackage_cycle_relation
 
+/-- R10: the nonidentity operation transports a concrete identification. -/
+theorem collapseOperation_transports_identification :
+    collapsedObject.configuration.identification
+      ((corePackage.algebra.configurationMap collapseOperation).atomMap
+        FiniteAtom.componentA)
+      ((corePackage.algebra.configurationMap collapseOperation).atomMap
+        FiniteAtom.componentB) :=
+  (corePackage.algebra.configurationMap collapseOperation).maps_identification
+    corePackage_componentA_identified_componentB
+
 /-- R10: the reached object differs from the generated base object. -/
 theorem baseObject_ne_collapsedObject :
     corePackage.baseObject ≠ collapsedAlgebraObject := by
@@ -609,7 +721,7 @@ theorem baseObject_ne_collapsedObject :
   have hbase :
       corePackage.object.configuration.family.mem FiniteAtom.componentA := by
     rw [corePackage.object_configuration_eq, corePackage.configuration_family_eq]
-    exact corePackage_family_mem _
+    exact corePackage_family_mem _ (by simp)
   have hmem : collapsedObject.configuration.family.mem FiniteAtom.componentA := by
     rw [← hobject]
     exact hbase
@@ -635,10 +747,10 @@ theorem cycleQueryDatum_matches_core :
     · intro _
       exact ⟨by simpa [corePackage.object_configuration_eq,
         corePackage.configuration_family_eq] using
-          corePackage_family_mem FiniteAtom.dependsAB,
+          corePackage_family_mem FiniteAtom.dependsAB (by simp),
         by simpa [corePackage.object_configuration_eq,
           corePackage.configuration_family_eq] using
-            corePackage_family_mem FiniteAtom.dependsBC,
+            corePackage_family_mem FiniteAtom.dependsBC (by simp),
         corePackage_cycle_relation⟩
   · rcases h with ⟨rfl, rfl⟩
     constructor
@@ -646,10 +758,10 @@ theorem cycleQueryDatum_matches_core :
     · intro _
       exact ⟨by simpa [corePackage.object_configuration_eq,
         corePackage.configuration_family_eq] using
-          corePackage_family_mem FiniteAtom.dependsBC,
+          corePackage_family_mem FiniteAtom.dependsBC (by simp),
         by simpa [corePackage.object_configuration_eq,
           corePackage.configuration_family_eq] using
-            corePackage_family_mem FiniteAtom.dependsCA,
+            corePackage_family_mem FiniteAtom.dependsCA (by simp),
         corePackage_cycle_relation_two⟩
   · rcases h with ⟨rfl, rfl⟩
     constructor
@@ -657,10 +769,10 @@ theorem cycleQueryDatum_matches_core :
     · intro _
       exact ⟨by simpa [corePackage.object_configuration_eq,
         corePackage.configuration_family_eq] using
-          corePackage_family_mem FiniteAtom.dependsCA,
+          corePackage_family_mem FiniteAtom.dependsCA (by simp),
         by simpa [corePackage.object_configuration_eq,
           corePackage.configuration_family_eq] using
-            corePackage_family_mem FiniteAtom.dependsAB,
+            corePackage_family_mem FiniteAtom.dependsAB (by simp),
         corePackage_cycle_relation_three⟩
 
 /-- R10: an opposite signed query that does not match the generated core object. -/
@@ -677,7 +789,7 @@ theorem componentAAbsentDatum_not_matches_core :
       (CircuitQuery.atomPresent FiniteAtom.componentA).Holds corePackage.object := by
     change corePackage.object.configuration.family.mem FiniteAtom.componentA
     rw [corePackage.object_configuration_eq, corePackage.configuration_family_eq]
-    exact corePackage_family_mem _
+    exact corePackage_family_mem _ (by simp)
   exact Bool.noConfusion ((hiff.mp hpresent))
 
 /--
@@ -745,8 +857,8 @@ def siteContext : Site.ArchCtx object where
     Support := PUnit
     Axis := PUnit
     Observable := PUnit
-    supportReads := fun _ _ => True
-    supportReads_objectFamily := fun _h => allFamily_mem _
+    supportReads := fun _ atom => atom ≠ FiniteAtom.componentC
+    supportReads_objectFamily := fun hselected => allFamily_mem _ hselected
     axisReads := fun _ => True
     observableReads := fun _ => True
   }
@@ -857,7 +969,11 @@ base contract observable.
 -/
 def siteComponentAProfile : SiteMinimalContextProfile where
   support := {FiniteAtom.componentA}
-  support_le_object := fun {_atom} _h => allFamily_mem _
+  support_le_object := by
+    intro atom h
+    have hatom : atom = FiniteAtom.componentA := Set.mem_singleton_iff.mp h
+    subst atom
+    exact allFamily_mem _ (by simp)
   axis := {FiniteAtom.componentA}
   observable := {FiniteAtom.contractBase}
 
@@ -867,7 +983,11 @@ profile, used to fire representative independence.
 -/
 def siteComponentAProfileCopy : SiteMinimalContextProfile where
   support := {FiniteAtom.componentA}
-  support_le_object := fun {_atom} _h => allFamily_mem _
+  support_le_object := by
+    intro atom h
+    have hatom : atom = FiniteAtom.componentA := Set.mem_singleton_iff.mp h
+    subst atom
+    exact allFamily_mem _ (by simp)
   axis := {FiniteAtom.componentA}
   observable := {FiniteAtom.contractBase}
 
@@ -877,7 +997,11 @@ and the implementation-contract observable.
 -/
 def siteComponentBProfile : SiteMinimalContextProfile where
   support := {FiniteAtom.componentB}
-  support_le_object := fun {_atom} _h => allFamily_mem _
+  support_le_object := by
+    intro atom h
+    have hatom : atom = FiniteAtom.componentB := Set.mem_singleton_iff.mp h
+    subst atom
+    exact allFamily_mem _ (by simp)
   axis := {FiniteAtom.componentB}
   observable := {FiniteAtom.contractImpl}
 
@@ -890,7 +1014,7 @@ abbrev SiteRawMinimalContextProfile :=
 def siteComponentARawProfileOne : SiteRawMinimalContextProfile where
   SupportIndex := PUnit
   supportRead := fun _ => FiniteAtom.componentA
-  supportRead_objectFamily := fun _ => allFamily_mem _
+  supportRead_objectFamily := fun _ => allFamily_mem _ (by simp)
   AxisIndex := PUnit
   axisRead := fun _ => FiniteAtom.componentA
   ObservableIndex := PUnit
@@ -903,7 +1027,7 @@ same extensional component-A readings.
 def siteComponentARawProfileTwo : SiteRawMinimalContextProfile where
   SupportIndex := Bool
   supportRead := fun _ => FiniteAtom.componentA
-  supportRead_objectFamily := fun _ => allFamily_mem _
+  supportRead_objectFamily := fun _ => allFamily_mem _ (by simp)
   AxisIndex := Bool
   axisRead := fun _ => FiniteAtom.componentA
   ObservableIndex := Bool
@@ -1163,7 +1287,8 @@ def siteSingletonCover :
     lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
     signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
     boundaryCoverage := fun _i _j => trivial
-    nonGeneration := fun _i {_support} {_atom} _h => allFamily_mem _
+    nonGeneration := fun _i {_support} {_atom} hselected =>
+      allFamily_mem _ hselected
   }
 
 /-- R11 / II.AC16: selected witness ideal requirements for the finite site. -/
@@ -1278,7 +1403,8 @@ noncomputable instance siteAdmissiblePrecoverage_stableUnderBaseChange :
         lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
         signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
         boundaryCoverage := fun _i _j => trivial
-        nonGeneration := fun _i {_support} {_atom} _h => allFamily_mem _
+        nonGeneration := fun _i {_support} {_atom} hread =>
+          Y.ctx.minimal.supportReads_objectFamily hread
       }
     }, ?_⟩
     exact siteContextPresieve_ofArrows_eq_unit P p₁
@@ -1652,8 +1778,8 @@ def twoPatchContext (i : TwoPatchContextIndex) : Site.ArchCtx object where
     Support := PUnit
     Axis := PUnit
     Observable := PUnit
-    supportReads := fun _ _ => True
-    supportReads_objectFamily := fun _h => allFamily_mem _
+    supportReads := fun _ atom => atom ≠ FiniteAtom.componentC
+    supportReads_objectFamily := fun hselected => allFamily_mem _ hselected
     axisReads := fun _ => True
     observableReads := fun _ => True
   }
@@ -1793,8 +1919,8 @@ noncomputable def twoPatchCover :
           twoPatchCoverageRequirements]⟩
     boundaryCoverage := fun _i _j => trivial
     nonGeneration := by
-      intro _i _support _atom _h
-      exact allFamily_mem _
+      intro _i _support _atom hselected
+      exact allFamily_mem _ hselected
   }
 
 /-- peer-review hardening II-5: the generated two-patch cover is a topology cover. -/

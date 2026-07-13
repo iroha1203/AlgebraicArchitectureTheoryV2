@@ -124,10 +124,10 @@ structure CoarseProjection (Family CoarseFamily : Type u) where
   pi : Family -> CoarseFamily
 
 /--
-I.公理A0-A3 as the axiom-level package over an AG Atom carrier.
+I.公理A0-A3 as the primitive foundation package over an AG Atom carrier.
 
 Implementation notes: the package retains only primitive existence and the
-five-coordinate extensionality axiom. Family extraction, composition,
+five-coordinate extensionality principle. Family extraction, composition,
 operations, laws, and observations belong to the separate core reading that
 constructs the Part I tower. The former abstract tower carriers were rejected
 because they did not provide the actual `AtomFamily`, configuration, and object

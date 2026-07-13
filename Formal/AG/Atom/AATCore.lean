@@ -61,7 +61,90 @@ structure AATCorePackage (U : AtomCarrier.{u}) where
   /-- The admissible reading from which all core components are derived. -/
   reading : CoreReading U
 
+namespace CompositionReading
+
+/-- Composition readings are equal when their configuration constructors agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {R S : CompositionReading U}
+    (hcompose : R.compose = S.compose) : R = S := by
+  cases R
+  cases S
+  cases hcompose
+  rfl
+
+/-- The composition rule returns a configuration on exactly the supplied family. -/
+theorem compose_family_eq {U : AtomCarrier.{u}} (R : CompositionReading U)
+    (F : AtomFamily U) (hfinite : F.ListFinite) :
+    (R.compose F hfinite).family = F :=
+  R.family_eq F hfinite
+
+/-- The composition rule returns a configuration supported by its supplied family. -/
+theorem compose_familySupported {U : AtomCarrier.{u}} (R : CompositionReading U)
+    (F : AtomFamily U) (hfinite : F.ListFinite) :
+    (R.compose F hfinite).FamilySupported :=
+  R.family_supported F hfinite
+
+end CompositionReading
+
+namespace ObjectReading
+
+/-- Object readings are equal when their object constructors agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {R S : ObjectReading U}
+    (hobject : R.object = S.object) : R = S := by
+  cases R
+  cases S
+  cases hobject
+  rfl
+
+/-- The object-formation rule returns an object on exactly the supplied configuration. -/
+theorem object_configuration_eq {U : AtomCarrier.{u}} (R : ObjectReading U)
+    (C : AtomConfiguration U) : (R.object C).configuration = C :=
+  R.configuration_eq C
+
+end ObjectReading
+
+namespace CoreReading
+
+/--
+Core readings are equal when their doctrine, dependent source, and all
+semantic reading rules agree. The finite-family evidence is proof-irrelevant.
+-/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {R S : CoreReading U}
+    (hdoctrine : R.doctrine = S.doctrine)
+    (hsource : HEq R.source S.source)
+    (hcomposition : R.composition = S.composition)
+    (hobjectReading : R.objectReading = S.objectReading)
+    (hlawReading : R.lawReading = S.lawReading)
+    (hinvariantReading : R.invariantReading = S.invariantReading)
+    (hsignatureReading : R.signatureReading = S.signatureReading)
+    (hoperationReading : R.operationReading = S.operationReading) : R = S := by
+  cases R
+  cases S
+  cases hdoctrine
+  cases hsource
+  cases hcomposition
+  cases hobjectReading
+  cases hlawReading
+  cases hinvariantReading
+  cases hsignatureReading
+  cases hoperationReading
+  rfl
+
+end CoreReading
+
 namespace AATCorePackage
+
+/-- Core packages are equal when their primitive systems and admissible readings agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
+    (haxioms : P.axioms = Q.axioms) (hreading : P.reading = Q.reading) : P = Q := by
+  cases P
+  cases Q
+  cases haxioms
+  cases hreading
+  rfl
 
 /-- Construct the core input package from its two independent inputs. -/
 def generate {U : AtomCarrier.{u}}
@@ -119,6 +202,38 @@ theorem object_configuration_eq {U : AtomCarrier.{u}}
     (core : AATCorePackage U) :
     core.object.configuration = core.configuration :=
   core.reading.objectReading.configuration_eq _
+
+/--
+An architecture object occurs in the generated algebra exactly when it is
+reachable from the generated base object by the selected operation reading.
+-/
+theorem algebra_object_nonempty_iff_reachable {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (A : ArchitectureObject U) :
+    Nonempty {a : core.algebra.Obj // core.algebra.object a = A} ↔
+      core.reading.operationReading.Reachable core.object A := by
+  constructor
+  · rintro ⟨a, ha⟩
+    rw [← ha]
+    exact a.2
+  · intro hreachable
+    exact ⟨⟨⟨A, hreachable⟩, rfl⟩⟩
+
+/--
+The generated algebra's circuit fiber is inhabited exactly when its indexed
+finite detector accepts a datum matching the selected generated object.
+-/
+theorem algebra_circuit_nonempty_iff {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (A : core.algebra.Obj)
+    (i : core.algebra.lawReading.lawUniverse.Index) :
+    Nonempty (core.algebra.Circuit A i) ↔
+      ∃ Q : FiniteCircuitDatum U,
+        Q.Matches (core.algebra.object A) ∧
+          core.algebra.lawReading.circuits.accepts i Q = true := by
+  constructor
+  · rintro ⟨c⟩
+    exact ⟨c.1, c.2⟩
+  · rintro ⟨Q, hmatches, haccepts⟩
+    exact ⟨⟨Q, hmatches, haccepts⟩⟩
 
 /-- `generate` retains the supplied Atom axioms. -/
 theorem generate_axioms {U : AtomCarrier.{u}}

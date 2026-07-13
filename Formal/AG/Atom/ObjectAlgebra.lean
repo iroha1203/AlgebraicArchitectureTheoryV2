@@ -25,6 +25,15 @@ structure ConfigurationHom {U : AtomCarrier.{u}}
 
 namespace ConfigurationHom
 
+/-- Configuration homomorphisms with the same atom map are equal. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {C D : AtomConfiguration U}
+    {f g : ConfigurationHom C D} (hatomMap : f.atomMap = g.atomMap) : f = g := by
+  cases f
+  cases g
+  cases hatomMap
+  rfl
+
 /-- The identity homomorphism of an Atom configuration. -/
 def id {U : AtomCarrier.{u}} (C : AtomConfiguration U) :
     ConfigurationHom C C where
@@ -202,12 +211,46 @@ end Operation
 
 namespace OperationReading
 
+/--
+Operation readings are equal when their indexed operation families and their
+dependent configuration-map functions agree.
+-/
+@[ext (iff := false)]
+theorem ext {U : AtomCarrier.{u}} {R S : OperationReading U}
+    (hOp : R.Op = S.Op)
+    (hconfigurationMap :
+      HEq (@OperationReading.configurationMap U R)
+        (@OperationReading.configurationMap U S)) : R = S := by
+  cases R
+  cases S
+  cases hOp
+  cases hconfigurationMap
+  rfl
+
 /-- Package a selected operation as an architecture operation. -/
 def operation {U : AtomCarrier.{u}} (R : OperationReading U)
     {A B : ArchitectureObject U} (op : R.Op A B) : Operation U where
   source := A
   target := B
   configurationMap := R.configurationMap op
+
+/-- A packaged selected operation has its first index as source. -/
+theorem operation_source {U : AtomCarrier.{u}} (R : OperationReading U)
+    {A B : ArchitectureObject U} (op : R.Op A B) :
+    (R.operation op).source = A :=
+  rfl
+
+/-- A packaged selected operation has its second index as target. -/
+theorem operation_target {U : AtomCarrier.{u}} (R : OperationReading U)
+    {A B : ArchitectureObject U} (op : R.Op A B) :
+    (R.operation op).target = B :=
+  rfl
+
+/-- A packaged selected operation exposes the recorded configuration homomorphism. -/
+theorem operation_configurationMap {U : AtomCarrier.{u}}
+    (R : OperationReading U) {A B : ArchitectureObject U} (op : R.Op A B) :
+    (R.operation op).configurationMap = R.configurationMap op :=
+  rfl
 
 /-- The least family of objects containing `base` and closed under selected operations. -/
 inductive Reachable {U : AtomCarrier.{u}} (R : OperationReading U)
@@ -236,6 +279,32 @@ end ArchitectureSignature
 
 namespace ObjectAlgebra
 
+/--
+Indexed object algebras are equal when their carrier and all dependent object,
+operation, and configuration-map fields agree, together with their readings.
+-/
+@[ext (iff := false)]
+theorem ext {U : AtomCarrier.{u}} {K L : ObjectAlgebra U}
+    (hObj : K.Obj = L.Obj)
+    (hobject : HEq (@ObjectAlgebra.object U K) (@ObjectAlgebra.object U L))
+    (hOp : HEq (@ObjectAlgebra.Op U K) (@ObjectAlgebra.Op U L))
+    (hconfigurationMap :
+      HEq (@ObjectAlgebra.configurationMap U K)
+        (@ObjectAlgebra.configurationMap U L))
+    (hinvariantReading : K.invariantReading = L.invariantReading)
+    (hlawReading : K.lawReading = L.lawReading)
+    (hsignatureReading : K.signatureReading = L.signatureReading) : K = L := by
+  cases K
+  cases L
+  cases hObj
+  cases hobject
+  cases hOp
+  cases hconfigurationMap
+  cases hinvariantReading
+  cases hlawReading
+  cases hsignatureReading
+  rfl
+
 /-- I.定義10.1: read an object of the algebra. -/
 def getObject {U : AtomCarrier.{u}} (algebra : ObjectAlgebra U)
     (object : algebra.Obj) : ArchitectureObject U :=
@@ -258,6 +327,46 @@ theorem getObject_eq {U : AtomCarrier.{u}} (algebra : ObjectAlgebra U)
     (object : algebra.Obj) :
     algebra.getObject object = algebra.object object :=
   rfl
+
+/-- An indexed algebra operation has the object at its first index as source. -/
+theorem operation_source {U : AtomCarrier.{u}} (K : ObjectAlgebra U)
+    {A B : K.Obj} (op : K.Op A B) :
+    (K.operation op).source = K.object A :=
+  rfl
+
+/-- An indexed algebra operation has the object at its second index as target. -/
+theorem operation_target {U : AtomCarrier.{u}} (K : ObjectAlgebra U)
+    {A B : K.Obj} (op : K.Op A B) :
+    (K.operation op).target = K.object B :=
+  rfl
+
+/-- An indexed algebra operation exposes its recorded configuration homomorphism. -/
+theorem operation_configurationMap {U : AtomCarrier.{u}}
+    (K : ObjectAlgebra U) {A B : K.Obj} (op : K.Op A B) :
+    (K.operation op).configurationMap = K.configurationMap op :=
+  rfl
+
+/-- Every circuit in an indexed algebra proves failure of its selected law. -/
+theorem circuit_sound {U : AtomCarrier.{u}} (K : ObjectAlgebra U)
+    (A : K.Obj) (i : K.lawReading.lawUniverse.Index)
+    (c : K.Circuit A i) :
+    ¬ (K.lawReading.lawUniverse.law i).holds (K.object A) :=
+  K.lawReading.circuits.sound i (K.object A) c.1 c.2.1 c.2.2
+
+/--
+The indexed circuit fiber is inhabited exactly when a matching datum is
+accepted by the corresponding detector.
+-/
+theorem circuit_nonempty_iff {U : AtomCarrier.{u}} (K : ObjectAlgebra U)
+    (A : K.Obj) (i : K.lawReading.lawUniverse.Index) :
+    Nonempty (K.Circuit A i) ↔
+      ∃ Q : FiniteCircuitDatum U,
+        Q.Matches (K.object A) ∧ K.lawReading.circuits.accepts i Q = true := by
+  constructor
+  · rintro ⟨c⟩
+    exact ⟨c.1, c.2⟩
+  · rintro ⟨Q, hmatches, haccepts⟩
+    exact ⟨⟨Q, hmatches, haccepts⟩⟩
 
 end ObjectAlgebra
 

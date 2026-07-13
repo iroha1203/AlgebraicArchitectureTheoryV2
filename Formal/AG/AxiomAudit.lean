@@ -945,6 +945,94 @@ def generatedCoreOperationMapsRelation :=
 def generatedCoreOperationMapsIdentification :=
   @AATCorePackage.generate_algebra_operation_maps_identification
 
+/- SD1 target and finite-firing declarations added by the core-generation slice. -/
+
+def sd1AtomFamilyExt := @AtomFamily.ext
+def sd1AtomConfigurationExt := @AtomConfiguration.ext
+def sd1CompositionReadingExt := @CompositionReading.ext
+def sd1CompositionComposeFamilyEq := @CompositionReading.compose_family_eq
+def sd1CompositionComposeFamilySupported := @CompositionReading.compose_familySupported
+def sd1ObjectReadingExt := @ObjectReading.ext
+def sd1ObjectReadingConfigurationEq := @ObjectReading.object_configuration_eq
+def sd1CoreReadingExt := @CoreReading.ext
+def sd1CorePackageExt := @AATCorePackage.ext
+def sd1CoreFamilyAtomizes := @AATCorePackage.family_atomizes
+def sd1CoreConfigurationFamilyEq := @AATCorePackage.configuration_family_eq
+def sd1CoreConfigurationSupported := @AATCorePackage.configuration_familySupported
+def sd1CoreObjectConfigurationEq := @AATCorePackage.object_configuration_eq
+def sd1CoreAlgebraObjectReachable := @AATCorePackage.algebra_object_nonempty_iff_reachable
+def sd1CoreAlgebraCircuitNonempty := @AATCorePackage.algebra_circuit_nonempty_iff
+def sd1GenerateAxioms := @AATCorePackage.generate_axioms
+def sd1GenerateReading := @AATCorePackage.generate_reading
+def sd1GenerateFamilyEqAtomize := @AATCorePackage.generate_family_eq_atomize
+def sd1GenerateFamilyAtomizes := @AATCorePackage.generate_family_atomizes
+def sd1GenerateFamilyListFinite := @AATCorePackage.generate_family_listFinite
+def sd1GenerateFamilyUnique := @AATCorePackage.generate_family_unique
+def sd1GenerateConfigurationFamilyEq := @AATCorePackage.generate_configuration_family_eq
+def sd1GenerateConfigurationSupported := @AATCorePackage.generate_configuration_familySupported
+def sd1GenerateObjectConfigurationEq := @AATCorePackage.generate_object_configuration_eq
+def sd1GenerateLawReadingEq := @AATCorePackage.generate_lawReading_eq
+def sd1GenerateAlgebraBaseObject := @AATCorePackage.generate_algebra_base_object
+def sd1GenerateOperationSource := @AATCorePackage.generate_algebra_operation_source
+def sd1GenerateOperationTarget := @AATCorePackage.generate_algebra_operation_target
+def sd1GenerateCircuitSound := @AATCorePackage.generate_circuit_sound
+def sd1GenerateOperationMapsFamily := @AATCorePackage.generate_algebra_operation_maps_family
+def sd1GenerateOperationMapsRelation := @AATCorePackage.generate_algebra_operation_maps_relation
+def sd1GenerateOperationMapsIdentification :=
+  @AATCorePackage.generate_algebra_operation_maps_identification
+
+def sd1ConfigurationHomExt := @ConfigurationHom.ext
+def sd1OperationReadingExt := @OperationReading.ext
+def sd1OperationReadingSource := @OperationReading.operation_source
+def sd1OperationReadingTarget := @OperationReading.operation_target
+def sd1OperationReadingConfigurationMap := @OperationReading.operation_configurationMap
+def sd1ObjectAlgebraExt := @ObjectAlgebra.ext
+def sd1ObjectAlgebraOperationSource := @ObjectAlgebra.operation_source
+def sd1ObjectAlgebraOperationTarget := @ObjectAlgebra.operation_target
+def sd1ObjectAlgebraConfigurationMap := @ObjectAlgebra.operation_configurationMap
+def sd1ObjectAlgebraCircuitSound := @ObjectAlgebra.circuit_sound
+def sd1ObjectAlgebraCircuitNonempty := @ObjectAlgebra.circuit_nonempty_iff
+
+def sd1FiniteCircuitDatumExt := @FiniteCircuitDatum.ext
+def sd1FiniteCircuitHoldsIff := @FiniteCircuitDatum.holds_iff_of_matches
+def sd1CircuitReadingExt := @CircuitReading.ext
+def sd1CircuitAcceptsEqEval := @CircuitReading.accepts_eq_eval
+def sd1CircuitSound := @CircuitReading.circuit_sound
+def sd1LawReadingExt := @LawReading.ext
+
+def sd1ObservationCanonicalFamilyUnique := @A9Example.canonical_family_unique
+
+def sd1FiniteAllFamilyMem := FiniteModel.allFamily_mem
+def sd1FiniteComponentAExtracted := FiniteModel.componentA_extracted_withoutComponentC
+def sd1FiniteComponentCNotExtracted :=
+  FiniteModel.componentC_not_extracted_withoutComponentC
+def sd1FiniteAllFamilyAtomizes := FiniteModel.allFamily_atomizes
+def sd1FiniteEmptyFamilyNotAtomizes := FiniteModel.emptyFamily_not_atomizes
+def sd1FiniteSystem := FiniteModel.axiomSystem
+def sd1FiniteCoreObject := FiniteModel.corePackage_object
+def sd1FiniteCollapsedReachable := FiniteModel.collapsedObject_reachable
+def sd1FiniteCollapseNonidentity := FiniteModel.collapseOperation_atomMap_nonidentity
+def sd1FiniteCoreFamilyMem := FiniteModel.corePackage_family_mem
+def sd1FiniteCoreComponentAMem := FiniteModel.corePackage_componentA_mem
+def sd1FiniteCoreComponentCNotMem := FiniteModel.corePackage_componentC_not_mem
+def sd1FiniteCycleRelationOne := FiniteModel.corePackage_cycle_relation
+def sd1FiniteCycleRelationTwo := FiniteModel.corePackage_cycle_relation_two
+def sd1FiniteCycleRelationThree := FiniteModel.corePackage_cycle_relation_three
+def sd1FiniteIdentification := FiniteModel.corePackage_componentA_identified_componentB
+def sd1FiniteTransportFamily := FiniteModel.collapseOperation_transports_family
+def sd1FiniteTransportRelation := FiniteModel.collapseOperation_transports_relation
+def sd1FiniteTransportIdentification :=
+  FiniteModel.collapseOperation_transports_identification
+def sd1FiniteDistinctObjects := FiniteModel.baseObject_ne_collapsedObject
+def sd1FiniteOperationFires := FiniteModel.nonidentity_reachable_operation_fires
+def sd1FiniteDatumMatches := FiniteModel.cycleQueryDatum_matches_core
+def sd1FiniteDatumNotMatches := FiniteModel.componentAAbsentDatum_not_matches_core
+def sd1FiniteRequiredCompleteNegative :=
+  FiniteModel.rejectingCircuitReading_not_requiredComplete
+def sd1FiniteDatumAccepted := FiniteModel.cycleQueryDatum_accepted
+def sd1FiniteDatumRejected := FiniteModel.emptyQueryDatum_rejected
+def sd1FiniteGeneratedCircuitSound := FiniteModel.generatedCycleCircuit_sound
+
 theorem finiteSeedWitnessClosureAdmissible :
     Site.AdmissibleCover FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap
       FiniteModel.siteSeedWitnessClosureCover.toAATCoverageFamily.toCoverageFamily :=
