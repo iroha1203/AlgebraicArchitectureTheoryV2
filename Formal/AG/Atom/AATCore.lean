@@ -8,10 +8,11 @@ universe u
 /-!
 # AAT core generation
 
-This module implements the Part I admissible-reading construction fixed by
-`docs/aat/aat_lean_01_atom_to_ringed_site_prd.md`, SD1.  A core stores only the
-Atom axioms and the reading rules.  Its family, configuration, architecture
-object, and operation-closed algebra are derived definitions.
+This module implements the Part I Definitions 10.1 and 10.4A admissible-reading
+construction used by Theorem 10.5.  The complete executable signatures are
+fixed in `Formal/AG/StatementContractsAtomToRingedSite.lean`.  A core stores
+only the Atom axioms and the reading rules.  Its family, configuration,
+architecture object, and operation-closed algebra are derived definitions.
 
 ## Implementation notes
 
