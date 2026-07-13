@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use super::registry::{
     binding_axes_for, expand_law_policy_v1, is_compatible_evaluator_condition, is_known_evaluator,
@@ -17,20 +17,33 @@ pub fn validate_law_policy_v1_report(
     measurement_profile: Option<&MeasurementProfileV1>,
     law_surface: Option<&LawEquationSurfaceV1>,
 ) -> LawPolicyValidationReportV1 {
+    let profiles = measurement_profile
+        .into_iter()
+        .map(|profile| (profile.profile_id.clone(), profile.clone()))
+        .collect::<BTreeMap<_, _>>();
+    validate_law_policy_v1_report_with_profiles(policy, input_path, &profiles, law_surface)
+}
+
+pub fn validate_law_policy_v1_report_with_profiles(
+    policy: &LawPolicyDocumentV1,
+    input_path: &str,
+    measurement_profiles: &BTreeMap<String, MeasurementProfileV1>,
+    law_surface: Option<&LawEquationSurfaceV1>,
+) -> LawPolicyValidationReportV1 {
     let expanded_policies = expand_law_policy_v1(policy);
     let mut checks = vec![
         check_v1_schema(policy),
         check_v1_identity(policy),
         check_v1_policy_entries(policy),
-        check_v1_policy_profile_refs(policy, measurement_profile),
+        check_v1_policy_profile_refs(policy, measurement_profiles),
         check_v1_basis(policy),
         check_v1_pack_and_evaluator_vocabulary(policy),
         check_v1_reserved_fields(policy),
-        check_v1_measurement_profile_selector(policy, measurement_profile),
+        check_v1_measurement_profile_selector(policy, measurement_profiles),
         check_v1_ag_evaluators_require_profile(policy),
         check_v1_law_surface_resolution(policy, law_surface),
     ];
-    if let Some(profile) = measurement_profile {
+    for profile in measurement_profiles.values() {
         checks.extend(measurement_profile_v1_checks(profile));
     }
     let failed_check_count = count_checks(&checks, "fail");
@@ -215,14 +228,14 @@ fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
 
 fn check_v1_policy_profile_refs(
     policy: &LawPolicyDocumentV1,
-    measurement_profile: Option<&MeasurementProfileV1>,
+    measurement_profiles: &BTreeMap<String, MeasurementProfileV1>,
 ) -> ValidationCheck {
     let mut examples = Vec::new();
     for (index, entry) in policy.policies.iter().enumerate() {
         let Some(profile_ref) = entry.profile_ref.as_deref() else {
             continue;
         };
-        if !measurement_profile.is_some_and(|profile| profile.profile_id == profile_ref) {
+        if !measurement_profiles.contains_key(profile_ref) {
             examples.push(generic_validation_example(
                 &format!("policies[{index}].profileRef"),
                 profile_ref,
@@ -463,7 +476,7 @@ fn check_v1_pack_and_evaluator_vocabulary(policy: &LawPolicyDocumentV1) -> Valid
 
 fn check_v1_measurement_profile_selector(
     policy: &LawPolicyDocumentV1,
-    measurement_profile: Option<&MeasurementProfileV1>,
+    measurement_profiles: &BTreeMap<String, MeasurementProfileV1>,
 ) -> ValidationCheck {
     let mut examples = Vec::new();
     if let Some(profile_ref) = policy.measurement_profile_ref.as_deref() {
@@ -473,7 +486,7 @@ fn check_v1_measurement_profile_selector(
                 "empty",
                 "measurement profile ref must be non-empty when present",
             ));
-        } else if !measurement_profile.is_some_and(|profile| profile.profile_id == profile_ref) {
+        } else if !measurement_profiles.contains_key(profile_ref) {
             examples.push(generic_validation_example(
                 "measurementProfileRef",
                 profile_ref,

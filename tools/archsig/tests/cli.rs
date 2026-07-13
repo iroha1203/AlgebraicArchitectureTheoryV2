@@ -10798,6 +10798,81 @@ fn cli_analyze_v2_rejects_unresolved_measurement_profile_refs() {
 }
 
 #[test]
+fn cli_analyze_v2_selects_multiple_measurement_profiles_at_runtime() {
+    let out_dir = temp_dir("ag-measurement-multiple-profiles");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_ag.json"));
+    let primary_profile = read_json(&root.join("measurement_profile_ag.json"));
+    let mut secondary_profile = primary_profile.clone();
+    secondary_profile["profileId"] = json!("profile:ag-secondary@1");
+    policy["policies"][0]["profileRef"] = json!("profile:ag-secondary@1");
+    let policy_path = out_dir.join("law_policy_multiple_profiles.json");
+    let primary_path = out_dir.join("measurement_profile_primary.json");
+    let secondary_path = out_dir.join("measurement_profile_secondary.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("policy writes");
+    fs::write(
+        &primary_path,
+        serde_json::to_vec_pretty(&primary_profile).expect("primary profile serializes"),
+    )
+    .expect("primary profile writes");
+    fs::write(
+        &secondary_path,
+        serde_json::to_vec_pretty(&secondary_profile).expect("secondary profile serializes"),
+    )
+    .expect("secondary profile writes");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--law-surface",
+        root.join("law_surface_ag_v052.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        primary_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        secondary_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let profile_ids = packet["profiles"]
+        .as_array()
+        .expect("multi-profile packet carries profiles")
+        .iter()
+        .filter_map(|profile| profile["profileId"].as_str())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        profile_ids,
+        BTreeSet::from(["profile:ag-default@1", "profile:ag-secondary@1"])
+    );
+    assert!(invariant_by_id(&packet, "cech-cohomology:profile:ag-secondary@1").is_object());
+    let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
+    assert_eq!(
+        manifest["measurementProfileInputPaths"]
+            .as_array()
+            .map(Vec::len),
+        Some(2)
+    );
+    assert_eq!(
+        manifest["inputDigests"]["measurementProfiles"]
+            .as_array()
+            .map(Vec::len),
+        Some(2)
+    );
+}
+
+#[test]
 fn cli_rejects_archmap_v2_context_restriction_cycle() {
     let out_dir = temp_dir("ag-measurement-context-cycle");
     let root = ag_measurement_root();

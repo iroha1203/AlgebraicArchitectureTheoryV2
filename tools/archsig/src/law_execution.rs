@@ -1,6 +1,9 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::{LawEquationSurfaceV1, NormalizedArchMapV2};
+use crate::{
+    LawDefectSourceV1, LawEquationSurfaceV1, LawQuotientSheafConditionV1, LawSkeletonSimplexV1,
+    NormalizedArchMapV2,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LawExecutionPlanV1 {
@@ -12,6 +15,9 @@ pub(crate) struct LawExecutionPlanV1 {
     pub(crate) section_witness_variables: Option<Vec<String>>,
     pub(crate) section_variable_aliases: Option<BTreeMap<String, String>>,
     pub(crate) section_forbidden_supports: Option<Vec<Vec<String>>>,
+    pub(crate) stage3_skeleton: Option<Vec<LawSkeletonSimplexV1>>,
+    pub(crate) stage3_defect_source: Option<LawDefectSourceV1>,
+    pub(crate) stage3_quotient_sheaf_condition: Option<LawQuotientSheafConditionV1>,
 }
 
 pub(crate) fn build_law_execution_plan(
@@ -185,6 +191,15 @@ pub(crate) fn build_law_execution_plan(
     } else {
         None
     };
+    let stage3_defect_source = surface
+        .defect_sources
+        .as_ref()
+        .and_then(|sources| {
+            sources
+                .iter()
+                .find(|source| source.law_id == selected_law.law_id)
+        })
+        .cloned();
     Ok(Some(LawExecutionPlanV1 {
         surface_id: surface.id.clone(),
         evaluator: evaluator.to_string(),
@@ -196,5 +211,8 @@ pub(crate) fn build_law_execution_plan(
         section_variable_aliases: (!section_variable_aliases.is_empty())
             .then_some(section_variable_aliases),
         section_forbidden_supports,
+        stage3_skeleton: surface.skeleton.clone(),
+        stage3_defect_source,
+        stage3_quotient_sheaf_condition: surface.quotient_sheaf_condition.clone(),
     }))
 }

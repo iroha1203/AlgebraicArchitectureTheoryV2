@@ -659,6 +659,7 @@ fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), 
         "lawPolicy",
         "lawSurface",
         "measurementProfile",
+        "measurementProfiles",
         "profileFingerprint",
         "residualPacket",
         "siteCoverDigest",
@@ -682,6 +683,46 @@ fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), 
         return Err(format!("{label} inputDigests is missing required keys").into());
     }
     for key in &actual_digest_keys {
+        if *key == "measurementProfiles" {
+            let entries = input_digests
+                .get(*key)
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    format!("{label} inputDigests.measurementProfiles must be an array")
+                })?;
+            if entries.is_empty() {
+                return Err(
+                    format!("{label} inputDigests.measurementProfiles must not be empty").into(),
+                );
+            }
+            for entry in entries {
+                let object = entry.as_object().ok_or_else(|| {
+                    format!("{label} inputDigests.measurementProfiles entries must be objects")
+                })?;
+                let keys = object.keys().map(String::as_str).collect::<BTreeSet<_>>();
+                if keys != BTreeSet::from(["path", "sha256"]) {
+                    return Err(format!(
+                        "{label} inputDigests.measurementProfiles entry has invalid fields"
+                    )
+                    .into());
+                }
+                if !object.get("path").is_some_and(Value::is_string)
+                    || !object
+                        .get("sha256")
+                        .and_then(Value::as_str)
+                        .is_some_and(|digest| {
+                            digest.len() == 64
+                                && digest.bytes().all(|byte| byte.is_ascii_hexdigit())
+                        })
+                {
+                    return Err(format!(
+                        "{label} inputDigests.measurementProfiles entry is invalid"
+                    )
+                    .into());
+                }
+            }
+            continue;
+        }
         let entry = input_digests
             .get(*key)
             .and_then(Value::as_object)
@@ -763,6 +804,7 @@ fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<
         "lawPolicyInputPath",
         "lawSurfaceInputPath",
         "measurementProfileInputPath",
+        "measurementProfileInputPaths",
         "repairPlanInputPath",
         "rawArtifactRetention",
         "generatedArtifacts",

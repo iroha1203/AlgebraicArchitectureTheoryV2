@@ -122,6 +122,10 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --out-dir .archsig/analyze
 ```
 
+For a single run with multiple policy-row profiles, repeat `--measurement-profile`; each
+`policies[].profileRef` is resolved against the supplied profile ids and the packet records
+the selected profile set.
+
 This writes:
 
 - `.archsig/analyze/archmap-validation.json`

@@ -10,6 +10,8 @@ pub struct ArchSigMeasurementPacketV1 {
     pub schema: String,
     pub packet_id: String,
     pub profile: MeasurementProfileV1,
+    #[serde(default)]
+    pub profiles: Vec<MeasurementProfileV1>,
     pub structural_verdict: Vec<AgStructuralVerdictV1>,
     pub computed_invariants: Vec<Value>,
     pub analytic_readings: Vec<AgAnalyticReadingV1>,
@@ -26,10 +28,13 @@ impl Serialize for ArchSigMeasurementPacketV1 {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("ArchSigMeasurementPacketV1", 10)?;
+        let mut state = serializer.serialize_struct("ArchSigMeasurementPacketV1", 11)?;
         state.serialize_field("schema", &self.schema)?;
         state.serialize_field("packetId", &self.packet_id)?;
         state.serialize_field("profile", &self.profile)?;
+        if !self.profiles.is_empty() {
+            state.serialize_field("profiles", &self.profiles)?;
+        }
         let invariants = self
             .computed_invariants
             .iter()
