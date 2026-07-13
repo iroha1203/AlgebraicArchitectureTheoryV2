@@ -202,9 +202,9 @@ pub(crate) fn evaluate_saga_grounded_v1(
             "sheafConditionForSelectedCover": {"status": "established", "theoremRef": "part10/7.3"},
             "descent": {"status": "established", "theoremRef": "part10/6.6", "note": "sheaf 条件 + cover membership から導出。独立 certificate は受け取らない"},
             "uniqueGlobalSection": {"status": "established", "theoremRef": "part10/7.3"},
-            "globalCoherentIffCoverRelativeH1Zero": {"status": "established", "instanceReading": {"coverRelativeH1Zero": true}},
+            "globalCoherentIffCoverRelativeH1Zero": {"status": "established", "theoremRef": "part10/8.2", "instanceReading": {"coverRelativeH1Zero": true}},
             "boundedAdditiveH1ZeroIffCoverRelativeH1Zero": {"status": "established", "theoremRef": "part10/8.2"},
-            "higherObstructionsVanish": {"status": "established", "note": "additive regime で自明に成立。外部仮定として供給されない(定理4.8 結論5)"}
+            "higherObstructionsVanish": {"status": "established", "theoremRef": "part10/4.8", "note": "additive regime で自明に成立。外部仮定として供給されない(定理4.8 結論5)"}
         }
     });
     let invariant = json!({
@@ -232,13 +232,33 @@ pub(crate) fn evaluate_saga_grounded_v1(
         },
         "detectorFindings": nonzero_charts
     });
-    let assumptions = vec![AgAssumptionLedgerEntryV1 {
+    let mut assumptions = vec![AgAssumptionLedgerEntryV1 {
         theorem_ref: "part10/11.3".to_string(),
         assumption: "displayedRequiredLawsHold is operationalized only by the declared holdsCriterion raw-value check".to_string(),
         status: "checked".to_string(),
         checked_by: Some(ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS.to_string()),
         assumed_by: None,
     }];
+    if execution_plan
+        .stage3_quotient_sheaf_condition
+        .as_ref()
+        .is_some_and(|condition| condition.mode == "assumed")
+    {
+        assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part10/7.3".to_string(),
+            assumption: format!(
+                "selected quotient sheaf condition for {}",
+                execution_plan.surface_id
+            ),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("law-surface:{}", execution_plan.surface_id)),
+        });
+    }
+    let assumption_ids = assumptions
+        .iter()
+        .map(assumption_id_for_schema)
+        .collect::<Vec<_>>();
     let verdict = if laws_hold {
         "measured_zero"
     } else {
@@ -261,7 +281,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
                 .to_string(),
                 cert_ref: Some("computedInvariants/saga-generated-end-to-end-packet".to_string()),
             },
-            depends_on_assumptions: vec![assumption_id_for_schema(&assumptions[0])],
+            depends_on_assumptions: assumption_ids,
             reason: Some(if laws_hold {
                 ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS.to_string()
             } else {
