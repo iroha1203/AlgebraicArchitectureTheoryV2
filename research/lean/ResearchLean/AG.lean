@@ -22,6 +22,7 @@ import ResearchLean.AG.QualitySurface.HandoffCechExactness
 import ResearchLean.AG.QualitySurface.HandoffRepairTransversal
 import ResearchLean.AG.QualitySurface.HeterogeneousRouteInteraction
 import ResearchLean.AG.QualitySurface.InternalExcursionMinSupport
+import ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.ArchitectureOperationPresentation
 import ResearchLean.AG.QualitySurface.LawGeneratedConormalDescent
 import ResearchLean.AG.QualitySurface.LawGeneratedLargeConormalDescent
 import ResearchLean.AG.QualitySurface.LawGeneratedLargeCoefficientCech

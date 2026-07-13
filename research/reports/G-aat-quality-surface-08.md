@@ -10,12 +10,11 @@ Issue #3282.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 1
+- latest reviewed cycle: 2
 - completion candidate: no
 - tracking Issue: #3282
 - current phase: Phase 0 — Semantic Operation Foundation
-- next obligation: J0 typed `ArchitectureOperationPresentation` and
-  `RealizesFirstOrder`
+- next obligation: J1a typed affine-localization geometry
 
 ## Cycle 1 — BC0 statement and API compatibility
 
@@ -384,3 +383,62 @@ define the external typed presentation joining a finite primitive operation
 label to a selected `Formal.Arch.ArchitectureOperation` and an ambient
 derivation realization, then state and prove its `RealizesFirstOrder` API
 without adding ring realization fields to the core operation structure.
+
+## Cycle 2 — J0 typed ambient operation presentation
+
+- decision: approve
+- result type: proof-checkpoint
+- proof obligation: connect each finite primitive operation label to a selected
+  `Formal.Arch.ArchitectureOperation` schema and its ambient derivation before
+  law quotients
+- Lean artifact:
+  `research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ArchitectureOperationPresentation.lean`
+- completion candidate: no
+
+### Construction
+
+`ArchitectureOperationPresentation` retains the finite label type `Op` and has
+exactly two data fields:
+
+1. `operation : Op → Formal.Arch.ArchitectureOperation ...`;
+2. `ambientDerivation : Op → Derivation k A₀ A₀`.
+
+`RealizesFirstOrder P i op ρ` is the graph relation requiring both `op` and `ρ`
+to be the values selected by the same label `i`. The constructor theorem,
+projection theorems, and two mismatch theorems prove that the stored pair is
+accepted and that replacing either coordinate by a distinct value is rejected.
+The generated proof-obligation kind is transported from the selected core
+operation theorem.
+
+### Premise delta and audit
+
+- discharged material premises: none. J0 fixes the typed ambient presentation;
+  it does not construct operation–derivation semantic compatibility.
+- fixed ambient inputs: base field `k`, ambient commutative `k`-algebra `A₀`,
+  finite primitive labels `Op`, selected operation family, and ambient
+  derivation realization.
+- structure-field escape: none. The presentation contains no chart,
+  localization, law quotient, restriction, response, repair, or sheaf field.
+- proof use: `realizesFirstOrder` uses both graph coordinates; the projection
+  and mismatch theorems use the corresponding equality. The
+  `generatedObligation_kind` theorem uses only the operation coordinate and is
+  not evidence for semantic compatibility with the derivation.
+- anti-weakening: the label family remains `Op`; it is not reduced to a single
+  operation. `Formal.Arch.ArchitectureOperation` is unchanged.
+- independent T3 audit: approve / proof-checkpoint.
+
+### Verification
+
+```text
+cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ArchitectureOperationPresentation.lean
+axiom audit: 21 declarations, standard axioms only
+```
+
+`git diff --check`, hidden / bidirectional Unicode scan, placeholder scan, and
+Research import-direction scan are clean.
+
+### Next obligation
+
+Implement J1a typed affine-localization geometry while preserving the locally
+affine global object and expressing selected chart and overlap maps through
+typed principal localizations.
