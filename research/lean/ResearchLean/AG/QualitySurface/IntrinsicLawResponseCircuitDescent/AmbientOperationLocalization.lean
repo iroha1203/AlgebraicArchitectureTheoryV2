@@ -9,6 +9,22 @@ import ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.TypedLo
 This file extends an ambient derivation across a ring localization through the
 localized Kähler differential.  It then applies the construction to every
 operation label and every chart and overlap of a typed localization geometry.
+
+## Implementation notes
+
+`localizeDerivation` is the J1b realization of the source note's canonical
+ambient-derivation localization.  It uses the localized Kähler differential
+because this construction supplies both the extension law and uniqueness for
+an arbitrary derivation, without a vanishing condition on a denominator.
+
+Two alternatives are deliberately not used.  A formula on selected fraction
+representatives would add a separate well-definedness proof and obscure the
+localization universal property.  Accepting chartwise derivations and their
+restriction compatibility as fields would move the J1b proof obligation into
+input data.  Instead, `chartDerivation` and `overlapDerivation` consume the J0
+`ambientDerivation` and the canonical `Localization.Away` instances generated
+by the J1a denominator family.  The accompanying extension, uniqueness, and
+naturality theorems form the no-unfold API used by J2.
 -/
 
 namespace ResearchLean.AG.QualitySurface
