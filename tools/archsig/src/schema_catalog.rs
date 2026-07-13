@@ -163,7 +163,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.2 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.5.2-ag-measurement"],
-                "MeasurementProfile v0.5.2 declares selected site, cover, coefficient, EffCoeff procedure, resolution selector, Dom/Zero/NonZero/Cert predicates, and five-valued verdict discipline. Witness variables are supplied by the referenced law-equation-surface.",
+                "MeasurementProfile v0.5.2 declares selected site, cover, coefficient, EffCoeff procedure, resolution selector, Dom/Zero/NonZero/Cert predicates, optional analytic innerProduct / weights / costModel declarations, and five-valued verdict discipline. Witness variables are supplied by the referenced law-equation-surface.",
                 vec![
                     "MeasurementProfile selects a bounded measurement regime; it does not prove adequacy or theorem hypotheses.",
                     "Profile absence for AG evaluators is a validation error, not an unmeasured zero result.",

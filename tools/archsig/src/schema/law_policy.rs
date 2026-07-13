@@ -52,6 +52,8 @@ pub struct MeasurementProfileV1 {
         skip_serializing_if = "Option::is_none"
     )]
     pub diagnostic_ceiling: Option<Option<Value>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub analytic: Option<Value>,
     pub finite_bounds: MeasurementProfileFiniteBoundsV1,
 }
 

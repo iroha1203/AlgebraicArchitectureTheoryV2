@@ -9050,6 +9050,152 @@ fn cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading() {
 }
 
 #[test]
+fn cli_analyze_v2_harmonic_debt_requires_cost_model_for_lower_bound() {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir("ag-measurement-harmonic-debt");
+    let mut policy = read_json(&root.join("law_policy_laplacian.json"));
+    policy["measurementProfileRef"] = json!("profile:ag-harmonic-debt@1");
+    policy["policies"][0]["evaluator"] = json!("ag.harmonic-debt");
+    let policy_path = out_dir.join("law_policy_harmonic_debt.json");
+    let profile_path = out_dir.join("measurement_profile_harmonic_debt.json");
+    let surface_path = root.join("law_surface_ag_v052.json");
+    fs::write(&policy_path, serde_json::to_vec_pretty(&policy).unwrap()).unwrap();
+    fs::copy(
+        root.join("measurement_profile_harmonic_debt.json"),
+        &profile_path,
+    )
+    .unwrap();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_sheaf_laplacian.json")
+            .to_str()
+            .unwrap(),
+        "--law-policy",
+        policy_path.to_str().unwrap(),
+        "--measurement-profile",
+        profile_path.to_str().unwrap(),
+        "--law-surface",
+        surface_path.to_str().unwrap(),
+        "--out-dir",
+        out_dir.to_str().unwrap(),
+    ]);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert!(
+        packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| row["evaluator"] != "ag.harmonic-debt"),
+        "harmonic debt must stay out of structural verdicts"
+    );
+    let invariant = invariant_by_id(&packet, "harmonic-debt:profile:ag-harmonic-debt@1");
+    assert_eq!(invariant["harmonicDebtNorm"], json!(0.707107));
+    assert_eq!(invariant["essentialRepairLowerBound"], json!(0.353553));
+    assert_eq!(invariant["lowerBoundStatus"], "cost_model_supplied");
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| row["theoremRef"] == "part8/8.7")
+    );
+    let reading = packet["analyticReadings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["evaluator"] == "ag.harmonic-debt")
+        .unwrap();
+    assert_eq!(reading["claimStatus"], "certified");
+    assert_eq!(reading["fidelity"], "faithful");
+    assert_eq!(reading["structuralVerdictRef"], Value::Null);
+
+    let no_cost_out = temp_dir("ag-measurement-harmonic-debt-no-cost");
+    let no_cost_profile = read_json(&profile_path);
+    let mut no_cost_profile = no_cost_profile;
+    no_cost_profile["analytic"]
+        .as_object_mut()
+        .unwrap()
+        .remove("costModel");
+    let no_cost_profile_path = no_cost_out.join("measurement_profile_harmonic_debt.json");
+    fs::write(
+        &no_cost_profile_path,
+        serde_json::to_vec_pretty(&no_cost_profile).unwrap(),
+    )
+    .unwrap();
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_sheaf_laplacian.json")
+            .to_str()
+            .unwrap(),
+        "--law-policy",
+        policy_path.to_str().unwrap(),
+        "--measurement-profile",
+        no_cost_profile_path.to_str().unwrap(),
+        "--law-surface",
+        surface_path.to_str().unwrap(),
+        "--out-dir",
+        no_cost_out.to_str().unwrap(),
+    ]);
+    let no_cost_packet = read_json(&no_cost_out.join("archsig-measurement-packet.json"));
+    let no_cost_invariant =
+        invariant_by_id(&no_cost_packet, "harmonic-debt:profile:ag-harmonic-debt@1");
+    assert_eq!(
+        no_cost_invariant["lowerBoundStatus"],
+        "cost_model_not_supplied"
+    );
+    assert!(no_cost_invariant.get("essentialRepairLowerBound").is_none());
+    let no_cost_reading = no_cost_packet["analyticReadings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["evaluator"] == "ag.harmonic-debt")
+        .unwrap();
+    assert!(
+        no_cost_reading["value"]
+            .get("essentialRepairLowerBound")
+            .is_none()
+    );
+    assert!(
+        !no_cost_packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| row["theoremRef"] == "part8/8.7")
+    );
+
+    let invalid_out = temp_dir("ag-measurement-harmonic-debt-invalid-cost");
+    let mut invalid_profile = read_json(&profile_path);
+    invalid_profile["analytic"]["costModel"]["kind"] = json!("unbounded-cost");
+    let invalid_profile_path = invalid_out.join("measurement_profile_harmonic_debt.json");
+    fs::write(
+        &invalid_profile_path,
+        serde_json::to_vec_pretty(&invalid_profile).unwrap(),
+    )
+    .unwrap();
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2_sheaf_laplacian.json")
+                .to_str()
+                .unwrap(),
+            "--law-policy",
+            policy_path.to_str().unwrap(),
+            "--measurement-profile",
+            invalid_profile_path.to_str().unwrap(),
+            "--law-surface",
+            surface_path.to_str().unwrap(),
+            "--out-dir",
+            invalid_out.to_str().unwrap(),
+        ],
+        2,
+    );
+}
+
+#[test]
 fn cli_analyze_v2_sheaf_laplacian_rejects_duplicate_cochain_cells() {
     let out_dir = temp_dir("ag-measurement-sheaf-laplacian-duplicate-cell");
     let root = ag_measurement_root();
