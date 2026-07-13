@@ -145,6 +145,13 @@ example {U : AtomCarrier.{u}} {core : AATCorePackage U} :
   @Site.SelectedGeometryReading.mk U core
 
 example {U : AtomCarrier.{u}} {core : AATCorePackage U}
+    {X Y : Site.SelectedGeometryReading core}
+    (hcontext : X.contextPreorder = Y.contextPreorder)
+    (hrequirements : X.requirements = Y.requirements)
+    (hoverlap : HEq X.overlap Y.overlap) : X = Y :=
+  Site.SelectedGeometryReading.ext hcontext hrequirements hoverlap
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U}
     (reading : Site.SelectedGeometryReading core) : Site.AATSite core.object :=
   reading.toAATSite
 
@@ -667,6 +674,11 @@ example :
 example :
     CategoryTheory.Sieve.generate FiniteModel.siteSingletonCover.presieve ∈
       FiniteModel.site.topology FiniteModel.siteBase :=
-  Site.AATGrothendieckTopology.generate_mem FiniteModel.siteSingletonCover
+  FiniteModel.siteSingletonCover_topologyCover
+
+example :
+    CategoryTheory.Sieve.generate FiniteModel.twoPatchCover.presieve ∈
+      FiniteModel.twoPatchSite.topology FiniteModel.twoPatchBase :=
+  FiniteModel.twoPatchCover_topologyCover
 
 end AAT.AG

@@ -1494,6 +1494,12 @@ def siteSingletonCover :
       allFamily_mem _ hselected
   }
 
+/-- SD2: the singleton admissible cover belongs to the generated core topology. -/
+theorem siteSingletonCover_topologyCover :
+    Sieve.generate siteSingletonCover.presieve ∈ site.topology siteBase := by
+  rw [site_topology_eq_generated]
+  exact Site.AATGrothendieckTopology.generate_mem siteSingletonCover
+
 /-- R11 / II.AC16: selected witness ideal requirements for the finite site. -/
 def siteAdequacyRequirements :
     Site.UAdequacyRequirements siteContextPreorder siteCoverageRequirements where
@@ -1503,7 +1509,7 @@ def siteAdequacyRequirements :
 /-- R11 / II.AC16: direct `U`-adequacy of the singleton finite cover. -/
 theorem siteSingletonCover_uAdequate :
     Site.UAdequateCover siteAdequacyRequirements siteSingletonCover where
-  topologyCover := Site.AATGrothendieckTopology.generate_mem siteSingletonCover
+  topologyCover := siteSingletonCover_topologyCover
   requiredSupportCovered := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
   requiredWitnessesVisible := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
   requiredAxesReadable := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
@@ -1619,8 +1625,10 @@ selected finite singleton site.
 theorem siteTopology_eq_coverage_toGrothendieck :
     site.topology =
       (Site.admissiblePrecoverage siteCoverageRequirements siteOverlap).toCoverage.toGrothendieck :=
-  Site.AATGrothendieckTopology.eq_coverage_toGrothendieck
-    siteCoverageRequirements siteOverlap
+  by
+    rw [site_topology_eq_generated]
+    exact Site.AATGrothendieckTopology.eq_coverage_toGrothendieck
+      siteCoverageRequirements siteOverlap
 
 /-- R11 / II.AC16: the finite model has finitely many required witnesses. -/
 theorem site_requiredWitnessSubtype_finite :
@@ -2077,13 +2085,23 @@ def twoPatchCoverageRequirements :
       W = twoPatchContext TwoPatchContextIndex.right
   boundaryVisibleOn := fun _ _ => True
 
-/-- peer-review hardening II-5: the two-patch AAT site over the finite model. -/
-noncomputable def twoPatchSite : Site.AATSite object where
+/-- SD2: the nondegenerate two-patch geometry is typed by the generated core. -/
+noncomputable def twoPatchSelectedGeometryReading :
+    Site.SelectedGeometryReading corePackage where
   contextPreorder := twoPatchContextPreorder
-  lawUniverse := lawUniverse
-  signature := signature
   requirements := twoPatchCoverageRequirements
   overlap := twoPatchOverlap
+
+/-- peer-review hardening II-5: the two-patch AAT site over the generated core. -/
+noncomputable def twoPatchSite : Site.AATSite corePackage.object :=
+  twoPatchSelectedGeometryReading.toAATSite
+
+/-- SD2: the two-patch topology is generated from its selected coverage. -/
+theorem twoPatchSite_topology_eq_generated :
+    twoPatchSite.topology =
+      Site.AATGrothendieckTopology twoPatchCoverageRequirements twoPatchOverlap :=
+  Site.SelectedGeometryReading.topology_eq_generated
+    twoPatchSelectedGeometryReading
 
 /-- peer-review hardening II-5: base object of the two-patch finite site. -/
 def twoPatchBase : twoPatchSite.category :=
@@ -2127,8 +2145,9 @@ noncomputable def twoPatchCover :
 
 /-- peer-review hardening II-5: the generated two-patch cover is a topology cover. -/
 theorem twoPatchCover_topologyCover :
-    Sieve.generate twoPatchCover.presieve ∈ twoPatchSite.topology twoPatchBase :=
-  Site.AATGrothendieckTopology.generate_mem twoPatchCover
+    Sieve.generate twoPatchCover.presieve ∈ twoPatchSite.topology twoPatchBase := by
+  rw [twoPatchSite_topology_eq_generated]
+  exact Site.AATGrothendieckTopology.generate_mem twoPatchCover
 
 /-- peer-review hardening II-5: selected adequacy requirements for the two-patch site. -/
 def twoPatchAdequacyRequirements :

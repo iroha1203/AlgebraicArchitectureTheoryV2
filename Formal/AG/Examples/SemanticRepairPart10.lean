@@ -1196,13 +1196,16 @@ def circleCoverageRequirements :
   axisReadableOn := fun _ _ => False
   boundaryVisibleOn := fun _ _ => False
 
-/-- X.例9.2: selected witness site for the circle-nerve nonzero class. -/
-def circleSite : Site.AATSite FiniteModel.object where
+/-- X.例9.2: generated-core geometry for the selected circle witness site. -/
+noncomputable def circleSelectedGeometryReading :
+    Site.SelectedGeometryReading FiniteModel.corePackage where
   contextPreorder := FiniteModel.siteContextPreorder
-  lawUniverse := FiniteModel.lawUniverse
-  signature := FiniteModel.signature
   requirements := circleCoverageRequirements
   overlap := FiniteModel.siteOverlap
+
+/-- X.例9.2: selected witness site for the circle-nerve nonzero class. -/
+noncomputable def circleSite : Site.AATSite FiniteModel.corePackage.object :=
+  circleSelectedGeometryReading.toAATSite
 
 /-- X.例9.2: base object for the selected circle witness site. -/
 def circleSiteBase : circleSite.category :=

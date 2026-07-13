@@ -1097,6 +1097,9 @@ def sd2TopologyGenerated := @Site.SelectedGeometryReading.topology_eq_generated
 def sd2FiniteLawUniverse := FiniteModel.site_lawUniverse_eq_core
 def sd2FiniteSignature := FiniteModel.site_signature_eq_core
 def sd2FiniteTopologyGenerated := FiniteModel.site_topology_eq_generated
+def sd2FiniteSingletonTopologyCover := FiniteModel.siteSingletonCover_topologyCover
+def sd2FiniteTwoPatchTopologyGenerated :=
+  FiniteModel.twoPatchSite_topology_eq_generated
 
 theorem finiteSeedWitnessClosureAdmissible :
     Site.AdmissibleCover FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap

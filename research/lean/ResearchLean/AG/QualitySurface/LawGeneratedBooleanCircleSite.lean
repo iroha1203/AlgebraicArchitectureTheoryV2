@@ -271,13 +271,22 @@ def coverageRequirements : Site.CoverageRequirements FiniteModel.object
   axisReadableOn := fun _ _ => False
   boundaryVisibleOn := fun _ _ => True
 
-/-- The AAT site on the selected Boolean-lattice context preorder. -/
-noncomputable def site : Site.AATSite FiniteModel.object where
+/-- The generated-core geometry on the selected Boolean-lattice context preorder. -/
+noncomputable def selectedGeometryReading :
+    Site.SelectedGeometryReading FiniteModel.corePackage where
   contextPreorder := contextPreorder
-  lawUniverse := FiniteModel.lawUniverse
-  signature := FiniteModel.signature
   requirements := coverageRequirements
   overlap := contextOverlap
+
+/-- The AAT site generated from the selected Boolean-lattice geometry. -/
+noncomputable def site : Site.AATSite FiniteModel.corePackage.object :=
+  selectedGeometryReading.toAATSite
+
+/-- The three-patch topology is generated from the core-typed coverage. -/
+theorem site_topology_eq_generated :
+    site.topology =
+      Site.AATGrothendieckTopology coverageRequirements contextOverlap :=
+  Site.SelectedGeometryReading.topology_eq_generated selectedGeometryReading
 
 /-- The empty-index context serving as the selected cover base. -/
 def base : site.category :=
@@ -319,6 +328,12 @@ theorem cover_patch_ne_base (i : cover.Index) : cover.patch i ≠ context ∅ :=
   have hindex : chartContextIndex i = (∅ : ContextIndex) := context_injective h
   simp [chartContextIndex] at hindex
 
+/-- The actual three-patch cover belongs to the generated core topology. -/
+theorem cover_topologyCover :
+    Sieve.generate cover.presieve ∈ site.topology base := by
+  rw [site_topology_eq_generated]
+  exact Site.AATGrothendieckTopology.generate_mem cover
+
 /-- Trivial witness-ideal adequacy requirements for the coefficient-free geometry. -/
 def adequacyRequirements :
     Site.UAdequacyRequirements contextPreorder coverageRequirements where
@@ -327,7 +342,7 @@ def adequacyRequirements :
 
 theorem cover_uAdequate :
     Site.UAdequateCover adequacyRequirements cover where
-  topologyCover := Site.AATGrothendieckTopology.generate_mem cover
+  topologyCover := cover_topologyCover
   requiredSupportCovered := cover.admissible.atomSupportCoverage
   requiredWitnessesVisible := cover.admissible.lawWitnessCoverage
   requiredAxesReadable := cover.admissible.signatureAxisCoverage
