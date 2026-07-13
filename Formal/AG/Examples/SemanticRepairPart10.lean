@@ -1188,10 +1188,9 @@ the generated topology is the top-only witness topology used for the concrete
 def circleCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
       FiniteModel.lawUniverse FiniteModel.signature where
-  selectedReading := FiniteModel.lawUniverse.selectedReading
-  requiredSupport := fun _ _ => True
-  requiredWitness := fun _ _ => False
-  requiredAxis := fun _ _ => False
+  requiredSupport := fun _ => True
+  requiredWitness := fun _ => False
+  requiredAxis := fun _ => False
   supportVisibleOn := fun _ _ => False
   witnessVisibleOn := fun _ _ => False
   axisReadableOn := fun _ _ => False

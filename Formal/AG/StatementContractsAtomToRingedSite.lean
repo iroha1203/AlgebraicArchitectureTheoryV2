@@ -5,9 +5,8 @@ noncomputable section
 /-!
 Executable statement contracts for the Atom-to-ringed-site PRD.
 
-This first implementation slice fixes the SD1 constructor and characterization
-surface.  Later PRD slices extend this file with SD2--SD5 contracts without
-changing the contracts below.
+The SD1 constructor and characterization surface remains fixed below. Later
+sections extend the same executable contract through SD2--SD5.
 -/
 
 namespace AAT.AG
@@ -122,6 +121,68 @@ example {U : AtomCarrier.{u}} {R : OperationReading U}
     {A : ArchitectureObject U} (reachable : R.Reachable base A) :
     motive A reachable :=
   OperationReading.Reachable.rec baseCase stepCase reachable
+
+/-! SD2 fixed geometry signatures. -/
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {LU : LawUniverse U} {Sig : ArchitectureSignature U} :
+    (U.Atom -> Prop) ->
+    (LU.witnessFamily.Witness -> Prop) ->
+    (Sig.Axis -> Prop) ->
+    (Site.ArchCtx A -> U.Atom -> Prop) ->
+    (Site.ArchCtx A -> LU.witnessFamily.Witness -> Prop) ->
+    (Site.ArchCtx A -> Sig.Axis -> Prop) ->
+    (Site.ArchCtx A -> Site.ArchCtx A -> Prop) ->
+    Site.CoverageRequirements A LU Sig :=
+  @Site.CoverageRequirements.mk U A LU Sig
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U} :
+    (contextPreorder : Site.ContextPreorderCategory core.object) ->
+    Site.CoverageRequirements core.object
+      core.algebra.lawReading.lawUniverse core.algebra.signatureReading ->
+    Site.ContextOverlapPullback contextPreorder ->
+    Site.SelectedGeometryReading core :=
+  @Site.SelectedGeometryReading.mk U core
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U}
+    (reading : Site.SelectedGeometryReading core) : Site.AATSite core.object :=
+  reading.toAATSite
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U}
+    (reading : Site.SelectedGeometryReading core) :
+    reading.toAATSite.architectureObject = core.object :=
+  reading.toAATSite_architectureObject
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U}
+    (reading : Site.SelectedGeometryReading core) :
+    reading.toAATSite.contextPreorder = reading.contextPreorder :=
+  reading.toAATSite_contextPreorder
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U}
+    (reading : Site.SelectedGeometryReading core) :
+    reading.toAATSite.lawUniverse = core.algebra.lawReading.lawUniverse :=
+  reading.toAATSite_lawUniverse
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U}
+    (reading : Site.SelectedGeometryReading core) :
+    reading.toAATSite.signature = core.algebra.signatureReading :=
+  reading.toAATSite_signature
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U}
+    (reading : Site.SelectedGeometryReading core) :
+    reading.toAATSite.requirements = reading.requirements :=
+  reading.toAATSite_requirements
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U}
+    (reading : Site.SelectedGeometryReading core) :
+    reading.toAATSite.overlap = reading.overlap :=
+  reading.toAATSite_overlap
+
+example {U : AtomCarrier.{u}} {core : AATCorePackage U}
+    (reading : Site.SelectedGeometryReading core) :
+    reading.toAATSite.topology =
+      Site.AATGrothendieckTopology reading.requirements reading.overlap :=
+  reading.topology_eq_generated
 
 example {U : AtomCarrier.{u}} (L : Law U) (A : ArchitectureObject U) : Prop :=
   SemanticObstruction L A
@@ -586,5 +647,26 @@ example :
     ¬ (FiniteModel.corePackage.algebra.lawReading.lawUniverse.law PUnit.unit).holds
       (FiniteModel.corePackage.algebra.object FiniteModel.corePackage.baseObject) :=
   FiniteModel.generatedCycleCircuit_sound
+
+example :
+    FiniteModel.site.lawUniverse =
+      FiniteModel.corePackage.algebra.lawReading.lawUniverse :=
+  FiniteModel.site_lawUniverse_eq_core
+
+example :
+    FiniteModel.site.signature = FiniteModel.corePackage.algebra.signatureReading :=
+  FiniteModel.site_signature_eq_core
+
+example :
+    FiniteModel.site.topology =
+      Site.AATGrothendieckTopology
+        FiniteModel.siteSelectedGeometryReading.requirements
+        FiniteModel.siteSelectedGeometryReading.overlap :=
+  FiniteModel.site_topology_eq_generated
+
+example :
+    CategoryTheory.Sieve.generate FiniteModel.siteSingletonCover.presieve ∈
+      FiniteModel.site.topology FiniteModel.siteBase :=
+  Site.AATGrothendieckTopology.generate_mem FiniteModel.siteSingletonCover
 
 end AAT.AG

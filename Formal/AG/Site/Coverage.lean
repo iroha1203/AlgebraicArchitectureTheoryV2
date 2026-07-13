@@ -45,17 +45,16 @@ end CoverageFamily
 /--
 II.定義7.1 前半: selected requirements read by admissible covers.
 
-The required support, witness, and signature axes are explicit parameters of
-the selected law universe and selected reading. Visibility predicates are kept
-separate from the context data so later topology and adequacy layers can choose
-the intended reading without changing the context category itself.
+The required support, witness, and signature axes are typed by the selected
+law universe and architecture signature. The law universe owns its unique
+`selectedReading`; coverage does not select a second reading value. Visibility
+predicates remain separate from the context data.
 -/
 structure CoverageRequirements {U : AtomCarrier.{u}} (A : ArchitectureObject U)
     (LU : LawUniverse U) (Sig : ArchitectureSignature U) where
-  selectedReading : LU.SelectedReading
-  requiredSupport : LU.SelectedReading -> U.Atom -> Prop
-  requiredWitness : LU.SelectedReading -> LU.witnessFamily.Witness -> Prop
-  requiredAxis : LU.SelectedReading -> Sig.Axis -> Prop
+  requiredSupport : U.Atom -> Prop
+  requiredWitness : LU.witnessFamily.Witness -> Prop
+  requiredAxis : Sig.Axis -> Prop
   supportVisibleOn : ArchCtx A -> U.Atom -> Prop
   witnessVisibleOn : ArchCtx A -> LU.witnessFamily.Witness -> Prop
   axisReadableOn : ArchCtx A -> Sig.Axis -> Prop
@@ -73,15 +72,15 @@ structure AdmissibleCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {Sig : ArchitectureSignature U} (R : CoverageRequirements A LU Sig)
     (P : ContextOverlapPullback C) (F : CoverageFamily C) : Prop where
   atomSupportCoverage :
-    ∀ atom : U.Atom, R.requiredSupport R.selectedReading atom ->
+    ∀ atom : U.Atom, R.requiredSupport atom ->
       ∃ i : F.Index, R.supportVisibleOn (F.patch i) atom
   lawWitnessCoverage :
-    ∀ witness : LU.witnessFamily.Witness, R.requiredWitness R.selectedReading witness ->
+    ∀ witness : LU.witnessFamily.Witness, R.requiredWitness witness ->
       (∃ i : F.Index, R.witnessVisibleOn (F.patch i) witness) ∨
         ∃ i j : F.Index,
           R.witnessVisibleOn (P.overlap F.base (F.patch i) (F.patch j)) witness
   signatureAxisCoverage :
-    ∀ axis : Sig.Axis, R.requiredAxis R.selectedReading axis ->
+    ∀ axis : Sig.Axis, R.requiredAxis axis ->
       ∃ i : F.Index, R.axisReadableOn (F.patch i) axis
   boundaryCoverage :
     ∀ i j : F.Index,
@@ -97,7 +96,7 @@ theorem support {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : ContextPreorderCategory A} {LU : LawUniverse U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
     {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
-    {atom : U.Atom} (hreq : R.requiredSupport R.selectedReading atom) :
+    {atom : U.Atom} (hreq : R.requiredSupport atom) :
     ∃ i : F.Index, R.supportVisibleOn (F.patch i) atom :=
   h.atomSupportCoverage atom hreq
 
@@ -110,7 +109,7 @@ theorem witness {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
     {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
     {witness : LU.witnessFamily.Witness}
-    (hreq : R.requiredWitness R.selectedReading witness) :
+    (hreq : R.requiredWitness witness) :
     (∃ i : F.Index, R.witnessVisibleOn (F.patch i) witness) ∨
       ∃ i j : F.Index,
         R.witnessVisibleOn (P.overlap F.base (F.patch i) (F.patch j)) witness :=
@@ -121,7 +120,7 @@ theorem axis {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : ContextPreorderCategory A} {LU : LawUniverse U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
     {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
-    {axis : Sig.Axis} (hreq : R.requiredAxis R.selectedReading axis) :
+    {axis : Sig.Axis} (hreq : R.requiredAxis axis) :
     ∃ i : F.Index, R.axisReadableOn (F.patch i) axis :=
   h.signatureAxisCoverage axis hreq
 

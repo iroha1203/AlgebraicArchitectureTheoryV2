@@ -35,8 +35,8 @@ def context (s : ContextIndex) : Site.ArchCtx FiniteModel.object where
     Support := PUnit
     Axis := PUnit
     Observable := PUnit
-    supportReads := fun _ _ => True
-    supportReads_objectFamily := fun _ => trivial
+    supportReads := fun _ atom => FiniteModel.object.configuration.family.mem atom
+    supportReads_objectFamily := fun h => h
     axisReads := fun _ => True
     observableReads := fun _ => True
   }
@@ -257,13 +257,12 @@ def chartContextIndex (i : Fin 3) : ContextIndex := {i}
 /-- Requirements forcing every admissible family to contain the three chart patches. -/
 def coverageRequirements : Site.CoverageRequirements FiniteModel.object
     FiniteModel.lawUniverse FiniteModel.signature where
-  selectedReading := FiniteModel.lawUniverse.selectedReading
-  requiredSupport := fun _ atom =>
+  requiredSupport := fun atom =>
     atom = FiniteModel.FiniteAtom.componentA ∨
     atom = FiniteModel.FiniteAtom.componentB ∨
     atom = FiniteModel.FiniteAtom.componentC
-  requiredWitness := fun _ _ => False
-  requiredAxis := fun _ _ => False
+  requiredWitness := fun _ => False
+  requiredAxis := fun _ => False
   supportVisibleOn := fun W atom =>
     (W = context (chartContextIndex 0) ∧ atom = FiniteModel.FiniteAtom.componentA) ∨
     (W = context (chartContextIndex 1) ∧ atom = FiniteModel.FiniteAtom.componentB) ∨
@@ -323,7 +322,7 @@ theorem cover_patch_ne_base (i : cover.Index) : cover.patch i ≠ context ∅ :=
 /-- Trivial witness-ideal adequacy requirements for the coefficient-free geometry. -/
 def adequacyRequirements :
     Site.UAdequacyRequirements contextPreorder coverageRequirements where
-  selectedWitnessIdeal := fun _ _ => True
+  selectedWitnessIdeal := fun _ => True
   witnessIdealPreservedBy := fun _ _ => trivial
 
 theorem cover_uAdequate :
