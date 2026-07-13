@@ -20,6 +20,8 @@ pub struct ArchSigRunManifestV1 {
     pub law_surface_input_path: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub measurement_profile_input_path: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub measurement_profile_input_paths: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub repair_plan_input_path: Option<String>,
     pub raw_artifact_retention: String,

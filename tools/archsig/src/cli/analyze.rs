@@ -18,7 +18,7 @@ impl AnalyzeRunContract {
         archmap: &Path,
         law_policy: &Path,
         law_surface: Option<&Path>,
-        measurement_profile: &Path,
+        measurement_profiles: &[&Path],
         residual_packet: Option<&Path>,
         profile_fingerprint: Value,
         site_cover_digest: Value,
@@ -30,7 +30,14 @@ impl AnalyzeRunContract {
         let law_surface_digest = law_surface
             .map(canonical_json_file_digest)
             .transpose()?;
-        let measurement_profile_digest = canonical_json_file_digest(measurement_profile)?;
+        let measurement_profile_digests = measurement_profiles
+            .iter()
+            .map(|path| canonical_json_file_digest(path))
+            .collect::<Result<Vec<_>, _>>()?;
+        let measurement_profile_digest = measurement_profile_digests
+            .first()
+            .cloned()
+            .ok_or("at least one measurement profile input is required")?;
         let tool_version = env!("CARGO_PKG_VERSION").to_string();
         let residual_packet_digest = residual_packet
             .map(canonical_json_file_digest)
@@ -40,16 +47,20 @@ impl AnalyzeRunContract {
             residual_packet_digest.as_deref(),
         ) {
             (Some(law_surface_digest), Some(residual_packet_digest)) => format!(
-                "{archmap_digest}|{law_policy_digest}|{law_surface_digest}|{measurement_profile_digest}|{residual_packet_digest}|{tool_version}"
+                "{archmap_digest}|{law_policy_digest}|{law_surface_digest}|{}|{residual_packet_digest}|{tool_version}",
+                measurement_profile_digests.join("|")
             ),
             (Some(law_surface_digest), None) => format!(
-                "{archmap_digest}|{law_policy_digest}|{law_surface_digest}|{measurement_profile_digest}|{tool_version}"
+                "{archmap_digest}|{law_policy_digest}|{law_surface_digest}|{}|{tool_version}",
+                measurement_profile_digests.join("|")
             ),
             (None, Some(residual_packet_digest)) => format!(
-                "{archmap_digest}|{law_policy_digest}|{measurement_profile_digest}|{residual_packet_digest}|{tool_version}"
+                "{archmap_digest}|{law_policy_digest}|{}|{residual_packet_digest}|{tool_version}",
+                measurement_profile_digests.join("|")
             ),
             (None, None) => format!(
-                "{archmap_digest}|{law_policy_digest}|{measurement_profile_digest}|{tool_version}"
+                "{archmap_digest}|{law_policy_digest}|{}|{tool_version}",
+                measurement_profile_digests.join("|")
             ),
         };
         let run_hash = sha256_hex(run_seed.as_bytes());
@@ -68,9 +79,17 @@ impl AnalyzeRunContract {
                 "sha256": law_policy_digest
             },
             "measurementProfile": {
-                "path": artifact_input_ref(measurement_profile),
+                "path": artifact_input_ref(measurement_profiles[0]),
                 "sha256": measurement_profile_digest
             },
+            "measurementProfiles": measurement_profiles
+                .iter()
+                .zip(measurement_profile_digests.iter())
+                .map(|(path, digest)| serde_json::json!({
+                    "path": artifact_input_ref(path),
+                    "sha256": digest
+                }))
+                .collect::<Vec<_>>(),
             "profileFingerprint": profile_fingerprint,
             "siteCoverDigest": site_cover_digest
         });
@@ -97,17 +116,20 @@ impl AnalyzeRunContract {
 
 pub(crate) fn contract_profile_fingerprint(
     law_policy: &Value,
-    measurement_profile: &Value,
+    measurement_profiles: &[Value],
 ) -> Result<Value, Box<dyn Error>> {
     let measurement_profile_ref = law_policy
         .get("measurementProfileRef")
         .cloned()
         .unwrap_or(Value::Null);
-    let profile = serde_json::json!({
+    let mut profile = serde_json::json!({
         "archmapShape": "finite-poset-site",
         "measurementProfileRef": measurement_profile_ref,
-        "selectedMeasurementProfile": measurement_profile,
+        "selectedMeasurementProfile": measurement_profiles.first().cloned().unwrap_or(Value::Null),
     });
+    if measurement_profiles.len() > 1 {
+        profile["selectedMeasurementProfiles"] = serde_json::json!(measurement_profiles);
+    }
     let canonical = canonical_json_bytes(&profile)?;
     Ok(serde_json::json!({
         "sha256": sha256_hex(&canonical),

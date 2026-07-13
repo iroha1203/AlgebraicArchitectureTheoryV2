@@ -279,10 +279,30 @@ fn collect_json_string_leaves(value: &Value, output: &mut Vec<String>) {
 
 pub fn selected_measurement_profile_v1<'a>(
     policy: &LawPolicyDocumentV1,
-    measurement_profile: &'a MeasurementProfileV1,
+    measurement_profiles: &'a BTreeMap<String, MeasurementProfileV1>,
 ) -> Option<&'a MeasurementProfileV1> {
     let profile_ref = policy.measurement_profile_ref.as_deref()?;
-    (measurement_profile.profile_id == profile_ref).then_some(measurement_profile)
+    measurement_profiles.get(profile_ref)
+}
+
+fn diagnostic_stage_rank(stage: &str) -> Option<u8> {
+    match stage {
+        "raw-values" => Some(0),
+        "boundary-membership" => Some(1),
+        "descent" => Some(2),
+        "class-transfer" => Some(3),
+        "law-grounded" => Some(4),
+        _ => None,
+    }
+}
+
+fn evaluator_stage_rank(evaluator: &str) -> u8 {
+    match evaluator {
+        "ag.saga-descent" => 2,
+        "ag.saga-comparison" => 3,
+        "ag.saga-grounded" => 4,
+        _ => 0,
+    }
 }
 
 fn profile_with_law_surface_witnesses(
@@ -575,7 +595,7 @@ pub fn build_foundation_measurement_packet_v1(
     archmap: &ArchMapDocumentV2,
     policy: &LawPolicyDocumentV1,
     law_surface: Option<&LawEquationSurfaceV1>,
-    measurement_profile: &MeasurementProfileV1,
+    measurement_profiles: &BTreeMap<String, MeasurementProfileV1>,
     repair_plan: Option<&RepairPlanDocumentV1>,
     archmap_ref: &str,
     law_policy_ref: &str,
@@ -590,16 +610,16 @@ pub fn build_foundation_measurement_packet_v1(
                 .to_string(),
         );
     }
-    let selected_profile = selected_measurement_profile_v1(policy, measurement_profile)
+    let selected_profile = selected_measurement_profile_v1(policy, measurement_profiles)
         .ok_or_else(|| "AG measurement packet requires measurementProfileRef".to_string())?
         .clone();
     let law_surface = law_surface.ok_or_else(|| {
         "AG measurement packet requires --law-surface; witness variables are supplied only by the law surface".to_string()
     })?;
-    let law_policy_report = crate::validate_law_policy_v1_report(
+    let law_policy_report = crate::validate_law_policy_v1_report_with_profiles(
         policy,
         law_policy_ref,
-        Some(&selected_profile),
+        measurement_profiles,
         Some(law_surface),
     );
     if law_policy_report.summary.result == "fail" {
@@ -677,6 +697,49 @@ pub fn build_foundation_measurement_packet_v1(
             .is_some_and(|evaluator| evaluator.starts_with("ag."))
     }) {
         let evaluator = entry.evaluator.as_deref().unwrap_or_default();
+        let entry_profile = entry
+            .profile_ref
+            .as_deref()
+            .and_then(|profile_ref| measurement_profiles.get(profile_ref))
+            .unwrap_or(&selected_profile);
+        let profile = profile_with_law_surface_witnesses(policy, entry_profile, law_surface)?;
+        if let Some(ceiling) = profile
+            .diagnostic_ceiling
+            .as_ref()
+            .and_then(|value| value.as_ref())
+            .and_then(Value::as_str)
+        {
+            if diagnostic_stage_rank(ceiling)
+                .is_some_and(|ceiling_rank| evaluator_stage_rank(evaluator) > ceiling_rank)
+            {
+                let method_status = "diagnostic_ceiling_not_reached";
+                computed_invariants.push(json!({
+                    "invariantId": format!("diagnostic-ceiling:{evaluator}:{}", profile.profile_id),
+                    "evaluator": evaluator,
+                    "status": "not_computed",
+                    "methodStatus": method_status,
+                    "diagnosticCeiling": ceiling,
+                    "reason": format!("{evaluator} is above the declared diagnostic ceiling {ceiling}")
+                }));
+                structural_verdict.push(AgStructuralVerdictV1 {
+                    evaluator: evaluator.to_string(),
+                    law: entry.law.clone().unwrap_or_else(|| evaluator.to_string()),
+                    verdict: "not_computed".to_string(),
+                    verdict_data: AgVerdictDataV1 {
+                        in_scope: true,
+                        zero: false,
+                        non_zero: false,
+                        method_status: method_status.to_string(),
+                        cert_ref: None,
+                    },
+                    depends_on_assumptions: Vec::new(),
+                    reason: Some(format!(
+                        "{evaluator} is above the declared diagnostic ceiling {ceiling}; the evaluator remains silent by design"
+                    )),
+                });
+                continue;
+            }
+        }
         let selected_contexts_for_plan = (evaluator == "ag.cech-obstruction").then(|| {
             selected_cover_contexts(normalized, &profile)
                 .into_iter()
@@ -1015,6 +1078,9 @@ pub fn build_foundation_measurement_packet_v1(
         schema: ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA.to_string(),
         packet_id: format!("measurement:{}", normalized.source_archmap_id),
         profile,
+        profiles: (measurement_profiles.len() > 1)
+            .then(|| measurement_profiles.values().cloned().collect())
+            .unwrap_or_default(),
         structural_verdict,
         computed_invariants,
         analytic_readings,
@@ -12176,6 +12242,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             "schema",
             "packetId",
             "profile",
+            "profiles",
             "structuralVerdict",
             "computedInvariants",
             "analyticReadings",
@@ -12280,6 +12347,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "laplacian",
         "cochainCells",
         "sagaConclusionCode",
+        "diagnosticCeiling",
         "residualKind",
         "commonAmbient",
         "lawConflicts",

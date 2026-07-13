@@ -37,7 +37,8 @@ pub use compare::build_comparison_artifacts_v1;
 pub use gate::{build_gate_report_v1, validate_gate_policy_v1};
 pub use law_policy::{
     expand_law_policy_v1, is_compatible_evaluator_condition, static_law_evaluator_registry_v1,
-    validate_law_policy_v1_report, validate_measurement_profile_v1_checks,
+    validate_law_policy_v1_report, validate_law_policy_v1_report_with_profiles,
+    validate_measurement_profile_v1_checks,
 };
 pub use law_surface::{
     LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_EQUATION_SURFACE_VALIDATION_REPORT_SCHEMA,

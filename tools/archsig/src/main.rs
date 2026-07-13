@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::error::Error;
 use std::path::Path;
 use std::path::PathBuf;
@@ -223,10 +224,10 @@ enum Command {
             required_unless_present = "policy_bundle",
             conflicts_with = "policy_bundle"
         )]
-        measurement_profile: Option<PathBuf>,
+        measurement_profiles: Option<Vec<PathBuf>>,
 
         /// Policy bundle supplying the LawPolicy, law surface, MeasurementProfile, and fingerprints.
-        #[arg(long = "policy-bundle", conflicts_with_all = ["law_policy", "law_surface", "measurement_profile"])]
+        #[arg(long = "policy-bundle", conflicts_with_all = ["law_policy", "law_surface", "measurement_profiles"])]
         policy_bundle: Option<PathBuf>,
 
         /// Optional SAGA RepairPlan artifact path.
@@ -861,14 +862,14 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             archmap,
             law_policy,
             law_surface,
-            measurement_profile,
+            measurement_profiles,
             policy_bundle,
             repair_plan,
             residual_packet,
             out_dir,
             stamp,
         }) => {
-            let (law_policy, law_surface, measurement_profile, bundle_fingerprints) =
+            let (law_policy, law_surface, measurement_profile_paths, bundle_fingerprints) =
                 if let Some(bundle_path) = policy_bundle {
                     let resolved = resolve_and_verify_policy_bundle(&bundle_path, None, None, None)?;
                     if resolved.report["summary"]["result"] != "pass" {
@@ -877,18 +878,22 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     (
                         resolved.law_policy,
                         Some(resolved.law_surface),
-                        resolved.measurement_profile,
+                        vec![resolved.measurement_profile],
                         Some(serde_json::json!(resolved.bundle.component_fingerprints)),
                     )
                 } else {
                     (
                         law_policy.ok_or("--law-policy is required without --policy-bundle")?,
                         law_surface,
-                        measurement_profile
+                        measurement_profiles
                             .ok_or("--measurement-profile is required without --policy-bundle")?,
                         None,
                     )
                 };
+            let measurement_profile = measurement_profile_paths
+                .first()
+                .cloned()
+                .ok_or("at least one --measurement-profile is required")?;
             let archmap_validation_path = out_dir.join("archmap-validation.json");
             let law_policy_validation_path = out_dir.join("law-policy-validation.json");
             let analysis_summary_path = out_dir.join("archsig-analysis-summary.json");
@@ -905,8 +910,24 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let (archmap_preflight, archmap_failed) =
                 validate_archmap_command_input(&archmap, &None, &[], &[], &None)?;
             let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
-            let (_measurement_profile_preflight, measurement_profile_document, measurement_profile_failed) =
-                validate_measurement_profile_command_input(&measurement_profile)?;
+            let mut measurement_profile_documents = Vec::new();
+            let mut measurement_profile_failed = false;
+            for path in &measurement_profile_paths {
+                let (_report, document, failed) = validate_measurement_profile_command_input(path)?;
+                measurement_profile_documents.push(document);
+                measurement_profile_failed |= failed;
+            }
+            let _measurement_profile_document = measurement_profile_documents
+                .first()
+                .cloned()
+                .ok_or("at least one --measurement-profile is required")?;
+            let measurement_profile_catalog = measurement_profile_documents
+                .iter()
+                .map(|profile| (profile.profile_id.clone(), profile.clone()))
+                .collect::<BTreeMap<_, _>>();
+            if measurement_profile_catalog.len() != measurement_profile_documents.len() {
+                return Err("--measurement-profile inputs must have unique profileId values".into());
+            }
             let law_surface_preflight = law_surface
                 .as_ref()
                 .map(validate_law_surface_command_input)
@@ -918,10 +939,10 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .map(serde_json::from_value::<LawEquationSurfaceV1>)
                 .transpose()?;
             let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
-            let law_policy_report = validate_law_policy_v1_report(
+            let law_policy_report = archsig::validate_law_policy_v1_report_with_profiles(
                 &law_policy_document,
                 &stable_input_ref(&law_policy),
-                Some(&measurement_profile_document),
+                &measurement_profile_catalog,
                 law_surface_document.as_ref(),
             );
             let law_policy_failed = law_policy_report.summary.result == "fail";
@@ -951,12 +972,19 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .as_ref()
                 .map(|path| artifact_input_ref(path));
             let measurement_profile_input_ref = artifact_input_ref(&measurement_profile);
+            let measurement_profile_input_refs = measurement_profile_paths
+                .iter()
+                .map(|path| artifact_input_ref(path))
+                .collect::<Vec<_>>();
             let repair_plan_input_ref = repair_plan.as_ref().map(|path| artifact_input_ref(path));
             let residual_packet_input_ref =
                 residual_packet.as_ref().map(|path| artifact_input_ref(path));
             let archmap_contract_input: Value = read_json(&archmap)?;
             let law_policy_contract_input: Value = read_json(&law_policy)?;
-            let measurement_profile_contract_input: Value = read_json(&measurement_profile)?;
+            let measurement_profile_contract_inputs = measurement_profile_paths
+                .iter()
+                .map(read_json)
+                .collect::<Result<Vec<_>, _>>()?;
             let mut validation_generated_artifacts =
                 vec!["archmap-validation.json", "law-policy-validation.json"];
             if law_surface_preflight.is_some() {
@@ -992,11 +1020,14 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &archmap,
                 &law_policy,
                 law_surface.as_deref(),
-                &measurement_profile,
+                &measurement_profile_paths
+                    .iter()
+                    .map(PathBuf::as_path)
+                    .collect::<Vec<_>>(),
                 residual_packet.as_deref(),
                 contract_profile_fingerprint(
                     &law_policy_contract_input,
-                    &measurement_profile_contract_input,
+                    &measurement_profile_contract_inputs,
                 )?,
                 contract_site_cover_digest(&archmap_contract_input)?,
                 component_fingerprints,
@@ -1062,6 +1093,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "lawPolicyInputPath": law_policy_input_ref,
                         "lawSurfaceInputPath": law_surface_input_ref,
                         "measurementProfileInputPath": measurement_profile_input_ref,
+                        "measurementProfileInputPaths": measurement_profile_input_refs,
                         "repairPlanInputPath": repair_plan_input_ref,
                         "rawArtifactRetention": "not-computed",
                         "generatedArtifacts": failure_generated_artifacts,
@@ -1112,7 +1144,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &archmap_document,
                 &law_policy_document,
                 law_surface_document.as_ref(),
-                &measurement_profile_document,
+                &measurement_profile_catalog,
                 repair_plan_document.as_ref(),
                 &archmap_input_ref,
                 &law_policy_input_ref,
@@ -1162,6 +1194,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "lawPolicyInputPath": law_policy_input_ref,
                             "lawSurfaceInputPath": law_surface_input_ref,
                             "measurementProfileInputPath": measurement_profile_input_ref,
+                            "measurementProfileInputPaths": measurement_profile_input_refs,
                             "repairPlanInputPath": repair_plan_input_ref,
                             "rawArtifactRetention": "not-computed",
                             "generatedArtifacts": runtime_failure_generated_artifacts,
@@ -1271,6 +1304,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "lawPolicyInputPath": law_policy_input_ref,
                     "lawSurfaceInputPath": law_surface_input_ref,
                     "measurementProfileInputPath": measurement_profile_input_ref,
+                    "measurementProfileInputPaths": measurement_profile_input_refs,
                     "repairPlanInputPath": repair_plan_input_ref,
                     "rawArtifactRetention": "omitted",
                     "generatedArtifacts": measurement_generated_artifacts,
