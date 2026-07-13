@@ -1431,7 +1431,7 @@ tracking_issue_closed: false
 - proof obligation: characterize ideal-preserving ambient directions as exactly
   the kernel of the full conormal response
 - base merge SHA: `2ea3760053802ff7696cd73d14c5e1e5b6179e75`
-- PR: pending
+- PR: #3321
 
 ### Construction
 
