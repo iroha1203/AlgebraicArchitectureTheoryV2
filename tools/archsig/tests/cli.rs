@@ -946,6 +946,25 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     );
 
     let mut explicit_comparison = read_json(&supplied_path);
+    let typed_explicit: RepairPlanDocumentV1 = serde_json::from_value(explicit_comparison.clone())
+        .expect("explicit comparison base plan matches RepairPlan schema");
+    let explicit_fingerprint = format!(
+        "{:x}",
+        Sha256::digest(
+            serde_json::to_vec(&typed_explicit.complex)
+                .expect("explicit comparison complex serializes")
+        )
+    );
+    let explicit_target_support = typed_explicit
+        .primitives
+        .iter()
+        .map(|primitive| {
+            json!({
+                "overlapRef": primitive.overlap_ref,
+                "support": primitive.support.variables
+            })
+        })
+        .collect::<Vec<_>>();
     explicit_comparison["comparison"] = json!({
         "kind": "saga-comparison",
         "incidenceBridge": {
@@ -957,6 +976,9 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             "schema": "h1-comparison-data/v0.5.2",
             "kind": "explicit",
             "cochainMapRef": "comparison:cochain-map",
+            "sourceComplexFingerprint": explicit_fingerprint,
+            "targetComplexFingerprint": explicit_fingerprint,
+            "targetCochainSupport": explicit_target_support,
             "degreeOneLeftInverse": true,
             "degreeOneRightInverse": true,
             "differencePreserving": true,
@@ -995,6 +1017,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         ("comparison-explicit-false-premise", json!(false)),
         ("comparison-unknown-field", json!("forged")),
         ("comparison-unresolved-reference", json!("complex:forged")),
+        ("comparison-target-support-mismatch", json!([])),
     ] {
         let mut invalid = explicit_comparison.clone();
         if case == "comparison-identity-fingerprint" {
@@ -1006,12 +1029,16 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             invalid["comparison"]["h1ComparisonData"] = json!({
                 "schema": "h1-comparison-data/v0.5.2",
                 "kind": "identity",
-                "complexFingerprint": mutation
+                "sourceComplexFingerprint": mutation,
+                "targetComplexFingerprint": explicit_fingerprint,
+                "targetCochainSupport": explicit_target_support
             });
         } else if case == "comparison-explicit-false-premise" {
             invalid["comparison"]["h1ComparisonData"]["differencePreserving"] = mutation;
         } else if case == "comparison-unresolved-reference" {
             invalid["comparison"]["incidenceBridge"]["sourceComplexRef"] = mutation;
+        } else if case == "comparison-target-support-mismatch" {
+            invalid["comparison"]["h1ComparisonData"]["targetCochainSupport"] = mutation;
         } else {
             invalid["comparison"]["incidenceBridge"]["forgedField"] = mutation;
         }
@@ -1961,7 +1988,19 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         "h1ComparisonData": {
             "schema": "h1-comparison-data/v0.5.2",
             "kind": "identity",
-            "complexFingerprint": complex_fingerprint
+            "sourceComplexFingerprint": complex_fingerprint,
+            "targetComplexFingerprint": complex_fingerprint,
+            "targetCochainSupport": plan["primitives"]
+                .as_array()
+                .expect("comparison primitives are an array")
+                .iter()
+                .map(|primitive| {
+                    json!({
+                        "overlapRef": primitive["overlapRef"],
+                        "support": primitive["support"]["variables"]
+                    })
+                })
+                .collect::<Vec<_>>()
         }
     });
     let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-class", plan);
@@ -2000,8 +2039,17 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         comparison["conclusionCode"],
         "SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA"
     );
+    assert_eq!(comparison["contract"]["targetClassComputed"], true);
     assert_eq!(comparison["suppliedCochainMap"]["level"], "cochain");
     assert_eq!(comparison["generatedQuotientTransfer"]["level"], "quotient");
+    assert_eq!(
+        comparison["generatedQuotientTransfer"]["preservesZeroPredicate"],
+        true
+    );
+    assert_eq!(
+        comparison["generatedQuotientTransfer"]["targetClassNonZero"],
+        true
+    );
     let closure = packet["computedInvariants"]
         .as_array()
         .unwrap()

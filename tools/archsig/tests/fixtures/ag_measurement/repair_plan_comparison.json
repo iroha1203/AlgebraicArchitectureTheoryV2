@@ -74,6 +74,13 @@
       "schema": "h1-comparison-data/v0.5.2",
       "kind": "explicit",
       "cochainMapRef": "comparison:cochain-map",
+      "sourceComplexFingerprint": "108fbdda5860ac4cebc2c9ad98df206451d3d2fe6da5b7c8b40fc4f5d4d89718",
+      "targetComplexFingerprint": "108fbdda5860ac4cebc2c9ad98df206451d3d2fe6da5b7c8b40fc4f5d4d89718",
+      "targetCochainSupport": [
+        { "overlapRef": "overlap:order-inventory", "support": ["src:inventory", "src:order"] },
+        { "overlapRef": "overlap:inventory-shared", "support": [] },
+        { "overlapRef": "overlap:order-shared", "support": ["src:inventory", "src:order"] }
+      ],
       "degreeOneLeftInverse": true,
       "degreeOneRightInverse": true,
       "differencePreserving": true,

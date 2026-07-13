@@ -294,7 +294,10 @@ fn evaluate_saga_comparison_v1(
     let h1_kind = comparison["h1ComparisonData"]["kind"]
         .as_str()
         .unwrap_or("unknown");
-    let established = class_available;
+    let target_class_nonzero = comparison_target_class_nonzero(plan, comparison);
+    let preserves_zero_predicate =
+        target_class_nonzero.is_some_and(|target| target == class_nonzero);
+    let established = class_available && preserves_zero_predicate;
     json!({
         "invariantId": "saga-comparison:h1-transfer",
         "evaluator": "ag.saga-comparison",
@@ -305,20 +308,22 @@ fn evaluate_saga_comparison_v1(
             "incidenceBridgeKind": bridge_kind,
             "h1ComparisonDataKind": h1_kind,
             "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
-            "classPrerequisite": class_available
+            "classPrerequisite": class_available,
+            "targetClassComputed": target_class_nonzero.is_some()
         },
         "suppliedCochainMap": {
             "level": "cochain",
             "kind": h1_kind,
-            "contractChecked": true
+            "contractChecked": true,
+            "targetSupportComputed": target_class_nonzero.is_some()
         },
         "generatedQuotientTransfer": if established {
             json!({
                 "level": "quotient",
                 "kind": "Z1/B1-class-transfer",
-                "preservesZeroPredicate": true,
+                "preservesZeroPredicate": preserves_zero_predicate,
                 "sourceClassNonZero": class_nonzero,
-                "targetClassNonZero": class_nonzero,
+                "targetClassNonZero": target_class_nonzero,
                 "sourceInvariant": "saga-descent:residual-class",
                 "targetInvariant": "saga-comparison:h1-transfer"
             })
@@ -331,6 +336,49 @@ fn evaluate_saga_comparison_v1(
             "The transfer reading is relative to the supplied finite comparison contract."
         ]
     })
+}
+
+fn comparison_target_class_nonzero(
+    plan: &RepairPlanDocumentV1,
+    comparison: &Value,
+) -> Option<bool> {
+    let h1 = comparison.get("h1ComparisonData")?.as_object()?;
+    let items = h1.get("targetCochainSupport")?.as_array()?;
+    let mut support_by_overlap = BTreeMap::<&str, BTreeSet<&str>>::new();
+    for item in items {
+        let object = item.as_object()?;
+        let overlap_ref = object.get("overlapRef")?.as_str()?;
+        let support = object.get("support")?.as_array()?;
+        let variables = support
+            .iter()
+            .map(Value::as_str)
+            .collect::<Option<Vec<_>>>()?;
+        let variable_set = variables.iter().copied().collect::<BTreeSet<_>>();
+        if variables.len() != variable_set.len()
+            || support_by_overlap
+                .insert(overlap_ref, variable_set)
+                .is_some()
+        {
+            return None;
+        }
+    }
+    if support_by_overlap.len() != plan.primitives.len()
+        || plan
+            .primitives
+            .iter()
+            .any(|primitive| !support_by_overlap.contains_key(primitive.overlap_ref.as_str()))
+    {
+        return None;
+    }
+    let mut target_plan = plan.clone();
+    for primitive in &mut target_plan.primitives {
+        primitive.support.variables = support_by_overlap
+            .get(primitive.overlap_ref.as_str())?
+            .iter()
+            .map(|variable| (*variable).to_string())
+            .collect();
+    }
+    Some(!solve_boundary_membership(&target_plan).in_b1)
 }
 
 fn class_supply_is_checked(archmap: &ArchMapDocumentV2, plan: &RepairPlanDocumentV1) -> bool {

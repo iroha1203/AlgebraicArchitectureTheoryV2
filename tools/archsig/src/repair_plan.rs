@@ -350,13 +350,21 @@ fn check_supplied_slots(
                     if let Some(h1) = h1 {
                         for key in h1.keys() {
                             let allowed = match h1.get("kind").and_then(Value::as_str) {
-                                Some("identity") => {
-                                    ["schema", "kind", "complexFingerprint"].as_slice()
-                                }
+                                Some("identity") => [
+                                    "schema",
+                                    "kind",
+                                    "sourceComplexFingerprint",
+                                    "targetComplexFingerprint",
+                                    "targetCochainSupport",
+                                ]
+                                .as_slice(),
                                 Some("explicit") => [
                                     "schema",
                                     "kind",
                                     "cochainMapRef",
+                                    "sourceComplexFingerprint",
+                                    "targetComplexFingerprint",
+                                    "targetCochainSupport",
                                     "degreeOneLeftInverse",
                                     "degreeOneRightInverse",
                                     "differencePreserving",
@@ -424,13 +432,19 @@ fn check_supplied_slots(
                         });
                     let h1_ok = !nested_unknown
                         && h1.is_some_and(|h1| {
+                            let complex_fingerprint = comparison_complex_fingerprint(plan);
+                            let fingerprints_ok =
+                                h1.get("sourceComplexFingerprint").and_then(Value::as_str)
+                                    == Some(complex_fingerprint.as_str())
+                                    && h1.get("targetComplexFingerprint").and_then(Value::as_str)
+                                        == Some(complex_fingerprint.as_str());
                             let kind = h1.get("kind").and_then(Value::as_str);
                             match kind {
                                 Some("identity") => {
                                     h1.get("schema").and_then(Value::as_str)
                                         == Some("h1-comparison-data/v0.5.2")
-                                        && h1.get("complexFingerprint").and_then(Value::as_str)
-                                            == Some(comparison_complex_fingerprint(plan).as_str())
+                                        && fingerprints_ok
+                                        && comparison_target_cochain_support_matches(plan, h1)
                                 }
                                 Some("explicit") => {
                                     let bool_keys = [
@@ -442,8 +456,10 @@ fn check_supplied_slots(
                                     ];
                                     h1.get("schema").and_then(Value::as_str)
                                         == Some("h1-comparison-data/v0.5.2")
+                                        && fingerprints_ok
                                         && h1.get("cochainMapRef").and_then(Value::as_str)
                                             == Some(COMPARISON_COCHAIN_MAP_REF)
+                                        && comparison_target_cochain_support_matches(plan, h1)
                                         && bool_keys
                                             .iter()
                                             .all(|key| h1.get(*key) == Some(&Value::Bool(true)))
@@ -472,6 +488,60 @@ fn check_supplied_slots(
         "Stage 2 supplied slots are explicit and checked before evaluator use",
         examples,
     )
+}
+
+fn comparison_target_cochain_support_matches(
+    plan: &RepairPlanDocumentV1,
+    h1: &serde_json::Map<String, Value>,
+) -> bool {
+    let expected = plan
+        .primitives
+        .iter()
+        .map(|primitive| {
+            (
+                primitive.overlap_ref.as_str(),
+                primitive
+                    .support
+                    .variables
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let Some(items) = h1.get("targetCochainSupport").and_then(Value::as_array) else {
+        return false;
+    };
+    let mut actual = BTreeMap::new();
+    for item in items {
+        let Some(object) = item.as_object() else {
+            return false;
+        };
+        if object
+            .keys()
+            .any(|key| !matches!(key.as_str(), "overlapRef" | "support"))
+        {
+            return false;
+        }
+        let Some(overlap_ref) = object.get("overlapRef").and_then(Value::as_str) else {
+            return false;
+        };
+        let Some(support) = object.get("support").and_then(Value::as_array) else {
+            return false;
+        };
+        let Some(support) = support
+            .iter()
+            .map(Value::as_str)
+            .collect::<Option<Vec<_>>>()
+        else {
+            return false;
+        };
+        let support_set = support.iter().copied().collect::<BTreeSet<_>>();
+        if support.len() != support_set.len() || actual.insert(overlap_ref, support_set).is_some() {
+            return false;
+        }
+    }
+    actual == expected
 }
 
 fn check_conclusion_tokens(plan: &RepairPlanDocumentV1) -> ValidationCheck {
