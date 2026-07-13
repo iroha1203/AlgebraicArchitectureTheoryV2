@@ -416,6 +416,33 @@
       }
     },
     {
+      "artifactId": "archsig-saga-conclusions/v0.5.2",
+      "artifactName": "ArchSig grounded SAGA conclusions packet v0.5.2",
+      "schemaName": "archsig-saga-conclusions/v0.5.2",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.5.2 Algebraic Geometry Measurement",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.2-ag-measurement"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "The grounded SAGA conclusions packet v0.5.2 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 7-conclusion section, degree-zero contribution, and chart detector findings.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "The packet is a bounded supplied-data computation contract; its theoremRef fields identify the mathematical reading without turning the packet into a Lean proof object.",
+          "lawIndependent conclusions are not evidence that displayed laws hold."
+        ]
+      }
+    },
+    {
       "artifactId": "archsig-boundary-statement/v0.5.2",
       "artifactName": "ArchSig BoundaryStatement v0.5.2",
       "schemaName": "archsig-boundary-statement/v0.5.2",

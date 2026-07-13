@@ -1043,8 +1043,13 @@ pub fn build_foundation_measurement_packet_v1(
         } else if evaluator == "ag.saga-grounded" {
             if let Some(plan) = repair_plan {
                 if let Some(execution_plan) = execution_plan.as_ref() {
-                    let measurement =
-                        evaluate_saga_grounded_v1(normalized, &profile, plan, execution_plan);
+                    let measurement = evaluate_saga_grounded_v1(
+                        archmap,
+                        normalized,
+                        &profile,
+                        plan,
+                        execution_plan,
+                    );
                     computed_invariants.extend(measurement.computed_invariants);
                     assumptions.extend(measurement.assumptions);
                     structural_verdict.extend(measurement.structural_verdict);
@@ -13089,6 +13094,12 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
                 ));
             }
         }
+        if invariant["evaluator"].as_str() == Some("ag.saga-grounded")
+            && invariant["kind"].as_str() == Some("saga-grounded-conclusions")
+            && invariant["status"].as_str() != Some("not_computed")
+        {
+            validate_saga_grounded_packet_shape(invariant, &label, &mut examples);
+        }
         if invariant.get("value").is_none() || invariant.get("representation").is_none() {
             examples.push(generic_validation_example(
                 &label,
@@ -13190,6 +13201,119 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
         "computed invariants expose invariantId, kind, value, and representation",
         examples,
     )
+}
+
+fn validate_saga_grounded_packet_shape(
+    invariant: &Value,
+    label: &str,
+    examples: &mut Vec<ValidationExample>,
+) {
+    for field in [
+        "schema",
+        "groundedSurfaceRef",
+        "theoremRef",
+        "lawDependent",
+        "lawIndependent",
+        "degreeZeroLawContribution",
+        "generatedQuotient",
+        "detectorFindings",
+    ] {
+        if invariant.get(field).is_none() {
+            examples.push(generic_validation_example(
+                label,
+                field,
+                "saga-grounded conclusion packet requires all typed top-level sections",
+            ));
+        }
+    }
+    if invariant["schema"].as_str() != Some("archsig-saga-conclusions/v0.5.2") {
+        examples.push(generic_validation_example(
+            &format!("{label}.schema"),
+            invariant["schema"].as_str().unwrap_or("missing"),
+            "saga-grounded packet schema must be archsig-saga-conclusions/v0.5.2",
+        ));
+    }
+    for (section, expected) in [
+        (
+            "lawDependent",
+            [
+                "generatedInterpretationZero",
+                "generatedRestrictionEvaluator",
+                "nonzeroInterpretationDetectsDisplayedLawFailure",
+            ]
+            .as_slice(),
+        ),
+        (
+            "lawIndependent",
+            [
+                "groundedGlobalGluingPackage",
+                "sheafConditionForSelectedCover",
+                "descent",
+                "uniqueGlobalSection",
+                "globalCoherentIffCoverRelativeH1Zero",
+                "boundedAdditiveH1ZeroIffCoverRelativeH1Zero",
+                "higherObstructionsVanish",
+            ]
+            .as_slice(),
+        ),
+    ] {
+        let conclusions = &invariant[section]["conclusions"];
+        if !conclusions.is_object() {
+            examples.push(generic_validation_example(
+                &format!("{label}.{section}"),
+                "missing",
+                "grounded conclusion section must carry a conclusions object",
+            ));
+            continue;
+        }
+        check_object_keys(
+            conclusions,
+            &format!("{label}.{section}.conclusions"),
+            expected,
+            examples,
+        );
+        for conclusion in expected.iter().copied() {
+            let row = &conclusions[conclusion];
+            if row["status"].as_str().is_none() || row["theoremRef"].as_str().is_none() {
+                examples.push(generic_validation_example(
+                    &format!("{label}.{section}.conclusions.{conclusion}"),
+                    "status/theoremRef",
+                    "each grounded conclusion must carry status and theoremRef",
+                ));
+            }
+        }
+    }
+    let quotient = &invariant["generatedQuotient"];
+    for field in [
+        "ambient",
+        "obstructionIdeal",
+        "representative",
+        "interpretation",
+    ] {
+        if quotient.get(field).is_none() {
+            examples.push(generic_validation_example(
+                &format!("{label}.generatedQuotient"),
+                field,
+                "generated quotient must expose ambient, obstruction ideal, representative, and interpretation",
+            ));
+        }
+    }
+    if quotient["coefficient"].as_str() != Some("F2")
+        || quotient["finiteBoundChecked"].as_bool() != Some(true)
+    {
+        examples.push(generic_validation_example(
+            &format!("{label}.generatedQuotient"),
+            "coefficient/finiteBoundChecked",
+            "generated quotient must record F2 and a checked finite bound",
+        ));
+    }
+    if !invariant["detectorFindings"].is_array() {
+        examples.push(generic_validation_example(
+            &format!("{label}.detectorFindings"),
+            "not-array",
+            "detectorFindings must be an array",
+        ));
+    }
 }
 
 fn check_analytic_regime_boundary(
