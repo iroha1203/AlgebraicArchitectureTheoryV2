@@ -5,8 +5,8 @@ use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use archsig::{
-    ARCHSIG_ANALYSIS_CONCLUSION_CODES, ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
-    ARCHSIG_COMPARISON_CONCLUSION_CODES,
+    ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
+    ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
@@ -6157,7 +6157,7 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdictData"]["certRef"],
-        "cert:nsdepth-square-free:computed"
+        "computedInvariants/square-free-repair:profile:ag-square-free@1"
     );
     assert_eq!(
         packet["structuralVerdict"]
@@ -6172,6 +6172,18 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     assert_eq!(
         repair["minimalForbiddenSupports"],
         serde_json::json!([["x_checkout", "x_inventory"], ["x_inventory", "x_payment"]])
+    );
+    assert!(
+        repair["obstructionIdeal"]["generators"]
+            .as_array()
+            .expect("declared generators are array")
+            .iter()
+            .all(|generator| {
+                generator["supportAtomRefs"]
+                    .as_array()
+                    .is_some_and(|refs| !refs.is_empty())
+            }),
+        "the observed square-free fixture must realize every declared generator"
     );
     assert_eq!(
         repair["alexanderDualRepair"]["minimalHittingSets"],
@@ -6190,6 +6202,17 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
         repair["nsdepthCertificate"]["verifiedMinimalForbiddenSupports"],
         serde_json::json!([["x_checkout", "x_inventory"], ["x_inventory", "x_payment"]])
     );
+    assert_eq!(
+        repair["nsdepthCertificate"]["certificateRef"],
+        "computedInvariants/square-free-repair:profile:ag-square-free@1"
+    );
+    assert_eq!(
+        repair["nsdepthCertificate"]["supportAtomRefs"],
+        serde_json::json!([
+            "atom:support-checkout-inventory",
+            "atom:support-inventory-payment"
+        ])
+    );
     let nsdepth_assumption = packet["assumptions"]
         .as_array()
         .expect("assumptions are array")
@@ -6199,7 +6222,7 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     assert_eq!(nsdepth_assumption["status"], "checked");
     assert_eq!(
         nsdepth_assumption["checkedBy"],
-        "ag.square-free-repair:cert:nsdepth-square-free:computed"
+        "ag.square-free-repair:computedInvariants/square-free-repair:profile:ag-square-free@1"
     );
     assert!(
         nsdepth_assumption["assumedBy"].is_null(),
@@ -6951,67 +6974,17 @@ fn cli_analyze_v2_section_requires_explicit_law_surface() {
 
 #[test]
 fn cli_analyze_v2_square_free_without_observed_support_keeps_declared_generators() {
-    let out_dir = temp_dir("ag-measurement-square-free-zero");
     let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
-    archmap["atoms"] = Value::Array(
-        archmap["atoms"]
-            .as_array()
-            .expect("atoms is array")
-            .iter()
-            .filter(|atom| atom["predicate"] != "support")
-            .cloned()
-            .collect(),
-    );
-    archmap["contexts"][0]["atoms"] = Value::Array(
-        archmap["contexts"][0]["atoms"]
-            .as_array()
-            .expect("context atoms is array")
-            .iter()
-            .filter(|atom| {
-                !matches!(
-                    atom.as_str(),
-                    Some("atom:support-checkout-inventory" | "atom:support-inventory-payment")
-                )
-            })
-            .cloned()
-            .collect(),
-    );
-    let archmap_path = out_dir.join("archmap_v2_square_free_zero.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
+    let archmap_path = root.join("archmap_v2_square_free_repair_unobserved.json");
+    let first_out = run_square_free_analysis("ag-measurement-square-free-zero-a", &archmap_path);
+    let second_out = run_square_free_analysis("ag-measurement-square-free-zero-b", &archmap_path);
+    assert_byte_identical_analysis_artifacts(&first_out, &second_out);
 
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_square_free.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        test_measurement_profile_path(Path::new(
-            root.join("law_policy_square_free.json")
-                .to_str()
-                .expect("path is utf-8"),
-        ))
-        .to_str()
-        .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_ag_v051.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let packet = read_json(&first_out.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
     assert_eq!(
-        packet["structuralVerdict"][0]["verdict"],
-        "measured_nonzero"
+        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
+        "square_free_observation_empty"
     );
     let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
     assert_eq!(
@@ -7028,6 +7001,237 @@ fn cli_analyze_v2_square_free_without_observed_support_keeps_declared_generators
             .iter()
             .all(|generator| generator["supportAtomRefs"].as_array().unwrap().is_empty())
     );
+    let unobserved_boundaries = packet["boundaryStatements"]
+        .as_array()
+        .expect("boundary statements are array")
+        .iter()
+        .filter(|statement| statement["reason"] == "declared_generator_unobserved")
+        .collect::<Vec<_>>();
+    assert_eq!(unobserved_boundaries.len(), 2);
+    assert!(unobserved_boundaries.iter().all(|statement| {
+        statement["kind"] == "silence_by_design"
+            && statement["scopeRefs"].as_array().is_some_and(|refs| {
+                refs.iter().any(|reference| {
+                    reference
+                        .as_str()
+                        .is_some_and(|reference| reference.starts_with("structuralVerdict/"))
+                })
+            })
+    }));
+    let certificate = &repair["nsdepthCertificate"];
+    assert_eq!(
+        certificate["certificateRef"],
+        "computedInvariants/square-free-repair:profile:ag-square-free@1"
+    );
+    assert_eq!(certificate["supportAtomRefs"], json!([]));
+    let summary = read_json(&first_out.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
+    );
+    assert!(summary["translationRule"]["theoremRef"].is_null());
+    assert_eq!(
+        summary["readThisFirst"]["whatItMeans"],
+        "ArchSig produced a profile-relative foundation result for the selected measurement surface."
+    );
+    let report = read_json(&first_out.join("archsig-insight-report.json"));
+    assert!(
+        report["gluingGeometry"]["forbiddenCages"]
+            .as_array()
+            .is_some_and(Vec::is_empty)
+    );
+    assert!(
+        report["gluingGeometry"]["repairMorphs"]
+            .as_array()
+            .is_some_and(Vec::is_empty)
+    );
+}
+
+#[test]
+fn cli_square_free_mixed_observation_keeps_nonzero_gate_blocking() {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir("ag-measurement-square-free-mixed-observation");
+    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
+    archmap["atoms"] = Value::Array(
+        archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| atom["id"] != "atom:support-inventory-payment")
+            .cloned()
+            .collect(),
+    );
+    archmap["contexts"][0]["atoms"] = Value::Array(
+        archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| atom.as_str() != Some("atom:support-inventory-payment"))
+            .cloned()
+            .collect(),
+    );
+    let archmap_path = out_dir.join("archmap_square_free_mixed.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("mixed ArchMap serializes"),
+    )
+    .expect("mixed ArchMap writes");
+
+    let run_dir = run_square_free_analysis("ag-square-free-mixed", &archmap_path);
+    let packet = read_json(&run_dir.join("archsig-measurement-packet.json"));
+    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
+    let generators = repair["obstructionIdeal"]["generators"]
+        .as_array()
+        .expect("square-free generators are array");
+    assert_eq!(generators.len(), 2);
+    assert!(generators.iter().any(|generator| {
+        generator["supportAtomRefs"]
+            .as_array()
+            .is_some_and(|refs| refs.is_empty())
+    }));
+    assert!(generators.iter().any(|generator| {
+        generator["supportAtomRefs"]
+            .as_array()
+            .is_some_and(|refs| !refs.is_empty())
+    }));
+    let unobserved_boundaries = packet["boundaryStatements"]
+        .as_array()
+        .expect("boundary statements are array")
+        .iter()
+        .filter(|statement| statement["reason"] == "declared_generator_unobserved")
+        .collect::<Vec<_>>();
+    assert_eq!(unobserved_boundaries.len(), 1);
+    assert!(
+        unobserved_boundaries[0]["scopeRefs"]
+            .as_array()
+            .is_some_and(|refs| refs.iter().all(|reference| {
+                !reference
+                    .as_str()
+                    .is_some_and(|reference| reference.starts_with("structuralVerdict/"))
+            }))
+    );
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+
+    let report = run_square_free_gate(&run_dir, 1);
+    let mapping = report["ruleOutcomes"][0]["appliedMapping"]
+        .as_array()
+        .expect("absolute gate mappings")
+        .iter()
+        .find(|mapping| {
+            mapping["rowRef"]
+                .as_str()
+                .is_some_and(|row_ref| row_ref.contains("ag-square-free-repair"))
+        })
+        .expect("mixed square-free gate mapping");
+    assert_eq!(mapping["verdict"], "measured_nonzero");
+    assert_eq!(mapping["action"], "block");
+    assert_eq!(mapping["boundaryOverrideApplied"], false);
+
+    assert_eq!(
+        report["decision"], "BLOCKED_BY_GATE_POLICY",
+        "mixed observation must remain blocking even with one silence_by_design statement"
+    );
+    let geometry =
+        read_json(&run_dir.join("archsig-insight-report.json"))["gluingGeometry"].clone();
+    assert_eq!(geometry["forbiddenCages"].as_array().map(Vec::len), Some(1));
+    assert!(
+        geometry["forbiddenCages"][0]["atomRefs"]
+            .as_array()
+            .is_some_and(|refs| !refs.is_empty())
+    );
+}
+
+#[test]
+fn cli_square_free_observation_drives_conservative_gate_sequence() {
+    let root = ag_measurement_root();
+    let sequence_dir = temp_dir("ag-measurement-square-free-gate-sequence");
+    let mut clean_archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
+    clean_archmap["atoms"] = Value::Array(
+        clean_archmap["atoms"]
+            .as_array()
+            .expect("atoms is array")
+            .iter()
+            .filter(|atom| atom["predicate"] != "support")
+            .cloned()
+            .collect(),
+    );
+    clean_archmap["contexts"][0]["atoms"] = Value::Array(
+        clean_archmap["contexts"][0]["atoms"]
+            .as_array()
+            .expect("context atoms is array")
+            .iter()
+            .filter(|atom| {
+                !matches!(
+                    atom.as_str(),
+                    Some("atom:support-checkout-inventory" | "atom:support-inventory-payment")
+                )
+            })
+            .cloned()
+            .collect(),
+    );
+    let clean_archmap_path = sequence_dir.join("archmap_square_free_clean.json");
+    fs::write(
+        &clean_archmap_path,
+        serde_json::to_vec_pretty(&clean_archmap).expect("clean ArchMap serializes"),
+    )
+    .expect("clean ArchMap writes");
+
+    let clean_run = run_square_free_analysis("ag-square-free-gate-clean", &clean_archmap_path);
+    let blocked_run = run_analyze_fixture_lock_with_surface(
+        "ag-square-free-gate-blocked",
+        "archmap_v2_square_free_repair.json",
+        "law_policy_square_free.json",
+        "law_surface_ag_v051.json",
+        None,
+    );
+    let repaired_archmap_path = sequence_dir.join("archmap_square_free_repaired.json");
+    let repaired_archmap = read_json(&root.join("archmap_v2_square_free_repair_unobserved.json"));
+    fs::write(
+        &repaired_archmap_path,
+        serde_json::to_vec_pretty(&repaired_archmap).expect("repaired ArchMap serializes"),
+    )
+    .expect("repaired ArchMap writes");
+    assert_ne!(clean_archmap_path, repaired_archmap_path);
+    let repaired_run =
+        run_square_free_analysis("ag-square-free-gate-repaired", &repaired_archmap_path);
+
+    let clean_gate = run_square_free_gate(&clean_run, 0);
+    let blocked_gate = run_square_free_gate(&blocked_run, 1);
+    let repaired_gate = run_square_free_gate(&repaired_run, 0);
+
+    assert_eq!(clean_gate["decision"], "PASS_WITHIN_GATE_POLICY");
+    assert_eq!(blocked_gate["decision"], "BLOCKED_BY_GATE_POLICY");
+    assert_eq!(repaired_gate["decision"], "PASS_WITHIN_GATE_POLICY");
+    for report in [&clean_gate, &repaired_gate] {
+        let mapping = report["ruleOutcomes"][0]["appliedMapping"]
+            .as_array()
+            .expect("absolute gate mappings")
+            .iter()
+            .find(|mapping| {
+                mapping["rowRef"]
+                    .as_str()
+                    .is_some_and(|row_ref| row_ref.contains("ag-square-free-repair"))
+            })
+            .expect("square-free gate mapping");
+        assert_eq!(mapping["verdict"], "measured_zero");
+        assert_eq!(mapping["action"], "pass_with_boundary");
+        assert_eq!(mapping["boundaryOverrideApplied"], true);
+    }
+    let blocked_mapping = blocked_gate["ruleOutcomes"][0]["appliedMapping"]
+        .as_array()
+        .expect("blocked absolute gate mappings")
+        .iter()
+        .find(|mapping| {
+            mapping["rowRef"]
+                .as_str()
+                .is_some_and(|row_ref| row_ref.contains("ag-square-free-repair"))
+        })
+        .expect("blocked square-free gate mapping");
+    assert_eq!(blocked_mapping["verdict"], "measured_nonzero");
+    assert_eq!(blocked_mapping["action"], "block");
 }
 
 #[test]
@@ -11625,6 +11829,43 @@ fn cli_gate_report_is_byte_deterministic() {
 }
 
 #[test]
+fn cli_gate_rejects_duplicate_json_and_input_output_aliases() {
+    let out_dir = temp_dir("archsig-gate-input-safety");
+    let policy_path = ag_measurement_root().join("gate_policy_conservative.json");
+    let duplicate_packet = out_dir.join("duplicate-packet.json");
+    fs::write(
+        &duplicate_packet,
+        r#"{"schema":"archsig-measurement-packet/v0.5.1","schema":"duplicate"}"#,
+    )
+    .expect("duplicate packet writes");
+    let duplicate_output = run_sig0_output(&[
+        "gate",
+        "--packet",
+        duplicate_packet.to_str().expect("path is utf-8"),
+        "--policy",
+        policy_path.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(duplicate_output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&duplicate_output.stderr).contains("duplicate JSON object key")
+    );
+
+    let packet_path = out_dir.join("packet.json");
+    write_gate_packet(&packet_path, "measured_zero");
+    let overwrite_output = run_sig0_output(&[
+        "gate",
+        "--packet",
+        packet_path.to_str().expect("path is utf-8"),
+        "--policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--out",
+        packet_path.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(overwrite_output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&overwrite_output.stderr).contains("output path must differ"));
+}
+
+#[test]
 fn cli_compare_asserts_identical_and_verdict_row_transitions() {
     let out_dir = temp_dir("archsig-compare-positive-transitions");
     let root = ag_measurement_root();
@@ -12792,6 +13033,49 @@ fn run_analyze_fixture_lock_with_surface(
     let arg_refs = args.iter().map(String::as_str).collect::<Vec<_>>();
     run_sig0(&arg_refs);
     out_dir
+}
+
+fn run_square_free_analysis(case_id: &str, archmap_path: &Path) -> PathBuf {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir(case_id);
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        root.join("measurement_profile_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-surface",
+        root.join("law_surface_ag_v051.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    out_dir
+}
+
+fn run_square_free_gate(run_dir: &Path, expected_exit_code: i32) -> Value {
+    let root = ag_measurement_root();
+    let packet_path = run_dir.join("archsig-measurement-packet.json");
+    let policy_path = root.join("gate_policy_conservative.json");
+    let report_path = run_dir.join("archsig-gate-report.json");
+    let args = [
+        "gate",
+        "--packet",
+        packet_path.to_str().expect("packet path is utf-8"),
+        "--policy",
+        policy_path.to_str().expect("policy path is utf-8"),
+        "--out",
+        report_path.to_str().expect("report path is utf-8"),
+    ];
+    run_sig0_expect_code(&args, expected_exit_code);
+    read_json(&report_path)
 }
 
 fn assert_byte_identical_analysis_artifacts(first_out: &Path, second_out: &Path) {

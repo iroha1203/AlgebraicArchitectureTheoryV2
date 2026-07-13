@@ -789,6 +789,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             comparison,
             out,
         }) => {
+            reject_output_overwrite(&packet, &out)?;
+            reject_output_overwrite(&policy, &out)?;
+            if let Some(comparison) = &comparison {
+                reject_output_overwrite(comparison, &out)?;
+            }
             let (report, exit_code) = build_gate_report_v1(&packet, &policy, comparison.as_deref())?;
             write_json(out, &report)?;
             Ok(ExitCode::from(exit_code as u8))

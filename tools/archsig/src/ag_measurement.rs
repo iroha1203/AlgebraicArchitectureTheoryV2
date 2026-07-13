@@ -362,6 +362,65 @@ fn boundary_statements_for_measurement_packet(
         }
     }
 
+    for (index, row) in packet.structural_verdict.iter().enumerate() {
+        if row.evaluator != "ag.square-free-repair" {
+            continue;
+        }
+        let scope_ref = structural_verdict_ref(row);
+        let Some(invariant) = packet
+            .computed_invariants
+            .iter()
+            .find(|invariant| invariant["evaluator"] == "ag.square-free-repair")
+        else {
+            continue;
+        };
+        let invariant_ref = invariant["invariantId"].as_str();
+        for (generator_index, generator) in invariant["obstructionIdeal"]["generators"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+        {
+            let has_support_atom_refs = generator["supportAtomRefs"]
+                .as_array()
+                .map(|refs| !refs.is_empty())
+                .unwrap_or(false);
+            if has_support_atom_refs {
+                continue;
+            }
+            let generator_id = generator["generatorId"]
+                .as_str()
+                .unwrap_or("unknown-generator");
+            let support = generator["support"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .collect::<Vec<_>>()
+                .join(",");
+            // Do not let one unobserved generator override a row-level
+            // measured_nonzero result when another generator is observed.
+            let mut scope_refs = Vec::new();
+            if row.verdict == "measured_zero" {
+                scope_refs.push(scope_ref.clone());
+            }
+            if let Some(invariant_ref) = invariant_ref {
+                scope_refs.push(invariant_ref.to_string());
+            }
+            statements.push(BoundaryStatementV1 {
+                id: format!(
+                    "boundary:silence-by-design:square-free:{index}:{generator_index}"
+                ),
+                kind: "silence_by_design".to_string(),
+                scope_refs,
+                reason: "declared_generator_unobserved".to_string(),
+                text: format!(
+                    "Declared square-free generator {generator_id} ({support}) has no selected support atom occurrence; its structural reading is silent under this measurement profile."
+                ),
+            });
+        }
+    }
+
     for (index, reading) in packet.analytic_readings.iter().enumerate() {
         if reading.regime.as_deref() == Some("theorem-candidate")
             && reading.structural_verdict_ref.is_none()
@@ -1880,6 +1939,7 @@ fn evaluate_square_free_repair_v1(
     let delta_facets = maximal_faces(&delta_faces);
     let reduced_homology = reduced_simplicial_homology_f2(&delta_faces);
     let repair_hitting_sets = minimal_hitting_sets(&witness_variables, &minimal_forbidden_supports);
+    let invariant_id = format!("square-free-repair:{}", profile.profile_id);
     let certificate = square_free_certificate(
         normalized,
         &selected_contexts,
@@ -1887,18 +1947,22 @@ fn evaluate_square_free_repair_v1(
         &repair_hitting_sets,
         &generators,
         witness_variables.len(),
+        &invariant_id,
     )?;
-    let has_obstruction = !minimal_forbidden_supports.is_empty();
-    let (verdict, zero, non_zero, method_status, cert_ref, reason) = if !has_obstruction {
+    let has_observed_support = generators
+        .iter()
+        .any(|generator| !generator.support_atom_refs.is_empty());
+    let (verdict, zero, non_zero, method_status, cert_ref, reason) = if !has_observed_support {
         (
             "measured_zero".to_string(),
             true,
             false,
-            "square_free_ideal_computed".to_string(),
+            "square_free_observation_empty".to_string(),
             certificate
                 .as_ref()
                 .map(|certificate| certificate.cert_ref.clone()),
-            "square-free obstruction ideal has no selected generators".to_string(),
+            "no selected square-free support atom realizes any declared obstruction generator"
+                .to_string(),
         )
     } else if let Some(certificate) = &certificate {
         if matches!(certificate.status.as_str(), "verified" | "computed") {
@@ -1908,26 +1972,32 @@ fn evaluate_square_free_repair_v1(
                 true,
                 "nsdepth_certificate_computed".to_string(),
                 Some(certificate.cert_ref.clone()),
-                "square-free obstruction generators were found and ArchSig computed the finite NSdepth certificate from the selected obstruction ideal".to_string(),
+                "observed square-free obstruction support was found and ArchSig computed the finite NSdepth certificate from the selected obstruction ideal".to_string(),
             )
         } else {
             (
-                "unknown".to_string(),
+                "measured_nonzero".to_string(),
                 false,
-                false,
-                format!("nsdepth_certificate_{}", certificate.status),
+                true,
+                format!(
+                    "observed_support_nsdepth_certificate_{}",
+                    certificate.status
+                ),
                 Some(certificate.cert_ref.clone()),
-                certificate.effect.clone(),
+                format!(
+                    "observed square-free obstruction support was found; structural verdict follows observed support atoms while the NSdepth certificate is {}",
+                    certificate.status
+                ),
             )
         }
     } else {
         (
-            "unknown".to_string(),
+            "measured_nonzero".to_string(),
             false,
-            false,
-            "nsdepth_certificate_not_computed".to_string(),
+            true,
+            "square_free_observed_support".to_string(),
             None,
-            "square-free obstruction generators were found, but ArchSig could not compute the NSdepth certificate".to_string(),
+            "observed square-free obstruction support was found; structural verdict follows observed support atoms even though the NSdepth certificate was not computed".to_string(),
         )
     };
 
@@ -1971,7 +2041,7 @@ fn evaluate_square_free_repair_v1(
                 "effect": certificate.effect
             })).unwrap_or_else(|| json!({
                 "status": "missing",
-                "effect": "structural verdict remains unknown when obstruction generators are present"
+                "effect": "NSdepth certificate is not computed; structural verdict follows observed support atom occurrence"
             }))
         }),
         lawful_locus_arrangement_invariant(
@@ -3841,12 +3911,16 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             && invariant["theorem12_4Discharge"]["coverShapeExcludesGluingObstruction"].as_bool()
                 == Some(true)
     });
-    let repair_targets_identified = packet.computed_invariants.iter().any(|invariant| {
-        invariant["evaluator"] == "ag.square-free-repair"
-            && invariant["alexanderDualRepair"]["minimalHittingSets"]
-                .as_array()
-                .is_some_and(|sets| !sets.is_empty())
+    let square_free_nonzero = packet.structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.square-free-repair" && verdict.verdict == "measured_nonzero"
     });
+    let repair_targets_identified = square_free_nonzero
+        && packet.computed_invariants.iter().any(|invariant| {
+            invariant["evaluator"] == "ag.square-free-repair"
+                && invariant["alexanderDualRepair"]["minimalHittingSets"]
+                    .as_array()
+                    .is_some_and(|sets| !sets.is_empty())
+        });
     let saga_non_gluing = packet.structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
             && verdict.law == "saga.residual-boundary-membership"
@@ -3875,8 +3949,6 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
         ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
     } else if packet.structural_verdict.is_empty() {
         ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
-    } else if nonzero_count == 0 {
-        ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
     } else {
         ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
     };
@@ -3905,7 +3977,7 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             } else if unmeasured_count > 0 {
                 "ArchSig produced a profile-relative foundation result with unmeasured, unknown, or not_computed rows still visible."
             } else {
-                "No selected H1 glue mismatch was measured under the profile."
+                "ArchSig produced a profile-relative foundation result for the selected measurement surface."
             },
             "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence",
             "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue.",
@@ -5378,10 +5450,9 @@ fn context_atom_refs(
 }
 
 fn forbidden_cage_projection(
-    normalized: &NormalizedArchMapV2,
+    _normalized: &NormalizedArchMapV2,
     packet: &ArchSigMeasurementPacketV1,
 ) -> Vec<Value> {
-    let atom_refs_by_variable = atom_refs_by_square_free_variable(normalized);
     let mut cages = Vec::new();
     for invariant in &packet.computed_invariants {
         let generators = invariant["obstructionIdeal"]["generators"]
@@ -5391,23 +5462,16 @@ fn forbidden_cage_projection(
         for generator in generators {
             let support_atom_refs = string_array_at(generator, &["supportAtomRefs"]);
             let support_variables = string_array_at(generator, &["support"]);
-            if support_atom_refs.is_empty() && support_variables.is_empty() {
+            // Declared support variables do not create measured geometry. A
+            // cage is projected only when the packet carries observed atom
+            // references for that generator.
+            if support_atom_refs.is_empty() {
                 continue;
             }
-            let atom_refs = if support_atom_refs.is_empty() {
-                support_variables
-                    .iter()
-                    .filter_map(|variable| atom_refs_by_variable.get(variable))
-                    .flatten()
-                    .cloned()
-                    .collect::<Vec<_>>()
-            } else {
-                support_atom_refs
-            };
             let generator_id = string_field(generator, "generatorId");
             cages.push(json!({
                 "cageId": format!("forbidden-cage:{generator_id}"),
-                "atomRefs": atom_refs,
+                "atomRefs": support_atom_refs,
                 "supportVariables": support_variables,
                 "sourceInvariantRef": invariant["invariantId"],
                 "sourceGeneratorRef": generator_id,
@@ -5425,6 +5489,9 @@ fn repair_morph_projection(
     packet: &ArchSigMeasurementPacketV1,
     forbidden_cages: &[Value],
 ) -> Vec<Value> {
+    if forbidden_cages.is_empty() {
+        return Vec::new();
+    }
     let lower_bound_readings = packet
         .analytic_readings
         .iter()
@@ -5462,14 +5529,16 @@ fn repair_morph_projection(
     repair_candidates
         .iter()
         .enumerate()
-        .map(|(index, candidate)| {
+        .filter_map(|(index, candidate)| {
             let candidate_variables = string_array_at(candidate, &["supportVariables"]);
             let related_cages = related_forbidden_cages(forbidden_cages, candidate);
+            if related_cages.is_empty() {
+                return None;
+            }
             let from_cage_ref = related_cages
                 .get(index % related_cages.len().max(1))
                 .or_else(|| related_cages.first())
-                .cloned()
-                .unwrap_or_else(|| "forbidden-cage:unavailable".to_string());
+                .cloned()?;
             let from_atom_refs = related_cages
                 .iter()
                 .filter_map(|cage_id| {
@@ -5481,7 +5550,7 @@ fn repair_morph_projection(
                 .collect::<BTreeSet<_>>()
                 .into_iter()
                 .collect::<Vec<_>>();
-            json!({
+            Some(json!({
                 "morphId": format!("repair-morph:{}", string_field(candidate, "candidateId")),
                 "fromCageRef": from_cage_ref,
                 "fromCageRefs": related_cages,
@@ -5497,7 +5566,7 @@ fn repair_morph_projection(
                 "animationRole": "continuous_morph_lower_bound",
                 "samplePhase": index,
                 "nonClaim": "not automatic repair"
-            })
+            }))
         })
         .collect()
 }
@@ -5885,25 +5954,6 @@ fn spectrum_numeric_value(value: &Value) -> Option<f64> {
         .as_f64()
         .or_else(|| value.as_str().and_then(|text| text.parse::<f64>().ok()))
         .filter(|value| value.is_finite())
-}
-
-fn atom_refs_by_square_free_variable(
-    normalized: &NormalizedArchMapV2,
-) -> BTreeMap<String, Vec<String>> {
-    let mut refs_by_variable = BTreeMap::<String, Vec<String>>::new();
-    for atom in &normalized.atoms {
-        for key in [
-            atom.source_atom_id.as_str(),
-            atom.normalized_atom_id.as_str(),
-            atom.subject.as_str(),
-        ] {
-            refs_by_variable
-                .entry(key.to_string())
-                .or_default()
-                .push(atom.normalized_atom_id.clone());
-        }
-    }
-    refs_by_variable
 }
 
 fn related_forbidden_cages(forbidden_cages: &[Value], candidate: &Value) -> Vec<String> {
@@ -10360,6 +10410,7 @@ fn square_free_certificate(
     repair_hitting_sets: &[Vec<String>],
     generators: &[SquareFreeGeneratorV1],
     witness_variable_count: usize,
+    invariant_id: &str,
 ) -> Result<Option<SquareFreeCertificateV1>, String> {
     if minimal_forbidden_supports.is_empty() {
         return Ok(None);
@@ -10371,7 +10422,7 @@ fn square_free_certificate(
         witness_variable_count,
     );
     Ok(Some(SquareFreeCertificateV1 {
-        cert_ref: "cert:nsdepth-square-free:computed".to_string(),
+        cert_ref: format!("computedInvariants/{invariant_id}"),
         nsdepth: verification.nsdepth,
         support_atom_refs: verification.support_atom_refs,
         verified_minimal_forbidden_supports: verification.verified_minimal_forbidden_supports,
@@ -10400,12 +10451,14 @@ fn compute_square_free_nsdepth_certificate(
         return square_free_certificate_unverified(
             Some(nsdepth),
             "not_computed",
-            "computed NSdepth exceeds selected witness family size; structural verdict remains unknown",
+            "computed NSdepth exceeds selected witness family size; structural verdict follows observed support atom occurrence",
         );
     }
     let support_atom_refs = generators
         .iter()
-        .map(|generator| generator.generator_id.clone())
+        .flat_map(|generator| generator.support_atom_refs.iter().cloned())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
         .collect::<Vec<_>>();
 
     SquareFreeCertificateVerificationV1 {
@@ -10414,7 +10467,7 @@ fn compute_square_free_nsdepth_certificate(
         verified_minimal_forbidden_supports: minimal_forbidden_supports.to_vec(),
         status: "computed".to_string(),
         effect:
-            "ArchSig computed NSdepth from selected raw supports, minimal forbidden supports, and the finite Alexander-dual hitting-set depth rule; structural verdict is measured_nonzero"
+            "ArchSig computed NSdepth from selected raw supports, minimal forbidden supports, and the finite Alexander-dual hitting-set depth rule; structural verdict follows observed support atom occurrence"
                 .to_string(),
     }
 }
@@ -12806,6 +12859,94 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
                 "computed invariant must carry typed value and representation",
             ));
         }
+        if invariant["evaluator"].as_str() == Some("ag.square-free-repair")
+            && invariant.get("obstructionIdeal").is_some()
+        {
+            let obstruction_label = format!("{label}.obstructionIdeal");
+            check_object_keys(
+                &invariant["obstructionIdeal"],
+                &obstruction_label,
+                &["id", "generators"],
+                &mut examples,
+            );
+            let Some(generators) = invariant["obstructionIdeal"]["generators"].as_array() else {
+                examples.push(generic_validation_example(
+                    &obstruction_label,
+                    "generators",
+                    "square-free obstructionIdeal.generators must be an array",
+                ));
+                continue;
+            };
+            for (generator_index, generator) in generators.iter().enumerate() {
+                let generator_label = format!("{obstruction_label}.generators[{generator_index}]");
+                check_object_keys(
+                    generator,
+                    &generator_label,
+                    &["generatorId", "support", "supportAtomRefs"],
+                    &mut examples,
+                );
+                for field in ["generatorId", "support", "supportAtomRefs"] {
+                    if field == "generatorId" {
+                        if generator[field].as_str().is_none_or(str::is_empty) {
+                            examples.push(generic_validation_example(
+                                &generator_label,
+                                field,
+                                "square-free generators must carry a generatorId",
+                            ));
+                        }
+                    } else if generator[field]
+                        .as_array()
+                        .is_none_or(|items| items.iter().any(|item| item.as_str().is_none()))
+                    {
+                        examples.push(generic_validation_example(
+                            &generator_label,
+                            field,
+                            "square-free generator support fields must be arrays of strings",
+                        ));
+                    }
+                }
+            }
+            if let Some(certificate) = invariant.get("nsdepthCertificate") {
+                if !certificate.is_null() {
+                    let certificate_label = format!("{label}.nsdepthCertificate");
+                    check_object_keys(
+                        certificate,
+                        &certificate_label,
+                        &[
+                            "status",
+                            "certificateRef",
+                            "nsdepth",
+                            "supportAtomRefs",
+                            "verifiedMinimalForbiddenSupports",
+                            "effect",
+                        ],
+                        &mut examples,
+                    );
+                    if certificate["status"].as_str() != Some("missing")
+                        && certificate["supportAtomRefs"]
+                            .as_array()
+                            .is_none_or(|items| items.iter().any(|item| item.as_str().is_none()))
+                    {
+                        examples.push(generic_validation_example(
+                            &certificate_label,
+                            "supportAtomRefs",
+                            "square-free NSdepth certificate supportAtomRefs must be an array of strings",
+                        ));
+                    }
+                    if certificate["status"].as_str() == Some("computed")
+                        && certificate["certificateRef"]
+                            .as_str()
+                            .is_none_or(|reference| !reference.starts_with("computedInvariants/"))
+                    {
+                        examples.push(generic_validation_example(
+                            &certificate_label,
+                            "certificateRef",
+                            "computed square-free NSdepth certificates must reference their computed invariant",
+                        ));
+                    }
+                }
+            }
+        }
     }
     check_examples(
         "measurement-packet-schema050-computed-invariants-typed",
@@ -14163,11 +14304,13 @@ mod tests {
                 "generators": [
                     {
                         "generatorId": "g0",
-                        "support": ["x_checkout", "x_inventory"]
+                        "support": ["x_checkout", "x_inventory"],
+                        "supportAtomRefs": ["atom:checkout-inventory"]
                     },
                     {
                         "generatorId": "g1",
-                        "support": ["x_inventory", "x_payment"]
+                        "support": ["x_inventory", "x_payment"],
+                        "supportAtomRefs": ["atom:inventory-payment"]
                     }
                 ]
             },

@@ -9,7 +9,11 @@
 
 ## R4
 
-square-free forbidden supportとrepair候補を結ぶ入力。
+observed square-free forbidden supportとrepair候補を結ぶ入力。宣言された生成元と
+minimal hitting setはlaw surfaceから決まり、選択されたArchMapは各生成元の
+`supportAtomRefs`と構造verdictを観測する。宣言された生成元が選択されたArchMapで
+生起しない場合、構造verdictは`measured_zero`となり、未生起は`silence_by_design`
+statementとして残る。未生起の生成元はviewer cageを生成しない。
 
 ## R5
 
