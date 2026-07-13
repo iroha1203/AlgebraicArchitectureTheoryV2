@@ -429,14 +429,16 @@ namespace RingedAATSite
 /-- The selected AAT site underlying a ringed presentation. -/
 def site {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    (_R : RingedAATSite S k) : Site.AATSite A :=
-  S
+    (R : RingedAATSite S k) : Site.AATSite A :=
+  match R with
+  | ⟨_ ⟩ => S
 
 /-- The architecture object carried by the selected site. -/
 def architectureObject {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    (_R : RingedAATSite S k) : ArchitectureObject U :=
-  S.architectureObject
+    (R : RingedAATSite S k) : ArchitectureObject U :=
+  match R with
+  | ⟨_ ⟩ => S.architectureObject
 
 /-- Ringed presentations agree when their raw algebra presheaves agree. -/
 @[ext]
