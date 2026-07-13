@@ -311,7 +311,7 @@ end QuotientFactorization
 | --- | --- | --- |
 | generated conormal `I/I²` | `LawGeneratedIdealPowerSequence.Raw.conormalCoefficient` and `conormalRestrict` | reuse |
 | generated finite cover and tuple Čech engine | G-07 finite-poset cover geometry and `LawGeneratedLargeCoefficientCech` | reuse |
-| class-zero iff actual gluing engine | `LawGeneratedLargeConormalDescent.connectingClassFor_isZero_iff_nonempty_globalLift` | reuse after constructing the response-kernel short exact sequence |
+| class-zero iff actual gluing engine | `LawGeneratedLargeConormalDescent.LocalLiftData.connectingClassFor_isZero_iff_nonempty_globalLift` | reuse after constructing the response-kernel short exact sequence |
 | typed Zariski chart rings | mathlib localization API | construct in G-08 |
 | ambient derivation localization and quotient-valued response | mathlib Kähler/derivation API | construct in G-08 |
 | allowed-operation image sheaf | categorical image plus localization comparison | construct in G-08 |
