@@ -12,7 +12,7 @@ sections extend the same executable contract through SD2--SD5.
 
 namespace AAT.AG
 
-universe u
+universe u v
 
 open CategoryTheory
 
@@ -687,31 +687,76 @@ example :
 /-! SD3 fixed typed raw presheaf signatures. -/
 
 example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    (S : Site.AATSite A) (k : Type u) [CommRing k] :
-    Type _ :=
-  LawAlgebra.RawAmbientRestrictionSystem S k
+    {S : Site.AATSite A} {k : Type v} [CommRing k] :
+    ((coordFamily : (W : S.category) -> LawAlgebra.CoordinateFamily W.ctx) ->
+      (relationFamily : (W : S.category) ->
+        LawAlgebra.StructuralRelationFamily (coordFamily W) k) ->
+      (restrictionStable : ∀ {X Y : S.category} (f : X ⟶ Y),
+        LawAlgebra.RestrictionStableStructuralRelations
+          (relationFamily X) (relationFamily Y)
+          (S.contextPreorder.morphism (CategoryTheory.leOfHom f))) ->
+      (∀ X : S.category,
+        (restrictionStable (𝟙 X)).restriction.polynomialMap =
+          RingHom.id (LawAlgebra.FreeTypedCommAlg (coordFamily X) k)) ->
+      (∀ {X Y Z : S.category} (f : X ⟶ Y) (g : Y ⟶ Z),
+        (restrictionStable (f ≫ g)).restriction.polynomialMap =
+          ((restrictionStable f).restriction.polynomialMap).comp
+            ((restrictionStable g).restriction.polynomialMap)) ->
+      LawAlgebra.RawAmbientRestrictionSystem S k) :=
+  @LawAlgebra.RawAmbientRestrictionSystem.mk U A S k _
 
 example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {S : Site.AATSite A} {k : Type u} [CommRing k]
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B : LawAlgebra.RawAmbientRestrictionSystem S k) (W : S.category) :
+    Type (max u v) :=
+  B.rawAlgebra W
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : LawAlgebra.CoordinateFamily source}
+    {targetFamily : LawAlgebra.CoordinateFamily target}
+    {k : Type v} [CommRing k]
+    {f : Site.ContextMorphism source target}
+    (rho : LawAlgebra.TypedCoordinateRestriction sourceFamily targetFamily k f)
+    (x : k) :
+    rho.polynomialMap (MvPolynomial.C x) = MvPolynomial.C x :=
+  rho.polynomialMap_C x
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : LawAlgebra.CoordinateFamily source}
+    {targetFamily : LawAlgebra.CoordinateFamily target}
+    {k : Type v} [CommRing k]
+    {sourceRelations : LawAlgebra.StructuralRelationFamily sourceFamily k}
+    {targetRelations : LawAlgebra.StructuralRelationFamily targetFamily k}
+    {f : Site.ContextMorphism source target}
+    (h : LawAlgebra.RestrictionStableStructuralRelations
+      sourceRelations targetRelations f) (x : k) :
+    h.quotientDesc (targetRelations.quotientMap (MvPolynomial.C x)) =
+      sourceRelations.quotientMap (MvPolynomial.C x) :=
+  h.quotientDesc_C x
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
     (B : LawAlgebra.RawAmbientRestrictionSystem S k) :
     LawAlgebra.AlgebraValuedAATPresheaf S k :=
   B.toPresheaf
 
 example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {S : Site.AATSite A} {k : Type u} [CommRing k]
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
     (B : LawAlgebra.RawAmbientRestrictionSystem S k) (W : S.category) :
     B.rawAlgebra W ≃+* (B.toPresheaf.obj (Opposite.op W)).right :=
   B.toPresheafObjectIso W
 
 example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {S : Site.AATSite A} {k : Type u} [CommRing k]
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
     (B : LawAlgebra.RawAmbientRestrictionSystem S k) (X : S.category) :
     (B.restrictionStable (𝟙 X)).quotientDesc =
       RingHom.id (B.rawAlgebra X) :=
   B.quotientDesc_id X
 
 example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {S : Site.AATSite A} {k : Type u} [CommRing k]
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
     (B : LawAlgebra.RawAmbientRestrictionSystem S k)
     {X Y Z : S.category} (f : X ⟶ Y) (g : Y ⟶ Z) :
     (B.restrictionStable (f ≫ g)).quotientDesc =
@@ -720,7 +765,7 @@ example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   B.quotientDesc_comp f g
 
 example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {S : Site.AATSite A} {k : Type u} [CommRing k]
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
     (B : LawAlgebra.RawAmbientRestrictionSystem S k)
     {X Y : S.category} (f : X ⟶ Y) (x : B.rawAlgebra Y) :
     B.toPresheafObjectIso X ((B.restrictionStable f).quotientDesc x) =

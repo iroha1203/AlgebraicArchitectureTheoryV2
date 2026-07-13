@@ -134,6 +134,11 @@ def system : RawAmbientRestrictionSystem Site Int where
   identity_polynomialMap := coordinateRestriction_id
   composition_polynomialMap := coordinateRestriction_comp
 
+/-- Characterization of the concrete restriction stored by the finite system. -/
+theorem system_restriction {X Y : Site.category} (f : X ⟶ Y) :
+    (system.restrictionStable f).restriction = coordinateRestriction f :=
+  rfl
+
 /-- SD3: the left patch includes into the base object. -/
 def leftToBase : left ⟶ AAT.AG.FiniteModel.twoPatchBase :=
   CategoryTheory.homOfLE
@@ -146,8 +151,8 @@ def leftToBase : left ⟶ AAT.AG.FiniteModel.twoPatchBase :=
 theorem leftToBase_polynomialMap_X :
     (system.restrictionStable leftToBase).restriction.polynomialMap (X ()) =
       -(X ()) := by
-  change (coordinateRestriction leftToBase).polynomialMap (X ()) = -(X ())
-  rw [coordinateRestriction_polynomialMap_X]
+  rw [system_restriction]
+  erw [coordinateRestriction_polynomialMap_X]
   have hne : AAT.AG.FiniteModel.twoPatchBase.ctx ≠ left.ctx := by
     intro h
     have heq := congrArg

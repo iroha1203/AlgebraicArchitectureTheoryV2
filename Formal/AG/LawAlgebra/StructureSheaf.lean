@@ -61,6 +61,26 @@ structure RawAmbientRestrictionSystem {U : AtomCarrier.{u}}
 
 namespace RawAmbientRestrictionSystem
 
+/-- Two restriction systems agree when their three data-bearing fields agree. -/
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (B C : RawAmbientRestrictionSystem S k)
+    (hcoord : B.coordFamily = C.coordFamily)
+    (hrelation : HEq B.relationFamily C.relationFamily)
+    (hrestriction : HEq
+      (@RawAmbientRestrictionSystem.restrictionStable U A S k _ B)
+      (@RawAmbientRestrictionSystem.restrictionStable U A S k _ C)) :
+    B = C := by
+  cases B with
+  | mk Bcoord Brelation Brestriction Bid Bcomp =>
+      cases C with
+      | mk Ccoord Crelation Crestriction Cid Ccomp =>
+          cases hcoord
+          cases hrelation
+          cases hrestriction
+          rfl
+
 /-- III.R3: the structural quotient assigned to a site object. -/
 abbrev rawAlgebra {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]

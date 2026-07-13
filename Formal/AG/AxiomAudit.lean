@@ -1758,17 +1758,53 @@ def transportDescentNonzeroToyModelNonempty :=
 def rawAmbientRestrictionSystemToPresheaf :=
   @LawAlgebra.RawAmbientRestrictionSystem.toPresheaf
 
+def rawAmbientRestrictionSystemExt :=
+  @LawAlgebra.RawAmbientRestrictionSystem.ext
+
+def typedCoordinateRestrictionPolynomialMapC :=
+  @LawAlgebra.TypedCoordinateRestriction.polynomialMap_C
+
+def restrictionStableStructuralRelationsQuotientDescC :=
+  @LawAlgebra.RestrictionStableStructuralRelations.quotientDesc_C
+
 def rawAmbientRestrictionSystemQuotientDescId :=
   @LawAlgebra.RawAmbientRestrictionSystem.quotientDesc_id
 
 def rawAmbientRestrictionSystemQuotientDescComp :=
   @LawAlgebra.RawAmbientRestrictionSystem.quotientDesc_comp
 
+def rawAmbientRestrictionSystemToPresheafMap :=
+  @LawAlgebra.RawAmbientRestrictionSystem.toPresheaf_map
+
+def rawPresheafFiniteGaugeSq :=
+  LawAlgebra.FiniteExamples.RawPresheaf.gauge_sq
+
+def rawPresheafFiniteCoordinateRestrictionPolynomialMapX :=
+  @LawAlgebra.FiniteExamples.RawPresheaf.coordinateRestriction_polynomialMap_X
+
+def rawPresheafFiniteSystemRestriction :=
+  @LawAlgebra.FiniteExamples.RawPresheaf.system_restriction
+
+def rawPresheafFiniteLeftToBasePolynomialMapX :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_polynomialMap_X
+
 def rawPresheafFiniteRelationVanishes :=
   LawAlgebra.FiniteExamples.RawPresheaf.relation_vanishes
 
 def rawPresheafFiniteQuotientMapNotInjective :=
   LawAlgebra.FiniteExamples.RawPresheaf.quotientMap_not_injective
+
+def rawPresheafFiniteRelationPolynomialNeZero :=
+  LawAlgebra.FiniteExamples.RawPresheaf.relation_polynomial_ne_zero
+
+def rawPresheafFiniteQuotientOneEvalMk :=
+  LawAlgebra.FiniteExamples.RawPresheaf.quotientOneEval_mk
+
+def rawPresheafFiniteQuotientXNeNegX :=
+  LawAlgebra.FiniteExamples.RawPresheaf.quotient_X_ne_neg_X
+
+def rawPresheafFiniteLeftToBaseQuotientDescX :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_X
 
 def rawPresheafFiniteRestrictionChangesCoordinate :=
   LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_X_ne_X
