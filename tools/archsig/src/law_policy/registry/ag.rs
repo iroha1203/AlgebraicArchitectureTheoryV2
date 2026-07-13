@@ -14,6 +14,7 @@ pub fn ag_evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
         ag_period_stokes_audit_manifest(),
         ag_manifest("ag.support-transfer", "ag.support-transfer"),
         ag_saga_descent_manifest(),
+        ag_saga_grounded_manifest(),
     ]
 }
 
@@ -65,6 +66,41 @@ fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
             "/assumptions".to_string(),
             "/computedInvariants".to_string(),
             "/boundaryStatements".to_string(),
+        ],
+        negative_fixtures: Vec::new(),
+    }
+}
+
+fn ag_saga_grounded_manifest() -> LawEvaluatorManifestV1 {
+    LawEvaluatorManifestV1 {
+        evaluator_id: "ag.saga-grounded".to_string(),
+        law_id: "ag.saga-grounded".to_string(),
+        condition_types: vec!["descent".to_string(), "closed-equational".to_string()],
+        required_atom_constructors: Vec::new(),
+        required_predicates: Vec::new(),
+        required_molecule_condition:
+            "law-equation-surface/v0.5.2 Stage 3 fields plus a checked saga-grounding RepairPlan slot"
+                .to_string(),
+        scope_filtering_rule:
+            "selected finite cover, chart-local defect observables, and the selected policy-row profile"
+                .to_string(),
+        missing_blocker_rule:
+            "missing grounding, Stage 3 defect source, or selected quotient condition is not_computed with silence_by_design"
+                .to_string(),
+        pass_criteria:
+            "holdsCriterion raw-value checks establish the displayed law premise and emit the law-dependent packet"
+                .to_string(),
+        violation_criteria:
+            "a non-empty chart-local defect observable emits MEASURED_LAW_DEFECT_AT_CHART and not_established law-dependent conclusions"
+                .to_string(),
+        typed_result_schema: "archsig-saga-conclusions/v0.5.2".to_string(),
+        distance_contribution:
+            "grounded 10-conclusion packet keeps law-dependent and law-independent structures separate"
+                .to_string(),
+        summary_output_refs: vec!["/structuralVerdict".to_string()],
+        detail_output_refs: vec![
+            "/assumptions".to_string(),
+            "/computedInvariants".to_string(),
         ],
         negative_fixtures: Vec::new(),
     }

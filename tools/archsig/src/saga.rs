@@ -2,12 +2,14 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
 
+use crate::law_execution::LawExecutionPlanV1;
 use crate::repair_plan::{comparison_complex_fingerprint, comparison_target_complex};
 use crate::{
-    ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
-    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA, AgAssumptionLedgerEntryV1,
-    AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2, RepairPlanDocumentV1,
-    assumption_id_for_schema,
+    ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS,
+    ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
+    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
+    AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
+    MeasurementProfileV1, NormalizedArchMapV2, RepairPlanDocumentV1, assumption_id_for_schema,
 };
 
 #[derive(Debug, Clone)]
@@ -15,6 +17,293 @@ pub(crate) struct SagaDescentMeasurementV1 {
     pub structural_verdict: Vec<AgStructuralVerdictV1>,
     pub computed_invariants: Vec<Value>,
     pub assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct SagaGroundedMeasurementV1 {
+    pub structural_verdict: Vec<AgStructuralVerdictV1>,
+    pub computed_invariants: Vec<Value>,
+    pub assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+pub(crate) fn evaluate_saga_grounded_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+    plan: &RepairPlanDocumentV1,
+    execution_plan: &LawExecutionPlanV1,
+) -> SagaGroundedMeasurementV1 {
+    let grounding = plan.grounding.as_ref().and_then(Value::as_object);
+    let grounding_ref = grounding
+        .and_then(|grounding| grounding.get("surfaceRef"))
+        .and_then(Value::as_str)
+        .map(str::to_string)
+        .unwrap_or_else(|| format!("repair-plan:{}#grounding", plan.id));
+    let criterion = execution_plan.stage3_defect_source.as_ref().map(|source| {
+        format!(
+            "law-surface:{}#defectSources/{}/holdsCriterion",
+            execution_plan.surface_id, source.law_id
+        )
+    });
+    let Some(source) = execution_plan.stage3_defect_source.as_ref() else {
+        return grounded_not_computed(
+            "grounded_surface_defect_source_missing",
+            grounding_ref,
+            execution_plan,
+        );
+    };
+    let grounding_is_aligned = grounding.is_some_and(|grounding| {
+        grounding.get("kind").and_then(Value::as_str) == Some("saga-grounding")
+            && grounding.get("profileRef").and_then(Value::as_str)
+                == Some(profile.profile_id.as_str())
+            && grounding.get("surfaceRef").and_then(Value::as_str)
+                == Some(execution_plan.surface_id.as_str())
+    });
+    let skeleton_is_aligned = execution_plan
+        .stage3_skeleton
+        .as_ref()
+        .is_some_and(|skeleton| {
+            !skeleton.is_empty()
+                && skeleton.iter().all(|simplex| {
+                    !simplex.support_atom_ref.is_empty()
+                        && simplex.required_law_id == execution_plan.selected_law_id
+                })
+        });
+    let coefficient_is_f2 = profile.coefficient == "F2"
+        && (plan.coefficient.is_f2_additive()
+            || plan.coefficient.supplied().is_some_and(|coefficient| {
+                coefficient.kind == "f2-additive"
+                    && coefficient.characteristic == 2
+                    && coefficient.additive
+                    && coefficient.delta_one_after_delta_zero
+                    && coefficient.zero_maps_to_zero
+            }));
+    let defect_support_size = source
+        .chart_defects
+        .iter()
+        .flat_map(|chart| {
+            normalized.atoms.iter().filter(|atom| {
+                atom.axis == chart.defect_observable.axis
+                    && atom.predicate == chart.defect_observable.predicate
+                    && atom.context_memberships.iter().any(|context| {
+                        context == &chart.chart || context == &format!("ctx:{}", chart.chart)
+                    })
+            })
+        })
+        .count();
+    if !grounding_is_aligned
+        || !skeleton_is_aligned
+        || !coefficient_is_f2
+        || source.cover_ref != profile.cover_ref
+        || defect_support_size > profile.finite_bounds.max_square_free_witness_variables
+        || execution_plan.stage3_skeleton.is_none()
+        || execution_plan.stage3_quotient_sheaf_condition.is_none()
+        || execution_plan
+            .stage3_quotient_sheaf_condition
+            .as_ref()
+            .is_some_and(|condition| condition.mode == "not-selected")
+    {
+        return grounded_not_computed(
+            if !grounding_is_aligned {
+                "grounding_reference_mismatch"
+            } else if !skeleton_is_aligned {
+                "grounded_skeleton_not_aligned"
+            } else if !coefficient_is_f2 {
+                "grounded_coefficient_not_f2_additive"
+            } else if source.cover_ref != profile.cover_ref {
+                "grounded_cover_profile_mismatch"
+            } else if defect_support_size > profile.finite_bounds.max_square_free_witness_variables
+            {
+                "grounded_finite_bound_exceeded"
+            } else {
+                "grounding_or_quotient_contract_missing"
+            },
+            grounding_ref,
+            execution_plan,
+        );
+    }
+    let per_chart = source
+        .chart_defects
+        .iter()
+        .map(|chart| {
+            let normalized_chart = if chart.chart.starts_with("ctx:") {
+                chart.chart.clone()
+            } else {
+                format!("ctx:{}", chart.chart)
+            };
+            let atom_refs = normalized
+                .atoms
+                .iter()
+                .filter(|atom| {
+                    atom.axis == chart.defect_observable.axis
+                        && atom.predicate == chart.defect_observable.predicate
+                        && atom.context_memberships.contains(&normalized_chart)
+                })
+                .map(|atom| atom.normalized_atom_id.clone())
+                .collect::<Vec<_>>();
+            let holds = match source.holds_criterion.zero_sense.as_str() {
+                "empty-witness-set" => atom_refs.is_empty(),
+                _ => false,
+            };
+            json!({
+                "chart": chart.chart,
+                "law": source.law_id,
+                "holds": holds,
+                "holdsCriterionRef": criterion,
+                "defectValueRef": format!("{}#{}", normalized.source_archmap_ref, normalized_chart),
+                "rawAtomRefs": atom_refs,
+                "defectObservable": {
+                    "axis": chart.defect_observable.axis,
+                    "predicate": chart.defect_observable.predicate
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    let laws_hold = !per_chart.is_empty()
+        && per_chart
+            .iter()
+            .all(|chart| chart.get("holds").and_then(Value::as_bool) == Some(true));
+    let nonzero_charts = per_chart
+        .iter()
+        .filter(|chart| chart.get("holds").and_then(Value::as_bool) == Some(false))
+        .map(|chart| {
+            json!({
+                "chart": chart["chart"],
+                "law": chart["law"],
+                "interpretationClass": "nonzero",
+                "reading": "非零 interpretation はこの chart の displayed required law の失敗を保証する(系11.5 detector soundness。前提計算は本 run の測定)"
+            })
+        })
+        .collect::<Vec<_>>();
+    let status = if laws_hold {
+        "established"
+    } else {
+        "not_established"
+    };
+    let conclusion_status =
+        |theorem_ref: &str| json!({"status": status, "theoremRef": theorem_ref});
+    let law_dependent = json!({
+        "premise": {
+            "name": "displayedRequiredLawsHold",
+            "status": if laws_hold { "holds" } else { "fails" },
+            "checkKind": "holds-criterion-raw-value",
+            "perChart": per_chart
+        },
+        "conclusions": {
+            "generatedInterpretationZero": conclusion_status("part10/7.5.1"),
+            "generatedRestrictionEvaluator": conclusion_status("part3/11.4"),
+            "nonzeroInterpretationDetectsDisplayedLawFailure": conclusion_status("part10/7.5.3")
+        },
+        "detectorFindings": nonzero_charts
+    });
+    let law_independent = json!({
+        "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。",
+        "conclusions": {
+            "groundedGlobalGluingPackage": {"status": "established", "theoremRef": "part10/7.3"},
+            "sheafConditionForSelectedCover": {"status": "established", "theoremRef": "part10/7.3"},
+            "descent": {"status": "established", "theoremRef": "part10/6.6", "note": "sheaf 条件 + cover membership から導出。独立 certificate は受け取らない"},
+            "uniqueGlobalSection": {"status": "established", "theoremRef": "part10/7.3"},
+            "globalCoherentIffCoverRelativeH1Zero": {"status": "established", "instanceReading": {"coverRelativeH1Zero": true}},
+            "boundedAdditiveH1ZeroIffCoverRelativeH1Zero": {"status": "established", "theoremRef": "part10/8.2"},
+            "higherObstructionsVanish": {"status": "established", "note": "additive regime で自明に成立。外部仮定として供給されない(定理4.8 結論5)"}
+        }
+    });
+    let invariant = json!({
+        "invariantId": "saga-generated-end-to-end-packet",
+        "kind": "saga-grounded-conclusions",
+        "evaluator": "ag.saga-grounded",
+        "schema": ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
+        "groundedSurfaceRef": grounding_ref,
+        "theoremRef": "part10/7.5",
+        "lawDependent": law_dependent,
+        "lawIndependent": law_independent,
+        "degreeZeroLawContribution": {
+            "theoremRef": "part10/8.1",
+            "generatedC0PointwiseZero": true,
+            "reading": "law 意味論が Čech 複体に到達する地点は正確に次数0。H^1 の内容は cover の幾何から来る(意味8.3)"
+        },
+        "generatedQuotient": {
+            "coefficient": profile.coefficient,
+            "construction": "finite F2 Boolean defect support quotient O/I_Ob",
+            "observedDefectSupportCardinality": defect_support_size,
+            "obstructionIdealSupportCardinality": defect_support_size,
+            "finiteBound": profile.finite_bounds.max_square_free_witness_variables,
+            "finiteBoundChecked": true,
+            "interpretationClass": if laws_hold { "zero" } else { "nonzero" }
+        },
+        "detectorFindings": nonzero_charts
+    });
+    let assumptions = vec![AgAssumptionLedgerEntryV1 {
+        theorem_ref: "part10/11.3".to_string(),
+        assumption: "displayedRequiredLawsHold is operationalized only by the declared holdsCriterion raw-value check".to_string(),
+        status: "checked".to_string(),
+        checked_by: Some(ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS.to_string()),
+        assumed_by: None,
+    }];
+    let verdict = if laws_hold {
+        "measured_zero"
+    } else {
+        "measured_nonzero"
+    };
+    SagaGroundedMeasurementV1 {
+        structural_verdict: vec![AgStructuralVerdictV1 {
+            evaluator: "ag.saga-grounded".to_string(),
+            law: source.law_id.clone(),
+            verdict: verdict.to_string(),
+            verdict_data: AgVerdictDataV1 {
+                in_scope: true,
+                zero: laws_hold,
+                non_zero: !laws_hold,
+                method_status: if laws_hold {
+                    "holds_criterion_raw_value_zero"
+                } else {
+                    "law_defect_detected"
+                }
+                .to_string(),
+                cert_ref: Some("computedInvariants/saga-generated-end-to-end-packet".to_string()),
+            },
+            depends_on_assumptions: vec![assumption_id_for_schema(&assumptions[0])],
+            reason: Some(if laws_hold {
+                ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS.to_string()
+            } else {
+                ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART.to_string()
+            }),
+        }],
+        computed_invariants: vec![invariant],
+        assumptions,
+    }
+}
+
+fn grounded_not_computed(
+    reason: &str,
+    grounding_ref: String,
+    execution_plan: &LawExecutionPlanV1,
+) -> SagaGroundedMeasurementV1 {
+    SagaGroundedMeasurementV1 {
+        structural_verdict: vec![AgStructuralVerdictV1 {
+            evaluator: "ag.saga-grounded".to_string(),
+            law: execution_plan.selected_law_id.clone(),
+            verdict: "not_computed".to_string(),
+            verdict_data: AgVerdictDataV1 {
+                in_scope: true,
+                zero: false,
+                non_zero: false,
+                method_status: reason.to_string(),
+                cert_ref: None,
+            },
+            depends_on_assumptions: Vec::new(),
+            reason: Some(format!("ag.saga-grounded is silent by design: {reason}")),
+        }],
+        computed_invariants: vec![json!({
+            "invariantId": "saga-generated-end-to-end-packet",
+            "kind": "saga-grounded-conclusions",
+            "evaluator": "ag.saga-grounded",
+            "schema": ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
+            "groundedSurfaceRef": grounding_ref,
+            "status": "not_computed",
+            "methodStatus": reason
+        })],
+        assumptions: Vec::new(),
+    }
 }
 
 pub(crate) fn evaluate_saga_descent_v1(

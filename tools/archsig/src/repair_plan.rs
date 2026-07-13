@@ -537,6 +537,32 @@ fn check_supplied_slots(
                         ));
                     }
                 }
+                "grounding" if kind == "saga-grounding" => {
+                    for key in object.keys() {
+                        if !matches!(key.as_str(), "kind" | "surfaceRef" | "profileRef") {
+                            examples.push(generic_validation_example(
+                                &format!("{path}.{key}"),
+                                "unknown-field",
+                                "saga grounding has no unregistered supplied fields",
+                            ));
+                        }
+                    }
+                    if object
+                        .get("surfaceRef")
+                        .and_then(Value::as_str)
+                        .is_none_or(str::is_empty)
+                        || object
+                            .get("profileRef")
+                            .and_then(Value::as_str)
+                            .is_none_or(str::is_empty)
+                    {
+                        examples.push(generic_validation_example(
+                            path,
+                            "grounding-reference-missing",
+                            "saga grounding requires non-empty surfaceRef and profileRef",
+                        ));
+                    }
+                }
                 _ => examples.push(generic_validation_example(
                     path,
                     kind,
