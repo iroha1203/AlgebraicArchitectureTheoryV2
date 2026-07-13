@@ -174,11 +174,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- measurement-profile \
 cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --out .tmp/law-policy-authoring/policy-validation.json
 cargo run --manifest-path tools/archsig/Cargo.toml -- policy-bundle \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
   --out .tmp/law-policy-authoring/policy-bundle.json
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \

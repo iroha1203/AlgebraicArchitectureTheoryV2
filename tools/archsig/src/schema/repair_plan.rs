@@ -130,6 +130,15 @@ pub struct RepairPlanSuppliedCoefficientV1 {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepairPlanSuppliedFaithfulnessV1 {
     pub zero_primitive_ref: String,
-    pub residual_support_predicate: String,
+    pub residual_support_predicate: RepairPlanSuppliedPredicateV1,
     pub faithfulness_law: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RepairPlanSuppliedPredicateV1 {
+    pub kind: String,
+    #[serde(default)]
+    pub support_variables: Vec<String>,
+    pub zero_on_zero_primitive: bool,
 }

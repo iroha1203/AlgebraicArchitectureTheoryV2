@@ -14,7 +14,7 @@ pub fn validate_repair_plan_v1_checks(
 ) -> Vec<ValidationCheck> {
     vec![
         check_schema(plan),
-        check_supplied_slots(plan),
+        check_supplied_slots(plan, archmap),
         check_conclusion_tokens(plan),
         check_references(plan),
         check_archmap_bindings(plan, archmap),
@@ -80,13 +80,21 @@ fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     check
 }
 
-fn check_supplied_slots(plan: &RepairPlanDocumentV1) -> ValidationCheck {
+fn check_supplied_slots(
+    plan: &RepairPlanDocumentV1,
+    archmap: &ArchMapDocumentV2,
+) -> ValidationCheck {
     let mut examples = Vec::new();
     if plan.faithfulness.mode == "supplied" {
         match &plan.faithfulness.supplied {
             Some(supplied)
                 if !supplied.zero_primitive_ref.is_empty()
-                    && !supplied.residual_support_predicate.is_empty()
+                    && supplied.residual_support_predicate.kind == "finite-support"
+                    && supplied.residual_support_predicate.zero_on_zero_primitive
+                    && supplied.residual_support_predicate
+                        .support_variables
+                        .iter()
+                        .all(|variable| !variable.is_empty())
                     && !supplied.faithfulness_law.is_empty() => {}
             Some(_) => examples.push(generic_validation_example(
                 "faithfulness.supplied",
@@ -98,6 +106,21 @@ fn check_supplied_slots(plan: &RepairPlanDocumentV1) -> ValidationCheck {
                 "missing",
                 "faithfulness.mode=supplied requires the three definition 4.6 data points",
             )),
+        }
+        if let Some(supplied) = &plan.faithfulness.supplied {
+            let primitive = plan
+                .primitives
+                .iter()
+                .find(|primitive| primitive.id == supplied.zero_primitive_ref);
+            if primitive.is_none()
+                || primitive.is_some_and(|primitive| !primitive.support.variables.is_empty())
+            {
+                examples.push(generic_validation_example(
+                    "faithfulness.supplied.zeroPrimitiveRef",
+                    &supplied.zero_primitive_ref,
+                    "zeroPrimitiveRef must resolve to a primitive with empty support",
+                ));
+            }
         }
     } else if plan.faithfulness.supplied.is_some() {
         examples.push(generic_validation_example(
@@ -118,12 +141,100 @@ fn check_supplied_slots(plan: &RepairPlanDocumentV1) -> ValidationCheck {
                 "null",
                 "optional supplied artifact must be an object when present",
             ));
-        } else if value.is_some() {
-            examples.push(generic_validation_example(
-                path,
-                "reserved-before-stage-2",
-                "Stage 2 supplied artifacts are rejected until their validators are implemented",
-            ));
+        } else if let Some(value) = value {
+            let Some(object) = value.as_object() else {
+                examples.push(generic_validation_example(
+                    path,
+                    "not-object",
+                    "optional supplied artifact must be an object when present",
+                ));
+                continue;
+            };
+            let kind = object
+                .get("kind")
+                .and_then(Value::as_str)
+                .unwrap_or_default();
+            match path {
+                "trueSheafCertificate" if kind == "true-sheaf-certificate" => {
+                    for key in object.keys() {
+                        if !matches!(
+                            key.as_str(),
+                            "kind" | "coverRef" | "memberCharts" | "globalCondition"
+                        ) {
+                            examples.push(generic_validation_example(
+                                &format!("{path}.{key}"),
+                                "unknown-field",
+                                "true-sheaf certificate has no unregistered supplied fields",
+                            ));
+                        }
+                    }
+                    let cover_ref = object
+                        .get("coverRef")
+                        .and_then(Value::as_str)
+                        .unwrap_or_default();
+                    let members = object
+                        .get("memberCharts")
+                        .and_then(Value::as_array)
+                        .map(|items| items.iter().filter_map(Value::as_str).collect::<Vec<_>>())
+                        .unwrap_or_default();
+                    let global_condition = object
+                        .get("globalCondition")
+                        .and_then(Value::as_str)
+                        .unwrap_or_default();
+                    if !archmap.covers.iter().any(|cover| cover.id == cover_ref)
+                        || members.is_empty()
+                        || members
+                            .iter()
+                            .any(|chart| !plan.complex.charts.iter().any(|item| item == chart))
+                        || !matches!(global_condition, "assumed" | "discharged-by-finite-model")
+                    {
+                        examples.push(generic_validation_example(
+                            path,
+                            "cover-membership-invalid",
+                            "true-sheaf certificate coverRef/memberCharts must resolve to the selected finite site and globalCondition must be an explicit assumption status",
+                        ));
+                    }
+                }
+                "gluingData" if kind == "gluing-data" => {
+                    for key in object.keys() {
+                        if !matches!(key.as_str(), "kind" | "overlapRefs") {
+                            examples.push(generic_validation_example(
+                                &format!("{path}.{key}"),
+                                "unknown-field",
+                                "gluing data has no unregistered supplied fields",
+                            ));
+                        }
+                    }
+                    let overlap_refs = object
+                        .get("overlapRefs")
+                        .and_then(Value::as_array)
+                        .map(|items| {
+                            items
+                                .iter()
+                                .filter_map(Value::as_str)
+                                .collect::<BTreeSet<_>>()
+                        })
+                        .unwrap_or_default();
+                    let expected = plan
+                        .complex
+                        .overlaps
+                        .iter()
+                        .map(|overlap| overlap.id.as_str())
+                        .collect::<BTreeSet<_>>();
+                    if overlap_refs != expected {
+                        examples.push(generic_validation_example(
+                            path,
+                            "overlap-membership-invalid",
+                            "gluing data must name every selected overlap exactly once",
+                        ));
+                    }
+                }
+                _ => examples.push(generic_validation_example(
+                    path,
+                    kind,
+                    "supplied artifact kind or finite compatibility data is invalid",
+                )),
+            }
         }
     }
     examples_check(

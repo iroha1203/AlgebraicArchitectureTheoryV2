@@ -54,7 +54,11 @@
     "mode": "supplied",
     "supplied": {
       "zeroPrimitiveRef": "primitive:inventory-shared",
-      "residualSupportPredicate": "residual support vanishes on the zero primitive",
+      "residualSupportPredicate": {
+        "kind": "finite-support",
+        "supportVariables": ["src:order", "src:inventory"],
+        "zeroOnZeroPrimitive": true
+      },
       "faithfulnessLaw": "residual support is faithful on the selected complete-support complex"
     }
   },

@@ -7,7 +7,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --out-dir .archsig/analyze
 ```
 
@@ -23,7 +23,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --repair-plan tools/archsig/tests/fixtures/ag_measurement/repair_plan_complete_support.json \
   --out-dir .archsig/analyze-saga
 ```
@@ -77,7 +77,7 @@ adjudicate; it never auto-adopts candidates.
 cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --out .archsig/law-policy-validation.json
 ```
 
@@ -94,7 +94,7 @@ JSON SHA-256 fingerprints:
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- policy-bundle \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v051.json \
+  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
   --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
   --out .archsig/policy-bundle.json
 ```

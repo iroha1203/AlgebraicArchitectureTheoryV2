@@ -84,7 +84,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
         let law_surface = if archmap_name.contains("cech_h1_visible") {
             "law_surface_cech_h1_v051.json"
         } else {
-            "law_surface_ag_v051.json"
+            "law_surface_ag_v052.json"
         };
         let law_surface_path = root.join(law_surface);
         let law_policy_path = if law_surface == "law_surface_cech_h1_v051.json" {

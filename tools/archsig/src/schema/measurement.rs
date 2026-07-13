@@ -325,6 +325,8 @@ fn invariant_kind_for_schema(invariant_id: &str, invariant: &Value) -> String {
         "tor1-class-support"
     } else if invariant_id.contains("boundary-residue") {
         "boundary-residue-rank"
+    } else if invariant_id.contains("residual-class") {
+        "residual-class-support"
     } else if invariant_id.contains("saga-descent") {
         "residual-boundary-membership"
     } else if evaluator == "ag.cech-obstruction" {
@@ -385,6 +387,7 @@ fn structural_verdict_target(row: &AgStructuralVerdictV1) -> Value {
 fn structural_target_kind(row: &AgStructuralVerdictV1) -> &'static str {
     match row.evaluator.as_str() {
         "ag.cech-obstruction" => "cover-relative-cech-h1-class",
+        "ag.saga-descent" if row.law == "saga.residual-class" => "saga-residual-class",
         "ag.saga-descent" => "saga-residual-boundary-membership",
         "ag.square-free-repair" => "square-free-repair-support",
         _ => "profile-relative-structural-verdict",

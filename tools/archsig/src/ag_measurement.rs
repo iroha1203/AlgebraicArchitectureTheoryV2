@@ -9,15 +9,15 @@ use crate::{
     ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
     ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
     ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
-    ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, AgAnalyticReadingV1,
-    AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
-    ArchSigMeasurementPacketV1, BoundaryStatementV1, LawEquationSurfaceV1, LawPolicyDocumentV1,
-    MeasurementProfileV1, MeasurementProfileWitnessV1, NormalizedArchMapV2, NormalizedAtomV2,
-    NormalizedContextV2, NormalizedCoverV2, RepairPlanDocumentV1, SuppliedDataLedgerEntryV1,
-    ValidationCheck, ValidationExample, analytic_claim_status, analytic_fidelity,
-    assumption_id_for_schema,
+    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
+    AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
+    ArchMapDocumentV2, ArchSigMeasurementPacketV1, BoundaryStatementV1, LawEquationSurfaceV1,
+    LawPolicyDocumentV1, MeasurementProfileV1, MeasurementProfileWitnessV1, NormalizedArchMapV2,
+    NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanDocumentV1,
+    SuppliedDataLedgerEntryV1, ValidationCheck, ValidationExample, analytic_claim_status,
+    analytic_fidelity, assumption_id_for_schema,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -39,13 +39,14 @@ const STRUCTURAL_VERDICT_EVALUATORS: [&str; 10] = [
     "ag.period-stokes-audit",
     "ag.saga-descent",
 ];
-const COMPUTED_INVARIANT_KINDS: [&str; 15] = [
+const COMPUTED_INVARIANT_KINDS: [&str; 16] = [
     "measurement-invariant",
     "cech-h1-rank",
     "minimal-forbidden-supports",
     "tor1-class-support",
     "boundary-residue-rank",
     "residual-boundary-membership",
+    "residual-class-support",
     "selected-cover-edge-support",
     "coherence-obstruction-count",
     "restriction-compatibility-rank",
@@ -104,6 +105,13 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             principal_text: "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
             boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
             generated_discipline: "generated complete-support boundary-membership detection",
+        },
+        ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
+            theorem_ref: Some("part10/4.5"),
+            principal_text: "The selected supplied finite complex contains a measured non-gluing residual class in Z1/B1.",
+            boundary: "The class reading is relative to the supplied triple overlaps, additive coefficient, sheaf certificate, and gluing data.",
+            generated_discipline: "generated supplied class representative detection",
         },
         ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION => SummaryTranslationRule {
             conclusion_code: ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
@@ -185,6 +193,18 @@ fn summary_concrete_support_refs(
                 .map(|invariant| &invariant["boundaryMembership"]["residualSupport"])
             {
                 collect_json_string_leaves(residual_support, &mut refs);
+            }
+            refs
+        }
+        ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS => {
+            let mut refs = Vec::new();
+            if let Some(support) = packet
+                .computed_invariants
+                .iter()
+                .find(|invariant| invariant["invariantId"] == "saga-descent:residual-class")
+                .map(|invariant| &invariant["residualClassSupport"]["representative"])
+            {
+                collect_json_string_leaves(support, &mut refs);
             }
             refs
         }
@@ -3950,12 +3970,19 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             && verdict.law == "saga.residual-boundary-membership"
             && verdict.verdict == "measured_nonzero"
     });
+    let saga_class_nonzero = packet.structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.saga-descent"
+            && verdict.law == "saga.residual-class"
+            && verdict.verdict == "measured_nonzero"
+    });
     let saga_glues = packet.structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
             && verdict.law == "saga.global-coherence"
             && verdict.verdict == "measured_zero"
     });
-    let conclusion = if saga_non_gluing {
+    let conclusion = if saga_class_nonzero {
+        ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
+    } else if saga_non_gluing {
         ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL
     } else if saga_glues {
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
@@ -3983,6 +4010,10 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
         "translationRule": active_summary_translation_rule_json(&translation_rule, packet),
         "translationRuleTable": ARCHSIG_ANALYSIS_CONCLUSION_CODES
             .iter()
+            .filter(|candidate| {
+                **candidate != ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
+                    || conclusion == ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
+            })
             .map(|conclusion| summary_translation_rule_json(&summary_translation_rule(conclusion)))
             .collect::<Vec<_>>(),
         "readThisFirst": {
@@ -12270,6 +12301,8 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "repairPathAtomRefs",
         "repairPlanRef",
         "representative",
+        "residualClassSupport",
+        "suppliedSlots",
         "resolutionSelector",
         "restrictionMatrix",
         "sectionAssignment",

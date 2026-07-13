@@ -3,8 +3,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::{Value, json};
 
 use crate::{
-    AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
-    RepairPlanDocumentV1, assumption_id_for_schema,
+    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1,
+    AgVerdictDataV1, ArchMapDocumentV2, RepairPlanDocumentV1, assumption_id_for_schema,
 };
 
 #[derive(Debug, Clone)]
@@ -31,6 +31,20 @@ pub(crate) fn evaluate_saga_descent_v1(
         assumed_by: Some("repair-plan author".to_string()),
     };
     let enumeration_assumption_id = assumption_id_for_schema(&enumeration_assumption);
+    let sheaf_assumption =
+        plan.true_sheaf_certificate
+            .as_ref()
+            .and_then(Value::as_object)
+            .and_then(|certificate| {
+                (certificate.get("globalCondition").and_then(Value::as_str) == Some("assumed"))
+                    .then(|| AgAssumptionLedgerEntryV1 {
+                        theorem_ref: "part4/4.7".to_string(),
+                        assumption: format!("global sheaf condition for {}", plan.id),
+                        status: "assumed".to_string(),
+                        checked_by: None,
+                        assumed_by: Some("trueSheafCertificate author".to_string()),
+                    })
+            });
     let mut structural_verdict = Vec::new();
     let boundary_verdict = if boundary.in_b1 {
         "measured_zero"
@@ -142,7 +156,7 @@ pub(crate) fn evaluate_saga_descent_v1(
         });
     }
 
-    let computed_invariants = vec![
+    let mut computed_invariants = vec![
         json!({
             "invariantId": "saga-descent:boundary-membership",
             "evaluator": "ag.saga-descent",
@@ -166,11 +180,127 @@ pub(crate) fn evaluate_saga_descent_v1(
             }
         }),
     ];
+    if class_supply_is_checked(archmap, plan) {
+        let class_nonzero = !boundary.in_b1;
+        structural_verdict.push(AgStructuralVerdictV1 {
+            evaluator: "ag.saga-descent".to_string(),
+            law: "saga.residual-class".to_string(),
+            verdict: if class_nonzero { "measured_nonzero" } else { "measured_zero" }
+                .to_string(),
+            verdict_data: AgVerdictDataV1 {
+                in_scope: true,
+                zero: !class_nonzero,
+                non_zero: class_nonzero,
+                method_status: if class_nonzero {
+                    "nonzero_class_representative"
+                } else {
+                    "zero_class_representative"
+                }
+                .to_string(),
+                cert_ref: Some("computedInvariants/saga-descent:residual-class".to_string()),
+            },
+            depends_on_assumptions: vec![enumeration_assumption_id.clone()],
+            reason: Some(if class_nonzero {
+                format!("{ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS}: supplied Z1 representative is not in B1")
+            } else {
+                "supplied Z1 representative is zero in Z1/B1".to_string()
+            }),
+        });
+        computed_invariants.push(json!({
+            "invariantId": "saga-descent:residual-class",
+            "evaluator": "ag.saga-descent",
+            "residualClassSupport": {
+                "basis": "Z1/B1",
+                "representative": boundary.residual_support,
+                "nonZero": class_nonzero,
+                "quotient": "Z1/B1"
+            },
+            "suppliedSlots": [
+                "complex.tripleOverlaps",
+                "coefficient",
+                "trueSheafCertificate",
+                "gluingData"
+            ]
+        }));
+    }
+    let mut assumptions = vec![enumeration_assumption];
+    if let Some(sheaf_assumption) = sheaf_assumption {
+        assumptions.push(sheaf_assumption);
+    }
     SagaDescentMeasurementV1 {
         structural_verdict,
         computed_invariants,
-        assumptions: vec![enumeration_assumption],
+        assumptions,
     }
+}
+
+fn class_supply_is_checked(archmap: &ArchMapDocumentV2, plan: &RepairPlanDocumentV1) -> bool {
+    let overlap_ids = plan
+        .complex
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let triple_ok = !plan.complex.triple_overlaps.is_empty()
+        && plan.complex.triple_overlaps.iter().all(|triple| {
+            triple
+                .overlap_refs
+                .iter()
+                .all(|overlap| overlap_ids.contains(overlap.as_str()))
+        });
+    let coefficient_ok = plan.coefficient.is_f2_additive()
+        || plan.coefficient.supplied().is_some_and(|coefficient| {
+            coefficient.kind == "f2-additive"
+                && coefficient.characteristic == 2
+                && coefficient.additive
+                && coefficient.delta_one_after_delta_zero
+                && coefficient.zero_maps_to_zero
+        });
+    let certificate_ok = plan
+        .true_sheaf_certificate
+        .as_ref()
+        .and_then(Value::as_object)
+        .is_some_and(|certificate| {
+            certificate.get("kind").and_then(Value::as_str) == Some("true-sheaf-certificate")
+                && certificate
+                    .get("globalCondition")
+                    .and_then(Value::as_str)
+                    .is_some_and(|condition| {
+                        matches!(condition, "assumed" | "discharged-by-finite-model")
+                    })
+                && certificate
+                    .get("coverRef")
+                    .and_then(Value::as_str)
+                    .is_some_and(|cover| archmap.covers.iter().any(|item| item.id == cover))
+                && certificate
+                    .get("memberCharts")
+                    .and_then(Value::as_array)
+                    .is_some_and(|members| {
+                        !members.is_empty()
+                            && members.iter().all(|member| {
+                                member.as_str().is_some_and(|chart| {
+                                    plan.complex.charts.iter().any(|item| item == chart)
+                                })
+                            })
+                    })
+        });
+    let gluing_ok = plan
+        .gluing_data
+        .as_ref()
+        .and_then(Value::as_object)
+        .is_some_and(|gluing| {
+            gluing.get("kind").and_then(Value::as_str) == Some("gluing-data")
+                && gluing
+                    .get("overlapRefs")
+                    .and_then(Value::as_array)
+                    .is_some_and(|refs| {
+                        refs.iter()
+                            .filter_map(Value::as_str)
+                            .collect::<BTreeSet<_>>()
+                            == overlap_ids
+                    })
+        });
+    triple_ok && coefficient_ok && certificate_ok && gluing_ok
 }
 
 #[derive(Debug, Clone)]

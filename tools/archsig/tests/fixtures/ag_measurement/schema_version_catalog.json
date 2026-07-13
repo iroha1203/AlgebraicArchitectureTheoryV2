@@ -397,7 +397,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchSig measurement packet v0.5.2 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, and REPAIR_TARGETS_IDENTIFIED.",
+        "fieldMappingPolicy": "ArchSig measurement packet v0.5.2 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, and REPAIR_TARGETS_IDENTIFIED.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -566,7 +566,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run. Registered analyze conclusionCode values are MEASURED_NONGLUING_RESIDUAL, REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, REPAIR_TARGETS_IDENTIFIED, MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, and VALIDATION_FAILED_BEFORE_MEASUREMENT.",
+        "fieldMappingPolicy": "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run. Registered analyze conclusionCode values are MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, REPAIR_TARGETS_IDENTIFIED, MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, and VALIDATION_FAILED_BEFORE_MEASUREMENT.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
