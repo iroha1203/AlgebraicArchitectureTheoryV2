@@ -74,6 +74,12 @@ def atomize {U : AtomCarrier.{u}}
     (D : ExtractionDoctrine U) (source : D.Source) : AtomFamily U where
   mem atom := D.extracts source atom
 
+/-- Membership in the canonical atomization is exactly source extraction. -/
+theorem atomize_mem_iff {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source) (atom : U.Atom) :
+    (D.atomize source).mem atom ↔ D.extracts source atom :=
+  Iff.rfl
+
 /--
 I.定義10.4A: a family realizes the extraction relation for a source.
 
@@ -86,6 +92,13 @@ def Atomizes {U : AtomCarrier.{u}}
     (D : ExtractionDoctrine U) (source : D.Source)
     (family : AtomFamily U) : Prop :=
   ∀ atom, family.mem atom ↔ D.extracts source atom
+
+/-- Any realizing family has membership exactly when the doctrine extracts the atom. -/
+theorem mem_iff_extracts_of_atomizes {U : AtomCarrier.{u}}
+    (D : ExtractionDoctrine U) (source : D.Source) (family : AtomFamily U)
+    (h : D.Atomizes source family) (atom : U.Atom) :
+    family.mem atom ↔ D.extracts source atom :=
+  h atom
 
 /-- I.定理10.5: the canonical family realizes its source extraction relation. -/
 theorem atomize_holds {U : AtomCarrier.{u}}

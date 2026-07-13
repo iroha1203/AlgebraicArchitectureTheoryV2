@@ -16,6 +16,110 @@ universe u
 
 /-! SD1 fixed definition signatures. -/
 
+example {U : AtomCarrier.{u}} :
+    (Source Vocabulary SemanticReading Resolution : Type u) ->
+    Vocabulary -> SemanticReading -> Resolution ->
+    (Vocabulary -> U.Atom -> Prop) ->
+    (SemanticReading -> Source -> U.Atom -> Prop) ->
+    (Resolution -> Source -> U.Atom -> Prop) ->
+    (Source -> U.Atom -> Prop) -> (Source -> Source) -> ExtractionDoctrine U :=
+  @ExtractionDoctrine.mk U
+
+example {U : AtomCarrier.{u}} :
+    Nonempty U.Atom ->
+    (∀ a b, SameCoordinates U a b ↔ a = b) -> AtomAxiomSystem U :=
+  @AtomAxiomSystem.mk U
+
+example {U : AtomCarrier.{u}} :
+    (compose : (F : AtomFamily U) -> F.ListFinite -> AtomConfiguration U) ->
+    (∀ F hfinite, (compose F hfinite).family = F) ->
+    (∀ F hfinite, (compose F hfinite).FamilySupported) -> CompositionReading U :=
+  @CompositionReading.mk U
+
+example {U : AtomCarrier.{u}} :
+    (object : AtomConfiguration U -> ArchitectureObject U) ->
+    (∀ C, (object C).configuration = C) -> ObjectReading U :=
+  @ObjectReading.mk U
+
+example {U : AtomCarrier.{u}} :
+    List (CircuitQuery U × Bool) -> FiniteCircuitDatum U :=
+  @FiniteCircuitDatum.mk U
+
+example {U : AtomCarrier.{u}} {LU : LawUniverse U} :
+    (code : LU.Index -> CircuitDetectorCode U) ->
+    (∀ (i : LU.Index) (A : ArchitectureObject U) (Q : FiniteCircuitDatum U),
+      Q.Matches A -> (code i).eval Q = true -> ¬ (LU.law i).holds A) ->
+    CircuitReading LU :=
+  @CircuitReading.mk U LU
+
+example {U : AtomCarrier.{u}} :
+    (lawUniverse : LawUniverse U) -> CircuitReading lawUniverse -> LawReading U :=
+  @LawReading.mk U
+
+example {U : AtomCarrier.{u}} {C D : AtomConfiguration U} :
+    (atomMap : U.Atom -> U.Atom) ->
+    (∀ {a}, C.family.mem a -> D.family.mem (atomMap a)) ->
+    (∀ {a b}, C.relation a b -> D.relation (atomMap a) (atomMap b)) ->
+    (∀ {a b}, C.identification a b -> D.identification (atomMap a) (atomMap b)) ->
+    ConfigurationHom C D :=
+  @ConfigurationHom.mk U C D
+
+example {U : AtomCarrier.{u}} :
+    (source target : ArchitectureObject U) ->
+    ConfigurationHom source.configuration target.configuration -> Operation U :=
+  @Operation.mk U
+
+example {U : AtomCarrier.{u}} :
+    (Op : ArchitectureObject U -> ArchitectureObject U -> Type u) ->
+    ({A B : ArchitectureObject U} -> Op A B ->
+      ConfigurationHom A.configuration B.configuration) -> OperationReading U :=
+  @OperationReading.mk U
+
+example {U : AtomCarrier.{u}} :
+    (doctrine : ExtractionDoctrine U) ->
+    (source : doctrine.Source) ->
+    (doctrine.atomize source).ListFinite -> CompositionReading U -> ObjectReading U ->
+    LawReading U -> InvariantFamily U -> ArchitectureSignature U -> OperationReading U ->
+    CoreReading U :=
+  @CoreReading.mk U
+
+example {U : AtomCarrier.{u}} :
+    (Obj : Type (u + 1)) ->
+    (object : Obj -> ArchitectureObject U) ->
+    (Op : Obj -> Obj -> Type u) ->
+    ({A B : Obj} -> Op A B ->
+      ConfigurationHom (object A).configuration (object B).configuration) ->
+    InvariantFamily U -> LawReading U -> ArchitectureSignature U -> ObjectAlgebra U :=
+  @ObjectAlgebra.mk U
+
+example {U : AtomCarrier.{u}} :
+    AtomAxiomSystem U -> CoreReading U -> AATCorePackage U :=
+  @AATCorePackage.mk U
+
+example {U : AtomCarrier.{u}}
+    {motive : CircuitQuery U -> Sort u}
+    (atomPresent : (a : U.Atom) -> motive (.atomPresent a))
+    (relationPresent : (a b : U.Atom) -> motive (.relationPresent a b))
+    (identificationPresent : (a b : U.Atom) -> motive (.identificationPresent a b))
+    (query : CircuitQuery U) : motive query :=
+  CircuitQuery.rec atomPresent relationPresent identificationPresent query
+
+example {U : AtomCarrier.{u}}
+    {motive : CircuitDetectorCode U -> Sort u}
+    (reject : motive .reject)
+    (exact : (pattern : FiniteCircuitDatum U) -> motive (.exact pattern))
+    (any : (left right : CircuitDetectorCode U) -> motive left -> motive right ->
+      motive (.any left right))
+    (code : CircuitDetectorCode U) : motive code :=
+  CircuitDetectorCode.rec reject exact any code
+
+example {U : AtomCarrier.{u}} (L : Law U) (A : ArchitectureObject U) : Prop :=
+  SemanticObstruction L A
+
+example {U : AtomCarrier.{u}} (L : Law U) (A : ArchitectureObject U) :
+    SemanticObstruction L A ↔ ¬ L.holds A :=
+  SemanticObstruction.iff_not_holds L A
+
 example {U : AtomCarrier.{u}} (D : ExtractionDoctrine U) :
     D.Source -> U.Atom -> Prop :=
   D.extracts
@@ -377,6 +481,17 @@ example :
     ∃ A B : FiniteModel.corePackage.algebra.Obj,
       A ≠ B ∧ Nonempty (FiniteModel.corePackage.algebra.Op A B) :=
   FiniteModel.nonidentity_reachable_operation_fires
+
+example :
+    ¬ FiniteModel.coreReading.operationReading.Reachable
+      FiniteModel.corePackage.object FiniteModel.unreachableEmptyObject :=
+  FiniteModel.unreachableEmptyObject_not_reachable
+
+example : SemanticObstruction FiniteModel.noCycleLaw FiniteModel.object :=
+  FiniteModel.object_semanticObstruction
+
+example : ¬ SemanticObstruction FiniteModel.noCycleLaw FiniteModel.acyclicObject :=
+  FiniteModel.acyclicObject_not_semanticObstruction
 
 example : FiniteModel.corePackage.family.mem FiniteModel.FiniteAtom.componentA :=
   FiniteModel.corePackage_componentA_mem

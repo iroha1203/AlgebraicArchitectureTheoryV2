@@ -12,6 +12,16 @@ def SemanticObstruction {U : AtomCarrier.{u}} (L : Law U)
     (A : ArchitectureObject U) : Prop :=
   ¬ L.holds A
 
+namespace SemanticObstruction
+
+/-- Semantic obstruction is exactly failure of the selected law. -/
+theorem iff_not_holds {U : AtomCarrier.{u}} (L : Law U)
+    (A : ArchitectureObject U) :
+    SemanticObstruction L A ↔ ¬ L.holds A :=
+  Iff.rfl
+
+end SemanticObstruction
+
 /-- SD1: a finite circuit query over Atom-level configuration data. -/
 inductive CircuitQuery (U : AtomCarrier.{u}) where
   | atomPresent (a : U.Atom)
@@ -31,6 +41,32 @@ def CircuitQuery.Holds {U : AtomCarrier.{u}} (q : CircuitQuery U)
       A.configuration.family.mem a ∧
       A.configuration.family.mem b ∧
       A.configuration.identification a b
+
+namespace CircuitQuery
+
+/-- An atom-presence query holds exactly when the atom belongs to the object family. -/
+theorem atomPresent_holds_iff {U : AtomCarrier.{u}} (a : U.Atom)
+    (A : ArchitectureObject U) :
+    (CircuitQuery.atomPresent a).Holds A ↔ A.configuration.family.mem a :=
+  Iff.rfl
+
+/-- A relation query exposes its two support memberships and selected relation. -/
+theorem relationPresent_holds_iff {U : AtomCarrier.{u}} (a b : U.Atom)
+    (A : ArchitectureObject U) :
+    (CircuitQuery.relationPresent a b).Holds A ↔
+      A.configuration.family.mem a ∧ A.configuration.family.mem b ∧
+        A.configuration.relation a b :=
+  Iff.rfl
+
+/-- An identification query exposes its support memberships and selected identification. -/
+theorem identificationPresent_holds_iff {U : AtomCarrier.{u}} (a b : U.Atom)
+    (A : ArchitectureObject U) :
+    (CircuitQuery.identificationPresent a b).Holds A ↔
+      A.configuration.family.mem a ∧ A.configuration.family.mem b ∧
+        A.configuration.identification a b :=
+  Iff.rfl
+
+end CircuitQuery
 
 /--
 SD1: a finite signed query pattern for an obstruction circuit.
@@ -67,6 +103,30 @@ noncomputable def CircuitDetectorCode.eval {U : AtomCarrier.{u}}
     | .reject => false
     | .exact pattern => if pattern = Q then true else false
     | .any left right => left.eval Q || right.eval Q
+
+namespace CircuitDetectorCode
+
+/-- The rejecting detector evaluates to false on every finite datum. -/
+@[simp]
+theorem eval_reject {U : AtomCarrier.{u}} (Q : FiniteCircuitDatum U) :
+    (CircuitDetectorCode.reject : CircuitDetectorCode U).eval Q = false := by
+  simp [CircuitDetectorCode.eval]
+
+/-- An exact detector accepts precisely its stored finite template. -/
+theorem eval_exact_eq_true_iff {U : AtomCarrier.{u}}
+    (pattern Q : FiniteCircuitDatum U) :
+    (CircuitDetectorCode.exact pattern).eval Q = true ↔ pattern = Q := by
+  classical
+  simp [CircuitDetectorCode.eval]
+
+/-- Finite disjunction accepts precisely when one of its detector branches accepts. -/
+theorem eval_any_eq_true_iff {U : AtomCarrier.{u}}
+    (left right : CircuitDetectorCode U) (Q : FiniteCircuitDatum U) :
+    (CircuitDetectorCode.any left right).eval Q = true ↔
+      left.eval Q = true ∨ right.eval Q = true := by
+  simp [CircuitDetectorCode.eval]
+
+end CircuitDetectorCode
 
 /--
 SD1: law-indexed finite detector code together with semantic soundness.
@@ -147,6 +207,37 @@ theorem accepts_eq_eval {U : AtomCarrier.{u}} {LU : LawUniverse U}
     (R : CircuitReading LU) (i : LU.Index) (Q : FiniteCircuitDatum U) :
     R.accepts i Q = (R.code i).eval Q :=
   rfl
+
+/-- Acceptance is true exactly when the indexed detector evaluates to true. -/
+theorem accepts_eq_true_iff_eval {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    (R : CircuitReading LU) (i : LU.Index) (Q : FiniteCircuitDatum U) :
+    R.accepts i Q = true ↔ (R.code i).eval Q = true :=
+  Iff.rfl
+
+/-- A rejecting indexed detector accepts no finite datum. -/
+theorem accepts_eq_false_of_code_reject {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU) (i : LU.Index)
+    (Q : FiniteCircuitDatum U) (hcode : R.code i = .reject) :
+    R.accepts i Q = false := by
+  rw [accepts_eq_eval, hcode]
+  exact CircuitDetectorCode.eval_reject Q
+
+/-- An exact indexed detector accepts precisely the selected finite template. -/
+theorem accepts_eq_true_iff_of_code_exact {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU) (i : LU.Index)
+    (pattern Q : FiniteCircuitDatum U) (hcode : R.code i = .exact pattern) :
+    R.accepts i Q = true ↔ pattern = Q := by
+  rw [accepts_eq_eval, hcode]
+  exact CircuitDetectorCode.eval_exact_eq_true_iff pattern Q
+
+/-- A disjunctive indexed detector accepts precisely when either branch accepts. -/
+theorem accepts_eq_true_iff_of_code_any {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU) (i : LU.Index)
+    (left right : CircuitDetectorCode U) (Q : FiniteCircuitDatum U)
+    (hcode : R.code i = .any left right) :
+    R.accepts i Q = true ↔ left.eval Q = true ∨ right.eval Q = true := by
+  rw [accepts_eq_eval, hcode]
+  exact CircuitDetectorCode.eval_any_eq_true_iff left right Q
 
 /-- An accepted matching circuit yields failure of its indexed law. -/
 theorem circuit_sound {U : AtomCarrier.{u}} {LU : LawUniverse U}

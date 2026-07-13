@@ -186,11 +186,49 @@ theorem family_atomizes {U : AtomCarrier.{u}} (core : AATCorePackage U) :
     core.reading.doctrine.Atomizes core.reading.source core.family :=
   core.reading.doctrine.atomize_holds core.reading.source
 
+/-- Membership in the generated family is exactly extraction from the core source. -/
+theorem family_mem_iff_extracts {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (atom : U.Atom) :
+    core.family.mem atom ↔
+      core.reading.doctrine.extracts core.reading.source atom :=
+  core.family_atomizes atom
+
+/-- The generated configuration is exactly the composition result selected by the reading. -/
+theorem configuration_eq_compose {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) :
+    core.configuration =
+      core.reading.composition.compose core.family core.reading.family_listFinite :=
+  rfl
+
 /-- The configuration of any core has exactly its canonical family. -/
 theorem configuration_family_eq {U : AtomCarrier.{u}}
     (core : AATCorePackage U) :
     core.configuration.family = core.family :=
   core.reading.composition.family_eq _ _
+
+/-- Configuration-family membership is exactly extraction from the core source. -/
+theorem configuration_family_mem_iff_extracts {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (atom : U.Atom) :
+    core.configuration.family.mem atom ↔
+      core.reading.doctrine.extracts core.reading.source atom := by
+  rw [core.configuration_family_eq]
+  exact core.family_mem_iff_extracts atom
+
+/-- The generated relation is exactly the relation returned by the composition rule. -/
+theorem configuration_relation_iff_compose {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (a b : U.Atom) :
+    core.configuration.relation a b ↔
+      (core.reading.composition.compose core.family
+        core.reading.family_listFinite).relation a b :=
+  Iff.rfl
+
+/-- The generated identification is exactly the one returned by the composition rule. -/
+theorem configuration_identification_iff_compose {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (a b : U.Atom) :
+    core.configuration.identification a b ↔
+      (core.reading.composition.compose core.family
+        core.reading.family_listFinite).identification a b :=
+  Iff.rfl
 
 /-- Relations and identifications of any generated configuration are family-supported. -/
 theorem configuration_familySupported {U : AtomCarrier.{u}}
@@ -202,6 +240,42 @@ theorem object_configuration_eq {U : AtomCarrier.{u}}
     (core : AATCorePackage U) :
     core.object.configuration = core.configuration :=
   core.reading.objectReading.configuration_eq _
+
+/-- Membership in the generated object's family is exactly source extraction. -/
+theorem object_family_mem_iff_extracts {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) (atom : U.Atom) :
+    core.object.configuration.family.mem atom ↔
+      core.reading.doctrine.extracts core.reading.source atom := by
+  rw [core.object_configuration_eq]
+  exact core.configuration_family_mem_iff_extracts atom
+
+/-- The generated algebra retains the core reading's selected law reading. -/
+theorem algebra_lawReading_eq {U : AtomCarrier.{u}} (core : AATCorePackage U) :
+    core.algebra.lawReading = core.reading.lawReading :=
+  rfl
+
+/-- The generated algebra retains the core reading's indexed circuit reading. -/
+theorem algebra_circuitReading_eq {U : AtomCarrier.{u}}
+    (core : AATCorePackage U) :
+    core.algebra.lawReading.circuits = core.reading.lawReading.circuits :=
+  rfl
+
+/-- The generated algebra uses the detector code selected by the core reading. -/
+theorem algebra_detectorCode_eq {U : AtomCarrier.{u}}
+    (core : AATCorePackage U)
+    (i : core.reading.lawReading.lawUniverse.Index) :
+    core.algebra.lawReading.circuits.code i =
+      core.reading.lawReading.circuits.code i :=
+  rfl
+
+/-- Generated circuit acceptance computes by the core reading's selected detector. -/
+theorem algebra_accepts_eq_detector_eval {U : AtomCarrier.{u}}
+    (core : AATCorePackage U)
+    (i : core.reading.lawReading.lawUniverse.Index)
+    (Q : FiniteCircuitDatum U) :
+    core.algebra.lawReading.circuits.accepts i Q =
+      (core.reading.lawReading.circuits.code i).eval Q :=
+  rfl
 
 /--
 An architecture object occurs in the generated algebra exactly when it is

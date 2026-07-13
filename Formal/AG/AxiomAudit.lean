@@ -1033,6 +1033,42 @@ def sd1FiniteDatumAccepted := FiniteModel.cycleQueryDatum_accepted
 def sd1FiniteDatumRejected := FiniteModel.emptyQueryDatum_rejected
 def sd1FiniteGeneratedCircuitSound := FiniteModel.generatedCycleCircuit_sound
 
+/- SD1 no-unfold characterizations and nontrivial negative instances. -/
+def sd1AtomizeMemIff := @ExtractionDoctrine.atomize_mem_iff
+def sd1AtomizesMemIff := @ExtractionDoctrine.mem_iff_extracts_of_atomizes
+def sd1SemanticObstructionIff := @SemanticObstruction.iff_not_holds
+def sd1AtomPresentHoldsIff := @CircuitQuery.atomPresent_holds_iff
+def sd1RelationPresentHoldsIff := @CircuitQuery.relationPresent_holds_iff
+def sd1IdentificationPresentHoldsIff := @CircuitQuery.identificationPresent_holds_iff
+def sd1DetectorReject := @CircuitDetectorCode.eval_reject
+def sd1DetectorExact := @CircuitDetectorCode.eval_exact_eq_true_iff
+def sd1DetectorAny := @CircuitDetectorCode.eval_any_eq_true_iff
+def sd1CircuitAcceptsEval := @CircuitReading.accepts_eq_true_iff_eval
+def sd1CircuitAcceptsReject := @CircuitReading.accepts_eq_false_of_code_reject
+def sd1CircuitAcceptsExact := @CircuitReading.accepts_eq_true_iff_of_code_exact
+def sd1CircuitAcceptsAny := @CircuitReading.accepts_eq_true_iff_of_code_any
+def sd1CoreFamilyMemIff := @AATCorePackage.family_mem_iff_extracts
+def sd1CoreConfigurationEqCompose := @AATCorePackage.configuration_eq_compose
+def sd1CoreConfigurationFamilyMemIff :=
+  @AATCorePackage.configuration_family_mem_iff_extracts
+def sd1CoreConfigurationRelationIff := @AATCorePackage.configuration_relation_iff_compose
+def sd1CoreConfigurationIdentificationIff :=
+  @AATCorePackage.configuration_identification_iff_compose
+def sd1CoreObjectFamilyMemIff := @AATCorePackage.object_family_mem_iff_extracts
+def sd1CoreAlgebraLawReadingEq := @AATCorePackage.algebra_lawReading_eq
+def sd1CoreAlgebraCircuitReadingEq := @AATCorePackage.algebra_circuitReading_eq
+def sd1CoreAlgebraDetectorCodeEq := @AATCorePackage.algebra_detectorCode_eq
+def sd1CoreAlgebraAcceptsEq := @AATCorePackage.algebra_accepts_eq_detector_eval
+def sd1FiniteSemanticObstruction := FiniteModel.object_semanticObstruction
+def sd1FiniteNoSemanticObstruction := FiniteModel.acyclicObject_not_semanticObstruction
+def sd1FiniteExtractsIffSelected := FiniteModel.extractionDoctrine_extracts_iff_selected
+def sd1FiniteConfigurationRelationIff := FiniteModel.corePackage_configuration_relation_iff
+def sd1FiniteObjectRelationIff := FiniteModel.corePackage_object_relation_iff
+def sd1FiniteReachableFamilyNonempty := @FiniteModel.reachable_object_family_nonempty
+def sd1FiniteUnreachableObject := FiniteModel.unreachableEmptyObject_not_reachable
+def sd1FiniteRejectingCode := FiniteModel.rejectingCircuitReading_code
+def sd1FiniteCoreDetectorCode := FiniteModel.coreReading_circuit_code
+
 theorem finiteSeedWitnessClosureAdmissible :
     Site.AdmissibleCover FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap
       FiniteModel.siteSeedWitnessClosureCover.toAATCoverageFamily.toCoverageFamily :=

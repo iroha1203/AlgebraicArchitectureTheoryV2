@@ -433,6 +433,19 @@ theorem acyclic_noCycleLaw_holds :
   intro hcycle
   exact hcycle.1
 
+/-- R10: the cyclic finite object has a nonempty semantic obstruction. -/
+theorem object_semanticObstruction :
+    SemanticObstruction noCycleLaw object :=
+  (SemanticObstruction.iff_not_holds noCycleLaw object).mpr
+    cycle_obstruction_law_failure
+
+/-- R10: the lawful acyclic finite object has no semantic obstruction. -/
+theorem acyclicObject_not_semanticObstruction :
+    ¬ SemanticObstruction noCycleLaw acyclicObject := by
+  intro hobstruction
+  exact (SemanticObstruction.iff_not_holds noCycleLaw acyclicObject).mp
+    hobstruction acyclic_noCycleLaw_holds
+
 /-- peer-review hardening I-1: the acyclic finite object is semantically lawful. -/
 theorem acyclic_lawfulness :
     Lawfulness acyclicObject lawUniverse := by
@@ -615,13 +628,18 @@ theorem collapseOperation_atomMap_nonidentity :
       FiniteAtom.componentA ≠ FiniteAtom.componentB := by
   exact ⟨rfl, by decide⟩
 
-/-- R10: the generated base configuration contains the first cycle relation. -/
+/-- R10: extraction from the selected source is exactly exclusion of component C. -/
+theorem extractionDoctrine_extracts_iff_selected (atom : carrier.Atom) :
+    extractionDoctrine.extracts ExtractionSource.withoutComponentC atom ↔
+      atom ≠ FiniteAtom.componentC := by
+  simp [ExtractionDoctrine.extracts, extractionDoctrine]
+
+/-- R10: generated-family membership is exactly the selected extraction predicate. -/
 theorem corePackage_family_mem (atom : carrier.Atom) :
     atom ≠ FiniteAtom.componentC -> corePackage.family.mem atom := by
   intro hselected
-  change True ∧ (ExtractionSource.withoutComponentC = ExtractionSource.all ∨
-    atom ≠ FiniteAtom.componentC) ∧ True ∧ True
-  exact ⟨trivial, Or.inr hselected, trivial, trivial⟩
+  exact (corePackage.family_mem_iff_extracts atom).mpr
+    ((extractionDoctrine_extracts_iff_selected atom).mpr hselected)
 
 /-- R10: the generated main core contains a concretely selected atom. -/
 theorem corePackage_componentA_mem :
@@ -632,46 +650,48 @@ theorem corePackage_componentA_mem :
 theorem corePackage_componentC_not_mem :
     ¬ corePackage.family.mem FiniteAtom.componentC := by
   intro h
-  change True ∧
-    (ExtractionSource.withoutComponentC = ExtractionSource.all ∨
-      FiniteAtom.componentC ≠ FiniteAtom.componentC) ∧ True ∧ True at h
-  simp at h
+  exact (extractionDoctrine_extracts_iff_selected FiniteAtom.componentC).mp
+    ((corePackage.family_mem_iff_extracts FiniteAtom.componentC).mp h) rfl
+
+/-- R10: configuration relations are the two selected relations on generated-family atoms. -/
+theorem corePackage_configuration_relation_iff (a b : carrier.Atom) :
+    corePackage.configuration.relation a b ↔
+      (cycleRelation a b ∨ substitutionRelation a b) ∧
+        corePackage.family.mem a ∧ corePackage.family.mem b := by
+  rw [corePackage.configuration_relation_iff_compose]
+  rfl
+
+/-- R10: object relations are characterized through the generated configuration API. -/
+theorem corePackage_object_relation_iff (a b : carrier.Atom) :
+    corePackage.object.configuration.relation a b ↔
+      (cycleRelation a b ∨ substitutionRelation a b) ∧
+        corePackage.family.mem a ∧ corePackage.family.mem b := by
+  rw [corePackage.object_configuration_eq]
+  exact corePackage_configuration_relation_iff a b
 
 /-- R10: the generated base configuration contains the first cycle relation. -/
 theorem corePackage_cycle_relation :
     corePackage.object.configuration.relation
-      FiniteAtom.dependsAB FiniteAtom.dependsBC := by
-  rw [corePackage.object_configuration_eq]
-  change (cycleRelation FiniteAtom.dependsAB FiniteAtom.dependsBC ∨
-    substitutionRelation FiniteAtom.dependsAB FiniteAtom.dependsBC) ∧
-      corePackage.family.mem FiniteAtom.dependsAB ∧
-        corePackage.family.mem FiniteAtom.dependsBC
-  exact ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
-    corePackage_family_mem _ (by simp)⟩
+      FiniteAtom.dependsAB FiniteAtom.dependsBC :=
+  (corePackage_object_relation_iff _ _).mpr
+    ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
+      corePackage_family_mem _ (by simp)⟩
 
 /-- R10: the generated base configuration contains the second cycle relation. -/
 theorem corePackage_cycle_relation_two :
     corePackage.object.configuration.relation
-      FiniteAtom.dependsBC FiniteAtom.dependsCA := by
-  rw [corePackage.object_configuration_eq]
-  change (cycleRelation FiniteAtom.dependsBC FiniteAtom.dependsCA ∨
-    substitutionRelation FiniteAtom.dependsBC FiniteAtom.dependsCA) ∧
-      corePackage.family.mem FiniteAtom.dependsBC ∧
-        corePackage.family.mem FiniteAtom.dependsCA
-  exact ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
-    corePackage_family_mem _ (by simp)⟩
+      FiniteAtom.dependsBC FiniteAtom.dependsCA :=
+  (corePackage_object_relation_iff _ _).mpr
+    ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
+      corePackage_family_mem _ (by simp)⟩
 
 /-- R10: the generated base configuration contains the third cycle relation. -/
 theorem corePackage_cycle_relation_three :
     corePackage.object.configuration.relation
-      FiniteAtom.dependsCA FiniteAtom.dependsAB := by
-  rw [corePackage.object_configuration_eq]
-  change (cycleRelation FiniteAtom.dependsCA FiniteAtom.dependsAB ∨
-    substitutionRelation FiniteAtom.dependsCA FiniteAtom.dependsAB) ∧
-      corePackage.family.mem FiniteAtom.dependsCA ∧
-        corePackage.family.mem FiniteAtom.dependsAB
-  exact ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
-    corePackage_family_mem _ (by simp)⟩
+      FiniteAtom.dependsCA FiniteAtom.dependsAB :=
+  (corePackage_object_relation_iff _ _).mpr
+    ⟨Or.inl trivial, corePackage_family_mem _ (by simp),
+      corePackage_family_mem _ (by simp)⟩
 
 /-- R10: the generated base configuration contains a concrete identification. -/
 theorem corePackage_componentA_identified_componentB :
@@ -687,10 +707,8 @@ theorem collapseOperation_transports_family :
       ((corePackage.algebra.configurationMap collapseOperation).atomMap
         FiniteAtom.componentA) :=
   (corePackage.algebra.configurationMap collapseOperation).maps_family
-    (by
-      change corePackage.object.configuration.family.mem FiniteAtom.componentA
-      rw [corePackage.object_configuration_eq, corePackage.configuration_family_eq]
-      exact corePackage_family_mem _ (by simp))
+    ((corePackage.object_family_mem_iff_extracts FiniteAtom.componentA).mpr
+      ((extractionDoctrine_extracts_iff_selected FiniteAtom.componentA).mpr (by simp)))
 
 /-- R10: the nonidentity operation transports an actual relation. -/
 theorem collapseOperation_transports_relation :
@@ -734,6 +752,39 @@ theorem nonidentity_reachable_operation_fires :
       A ≠ B ∧ Nonempty (corePackage.algebra.Op A B) :=
   ⟨corePackage.baseObject, collapsedAlgebraObject,
     baseObject_ne_collapsedObject, ⟨collapseOperation⟩⟩
+
+/-- R10: an empty configuration used to refute universal reachability. -/
+def unreachableEmptyConfiguration : AtomConfiguration carrier where
+  family := emptyFamily
+  relation _ _ := False
+  identification _ _ := False
+
+/-- R10: an architecture object whose Atom family is empty. -/
+def unreachableEmptyObject : ArchitectureObject carrier :=
+  objectOfConfiguration unreachableEmptyConfiguration
+
+/-- R10: every object reachable from the generated base retains an Atom witness. -/
+theorem reachable_object_family_nonempty
+    {A : ArchitectureObject carrier}
+    (hreachable : coreReading.operationReading.Reachable corePackage.object A) :
+    Nonempty {atom : carrier.Atom // A.configuration.family.mem atom} := by
+  induction hreachable with
+  | base =>
+      exact ⟨⟨FiniteAtom.componentA, by
+        rw [corePackage.object_configuration_eq,
+          corePackage.configuration_family_eq]
+        exact corePackage_componentA_mem⟩⟩
+  | step hsource op ih =>
+      obtain ⟨⟨atom, hatom⟩⟩ := ih
+      exact ⟨⟨op.atomMap atom, op.maps_family hatom⟩⟩
+
+/-- R10: the empty-family object is not in the generated operation closure. -/
+theorem unreachableEmptyObject_not_reachable :
+    ¬ coreReading.operationReading.Reachable corePackage.object
+      unreachableEmptyObject := by
+  intro hreachable
+  obtain ⟨⟨atom, hatom⟩⟩ := reachable_object_family_nonempty hreachable
+  exact hatom
 
 /-- R10: the selected cycle datum matches the generated core object. -/
 theorem cycleQueryDatum_matches_core :
@@ -787,9 +838,9 @@ theorem componentAAbsentDatum_not_matches_core :
     (by simp [componentAAbsentDatum])
   have hpresent :
       (CircuitQuery.atomPresent FiniteAtom.componentA).Holds corePackage.object := by
-    change corePackage.object.configuration.family.mem FiniteAtom.componentA
-    rw [corePackage.object_configuration_eq, corePackage.configuration_family_eq]
-    exact corePackage_family_mem _ (by simp)
+    exact (CircuitQuery.atomPresent_holds_iff _ _).mpr
+      ((corePackage.object_family_mem_iff_extracts FiniteAtom.componentA).mpr
+        ((extractionDoctrine_extracts_iff_selected FiniteAtom.componentA).mpr (by simp)))
   exact Bool.noConfusion ((hiff.mp hpresent))
 
 /--
@@ -804,6 +855,12 @@ noncomputable def rejectingCircuitReading : CircuitReading lawUniverse where
   code _ := .reject
   sound := by simp [CircuitDetectorCode.eval]
 
+/-- R10: the reject-only detector selects the public reject code at every index. -/
+theorem rejectingCircuitReading_code (i : lawUniverse.Index) :
+    rejectingCircuitReading.code i = .reject := by
+  cases i
+  rfl
+
 theorem rejectingCircuitReading_not_requiredComplete :
     ¬ rejectingCircuitReading.RequiredComplete := by
   intro hcomplete
@@ -814,22 +871,38 @@ theorem rejectingCircuitReading_not_requiredComplete :
       corePackage_cycle_relation_three⟩
   obtain ⟨circuit⟩ := hcomplete corePackage.object PUnit.unit rfl
     hfailure
-  have hfalse : false = true := by
-    simpa [rejectingCircuitReading, CircuitReading.accepts,
-      CircuitDetectorCode.eval] using circuit.2.2
+  have hreject :
+      rejectingCircuitReading.accepts PUnit.unit circuit.1 = false :=
+    CircuitReading.accepts_eq_false_of_code_reject
+      rejectingCircuitReading PUnit.unit circuit.1
+      (rejectingCircuitReading_code PUnit.unit)
+  have hfalse : false = true := hreject.symm.trans circuit.2.2
   exact Bool.noConfusion hfalse
+
+/-- R10: the main core reading selects the exact cycle detector template. -/
+theorem coreReading_circuit_code (i : lawUniverse.Index) :
+    coreReading.lawReading.circuits.code i = .exact cycleQueryDatum := by
+  cases i
+  rfl
 
 /-- R10: the finite-template detector accepts the concrete cycle datum. -/
 theorem cycleQueryDatum_accepted :
-    coreReading.lawReading.circuits.accepts PUnit.unit cycleQueryDatum = true := by
-  simp [coreReading, lawReading, circuitReading, CircuitReading.accepts,
-    CircuitDetectorCode.eval]
+    coreReading.lawReading.circuits.accepts PUnit.unit cycleQueryDatum = true :=
+  (CircuitReading.accepts_eq_true_iff_of_code_exact
+    coreReading.lawReading.circuits PUnit.unit cycleQueryDatum cycleQueryDatum
+    (coreReading_circuit_code PUnit.unit)).mpr rfl
 
 /-- R10: a distinct empty datum is rejected by the finite-template detector. -/
 theorem emptyQueryDatum_rejected :
     coreReading.lawReading.circuits.accepts PUnit.unit ⟨[]⟩ = false := by
-  simp [coreReading, lawReading, circuitReading, CircuitReading.accepts,
-    CircuitDetectorCode.eval, cycleQueryDatum]
+  apply Bool.eq_false_of_not_eq_true
+  intro haccepts
+  have heq : cycleQueryDatum = ⟨[]⟩ :=
+    (CircuitReading.accepts_eq_true_iff_of_code_exact
+      coreReading.lawReading.circuits PUnit.unit cycleQueryDatum ⟨[]⟩
+      (coreReading_circuit_code PUnit.unit)).mp haccepts
+  have hqueries := congrArg FiniteCircuitDatum.queries heq
+  simp [cycleQueryDatum] at hqueries
 
 /-- R10: the accepted datum is an element of the generated indexed circuit family. -/
 def generatedCycleCircuit :
