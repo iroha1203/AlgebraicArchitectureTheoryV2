@@ -15,22 +15,32 @@
 
 ## レビューバッチと修正後確認
 
-- 正式レビューは、親が実装・証拠固定・自己点検を終えて固定した最終スナップショットに対して行う。
-  実装中の小さな変更確認に正式レビューを使わない。ここでいう親は、実装ループとレビューゲートを
-  起動した外側のCodexであり、レビューsubagentではない。
-- Tool / Docs / Website は、最終スナップショットに対する4観点レビューを1回行う。既存findingの
-  対象だけを直し、公開契約・claim・source of truth・責務・新しいsurfaceを変えない修正は、親が
-  変更箇所とfindingに限定した単一subagentで確認する。これを「直接対応」とし、全4観点や
-  `review-pr`を再起動しない。
-- Tool / Docs / Websiteで公開契約・schema・公開API・evidence contract・claim scope・source of truth・
-  責務・新しいsurfaceのいずれかが変わった場合は、実装を完了し直して最終スナップショットを固定し、
-  正式レビューを再実行する。判定不能な場合も、直接対応として扱わない。
-- Math / Lean は実装中、focused checkまたは必要な単一subagentの確認に限定する。実装完了後に
-  最終スナップショットを固定して4本の正式査読を行う。findingが出た場合は全findingをまとめて
-  実装フェーズへ戻し、修正後に最終スナップショットを固定し直してから4本を再実行する。
+- 正式レビュー(分野別SKILLの全観点・全lane)は、PR作成後のレビューゲート(`review-pr`経由)
+  として、PRの最終スナップショットに対して1回行う。実装中の変更確認やPR作成前の自己点検に
+  正式レビューを使わない。ここでいう親は、実装ループとレビューゲートを起動した外側のCodexであり、
+  レビューsubagentではない。
+- 例外は`target-theorem-loop`の完了判定である。final `$math-lean-review`はPRゲートではなく
+  大定理の完了判定ゲートとして、従来どおりcompletion candidateの固定packetに対して実行する。
+- 初回の正式レビューでfindingが出た場合、全findingをまとめて実装フェーズへ戻す。修正後の既定は
+  「直接対応」であり、正式レビューの再実行ではない。
+- **直接対応**: 既存findingの対象だけを直した修正を、親が変更箇所とfindingに限定した
+  単一subagentで確認する。全観点・全laneや`review-pr`を再起動しない。直接対応の資格条件は
+  分野別に次とする。
+  - Tool / Docs / Website: 公開契約・claim・source of truth・責務・新しいsurfaceを変えない修正。
+  - Math / Lean: theorem / defのstatement(signature)を変えず、新規theorem / defの追加、
+    import方向の変更、台帳statusの変更を含まない、proof内部または台帳・docs記載の修正。
+- 資格喪失時は正式レビューへ戻す。Tool / Docs / Websiteで公開契約・schema・公開API・
+  evidence contract・claim scope・source of truth・責務・新しいsurfaceのいずれかが変わった場合、
+  Math / Leanでstatement変更・新規宣言の追加・import方向の変更・台帳status変更のいずれかを
+  含む場合は、実装を完了し直して最終スナップショットを固定し、正式レビューを再実行する。
+  判定不能な場合も、直接対応として扱わない。
+- 直接対応の確認subagentは、各findingの解消と併せて、diffがfinding対象外の変更を含んでいないかを
+  検査する。対象外の変更が混じっていれば、解消判定を出さず資格喪失として報告し、親は正式レビューの
+  再実行へ戻す(fail-closed)。
 - 修正後確認の出力は、各findingの解消、変更範囲、実行したfocused check・test・scan、未確認範囲とする。
-  Tool / Docs / Websiteの直接対応では、この出力を既存のPR監査記録へ追記する。初回正式レビューの
-  全findingが解消され、修正後確認が有資格なら、これを2回目の`review-pr`なしの最終内容証拠として扱う。
+  直接対応では、この出力を既存のPR監査記録へ追記する。初回正式レビューの全findingが解消され、
+  修正後確認が有資格なら、これを2回目の正式レビューなしの最終内容証拠として扱う。
+- Math / Lean は実装中、focused checkまたは必要な単一subagentの確認に限定する。
 
 ## 非編集とfail-closed
 
@@ -48,8 +58,9 @@
 - 必須laneが起動不能、未完了、または必要なcoverageを欠く場合、親が肩代わりして
   合格を作らず `Blocked / cannot determine` とする。
 - 1 laneでも中心 claim に関わるfindingを出した場合、親の裁量だけで棄却しない。全laneのfindingを
-  まとめて実装フェーズへ戻し、修正後に対象分野の再確認を行う。4本の正式査読を再実行する場合は、
-  実装完了と最終スナップショットの再固定後に限る。
+  まとめて実装フェーズへ戻し、修正後は「レビューバッチと修正後確認」に従い、直接対応または
+  正式レビューの再実行で確認する。正式レビューを再実行する場合は、実装完了と
+  最終スナップショットの再固定後に限る。
 
 ## Subagent入力
 
