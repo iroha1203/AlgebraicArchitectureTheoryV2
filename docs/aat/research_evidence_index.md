@@ -41,7 +41,7 @@ Research 側(`research/lean/ResearchLean/`)で受理された成果の1行台帳
 
 | theorem | file | 本文ラベル | conjuncts 要旨 | 未放電仮定 | 受理 | 移植状況 | 本体対応 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `ArchitectureOperationPresentation.operation_image_factorization` | `AG/QualitySurface/IntrinsicLawResponseCircuitDescent/OperationImageSheaf.lean` | - | finite `Op` と明示的に同値なindex上の free `O_Y`-module sheafからJ3a係数層へのmorphismを生成し、`lawfulSpace.Modules`内のabelian image、epi/mono factorization、selected generatorのJ2 chart/overlap回収、左右restriction naturalityを構成 | base field、ambient algebra/ideal、有限`Op`/`Chart`、J0 presentation、J1a geometry | G-aat-quality-surface-08 Cycle 7 / PR #3319 | unported | #3282 |
+| `ArchitectureOperationPresentation.operation_image_factorization` | `AG/QualitySurface/IntrinsicLawResponseCircuitDescent/OperationImageSheaf.lean` | - | finite `Op` と明示的に同値なindex上の free `O_Y`-module sheafからJ3a係数層へのmorphismを生成し、`lawfulSpace.Modules`内のabelian image、epi/mono factorization、selected generatorのJ2 chart/overlap回収、左右restriction naturalityを構成 | なし | G-aat-quality-surface-08 Cycle 7 / PR #3319 | unported | #3282 |
 
 <!--
 既存の受理成果の遡及登録(初期整備)は別 PRD で実施する
