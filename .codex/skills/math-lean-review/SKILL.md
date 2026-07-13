@@ -195,13 +195,13 @@ rg -n "import ResearchLean\.AG" Formal Formal.lean
 lane定義、追加出力、統合schemaは
 [references/reviewer-lanes.md](references/reviewer-lanes.md)を読む。
 
-起動時点はPR作成後のレビューゲート(`review-pr`経由)または`target-theorem-loop`の完了判定に
-限る。実装中はfocused checkまたは必要な単一subagentの確認に限定する。正式査読でfindingが出た
-場合は、全laneのfindingをまとめて実装フェーズを再開し、修正後の確認は共有review protocolの
-「レビューバッチと修正後確認」に従う。直接対応の資格を満たす修正(statement不変・新規宣言なし・
-import方向不変・台帳status不変のproof内部または台帳・docs記載の修正)はfinding限定の
-単一subagentで確認し、4本を再実行しない。資格を失う修正は、最終スナップショットを固定し直して
-から正式レビューとして4本を再実行する。
+起動時点は共有review protocolの「レビューバッチと修正後確認」が許可する時点(PR作成後の
+レビューゲート、`target-theorem-loop`の完了判定、`prd-loop`のエスカレーション)に限る。
+実装中はfocused checkまたは必要な単一subagentの確認に限定する。PRレビューゲートの正式査読で
+findingが出た場合は、全laneのfindingをまとめて実装フェーズを再開し、修正後の確認は共有
+review protocolの「レビューバッチと修正後確認」に従う(直接対応の資格条件・確認subagentの
+検査義務・資格喪失時の4本再実行は同節が正本)。完了判定ゲートとして起動された場合のfindingに
+直接対応は適用されず、完了判定は4本の正式再実行だけで更新する。
 
 ## 親 Codex の統合判定
 
