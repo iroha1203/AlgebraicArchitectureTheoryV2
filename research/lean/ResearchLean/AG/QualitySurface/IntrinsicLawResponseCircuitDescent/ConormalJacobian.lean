@@ -22,6 +22,9 @@ open CategoryTheory
 open TopologicalSpace
 open scoped AlgebraicGeometry
 
+set_option maxHeartbeats 1000000
+set_option synthInstance.maxHeartbeats 200000
+
 namespace ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent
 
 universe uk uA uOp uChart uState uBefore uAfter u
@@ -143,17 +146,40 @@ noncomputable def ambientLabeledResponseSheaf (I : Ideal A) (c : I.Cotangent) :
     (AlgebraicGeometry.tildeSelf
       (R := CommRingCat.of (ambientLawQuotient I))).hom
 
-/-- Canonical map from the restricted ambient structure module to the lawful-space one. -/
+/-- Transport restricted ambient structure sections to the lawful-space structure module. -/
 noncomputable def restrictedStructureModuleMap
     (G : TypedLocalizationGeometry k A Chart) (I : Ideal A) :
     (AlgebraicGeometry.Scheme.Modules.restrictFunctor (G.lawfulOpen I).ι).obj
         (SheafOfModules.unit ((ambientLawSpec I).ringCatSheaf)) ⟶
-      SheafOfModules.unit ((G.lawfulSpace I).ringCatSheaf) :=
-  (AlgebraicGeometry.Scheme.Modules.restrictFunctorIsoPullback
-      (G.lawfulOpen I).ι).hom.app
-        (SheafOfModules.unit ((ambientLawSpec I).ringCatSheaf)) ≫
-    SheafOfModules.pullbackObjUnitToUnit
-      (G.lawfulOpen I).ι.toRingCatSheafHom
+      SheafOfModules.unit ((G.lawfulSpace I).ringCatSheaf) where
+  val.app U := ModuleCat.homMk
+    ((forget₂ RingCat AddCommGrpCat).map
+      ((forget₂ CommRingCat RingCat).map
+        ((G.lawfulOpen I).ι.appIso U.unop).hom)) (by
+      intro r
+      ext s
+      change (show Γ(G.lawfulSpace I, U.unop) from r) *
+          (show Γ(G.lawfulSpace I, U.unop) from
+            ((G.lawfulOpen I).ι.appIso U.unop).hom s) =
+        ((G.lawfulOpen I).ι.appIso U.unop).hom
+          (((G.lawfulOpen I).ι.appIso U.unop).inv r *
+            (show Γ(ambientLawSpec I,
+              (G.lawfulOpen I).ι ''ᵁ U.unop) from s))
+      rw [map_mul, Iso.inv_hom_id_apply])
+  val.naturality f := by
+    rename_i X Y
+    ext s
+    apply ((G.lawfulOpen I).ι.appIso Y.unop).commRingCatIsoToRingEquiv.symm.injective
+    simpa using congr($((G.lawfulOpen I).ι.appIso_inv_naturality f).hom
+      (((G.lawfulOpen I).ι.appIso X.unop).hom s))
+
+@[simp] theorem restrictedStructureModuleMap_app
+    (G : TypedLocalizationGeometry k A Chart) (I : Ideal A)
+    (U : (G.lawfulSpace I).Opens)
+    (s : Γ(SheafOfModules.unit ((ambientLawSpec I).ringCatSheaf),
+      (G.lawfulOpen I).ι ''ᵁ U)) :
+    (G.restrictedStructureModuleMap I).app U s =
+      ((G.lawfulOpen I).ι.appIso U).hom s := rfl
 
 /-- Restrict one ambient labeled response to the generated lawful space. -/
 noncomputable def coefficientLabeledResponse
@@ -217,15 +243,12 @@ noncomputable def chartStructureSectionToLawQuotient
     (Submonoid.powers (Ideal.Quotient.mk I (G.denominator i))) source.hom
     (Algebra.linearMap (ambientLawQuotient I) (G.chartLawQuotient I i))
   intro s
+  rw [← (Algebra.lsmul (ambientLawQuotient I)
+    (A := G.chartLawQuotient I i) (ambientLawQuotient I)
+    (G.chartLawQuotient I i)).commutes]
   rcases s.2 with ⟨n, hn⟩
   rw [← hn, map_pow]
-  simpa only [(Algebra.lsmul (ambientLawQuotient I)
-    (A := G.chartLawQuotient I i) (ambientLawQuotient I)
-    (G.chartLawQuotient I i)).commutes] using
-      ((G.isUnit_chartLawQuotientMap_denominator I i).pow n).map
-        (Algebra.lsmul (ambientLawQuotient I)
-          (A := G.chartLawQuotient I i) (ambientLawQuotient I)
-          (G.chartLawQuotient I i))
+  exact (G.isUnit_chartLawQuotientMap_denominator I i).pow n |>.map _
 
 @[simp] theorem chartStructureSectionToLawQuotient_toOpen
     (G : TypedLocalizationGeometry k A Chart) (I : Ideal A) (i : Chart)
@@ -246,8 +269,7 @@ noncomputable def chartStructureSectionToLawQuotient
         (G.lawfulChartOpen I i)).hom :=
     G.chartStructureToOpenIsLocalized I i
   unfold chartStructureSectionToLawQuotient
-  rw [IsLocalizedModule.lift_apply]
-  rfl
+  apply IsLocalizedModule.lift_apply
 
 /-- Read a lawful-space structure-module section on a selected chart in its quotient ring. -/
 noncomputable def chartStructureSectionToLawQuotientOnSpace
@@ -256,10 +278,10 @@ noncomputable def chartStructureSectionToLawQuotientOnSpace
       G.lawfulChartOpenOnSpace I i)) :
     G.chartLawQuotient I i :=
   G.chartStructureSectionToLawQuotient I i
-    ((SheafOfModules.unit ((ambientLawSpec I).ringCatSheaf)).presheaf.map
+    ((SheafOfModules.unit ((ambientLawSpec I).ringCatSheaf)).val.map
       (eqToHom (G.image_lawfulChartOpenOnSpace I i).symm).op
-      ((inv (G.restrictedStructureModuleMap I)).app
-        (G.lawfulChartOpenOnSpace I i) s))
+      (((G.lawfulOpen I).ι.appIso
+        (G.lawfulChartOpenOnSpace I i)).inv s))
 
 theorem chartStructureSectionToLawQuotientOnSpace_coefficientLabeledResponse
     (G : TypedLocalizationGeometry k A Chart) (I : Ideal A) (i : Chart)
@@ -269,11 +291,15 @@ theorem chartStructureSectionToLawQuotientOnSpace_coefficientLabeledResponse
         ((G.coefficientLabeledResponse I c).app
           (G.lawfulChartOpenOnSpace I i) s) =
       G.chartStructureSectionToLawQuotient I i
-        ((G.ambientLabeledResponseSheaf I c).app (G.lawfulChartOpen I i)
+        ((ambientLabeledResponseSheaf (k := k) I c).app (G.lawfulChartOpen I i)
           ((ambientDerivationSheaf (k := k) I).presheaf.map
             (eqToHom (G.image_lawfulChartOpenOnSpace I i).symm).op s)) := by
-  simp [chartStructureSectionToLawQuotientOnSpace,
-    coefficientLabeledResponse, Category.assoc]
+  unfold chartStructureSectionToLawQuotientOnSpace
+  apply congrArg (G.chartStructureSectionToLawQuotient I i)
+  simpa [coefficientLabeledResponse, restrictedStructureModuleMap] using
+    (PresheafOfModules.naturality_apply
+      (ambientLabeledResponseSheaf (k := k) I c).val
+      (eqToHom (G.image_lawfulChartOpenOnSpace I i).symm).op s).symm
 
 /-- On a selected chart, the sheafified evaluation is the localized full Jacobian evaluation. -/
 theorem chartAmbientLabeledResponse_eq_conormalResponse
@@ -283,7 +309,7 @@ theorem chartAmbientLabeledResponse_eq_conormalResponse
       (ambientDerivationSheaf (k := k) I)).presheaf.obj
         (.op (G.lawfulChartOpen I i))) :
     G.chartStructureSectionToLawQuotient I i
-        ((G.ambientLabeledResponseSheaf I (I.toCotangent x)).app
+        ((ambientLabeledResponseSheaf (k := k) I (I.toCotangent x)).app
           (G.lawfulChartOpen I i) s) =
       QuotientValuedDerivation.conormalResponse (G.chartLawIdeal I i)
         (G.chartSectionToDerivation I i s)
@@ -307,32 +333,59 @@ theorem chartAmbientLabeledResponse_eq_conormalResponse
           (.op (G.lawfulChartOpen I i)) →ₗ[ambientLawQuotient I]
         G.chartLawQuotient I i :=
     (G.chartStructureSectionToLawQuotient I i).comp
-      (((G.ambientLabeledResponseSheaf I (I.toCotangent x)).app
-        (G.lawfulChartOpen I i)).hom.restrictScalars (ambientLawQuotient I))
+      ((AlgebraicGeometry.modulesSpecToSheaf.map
+        (ambientLabeledResponseSheaf (k := k) I (I.toCotangent x))).1.app
+          (.op (G.lawfulChartOpen I i))).hom
   let jacobianMap :
       (AlgebraicGeometry.modulesSpecToSheaf.obj
         (ambientDerivationSheaf (k := k) I)).presheaf.obj
           (.op (G.lawfulChartOpen I i)) →ₗ[ambientLawQuotient I]
         G.chartLawQuotient I i :=
-    ((LinearMap.applyₗ (R := G.chartLawQuotient I i) localClass).restrictScalars
-      (ambientLawQuotient I)).comp (G.chartSectionToDerivation I i)
+    (((LinearMap.applyₗ (R := G.chartLawQuotient I i) localClass).comp
+      (QuotientValuedDerivation.conormalResponseLinear (k := k)
+        (G.chartLawIdeal I i))).restrictScalars
+          (ambientLawQuotient I)).comp (G.chartSectionToDerivation I i)
   change responseMap s = jacobianMap s
   apply LinearMap.congr_fun
   apply IsLocalizedModule.ext
     (Submonoid.powers (Ideal.Quotient.mk I (G.denominator i))) source.hom
   · intro denominator
+    rw [← (Algebra.lsmul (ambientLawQuotient I)
+      (A := G.chartLawQuotient I i) (ambientLawQuotient I)
+      (G.chartLawQuotient I i)).commutes]
     rcases denominator.2 with ⟨n, hn⟩
     rw [← hn, map_pow]
-    simpa only [(Algebra.lsmul (ambientLawQuotient I)
-      (A := G.chartLawQuotient I i) (ambientLawQuotient I)
-      (G.chartLawQuotient I i)).commutes] using
-        ((G.isUnit_chartLawQuotientMap_denominator I i).pow n).map
-          (Algebra.lsmul (ambientLawQuotient I)
-            (A := G.chartLawQuotient I i) (ambientLawQuotient I)
-            (G.chartLawQuotient I i))
+    exact (G.isUnit_chartLawQuotientMap_denominator I i).pow n |>.map _
   · ext d
     simp [responseMap, jacobianMap, localClass, ambientLabeledResponseSheaf,
-      ambientLabeledResponse, ambientConormalJacobian, ambientConormalEvaluation]
+      ambientLabeledResponse, ambientConormalJacobian, ambientConormalEvaluation,
+      AlgebraicGeometry.tildeSelf]
+    have hmap := congr($(AlgebraicGeometry.tilde.toOpen_map_app
+      (ModuleCat.ofHom (QuotientValuedDerivation.conormalResponseLinear
+        (k := k) I) ≫
+        ModuleCat.ofHom (LinearMap.applyₗ (R := ambientLawQuotient I)
+          (I.toCotangent x))) (G.lawfulChartOpen I i)) d)
+    rw [ModuleCat.comp_apply, ModuleCat.comp_apply] at hmap
+    dsimp [source]
+    refine (congrArg (G.chartStructureSectionToLawQuotient I i) hmap).trans ?_
+    rw [G.chartStructureSectionToLawQuotient_toOpen]
+    calc
+      G.chartLawQuotientMap I i
+          ((ModuleCat.ofHom (QuotientValuedDerivation.conormalResponseLinear
+            (k := k) I) ≫
+            ModuleCat.ofHom (LinearMap.applyₗ (R := ambientLawQuotient I)
+              (I.toCotangent x))).hom d) =
+        G.chartLawQuotientMap I i (d x) := rfl
+      _ = G.chartAmbientComparison I i d
+          (algebraMap A (G.chartRing i) x) :=
+        (G.chartAmbientComparison_algebraMap I i d x).symm
+      _ = G.chartSectionToDerivation I i
+          ((AlgebraicGeometry.tilde.toOpen
+            (ambientDerivationModule (k := k) I)
+            (G.lawfulChartOpen I i)) d)
+          (algebraMap A (G.chartRing i) x) :=
+        congrArg (fun e ↦ e (algebraMap A (G.chartRing i) x))
+          (G.chartSectionToDerivation_toOpen I i d).symm
 
 /-- The structure-module section map on a selected overlap is localization. -/
 noncomputable def overlapStructureToOpenIsLocalized
@@ -393,15 +446,12 @@ noncomputable def overlapStructureSectionToLawQuotient
       (Ideal.Quotient.mk I (G.denominator i * G.denominator j))) source.hom
     (Algebra.linearMap (ambientLawQuotient I) (G.overlapLawQuotient I i j))
   intro s
+  rw [← (Algebra.lsmul (ambientLawQuotient I)
+    (A := G.overlapLawQuotient I i j) (ambientLawQuotient I)
+    (G.overlapLawQuotient I i j)).commutes]
   rcases s.2 with ⟨n, hn⟩
   rw [← hn, map_pow]
-  simpa only [(Algebra.lsmul (ambientLawQuotient I)
-    (A := G.overlapLawQuotient I i j) (ambientLawQuotient I)
-    (G.overlapLawQuotient I i j)).commutes] using
-      ((G.isUnit_overlapLawQuotientMap_denominator I i j).pow n).map
-        (Algebra.lsmul (ambientLawQuotient I)
-          (A := G.overlapLawQuotient I i j) (ambientLawQuotient I)
-          (G.overlapLawQuotient I i j))
+  exact (G.isUnit_overlapLawQuotientMap_denominator I i j).pow n |>.map _
 
 @[simp] theorem overlapStructureSectionToLawQuotient_toOpen
     (G : TypedLocalizationGeometry k A Chart) (I : Ideal A) (i j : Chart)
@@ -423,8 +473,7 @@ noncomputable def overlapStructureSectionToLawQuotient
         (G.lawfulOverlapOpen I i j)).hom :=
     G.overlapStructureToOpenIsLocalized I i j
   unfold overlapStructureSectionToLawQuotient
-  rw [IsLocalizedModule.lift_apply]
-  rfl
+  apply IsLocalizedModule.lift_apply
 
 /-- Read a lawful-space structure-module section on an overlap in its quotient ring. -/
 noncomputable def overlapStructureSectionToLawQuotientOnSpace
@@ -433,10 +482,10 @@ noncomputable def overlapStructureSectionToLawQuotientOnSpace
       G.lawfulOverlapOpenOnSpace I i j)) :
     G.overlapLawQuotient I i j :=
   G.overlapStructureSectionToLawQuotient I i j
-    ((SheafOfModules.unit ((ambientLawSpec I).ringCatSheaf)).presheaf.map
+    ((SheafOfModules.unit ((ambientLawSpec I).ringCatSheaf)).val.map
       (eqToHom (G.image_lawfulOverlapOpenOnSpace I i j).symm).op
-      ((inv (G.restrictedStructureModuleMap I)).app
-        (G.lawfulOverlapOpenOnSpace I i j) s))
+      (((G.lawfulOpen I).ι.appIso
+        (G.lawfulOverlapOpenOnSpace I i j)).inv s))
 
 theorem overlapStructureSectionToLawQuotientOnSpace_coefficientLabeledResponse
     (G : TypedLocalizationGeometry k A Chart) (I : Ideal A) (i j : Chart)
@@ -446,11 +495,15 @@ theorem overlapStructureSectionToLawQuotientOnSpace_coefficientLabeledResponse
         ((G.coefficientLabeledResponse I c).app
           (G.lawfulOverlapOpenOnSpace I i j) s) =
       G.overlapStructureSectionToLawQuotient I i j
-        ((G.ambientLabeledResponseSheaf I c).app (G.lawfulOverlapOpen I i j)
+        ((ambientLabeledResponseSheaf (k := k) I c).app (G.lawfulOverlapOpen I i j)
           ((ambientDerivationSheaf (k := k) I).presheaf.map
             (eqToHom (G.image_lawfulOverlapOpenOnSpace I i j).symm).op s)) := by
-  simp [overlapStructureSectionToLawQuotientOnSpace,
-    coefficientLabeledResponse, Category.assoc]
+  unfold overlapStructureSectionToLawQuotientOnSpace
+  apply congrArg (G.overlapStructureSectionToLawQuotient I i j)
+  simpa [coefficientLabeledResponse, restrictedStructureModuleMap] using
+    (PresheafOfModules.naturality_apply
+      (ambientLabeledResponseSheaf (k := k) I c).val
+      (eqToHom (G.image_lawfulOverlapOpenOnSpace I i j).symm).op s).symm
 
 /-- On an overlap, the sheafified evaluation is the localized full conormal response. -/
 theorem overlapAmbientLabeledResponse_eq_conormalResponse
@@ -460,7 +513,7 @@ theorem overlapAmbientLabeledResponse_eq_conormalResponse
       (ambientDerivationSheaf (k := k) I)).presheaf.obj
         (.op (G.lawfulOverlapOpen I i j))) :
     G.overlapStructureSectionToLawQuotient I i j
-        ((G.ambientLabeledResponseSheaf I (I.toCotangent x)).app
+        ((ambientLabeledResponseSheaf (k := k) I (I.toCotangent x)).app
           (G.lawfulOverlapOpen I i j) s) =
       QuotientValuedDerivation.conormalResponse (G.overlapLawIdeal I i j)
         (G.overlapSectionToDerivation I i j s)
@@ -485,33 +538,60 @@ theorem overlapAmbientLabeledResponse_eq_conormalResponse
           (.op (G.lawfulOverlapOpen I i j)) →ₗ[ambientLawQuotient I]
         G.overlapLawQuotient I i j :=
     (G.overlapStructureSectionToLawQuotient I i j).comp
-      (((G.ambientLabeledResponseSheaf I (I.toCotangent x)).app
-        (G.lawfulOverlapOpen I i j)).hom.restrictScalars (ambientLawQuotient I))
+      ((AlgebraicGeometry.modulesSpecToSheaf.map
+        (ambientLabeledResponseSheaf (k := k) I (I.toCotangent x))).1.app
+          (.op (G.lawfulOverlapOpen I i j))).hom
   let jacobianMap :
       (AlgebraicGeometry.modulesSpecToSheaf.obj
         (ambientDerivationSheaf (k := k) I)).presheaf.obj
           (.op (G.lawfulOverlapOpen I i j)) →ₗ[ambientLawQuotient I]
         G.overlapLawQuotient I i j :=
-    ((LinearMap.applyₗ (R := G.overlapLawQuotient I i j) localClass).restrictScalars
-      (ambientLawQuotient I)).comp (G.overlapSectionToDerivation I i j)
+    (((LinearMap.applyₗ (R := G.overlapLawQuotient I i j) localClass).comp
+      (QuotientValuedDerivation.conormalResponseLinear (k := k)
+        (G.overlapLawIdeal I i j))).restrictScalars
+          (ambientLawQuotient I)).comp (G.overlapSectionToDerivation I i j)
   change responseMap s = jacobianMap s
   apply LinearMap.congr_fun
   apply IsLocalizedModule.ext
     (Submonoid.powers
       (Ideal.Quotient.mk I (G.denominator i * G.denominator j))) source.hom
   · intro denominator
+    rw [← (Algebra.lsmul (ambientLawQuotient I)
+      (A := G.overlapLawQuotient I i j) (ambientLawQuotient I)
+      (G.overlapLawQuotient I i j)).commutes]
     rcases denominator.2 with ⟨n, hn⟩
     rw [← hn, map_pow]
-    simpa only [(Algebra.lsmul (ambientLawQuotient I)
-      (A := G.overlapLawQuotient I i j) (ambientLawQuotient I)
-      (G.overlapLawQuotient I i j)).commutes] using
-        ((G.isUnit_overlapLawQuotientMap_denominator I i j).pow n).map
-          (Algebra.lsmul (ambientLawQuotient I)
-            (A := G.overlapLawQuotient I i j) (ambientLawQuotient I)
-            (G.overlapLawQuotient I i j))
+    exact (G.isUnit_overlapLawQuotientMap_denominator I i j).pow n |>.map _
   · ext d
     simp [responseMap, jacobianMap, localClass, ambientLabeledResponseSheaf,
-      ambientLabeledResponse, ambientConormalJacobian, ambientConormalEvaluation]
+      ambientLabeledResponse, ambientConormalJacobian, ambientConormalEvaluation,
+      AlgebraicGeometry.tildeSelf]
+    have hmap := congr($(AlgebraicGeometry.tilde.toOpen_map_app
+      (ModuleCat.ofHom (QuotientValuedDerivation.conormalResponseLinear
+        (k := k) I) ≫
+        ModuleCat.ofHom (LinearMap.applyₗ (R := ambientLawQuotient I)
+          (I.toCotangent x))) (G.lawfulOverlapOpen I i j)) d)
+    rw [ModuleCat.comp_apply, ModuleCat.comp_apply] at hmap
+    dsimp [source]
+    refine (congrArg (G.overlapStructureSectionToLawQuotient I i j) hmap).trans ?_
+    rw [G.overlapStructureSectionToLawQuotient_toOpen]
+    calc
+      G.overlapLawQuotientMap I i j
+          ((ModuleCat.ofHom (QuotientValuedDerivation.conormalResponseLinear
+            (k := k) I) ≫
+            ModuleCat.ofHom (LinearMap.applyₗ (R := ambientLawQuotient I)
+              (I.toCotangent x))).hom d) =
+        G.overlapLawQuotientMap I i j (d x) := rfl
+      _ = G.overlapAmbientComparison I i j d
+          (algebraMap A (G.overlapRing i j) x) :=
+        (G.overlapAmbientComparison_algebraMap I i j d x).symm
+      _ = G.overlapSectionToDerivation I i j
+          ((AlgebraicGeometry.tilde.toOpen
+            (ambientDerivationModule (k := k) I)
+            (G.lawfulOverlapOpen I i j)) d)
+          (algebraMap A (G.overlapRing i j) x) :=
+        congrArg (fun e ↦ e (algebraMap A (G.overlapRing i j) x))
+          (G.overlapSectionToDerivation_toOpen I i j d).symm
 
 /-- The full conormal Jacobian on one typed chart. -/
 noncomputable def chartConormalJacobian
@@ -529,7 +609,7 @@ theorem chartAmbientLabeledResponse_eq_conormalJacobian
       (ambientDerivationSheaf (k := k) I)).presheaf.obj
         (.op (G.lawfulChartOpen I i))) :
     G.chartStructureSectionToLawQuotient I i
-        ((G.ambientLabeledResponseSheaf I (I.toCotangent x)).app
+        ((ambientLabeledResponseSheaf (k := k) I (I.toCotangent x)).app
           (G.lawfulChartOpen I i) s) =
       G.chartConormalJacobian I i (G.chartSectionToDerivation I i s)
         ((G.chartLawIdeal I i).toCotangent
@@ -555,7 +635,7 @@ theorem overlapAmbientLabeledResponse_eq_conormalJacobian
       (ambientDerivationSheaf (k := k) I)).presheaf.obj
         (.op (G.lawfulOverlapOpen I i j))) :
     G.overlapStructureSectionToLawQuotient I i j
-        ((G.ambientLabeledResponseSheaf I (I.toCotangent x)).app
+        ((ambientLabeledResponseSheaf (k := k) I (I.toCotangent x)).app
           (G.lawfulOverlapOpen I i j) s) =
       G.overlapConormalJacobian I i j (G.overlapSectionToDerivation I i j s)
         ((G.overlapLawIdeal I i j).toCotangent

@@ -1321,7 +1321,7 @@ obligations.
 ```text
 cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ConormalJacobian.lean
 axiom audit: 6 declarations under QuotientValuedDerivation, standard axioms only
-axiom audit: 26 declarations under TypedLocalizationGeometry, standard axioms only
+axiom audit: 27 declarations under TypedLocalizationGeometry, standard axioms only
 axiom audit: 13 declarations under LawGeneratedLabeledConormal, standard axioms only
 axiom audit: 17 declarations under ArchitectureOperationPresentation, standard axioms only
 lake build
