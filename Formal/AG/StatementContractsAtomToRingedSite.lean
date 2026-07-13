@@ -804,4 +804,107 @@ example :
           (MvPolynomial.C (2 : Int)) :=
   LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_C
 
+/-! SD4 fixed ringed AAT site signatures. -/
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k] :
+    LawAlgebra.AlgebraValuedAATPresheaf S k ->
+      LawAlgebra.RingedAATSite S k :=
+  @LawAlgebra.RingedAATSite.mk U A S k _
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k) : Site.AATSite A :=
+  R.site
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k) : ArchitectureObject U :=
+  R.architectureObject
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R T : LawAlgebra.RingedAATSite S k) (hraw : R.raw = T.raw) : R = T :=
+  LawAlgebra.RingedAATSite.ext R T hraw
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (raw : LawAlgebra.AlgebraValuedAATPresheaf S k) :
+    LawAlgebra.RingedAATSite S k :=
+  LawAlgebra.RingedAATSite.ofMathlibSheafification raw
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :
+    LawAlgebra.LawAlgebraSheafificationBridge S k :=
+  R.sheafificationBridge
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :
+    R.sheafificationBridge.raw = R.raw :=
+  R.sheafificationBridge_raw
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :
+    LawAlgebra.LawAlgebraSheaf S k :=
+  R.structureSheaf
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :
+    R.raw ⟶ R.structureSheaf.val :=
+  R.canonical
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :
+    R.structureSheaf =
+      (CategoryTheory.presheafToSheaf
+        S.topology (LawAlgebra.AATCommAlgCat k)).obj R.raw :=
+  R.structureSheaf_eq_sheafify
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :
+    R.canonical = CategoryTheory.toSheafify S.topology R.raw :=
+  R.canonical_eq_toSheafify
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (F : LawAlgebra.LawAlgebraSheaf S k) (eta : R.raw ⟶ F.val) :
+    ∃! lift : R.structureSheaf.val ⟶ F.val, R.canonical ≫ lift = eta :=
+  R.lift_unique F eta
+
+example (k : Type v) [CommRing k] :
+    LawAlgebra.AATCommAlgCat.{u, v} k ⥤ Type (max u v) :=
+  LawAlgebra.AATCommAlgToType k
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    [S.topology.HasSheafCompose (LawAlgebra.AATCommAlgToType k)] :
+    CategoryTheory.Sheaf S.topology (Type (max u v)) :=
+  R.underlyingTypeSheaf
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    [S.topology.HasSheafCompose (LawAlgebra.AATCommAlgToType k)] :
+    R.underlyingTypeSheaf.val =
+      R.structureSheaf.val ⋙ LawAlgebra.AATCommAlgToType k :=
+  R.underlyingTypeSheaf_val
+
 end AAT.AG
