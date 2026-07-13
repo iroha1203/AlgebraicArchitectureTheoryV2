@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::{Value, json};
 
 use crate::law_execution::{LawExecutionPlanV1, build_law_execution_plan};
-use crate::saga::evaluate_saga_descent_v1;
+use crate::saga::{evaluate_saga_descent_v1, evaluate_saga_grounded_v1};
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
@@ -27,7 +27,7 @@ const VERDICTS: [&str; 5] = [
     "unknown",
     "not_computed",
 ];
-const STRUCTURAL_VERDICT_EVALUATORS: [&str; 11] = [
+const STRUCTURAL_VERDICT_EVALUATORS: [&str; 12] = [
     "ag.cech-obstruction",
     "ag.restriction-compatibility",
     "ag.section-factorization",
@@ -39,8 +39,9 @@ const STRUCTURAL_VERDICT_EVALUATORS: [&str; 11] = [
     "ag.period-stokes-audit",
     "ag.saga-descent",
     "ag.saga-comparison",
+    "ag.saga-grounded",
 ];
-const COMPUTED_INVARIANT_KINDS: [&str; 17] = [
+const COMPUTED_INVARIANT_KINDS: [&str; 18] = [
     "measurement-invariant",
     "cech-h1-rank",
     "minimal-forbidden-supports",
@@ -58,6 +59,7 @@ const COMPUTED_INVARIANT_KINDS: [&str; 17] = [
     "support-transfer-rank",
     "topological-debt-capacity",
     "h1-comparison-transfer",
+    "saga-grounded-conclusions",
 ];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_COHERENCE_CONTEXTS: usize = 12;
@@ -648,6 +650,17 @@ pub fn build_foundation_measurement_packet_v1(
         ));
     }
     validate_profile_refs(&profile, normalized)?;
+    for candidate in measurement_profiles.values() {
+        validate_profile_refs(candidate, normalized)?;
+        if candidate.site_ref != selected_profile.site_ref
+            || candidate.cover_ref != selected_profile.cover_ref
+        {
+            return Err(format!(
+                "measurement profiles {} and {} must have matching normalized site/cover refs",
+                selected_profile.profile_id, candidate.profile_id
+            ));
+        }
+    }
     let mut structural_verdict = Vec::new();
     let mut computed_invariants = vec![json!({
         "invariantId": "finite-poset-site-shape",
@@ -703,6 +716,7 @@ pub fn build_foundation_measurement_packet_v1(
             .and_then(|profile_ref| measurement_profiles.get(profile_ref))
             .unwrap_or(&selected_profile);
         let profile = profile_with_law_surface_witnesses(policy, entry_profile, law_surface)?;
+        validate_profile_refs(&profile, normalized)?;
         if let Some(ceiling) = profile
             .diagnostic_ceiling
             .as_ref()
@@ -1023,6 +1037,65 @@ pub fn build_foundation_measurement_packet_v1(
                     depends_on_assumptions: Vec::new(),
                     reason: Some(
                         "repair-plan not supplied; ag.saga-descent remains silent by design until --repair-plan is provided.".to_string(),
+                    ),
+                });
+            }
+        } else if evaluator == "ag.saga-grounded" {
+            if let Some(plan) = repair_plan {
+                if let Some(execution_plan) = execution_plan.as_ref() {
+                    let measurement =
+                        evaluate_saga_grounded_v1(normalized, &profile, plan, execution_plan);
+                    computed_invariants.extend(measurement.computed_invariants);
+                    assumptions.extend(measurement.assumptions);
+                    structural_verdict.extend(measurement.structural_verdict);
+                } else {
+                    computed_invariants.push(json!({
+                        "invariantId": "saga-generated-end-to-end-packet",
+                        "kind": "saga-grounded-conclusions",
+                        "evaluator": "ag.saga-grounded",
+                        "status": "not_computed",
+                        "methodStatus": "execution_plan_not_supplied"
+                    }));
+                    structural_verdict.push(AgStructuralVerdictV1 {
+                        evaluator: evaluator.to_string(),
+                        law: entry.law.clone().unwrap_or_else(|| evaluator.to_string()),
+                        verdict: "not_computed".to_string(),
+                        verdict_data: AgVerdictDataV1 {
+                            in_scope: true,
+                            zero: false,
+                            non_zero: false,
+                            method_status: "execution_plan_not_supplied".to_string(),
+                            cert_ref: None,
+                        },
+                        depends_on_assumptions: Vec::new(),
+                        reason: Some(
+                            "ag.saga-grounded requires a Stage 3 law execution plan".to_string(),
+                        ),
+                    });
+                }
+            } else {
+                computed_invariants.push(json!({
+                    "invariantId": "saga-generated-end-to-end-packet",
+                    "kind": "saga-grounded-conclusions",
+                    "evaluator": "ag.saga-grounded",
+                    "status": "not_computed",
+                    "methodStatus": "repair_plan_not_supplied"
+                }));
+                structural_verdict.push(AgStructuralVerdictV1 {
+                    evaluator: evaluator.to_string(),
+                    law: entry.law.clone().unwrap_or_else(|| evaluator.to_string()),
+                    verdict: "not_computed".to_string(),
+                    verdict_data: AgVerdictDataV1 {
+                        in_scope: true,
+                        zero: false,
+                        non_zero: false,
+                        method_status: "repair_plan_not_supplied".to_string(),
+                        cert_ref: None,
+                    },
+                    depends_on_assumptions: Vec::new(),
+                    reason: Some(
+                        "repair-plan not supplied; ag.saga-grounded remains silent by design"
+                            .to_string(),
                     ),
                 });
             }
@@ -12414,6 +12487,14 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "transferResidue",
         "violatedForbiddenSupports",
         "wassersteinTransferCost",
+        "schema",
+        "groundedSurfaceRef",
+        "theoremRef",
+        "lawDependent",
+        "lawIndependent",
+        "degreeZeroLawContribution",
+        "generatedQuotient",
+        "detectorFindings",
     ];
     for (index, invariant) in packet_value["computedInvariants"]
         .as_array()

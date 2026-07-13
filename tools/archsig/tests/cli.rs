@@ -10870,6 +10870,172 @@ fn cli_analyze_v2_selects_multiple_measurement_profiles_at_runtime() {
             .map(Vec::len),
         Some(2)
     );
+
+    let mut incompatible_profile = secondary_profile;
+    incompatible_profile["coverRef"] = json!("cover:missing");
+    let incompatible_path = out_dir.join("measurement_profile_incompatible.json");
+    fs::write(
+        &incompatible_path,
+        serde_json::to_vec_pretty(&incompatible_profile).expect("incompatible profile serializes"),
+    )
+    .expect("incompatible profile writes");
+    let incompatible_out = temp_dir("ag-measurement-multiple-profiles-incompatible");
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2.json").to_str().unwrap(),
+            "--law-policy",
+            policy_path.to_str().unwrap(),
+            "--law-surface",
+            root.join("law_surface_ag_v052.json").to_str().unwrap(),
+            "--measurement-profile",
+            primary_path.to_str().unwrap(),
+            "--measurement-profile",
+            incompatible_path.to_str().unwrap(),
+            "--out-dir",
+            incompatible_out.to_str().unwrap(),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
+    let out_dir = temp_dir("ag-measurement-saga-grounded");
+    let root = ag_measurement_root();
+    let mut policy = read_json(&root.join("law_policy_ag.json"));
+    policy["id"] = json!("law-policy:grounded-test");
+    policy["lawSurfaceRef"] = json!("law-surface:grounded-test");
+    policy["policies"][0] = json!({
+        "law": "law:grounded-test",
+        "evaluator": "ag.saga-grounded",
+        "basis": ["policy-basis:layering"],
+        "scope": ["src/"],
+        "severity": "high"
+    });
+    let mut surface = read_json(&root.join("law_surface_ag_v052.json"));
+    surface["id"] = json!("law-surface:grounded-test");
+    surface["laws"].as_array_mut().unwrap().push(json!({
+        "lawId": "law:grounded-test",
+        "conditionType": "descent",
+        "evaluatorRef": "ag.saga-grounded",
+    }));
+    surface["skeleton"] = json!([{
+        "simplex": "vertex:grounded",
+        "supportAtomRef": "atom:order",
+        "requiredLawId": "law:grounded-test"
+    }]);
+    surface["defectSources"] = json!([{
+        "lawId": "law:grounded-test",
+        "coverRef": "cover:order-inventory",
+        "chartDefects": [
+            {"chart": "ctx:order", "defectObservable": {"axis": "cech", "predicate": "sectionValue"}},
+            {"chart": "ctx:inventory", "defectObservable": {"axis": "cech", "predicate": "sectionValue"}},
+            {"chart": "ctx:shared", "defectObservable": {"axis": "cech", "predicate": "sectionValue"}}
+        ],
+        "holdsCriterion": {"kind": "defect-raw-value-zero", "zeroSense": "empty-witness-set"}
+    }]);
+    surface["quotientSheafCondition"] = json!({"mode": "assumed"});
+    let policy_path = out_dir.join("law_policy_grounded.json");
+    let surface_path = out_dir.join("law_surface_grounded.json");
+    let plan_path = out_dir.join("repair_plan_grounded.json");
+    fs::write(&policy_path, serde_json::to_vec_pretty(&policy).unwrap()).unwrap();
+    fs::write(&surface_path, serde_json::to_vec_pretty(&surface).unwrap()).unwrap();
+    let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
+    plan["grounding"] = json!({
+        "kind": "saga-grounding",
+        "surfaceRef": "law-surface:grounded-test",
+        "profileRef": "profile:ag-default@1"
+    });
+    fs::write(&plan_path, serde_json::to_vec_pretty(&plan).unwrap()).unwrap();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json").to_str().unwrap(),
+        "--law-policy",
+        policy_path.to_str().unwrap(),
+        "--law-surface",
+        surface_path.to_str().unwrap(),
+        "--measurement-profile",
+        root.join("measurement_profile_ag.json").to_str().unwrap(),
+        "--repair-plan",
+        plan_path.to_str().unwrap(),
+        "--out-dir",
+        out_dir.to_str().unwrap(),
+    ]);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let grounded = invariant_by_id(&packet, "saga-generated-end-to-end-packet");
+    assert_eq!(grounded["kind"], "saga-grounded-conclusions");
+    assert_eq!(grounded["schema"], "archsig-saga-conclusions/v0.5.2");
+    assert_eq!(grounded["lawDependent"]["premise"]["status"], "holds");
+    assert_eq!(
+        grounded["lawIndependent"]["note"],
+        "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。"
+    );
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|row| row["evaluator"] == "ag.saga-grounded")
+            .unwrap()["verdict"],
+        "measured_zero"
+    );
+
+    let mut bad_archmap = read_json(&root.join("archmap_v2.json"));
+    bad_archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!("atom:grounded-defect"));
+    bad_archmap["atoms"].as_array_mut().unwrap().push(json!({
+        "id": "atom:grounded-defect",
+        "kind": "semantic",
+        "subject": "ctx:order",
+        "object": "section=bad",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "refs": ["src:order"]
+    }));
+    let bad_archmap_path = out_dir.join("archmap_grounded_defect.json");
+    let bad_out_dir = temp_dir("ag-measurement-saga-grounded-defect");
+    fs::write(
+        &bad_archmap_path,
+        serde_json::to_vec_pretty(&bad_archmap).unwrap(),
+    )
+    .unwrap();
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        bad_archmap_path.to_str().unwrap(),
+        "--law-policy",
+        policy_path.to_str().unwrap(),
+        "--law-surface",
+        surface_path.to_str().unwrap(),
+        "--measurement-profile",
+        root.join("measurement_profile_ag.json").to_str().unwrap(),
+        "--repair-plan",
+        plan_path.to_str().unwrap(),
+        "--out-dir",
+        bad_out_dir.to_str().unwrap(),
+    ]);
+    let bad_packet = read_json(&bad_out_dir.join("archsig-measurement-packet.json"));
+    let bad_grounded = invariant_by_id(&bad_packet, "saga-generated-end-to-end-packet");
+    assert_eq!(bad_grounded["lawDependent"]["premise"]["status"], "fails");
+    assert_eq!(
+        bad_grounded["detectorFindings"].as_array().map(Vec::len),
+        Some(1)
+    );
+    assert_eq!(
+        bad_packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|row| row["evaluator"] == "ag.saga-grounded")
+            .unwrap()["verdict"],
+        "measured_nonzero"
+    );
 }
 
 #[test]
