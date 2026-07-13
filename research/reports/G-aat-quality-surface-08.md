@@ -599,19 +599,24 @@ coordinate.
 A concrete `ArchitectureOperation` and
 `ArchitectureOperationPresentation` select this derivation at a finite
 operation label. The typed geometry reuses the existing three AAT cover labels
-and assigns the three orthogonal product idempotents of a G-08-specific
-three-component ring layer. Its first component is the dual-number factor and
-the other two components make all three principal opens and localizations
-genuinely distinct. Each quotient idempotent is nonzero, pairwise products
-vanish, and the idempotents sum to `1`; hence the principal opens are nonempty,
-pairwise disjoint, pairwise distinct, and cover the full lawful affine scheme.
-The comparison retains the existing cover's distinct context patches,
-inclusions, support visibility, and five admissibility clauses.
+and assigns three product idempotents of a G-08-specific three-component ring
+layer, each selecting two components. Its first component is the dual-number
+factor and the other two components make all three principal opens and
+localizations genuinely distinct. Each quotient idempotent is nonzero, every
+pairwise product is nonzero, the triple product vanishes, and the generated
+ideal is top. Hence the three nonempty principal opens have nonempty pairwise
+intersections, empty triple intersection, are pairwise distinct, and cover the
+full lawful affine scheme. This realizes the Boolean-circle nerve on the typed
+principal-localization layer. The comparison retains the existing cover's
+distinct context patches, inclusions, support visibility, and five
+admissibility clauses.
 
-On chart `0`, localization maps canonically to the dual-number factor. This map
-sends the transported obstruction ideal into the square-zero ideal while the
-response maps to its constant element `1`. The corresponding existing AAT
-patch carries the selected support Atom and detects the nonzero response.
+On chart `0` and on its `(0,1)` overlap, localization maps canonically to the
+dual-number factor. These maps send the transported obstruction ideal into the
+square-zero ideal while the response maps to its constant element `1`. The
+corresponding existing AAT patch carries the selected support Atom; the actual
+AAT overlap is identified with the `{0,1}` context, its typed principal
+intersection is nonempty, and its overlap conormal response is nonzero.
 
 The selected required `(lawIndex, atom)` label is the existing required law and
 the prototype core's support Atom. Its generated witness is the square-zero
@@ -627,8 +632,10 @@ response is nonzero on the selected support patch.
     realization;
   - typed three-chart principal-localization ring layer;
   - denominator ideal generation and full lawful-open cover;
+  - nonempty pairwise typed overlaps and empty triple intersection;
   - ambient and selected-support-chart nonzero response on a generated required
     labeled conormal class;
+  - nonzero restricted response on the matched `(0,1)` AAT/typed overlap;
   - selected required conormal witness nonvacuity after localization.
 - fixed inputs: the existing Boolean-circle site and admissible three-patch
   cover, plus the G-08 response core, required-law membership, and support Atom.
@@ -643,9 +650,10 @@ response is nonzero on the selected support patch.
 - structure-field escape: none. Nonmembership, cover adequacy, and nonzero
   response are proved outputs rather than presentation fields.
 - route integrity: pass. The response is evaluated on the existing required
-  witness, the three orthogonal-idempotent principal opens are distinct and
-  cover the lawful affine scheme, and the selected support patch has nonzero
-  response.
+  witness; the three principal opens form a circle nerve with nonempty
+  pairwise intersections and empty triple intersection; and the selected
+  support patch has a nonzero response that remains nonzero on the matched
+  `(0,1)` overlap.
 
 Phase 0 is complete. The fixed target theorem remains incomplete; Phase 1–5
 obligations remain.
@@ -654,7 +662,7 @@ obligations remain.
 
 ```text
 cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/BooleanCircleOperationResponsePrototype.lean
-axiom audit: 56 declarations under BooleanCircleOperationResponsePrototype, standard axioms only
+axiom audit: 69 declarations under BooleanCircleOperationResponsePrototype, standard axioms only
 lake build
 Build completed successfully (7718 jobs).
 ```
@@ -682,17 +690,20 @@ lean_artifacts:
       - BooleanCircleOperationResponsePrototype.presentation_realizesFirstOrder
       - BooleanCircleOperationResponsePrototype.denominator_span_eq_top
       - BooleanCircleOperationResponsePrototype.lawfulChartOpen_ne_bot
-      - BooleanCircleOperationResponsePrototype.lawfulChartOpen_inf_eq_bot
+      - BooleanCircleOperationResponsePrototype.lawfulChartOpen_inf_ne_bot
+      - BooleanCircleOperationResponsePrototype.lawfulChartOpen_triple_inf_eq_bot
       - BooleanCircleOperationResponsePrototype.lawfulChartOpen_ne
       - BooleanCircleOperationResponsePrototype.lawfulOpen_eq_top
+      - BooleanCircleOperationResponsePrototype.aatPatch_pair_overlap
       - BooleanCircleOperationResponsePrototype.ambient_selected_response_ne_zero
-      - BooleanCircleOperationResponsePrototype.selectedSupportPatch_visible_and_response_ne_zero
+      - BooleanCircleOperationResponsePrototype.selectedSupportCircleEdge_visible_and_response_ne_zero
 premise_delta:
   discharged:
     - typed Boolean-circle principal-localization operation response
     - generated lawful-open cover adequacy
+    - pairwise overlap nonemptiness and empty triple intersection
     - ambient and selected-support-chart required labeled response nonvacuity
-    - matched-index support visibility and nonzero chart response
+    - matched-index support visibility and nonzero chart/overlap response
   remaining:
     - L0 finite repair and support-minimal circuit theorem
     - C0 kernel base change, support comparison, and fiber circuit locus
@@ -707,6 +718,7 @@ certificate_provenance:
     - required-law membership and support Atom from the G-08 response core
     - response witness from the response core's generated square-zero violationWitness
     - chart transport from canonical algebra maps and localization maps to the dual-number factor
+    - overlap transport from the canonical product-denominator localization
   unresolved:
     - circuit minimality, support comparison, descent, and certified witness pair
 proof_use_audit:

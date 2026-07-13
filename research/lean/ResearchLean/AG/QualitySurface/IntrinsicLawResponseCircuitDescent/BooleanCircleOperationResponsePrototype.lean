@@ -8,9 +8,10 @@ import ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.Derivat
 The existing three-patch Boolean-circle cover is paired with a G-08-specific
 three-component principal-localization ring layer.  Its first component is a
 dual-number factor carrying a square-zero law generator; the other two
-components make the three principal chart opens genuinely distinct.  A
-concrete operation derivation detects the selected required conormal class on
-the AAT patch carrying its support Atom.
+components make the three principal chart opens genuinely distinct.  Their
+pairwise intersections are nonempty and their triple intersection is empty.
+A concrete operation derivation detects the selected required conormal class
+on the AAT patch carrying its support Atom and on a matched overlap.
 -/
 
 noncomputable section
@@ -148,45 +149,40 @@ theorem presentation_realizesFirstOrder :
       epsilonDerivative :=
   presentation.realizesFirstOrder Unit.unit
 
-/-- Three orthogonal idempotents, one for each existing AAT cover patch. -/
+/-- Three idempotents whose pairwise intersections form a Boolean-circle
+nerve: each selects two of the three product components. -/
 def denominator (i : Fin 3) : ResponseRing :=
-  if i = 0 then (1, 0, 0) else if i = 1 then (0, 1, 0) else (0, 0, 1)
+  if i = 0 then (1, 1, 0) else if i = 1 then (1, 0, 1) else (0, 1, 1)
 
 def geometry : TypedLocalizationGeometry ResponseField
     (responseCore.Observable base) (Fin 3) where
   denominator := denominator
 
-@[simp] theorem denominator_zero : geometry.denominator 0 = (1, 0, 0) := by
+@[simp] theorem denominator_zero : geometry.denominator 0 = (1, 1, 0) := by
   simp [geometry, denominator]
 
-@[simp] theorem denominator_one : geometry.denominator 1 = (0, 1, 0) := by
+@[simp] theorem denominator_one : geometry.denominator 1 = (1, 0, 1) := by
   simp [geometry, denominator]
 
-@[simp] theorem denominator_two : geometry.denominator 2 = (0, 0, 1) := by
+@[simp] theorem denominator_two : geometry.denominator 2 = (0, 1, 1) := by
   simp [geometry, denominator]
 
 theorem denominator_injective : Function.Injective geometry.denominator := by
   intro i j h
   fin_cases i <;> fin_cases j
   all_goals try rfl
-  · change ((1, 0, 0) : ResponseRing) = (0, 1, 0) at h
-    have := congrArg (fun x : ResponseRing ↦ x.1.fst) h
-    norm_num at this
-  · change ((1, 0, 0) : ResponseRing) = (0, 0, 1) at h
-    have := congrArg (fun x : ResponseRing ↦ x.1.fst) h
-    norm_num at this
-  · change ((0, 1, 0) : ResponseRing) = (1, 0, 0) at h
-    have := congrArg (fun x : ResponseRing ↦ x.1.fst) h
-    norm_num at this
-  · change ((0, 1, 0) : ResponseRing) = (0, 0, 1) at h
-    have := congrArg (fun x : ResponseRing ↦ x.2.1) h
-    norm_num at this
-  · change ((0, 0, 1) : ResponseRing) = (1, 0, 0) at h
-    have := congrArg (fun x : ResponseRing ↦ x.1.fst) h
-    norm_num at this
-  · change ((0, 0, 1) : ResponseRing) = (0, 1, 0) at h
-    have := congrArg (fun x : ResponseRing ↦ x.2.1) h
-    norm_num at this
+  · have hc := congrArg (fun x : ResponseRing ↦ x.2.1) h
+    norm_num [geometry, denominator] at hc
+  · have hc := congrArg (fun x : ResponseRing ↦ x.1.fst) h
+    norm_num [geometry, denominator] at hc
+  · have hc := congrArg (fun x : ResponseRing ↦ x.2.1) h
+    norm_num [geometry, denominator] at hc
+  · have hc := congrArg (fun x : ResponseRing ↦ x.1.fst) h
+    norm_num [geometry, denominator] at hc
+  · have hc := congrArg (fun x : ResponseRing ↦ x.1.fst) h
+    norm_num [geometry, denominator] at hc
+  · have hc := congrArg (fun x : ResponseRing ↦ x.1.fst) h
+    norm_num [geometry, denominator] at hc
 
 theorem denominator_span_eq_top :
     Ideal.span (Set.range geometry.denominator) =
@@ -198,27 +194,61 @@ theorem denominator_span_eq_top :
     Ideal.subset_span ⟨1, rfl⟩
   have h₂ : geometry.denominator 2 ∈ Ideal.span (Set.range geometry.denominator) :=
     Ideal.subset_span ⟨2, rfl⟩
-  have hone : geometry.denominator 0 + geometry.denominator 1 +
-      geometry.denominator 2 = (1 : ResponseRing) := by
-    change denominator 0 + denominator 1 + denominator 2 = (1 : ResponseRing)
+  have h₀₁ : geometry.denominator 0 * geometry.denominator 1 ∈
+      Ideal.span (Set.range geometry.denominator) :=
+    Ideal.mul_mem_left _ _ h₁
+  have h₀₂ : geometry.denominator 0 * geometry.denominator 2 ∈
+      Ideal.span (Set.range geometry.denominator) :=
+    Ideal.mul_mem_left _ _ h₂
+  have h₁₂ : geometry.denominator 1 * geometry.denominator 2 ∈
+      Ideal.span (Set.range geometry.denominator) :=
+    Ideal.mul_mem_left _ _ h₂
+  have hone : geometry.denominator 0 * geometry.denominator 1 +
+      geometry.denominator 0 * geometry.denominator 2 +
+      geometry.denominator 1 * geometry.denominator 2 = (1 : ResponseRing) := by
+    change denominator 0 * denominator 1 + denominator 0 * denominator 2 +
+      denominator 1 * denominator 2 = (1 : ResponseRing)
     ext <;> simp [denominator]
   rw [← hone]
-  exact Ideal.add_mem _ (Ideal.add_mem _ h₀ h₁) h₂
+  exact Ideal.add_mem _ (Ideal.add_mem _ h₀₁ h₀₂) h₁₂
 
 theorem denominator_mul_self (i : Fin 3) :
     denominator i * denominator i = denominator i := by
   fin_cases i <;> ext <;> simp [denominator]
 
-theorem denominator_mul_eq_zero {i j : Fin 3} (hij : i ≠ j) :
-    denominator i * denominator j = 0 := by
-  fin_cases i <;> fin_cases j <;> ext <;> simp_all [denominator]
+theorem denominator_mul_ne_zero {i j : Fin 3} (hij : i ≠ j) :
+    denominator i * denominator j ≠ 0 := by
+  fin_cases i <;> fin_cases j <;> simp_all [denominator]
+
+theorem denominator_triple_mul_eq_zero :
+    denominator 0 * denominator 1 * denominator 2 = 0 := by
+  ext <;> simp [denominator]
 
 theorem denominator_not_mem_obstructionIdeal (i : Fin 3) :
     denominator i ∉ responseCore.obstructionIdeal base := by
   rw [response_obstructionIdeal, Ideal.mem_span_singleton']
   rintro ⟨r, hr⟩
   fin_cases i
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.1) hr
+    norm_num [denominator, responseGenerator] at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.2) hr
+    norm_num [denominator, responseGenerator] at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.1) hr
+    norm_num [denominator, responseGenerator] at hcoord
+
+theorem denominator_mul_not_mem_obstructionIdeal {i j : Fin 3} (hij : i ≠ j) :
+    denominator i * denominator j ∉ responseCore.obstructionIdeal base := by
+  rw [response_obstructionIdeal, Ideal.mem_span_singleton']
+  rintro ⟨r, hr⟩
+  fin_cases i <;> fin_cases j
+  all_goals try { exact (hij rfl).elim }
   · have hcoord := congrArg (fun x : ResponseRing ↦ x.1.fst) hr
+    norm_num [denominator, responseGenerator] at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.1) hr
+    norm_num [denominator, responseGenerator] at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.1.fst) hr
+    norm_num [denominator, responseGenerator] at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.2) hr
     norm_num [denominator, responseGenerator] at hcoord
   · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.1) hr
     norm_num [denominator, responseGenerator] at hcoord
@@ -249,12 +279,47 @@ theorem quotientDenominator_not_isNilpotent (i : Fin 3) :
   exact quotientDenominator_ne_zero i
     ((quotientDenominator_isIdempotent i).eq_zero_of_isNilpotent hnil)
 
-theorem quotientDenominator_mul_eq_zero {i j : Fin 3} (hij : i ≠ j) :
-    quotientDenominator i * quotientDenominator j = 0 := by
+theorem quotientDenominator_injective : Function.Injective quotientDenominator := by
+  intro i j hq
+  by_contra hij
+  have hmem := (Ideal.Quotient.mk_eq_mk_iff_sub_mem
+    (I := responseCore.obstructionIdeal base)
+    (denominator i) (denominator j)).mp hq
+  rw [response_obstructionIdeal, Ideal.mem_span_singleton'] at hmem
+  obtain ⟨r, hr⟩ := hmem
+  change ResponseRing at r
+  fin_cases i <;> fin_cases j
+  all_goals try { exact (hij rfl).elim }
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.1) hr
+    change r.2.1 * 0 = (1 : ResponseField) - 0 at hcoord
+    norm_num at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.2) hr
+    change r.2.2 * 0 = (0 : ResponseField) - 1 at hcoord
+    norm_num at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.1) hr
+    change r.2.1 * 0 = (0 : ResponseField) - 1 at hcoord
+    norm_num at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.1) hr
+    change r.2.1 * 0 = (0 : ResponseField) - 1 at hcoord
+    norm_num at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.2) hr
+    change r.2.2 * 0 = (1 : ResponseField) - 0 at hcoord
+    norm_num at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.1) hr
+    change r.2.1 * 0 = (1 : ResponseField) - 0 at hcoord
+    norm_num at hcoord
+
+theorem quotientDenominator_mul_ne_zero {i j : Fin 3} (hij : i ≠ j) :
+    quotientDenominator i * quotientDenominator j ≠ 0 := by
+  intro hz
+  exact denominator_mul_not_mem_obstructionIdeal hij
+    (Ideal.Quotient.eq_zero_iff_mem.mp hz)
+
+theorem quotientDenominator_triple_mul_eq_zero :
+    quotientDenominator 0 * quotientDenominator 1 * quotientDenominator 2 = 0 := by
   change Ideal.Quotient.mk (responseCore.obstructionIdeal base)
-      (denominator i * denominator j) =
-    Ideal.Quotient.mk (responseCore.obstructionIdeal base) 0
-  rw [denominator_mul_eq_zero hij]
+      (denominator 0 * denominator 1 * denominator 2) = 0
+  rw [denominator_triple_mul_eq_zero, map_zero]
 
 theorem lawfulChartOpen_ne_bot (i : Fin 3) :
     geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i ≠ ⊥ := by
@@ -263,25 +328,38 @@ theorem lawfulChartOpen_ne_bot (i : Fin 3) :
   exact quotientDenominator_not_isNilpotent i
     ((PrimeSpectrum.basicOpen_eq_bot_iff _).mp hbot)
 
-theorem lawfulChartOpen_inf_eq_bot {i j : Fin 3} (hij : i ≠ j) :
+theorem lawfulChartOpen_inf_ne_bot {i j : Fin 3} (hij : i ≠ j) :
     geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i ⊓
-        geometry.lawfulChartOpen (responseCore.obstructionIdeal base) j = ⊥ := by
+        geometry.lawfulChartOpen (responseCore.obstructionIdeal base) j ≠ ⊥ := by
   change PrimeSpectrum.basicOpen (quotientDenominator i) ⊓
-      PrimeSpectrum.basicOpen (quotientDenominator j) = ⊥
-  rw [← PrimeSpectrum.basicOpen_mul, quotientDenominator_mul_eq_zero hij,
-    PrimeSpectrum.basicOpen_zero]
+      PrimeSpectrum.basicOpen (quotientDenominator j) ≠ ⊥
+  rw [← PrimeSpectrum.basicOpen_mul]
+  intro hbot
+  have hnil := (PrimeSpectrum.basicOpen_eq_bot_iff _).mp hbot
+  have hzero := ((quotientDenominator_isIdempotent i).mul
+    (quotientDenominator_isIdempotent j)).eq_zero_of_isNilpotent hnil
+  exact quotientDenominator_mul_ne_zero hij hzero
+
+theorem lawfulChartOpen_triple_inf_eq_bot :
+    geometry.lawfulChartOpen (responseCore.obstructionIdeal base) 0 ⊓
+        geometry.lawfulChartOpen (responseCore.obstructionIdeal base) 1 ⊓
+        geometry.lawfulChartOpen (responseCore.obstructionIdeal base) 2 = ⊥ := by
+  change PrimeSpectrum.basicOpen (quotientDenominator 0) ⊓
+      PrimeSpectrum.basicOpen (quotientDenominator 1) ⊓
+      PrimeSpectrum.basicOpen (quotientDenominator 2) = ⊥
+  rw [← PrimeSpectrum.basicOpen_mul, ← PrimeSpectrum.basicOpen_mul,
+    quotientDenominator_triple_mul_eq_zero, PrimeSpectrum.basicOpen_zero]
 
 theorem lawfulChartOpen_ne {i j : Fin 3} (hij : i ≠ j) :
     geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i ≠
       geometry.lawfulChartOpen (responseCore.obstructionIdeal base) j := by
-  intro heq
-  apply lawfulChartOpen_ne_bot i
-  calc
-    geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i =
-        geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i ⊓
-          geometry.lawfulChartOpen (responseCore.obstructionIdeal base) j := by
-      rw [heq, inf_idem]
-    _ = ⊥ := lawfulChartOpen_inf_eq_bot hij
+  change PrimeSpectrum.basicOpen (quotientDenominator i) ≠
+    PrimeSpectrum.basicOpen (quotientDenominator j)
+  intro hopen
+  have hq := PrimeSpectrum.basicOpen_injOn_isIdempotentElem
+    (quotientDenominator_isIdempotent i)
+    (quotientDenominator_isIdempotent j) hopen
+  exact hij (quotientDenominator_injective hq)
 
 /-- Typed charts and the existing admissible AAT cover use the same index. -/
 def chartEquivCoverIndex : Fin 3 ≃ cover.Index := Equiv.refl (Fin 3)
@@ -310,6 +388,21 @@ theorem selectedSupport_visibleOn_aatPatch :
   simp [coverageRequirements, cover, chartEquivCoverIndex, responseCore,
     chartContextIndex]
 
+theorem aatPatch_pair_overlap (i j : Fin 3) :
+    contextOverlap.overlap base.1
+        (cover.patch (chartEquivCoverIndex i))
+        (cover.patch (chartEquivCoverIndex j)) =
+      context (chartContextIndex i ∪ chartContextIndex j) := by
+  simp [contextOverlap, overlapContext, cover, chartEquivCoverIndex,
+    recognized_context]
+
+theorem aatPatch_zero_one_overlap :
+    contextOverlap.overlap base.1
+        (cover.patch (chartEquivCoverIndex 0))
+        (cover.patch (chartEquivCoverIndex 1)) =
+      context ({0, 1} : Finset (Fin 3)) := by
+  simpa [chartContextIndex] using aatPatch_pair_overlap 0 1
+
 /-- The three distinct principal opens cover the full lawful affine scheme. -/
 theorem lawfulOpen_eq_top :
     geometry.lawfulOpen (responseCore.obstructionIdeal base) = ⊤ := by
@@ -330,13 +423,24 @@ theorem lawfulOpen_eq_top :
     (responseCore.obstructionIdeal base) (geometry.denominator 2) ∈
       Set.range (fun i ↦ Ideal.Quotient.mk (responseCore.obstructionIdeal base)
         (geometry.denominator i)) from ⟨2, rfl⟩)
-  have hone : geometry.denominator 0 + geometry.denominator 1 +
-      geometry.denominator 2 = (1 : ResponseRing) := by
-    change denominator 0 + denominator 1 + denominator 2 = (1 : ResponseRing)
+  have h₀₁ := Ideal.mul_mem_left _
+    (Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+      (geometry.denominator 0)) h₁
+  have h₀₂ := Ideal.mul_mem_left _
+    (Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+      (geometry.denominator 0)) h₂
+  have h₁₂ := Ideal.mul_mem_left _
+    (Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+      (geometry.denominator 1)) h₂
+  have hone : geometry.denominator 0 * geometry.denominator 1 +
+      geometry.denominator 0 * geometry.denominator 2 +
+      geometry.denominator 1 * geometry.denominator 2 = (1 : ResponseRing) := by
+    change denominator 0 * denominator 1 + denominator 0 * denominator 2 +
+      denominator 1 * denominator 2 = (1 : ResponseRing)
     ext <;> simp [denominator]
   rw [← map_one (Ideal.Quotient.mk (responseCore.obstructionIdeal base)),
-    ← hone, map_add, map_add]
-  exact Ideal.add_mem _ (Ideal.add_mem _ h₀ h₁) h₂
+    ← hone, map_add, map_add, map_mul, map_mul, map_mul]
+  exact Ideal.add_mem _ (Ideal.add_mem _ h₀₁ h₀₂) h₁₂
 
 /-- Localization of chart `0` maps canonically back to the dual-number factor. -/
 noncomputable def chartZeroToDual : geometry.chartRing 0 →+* ResponseDual :=
@@ -351,6 +455,22 @@ noncomputable def chartZeroToDual : geometry.chartRing 0 →+* ResponseDual :=
       (algebraMap (responseCore.Observable base) (geometry.chartRing 0) a) =
         a.1 := by
   rw [chartZeroToDual, IsLocalization.Away.lift_eq]
+  rfl
+
+/-- The `(0,1)` principal overlap maps canonically to the dual-number factor;
+both chart denominators restrict to `1` there. -/
+noncomputable def overlapZeroOneToDual : geometry.overlapRing 0 1 →+* ResponseDual :=
+  IsLocalization.Away.lift (S := geometry.overlapRing 0 1) (P := ResponseDual)
+    (geometry.denominator 0 * geometry.denominator 1)
+    (g := RingHom.fst ResponseDual (ResponseField × ResponseField)) (by
+      change IsUnit (1 : ResponseDual)
+      exact isUnit_one)
+
+@[simp] theorem overlapZeroOneToDual_algebraMap (a : ResponseRing) :
+    overlapZeroOneToDual
+      (algebraMap (responseCore.Observable base) (geometry.overlapRing 0 1) a) =
+        a.1 := by
+  rw [overlapZeroOneToDual, IsLocalization.Away.lift_eq]
   rfl
 
 def dualSquareZeroIdeal : Ideal ResponseDual :=
@@ -403,6 +523,34 @@ theorem responseValue_not_mem_chartZeroLawIdeal :
   rw [chartZeroToDual_algebraMap] at hh
   exact hh
 
+theorem responseValue_not_mem_overlapZeroOneLawIdeal :
+    algebraMap (responseCore.Observable base) (geometry.overlapRing 0 1)
+        responseValue ∉
+      geometry.overlapLawIdeal (responseCore.obstructionIdeal base) 0 1 := by
+  intro h
+  apply dualConstant_not_mem_squareZeroIdeal
+  have hle : geometry.overlapLawIdeal (responseCore.obstructionIdeal base) 0 1 ≤
+      Ideal.comap overlapZeroOneToDual dualSquareZeroIdeal := by
+    change Ideal.map
+      (algebraMap (responseCore.Observable base) (geometry.overlapRing 0 1))
+        (responseCore.obstructionIdeal base) ≤
+          Ideal.comap overlapZeroOneToDual dualSquareZeroIdeal
+    rw [Ideal.map_le_iff_le_comap]
+    intro x hx
+    change overlapZeroOneToDual
+      (algebraMap (responseCore.Observable base) (geometry.overlapRing 0 1) x) ∈
+        dualSquareZeroIdeal
+    rw [overlapZeroOneToDual_algebraMap]
+    exact map_fst_obstructionIdeal_le_dualSquareZeroIdeal
+      (Ideal.mem_map_of_mem
+        (RingHom.fst ResponseDual (ResponseField × ResponseField)) hx)
+  have hh := hle h
+  change overlapZeroOneToDual
+      (algebraMap (responseCore.Observable base) (geometry.overlapRing 0 1)
+        responseValue) ∈ dualSquareZeroIdeal at hh
+  rw [overlapZeroOneToDual_algebraMap] at hh
+  exact hh
+
 /-- The existing required law paired with the support Atom selected by the
 prototype core. -/
 def selectedLabel : LawGeneratedLabeledConormal.RequiredGeneratorLabel site :=
@@ -442,6 +590,12 @@ noncomputable def chartZeroDerivative :
   presentation.chartQuotientDerivation geometry
     (responseCore.obstructionIdeal base) Unit.unit 0
 
+noncomputable def overlapZeroOneDerivative :
+    Derivation ResponseField (geometry.overlapRing 0 1)
+      (geometry.overlapLawQuotient (responseCore.obstructionIdeal base) 0 1) :=
+  presentation.overlapQuotientDerivation geometry
+    (responseCore.obstructionIdeal base) Unit.unit 0 1
+
 /-- The AAT patch carrying the selected support Atom detects a nonzero required
 conormal response on its genuinely distinct principal chart. -/
 theorem selectedSupportPatch_response_ne_zero :
@@ -467,6 +621,29 @@ theorem selectedSupportPatch_response_ne_zero :
   exact responseValue_not_mem_chartZeroLawIdeal
     ((Submodule.Quotient.mk_eq_zero _).mp hz)
 
+theorem selectedSupportEdge_response_ne_zero :
+    geometry.overlapConormalJacobian (responseCore.obstructionIdeal base) 0 1
+        overlapZeroOneDerivative
+        (LawGeneratedLabeledConormal.overlapLabeledConormal
+          responseCore base geometry selectedLabel 0 1) ≠ 0 := by
+  change overlapZeroOneDerivative
+      (LawGeneratedLabeledConormal.overlapRequiredGeneratorWitness
+        responseCore base geometry selectedLabel 0 1 :
+          geometry.overlapLawIdeal (responseCore.obstructionIdeal base) 0 1).1 ≠ 0
+  rw [show (LawGeneratedLabeledConormal.overlapRequiredGeneratorWitness
+      responseCore base geometry selectedLabel 0 1).1 =
+        algebraMap (responseCore.Observable base) (geometry.overlapRing 0 1)
+          responseGenerator by rfl]
+  rw [overlapZeroOneDerivative,
+    ArchitectureOperationPresentation.overlapQuotientDerivation_algebraMap]
+  change Ideal.Quotient.mk
+      (geometry.overlapLawIdeal (responseCore.obstructionIdeal base) 0 1)
+      (algebraMap (responseCore.Observable base) (geometry.overlapRing 0 1)
+        responseValue) ≠ 0
+  intro hz
+  exact responseValue_not_mem_overlapZeroOneLawIdeal
+    ((Submodule.Quotient.mk_eq_zero _).mp hz)
+
 /-- The existing AAT patch visibility and the typed nonzero response are one
 matched-index fact, rather than two independently named constructions. -/
 theorem selectedSupportPatch_visible_and_response_ne_zero :
@@ -478,6 +655,25 @@ theorem selectedSupportPatch_visible_and_response_ne_zero :
             responseCore base geometry selectedLabel 0) ≠ 0 :=
   ⟨selectedSupport_visibleOn_aatPatch,
     selectedSupportPatch_response_ne_zero⟩
+
+/-- The same selected support patch participates in an actual AAT overlap, and
+the matched nonempty typed principal intersection carries the restricted
+nonzero response. -/
+theorem selectedSupportCircleEdge_visible_and_response_ne_zero :
+    coverageRequirements.supportVisibleOn
+        (cover.patch (chartEquivCoverIndex 0)) responseCore.supportAtom ∧
+      contextOverlap.overlap base.1
+          (cover.patch (chartEquivCoverIndex 0))
+          (cover.patch (chartEquivCoverIndex 1)) =
+        context ({0, 1} : Finset (Fin 3)) ∧
+      geometry.lawfulChartOpen (responseCore.obstructionIdeal base) 0 ⊓
+          geometry.lawfulChartOpen (responseCore.obstructionIdeal base) 1 ≠ ⊥ ∧
+      geometry.overlapConormalJacobian (responseCore.obstructionIdeal base) 0 1
+          overlapZeroOneDerivative
+          (LawGeneratedLabeledConormal.overlapLabeledConormal
+            responseCore base geometry selectedLabel 0 1) ≠ 0 :=
+  ⟨selectedSupport_visibleOn_aatPatch, aatPatch_zero_one_overlap,
+    lawfulChartOpen_inf_ne_bot (by decide), selectedSupportEdge_response_ne_zero⟩
 
 #assert_standard_axioms_only
   ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.BooleanCircleOperationResponsePrototype
