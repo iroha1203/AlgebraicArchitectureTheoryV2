@@ -232,7 +232,7 @@ theorem rawSystem_toPresheaf_eq_existing :
   rfl
 
 /-- The selected coefficient ring has distinct zero and one. -/
-def coefficientNontrivial : Nontrivial Int := inferInstance
+theorem coefficientNontrivial : Nontrivial Int := inferInstance
 
 /-- The selected left patch and base are distinct context objects. -/
 theorem left_ne_base : RawPresheaf.left ≠ base := by
