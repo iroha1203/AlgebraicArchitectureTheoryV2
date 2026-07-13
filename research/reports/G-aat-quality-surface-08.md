@@ -602,9 +602,11 @@ operation label. The typed geometry reuses the existing three AAT cover labels
 and assigns the three orthogonal product idempotents of a G-08-specific
 three-component ring layer. Its first component is the dual-number factor and
 the other two components make all three principal opens and localizations
-genuinely distinct. The idempotents sum to `1`, so their generated principal
-opens cover the full lawful affine scheme. The comparison retains the existing
-cover's distinct context patches, inclusions, and five admissibility clauses.
+genuinely distinct. Each quotient idempotent is nonzero, pairwise products
+vanish, and the idempotents sum to `1`; hence the principal opens are nonempty,
+pairwise disjoint, pairwise distinct, and cover the full lawful affine scheme.
+The comparison retains the existing cover's distinct context patches,
+inclusions, support visibility, and five admissibility clauses.
 
 On chart `0`, localization maps canonically to the dual-number factor. This map
 sends the transported obstruction ideal into the square-zero ideal while the
@@ -652,7 +654,7 @@ obligations remain.
 
 ```text
 cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/BooleanCircleOperationResponsePrototype.lean
-axiom audit: 43 declarations under BooleanCircleOperationResponsePrototype, standard axioms only
+axiom audit: 56 declarations under BooleanCircleOperationResponsePrototype, standard axioms only
 lake build
 Build completed successfully (7718 jobs).
 ```
@@ -679,14 +681,18 @@ lean_artifacts:
     declarations:
       - BooleanCircleOperationResponsePrototype.presentation_realizesFirstOrder
       - BooleanCircleOperationResponsePrototype.denominator_span_eq_top
+      - BooleanCircleOperationResponsePrototype.lawfulChartOpen_ne_bot
+      - BooleanCircleOperationResponsePrototype.lawfulChartOpen_inf_eq_bot
+      - BooleanCircleOperationResponsePrototype.lawfulChartOpen_ne
       - BooleanCircleOperationResponsePrototype.lawfulOpen_eq_top
       - BooleanCircleOperationResponsePrototype.ambient_selected_response_ne_zero
-      - BooleanCircleOperationResponsePrototype.selectedSupportPatch_response_ne_zero
+      - BooleanCircleOperationResponsePrototype.selectedSupportPatch_visible_and_response_ne_zero
 premise_delta:
   discharged:
     - typed Boolean-circle principal-localization operation response
     - generated lawful-open cover adequacy
     - ambient and selected-support-chart required labeled response nonvacuity
+    - matched-index support visibility and nonzero chart response
   remaining:
     - L0 finite repair and support-minimal circuit theorem
     - C0 kernel base change, support comparison, and fiber circuit locus

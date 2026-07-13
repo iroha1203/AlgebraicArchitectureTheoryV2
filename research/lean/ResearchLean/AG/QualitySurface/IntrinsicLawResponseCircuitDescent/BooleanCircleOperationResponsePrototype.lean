@@ -205,6 +205,84 @@ theorem denominator_span_eq_top :
   rw [← hone]
   exact Ideal.add_mem _ (Ideal.add_mem _ h₀ h₁) h₂
 
+theorem denominator_mul_self (i : Fin 3) :
+    denominator i * denominator i = denominator i := by
+  fin_cases i <;> ext <;> simp [denominator]
+
+theorem denominator_mul_eq_zero {i j : Fin 3} (hij : i ≠ j) :
+    denominator i * denominator j = 0 := by
+  fin_cases i <;> fin_cases j <;> ext <;> simp_all [denominator]
+
+theorem denominator_not_mem_obstructionIdeal (i : Fin 3) :
+    denominator i ∉ responseCore.obstructionIdeal base := by
+  rw [response_obstructionIdeal, Ideal.mem_span_singleton']
+  rintro ⟨r, hr⟩
+  fin_cases i
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.1.fst) hr
+    norm_num [denominator, responseGenerator] at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.1) hr
+    norm_num [denominator, responseGenerator] at hcoord
+  · have hcoord := congrArg (fun x : ResponseRing ↦ x.2.2) hr
+    norm_num [denominator, responseGenerator] at hcoord
+
+abbrev quotientDenominator (i : Fin 3) :=
+  Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+    (denominator i)
+
+theorem quotientDenominator_isIdempotent (i : Fin 3) :
+    IsIdempotentElem (quotientDenominator i) := by
+  change quotientDenominator i * quotientDenominator i = quotientDenominator i
+  change Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+      (denominator i * denominator i) =
+    Ideal.Quotient.mk (responseCore.obstructionIdeal base) (denominator i)
+  rw [denominator_mul_self]
+
+theorem quotientDenominator_ne_zero (i : Fin 3) :
+    quotientDenominator i ≠ 0 := by
+  intro hz
+  have hmem := Ideal.Quotient.eq_zero_iff_mem.mp hz
+  exact denominator_not_mem_obstructionIdeal i hmem
+
+theorem quotientDenominator_not_isNilpotent (i : Fin 3) :
+    ¬ IsNilpotent (quotientDenominator i) := by
+  intro hnil
+  exact quotientDenominator_ne_zero i
+    ((quotientDenominator_isIdempotent i).eq_zero_of_isNilpotent hnil)
+
+theorem quotientDenominator_mul_eq_zero {i j : Fin 3} (hij : i ≠ j) :
+    quotientDenominator i * quotientDenominator j = 0 := by
+  change Ideal.Quotient.mk (responseCore.obstructionIdeal base)
+      (denominator i * denominator j) =
+    Ideal.Quotient.mk (responseCore.obstructionIdeal base) 0
+  rw [denominator_mul_eq_zero hij]
+
+theorem lawfulChartOpen_ne_bot (i : Fin 3) :
+    geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i ≠ ⊥ := by
+  change PrimeSpectrum.basicOpen (quotientDenominator i) ≠ ⊥
+  intro hbot
+  exact quotientDenominator_not_isNilpotent i
+    ((PrimeSpectrum.basicOpen_eq_bot_iff _).mp hbot)
+
+theorem lawfulChartOpen_inf_eq_bot {i j : Fin 3} (hij : i ≠ j) :
+    geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i ⊓
+        geometry.lawfulChartOpen (responseCore.obstructionIdeal base) j = ⊥ := by
+  change PrimeSpectrum.basicOpen (quotientDenominator i) ⊓
+      PrimeSpectrum.basicOpen (quotientDenominator j) = ⊥
+  rw [← PrimeSpectrum.basicOpen_mul, quotientDenominator_mul_eq_zero hij,
+    PrimeSpectrum.basicOpen_zero]
+
+theorem lawfulChartOpen_ne {i j : Fin 3} (hij : i ≠ j) :
+    geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i ≠
+      geometry.lawfulChartOpen (responseCore.obstructionIdeal base) j := by
+  intro heq
+  apply lawfulChartOpen_ne_bot i
+  calc
+    geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i =
+        geometry.lawfulChartOpen (responseCore.obstructionIdeal base) i ⊓
+          geometry.lawfulChartOpen (responseCore.obstructionIdeal base) j := by
+      rw [heq, inf_idem]
+    _ = ⊥ := lawfulChartOpen_inf_eq_bot hij
+
 /-- Typed charts and the existing admissible AAT cover use the same index. -/
 def chartEquivCoverIndex : Fin 3 ≃ cover.Index := Equiv.refl (Fin 3)
 
@@ -225,6 +303,12 @@ theorem aatCover_admissible :
     Site.AdmissibleCover coverageRequirements contextOverlap
       cover.toCoverageFamily :=
   cover.admissible
+
+theorem selectedSupport_visibleOn_aatPatch :
+    coverageRequirements.supportVisibleOn
+      (cover.patch (chartEquivCoverIndex 0)) responseCore.supportAtom := by
+  simp [coverageRequirements, cover, chartEquivCoverIndex, responseCore,
+    chartContextIndex]
 
 /-- The three distinct principal opens cover the full lawful affine scheme. -/
 theorem lawfulOpen_eq_top :
@@ -382,6 +466,18 @@ theorem selectedSupportPatch_response_ne_zero :
   intro hz
   exact responseValue_not_mem_chartZeroLawIdeal
     ((Submodule.Quotient.mk_eq_zero _).mp hz)
+
+/-- The existing AAT patch visibility and the typed nonzero response are one
+matched-index fact, rather than two independently named constructions. -/
+theorem selectedSupportPatch_visible_and_response_ne_zero :
+    coverageRequirements.supportVisibleOn
+        (cover.patch (chartEquivCoverIndex 0)) responseCore.supportAtom ∧
+      geometry.chartConormalJacobian (responseCore.obstructionIdeal base) 0
+          chartZeroDerivative
+          (LawGeneratedLabeledConormal.chartLabeledConormal
+            responseCore base geometry selectedLabel 0) ≠ 0 :=
+  ⟨selectedSupport_visibleOn_aatPatch,
+    selectedSupportPatch_response_ne_zero⟩
 
 #assert_standard_axioms_only
   ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.BooleanCircleOperationResponsePrototype
