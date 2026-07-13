@@ -1,11 +1,17 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 
+use crate::schema::RepairPlanComplexV1;
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, RepairPlanDocumentV1, ValidationCheck,
 };
+
+const COMPARISON_SOURCE_COMPLEX_REF: &str = "complex:repair";
+const COMPARISON_TARGET_COMPLEX_REF: &str = "complex:cech";
+const COMPARISON_COCHAIN_MAP_REF: &str = "comparison:cochain-map";
 
 pub fn validate_repair_plan_v1_checks(
     plan: &RepairPlanDocumentV1,
@@ -59,6 +65,56 @@ pub fn build_repair_plan_validation_report_v1(
             "warningCheckCount": warning_check_count
         }
     })
+}
+
+pub(crate) fn comparison_complex_fingerprint(plan: &RepairPlanDocumentV1) -> String {
+    complex_fingerprint(&plan.complex)
+}
+
+pub(crate) fn complex_fingerprint(complex: &RepairPlanComplexV1) -> String {
+    let bytes = serde_json::to_vec(complex).unwrap_or_default();
+    format!("{:x}", Sha256::digest(bytes))
+}
+
+pub(crate) fn comparison_target_complex(
+    plan: &RepairPlanDocumentV1,
+    comparison: &Value,
+) -> Option<RepairPlanComplexV1> {
+    let bridge = comparison.get("incidenceBridge")?.as_object()?;
+    comparison_target_complex_from_bridge(plan, bridge)
+}
+
+fn comparison_target_complex_from_bridge(
+    plan: &RepairPlanDocumentV1,
+    bridge: &serde_json::Map<String, Value>,
+) -> Option<RepairPlanComplexV1> {
+    let target = match bridge.get("kind").and_then(Value::as_str) {
+        Some("chart-indexed") => plan.complex.clone(),
+        Some("explicit") => {
+            let value = bridge.get("targetComplex")?.clone();
+            match serde_json::from_value(value) {
+                Ok(complex) => complex,
+                Err(_) => return None,
+            }
+        }
+        _ => return None,
+    };
+    let source_overlap_ids = plan
+        .complex
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let target_overlap_ids = target
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let valid = source_overlap_ids == target_overlap_ids
+        && target.overlaps.iter().all(|overlap| {
+            target.charts.contains(&overlap.left) && target.charts.contains(&overlap.right)
+        });
+    valid.then_some(target)
 }
 
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
@@ -300,6 +356,187 @@ fn check_supplied_slots(
                         ));
                     }
                 }
+                "comparison" if kind == "saga-comparison" => {
+                    for key in object.keys() {
+                        if !matches!(
+                            key.as_str(),
+                            "kind" | "incidenceBridge" | "h1ComparisonData"
+                        ) {
+                            examples.push(generic_validation_example(
+                                &format!("{path}.{key}"),
+                                "unknown-field",
+                                "comparison has no unregistered supplied fields",
+                            ));
+                        }
+                    }
+                    let bridge = object.get("incidenceBridge").and_then(Value::as_object);
+                    let h1 = object.get("h1ComparisonData").and_then(Value::as_object);
+                    let target_complex = bridge
+                        .and_then(|bridge| comparison_target_complex_from_bridge(plan, bridge));
+                    let mut nested_unknown = false;
+                    if let Some(bridge) = bridge {
+                        for key in bridge.keys() {
+                            let allowed = match bridge.get("kind").and_then(Value::as_str) {
+                                Some("chart-indexed") => {
+                                    ["kind", "repairChartRefs", "cechChartRefs"].as_slice()
+                                }
+                                Some("explicit") => [
+                                    "kind",
+                                    "sourceComplexRef",
+                                    "targetComplexRef",
+                                    "targetComplex",
+                                ]
+                                .as_slice(),
+                                _ => ["kind"].as_slice(),
+                            };
+                            if !allowed.contains(&key.as_str()) {
+                                nested_unknown = true;
+                                examples.push(generic_validation_example(
+                                    &format!("{path}.incidenceBridge.{key}"),
+                                    "unknown-field",
+                                    "incidence bridge has no unregistered supplied fields",
+                                ));
+                            }
+                        }
+                    }
+                    if let Some(h1) = h1 {
+                        for key in h1.keys() {
+                            let allowed = match h1.get("kind").and_then(Value::as_str) {
+                                Some("identity") => [
+                                    "schema",
+                                    "kind",
+                                    "sourceComplexFingerprint",
+                                    "targetComplexFingerprint",
+                                    "targetCochainSupport",
+                                ]
+                                .as_slice(),
+                                Some("explicit") => [
+                                    "schema",
+                                    "kind",
+                                    "cochainMapRef",
+                                    "sourceComplexFingerprint",
+                                    "targetComplexFingerprint",
+                                    "targetCochainSupport",
+                                    "degreeOneLeftInverse",
+                                    "degreeOneRightInverse",
+                                    "differencePreserving",
+                                    "degreeTwoZeroPreserving",
+                                    "differentialCommutative",
+                                ]
+                                .as_slice(),
+                                _ => ["kind"].as_slice(),
+                            };
+                            if !allowed.contains(&key.as_str()) {
+                                nested_unknown = true;
+                                examples.push(generic_validation_example(
+                                    &format!("{path}.h1ComparisonData.{key}"),
+                                    "unknown-field",
+                                    "H1 comparison data has no unregistered supplied fields",
+                                ));
+                            }
+                        }
+                    }
+                    let bridge_ok = !nested_unknown
+                        && bridge.is_some_and(|bridge| {
+                            let bridge_kind = bridge.get("kind").and_then(Value::as_str);
+                            match bridge_kind {
+                                Some("chart-indexed") => {
+                                    let expected = plan
+                                        .complex
+                                        .charts
+                                        .iter()
+                                        .map(String::as_str)
+                                        .collect::<BTreeSet<_>>();
+                                    let parse_refs = |key: &str| {
+                                        bridge.get(key).and_then(Value::as_array).and_then(
+                                            |items| {
+                                                items
+                                                    .iter()
+                                                    .map(Value::as_str)
+                                                    .collect::<Option<Vec<_>>>()
+                                            },
+                                        )
+                                    };
+                                    let repair = parse_refs("repairChartRefs");
+                                    let cech = parse_refs("cechChartRefs");
+                                    repair.as_ref().is_some_and(|refs| {
+                                        cech.as_ref().is_some_and(|cech_refs| {
+                                            refs.len() == expected.len()
+                                                && cech_refs.len() == expected.len()
+                                                && refs.iter().copied().collect::<BTreeSet<_>>()
+                                                    == expected
+                                                && cech_refs
+                                                    .iter()
+                                                    .copied()
+                                                    .collect::<BTreeSet<_>>()
+                                                    == expected
+                                        })
+                                    })
+                                }
+                                Some("explicit") => {
+                                    bridge.get("sourceComplexRef").and_then(Value::as_str)
+                                        == Some(COMPARISON_SOURCE_COMPLEX_REF)
+                                        && bridge.get("targetComplexRef").and_then(Value::as_str)
+                                            == Some(COMPARISON_TARGET_COMPLEX_REF)
+                                        && target_complex.is_some()
+                                }
+                                _ => false,
+                            }
+                        });
+                    let h1_ok = !nested_unknown
+                        && h1.is_some_and(|h1| {
+                            let source_complex_fingerprint = comparison_complex_fingerprint(plan);
+                            let target_fingerprint = target_complex
+                                .as_ref()
+                                .map(crate::repair_plan::complex_fingerprint);
+                            let fingerprints_ok =
+                                h1.get("sourceComplexFingerprint").and_then(Value::as_str)
+                                    == Some(source_complex_fingerprint.as_str())
+                                    && h1.get("targetComplexFingerprint").and_then(Value::as_str)
+                                        == target_fingerprint.as_deref();
+                            let kind = h1.get("kind").and_then(Value::as_str);
+                            match kind {
+                                Some("identity") => {
+                                    h1.get("schema").and_then(Value::as_str)
+                                        == Some("h1-comparison-data/v0.5.2")
+                                        && fingerprints_ok
+                                        && target_fingerprint.as_deref()
+                                            == Some(source_complex_fingerprint.as_str())
+                                        && target_complex.as_ref().is_some_and(|complex| {
+                                            comparison_target_cochain_support_matches(complex, h1)
+                                        })
+                                }
+                                Some("explicit") => {
+                                    let bool_keys = [
+                                        "degreeOneLeftInverse",
+                                        "degreeOneRightInverse",
+                                        "differencePreserving",
+                                        "degreeTwoZeroPreserving",
+                                        "differentialCommutative",
+                                    ];
+                                    h1.get("schema").and_then(Value::as_str)
+                                        == Some("h1-comparison-data/v0.5.2")
+                                        && fingerprints_ok
+                                        && h1.get("cochainMapRef").and_then(Value::as_str)
+                                            == Some(COMPARISON_COCHAIN_MAP_REF)
+                                        && target_complex.as_ref().is_some_and(|complex| {
+                                            comparison_target_cochain_support_matches(complex, h1)
+                                        })
+                                        && bool_keys
+                                            .iter()
+                                            .all(|key| h1.get(*key) == Some(&Value::Bool(true)))
+                                }
+                                _ => false,
+                            }
+                        });
+                    if !bridge_ok || !h1_ok {
+                        examples.push(generic_validation_example(
+                            path,
+                            "comparison-contract-invalid",
+                            "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a validated identity or explicit finite H1 comparison contract",
+                        ));
+                    }
+                }
                 _ => examples.push(generic_validation_example(
                     path,
                     kind,
@@ -313,6 +550,50 @@ fn check_supplied_slots(
         "Stage 2 supplied slots are explicit and checked before evaluator use",
         examples,
     )
+}
+
+fn comparison_target_cochain_support_matches(
+    complex: &RepairPlanComplexV1,
+    h1: &serde_json::Map<String, Value>,
+) -> bool {
+    let expected = complex
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let Some(items) = h1.get("targetCochainSupport").and_then(Value::as_array) else {
+        return false;
+    };
+    let mut actual = BTreeMap::new();
+    for item in items {
+        let Some(object) = item.as_object() else {
+            return false;
+        };
+        if object
+            .keys()
+            .any(|key| !matches!(key.as_str(), "overlapRef" | "support"))
+        {
+            return false;
+        }
+        let Some(overlap_ref) = object.get("overlapRef").and_then(Value::as_str) else {
+            return false;
+        };
+        let Some(support) = object.get("support").and_then(Value::as_array) else {
+            return false;
+        };
+        let Some(support) = support
+            .iter()
+            .map(Value::as_str)
+            .collect::<Option<Vec<_>>>()
+        else {
+            return false;
+        };
+        let support_set = support.iter().copied().collect::<BTreeSet<_>>();
+        if support.len() != support_set.len() || actual.insert(overlap_ref, support_set).is_some() {
+            return false;
+        }
+    }
+    actual.keys().copied().collect::<BTreeSet<_>>() == expected
 }
 
 fn check_conclusion_tokens(plan: &RepairPlanDocumentV1) -> ValidationCheck {
@@ -374,9 +655,46 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
             }
         }
     }
+    if let Some(comparison) = plan.comparison.as_ref() {
+        if comparison.get("kind").and_then(Value::as_str) == Some("saga-comparison") {
+            if let Some(bridge) = comparison.get("incidenceBridge") {
+                if bridge.get("kind").and_then(Value::as_str) == Some("explicit") {
+                    for (field, expected) in [
+                        ("sourceComplexRef", COMPARISON_SOURCE_COMPLEX_REF),
+                        ("targetComplexRef", COMPARISON_TARGET_COMPLEX_REF),
+                    ] {
+                        let actual = bridge.get(field).and_then(Value::as_str);
+                        if actual != Some(expected) {
+                            examples.push(generic_validation_example(
+                                &format!("comparison.incidenceBridge.{field}"),
+                                actual.unwrap_or("<missing>"),
+                                &format!(
+                                    "explicit comparison reference must resolve to {expected}"
+                                ),
+                            ));
+                        }
+                    }
+                }
+            }
+            if let Some(h1) = comparison.get("h1ComparisonData") {
+                if h1.get("kind").and_then(Value::as_str) == Some("explicit")
+                    && h1.get("cochainMapRef").and_then(Value::as_str)
+                        != Some(COMPARISON_COCHAIN_MAP_REF)
+                {
+                    examples.push(generic_validation_example(
+                        "comparison.h1ComparisonData.cochainMapRef",
+                        h1.get("cochainMapRef")
+                            .and_then(Value::as_str)
+                            .unwrap_or("<missing>"),
+                        "explicit comparison cochain map reference must resolve to comparison:cochain-map",
+                    ));
+                }
+            }
+        }
+    }
     examples_check(
         "repair-plan-schema052-reference-resolution",
-        "RepairPlan chart, overlap, primitive, and triple references resolve",
+        "RepairPlan chart, overlap, primitive, triple, and comparison references resolve",
         examples,
     )
 }

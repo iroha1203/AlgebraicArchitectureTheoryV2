@@ -2,9 +2,12 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
 
+use crate::repair_plan::{comparison_complex_fingerprint, comparison_target_complex};
 use crate::{
-    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1,
-    AgVerdictDataV1, ArchMapDocumentV2, RepairPlanDocumentV1, assumption_id_for_schema,
+    ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
+    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA, AgAssumptionLedgerEntryV1,
+    AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2, RepairPlanDocumentV1,
+    assumption_id_for_schema,
 };
 
 #[derive(Debug, Clone)]
@@ -244,6 +247,7 @@ pub(crate) fn evaluate_saga_descent_v1(
             ]
         }));
     }
+    computed_invariants.push(evaluate_saga_comparison_v1(plan, &structural_verdict));
     let mut assumptions = vec![enumeration_assumption];
     if let Some(sheaf_assumption) = sheaf_assumption {
         assumptions.push(sheaf_assumption);
@@ -256,6 +260,127 @@ pub(crate) fn evaluate_saga_descent_v1(
         computed_invariants,
         assumptions,
     }
+}
+
+fn evaluate_saga_comparison_v1(
+    plan: &RepairPlanDocumentV1,
+    structural_verdict: &[AgStructuralVerdictV1],
+) -> Value {
+    let Some(comparison) = plan.comparison.as_ref() else {
+        return json!({
+            "invariantId": "saga-comparison:h1-transfer",
+            "evaluator": "ag.saga-comparison",
+            "kind": "h1-comparison-transfer",
+            "status": "silence_by_design",
+            "reason": "comparison_data_not_supplied"
+        });
+    };
+    let class_available = structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.saga-descent"
+            && verdict.law == "saga.residual-class"
+            && matches!(
+                verdict.verdict.as_str(),
+                "measured_zero" | "measured_nonzero"
+            )
+    });
+    let class_nonzero = structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.saga-descent"
+            && verdict.law == "saga.residual-class"
+            && verdict.verdict == "measured_nonzero"
+    });
+    let bridge_kind = comparison["incidenceBridge"]["kind"]
+        .as_str()
+        .unwrap_or("unknown");
+    let h1_kind = comparison["h1ComparisonData"]["kind"]
+        .as_str()
+        .unwrap_or("unknown");
+    let target_class_nonzero = comparison_target_class_nonzero(plan, comparison);
+    let preserves_zero_predicate =
+        target_class_nonzero.is_some_and(|target| target == class_nonzero);
+    let established = class_available && preserves_zero_predicate;
+    json!({
+        "invariantId": "saga-comparison:h1-transfer",
+        "evaluator": "ag.saga-comparison",
+        "kind": "h1-comparison-transfer",
+        "status": if established { "established" } else { "not_computed" },
+        "conclusionCode": established.then_some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA),
+        "contract": {
+            "incidenceBridgeKind": bridge_kind,
+            "h1ComparisonDataKind": h1_kind,
+            "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
+            "classPrerequisite": class_available,
+            "targetClassComputed": target_class_nonzero.is_some()
+        },
+        "suppliedCochainMap": {
+            "level": "cochain",
+            "kind": h1_kind,
+            "contractChecked": true,
+            "targetSupportComputed": target_class_nonzero.is_some()
+        },
+        "generatedQuotientTransfer": if established {
+            json!({
+                "level": "quotient",
+                "kind": "Z1/B1-class-transfer",
+                "preservesZeroPredicate": preserves_zero_predicate,
+                "sourceClassNonZero": class_nonzero,
+                "targetClassNonZero": target_class_nonzero,
+                "sourceInvariant": "saga-descent:residual-class",
+                "targetInvariant": "saga-comparison:h1-transfer"
+            })
+        } else {
+            Value::Null
+        },
+        "failureCode": if established { Value::Null } else { json!(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION) },
+        "nonConclusions": [
+            "Supplied cochain data and generated quotient-level transfer are separate structures.",
+            "The transfer reading is relative to the supplied finite comparison contract."
+        ]
+    })
+}
+
+fn comparison_target_class_nonzero(
+    plan: &RepairPlanDocumentV1,
+    comparison: &Value,
+) -> Option<bool> {
+    let target_complex = comparison_target_complex(plan, comparison)?;
+    let h1 = comparison.get("h1ComparisonData")?.as_object()?;
+    let items = h1.get("targetCochainSupport")?.as_array()?;
+    let mut support_by_overlap = BTreeMap::<&str, BTreeSet<&str>>::new();
+    for item in items {
+        let object = item.as_object()?;
+        let overlap_ref = object.get("overlapRef")?.as_str()?;
+        let support = object.get("support")?.as_array()?;
+        let variables = support
+            .iter()
+            .map(Value::as_str)
+            .collect::<Option<Vec<_>>>()?;
+        let variable_set = variables.iter().copied().collect::<BTreeSet<_>>();
+        if variables.len() != variable_set.len()
+            || support_by_overlap
+                .insert(overlap_ref, variable_set)
+                .is_some()
+        {
+            return None;
+        }
+    }
+    if support_by_overlap.len() != target_complex.overlaps.len()
+        || target_complex
+            .overlaps
+            .iter()
+            .any(|overlap| !support_by_overlap.contains_key(overlap.id.as_str()))
+    {
+        return None;
+    }
+    let mut target_plan = plan.clone();
+    target_plan.complex = target_complex;
+    for primitive in &mut target_plan.primitives {
+        primitive.support.variables = support_by_overlap
+            .get(primitive.overlap_ref.as_str())?
+            .iter()
+            .map(|variable| (*variable).to_string())
+            .collect();
+    }
+    Some(!solve_boundary_membership(&target_plan).in_b1)
 }
 
 fn class_supply_is_checked(archmap: &ArchMapDocumentV2, plan: &RepairPlanDocumentV1) -> bool {
