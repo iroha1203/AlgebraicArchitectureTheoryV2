@@ -4,7 +4,8 @@
 - 対象: `Formal/AG/Atom`、`Formal/AG/Site`、`Formal/AG/LawAlgebra` のsite・raw algebra・structure sheaf層、aggregate、statement contracts、axiom audit、Lean台帳
 - 数学的正典: `docs/aat/algebraic_geometric_theory/` 第I部〜第III部
 - 品質基準: `AGENTS.md`、`docs/guideline.md`、`docs/aat/guideline.md`、`docs/aat/lean_quality_standard.md`
-- tracking Issue: 未作成。Issue作成と依存登録が済むまで実行不可
+- tracking Issue: #3308
+- core / obstruction split contract: [`statement_contracts/aat_core_obstruction_split.md`](statement_contracts/aat_core_obstruction_split.md)
 - executable contract: `Formal/AG/StatementContractsAtomToRingedSite.lean`。実装と同時に作成し、CIでelaborateする
 - 実行単位: GitHub tracking Issue配下の `1 Issue = 1 PR`
 
@@ -14,33 +15,23 @@
 
 ## Statement Design
 
-この節は本PRDの設計入力であり、実装開始後にtargetの仮定・結論・量化対象を変更しない。
-実装状態は記録しない。実装後は
-`Formal/AG/StatementContractsAtomToRingedSite.lean`が、ここに固定したtargetと
-実装宣言のLean signatureを回帰検査する。別のMarkdown contractは作成しない。
+この節は現行statement contractを参照する設計入力であり、実装状態は記録しない。
+実装後は`Formal/AG/StatementContractsAtomToRingedSite.lean`が、現行contractに固定したtargetと
+実装宣言のLean signatureを回帰検査する。
 
 ### SD1 — AAT Core generation
 
-主constructorを次で固定する。
+定理10.5のcoreは、family、configuration、architecture object、law universe、signature、
+object algebraを持つ無条件生成層とする。`ObstructionCircuit`はcoreの必須fieldにしない。
+ここで無条件とは、selected law failureをpremiseとして要求しないことを指す。
+生成済みlaw universeのindex、選ばれたfinite Atom family / relation support、
+そのlawが生成済みobject上で失敗する証明がある場合だけ、`ObstructedAATCorePackage`を
+dependent extensionとして構成する。
 
-```lean
-def AATCorePackage.generate {U : AtomCarrier}
-    (S : AtomAxiomSystem U) : AATCorePackage U
-```
-
-`generate_axioms`、`generate_family_provenance`、`generate_configuration_eq`、
-`generate_object_eq`、`generate_lawUniverse_provenance`、
-`generate_algebra_contains_object`、`generate_algebra_contains_operation`をtargetとする。
-各targetは、生成物が`S`のextraction、configuration、law、operationに由来することを述べる。
-
-selected `AtomFamily`、`AtomConfiguration`、`ArchitectureObject`、`LawUniverse`、
-`ObstructionCircuit`、`ArchitectureSignature`、`ObjectAlgebra`またはそれらの一致証明を
-`generate`の追加引数にしない。現行`AtomAxiomSystem`の情報だけでは構成不能と確定した場合、
-強いcomponent packageを追加せず、`AtomAxiomSystem`自体のprimitive generation operationを
-設計し直す。生成familyは全doctrine/sourceの`atomize`の像、configurationはそのclosure、
-law universeとoperationはaxiom-sideの生成operationの像として構成する。
-空のdoctrine/sourceから退化生成しないためのnonempty conditionは公理系のwell-formednessに置き、
-`generate`の追加premiseにはしない。このprimitive redesignが本文から正当化できなければ停止条件を適用する。
+このsplitで変更するLean schema、constructor、characterization API、all-laws-hold counterexampleの
+固定signatureは
+[`statement_contracts/aat_core_obstruction_split.md`](statement_contracts/aat_core_obstruction_split.md)
+を不変入力とする。失敗lawをconstructor内部で作らず、呼出側が生成済みlaw indexを指定する。
 
 ### SD2 — selected geometry reading
 
@@ -107,7 +98,8 @@ characterization theoremは、site、raw presheaf、structure sheaf、canonical 
 ```text
 Atom axiom system
   -> Atom family / configuration / architecture object
-  -> core law universe / obstruction circuit / signature / AAT core
+  -> core law universe / signature / object algebra / AAT core
+  + generated law index / law failure -> obstructed AAT core
   + selected geometry law universe / coverage requirements / coefficient ring
   -> architecture context category
   -> admissible coverage and generated Grothendieck topology
@@ -126,8 +118,9 @@ Atom axiom system
 - `AATCorePackage`、`PartIPrerequisites`、`ArchitectureGeometry`、`AATSite`、
   `AATGrothendieckTopology`は存在する。
 - `AATCorePackage.ofComponents`はfamily、configuration、architecture object、law universe、
-  obstruction circuit、signatureをすべて受け取り、`ofAxiomRealization`も後段componentを受け取る。
-  現行主経路はAtom公理系からのgeneration theoremではなくselected componentのassemblyである。
+  signatureを受け取り、obstructionを必須入力にしない。actual obstructionは生成済みlaw index、
+  finite circuit data、そのfailureから`ObstructedAATCorePackage`として構成する。core側はなお
+  Atom公理系からのgeneration theoremではなくselected componentのassemblyである。
 - `AATCorePackage.objectAlgebraOfComponents`は`PUnit`上のsingleton object/operationを使うため、
   非退化なcore generationの主証拠にはならない。
 - `RawAmbientPresheafBridge`と`RawAmbientAlgebraPresheafBridge`は、context-indexed raw algebraと
@@ -148,7 +141,7 @@ Atom axiom system
 
 完了時に次が成り立つ。
 
-1. Atom公理系からfamily、configuration、architecture object、core law universe、obstruction circuit、signatureを生成する公開経路がある。
+1. Atom公理系からfamily、configuration、architecture object、core law universe、signature、object algebraを無条件に生成する公開経路があり、生成済みlawの失敗からobstructed extensionを構成できる。
 2. 生成済みcoreから、selected law readingを持つAAT siteまでの公開constructorがある。
 3. typed coordinate family、structural relations、restriction dataからraw ambient algebra presheafが構成される。
 4. structural relation idealのrestriction stabilityが、quotient restriction mapとpresheaf functorialityの証明に実際に使われる。
@@ -160,7 +153,7 @@ Atom axiom system
 
 ## 採否規律
 
-- 数学本文はread-onlyとし、`docs/aat/algebraic_geometric_theory/**`を変更しない。
+- 数学本文の定義8.2と定理10.5は、無条件coreとlaw-failure相対のobstructed extensionを区別する。
 - `AATCorePackage.ofComponents`または`ofAxiomRealization`によるassemblyだけを
   Atom-to-ringed-site generationの完了証拠にしない。
 - 本文の定理10.5をLean都合でassembly theoremへ弱めない。
@@ -171,7 +164,7 @@ Atom axiom system
 - legacy declarationは直ちに削除しない。新基盤へsoundに変換できる場合だけadapterを置く。
 - core law universeは定理10.5の生成対象とし、geometryで使うselected law universeは
   generated core law universeからのtyped selectionとして入力する。coverageとcoefficientはgeometry parameterとして入力する。
-- target statementと参照definitionは、このPRDの`Statement Design`節を不変入力とする。
+- core / obstruction splitのtarget statementと参照definitionは、現行statement contractを不変入力とする。
 
 ## 改修要求
 
@@ -194,12 +187,17 @@ Atom axiom system
   Atom公理系の生成operationからcomparisonを構成する。
 - `configurationOf`、family/configuration/objectの一致をproof bodyで使う。
 - axiom-side law dataからactual core `LawUniverse`へのcomparisonとimage provenanceを構成する。
-- core law universe、obstruction circuit、signatureをgenerated Atom towerとaxiom-side law dataから構成し、
+- core law universe、signature、object algebraをgenerated Atom towerとaxiom-side law dataから構成し、
   selected componentの再包装にしない。
+- `AATCorePackage`からmandatory obstruction law / circuitを除き、生成済みlaw index、finite circuit data、失敗証明に
+  dependentな`ObstructedAATCorePackage`を定義する。
+- obstructed extensionのconstructorは生成済みlaw indexを入力し、そのindexとcircuitのlawが一致することを
+  型とcharacterization theoremで保証する。constructor内部でalways-false lawを作らない。
+- すべてのarchitecture object上で成り立つlawにはactual `ObstructionCircuit`が存在しないことを
+  counterexample theoremとして証明する。
 - geometryで使うlaw universeはgenerated core law universeからのtyped selectionとして与え、
   core generationとgeometry relativityを混同しない。
 - object algebraはsingleton identity exampleだけでなく、少なくとも一つの非退化operationを持つmodelで発火させる。
-- `ObstructionCircuit.law_failure`が定理10.5の量化対象と一致しない場合は、固定statementを変更せず停止する。
 - Atom公理系から生成された各componentが`AATCorePackage`のfieldと一致するcharacterization theoremを証明する。
 - 現行coreからarchitecture object、law universe、signatureを読む小さいAPIを整える。
 - coverage requirementsとoverlap dataが同じarchitecture objectとlaw universeに型付けされるようにする。
@@ -262,9 +260,11 @@ Atom axiom system
 
 ## Acceptance Criteria
 
-- [ ] AC1: executable contractが主constructor、ringed site presentation、非退化exampleの実装signatureを直接参照する。
+- [ ] AC1: executable contractが主constructor、obstructed extension、ringed site presentation、非退化exampleの実装signatureを直接参照する。
 - [ ] AC2: `S.Family` / `S.Configuration` / axiom-side law dataからactual family / configuration / core law universeへのcomparison、image provenance、`S.configurationOf`との可換性が証明され、無関係なselected componentの再包装ではない。
 - [ ] AC3: generated architecture objectのfamily/configuration一致がcharacterization theoremで追跡でき、非退化operationを持つmodelで発火する。
+- [ ] AC3a: `AATCorePackage`はobstructionを必須fieldに持たず、生成済みlaw index、finite circuit data、その失敗からだけ`ObstructedAATCorePackage`を構成できる。
+- [ ] AC3b: all-holding lawにはactual `ObstructionCircuit`が存在しないことがstandard axiomsだけで証明される。
 - [ ] AC4: 生成済みAAT coreからAAT siteまでのconstructorがあり、object、law universe、signature、coverage provenanceを失わない。
 - [ ] AC5: admissible coverageからactual Mathlib `GrothendieckTopology`が生成される。
 - [ ] AC6: typed coordinateとstructural relationからactual algebra-valued presheafが構成され、restriction identity/compositionが証明される。
@@ -276,7 +276,7 @@ Atom axiom system
 - [ ] AC12: 非退化finite vertical sliceが同一Atom inputからcore、site、raw presheaf、structure sheafまで発火する。
 - [ ] AC13: 新definitionにconstructor/destructor/ext/characterization/comparison APIがあり、主要利用者がdefinition unfoldに依存しない。
 - [ ] AC14: target declarationsとexampleがstandard axiomsのみを使用し、statement contractsとaxiom auditがgreenである。
-- [ ] AC15: `docs/aat/algebraic_geometric_theory/**`に変更がなく、Lean台帳だけが必要範囲で同期される。
+- [ ] AC15: 数学本文の定義8.2・定理10.5、現行statement contract、Lean台帳が二層設計へ同期される。
 - [ ] AC16: `math-lean-review`の4本の独立査読がすべて`No major findings`である。
 
 ## Failure Contract
@@ -286,6 +286,10 @@ Atom axiom system
 - unrelated componentsを並べたpackageの追加。
 - `AATCorePackage.ofComponents`またはsingleton object algebraだけでAtom generationを主張すること。
 - `S.Family`からactual familyへのarbitrary mapと無関係なactual familyを同時入力し、provenanceと呼ぶこと。
+- actual obstruction circuitを無条件coreのfieldとして要求すること。
+- 生成済みlaw indexを受けず、constructor内部で失敗lawを作ること。
+- circuitのfinitenessを具体的なfinite family witnessではなく自由な`True` markerで閉じること。
+- 結論相当のfailure certificateを別fieldから射影してobstructed extensionの存在を主張すること。
 - arbitrary presheafとobjectwise equivalenceを入力して生成と呼ぶこと。
 - presheaf functoriality、sheaf condition、sheafification普遍性を結論相当fieldから射影すること。
 - `True`、未使用material premise、singletonだけで主経路を発火させること。
@@ -298,7 +302,6 @@ Atom axiom system
 - fixed statementを弱める、material premiseを追加する、参照definitionのsignatureを結論相当に変更する必要が生じた。
 - Mathlib sheafificationを利用できず、同じ普遍性を持つ構成も対象範囲内で実装できない。
 - Atom公理系からactual family/configuration/objectを生成するために本文にないmaterial premiseが必要と判明した。
-- `ObstructionCircuit.law_failure`と本文定理10.5の量化対象が固定statement上で整合しない。
 - 非退化finite modelが構成できず、退化例だけが残る。
 
 停止報告には、該当AC、最小の反例またはAPI blocker、試した構成、未放電仮定、

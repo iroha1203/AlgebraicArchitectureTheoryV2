@@ -418,7 +418,24 @@ theorem finite_lawfulness_iff_omega_zero :
 /-- R10: the finite model feeds the AAT Core theorem package. -/
 def corePackage : AATCorePackage carrier :=
   AATCorePackage.ofComponents axiomSystem allFamily configuration object rfl rfl
-    invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit signature
+    invariantFamily lawUniverse signature
+
+/-- R10: the selected NoCycle law fails on the cyclic finite object. -/
+theorem noCycleLaw_fails_on_object :
+    ¬ noCycleLaw.holds object :=
+  cycleObstructionCircuit.law_failure
+
+/--
+R10: the cyclic finite model realizes an obstruction over the unconditional
+core package, relative to the selected NoCycle law failure.
+-/
+def obstructedCorePackage : ObstructedAATCorePackage corePackage :=
+  ObstructedAATCorePackage.ofLawFailure corePackage PUnit.unit allFamily
+    cycleRelation
+    (by
+      intro a b _h
+      exact ⟨trivial, trivial⟩)
+    allFamily_listFinite noCycleLaw_fails_on_object
 
 /-- peer-review hardening I-2: the finite model realizes the abstract A0-A8 family/configuration tower. -/
 def atomTowerRealization : AATCorePackage.AtomTowerRealization axiomSystem where
@@ -436,7 +453,7 @@ def atomTowerRealization : AATCorePackage.AtomTowerRealization axiomSystem where
 /-- peer-review hardening I-2: finite model core package using the axiom-system realization bridge. -/
 def corePackageFromAxiomRealization : AATCorePackage carrier :=
   AATCorePackage.ofAxiomRealization axiomSystem atomTowerRealization object rfl
-    invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit signature
+    invariantFamily lawUniverse signature
 
 /-- peer-review hardening I-2: the finite realization theorem has no HEq in its conclusion. -/
 theorem corePackageFromAxiomRealization_exists_noHEq :
@@ -448,11 +465,29 @@ theorem corePackageFromAxiomRealization_exists_noHEq :
               core.configuration.family = core.family ∧
                 core.object.configuration = core.configuration ∧
                   core.lawUniverse = lawUniverse ∧
-                    core.obstructionLaw = noCycleLaw ∧
-                      core.signature = signature :=
+                    core.signature = signature :=
   AATCorePackage.exists_ofAxiomRealization_noHEq axiomSystem atomTowerRealization
-    object rfl invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit
-    signature
+    object rfl invariantFamily lawUniverse signature
+
+/--
+R10: the selected NoCycle law admits the conditional obstruction extension for
+the finite core package.
+-/
+theorem obstructedCorePackage_exists :
+    ∃ obstructed : ObstructedAATCorePackage corePackage,
+      obstructed.lawIndex = PUnit.unit :=
+  ⟨obstructedCorePackage, rfl⟩
+
+/-- R10: the conditional obstruction extension retains the actual law failure. -/
+theorem obstructedCorePackage_law_failure :
+    ¬ (corePackage.lawUniverse.law obstructedCorePackage.lawIndex).holds
+      corePackage.object :=
+  obstructedCorePackage.law_failure
+
+/-- R10: the conditional layer retains the concrete finite obstruction support. -/
+theorem obstructedCorePackage_listFinite :
+    obstructedCorePackage.circuit.ListFinite :=
+  allFamily_listFinite
 
 /-- R10: the finite core package contains the selected finite object. -/
 theorem corePackage_object :

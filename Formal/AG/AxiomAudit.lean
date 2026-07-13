@@ -1,4 +1,5 @@
 import Formal.AG
+import Formal.AG.Examples.CoreObstructionCounterexample
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
@@ -900,9 +901,134 @@ theorem finiteCorePackageFromAxiomRealizationNoHEq :
               core.configuration.family = core.family ∧
                 core.object.configuration = core.configuration ∧
                   core.lawUniverse = FiniteModel.lawUniverse ∧
-                    core.obstructionLaw = FiniteModel.noCycleLaw ∧
-                      core.signature = FiniteModel.signature :=
+                    core.signature = FiniteModel.signature :=
   FiniteModel.corePackageFromAxiomRealization_exists_noHEq
+
+/-- Audit the unconditional core constructor itself. -/
+def unconditionalCoreConstructor :=
+  @AATCorePackage.ofComponents
+
+/-- Audit the constructor that proof-uses a selected law failure. -/
+def obstructionExtensionFromLawFailure :=
+  @ObstructedAATCorePackage.ofLawFailure
+
+/-- The finite consumer directly audits the unconditional core constructor. -/
+def finiteUnconditionalCorePackage : AATCorePackage FiniteModel.carrier :=
+  FiniteModel.corePackage
+
+/-- The cyclic finite consumer directly audits the conditional obstruction layer. -/
+def finiteObstructedCorePackage :
+    ObstructedAATCorePackage FiniteModel.corePackage :=
+  FiniteModel.obstructedCorePackage
+
+/-- The concrete obstruction extension retains the selected law failure. -/
+theorem finiteObstructedCorePackageLawFailure :
+    ¬ (FiniteModel.corePackage.lawUniverse.law
+        FiniteModel.obstructedCorePackage.lawIndex).holds
+      FiniteModel.corePackage.object :=
+  FiniteModel.obstructedCorePackage_law_failure
+
+/-- The concrete obstruction extension retains a list-finite circuit. -/
+theorem finiteObstructedCorePackageListFinite :
+    FiniteModel.obstructedCorePackage.circuit.ListFinite :=
+  FiniteModel.obstructedCorePackage_listFinite
+
+/-- Regression audit: an all-holding law cannot carry an actual circuit. -/
+theorem allHoldingLawHasNoObstructionCircuit {U : AtomCarrier.{u}}
+    (A : ArchitectureObject U) :
+    ¬ Nonempty
+      (ObstructionCircuit (CoreObstructionCounterexample.allHoldingLaw U) A) :=
+  CoreObstructionCounterexample.allHoldingLaw_has_no_obstructionCircuit A
+
+/-- Audit the empty obstruction index of the unconditional algebra. -/
+theorem unconditionalCoreAlgebraObstructionEmpty {U : AtomCarrier.{u}}
+    (Inv : InvariantFamily U) (LU : LawUniverse U)
+    (A : ArchitectureObject U) (Sig : ArchitectureSignature U) :
+    (AATCorePackage.objectAlgebraOfComponents Inv LU A Sig).Ob =
+      AATCorePackage.EmptyObstructionIndex :=
+  AATCorePackage.objectAlgebraOfComponents_obstruction_empty Inv LU A Sig
+
+/-- Audit the empty obstruction index through the core constructor. -/
+theorem unconditionalCoreObstructionIndexEmpty {U : AtomCarrier.{u}}
+    {S : AtomAxiomSystem U} {F : AtomFamily U}
+    {C : AtomConfiguration U} {A : ArchitectureObject U}
+    {Inv : InvariantFamily U} {hconfiguration : C.family = F}
+    {hobject : A.configuration = C} {LU : LawUniverse U}
+    {Sig : ArchitectureSignature U} :
+    (AATCorePackage.ofComponents S F C A hconfiguration hobject Inv LU Sig).algebra.Ob =
+      AATCorePackage.EmptyObstructionIndex :=
+  AATCorePackage.algebra_obstruction_index_eq
+
+section ObstructionExtensionAudit
+
+variable {U : AtomCarrier.{u}} (core : AATCorePackage U)
+  (lawIndex : core.lawUniverse.Index)
+  (family : AtomFamily U) (relation : U.Atom -> U.Atom -> Prop)
+  (relation_supported :
+    ∀ {a b}, relation a b -> family.mem a ∧ family.mem b)
+  (familyFinite : family.ListFinite)
+  (failure : ¬ (core.lawUniverse.law lawIndex).holds core.object)
+
+/-- Audit preservation of the selected law index. -/
+theorem obstructionExtensionLawIndex :
+    (ObstructedAATCorePackage.ofLawFailure core lawIndex family relation
+      relation_supported familyFinite failure).lawIndex = lawIndex :=
+  ObstructedAATCorePackage.ofLawFailure_lawIndex core lawIndex family relation
+    relation_supported familyFinite failure
+
+/-- Audit preservation of the selected circuit family. -/
+theorem obstructionExtensionFamily :
+    (ObstructedAATCorePackage.ofLawFailure core lawIndex family relation
+      relation_supported familyFinite failure).circuit.family = family :=
+  ObstructedAATCorePackage.ofLawFailure_family core lawIndex family relation
+    relation_supported familyFinite failure
+
+/-- Audit preservation of the selected circuit relation. -/
+theorem obstructionExtensionRelation :
+    (ObstructedAATCorePackage.ofLawFailure core lawIndex family relation
+      relation_supported familyFinite failure).circuit.relation = relation :=
+  ObstructedAATCorePackage.ofLawFailure_relation core lawIndex family relation
+    relation_supported familyFinite failure
+
+/-- Audit support of the stored circuit relation. -/
+theorem obstructionExtensionRelationSupported : ∀ {a b},
+    (ObstructedAATCorePackage.ofLawFailure core lawIndex family relation
+      relation_supported familyFinite failure).circuit.relation a b ->
+    (ObstructedAATCorePackage.ofLawFailure core lawIndex family relation
+      relation_supported familyFinite failure).circuit.family.mem a ∧
+    (ObstructedAATCorePackage.ofLawFailure core lawIndex family relation
+      relation_supported familyFinite failure).circuit.family.mem b :=
+  ObstructedAATCorePackage.ofLawFailure_relation_supported core lawIndex family
+    relation relation_supported familyFinite failure
+
+/-- Audit list-finiteness produced by the main extension constructor. -/
+theorem obstructionExtensionFromLawFailureListFinite :
+    (ObstructedAATCorePackage.ofLawFailure core lawIndex family relation
+      relation_supported familyFinite failure).circuit.ListFinite :=
+  ObstructedAATCorePackage.ofLawFailure_listFinite core lawIndex family relation
+    relation_supported familyFinite failure
+
+/-- Audit failure exposure for the main extension constructor. -/
+theorem obstructionExtensionFromLawFailureFailure :
+    ¬ (core.lawUniverse.law
+      (ObstructedAATCorePackage.ofLawFailure core lawIndex family relation
+        relation_supported familyFinite failure).lawIndex).holds core.object :=
+  ObstructedAATCorePackage.ofLawFailure_law_failure core lawIndex family relation
+    relation_supported familyFinite failure
+
+end ObstructionExtensionAudit
+
+/-- Audit list-finiteness for every obstruction extension. -/
+theorem obstructionExtensionListFinite {U : AtomCarrier.{u}}
+    {core : AATCorePackage U} (obstructed : ObstructedAATCorePackage core) :
+    obstructed.circuit.ListFinite :=
+  ObstructedAATCorePackage.listFinite obstructed
+
+/-- Audit existence of the concrete cyclic obstruction extension. -/
+theorem finiteObstructedCorePackageExists :
+    ∃ obstructed : ObstructedAATCorePackage FiniteModel.corePackage,
+      obstructed.lawIndex = PUnit.unit :=
+  FiniteModel.obstructedCorePackage_exists
 
 theorem finiteSeedWitnessClosureAdmissible :
     Site.AdmissibleCover FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap
