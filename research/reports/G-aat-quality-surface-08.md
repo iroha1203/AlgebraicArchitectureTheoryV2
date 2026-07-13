@@ -42,9 +42,10 @@ Issue #3282.
    localizations; G-08 constructs a principal-localization ring layer.
 4. Concrete typed adapters elaborate for the selected operation fields,
    principal-localization Kähler map, quotient-valued derivation, square-zero
-   lift, sheaf-category image, and quotient-module factorization. The sheaf
-   image adapter exposes `HasSheafify` as a requirement; constructing the
-   selected-site instance and composing the adapters remain J0-and-later work.
+   lift, categorical image and factorization in `SheafOfModules O`, sectionwise
+   `O`-linearity, and quotient-module factorization. Constructing the required
+   sheafification instances for the selected site and composing the adapters
+   remain J0-and-later work.
 
 ### API probe
 
@@ -75,6 +76,7 @@ these declarations:
   `CategoryTheory.Limits.image`, `CategoryTheory.Limits.image.ι`,
   `CategoryTheory.Limits.imageSubobject`,
   `CategoryTheory.Limits.factorThruImageSubobject`,
+  `SheafOfModules`,
   `ModuleCat.subobjectModule`, `Submodule.mapQ`, `Submodule.factor`, and
   `Submodule.Quotient.mk_smul`.
 
@@ -83,10 +85,10 @@ witness fields, principal localization and its Kähler base-change map,
 ambient-to-quotient derivation push-forward, square-zero lift production,
 the kernel ideal of the `TrivSqZeroExt` projection, its square-zero proof, the
 coefficient-to-ideal linear equivalence, the induced lift and first-projection
-comparison, sheaf-image instance synthesis under an explicit
-`HasSheafify` requirement, and quotient factorization. These examples establish
-the component adapters needed to enter J0; they do not claim their full J0-J3
-composition or discharge any target material premise.
+comparison, image and factorization in `SheafOfModules O` on an arbitrary site,
+sectionwise `O`-linearity, and quotient factorization. These examples
+establish the component adapters needed to enter J0; they do not claim their
+full J0-J3 composition or discharge any target material premise.
 
 The first probe attempt also fixed three stale guesses before approval:
 `Derivation.compAlgebra` is `Derivation.compAlgebraMap`; the `TrivSqZeroExt`
@@ -102,6 +104,7 @@ import Formal.Arch.Operation.Operation
 import Mathlib.Algebra.TrivSqZeroExt
 import Mathlib.Algebra.Category.ModuleCat.Images
 import Mathlib.Algebra.Category.ModuleCat.Subobject
+import Mathlib.Algebra.Category.ModuleCat.Sheaf.Abelian
 import Mathlib.CategoryTheory.Sites.Abelian
 import Mathlib.CategoryTheory.Sites.Sheaf
 import Mathlib.RingTheory.Etale.Kaehler
@@ -134,6 +137,7 @@ import Mathlib.RingTheory.Etale.Kaehler
 #check CategoryTheory.Limits.imageSubobject
 #check CategoryTheory.Limits.factorThruImageSubobject
 #check ModuleCat.subobjectModule
+#check SheafOfModules
 
 #check Submodule.mapQ
 #check Submodule.factor
@@ -278,21 +282,41 @@ example (b : B) :
 
 end SquareZeroLift
 
-section SheafImage
+section SheafOfModulesImage
 
-variable {C : Type u} [Category.{v} C]
-variable (J : GrothendieckTopology C)
-variable (R : Type w) [CommRing R]
-variable [HasSheafify J (ModuleCat.{max u v w} R)]
+variable {C : Type u} [Category.{u} C]
+variable {J : GrothendieckTopology C}
+variable (O : Sheaf J RingCat.{u})
+variable [HasSheafify J AddCommGrpCat.{u}]
+variable [J.WEqualsLocallyBijective AddCommGrpCat.{u}]
+variable {M N : SheafOfModules.{u} O}
 
-example : HasImages (Sheaf J (ModuleCat.{max u v w} R)) :=
-  inferInstance
-
-noncomputable example {F G : Sheaf J (ModuleCat.{max u v w} R)} (φ : F ⟶ G) :
-    Sheaf J (ModuleCat.{max u v w} R) :=
+noncomputable example (φ : M ⟶ N) : SheafOfModules.{u} O :=
   image φ
 
-end SheafImage
+noncomputable example (φ : M ⟶ N) : M ⟶ image φ :=
+  factorThruImage φ
+
+noncomputable example (φ : M ⟶ N) : image φ ⟶ N :=
+  image.ι φ
+
+noncomputable example (φ : M ⟶ N) :
+    factorThruImage φ ≫ image.ι φ = φ :=
+  image.fac φ
+
+noncomputable example (φ : M ⟶ N) (W : Cᵒᵖ)
+    (r : O.val.obj W) (m : M.val.obj W) :
+    ((factorThruImage φ).val.app W).hom (r • m) =
+      r • ((factorThruImage φ).val.app W).hom m :=
+  ((factorThruImage φ).val.app W).hom.map_smul r m
+
+noncomputable example (φ : M ⟶ N) (W : Cᵒᵖ)
+    (r : O.val.obj W) (m : (image φ).val.obj W) :
+    ((image.ι φ).val.app W).hom (r • m) =
+      r • ((image.ι φ).val.app W).hom m :=
+  ((image.ι φ).val.app W).hom.map_smul r m
+
+end SheafOfModulesImage
 
 section QuotientFactorization
 
@@ -326,8 +350,9 @@ end QuotientFactorization
   replacement map, exact current API names, and concrete component adapters are
   fixed for J0.
 - remaining: every target material premise listed by the GOAL, beginning with
-  the J0 typed operation presentation. The selected-site `HasSheafify` instance
-  and full adapter composition are explicitly unresolved.
+  the J0 typed operation presentation. The selected-site `HasSheafify` and
+  `WEqualsLocallyBijective` instances and full adapter composition are explicitly
+  unresolved.
 
 ### Audits
 
@@ -342,7 +367,7 @@ end QuotientFactorization
 - route integrity: pass for the BC0 route choice. The component examples start
   from the selected operation schema, principal localization, canonical
   quotient, square-zero universal API, and categorical image construction.
-  Full route composition and the selected-site `HasSheafify` instance remain
+  Full route composition and the selected-site sheafification instances remain
   J0-and-later obligations.
 - target-fitting construction: none found.
 - vacuity or degeneracy: none found at BC0; nonvacuity remains required for the
