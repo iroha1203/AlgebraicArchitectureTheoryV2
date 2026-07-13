@@ -102,18 +102,6 @@ theorem not_realizesFirstOrder_of_ambientDerivation_ne
   intro h
   exact hρ h.ambientDerivation_eq.symm
 
-/-- The realized operation retains the generated-obligation kind of the core schema. -/
-theorem RealizesFirstOrder.generatedObligation_kind
-    {P : ArchitectureOperationPresentation
-      k A₀ Op State BeforeWitness AfterWitness}
-    {i : Op}
-    {op : Formal.Arch.ArchitectureOperation State BeforeWitness AfterWitness}
-    {ρ : Derivation k A₀ A₀}
-    (h : P.RealizesFirstOrder i op ρ) :
-    op.generatedProofObligation.kind = op.kind := by
-  rw [← h.operation_eq]
-  exact (P.operation i).generatedObligation_kind
-
 end ArchitectureOperationPresentation
 end IntrinsicLawResponseCircuitDescent
 end ResearchLean.AG.QualitySurface

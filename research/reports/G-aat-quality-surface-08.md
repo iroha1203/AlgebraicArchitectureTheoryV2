@@ -407,8 +407,6 @@ exactly two data fields:
 to be the values selected by the same label `i`. The constructor theorem,
 projection theorems, and two mismatch theorems prove that the stored pair is
 accepted and that replacing either coordinate by a distinct value is rejected.
-The generated proof-obligation kind is transported from the selected core
-operation theorem.
 
 ### Premise delta and audit
 
@@ -420,9 +418,7 @@ operation theorem.
 - structure-field escape: none. The presentation contains no chart,
   localization, law quotient, restriction, response, repair, or sheaf field.
 - proof use: `realizesFirstOrder` uses both graph coordinates; the projection
-  and mismatch theorems use the corresponding equality. The
-  `generatedObligation_kind` theorem uses only the operation coordinate and is
-  not evidence for semantic compatibility with the derivation.
+  and mismatch theorems use the corresponding equality.
 - anti-weakening: the label family remains `Op`; it is not reduced to a single
   operation. `Formal.Arch.ArchitectureOperation` is unchanged.
 - independent T3 audit: approve / proof-checkpoint.
