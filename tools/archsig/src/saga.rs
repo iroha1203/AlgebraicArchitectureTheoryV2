@@ -27,6 +27,7 @@ pub(crate) struct SagaGroundedMeasurementV1 {
 }
 
 pub(crate) fn evaluate_saga_grounded_v1(
+    archmap: &ArchMapDocumentV2,
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
     plan: &RepairPlanDocumentV1,
@@ -93,6 +94,10 @@ pub(crate) fn evaluate_saga_grounded_v1(
     if !grounding_is_aligned
         || !skeleton_is_aligned
         || !coefficient_is_f2
+        || plan.faithfulness.mode != "supplied"
+        || plan.faithfulness.supplied.is_none()
+        || plan.comparison.is_none()
+        || !class_supply_is_checked(archmap, plan)
         || source.cover_ref != profile.cover_ref
         || defect_support_size > profile.finite_bounds.max_square_free_witness_variables
         || execution_plan.stage3_skeleton.is_none()
@@ -109,6 +114,12 @@ pub(crate) fn evaluate_saga_grounded_v1(
                 "grounded_skeleton_not_aligned"
             } else if !coefficient_is_f2 {
                 "grounded_coefficient_not_f2_additive"
+            } else if plan.faithfulness.mode != "supplied"
+                || plan.faithfulness.supplied.is_none()
+                || plan.comparison.is_none()
+                || !class_supply_is_checked(archmap, plan)
+            {
+                "grounded_layer_d_not_supplied"
             } else if source.cover_ref != profile.cover_ref {
                 "grounded_cover_profile_mismatch"
             } else if defect_support_size > profile.finite_bounds.max_square_free_witness_variables
@@ -162,6 +173,40 @@ pub(crate) fn evaluate_saga_grounded_v1(
         && per_chart
             .iter()
             .all(|chart| chart.get("holds").and_then(Value::as_bool) == Some(true));
+    let quotient_basis = per_chart
+        .iter()
+        .flat_map(|chart| chart["rawAtomRefs"].as_array().into_iter().flatten())
+        .filter_map(Value::as_str)
+        .map(str::to_string)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let interpretation_zero = quotient_basis.is_empty();
+    let generated_quotient = json!({
+        "coefficient": "F2",
+        "construction": "finite Boolean quotient of the declared chart-defect observation space",
+        "ambient": {
+            "basis": quotient_basis,
+            "relations": ["e_i^2=e_i", "2e_i=0"]
+        },
+        "obstructionIdeal": {
+            "generators": [],
+            "kind": "zero-ideal-under-declared-defect-observable",
+            "reason": "no additional obstruction generator is supplied by the grounded surface"
+        },
+        "representative": {
+            "support": quotient_basis,
+            "normalForm": quotient_basis,
+            "reduction": "modulo the explicitly empty obstruction ideal"
+        },
+        "interpretation": {
+            "map": "interpret(i)=[d_i]",
+            "class": if interpretation_zero { "zero" } else { "nonzero" },
+            "representative": quotient_basis
+        },
+        "finiteBound": profile.finite_bounds.max_square_free_witness_variables,
+        "finiteBoundChecked": true
+    });
     let nonzero_charts = per_chart
         .iter()
         .filter(|chart| chart.get("holds").and_then(Value::as_bool) == Some(false))
@@ -189,7 +234,11 @@ pub(crate) fn evaluate_saga_grounded_v1(
             "perChart": per_chart
         },
         "conclusions": {
-            "generatedInterpretationZero": conclusion_status("part10/7.5.1"),
+            "generatedInterpretationZero": {
+                "status": if interpretation_zero { status } else { "not_established" },
+                "theoremRef": "part10/7.5.1",
+                "instanceReading": {"class": if interpretation_zero { "zero" } else { "nonzero" }}
+            },
             "generatedRestrictionEvaluator": conclusion_status("part3/11.4"),
             "nonzeroInterpretationDetectsDisplayedLawFailure": conclusion_status("part10/7.5.3")
         },
@@ -221,15 +270,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
             "generatedC0PointwiseZero": true,
             "reading": "law 意味論が Čech 複体に到達する地点は正確に次数0。H^1 の内容は cover の幾何から来る(意味8.3)"
         },
-        "generatedQuotient": {
-            "coefficient": profile.coefficient,
-            "construction": "finite F2 Boolean defect support quotient O/I_Ob",
-            "observedDefectSupportCardinality": defect_support_size,
-            "obstructionIdealSupportCardinality": defect_support_size,
-            "finiteBound": profile.finite_bounds.max_square_free_witness_variables,
-            "finiteBoundChecked": true,
-            "interpretationClass": if laws_hold { "zero" } else { "nonzero" }
-        },
+        "generatedQuotient": generated_quotient,
         "detectorFindings": nonzero_charts
     });
     let mut assumptions = vec![AgAssumptionLedgerEntryV1 {

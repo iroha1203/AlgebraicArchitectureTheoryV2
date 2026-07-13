@@ -8,12 +8,12 @@ use crate::{
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_POLICY_BUNDLE_V1_SCHEMA,
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
-    ARCHSIG_SAGA_CONCLUSION_CODES, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
-    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
-    NORMALIZED_ARCHMAP_V2_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
-    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
-    SchemaVersionCatalogV0,
+    ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
+    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, LAW_SURFACE_BINDING_VOCABULARY_SCHEMA,
+    MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
+    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
+    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
+    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -229,6 +229,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "Analytic readings do not generate structural verdicts unless a certified evaluator explicitly emits one.",
                     "BoundaryStatements are typed scoped qualifiers; nonConclusions remains a string compatibility view.",
                     "Theorem-candidate readings are analytic-only.",
+                ],
+            ),
+            artifact(
+                "archsig-saga-conclusions/v0.5.2",
+                "ArchSig grounded SAGA conclusions packet v0.5.2",
+                ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
+                "primary",
+                "ArchSig v0.5.2 Algebraic Geometry Measurement",
+                vec!["archsig-contract:v0.5.2-ag-measurement"],
+                "The grounded SAGA conclusions packet v0.5.2 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 7-conclusion section, degree-zero contribution, and chart detector findings.",
+                vec![
+                    "The packet is a bounded supplied-data computation contract; its theoremRef fields identify the mathematical reading without turning the packet into a Lean proof object.",
+                    "lawIndependent conclusions are not evidence that displayed laws hold.",
                 ],
             ),
             artifact(
@@ -494,6 +507,7 @@ mod tests {
                 "archsig-repair-plan/v0.5.2",
                 "normalized-archmap-current",
                 "archsig-measurement-packet/v0.5.2",
+                "archsig-saga-conclusions/v0.5.2",
                 "archsig-boundary-statement/v0.5.2",
                 "archsig-gate-policy/v0.5.2",
                 "archsig-gate-report/v0.5.2",

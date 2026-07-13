@@ -10943,6 +10943,14 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
     fs::write(&policy_path, serde_json::to_vec_pretty(&policy).unwrap()).unwrap();
     fs::write(&surface_path, serde_json::to_vec_pretty(&surface).unwrap()).unwrap();
     let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
+    let supplied_faithfulness = read_json(&root.join("repair_plan_supplied_faithfulness.json"));
+    let true_sheaf = read_json(&root.join("repair_plan_true_sheaf.json"));
+    let gluing_data = read_json(&root.join("repair_plan_gluing_data.json"));
+    let comparison = read_json(&root.join("repair_plan_comparison.json"));
+    plan["faithfulness"] = supplied_faithfulness["faithfulness"].clone();
+    plan["trueSheafCertificate"] = true_sheaf["trueSheafCertificate"].clone();
+    plan["gluingData"] = gluing_data["gluingData"].clone();
+    plan["comparison"] = comparison["comparison"].clone();
     plan["grounding"] = json!({
         "kind": "saga-grounding",
         "surfaceRef": "law-surface:grounded-test",
@@ -10970,6 +10978,32 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
     assert_eq!(grounded["kind"], "saga-grounded-conclusions");
     assert_eq!(grounded["schema"], "archsig-saga-conclusions/v0.5.2");
     assert_eq!(grounded["lawDependent"]["premise"]["status"], "holds");
+    assert_eq!(
+        grounded["lawDependent"]["conclusions"]
+            .as_object()
+            .unwrap()
+            .len(),
+        3
+    );
+    assert_eq!(
+        grounded["lawIndependent"]["conclusions"]
+            .as_object()
+            .unwrap()
+            .len(),
+        7
+    );
+    assert_eq!(
+        grounded["generatedQuotient"]["interpretation"]["class"],
+        "zero"
+    );
+    assert_eq!(
+        grounded["generatedQuotient"]["obstructionIdeal"]["generators"],
+        json!([])
+    );
+    assert_eq!(
+        grounded["generatedQuotient"]["interpretation"]["map"],
+        "interpret(i)=[d_i]"
+    );
     assert_eq!(
         grounded["lawIndependent"]["note"],
         "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。"
@@ -11035,6 +11069,45 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
             .find(|row| row["evaluator"] == "ag.saga-grounded")
             .unwrap()["verdict"],
         "measured_nonzero"
+    );
+    assert_eq!(
+        bad_grounded["generatedQuotient"]["interpretation"]["class"],
+        "nonzero"
+    );
+
+    let incomplete_out_dir = temp_dir("ag-measurement-saga-grounded-layer-d-missing");
+    let incomplete_plan_path = incomplete_out_dir.join("repair_plan_incomplete.json");
+    let mut incomplete_plan = read_json(&root.join("repair_plan_complete_support.json"));
+    incomplete_plan["grounding"] = plan["grounding"].clone();
+    fs::write(
+        &incomplete_plan_path,
+        serde_json::to_vec_pretty(&incomplete_plan).unwrap(),
+    )
+    .unwrap();
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json").to_str().unwrap(),
+        "--law-policy",
+        policy_path.to_str().unwrap(),
+        "--law-surface",
+        surface_path.to_str().unwrap(),
+        "--measurement-profile",
+        root.join("measurement_profile_ag.json").to_str().unwrap(),
+        "--repair-plan",
+        incomplete_plan_path.to_str().unwrap(),
+        "--out-dir",
+        incomplete_out_dir.to_str().unwrap(),
+    ]);
+    let incomplete_packet = read_json(&incomplete_out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        incomplete_packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|row| row["evaluator"] == "ag.saga-grounded")
+            .unwrap()["verdict"],
+        "not_computed"
     );
 }
 
@@ -11776,6 +11849,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "law-evaluator-registry/v0.5.2",
             "normalized-archmap-current",
             "archsig-measurement-packet/v0.5.2",
+            "archsig-saga-conclusions/v0.5.2",
             "archsig-boundary-statement/v0.5.2",
             "archsig-gate-policy/v0.5.2",
             "archsig-gate-report/v0.5.2",
