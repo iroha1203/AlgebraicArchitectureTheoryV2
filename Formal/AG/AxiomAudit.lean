@@ -1755,7 +1755,7 @@ def transportDescentZeroToyModelNonempty :=
 def transportDescentNonzeroToyModelNonempty :=
   @FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero
 
-def rawAmbientRestrictionSystemToPresheaf :=
+noncomputable def rawAmbientRestrictionSystemToPresheaf :=
   @LawAlgebra.RawAmbientRestrictionSystem.toPresheaf
 
 def rawAmbientRestrictionSystemExt :=
