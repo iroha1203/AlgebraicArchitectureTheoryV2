@@ -4,6 +4,7 @@ import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.Examples.SingularityMonodromyStackPart6
 import Formal.AG.LawAlgebra.FiniteExamples
+import Formal.AG.LawAlgebra.RawPresheafFiniteExample
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -1753,6 +1754,27 @@ def transportDescentZeroToyModelNonempty :=
 
 def transportDescentNonzeroToyModelNonempty :=
   @FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero
+
+def rawAmbientRestrictionSystemToPresheaf :=
+  @LawAlgebra.RawAmbientRestrictionSystem.toPresheaf
+
+def rawAmbientRestrictionSystemQuotientDescId :=
+  @LawAlgebra.RawAmbientRestrictionSystem.quotientDesc_id
+
+def rawAmbientRestrictionSystemQuotientDescComp :=
+  @LawAlgebra.RawAmbientRestrictionSystem.quotientDesc_comp
+
+def rawPresheafFiniteRelationVanishes :=
+  LawAlgebra.FiniteExamples.RawPresheaf.relation_vanishes
+
+def rawPresheafFiniteQuotientMapNotInjective :=
+  LawAlgebra.FiniteExamples.RawPresheaf.quotientMap_not_injective
+
+def rawPresheafFiniteRestrictionChangesCoordinate :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_X_ne_X
+
+def rawPresheafFiniteRestrictionFixesCoefficient :=
+  LawAlgebra.FiniteExamples.RawPresheaf.leftToBase_quotientDesc_C
 
 end AAT.AG.AxiomAudit
 

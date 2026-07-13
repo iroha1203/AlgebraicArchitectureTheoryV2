@@ -13,3 +13,4 @@ import Formal.AG.LawAlgebra.AffineChart
 import Formal.AG.LawAlgebra.Scheme
 import Formal.AG.LawAlgebra.Correspondence
 import Formal.AG.LawAlgebra.FiniteExamples
+import Formal.AG.LawAlgebra.RawPresheafFiniteExample
