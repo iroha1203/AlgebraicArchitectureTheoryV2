@@ -10,11 +10,11 @@ Issue #3282.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 7
+- latest reviewed cycle: 8
 - completion candidate: no
 - tracking Issue: #3282
 - current phase: Phase 0 — Semantic Operation Foundation
-- next obligation: J4 conormal Jacobian / labeled response / restriction
+- next obligation: J5a ideal-preserving full conormal-response kernel characterization
 
 ## Cycle 1 — BC0 statement and API compatibility
 
@@ -1220,6 +1220,189 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: J4 conormal Jacobian / labeled response / restriction
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 8 — J4 conormal Jacobian and labeled response restriction
+
+- decision: approve
+- result type: proof-obligation-discharged
+- proof obligation: construct the full conormal Jacobian, generate required
+  law/Atom responses from existing violation witnesses, and prove chart / overlap
+  restriction compatibility
+- base merge SHA: `2b0629ec2e484b0d1ac20bcbbf50bbdf0975e060`
+
+### Construction
+
+`ConormalJacobian.lean` proves directly from the Leibniz rule that every
+quotient-valued derivation restricts to an ambient-linear map on the law ideal
+and kills its square. `Submodule.liftQ` and quotient scalar extension therefore
+construct the full response
+
+```text
+J_W(d) : I_W / I_W^2 -> B_W.
+```
+
+The construction is linear in `d`. It is instantiated on each typed chart and
+overlap, and the allowed-operation local-section adapters run through the J3b
+image inclusion and J3a readout before applying the full Jacobian.
+
+`RequiredGeneratorLabel` is the product of a required law subtype and an Atom.
+For every label, `requiredGeneratorWitness` obtains obstruction-ideal
+membership from `lawWitnessIdeal_le_obstructionIdeal` and `Ideal.subset_span`.
+Its conormal class is therefore generated from the existing
+`violationWitness`. The G-07 `Raw.conormalRestrict` theorem proves context
+restriction, while `Ideal.mapCotangent` proves both typed chart-to-overlap
+class restrictions.
+
+For a fixed label, `ambientLabeledResponse` first applies the full conormal
+Jacobian and then evaluates its generated class. Tilde functoriality, open
+restriction, and the canonical structure-module map turn this into the actual
+
+```text
+alpha_e : E_A -> O_Y.
+```
+
+The natural transformation law proves compatibility on every inclusion of
+lawful-space opens, with explicit left and right chart-to-overlap corollaries.
+Selected-operation computations recover J2 chart / overlap derivations and use
+the J2 left / right naturality theorems. No internal-Hom sheaf identification
+is asserted.
+
+### Premise delta and audit
+
+- discharged material obligations:
+  - full quotient-valued conormal response and linear Jacobian;
+  - chartwise and overlap full Jacobians;
+  - allowed-operation local-section adapters through J3b and J3a;
+  - required `(lawIndex, atom)` labels and existing-witness provenance;
+  - G-07 context restriction of required labeled conormal classes;
+  - typed left and right chart-to-overlap conormal transport;
+  - actual labeled response morphisms `alpha_e : E_A -> O_Y`;
+  - all-open response naturality and explicit left / right corollaries;
+  - selected-operation Jacobian evaluation and both restriction theorems.
+- fixed ambient inputs: base field, selected AAT site context and existing law
+  core, typed localization geometry, J0 operation presentation, and finite
+  operation / chart labels.
+- certificate provenance: ideal membership is generated from the law witness
+  span and required-law inclusion; conormal classes use `Ideal.toCotangent`;
+  response descent uses the Leibniz rule and `Submodule.liftQ`; `alpha_e` is
+  produced by `tilde.map`, open restriction, and the J3b inclusion.
+- proof use: `violationWitness_restrict`, `Raw.conormalRestrict_toCotangent`,
+  both `Ideal.mapCotangent` transports, the J3a chart / overlap readouts, J3b
+  selected-section recovery, and the two J2 naturality theorems occur in proof
+  terms.
+- structure-field escape: none. The evaluator, conormal class, response
+  morphism, and compatibility are constructed rather than supplied.
+- route integrity: pass. The full `J_W` remains objectwise; the file does not
+  turn an unproved family of duals into an internal-Hom sheaf. Each fixed
+  labeled evaluation is sheafified only after its ambient linear map is
+  constructed.
+- independent implementation audit: approve / no findings.
+
+The ideal-preserving kernel characterization, labeled conormal generation,
+nonzero response, cover adequacy, and witness nonvacuity remain later
+obligations.
+
+### Verification
+
+```text
+cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ConormalJacobian.lean
+axiom audit: 6 declarations under QuotientValuedDerivation, standard axioms only
+axiom audit: 12 declarations under TypedLocalizationGeometry, standard axioms only
+axiom audit: 13 declarations under LawGeneratedLabeledConormal, standard axioms only
+axiom audit: 13 declarations under ArchitectureOperationPresentation, standard axioms only
+lake build
+Build completed successfully (7718 jobs).
+```
+
+`git diff --check`, hidden / bidirectional Unicode scan, placeholder scan,
+private-path scan, and Research import-direction scan are clean.
+
+### Next obligation
+
+Implement J5a: prove that an ambient direction preserves the law ideal if and
+only if its full conormal response vanishes, without using labeled generation.
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-aat-quality-surface-08
+target_theorem: Intrinsic Law-Response Circuit–Descent Theorem
+cycle: 8
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: J4 conormal Jacobian and labeled response restriction
+proof_obligation_delta: intrinsic full response and required-label sheaf morphisms generated
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ConormalJacobian.lean
+    declarations:
+      - QuotientValuedDerivation.conormalResponseLinear
+      - TypedLocalizationGeometry.chartConormalJacobian
+      - TypedLocalizationGeometry.overlapConormalJacobian
+      - LawGeneratedLabeledConormal.requiredGeneratorConormal_restrict
+      - LawGeneratedLabeledConormal.left_chartLabeledConormal_natural
+      - LawGeneratedLabeledConormal.right_chartLabeledConormal_natural
+      - ArchitectureOperationPresentation.chartAllowedConormalJacobian
+      - ArchitectureOperationPresentation.overlapAllowedConormalJacobian
+      - ArchitectureOperationPresentation.labeledResponse
+      - ArchitectureOperationPresentation.left_labeledResponse_natural
+      - ArchitectureOperationPresentation.right_labeledResponse_natural
+      - ArchitectureOperationPresentation.left_selectedConormalJacobian_natural
+      - ArchitectureOperationPresentation.right_selectedConormalJacobian_natural
+premise_delta:
+  discharged:
+    - full quotient-valued conormal response and chart / overlap Jacobians
+    - required law/Atom witness provenance and G-07 conormal restriction
+    - typed left and right conormal class transport
+    - actual labeled response sheaf morphisms on the allowed-operation sheaf
+    - all-open and explicit chart / overlap response naturality
+    - selected allowed-operation Jacobian recovery and restriction
+  remaining:
+    - J5a ideal-preserving full conormal-response kernel characterization
+    - J5b labeled conormal generation
+    - J6 typed nonzero response, cover adequacy, and witness nonvacuity
+    - L0 finite repair and support-minimal circuit theorem
+    - C0 kernel base change, support comparison, and fiber circuit locus
+    - D0-D2 image sequence, Cech instance, actual gluing, and zero iff global normalized section
+    - E-pre local-circuit and pure-descent witness pair
+    - N0 strict labeled presentation naturality and unit rescaling transport
+    - M0 finite measurement chain map and effective certificate
+    - E-cert certified witness pair
+    - main theorem package and independent final gate
+certificate_provenance:
+  discharged:
+    - witness membership from required-law span generation
+    - conormal descent from Leibniz and Submodule.liftQ
+    - AAT-context restriction from the G-07 conormal API
+    - typed conormal transport from Ideal.mapCotangent
+    - alpha_e from full Jacobian evaluation, tilde, and J3b inclusion
+  unresolved:
+    - kernel characterization, labeled generation, descent, and witness nonvacuity
+proof_use_audit:
+  used_material_premises:
+    - existing semantic law-equation witness core
+    - typed localization geometry and ambient operation presentation
+    - J2 quotient-valued derivations and naturality
+    - J3a coefficient readout and J3b image inclusion
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns:
+    - full kernel comparison remains J5a
+    - labeled generation remains J5b
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: J5a ideal-preserving full conormal-response kernel characterization
 completion_candidate: false
 tracking_issue_closed: false
 ```
