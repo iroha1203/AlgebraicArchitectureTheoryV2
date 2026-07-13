@@ -10,11 +10,11 @@ Issue #3282.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 2
+- latest reviewed cycle: 3
 - completion candidate: no
 - tracking Issue: #3282
 - current phase: Phase 0 — Semantic Operation Foundation
-- next obligation: J1a typed affine-localization geometry
+- next obligation: J1b ambient derivation localization
 
 ## Cycle 1 — BC0 statement and API compatibility
 
@@ -438,3 +438,134 @@ Research import-direction scan are clean.
 Implement J1a typed affine-localization geometry while preserving the locally
 affine global object and expressing selected chart and overlap maps through
 typed principal localizations.
+
+## Cycle 3 — J1a typed affine-localization geometry
+
+- decision: approve
+- result type: proof-checkpoint
+- proof obligation: construct finite principal chart and pairwise-overlap
+  coordinate geometry from a common ambient algebra without accepting selected
+  coordinate rings or restriction maps as inputs
+- Lean artifact:
+  `research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/TypedLocalizationGeometry.lean`
+- completion candidate: no
+
+### Construction
+
+`TypedLocalizationGeometry` stores only a finite chart-indexed denominator
+family in the common ambient algebra. It derives:
+
+1. `chartRing i = Localization.Away (denominator i)`;
+2. `overlapRing i j = Localization.Away (denominator i * denominator j)`;
+3. affine `chartSpec` and `overlapSpec` values;
+4. principal-localization provenance for both coordinate-ring families;
+5. canonical left and right chart-to-overlap `A₀`-algebra maps using
+   `awayToAwayRight` and `awayToAwayLeft`;
+6. ambient algebra-map compatibility for both restrictions.
+
+No global affine identification is introduced. Generated-cover adequacy,
+chart-family nonvacuity, and higher-overlap coherence are not claimed by this
+checkpoint.
+
+### Premise delta and audit
+
+- discharged material premises: none. J1a fixes the canonical coordinate
+  localization layer; construction of the ambient derivation localization is
+  the J1b material discharge.
+- fixed ambient inputs: base ring `k`, common commutative `k`-algebra `A₀`,
+  finite chart label type, and the selected denominator family.
+- certificate provenance: chart and overlap rings are `Localization.Away`
+  values, their `IsLocalization` proofs are inferred from the canonical
+  instances, and both restrictions come from the localization universal API.
+- proof use: every denominator defines its chart ring, every denominator pair
+  defines its overlap ring, and the same elements construct the two canonical
+  restrictions. No compatibility theorem is supplied as an argument.
+- structure-field escape: none. The sole data field is `denominator`; rings,
+  restrictions, compatibility, response, repair, and gluing are not fields.
+- route integrity: pass. The construction is independent of later response or
+  descent conclusions. Empty or singleton chart types and zero denominators do
+  not close any cover, repair, or witness claim at this checkpoint; concrete
+  adequacy and nonvacuity remain required later.
+- cheat-route audit: target-fitting construction `none-found`; vacuity or
+  degeneracy `none-found`; one-way theorem as equivalence `none-found`;
+  GOAL/report reinterpretation `none-found`.
+- independent T3 audit: approve / proof-checkpoint.
+
+### Verification
+
+```text
+cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/TypedLocalizationGeometry.lean
+axiom audit: 23 declarations, standard axioms only
+cd research/lean && lake build
+full build: pass (4079 jobs)
+```
+
+`git diff --check`, hidden / bidirectional Unicode scan, placeholder scan,
+private-path scan, and Research import-direction scan are clean.
+
+### Next obligation
+
+Implement J1b in
+`research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/AmbientOperationLocalization.lean`:
+canonically localize each J0 ambient derivation to the J1a chart and overlap
+coordinate rings and prove compatibility with both chart-to-overlap maps.
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-aat-quality-surface-08
+target_theorem: Intrinsic Law-Response Circuit–Descent Theorem
+cycle: 3
+decision: approve
+result_type: proof-checkpoint
+proof_obligation: J1a typed affine-localization geometry
+proof_obligation_delta: canonical principal chart and overlap coordinate layer fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/TypedLocalizationGeometry.lean
+    declarations:
+      - TypedLocalizationGeometry
+      - chartRing
+      - overlapRing
+      - chartSpec
+      - overlapSpec
+      - chartRing_isLocalization
+      - overlapRing_isLocalization
+      - leftChartToOverlap
+      - rightChartToOverlap
+      - leftChartToOverlap_algebraMap
+      - rightChartToOverlap_algebraMap
+premise_delta:
+  discharged: []
+  remaining:
+    - J1b ambient derivation localization
+    - generated cover adequacy and higher-overlap coherence
+    - all J2-and-later material obligations
+certificate_provenance:
+  discharged:
+    - chart and overlap localizations generated by Localization.Away
+    - restriction maps generated by awayToAwayRight and awayToAwayLeft
+  unresolved:
+    - generated cover adequacy and nonvacuity
+    - ambient derivation restriction compatibility
+proof_use_audit:
+  used_material_premises:
+    - denominator family used in every coordinate and restriction construction
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns:
+    - generated cover and higher-overlap coherence remain later obligations
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: J1b ambient derivation localization and restriction compatibility
+completion_candidate: false
+tracking_issue_closed: false
+```
