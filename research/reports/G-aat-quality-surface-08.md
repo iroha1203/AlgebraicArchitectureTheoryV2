@@ -1564,7 +1564,7 @@ tracking_issue_closed: false
   existing obstruction-ideal construction and compare all labeled response
   vanishing with full-response vanishing
 - base merge SHA: `e3540f411b9edf07496bd6f99a44511a63d14d40`
-- PR: pending
+- PR: #3322
 
 ### Construction
 
