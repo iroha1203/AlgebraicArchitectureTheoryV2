@@ -21,6 +21,9 @@
 `Formal/AG/StatementContractsAtomToRingedSite.lean`が、ここに固定したtargetと
 実装宣言のLean signatureを回帰検査する。別のMarkdown contractは作成しない。
 
+以下のLean blockは`namespace AAT.AG`、`open CategoryTheory`、`universe u v`の下で読む。
+SD3〜SD5ではさらに`open LawAlgebra`を前提とする。
+
 ### SD1 — AAT Core generation
 
 Part I 定義8.2、定義10.1、定義10.4A、定理10.5に合わせ、axiom-level data、
@@ -408,8 +411,7 @@ concrete modelの性質として別々に証明する。
 ```lean
 structure Site.CoverageRequirements {U : AtomCarrier.{u}}
     (A : ArchitectureObject U) (LU : LawUniverse U)
-    (Sig : ArchitectureSignature U)
-    (reading : LU.SelectedReading) where
+    (Sig : ArchitectureSignature U) where
   requiredSupport : U.Atom -> Prop
   requiredWitness : LU.witnessFamily.Witness -> Prop
   requiredAxis : Sig.Axis -> Prop
@@ -423,7 +425,6 @@ structure Site.SelectedGeometryReading {U : AtomCarrier.{u}}
   contextPreorder : Site.ContextPreorderCategory core.object
   requirements : Site.CoverageRequirements core.object
     core.algebra.lawReading.lawUniverse core.algebra.signatureReading
-    core.algebra.lawReading.lawUniverse.selectedReading
   overlap : Site.ContextOverlapPullback contextPreorder
 
 def Site.SelectedGeometryReading.toAATSite {U : AtomCarrier.{u}}
@@ -442,6 +443,11 @@ theorem Site.SelectedGeometryReading.topology_eq_generated
 overlap dataだけを保持する。
 selected readingは`LawUniverse.selectedReading`に一本化し、coverage packageの中で
 別の値を再選択しない。
+このsignature変更では、`CoverageRequirements`だけでなく、これを引数に取る
+`AdmissibleCover`、`AATCoverageFamily`、`admissiblePrecoverage`、
+`AATGrothendieckTopology`、`AATSite`、`UAdequacyRequirements`、`UAdequateCover`を
+同じPRで一括移行する。旧`selectedReading` fieldやreading引数付きpredicateを保持するadapterを
+新しい主経路には置かない。
 `toAATSite`は`AATSite core.object`を返し、`topology_eq_generated`はそのtopologyが
 admissible coverageから生成されたMathlib `GrothendieckTopology`であることを述べる。
 architecture object、law reading、signature readingは`core`から読み、coefficient ringは
@@ -611,9 +617,9 @@ theorem RingedAATSite.lift_unique
       R.canonical ≫ lift = η
 
 def AATCommAlgToType (k : Type v) [CommRing k] :
-    AATCommAlgCat.{u, v} k ⟶ Type (max u v) :=
+    AATCommAlgCat.{u, v} k ⥤ Type (max u v) :=
   CategoryTheory.Under.forget
-      (CommRingCat.of (ULift.{max u v, v} k)) ≫
+      (CommRingCat.of (ULift.{max u v, v} k)) ⋙
     CategoryTheory.forget CommRingCat
 
 noncomputable def RingedAATSite.underlyingTypeSheaf
@@ -631,7 +637,7 @@ noncomputable def RingedAATSite.underlyingTypeSheaf
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     [S.topology.HasSheafCompose (AATCommAlgToType k)] :
     R.underlyingTypeSheaf.val =
-      R.structureSheaf.val ≫ AATCommAlgToType k
+      R.structureSheaf.val ⋙ AATCommAlgToType k
 ```
 
 `structureSheaf`と`canonical`は`raw`のMathlib sheafificationとそのunitから定義し、
@@ -874,6 +880,9 @@ Atom axiom system
 ### R2 — coverageからGrothendieck topologyまでの生成経路
 
 - admissible coverageから`AATGrothendieckTopology`を生成する現行経路を新APIへ接続する。
+- `CoverageRequirements`のselected reading一本化に伴い、`Coverage.lean`、`Topology.lean`、
+  `Geometry.lean`、`Adequate.lean`のcoverage / topology / site / adequacy APIを新signatureへ一括移行する。
+  旧signatureを要求するadapterは主経路に残さない。
 - identity、base change、transitivityはMathlibの生成位相APIまたは現行証明へ接続する。
 - topologyがselected coverage requirementsから生成されたことをcharacterization theoremで公開する。
 - finite-poset regimeを一般APIの実例として接続し、別理論として複製しない。

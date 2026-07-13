@@ -78,8 +78,6 @@ J : CoverageTopology
 `S` は `At` の axiom certificate、`r` は `At` 上の構成 reading である。
 両者は core package で同じ provenance にまとめるが、`r` の field は `S` の値に依存しない。
 
-である。
-
 core reading のうち source、composition、object / operation / signature reading が固定され、
 Atom vocabulary `V` と law universe `U` を表示する場合は `X_s^{V,U,J}` と略記する。
 

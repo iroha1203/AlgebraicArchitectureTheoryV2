@@ -522,9 +522,10 @@ semantic(q(y), denotes result-of-m)
 は、operation `m` の入出力上の約束と、その結果値に与える意味を表す。
 ここから substitution、projection、semantic consistency の law が読める。
 
-Atom family そのものは、同じ source と同じ Atom vocabulary の下では一意に読む。
-semantic reading と resolution は Atom の存在条件ではなく、canonical Atom family に対する
-後段の解釈と projection / truncation である。
+Atom family そのものは、同じ source と同じ extraction doctrine の下で一意に読む。
+Atom vocabulary が同じでも、semantic reading、resolution、source semantics、normalizationが
+異なればfamilyは異なりうる。projection / truncationは、固定doctrineから生成された
+canonical Atom familyを後段で粗く読む操作である。
 
 ```text
 canonical:

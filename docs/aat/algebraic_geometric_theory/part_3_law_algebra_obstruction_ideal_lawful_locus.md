@@ -510,7 +510,10 @@ Accepts_{L_W'}(include_W'(res_j(c))) = true
 
 これらの map と証明は local circuit reading の data であり、global signed circuit から
 自動的に得られるとは主張しない。以後の local realization に使う circuit は
-`Circ_U^loc` の element に限る。
+`Circ_U^loc` の element に限る。これは全local circuitを集めたfamilyではなく、すべてのselected
+restriction後にもmatchingとacceptanceを保つpersistent selected subfamilyである。
+このfamilyについてcompletenessを使う場合は、対象とするselected failureが同じrestrictionに沿って
+persistentであることを別条件として固定する。
 
 selected law reading が local circuit を violation witness として読む写像を
 
@@ -1983,14 +1986,18 @@ observable presheaf:
   res は恒等と合成を保つ。
 
 violation coordinates:
-  各 law L と各 Atom a に対して、元 v_{L,a}(W) in O(W)。
-  定義 5.1 の violation witness family の Atom-indexed 実現である。
+  各 law L と各 witness v in Viol_L(W) に対して、
+  coord_{L,W}(v) in O(W)。
+  定義5.1の記法では x_v := coord_{L,W}(v) とする。
 
 restriction compatibility:
-  res_i(v_{L,a}(W)) = v_{L,a}(W')。
+  各 v in Viol_L(W) について、res_i(coord_{L,W}(v)) は
+  W' 上の violation coordinates が生成する ideal に属する。
+  persistent witness v に selected restriction res_i^Viol(v) がある場合は、
+  res_i(coord_{L,W}(v)) = coord_{L,W'}(res_i^Viol(v))。
 
 witness ideal:
-  I_L(W) = < v_{L,a}(W) | a >(定義 5.2 の実現)。
+  I_L(W) = < coord_{L,W}(v) | v in Viol_L(W) >(定義 5.2 の実現)。
 
 obstruction ideal:
   I_Ob(W) = sum_{L required} I_L(W)(定義 6.1 の実現)。

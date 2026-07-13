@@ -211,7 +211,9 @@ law failure と結び付ける条件として明示する。
 ```text
 conormal regime:
   I_L -> I_L / I_L^2
-  is the quotient map, followed by the selected inclusion into Ob_U.
+  is the quotient map, followed by the canonical or selected morphism into Ob_U
+  after source and target are placed in the same sheaf category.
+  This morphism is not assumed to be injective; injectivity is a separate condition.
 
 torsor regime:
   a torsor mismatch is first sent to the selected abelianization;
@@ -942,17 +944,27 @@ coverage mismatch
 
 ### 定義 8.3 Boundary Connecting Homomorphism
 
-obstruction sheaf が `C' = C_core union F` 上の一つの coefficient object の制限として与えられ、
-`B = C_core intersection F` への restriction と extension-by-zero が標準的に定義される場合、
-Mayer-Vietoris triangle により、derived category 上で次が得られる。
+`C_core`と`F`が`C'`のopen subobject、`B`がそのfiber-product intersectionであるとする。
+包含を
+
+```text
+j_core : C_core -> C'
+j_F    : F -> C'
+j_B    : B -> C'
+```
+
+と書く。obstruction sheafが`C'`上の一つのcoefficient object `Ob_C'`の制限として与えられる場合、
+`D(C')`の中でMayer-Vietoris triangleは次の形を持つ。
 
 ```text
 Ob_C'
-  -> Ob_core direct_sum Ob_F
-  -> Ob_B
+  -> Rj_core,* j_core^* Ob_C' direct_sum Rj_F,* j_F^* Ob_C'
+  -> Rj_B,* j_B^* Ob_C'
   -> Ob_C'[1]
 ```
 
+対応するdirect imageがexactであるregimeでは`R`を省略する。
+`Ob_core := j_core^* Ob_C'`、`Ob_F := j_F^* Ob_C'`、`Ob_B := j_B^* Ob_C'`と略記する。
 この場合、distinguished triangle は追加の architecture 仮定ではなく、選ばれた coefficient object に
 対する Mayer-Vietoris の標準形である。
 `Ob_core`、`Ob_F`、`Ob_B` を互いに独立に選ぶ場合は、この triangle の存在を別途仮定する。
