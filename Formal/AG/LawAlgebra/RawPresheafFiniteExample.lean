@@ -8,6 +8,7 @@ namespace AAT.AG.LawAlgebra.FiniteExamples.RawPresheaf
 open CategoryTheory
 open MvPolynomial
 
+/-- The selected two-patch site used by the raw presheaf firing example. -/
 abbrev Site := AAT.AG.FiniteModel.twoPatchSite
 
 /-- SD3: the left patch as an object of the selected two-patch site. -/

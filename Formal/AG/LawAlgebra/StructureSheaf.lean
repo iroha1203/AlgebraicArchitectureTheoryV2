@@ -43,9 +43,12 @@ AAT site, with identity and composition coherence before quotienting.
 structure RawAmbientRestrictionSystem {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} (S : Site.AATSite A)
     (k : Type v) [CommRing k] where
+  /-- The typed coordinate family assigned to each selected site object. -/
   coordFamily : (W : S.category) -> CoordinateFamily W.ctx
+  /-- The structural equations imposed on the coordinates of each object. -/
   relationFamily : (W : S.category) ->
     StructuralRelationFamily (coordFamily W) k
+  /-- Restriction data together with preservation of the structural ideal. -/
   restrictionStable : ∀ {X Y : S.category} (f : X ⟶ Y),
     RestrictionStableStructuralRelations
       (relationFamily X) (relationFamily Y)
