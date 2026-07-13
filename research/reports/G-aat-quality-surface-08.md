@@ -10,11 +10,11 @@ Issue #3282.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 9
+- latest reviewed cycle: 10
 - completion candidate: no
 - tracking Issue: #3282
 - current phase: Phase 0 — Semantic Operation Foundation
-- next obligation: J5b labeled conormal generation
+- next obligation: J6 typed nonzero response, cover adequacy, and witness nonvacuity
 
 ## Cycle 1 — BC0 statement and API compatibility
 
@@ -1552,6 +1552,147 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: J5b labeled conormal generation
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 10 — J5b labeled conormal generation
+
+- decision: approve
+- result type: proof-obligation-discharged
+- proof obligation: derive required labeled conormal generation from the
+  existing obstruction-ideal construction and compare all labeled response
+  vanishing with full-response vanishing
+- base merge SHA: `e3540f411b9edf07496bd6f99a44511a63d14d40`
+- PR: pending
+
+### Construction
+
+`LabeledConormalGeneration.lean` first proves the reusable algebraic step:
+whenever subtype elements generate an ideal, their canonical classes generate
+the full `I / I²` module over `R / I`. The proof maps the subtype span through
+the injective ideal inclusion, then maps the resulting full span through the
+surjective `Ideal.toCotangent` map and extends scalars from `R` to `R / I`.
+
+For the AAT law data, the existing definition
+`obstructionIdeal = localObstructionIdeal` and
+`localObstructionIdeal_le_iff` reduce generation to every required law witness
+ideal. Each such ideal is already the span of the atom-indexed
+`violationWitness`, so the required `(lawIndex, atom)` labels generate the
+ambient obstruction ideal. Mapping this equality along each typed localization
+proves the corresponding chart and overlap ideal generation, hence ambient,
+chart, and overlap conormal span-top theorems.
+
+Finally, the kernel of a full conormal response contains all labeled classes
+if and only if it contains their full span. This proves ambient, chart, and
+overlap equivalences between vanishing on every required label and vanishing
+of the full conormal response/Jacobian. No generator family or labeled
+generation certificate is accepted as input.
+
+### Premise delta and audit
+
+- discharged material obligations:
+  - required law/Atom witnesses generate the ambient obstruction ideal;
+  - required labeled classes generate ambient, chart, and overlap conormal
+    modules;
+  - all labeled responses vanish iff the full response vanishes, ambient and
+    typed chart/overlap.
+- fixed ambient inputs: selected AAT site context and existing law core, base
+  field, typed localization geometry, and finite chart labels.
+- certificate provenance: required-law selection comes from the law universe;
+  witness values are the existing atom-indexed `violationWitness`; transported
+  values are canonical algebra-map images.
+- proof use: `localObstructionIdeal_le_iff`, the definition of
+  `lawWitnessIdeal`, `Ideal.map_span`, injectivity of the ideal subtype,
+  surjectivity of `Ideal.toCotangent`, and the full-response kernel occur in
+  proof terms.
+- structure-field escape: none. The ideal equality, conormal span, and
+  response comparison are theorems derived from existing law data.
+- route integrity: pass. The comparison uses full conormal span; it does not
+  identify labeled zero with full zero before proving generation.
+
+Typed nonzero response, cover adequacy, and witness nonvacuity remain J6.
+
+### Verification
+
+```text
+cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/LabeledConormalGeneration.lean
+axiom audit: 7 declarations under LawGeneratedLabeledConormal, standard axioms only
+axiom audit: 3 declarations under QuotientValuedDerivation, standard axioms only
+lake build
+Build completed successfully (7718 jobs).
+```
+
+### Next obligation
+
+Implement J6: construct the typed Boolean-circle operation-response prototype,
+prove a generated required response is nonzero, and discharge cover adequacy
+and witness nonvacuity before entering Phase 1.
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-aat-quality-surface-08
+target_theorem: Intrinsic Law-Response Circuit–Descent Theorem
+cycle: 10
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: J5b labeled conormal generation
+proof_obligation_delta: required law/Atom classes generate full conormal modules and detect full response vanishing
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/LabeledConormalGeneration.lean
+    declarations:
+      - LawGeneratedLabeledConormal.cotangent_span_top_of_ideal_span
+      - LawGeneratedLabeledConormal.span_requiredGeneratorWitness_eq_obstructionIdeal
+      - LawGeneratedLabeledConormal.requiredGeneratorConormal_span_top
+      - LawGeneratedLabeledConormal.chartLabeledConormal_span_top
+      - LawGeneratedLabeledConormal.overlapLabeledConormal_span_top
+      - QuotientValuedDerivation.allLabeledResponses_zero_iff_conormalResponse_eq_zero
+      - QuotientValuedDerivation.allChartLabeledResponses_zero_iff_conormalJacobian_eq_zero
+      - QuotientValuedDerivation.allOverlapLabeledResponses_zero_iff_conormalJacobian_eq_zero
+premise_delta:
+  discharged:
+    - required witness ideal generation from law selection and atom-indexed witnesses
+    - ambient and typed chart / overlap labeled conormal generation
+    - all-labeled-zero iff full-response-zero comparisons
+  remaining:
+    - J6 typed nonzero response, cover adequacy, and witness nonvacuity
+    - L0 finite repair and support-minimal circuit theorem
+    - C0 kernel base change, support comparison, and fiber circuit locus
+    - D0-D2 image sequence, Cech instance, actual gluing, and zero iff global normalized section
+    - E-pre local-circuit and pure-descent witness pair
+    - N0 strict labeled presentation naturality and unit rescaling transport
+    - M0 finite measurement chain map and effective certificate
+    - E-cert certified witness pair
+    - main theorem package and independent final gate
+certificate_provenance:
+  discharged:
+    - required-law membership from the selected law universe
+    - atom-indexed generators from existing violationWitness values
+    - typed generators from canonical algebra-map transport
+  unresolved:
+    - typed nonzero response, cover adequacy, descent, and witness nonvacuity
+proof_use_audit:
+  used_material_premises:
+    - existing semantic law-equation witness core
+    - J1a typed localization geometry
+    - J4 full conormal response and labeled classes
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns:
+    - typed nonzero response and witness nonvacuity remain J6
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: J6 typed nonzero response, cover adequacy, and witness nonvacuity
 completion_candidate: false
 tracking_issue_closed: false
 ```
