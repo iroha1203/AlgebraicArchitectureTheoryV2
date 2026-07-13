@@ -1,6 +1,6 @@
 ---
 name: math-lean-review
-description: 実装完了後の最終スナップショットに対するAATの数学本文・GOAL・固定statementとLean実装を、仮定放電、certificate provenance、proof-use、依存、台帳まで4本の独立査読で判定する。"$math-lean-review"、review-prの最終ゲート、大定理のcompletion candidateで使う。
+description: PR作成後のレビューゲートと大定理のcompletion candidateで、最終スナップショットのAATの数学本文・GOAL・固定statementとLean実装を、仮定放電、certificate provenance、proof-use、依存、台帳まで4本の独立査読で判定する。"$math-lean-review"、review-prの最終ゲートで使う。
 ---
 
 # Math Lean Review
@@ -195,9 +195,13 @@ rg -n "import ResearchLean\.AG" Formal Formal.lean
 lane定義、追加出力、統合schemaは
 [references/reviewer-lanes.md](references/reviewer-lanes.md)を読む。
 
-起動時点は実装完了後の最終ゲートに限る。実装中はfocused checkまたは必要な単一subagentの確認に
-限定する。正式査読でfindingが出た場合は、全laneのfindingをまとめて実装フェーズを再開し、修正後に
-最終スナップショットを固定し直してから、正式レビューとして4本を再実行する。
+起動時点は共有review protocolの「レビューバッチと修正後確認」が許可する時点(PR作成後の
+レビューゲート、`target-theorem-loop`の完了判定、`prd-loop`のエスカレーション)に限る。
+実装中はfocused checkまたは必要な単一subagentの確認に限定する。PRレビューゲートの正式査読で
+findingが出た場合は、全laneのfindingをまとめて実装フェーズを再開し、修正後の確認は共有
+review protocolの「レビューバッチと修正後確認」に従う(直接対応の資格条件・確認subagentの
+検査義務・資格喪失時の4本再実行は同節が正本)。完了判定ゲートとして起動された場合のfindingに
+直接対応は適用されず、完了判定は4本の正式再実行だけで更新する。
 
 ## 親 Codex の統合判定
 

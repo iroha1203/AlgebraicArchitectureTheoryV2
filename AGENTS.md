@@ -102,9 +102,11 @@
 - レビューは分野別の敵対レビュー SKILL
   (`math-lean-review` / `tool-review` / `website-review` / `docs-review`)で行う。
   共通の反証観点は `.codex/skills/_shared/refutation-checklist.md` を正本とする。
-- Lean 実装(`Formal/`)を触る差分は、大きさを問わず `math-lean-review` の
-  4本の独立査読を行い、4本すべての承認を必須とする。
-- 修正後の再レビューと確認の詳細は、`.codex/skills/_shared/review-protocol.md`を正本とする。
+- Lean 実装(`Formal/`)を触る差分は、大きさを問わず PR 作成後のレビューゲートとして
+  `math-lean-review` の4本の独立査読を行う。承認は、4本すべての合格、または finding
+  全解消+`review-protocol.md` に従う有資格な修正後確認(直接対応)の記録をもって成立する。
+- 正式レビューの起動時点、finding 修正後の直接対応(finding 限定の軽量確認)と
+  正式レビュー再実行の条件は、`.codex/skills/_shared/review-protocol.md`を正本とする。
 - Research 側で受理済みの成果が本体に無い状態は、scope 制限ではなく
   `unported (Research-proved)`(未移植)と呼ぶ。詳細は
   `docs/aat/guideline.md` の Lean status discipline と
