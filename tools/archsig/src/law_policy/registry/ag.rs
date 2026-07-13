@@ -85,17 +85,17 @@ fn ag_saga_grounded_manifest() -> LawEvaluatorManifestV1 {
             "selected finite cover, chart-local defect observables, and the selected policy-row profile"
                 .to_string(),
         missing_blocker_rule:
-            "missing grounding, Stage 3 defect source, or selected quotient condition is not_computed with silence_by_design"
+            "missing grounding, Stage 3 defect source, witnessVariables/forbiddenSupportGenerators, Layer D supplied data, aligned skeleton, selected quotient condition, or finite witness bound is not_computed with silence_by_design"
                 .to_string(),
         pass_criteria:
-            "holdsCriterion raw-value checks establish the displayed law premise and emit the law-dependent packet"
+            "grounded witnessVariables and forbiddenSupportGenerators generate the finite F2 Boolean quotient; holdsCriterion raw-value checks derive the displayed law premise, interpretation class, and law-dependent packet"
                 .to_string(),
         violation_criteria:
             "a non-empty chart-local defect observable emits MEASURED_LAW_DEFECT_AT_CHART and not_established law-dependent conclusions"
                 .to_string(),
         typed_result_schema: "archsig-saga-conclusions/v0.5.2".to_string(),
         distance_contribution:
-            "grounded 10-conclusion packet keeps law-dependent and law-independent structures separate"
+            "grounded 10-conclusion packet keeps law-dependent and law-independent structures separate and records generated quotient provenance"
                 .to_string(),
         summary_output_refs: vec!["/structuralVerdict".to_string()],
         detail_output_refs: vec![

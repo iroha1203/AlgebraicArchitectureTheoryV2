@@ -52,6 +52,13 @@ pub(crate) fn evaluate_saga_grounded_v1(
             execution_plan,
         );
     };
+    let grounded_variable_aliases = execution_plan.grounded_variable_aliases.as_ref();
+    let grounded_forbidden_supports = execution_plan.grounded_forbidden_supports.as_ref();
+    let grounded_witness_variables = grounded_variable_aliases
+        .into_iter()
+        .flat_map(|aliases| aliases.values())
+        .cloned()
+        .collect::<BTreeSet<_>>();
     let grounding_is_aligned = grounding.is_some_and(|grounding| {
         grounding.get("kind").and_then(Value::as_str) == Some("saga-grounding")
             && grounding.get("profileRef").and_then(Value::as_str)
@@ -64,9 +71,19 @@ pub(crate) fn evaluate_saga_grounded_v1(
         .as_ref()
         .is_some_and(|skeleton| {
             !skeleton.is_empty()
+                && skeleton
+                    .iter()
+                    .map(|simplex| simplex.support_atom_ref.as_str())
+                    .collect::<BTreeSet<_>>()
+                    .len()
+                    == skeleton.len()
                 && skeleton.iter().all(|simplex| {
                     !simplex.support_atom_ref.is_empty()
                         && simplex.required_law_id == execution_plan.selected_law_id
+                        && normalized
+                            .atoms
+                            .iter()
+                            .any(|atom| atom.normalized_atom_id == simplex.support_atom_ref)
                 })
         });
     let coefficient_is_f2 = profile.coefficient == "F2"
@@ -98,6 +115,11 @@ pub(crate) fn evaluate_saga_grounded_v1(
         || plan.faithfulness.supplied.is_none()
         || plan.comparison.is_none()
         || !class_supply_is_checked(archmap, plan)
+        || grounded_variable_aliases.is_none()
+        || grounded_forbidden_supports.is_none()
+        || grounded_witness_variables.is_empty()
+        || grounded_witness_variables.len() + defect_support_size
+            > profile.finite_bounds.max_square_free_witness_variables
         || source.cover_ref != profile.cover_ref
         || defect_support_size > profile.finite_bounds.max_square_free_witness_variables
         || execution_plan.stage3_skeleton.is_none()
@@ -122,6 +144,15 @@ pub(crate) fn evaluate_saga_grounded_v1(
                 "grounded_layer_d_not_supplied"
             } else if source.cover_ref != profile.cover_ref {
                 "grounded_cover_profile_mismatch"
+            } else if grounded_variable_aliases.is_none()
+                || grounded_forbidden_supports.is_none()
+                || grounded_witness_variables.is_empty()
+            {
+                "grounded_equation_support_not_supplied"
+            } else if grounded_witness_variables.len() + defect_support_size
+                > profile.finite_bounds.max_square_free_witness_variables
+            {
+                "grounded_witness_variable_bound_exceeded"
             } else if defect_support_size > profile.finite_bounds.max_square_free_witness_variables
             {
                 "grounded_finite_bound_exceeded"
@@ -151,6 +182,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
                 })
                 .map(|atom| atom.normalized_atom_id.clone())
                 .collect::<Vec<_>>();
+            let support_variables = atom_refs.clone();
             let holds = match source.holds_criterion.zero_sense.as_str() {
                 "empty-witness-set" => atom_refs.is_empty(),
                 _ => false,
@@ -162,6 +194,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
                 "holdsCriterionRef": criterion,
                 "defectValueRef": format!("{}#{}", normalized.source_archmap_ref, normalized_chart),
                 "rawAtomRefs": atom_refs,
+                "supportVariables": support_variables,
                 "defectObservable": {
                     "axis": chart.defect_observable.axis,
                     "predicate": chart.defect_observable.predicate
@@ -173,15 +206,65 @@ pub(crate) fn evaluate_saga_grounded_v1(
         && per_chart
             .iter()
             .all(|chart| chart.get("holds").and_then(Value::as_bool) == Some(true));
-    let quotient_basis = per_chart
+    let quotient_basis = grounded_witness_variables
         .iter()
-        .flat_map(|chart| chart["rawAtomRefs"].as_array().into_iter().flatten())
-        .filter_map(Value::as_str)
-        .map(str::to_string)
+        .cloned()
+        .chain(
+            per_chart
+                .iter()
+                .flat_map(|chart| chart["supportVariables"].as_array().into_iter().flatten())
+                .filter_map(Value::as_str)
+                .map(str::to_string),
+        )
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect::<Vec<_>>();
-    let interpretation_zero = quotient_basis.is_empty();
+    let observed_support = per_chart
+        .iter()
+        .flat_map(|chart| chart["supportVariables"].as_array().into_iter().flatten())
+        .filter_map(Value::as_str)
+        .map(str::to_string)
+        .collect::<BTreeSet<_>>();
+    let interpretation_zero = observed_support.is_empty();
+    let obstruction_generators = grounded_forbidden_supports
+        .into_iter()
+        .flat_map(|supports| supports.iter().enumerate())
+        .map(|(index, support)| {
+            let support = support
+                .iter()
+                .filter_map(|variable| {
+                    grounded_variable_aliases.and_then(|aliases| aliases.get(variable))
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            let support_atom_refs = support
+                .iter()
+                .filter(|alias| {
+                    normalized
+                        .atoms
+                        .iter()
+                        .any(|atom| atom.normalized_atom_id == **alias)
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            json!({
+                "generatorId": format!("grounded-forbidden-{index}"),
+                "support": support,
+                "supportAtomRefs": support_atom_refs
+            })
+        })
+        .collect::<Vec<_>>();
+    let interpretation_map = quotient_basis
+        .iter()
+        .map(|variable| {
+            json!({
+                "variable": variable,
+                "image": format!("[{variable}]"),
+                "observed": observed_support.contains(variable)
+            })
+        })
+        .collect::<Vec<_>>();
+    let representative_support = observed_support.into_iter().collect::<Vec<_>>();
     let generated_quotient = json!({
         "coefficient": "F2",
         "construction": "finite Boolean quotient of the declared chart-defect observation space",
@@ -190,19 +273,19 @@ pub(crate) fn evaluate_saga_grounded_v1(
             "relations": ["e_i^2=e_i", "2e_i=0"]
         },
         "obstructionIdeal": {
-            "generators": [],
-            "kind": "zero-ideal-under-declared-defect-observable",
-            "reason": "no additional obstruction generator is supplied by the grounded surface"
+            "generators": obstruction_generators,
+            "kind": "finite-f2-boolean-obstruction-ideal",
+            "source": "law-equation-surface.forbiddenSupportGenerators"
         },
         "representative": {
-            "support": quotient_basis,
-            "normalForm": quotient_basis,
-            "reduction": "modulo the explicitly empty obstruction ideal"
+            "support": representative_support,
+            "normalForm": representative_support,
+            "reduction": "modulo the generated finite obstruction ideal"
         },
         "interpretation": {
-            "map": "interpret(i)=[d_i]",
+            "map": interpretation_map,
             "class": if interpretation_zero { "zero" } else { "nonzero" },
-            "representative": quotient_basis
+            "representative": representative_support
         },
         "finiteBound": profile.finite_bounds.max_square_free_witness_variables,
         "finiteBoundChecked": true

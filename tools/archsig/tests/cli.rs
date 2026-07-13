@@ -14,7 +14,7 @@ use archsig::{
     ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
     ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV1,
-    RepairPlanDocumentV1, compare_archmap_v2_doctrine,
+    RepairPlanDocumentV1, compare_archmap_v2_doctrine, validate_measurement_packet_value_v1,
 };
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -10918,8 +10918,16 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
     surface["id"] = json!("law-surface:grounded-test");
     surface["laws"].as_array_mut().unwrap().push(json!({
         "lawId": "law:grounded-test",
-        "conditionType": "descent",
-        "evaluatorRef": "ag.saga-grounded",
+        "conditionType": "closed-equational",
+        "witnessVariables": [
+            {"variable": "atom:order", "binding": {"edge": ["ctx:order", "ctx:shared"], "axis": "cech", "predicate": "sectionValue"}},
+            {"variable": "atom:inventory", "binding": {"edge": ["ctx:inventory", "ctx:shared"], "axis": "cech", "predicate": "sectionValue"}},
+            {"variable": "atom:shared", "binding": {"edge": ["ctx:order", "ctx:inventory"], "axis": "cech", "predicate": "sectionValue"}}
+        ],
+        "forbiddenSupportGenerators": [
+            {"support": ["atom:order", "atom:inventory"]},
+            {"support": ["atom:inventory", "atom:shared"]}
+        ]
     }));
     surface["skeleton"] = json!([{
         "simplex": "vertex:grounded",
@@ -10997,12 +11005,28 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
         "zero"
     );
     assert_eq!(
-        grounded["generatedQuotient"]["obstructionIdeal"]["generators"],
-        json!([])
+        grounded["generatedQuotient"]["ambient"]["basis"],
+        json!(["atom:inventory", "atom:order", "atom:shared"])
     );
     assert_eq!(
-        grounded["generatedQuotient"]["interpretation"]["map"],
-        "interpret(i)=[d_i]"
+        grounded["generatedQuotient"]["obstructionIdeal"]["generators"]
+            .as_array()
+            .map(Vec::len),
+        Some(2)
+    );
+    assert_eq!(
+        grounded["generatedQuotient"]["interpretation"]["map"]
+            .as_array()
+            .map(Vec::len),
+        Some(3)
+    );
+    let mut malformed_packet = packet.clone();
+    invariant_by_id_mut(&mut malformed_packet, "saga-generated-end-to-end-packet")["generatedQuotient"]
+        ["interpretation"]["map"] = json!("forged");
+    assert!(
+        validate_measurement_packet_value_v1(&malformed_packet)
+            .iter()
+            .any(|check| check.result == "fail")
     );
     assert_eq!(
         grounded["lawIndependent"]["note"],
@@ -14499,6 +14523,15 @@ fn invariant_by_id<'a>(packet: &'a Value, invariant_id: &str) -> &'a Value {
         .as_array()
         .expect("computedInvariants is array")
         .iter()
+        .find(|invariant| invariant["invariantId"] == invariant_id)
+        .unwrap_or_else(|| panic!("missing computed invariant {invariant_id}"))
+}
+
+fn invariant_by_id_mut<'a>(packet: &'a mut Value, invariant_id: &str) -> &'a mut Value {
+    packet["computedInvariants"]
+        .as_array_mut()
+        .expect("computedInvariants is array")
+        .iter_mut()
         .find(|invariant| invariant["invariantId"] == invariant_id)
         .unwrap_or_else(|| panic!("missing computed invariant {invariant_id}"))
 }
