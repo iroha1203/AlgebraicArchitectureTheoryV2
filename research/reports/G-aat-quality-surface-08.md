@@ -1267,9 +1267,14 @@ alpha_e : E_A -> O_Y.
 
 The natural transformation law proves compatibility on every inclusion of
 lawful-space opens, with explicit left and right chart-to-overlap corollaries.
-Selected-operation computations recover J2 chart / overlap derivations and use
-the J2 left / right naturality theorems. No internal-Hom sheaf identification
-is asserted.
+Canonical localization readouts from the lawful-space structure module to the
+chart and overlap law quotients prove, for every allowed-operation local
+section, that `alpha_e` is exactly the full `J_W` evaluated at the localized
+generated class `c_e`. The left and right labeled-Jacobian restriction
+corollaries are then derived from these comparison theorems and sheaf
+naturality. Selected-operation computations recover J2 chart / overlap
+derivations and use the J2 left / right naturality theorems. No internal-Hom
+sheaf identification is asserted.
 
 ### Premise delta and audit
 
@@ -1281,6 +1286,8 @@ is asserted.
   - G-07 context restriction of required labeled conormal classes;
   - typed left and right chart-to-overlap conormal transport;
   - actual labeled response morphisms `alpha_e : E_A -> O_Y`;
+  - chart / overlap comparison of `alpha_e` with full-Jacobian evaluation for
+    every allowed-operation local section;
   - all-open response naturality and explicit left / right corollaries;
   - selected-operation Jacobian evaluation and both restriction theorems.
 - fixed ambient inputs: base field, selected AAT site context and existing law
@@ -1291,16 +1298,19 @@ is asserted.
   response descent uses the Leibniz rule and `Submodule.liftQ`; `alpha_e` is
   produced by `tilde.map`, open restriction, and the J3b inclusion.
 - proof use: `violationWitness_restrict`, `Raw.conormalRestrict_toCotangent`,
-  both `Ideal.mapCotangent` transports, the J3a chart / overlap readouts, J3b
-  selected-section recovery, and the two J2 naturality theorems occur in proof
-  terms.
+  both `Ideal.mapCotangent` transports, `IsLocalizedModule.ext`, the J3a chart /
+  overlap readouts, J3b selected-section recovery, the sheaf naturality law,
+  and the two J2 naturality theorems occur in proof terms.
 - structure-field escape: none. The evaluator, conormal class, response
   morphism, and compatibility are constructed rather than supplied.
 - route integrity: pass. The full `J_W` remains objectwise; the file does not
   turn an unproved family of duals into an internal-Hom sheaf. Each fixed
   labeled evaluation is sheafified only after its ambient linear map is
   constructed.
-- independent implementation audit: approve / no findings.
+- adversarial lane A initially found that the sheaf morphism and objectwise
+  Jacobian lacked an explicit local comparison. The chart / overlap readout,
+  comparison, and derived restriction theorems close that finding on the
+  corrected PR snapshot.
 
 The ideal-preserving kernel characterization, labeled conormal generation,
 nonzero response, cover adequacy, and witness nonvacuity remain later
@@ -1311,9 +1321,9 @@ obligations.
 ```text
 cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ConormalJacobian.lean
 axiom audit: 6 declarations under QuotientValuedDerivation, standard axioms only
-axiom audit: 12 declarations under TypedLocalizationGeometry, standard axioms only
+axiom audit: 26 declarations under TypedLocalizationGeometry, standard axioms only
 axiom audit: 13 declarations under LawGeneratedLabeledConormal, standard axioms only
-axiom audit: 13 declarations under ArchitectureOperationPresentation, standard axioms only
+axiom audit: 17 declarations under ArchitectureOperationPresentation, standard axioms only
 lake build
 Build completed successfully (7718 jobs).
 ```
@@ -1349,8 +1359,12 @@ lean_artifacts:
       - ArchitectureOperationPresentation.chartAllowedConormalJacobian
       - ArchitectureOperationPresentation.overlapAllowedConormalJacobian
       - ArchitectureOperationPresentation.labeledResponse
+      - ArchitectureOperationPresentation.chart_labeledResponse_eq_allowedConormalJacobian
+      - ArchitectureOperationPresentation.overlap_labeledResponse_eq_allowedConormalJacobian
       - ArchitectureOperationPresentation.left_labeledResponse_natural
       - ArchitectureOperationPresentation.right_labeledResponse_natural
+      - ArchitectureOperationPresentation.left_labeledConormalJacobian_natural
+      - ArchitectureOperationPresentation.right_labeledConormalJacobian_natural
       - ArchitectureOperationPresentation.left_selectedConormalJacobian_natural
       - ArchitectureOperationPresentation.right_selectedConormalJacobian_natural
 premise_delta:
@@ -1359,6 +1373,7 @@ premise_delta:
     - required law/Atom witness provenance and G-07 conormal restriction
     - typed left and right conormal class transport
     - actual labeled response sheaf morphisms on the allowed-operation sheaf
+    - chart / overlap comparison with full-Jacobian evaluation for every local section
     - all-open and explicit chart / overlap response naturality
     - selected allowed-operation Jacobian recovery and restriction
   remaining:
