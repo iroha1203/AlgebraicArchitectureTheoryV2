@@ -4,6 +4,112 @@ namespace AAT.AG
 
 universe u
 
+/--
+SD1: semantic obstruction is failure of the selected law on the selected
+architecture object.
+-/
+def SemanticObstruction {U : AtomCarrier.{u}} (L : Law U)
+    (A : ArchitectureObject U) : Prop :=
+  ¬ L.holds A
+
+/-- SD1: a finite circuit query over Atom-level configuration data. -/
+inductive CircuitQuery (U : AtomCarrier.{u}) where
+  | atomPresent (a : U.Atom)
+  | relationPresent (a b : U.Atom)
+  | identificationPresent (a b : U.Atom)
+
+/-- SD1: the semantic reading of a circuit query on an architecture object. -/
+def CircuitQuery.Holds {U : AtomCarrier.{u}} (q : CircuitQuery U)
+    (A : ArchitectureObject U) : Prop :=
+  match q with
+  | .atomPresent a => A.configuration.family.mem a
+  | .relationPresent a b =>
+      A.configuration.family.mem a ∧
+      A.configuration.family.mem b ∧
+      A.configuration.relation a b
+  | .identificationPresent a b =>
+      A.configuration.family.mem a ∧
+      A.configuration.family.mem b ∧
+      A.configuration.identification a b
+
+/--
+SD1: a finite signed query pattern for an obstruction circuit.
+
+Implementation notes: signed queries are finite data; matching remains a
+separate predicate on architecture objects.  Storing an object or a law-failure
+proof in the datum was rejected because it would repackage the desired
+semantic conclusion.
+-/
+structure FiniteCircuitDatum (U : AtomCarrier.{u}) where
+  /-- The finite list of queries paired with their expected Boolean polarity. -/
+  queries : List (CircuitQuery U × Bool)
+
+/-- SD1: every signed query in the datum has the expected reading on the object. -/
+def FiniteCircuitDatum.Matches {U : AtomCarrier.{u}}
+    (Q : FiniteCircuitDatum U) (A : ArchitectureObject U) : Prop :=
+  ∀ query expected, (query, expected) ∈ Q.queries ->
+    (query.Holds A ↔ expected = true)
+
+/--
+SD1: finite-template detector syntax. Its constructors contain only finite
+data, exact templates, and finite disjunction.
+-/
+inductive CircuitDetectorCode (U : AtomCarrier.{u}) where
+  | reject
+  | exact (pattern : FiniteCircuitDatum U)
+  | any (left right : CircuitDetectorCode U)
+
+/-- SD1: evaluate finite-template detector syntax on a finite circuit datum. -/
+noncomputable def CircuitDetectorCode.eval {U : AtomCarrier.{u}}
+    (code : CircuitDetectorCode U) (Q : FiniteCircuitDatum U) : Bool := by
+  classical
+  exact match code with
+    | .reject => false
+    | .exact pattern => if pattern = Q then true else false
+    | .any left right => left.eval Q || right.eval Q
+
+/--
+SD1: law-indexed finite detector code together with semantic soundness.
+
+Implementation notes: law failure is derived by `sound`; it is not stored in
+`CircuitDetectorCode` or `FiniteCircuitDatum`.
+-/
+structure CircuitReading {U : AtomCarrier.{u}} (LU : LawUniverse U) where
+  /-- The finite detector syntax selected for each law. -/
+  code : (i : LU.Index) -> CircuitDetectorCode U
+  sound : ∀ (i : LU.Index) (A : ArchitectureObject U)
+    (Q : FiniteCircuitDatum U),
+      Q.Matches A -> (code i).eval Q = true ->
+        ¬ (LU.law i).holds A
+
+/-- SD1: Boolean acceptance of a finite datum by the selected law detector. -/
+noncomputable def CircuitReading.accepts {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU)
+    (i : LU.Index) (Q : FiniteCircuitDatum U) : Bool :=
+  (R.code i).eval Q
+
+/-- SD1: the type of accepted matching circuit data for an object and law index. -/
+def CircuitReading.Circuit {U : AtomCarrier.{u}} {LU : LawUniverse U}
+    (R : CircuitReading LU) (A : ArchitectureObject U)
+    (i : LU.Index) : Type u :=
+  {Q : FiniteCircuitDatum U // Q.Matches A ∧ R.accepts i Q = true}
+
+/--
+SD1: every failure of a required law has an accepted matching finite circuit.
+This is an additional completeness condition, not a field of `CircuitReading`.
+-/
+def CircuitReading.RequiredComplete {U : AtomCarrier.{u}}
+    {LU : LawUniverse U} (R : CircuitReading LU) : Prop :=
+  ∀ (A : ArchitectureObject U) (i : LU.Index), LU.Required i ->
+    ¬ (LU.law i).holds A -> Nonempty (R.Circuit A i)
+
+/-- SD1: a selected law universe equipped with its finite circuit reading. -/
+structure LawReading (U : AtomCarrier.{u}) where
+  /-- The selected universe of laws. -/
+  lawUniverse : LawUniverse U
+  /-- The finite circuit detector reading for that universe. -/
+  circuits : CircuitReading lawUniverse
+
 /-- I.定義8.1: an obstruction is a selected witness of law failure. -/
 structure Obstruction {U : AtomCarrier.{u}} (L : Law U)
     (A : ArchitectureObject U) where

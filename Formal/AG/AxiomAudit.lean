@@ -891,18 +891,59 @@ theorem finiteCyclicConcreteThreeReadingFires :
           FiniteModel.concreteNoCycleSignatureAxes :=
   FiniteModel.object_concreteThreeReadingAgreement_fires
 
-theorem finiteCorePackageFromAxiomRealizationNoHEq :
-    ∃ core : AATCorePackage FiniteModel.carrier,
-      core.axioms = FiniteModel.axiomSystem ∧
-        core.family = FiniteModel.allFamily ∧
-          core.configuration = FiniteModel.configuration ∧
-            core.object = FiniteModel.object ∧
-              core.configuration.family = core.family ∧
-                core.object.configuration = core.configuration ∧
-                  core.lawUniverse = FiniteModel.lawUniverse ∧
-                    core.obstructionLaw = FiniteModel.noCycleLaw ∧
-                      core.signature = FiniteModel.signature :=
-  FiniteModel.corePackageFromAxiomRealization_exists_noHEq
+theorem finiteCoreGeneratedFamilyAtomizes :
+    FiniteModel.coreReading.doctrine.Atomizes
+      FiniteModel.coreReading.source FiniteModel.corePackage.family :=
+  FiniteModel.corePackage.family_atomizes
+
+theorem finiteCoreNonidentityReachableOperation :
+    ∃ A B : FiniteModel.corePackage.algebra.Obj,
+      A ≠ B ∧ Nonempty (FiniteModel.corePackage.algebra.Op A B) :=
+  FiniteModel.nonidentity_reachable_operation_fires
+
+theorem finiteCoreGeneratedCircuitSound :
+    ¬ (FiniteModel.corePackage.algebra.lawReading.lawUniverse.law PUnit.unit).holds
+      (FiniteModel.corePackage.algebra.object FiniteModel.corePackage.baseObject) :=
+  FiniteModel.generatedCycleCircuit_sound
+
+def extractionDoctrineAtomizeHolds :=
+  @ExtractionDoctrine.atomize_holds
+
+def extractionDoctrineAtomizeUnique :=
+  @ExtractionDoctrine.atomize_unique
+
+def extractionDoctrineEqAtomize :=
+  @ExtractionDoctrine.eq_atomize
+
+def generatedCoreAxioms :=
+  @AATCorePackage.generate_axioms
+
+def generatedCoreReading :=
+  @AATCorePackage.generate_reading
+
+def generatedCoreFamilyAtomizes :=
+  @AATCorePackage.generate_family_atomizes
+
+def generatedCoreFamilyUnique :=
+  @AATCorePackage.generate_family_unique
+
+def generatedCoreConfigurationSupported :=
+  @AATCorePackage.generate_configuration_familySupported
+
+def generatedCoreObjectConfiguration :=
+  @AATCorePackage.generate_object_configuration_eq
+
+def generatedCoreCircuitSound :=
+  @AATCorePackage.generate_circuit_sound
+
+def generatedCoreOperationMapsFamily :=
+  @AATCorePackage.generate_algebra_operation_maps_family
+
+def generatedCoreOperationMapsRelation :=
+  @AATCorePackage.generate_algebra_operation_maps_relation
+
+def generatedCoreOperationMapsIdentification :=
+  @AATCorePackage.generate_algebra_operation_maps_identification
 
 theorem finiteSeedWitnessClosureAdmissible :
     Site.AdmissibleCover FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap

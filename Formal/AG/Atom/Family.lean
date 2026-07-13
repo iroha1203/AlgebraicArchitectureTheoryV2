@@ -10,6 +10,17 @@ structure AtomFamily (U : AtomCarrier.{u}) where
 
 namespace AtomFamily
 
+/-- Extensionality of Atom families by pointwise membership. -/
+@[ext] theorem ext {U : AtomCarrier.{u}} {F G : AtomFamily U}
+    (h : ∀ atom, F.mem atom ↔ G.mem atom) : F = G := by
+  cases F with
+  | mk f =>
+      cases G with
+      | mk g =>
+          congr 1
+          funext atom
+          exact propext (h atom)
+
 /-- Inclusion of Atom families. -/
 def Subset {U : AtomCarrier.{u}} (F G : AtomFamily U) : Prop :=
   ∀ {atom}, F.mem atom -> G.mem atom

@@ -123,21 +123,30 @@ theorem reconstruction_not_exact :
   no_exact_reconstruction_of_nonInjective familyObservation reconstruction
     noninjective_family_observation
 
-/-- I.命題A9 / A8: a doctrine whose canonical family is independent of observation. -/
-def doctrine : ExtractionDoctrine carrier Family where
+/-- I.命題A9 / A8: the canonical actual Atom family selected by the doctrine. -/
+def canonicalAtomFamily : AtomFamily carrier where
+  mem atom := atom = Atom.observed
+
+/-- I.命題A9 / A8: a doctrine whose actual Atom family is independent of observation. -/
+def doctrine : ExtractionDoctrine carrier where
   Source := Source
   Vocabulary := Unit
   SemanticReading := Unit
   Resolution := Unit
-  sourceSemantics := fun _ => Unit
+  vocabulary := ()
+  semanticReading := ()
+  resolution := ()
+  vocabularyAllows := fun _ _ => True
+  semanticAllows := fun _ _ _ => True
+  resolutionAllows := fun _ _ _ => True
+  sourceSemantics := fun _ atom => atom = Atom.observed
   normalize := fun src => src
-  atomize := fun _ => Family.canonical
 
 /-- I.命題A9 / A8: canonical family uniqueness follows from the doctrine. -/
-theorem canonical_family_unique {F G : Family}
-    (hF : F = doctrine.atomize Source.source)
-    (hG : G = doctrine.atomize Source.source) : F = G :=
-  ExtractionDoctrine.atomize_unique doctrine Source.source hF hG
+theorem canonical_family_unique {F G : AtomFamily carrier}
+    (hF : doctrine.Atomizes Source.source F)
+    (hG : doctrine.Atomizes Source.source G) : F = G :=
+  doctrine.atomize_unique Source.source hF hG
 
 /--
 I.命題A9: observation incompleteness and A8 canonical-family uniqueness are
@@ -145,9 +154,9 @@ separate facts in the same finite example.
 -/
 theorem observation_incompleteness_coexists_with_a8 :
     familyObservation.NonInjective ∧
-      (∀ {F G : Family},
-        F = doctrine.atomize Source.source ->
-        G = doctrine.atomize Source.source ->
+      (∀ {F G : AtomFamily carrier},
+        doctrine.Atomizes Source.source F ->
+        doctrine.Atomizes Source.source G ->
         F = G) := by
   constructor
   · exact noninjective_family_observation
