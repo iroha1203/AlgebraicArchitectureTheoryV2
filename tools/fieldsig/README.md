@@ -1,6 +1,6 @@
 # FieldSig
 
-`fieldsig` is the SFT-based software evolution measurement layer. It is separate from ArchSig: ArchSig produces current AG measurement state and review cues, while FieldSig consumes serialized `archsig-measurement-packet/v0.5.1` handoff artifacts with the three selected component fingerprints together with PRD, SPEC, Issue, CI, test, review, runtime, ownership, history, calibration, and AI proposal policy evidence to study PR / diff / change-vector evolution over that state.
+`fieldsig` is the SFT-based software evolution measurement layer. It is separate from ArchSig: ArchSig produces current AG measurement state and review cues, while FieldSig consumes serialized `archsig-measurement-packet/v0.5.2` handoff artifacts with the three selected component fingerprints together with PRD, SPEC, Issue, CI, test, review, runtime, ownership, history, calibration, and AI proposal policy evidence to study PR / diff / change-vector evolution over that state.
 
 FieldSig artifacts are measurement and workflow evidence. They do not prove forecast correctness, assign probabilities by default, establish causal correctness, provide global safety, or replace CI, tests, and human review.
 
@@ -17,7 +17,7 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- fieldsig-run-manifest --f
 
 `archsig-analysis-sft-input` is the current ArchSig handoff command. Its only
 ArchSig input is `--measurement-packet` with schema
-`archsig-measurement-packet/v0.5.1`. The command requires all three component fingerprints, rejects other packet shapes and
+`archsig-measurement-packet/v0.5.2`. The command requires all three component fingerprints, rejects other packet shapes and
 raw ArchMap JSON, then preserves structural verdicts, computed invariants,
 analytic readings, assumption ledger entries, supplied data, and boundary
 statements as bounded SFT input refs / unknown remainder. It does not treat

@@ -99,4 +99,4 @@ ${ARCHSIG_BIN:-archsig} analyze \
 
 Use `$arch-pr-analyzer` after this skill when the user asks what an ArchMap or PR / CI artifact implies for PR quality or current architecture state.
 
-Use FieldSig planning skills after ArchSig has produced `archsig-measurement-packet/v0.5.1` with all three component fingerprints and the user asks for planning forecast.
+Use FieldSig planning skills after ArchSig has produced `archsig-measurement-packet/v0.5.2` with all three component fingerprints and the user asks for planning forecast.
