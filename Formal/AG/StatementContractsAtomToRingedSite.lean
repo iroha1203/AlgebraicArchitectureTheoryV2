@@ -907,4 +907,82 @@ example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
       R.structureSheaf.val ⋙ LawAlgebra.AATCommAlgToType k :=
   R.underlyingTypeSheaf_val
 
+/-! SD5 fixed end-to-end constructor signatures. -/
+
+example {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U)
+    (coreReading : CoreReading U)
+    (reading : Site.SelectedGeometryReading
+      (AATCorePackage.generate S coreReading))
+    (k : Type v) [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem reading.toAATSite k)
+    [CategoryTheory.HasSheafify
+      reading.toAATSite.topology (LawAlgebra.AATCommAlgCat k)] :
+    LawAlgebra.RingedAATSite reading.toAATSite k :=
+  LawAlgebra.generateRingedAATSite S coreReading reading k raw
+
+example {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (coreReading : CoreReading U)
+    (reading : Site.SelectedGeometryReading
+      (AATCorePackage.generate S coreReading))
+    (k : Type v) [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem reading.toAATSite k)
+    [CategoryTheory.HasSheafify
+      reading.toAATSite.topology (LawAlgebra.AATCommAlgCat k)] :
+    (LawAlgebra.generateRingedAATSite S coreReading reading k raw).site =
+      reading.toAATSite :=
+  LawAlgebra.generateRingedAATSite_site S coreReading reading k raw
+
+example {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (coreReading : CoreReading U)
+    (reading : Site.SelectedGeometryReading
+      (AATCorePackage.generate S coreReading))
+    (k : Type v) [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem reading.toAATSite k)
+    [CategoryTheory.HasSheafify
+      reading.toAATSite.topology (LawAlgebra.AATCommAlgCat k)] :
+    (LawAlgebra.generateRingedAATSite S coreReading reading k raw).raw =
+      raw.toPresheaf :=
+  LawAlgebra.generateRingedAATSite_raw S coreReading reading k raw
+
+example {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (coreReading : CoreReading U)
+    (reading : Site.SelectedGeometryReading
+      (AATCorePackage.generate S coreReading))
+    (k : Type v) [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem reading.toAATSite k)
+    [CategoryTheory.HasSheafify
+      reading.toAATSite.topology (LawAlgebra.AATCommAlgCat k)] :
+    (LawAlgebra.generateRingedAATSite S coreReading reading k raw).structureSheaf =
+      (CategoryTheory.presheafToSheaf
+        reading.toAATSite.topology
+        (LawAlgebra.AATCommAlgCat k)).obj raw.toPresheaf :=
+  LawAlgebra.generateRingedAATSite_structureSheaf S coreReading reading k raw
+
+example {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (coreReading : CoreReading U)
+    (reading : Site.SelectedGeometryReading
+      (AATCorePackage.generate S coreReading))
+    (k : Type v) [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem reading.toAATSite k)
+    [CategoryTheory.HasSheafify
+      reading.toAATSite.topology (LawAlgebra.AATCommAlgCat k)] :
+    (LawAlgebra.generateRingedAATSite S coreReading reading k raw).canonical =
+      CategoryTheory.toSheafify
+        reading.toAATSite.topology raw.toPresheaf :=
+  LawAlgebra.generateRingedAATSite_canonical S coreReading reading k raw
+
+example {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (coreReading : CoreReading U)
+    (reading : Site.SelectedGeometryReading
+      (AATCorePackage.generate S coreReading))
+    (k : Type v) [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem reading.toAATSite k)
+    [CategoryTheory.HasSheafify
+      reading.toAATSite.topology (LawAlgebra.AATCommAlgCat k)] :
+    (LawAlgebra.generateRingedAATSite S coreReading reading k raw).architectureObject =
+      (AATCorePackage.generate S coreReading).object :=
+  LawAlgebra.generateRingedAATSite_architectureObject
+    S coreReading reading k raw
+
 end AAT.AG
