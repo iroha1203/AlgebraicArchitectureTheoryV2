@@ -130,10 +130,12 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- repair-plan \
   --out .archsig/repair-plan-validation.json
 ```
 
-`repair-plan` validates the supplied SAGA Stage 1 input side. Reserved future
-fields, generated conclusion tokens, unresolved refs, restriction-difference
-violations, cocycle parity violations, and complete-support inconsistencies
-fail closed. `enumerationComplete` is recorded as an author assumption.
+`repair-plan` validates the supplied SAGA Stage 1 input side. Faithfulness,
+true-sheaf, gluing, and coefficient slots are checked. Still-reserved
+comparison/grounding fields, generated conclusion tokens, unresolved refs,
+restriction-difference violations, cocycle parity violations, and
+complete-support inconsistencies fail closed. `enumerationComplete` is recorded
+as an author assumption.
 
 ## Compare
 

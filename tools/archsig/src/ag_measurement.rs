@@ -582,12 +582,6 @@ pub fn build_foundation_measurement_packet_v1(
     repair_plan_ref: Option<&str>,
     residual_packet_ref: Option<&str>,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
-    if repair_plan.is_some_and(|plan| plan.faithfulness.mode == "supplied") {
-        return Err(
-            "Stage 1 measurement packet builder rejects faithfulness.mode=supplied; use complete-support or none"
-            .to_string(),
-        );
-    }
     if policy.policies.iter().any(|entry| entry.pack.is_some()) {
         return Err(
             "Stage 1 measurement packet builder rejects retired LawPolicy pack selectors; use explicit law/evaluator entries"

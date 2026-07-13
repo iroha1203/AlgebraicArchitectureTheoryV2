@@ -176,6 +176,7 @@ pub(crate) fn evaluate_saga_descent_v1(
             },
             "faithfulnessBasis": {
                 "mode": plan.faithfulness.mode,
+                "basis": if plan.faithfulness.mode == "supplied" { "supplied-data" } else { "complete-support" },
                 "completeSupportPrimitiveCount": plan.primitives.iter().filter(|primitive| primitive.support.kind == "complete").count()
             }
         }),
@@ -243,10 +244,13 @@ fn class_supply_is_checked(archmap: &ArchMapDocumentV2, plan: &RepairPlanDocumen
         .collect::<BTreeSet<_>>();
     let triple_ok = !plan.complex.triple_overlaps.is_empty()
         && plan.complex.triple_overlaps.iter().all(|triple| {
-            triple
-                .overlap_refs
-                .iter()
-                .all(|overlap| overlap_ids.contains(overlap.as_str()))
+            let refs = triple.overlap_refs.iter().collect::<BTreeSet<_>>();
+            triple.overlap_refs.len() == 3
+                && refs.len() == 3
+                && refs
+                    .iter()
+                    .all(|overlap| overlap_ids.contains(overlap.as_str()))
+                && triple_cocycle_is_zero(plan, &triple.overlap_refs)
         });
     let coefficient_ok = plan.coefficient.is_f2_additive()
         || plan.coefficient.supplied().is_some_and(|coefficient| {
@@ -299,8 +303,40 @@ fn class_supply_is_checked(archmap: &ArchMapDocumentV2, plan: &RepairPlanDocumen
                             .collect::<BTreeSet<_>>()
                             == overlap_ids
                     })
+                && gluing
+                    .get("sectionRefs")
+                    .and_then(Value::as_array)
+                    .is_some_and(|refs| {
+                        refs.iter()
+                            .filter_map(Value::as_object)
+                            .filter_map(|item| {
+                                let overlap = item.get("overlapRef")?.as_str()?;
+                                let section = item.get("sectionRef")?.as_str()?;
+                                (!section.is_empty()).then_some(overlap)
+                            })
+                            .collect::<BTreeSet<_>>()
+                            == overlap_ids
+                    })
         });
     triple_ok && coefficient_ok && certificate_ok && gluing_ok
+}
+
+fn triple_cocycle_is_zero(plan: &RepairPlanDocumentV1, overlap_refs: &[String]) -> bool {
+    let primitives = plan
+        .primitives
+        .iter()
+        .map(|primitive| (primitive.overlap_ref.as_str(), primitive))
+        .collect::<BTreeMap<_, _>>();
+    let mut parity = BTreeMap::<&str, usize>::new();
+    for overlap_ref in overlap_refs {
+        let Some(primitive) = primitives.get(overlap_ref.as_str()) else {
+            return false;
+        };
+        for variable in &primitive.support.variables {
+            *parity.entry(variable.as_str()).or_default() += 1;
+        }
+    }
+    parity.values().all(|count| count % 2 == 0)
 }
 
 #[derive(Debug, Clone)]
