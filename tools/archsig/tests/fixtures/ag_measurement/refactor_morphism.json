@@ -1,0 +1,36 @@
+{
+  "schema": "refactor-morphism/v0.5.2",
+  "id": "refactor-morphism:extract-square-free-repair",
+  "siteMorphism": {
+    "sourceSiteRef": "archmap:/contexts",
+    "targetSiteRef": "archmap:/contexts",
+    "direction": "source-to-target",
+    "contextMap": [
+      {"source": "ctx:order", "target": "ctx:order"},
+      {"source": "ctx:inventory", "target": "ctx:inventory"}
+    ],
+    "coverMap": [
+      {"source": "cover:order-inventory", "target": "cover:order-inventory"}
+    ]
+  },
+  "lawCompatibility": {
+    "sourceLawSurfaceRef": "law-surface:ag-measurement-v052",
+    "targetLawSurfaceRef": "law-surface:ag-measurement-v052",
+    "lawPairs": [
+      {"sourceLawId": "ag.square-free-repair", "targetLawId": "ag.square-free-repair"}
+    ]
+  },
+  "coefficientCompatibility": {
+    "kind": "f2-additive",
+    "source": "F2",
+    "target": "F2"
+  },
+  "witnessCompatibility": {
+    "kind": "finite-support",
+    "variableMap": [
+      {"source": "x_checkout", "target": "x_checkout"},
+      {"source": "x_inventory", "target": "x_inventory"},
+      {"source": "x_payment", "target": "x_payment"}
+    ]
+  }
+}

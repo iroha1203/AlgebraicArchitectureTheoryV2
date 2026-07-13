@@ -8,6 +8,7 @@ use serde::de::{DeserializeSeed, MapAccess, SeqAccess, Visitor};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
+use crate::validate_refinement_comparison_v1;
 use crate::{
     ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
@@ -15,6 +16,7 @@ use crate::{
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
+    ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
     ArchSigMeasurementPacketV1, NORMALIZED_ARCHMAP_V2_SCHEMA, validate_measurement_packet_value_v1,
 };
 
@@ -23,6 +25,14 @@ const RECORD_DISCIPLINE: &str = "Comparison is a record-level juxtaposition of t
 pub fn build_comparison_artifacts_v1(
     base_run: &Path,
     head_run: &Path,
+) -> Result<(Value, Value), Box<dyn Error>> {
+    build_comparison_artifacts_with_refinement_v1(base_run, head_run, None)
+}
+
+pub fn build_comparison_artifacts_with_refinement_v1(
+    base_run: &Path,
+    head_run: &Path,
+    refinement_path: Option<&Path>,
 ) -> Result<(Value, Value), Box<dyn Error>> {
     let base_manifest = read_run_json(base_run, "archsig-run-manifest.json")?;
     let head_manifest = read_run_json(head_run, "archsig-run-manifest.json")?;
@@ -80,6 +90,20 @@ pub fn build_comparison_artifacts_v1(
     );
     let conclusion_code = conclusion_code(&comparability, &verdict_transitions);
     let boundary_statements = comparison_boundaries(&comparability, cover_or_context_changed);
+    let class_transport = if let Some(refinement_path) = refinement_path {
+        let refinement = read_run_json_path(refinement_path)?;
+        validate_refinement_comparison_v1(&refinement)?;
+        class_transport(&base_packet, &head_packet, &comparability, &refinement)
+    } else {
+        json!({
+            "status": "silence_by_design",
+            "reason": "refinement_data_not_supplied",
+            "nonConclusion": "comparison does not identify or transport a class without a checked coarse-to-fine refinement artifact"
+        })
+    };
+    let profile_conclusion_code = (refinement_path.is_none()
+        && comparability["level"].as_str() == Some("not-comparable"))
+    .then_some(ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY);
 
     let report = json!({
         "schema": ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
@@ -102,6 +126,8 @@ pub fn build_comparison_artifacts_v1(
         },
         "verdictTransitions": verdict_transitions,
         "boundaryStatements": boundary_statements,
+        "classTransport": class_transport,
+        "profileConclusionCode": profile_conclusion_code,
         "nonConclusions": [
             "Comparison report records run-local verdict rows and deterministic ArchMap diff intersections.",
             "Comparison report does not implement class transport, obstruction identity transport, repair causality, or semantic equivalence.",
@@ -109,6 +135,56 @@ pub fn build_comparison_artifacts_v1(
         ]
     });
     Ok((archmap_diff, report))
+}
+
+fn class_transport(
+    base_packet: &Value,
+    head_packet: &Value,
+    comparability: &Value,
+    refinement: &Value,
+) -> Value {
+    if comparability["level"].as_str() == Some("not-comparable") {
+        return json!({
+            "status": "not_computed",
+            "reason": "refinement_supplied_but_runs_not_comparable"
+        });
+    }
+    let class = |packet: &Value| {
+        packet["computedInvariants"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .find(|invariant| invariant["invariantId"] == "saga-descent:residual-class")
+            .and_then(|invariant| invariant["residualClassSupport"]["nonZero"].as_bool())
+    };
+    let Some(base_nonzero) = class(base_packet) else {
+        return json!({
+            "status": "not_computed",
+            "reason": "base_class_not_supplied"
+        });
+    };
+    let Some(head_nonzero) = class(head_packet) else {
+        return json!({
+            "status": "not_computed",
+            "reason": "head_class_not_supplied"
+        });
+    };
+    let zero_preserved = base_nonzero == head_nonzero;
+    json!({
+        "status": if zero_preserved { "established" } else { "not_computed" },
+        "conclusionCode": zero_preserved.then_some(ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR),
+        "schema": "refinement-comparison/v0.5.2",
+        "direction": refinement["direction"],
+        "sourceClassNonZero": base_nonzero,
+        "targetClassNonZero": head_nonzero,
+        "zeroPreserved": zero_preserved,
+        "nonConclusion": "transport is limited to the supplied residual class zero predicate under the checked coarse-to-fine comparison"
+    })
+}
+
+fn read_run_json_path(path: &Path) -> Result<Value, Box<dyn Error>> {
+    let file = File::open(path)?;
+    Ok(serde_json::from_reader(file)?)
 }
 
 fn build_archmap_diff(

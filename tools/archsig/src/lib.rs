@@ -10,8 +10,11 @@ mod law_policy;
 mod law_surface;
 mod normalizer;
 mod policy_bundle;
+mod refactor;
 mod repair_plan;
 mod saga;
+
+pub use refactor::{validate_refactor_morphism_v1, validate_refinement_comparison_v1};
 mod schema;
 mod schema_catalog;
 mod validation;
@@ -33,7 +36,7 @@ pub use authoring::{
     build_scope_manifest_v1, validate_authoring_audit_input_v1, validate_candidate_packet_v1,
     validate_coverage_ledger_v1, validate_extraction_consistency_v1, validate_scope_manifest_v1,
 };
-pub use compare::build_comparison_artifacts_v1;
+pub use compare::{build_comparison_artifacts_v1, build_comparison_artifacts_with_refinement_v1};
 pub use gate::{build_gate_report_v1, validate_gate_policy_v1};
 pub use law_policy::{
     expand_law_policy_v1, is_compatible_evaluator_condition, static_law_evaluator_registry_v1,

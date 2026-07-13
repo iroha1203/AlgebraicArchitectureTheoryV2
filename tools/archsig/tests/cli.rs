@@ -15,6 +15,7 @@ use archsig::{
     ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV1,
     RepairPlanDocumentV1, compare_archmap_v2_doctrine, validate_measurement_packet_value_v1,
+    validate_refactor_morphism_v1, validate_refinement_comparison_v1,
 };
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -10438,6 +10439,10 @@ fn cli_analyze_v2_refactor_transport_reading_requires_functoriality_witness() {
         root.join("law_surface_ag_v052.json")
             .to_str()
             .expect("path is utf-8"),
+        "--refactor-morphism",
+        root.join("refactor_morphism.json")
+            .to_str()
+            .expect("path is utf-8"),
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
     ]);
@@ -10455,7 +10460,7 @@ fn cli_analyze_v2_refactor_transport_reading_requires_functoriality_witness() {
         .as_array()
         .expect("analytic readings is array")
         .iter()
-        .find(|reading| reading["value"]["readingKind"] == "refactor-invariant-transport@1")
+        .find(|reading| reading["value"]["readingKind"] == "refactor-verdict-transport@1")
         .expect("refactor transport reading exists when functoriality witness is supplied");
     assert_eq!(reading["evaluator"], "ag.foundation");
     assert_eq!(reading["structuralVerdictRef"], Value::Null);
@@ -10467,11 +10472,31 @@ fn cli_analyze_v2_refactor_transport_reading_requires_functoriality_witness() {
         reading["value"]["transportedEvaluator"],
         "ag.square-free-repair"
     );
+    assert_eq!(reading["value"]["schema"], "refactor-morphism/v0.5.2");
     assert!(
         reading["value"]["nonConclusion"]
             .as_str()
             .is_some_and(|text| text.contains("creates no new verdict"))
     );
+}
+
+#[test]
+fn cli_refactor_and_refinement_artifacts_are_validated_fail_closed() {
+    let root = ag_measurement_root();
+    let morphism = read_json(&root.join("refactor_morphism.json"));
+    assert!(validate_refactor_morphism_v1(&morphism).is_ok());
+    let mut invalid_morphism = morphism.clone();
+    invalid_morphism["siteMorphism"]["direction"] = json!("fine-to-coarse");
+    assert!(validate_refactor_morphism_v1(&invalid_morphism).is_err());
+    let mut unknown_morphism = morphism.clone();
+    unknown_morphism["conclusion"] = json!("forged");
+    assert!(validate_refactor_morphism_v1(&unknown_morphism).is_err());
+
+    let refinement = read_json(&root.join("refinement_comparison.json"));
+    assert!(validate_refinement_comparison_v1(&refinement).is_ok());
+    let mut invalid_refinement = refinement.clone();
+    invalid_refinement["direction"] = json!("fine-to-coarse");
+    assert!(validate_refinement_comparison_v1(&invalid_refinement).is_err());
 }
 
 #[test]
@@ -12021,6 +12046,8 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archsig-measurement-packet/v0.5.2",
             "archsig-saga-conclusions/v0.5.2",
             "archsig-boundary-statement/v0.5.2",
+            "refactor-morphism/v0.5.2",
+            "refinement-comparison/v0.5.2",
             "archsig-gate-policy/v0.5.2",
             "archsig-gate-report/v0.5.2",
             "archmap-diff/v0.5.2",

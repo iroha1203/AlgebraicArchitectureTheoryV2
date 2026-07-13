@@ -12,6 +12,7 @@ use crate::{
     ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
     ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
+    ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
     AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
     ArchMapDocumentV2, ArchSigMeasurementPacketV1, BoundaryStatementV1, LawEquationSurfaceV1,
     LawPolicyDocumentV1, MeasurementProfileV1, MeasurementProfileWitnessV1, NormalizedArchMapV2,
@@ -138,6 +139,20 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             principal_text: "The selected square-free obstruction invariant identifies combinatorial repair target supports.",
             boundary: "Supply semantic repair operations before treating hitting sets as automatic repairs.",
             generated_discipline: "generated square-free hitting-set detection",
+        },
+        ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
+            theorem_ref: Some("part8/7.3"),
+            principal_text: "An existing verdict row is transported under the supplied refactor morphism compatibility contract.",
+            boundary: "Supply the validated refactor-morphism artifact and matching witness again before reading transport.",
+            generated_discipline: "generated declared refactor transport reading",
+        },
+        ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY,
+            theorem_ref: None,
+            principal_text: "Two selected measurement profiles are reported separately because their comparison contract does not establish a shared class reading.",
+            boundary: "Supply a validated comparison or refinement artifact before reading a cross-profile transport.",
+            generated_discipline: "generated separate-profile comparison record",
         },
         ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE => SummaryTranslationRule {
             conclusion_code: ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE,
@@ -606,6 +621,7 @@ pub fn build_foundation_measurement_packet_v1(
     measurement_profile_ref: &str,
     repair_plan_ref: Option<&str>,
     residual_packet_ref: Option<&str>,
+    refactor_morphism: Option<&Value>,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
     if policy.policies.iter().any(|entry| entry.pack.is_some()) {
         return Err(
@@ -1110,6 +1126,9 @@ pub fn build_foundation_measurement_packet_v1(
                     ),
                 });
             }
+        } else if evaluator == "ag.refactor-transport" {
+            // Refactor transport is analytic-only and is emitted below only when
+            // both the declared morphism and a matching ArchMap witness exist.
         } else {
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
@@ -1137,6 +1156,7 @@ pub fn build_foundation_measurement_packet_v1(
         &profile,
         &selected_contexts,
         &structural_verdict,
+        refactor_morphism,
     ));
 
     let mut non_conclusions = vec![
@@ -4225,7 +4245,14 @@ fn refactor_transport_readings(
     profile: &MeasurementProfileV1,
     selected_contexts: &BTreeSet<String>,
     structural_verdict: &[AgStructuralVerdictV1],
+    refactor_morphism: Option<&Value>,
 ) -> Vec<AgAnalyticReadingV1> {
+    let Some(refactor_morphism) = refactor_morphism else {
+        return Vec::new();
+    };
+    let Ok(validated) = crate::validate_refactor_morphism_v1(refactor_morphism) else {
+        return Vec::new();
+    };
     let verdict_refs = structural_verdict
         .iter()
         .map(|row| (row.evaluator.clone(), structural_verdict_ref(row)))
@@ -4258,7 +4285,9 @@ fn refactor_transport_readings(
                 reading_id: format!("analytic:refactor-transport:{}", atom.normalized_atom_id),
                 evaluator: "ag.foundation".to_string(),
                 value: json!({
-                    "readingKind": "refactor-invariant-transport@1",
+                    "readingKind": "refactor-verdict-transport@1",
+                    "schema": "refactor-morphism/v0.5.2",
+                    "morphismId": validated["id"].clone(),
                     "selectedCoverRef": profile.cover_ref.clone(),
                     "witnessAtomRef": atom.normalized_atom_id.clone(),
                     "transportSubject": atom.subject.clone(),
@@ -4268,7 +4297,8 @@ fn refactor_transport_readings(
                     "predicate": atom.predicate.clone(),
                     "contextRefs": atom.context_memberships.clone(),
                     "sourceRefs": atom.source_refs.clone(),
-                    "nonConclusion": "refactor transport is emitted only from supplied functoriality witness data tied to an existing structural verdict; it creates no new verdict or evaluator"
+                    "conclusionCode": ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
+                    "nonConclusion": "refactor transport is emitted only from a validated refactor-morphism artifact and supplied witness data tied to an existing structural verdict; it creates no new verdict or evaluator"
                 }),
                 regime: Some("analytic-measurement".to_string()),
                 structural_verdict_ref: None,
@@ -4353,18 +4383,27 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
         ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
     };
     let translation_rule = summary_translation_rule(conclusion);
+    let mut translation_rule_table = ARCHSIG_ANALYSIS_CONCLUSION_CODES
+        .iter()
+        .filter(|candidate| {
+            **candidate != ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
+                || conclusion == ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
+        })
+        .map(|conclusion| summary_translation_rule_json(&summary_translation_rule(conclusion)))
+        .collect::<Vec<_>>();
+    if packet.analytic_readings.iter().any(|reading| {
+        reading.value.get("readingKind").and_then(Value::as_str)
+            == Some("refactor-verdict-transport@1")
+    }) {
+        translation_rule_table.push(summary_translation_rule_json(&summary_translation_rule(
+            ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
+        )));
+    }
     json!({
         "schema": "archsig-analysis-summary/v0.5.2",
         "conclusion": conclusion,
         "translationRule": active_summary_translation_rule_json(&translation_rule, packet),
-        "translationRuleTable": ARCHSIG_ANALYSIS_CONCLUSION_CODES
-            .iter()
-            .filter(|candidate| {
-                **candidate != ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
-                    || conclusion == ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
-            })
-            .map(|conclusion| summary_translation_rule_json(&summary_translation_rule(conclusion)))
-            .collect::<Vec<_>>(),
+        "translationRuleTable": translation_rule_table,
         "readThisFirst": {
             "heading": "Read this first",
             "conclusion": conclusion,
