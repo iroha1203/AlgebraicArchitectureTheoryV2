@@ -15,8 +15,8 @@
 | saga-grounding / 10結論 packet | PRD R6 / 定義5.1 / 定理7.5・8.1・8.2・11.5 | RepairPlan `grounding.kind=saga-grounding` + `archsig-saga-conclusions/v0.5.2` | grounding/profile/surface/cover の参照整合、F₂ additive、有限上限、holdsCriterion 生値、witnessVariables / forbiddenSupportGenerators からの quotient 生成、nested packet validator、detector | `cli_analyze_v2_saga_grounded_emits_split_packet_and_detector` | lawDependent / lawIndependent の10結論、degree-zero寄与、chart detector、生成商 provenance | PR-4 corrective follow-up実装済 |
 | diagnostic ceiling / policy profileRef | PRD R5 / R9 | `measurement-profile/v0.5.2.diagnosticCeiling` + `policies[].profileRef` | registered ceiling stage、policy profile ID 解決、未到達時の `silence_by_design`、site/cover validator | `measurement_profile_*` CLI negative/positive locks | 選択診断段の boundary contract | PR-3実装済 |
 | cost model(Lipschitz L + harmonic resolution) | PRD R7 / 第VIII部 系8.7 | `measurement-profile/v0.5.2` analytic 宣言 | innerProduct weights + costModel kind/L/resolution、assumption ledger 記録 | `tests/fixtures/ag_measurement/measurement_profile_harmonic_debt.json` | harmonicDebtNorm、cost model供給時のみrepair下界行 | PR-5実装済 |
-| refactor morphism(site 射 + law / coefficient / witness 互換) | PRD R8 / 第VIII部 定理7.3 | `refactor-morphism/v0.5.2` | 互換データ検査 | `tests/fixtures/ag_measurement/refactor_morphism.json` | 版間 verdict transport | PR-6予定 |
-| refinement data(粗→細) | PRD R8 / 命題4.10 | `refinement-comparison/v0.5.2` | 粗→細方向検査 | `tests/fixtures/ag_measurement/refinement_comparison.json` | compare の zero 引き継ぎ | PR-6予定 |
+| refactor morphism(site 射 + law / coefficient / witness 互換) | PRD R8 / 第VIII部 定理7.3 | `refactor-morphism/v0.5.2` | site / cover / law / coefficient / finite witness compatibility の fail-closed 検査 | `tests/fixtures/ag_measurement/refactor_morphism.json` | validated artifact + witness による analytic verdict transport | PR-6実装済 |
+| refinement data(粗→細) | PRD R8 / 命題4.10 | `refinement-comparison/v0.5.2` | coarse-to-fine direction + class-zero preservation の検査 | `tests/fixtures/ag_measurement/refinement_comparison.json` | compare の class-zero 引き継ぎ | PR-6実装済 |
 
 ## 台帳外入力の扱い
 

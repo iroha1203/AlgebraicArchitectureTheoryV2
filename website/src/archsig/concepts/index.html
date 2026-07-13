@@ -71,7 +71,7 @@
                 <li><strong><code>verdict-row</code></strong><span>Same policy-bundle component fingerprints, site cover digest, and tool version — verdict rows can be matched one-to-one even though the evidence changed. This is the normal PR case.</span></li>
                 <li><strong><code>not-comparable</code></strong><span>The site itself changed — for example the PR added a context, as the one-cent drift head does. The report records both independent conclusions and a typed boundary, and refuses row-level claims.</span></li>
               </ul>
-              <p>Compare never claims that an obstruction was "introduced by" or "fixed by" a change, never transports a cohomology class across runs, and never decides causality. Those readings are left to the humans and agents looking at the juxtaposition — with the gate acting on each run's own verdicts, which is why a not-comparable head run can still be blocked on its absolute rule.</p>
+              <p>Compare records transitions without assigning causality. A class-zero reading is released only when a validated <code>refinement-comparison/v0.5.2</code> artifact supplies the coarse-to-fine contract; otherwise the two profiles remain separate. The gate still acts on each run's own verdicts, which is why a not-comparable head run can still be blocked on its absolute rule.</p>
             </section>
             <section id="silence" class="article-section">
               <h2>Silence as a feature</h2>

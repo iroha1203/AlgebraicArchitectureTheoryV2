@@ -1,7 +1,8 @@
 # ArchSig compare report guide
 
-`archsig compare` は 2 つの `archsig analyze` run directory を読み、record 水準の差分だけを出力する。
-class transport、同一 obstruction の持続、修復因果、semantic equivalence は実装しない。
+`archsig compare` は 2 つの `archsig analyze` run directory を読み、record 水準の差分を出力する。
+`--refinement <refinement-comparison/v0.5.2>` を供給した場合に限り、検査済み粗→細データの下で class-zero preservation reading を追加する。
+fingerprint 不一致かつ refinement 不在の場合は `profileConclusionCode: TWO_PROFILES_REPORTED_SEPARATELY` を記録する。
 
 ## Inputs and outputs
 
@@ -46,7 +47,8 @@ Current conclusion codes are:
 - `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`
 - `RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA`
 
-Names that imply transport or causality, including `ZERO_PRESERVED...`,
+Names that imply transport or causality without the corresponding supplied
+artifact, including `ZERO_PRESERVED...`,
 `..._INTRODUCED_BY_CHANGE`, and `..._CLEARED_BY_CHANGE`, are outside this artifact contract.
 
 ## Non-claims
