@@ -81,7 +81,8 @@ these declarations:
 It then elaborates concrete typed `example`s for the operation obligation and
 witness fields, principal localization and its Kähler base-change map,
 ambient-to-quotient derivation push-forward, square-zero lift production,
-square-zero multiplication, sheaf-image instance synthesis under an explicit
+the kernel ideal of the `TrivSqZeroExt` projection, its square-zero proof, the
+coefficient-to-ideal linear equivalence, the induced lift, sheaf-image instance synthesis under an explicit
 `HasSheafify` requirement, and quotient factorization. These examples establish
 the component adapters needed to enter J0; they do not claim their full J0-J3
 composition or discharge any target material premise.
@@ -193,12 +194,67 @@ section SquareZeroLift
 
 variable (R A B : Type u) [CommSemiring R] [CommSemiring A] [CommRing B]
 variable [Algebra R A] [Algebra R B] [Algebra A B] [IsScalarTower R A B]
-variable (I : Ideal B) (hI : I ^ 2 = ⊥)
 
-example (d : Derivation R A I) :
-    { lift : A →ₐ[R] B //
-      (Ideal.Quotient.mkₐ R I).comp lift = IsScalarTower.toAlgHom R A (B ⧸ I) } :=
-  derivationToSquareZeroEquivLift I hI d
+def trivialExtensionIdeal : Ideal (TrivSqZeroExt B B) :=
+  RingHom.ker (TrivSqZeroExt.fstHom B B B).toRingHom
+
+theorem trivialExtensionIdeal_sq : trivialExtensionIdeal B ^ 2 = ⊥ := by
+  rw [pow_two]
+  apply le_antisymm
+  · intro z hz
+    change z = 0
+    refine Submodule.mul_induction_on hz ?_ ?_
+    · intro x hx y hy
+      change TrivSqZeroExt.fst x = 0 at hx
+      change TrivSqZeroExt.fst y = 0 at hy
+      apply TrivSqZeroExt.ext
+      · simp [hx, hy]
+      · simp [hx, hy]
+    · intro x y hx hy
+      rw [hx, hy, add_zero]
+  · exact bot_le
+
+def inrToTrivialExtensionIdeal : B →ₗ[B] trivialExtensionIdeal B :=
+  { toFun := fun b ↦ ⟨TrivSqZeroExt.inr b, by
+      change TrivSqZeroExt.fst (TrivSqZeroExt.inr b) = 0
+      simp⟩
+    map_add' := fun x y ↦ by
+      apply Subtype.ext
+      exact TrivSqZeroExt.inr_add B x y
+    map_smul' := fun r x ↦ by
+      apply Subtype.ext
+      exact TrivSqZeroExt.inr_smul B r x }
+
+theorem inrToTrivialExtensionIdeal_bijective :
+    Function.Bijective (inrToTrivialExtensionIdeal B) := by
+  constructor
+  · intro x y h
+    have hsnd := congrArg
+      (fun z : TrivSqZeroExt B B ↦ TrivSqZeroExt.snd z)
+      (congrArg Subtype.val h)
+    simpa [inrToTrivialExtensionIdeal] using hsnd
+  · rintro ⟨x, hx⟩
+    refine ⟨TrivSqZeroExt.snd x, Subtype.ext ?_⟩
+    change ↑(inrToTrivialExtensionIdeal B (TrivSqZeroExt.snd x)) = x
+    simp only [inrToTrivialExtensionIdeal]
+    apply TrivSqZeroExt.ext
+    · change TrivSqZeroExt.fst x = 0 at hx
+      simp [hx]
+    · simp
+
+noncomputable def trivialExtensionIdealEquiv :
+    B ≃ₗ[B] trivialExtensionIdeal B :=
+  LinearEquiv.ofBijective (inrToTrivialExtensionIdeal B)
+    (inrToTrivialExtensionIdeal_bijective B)
+
+noncomputable example (d : Derivation R A B) :
+    { lift : A →ₐ[R] TrivSqZeroExt B B //
+      (Ideal.Quotient.mkₐ R (trivialExtensionIdeal B)).comp lift =
+        IsScalarTower.toAlgHom R A
+          (TrivSqZeroExt B B ⧸ trivialExtensionIdeal B) } :=
+  derivationToSquareZeroEquivLift (trivialExtensionIdeal B)
+    (trivialExtensionIdeal_sq B)
+    (((trivialExtensionIdealEquiv B).toLinearMap.restrictScalars A).compDer d)
 
 example (b : B) :
     TrivSqZeroExt.inr b * TrivSqZeroExt.inr b =
