@@ -40,9 +40,11 @@ Issue #3282.
    coefficient, the selected-cover Čech engine, and actual gluing. The G-07
    Boolean-circle coefficient maps based on `killEps` are not reused as typed
    localizations; G-08 constructs a principal-localization ring layer.
-4. The current mathlib surface supports the planned Kähler localization map,
-   derivation push-forward/precomposition, square-zero lift comparison,
-   cotangent maps, categorical image, and quotient-module factorization.
+4. Concrete typed adapters elaborate for the selected operation fields,
+   principal-localization Kähler map, quotient-valued derivation, square-zero
+   lift, sheaf-category image, and quotient-module factorization. The sheaf
+   image adapter exposes `HasSheafify` as a requirement; constructing the
+   selected-site instance and composing the adapters remain J0-and-later work.
 
 ### API probe
 
@@ -53,8 +55,8 @@ lake env lean .tmp/G08ApiProbe.lean
 cd research/lean && lake env lean ResearchLean/AG/QualitySurface/LawGeneratedIdealPowerSequence.lean
 ```
 
-The scratch probe checks the simultaneous import and elaboration of these
-declarations:
+The scratch probe checks the simultaneous import and general signatures of
+these declarations:
 
 - operation presentation source:
   `Formal.Arch.ArchitectureOperation`, `.source`, `.target`, `.witnessMap`;
@@ -76,6 +78,14 @@ declarations:
   `ModuleCat.subobjectModule`, `Submodule.mapQ`, `Submodule.factor`, and
   `Submodule.Quotient.mk_smul`.
 
+It then elaborates concrete typed `example`s for the operation obligation and
+witness fields, principal localization and its Kähler base-change map,
+ambient-to-quotient derivation push-forward, square-zero lift production,
+square-zero multiplication, sheaf-image instance synthesis under an explicit
+`HasSheafify` requirement, and quotient factorization. These examples establish
+the component adapters needed to enter J0; they do not claim their full J0-J3
+composition or discharge any target material premise.
+
 The first probe attempt also fixed three stale guesses before approval:
 `Derivation.compAlgebra` is `Derivation.compAlgebraMap`; the `TrivSqZeroExt`
 API requires its direct import; and `imageSubobject` lives under
@@ -88,7 +98,9 @@ before running the documented command:
 ```lean
 import Formal.Arch.Operation.Operation
 import Mathlib.Algebra.TrivSqZeroExt
+import Mathlib.Algebra.Category.ModuleCat.Images
 import Mathlib.Algebra.Category.ModuleCat.Subobject
+import Mathlib.CategoryTheory.Sites.Abelian
 import Mathlib.CategoryTheory.Sites.Sheaf
 import Mathlib.RingTheory.Etale.Kaehler
 
@@ -124,6 +136,102 @@ import Mathlib.RingTheory.Etale.Kaehler
 #check Submodule.mapQ
 #check Submodule.factor
 #check Submodule.Quotient.mk_smul
+
+open CategoryTheory CategoryTheory.Limits
+
+universe u v w
+
+section OperationPresentation
+
+variable {State : Type u} {BeforeWitness : Type v} {AfterWitness : Type w}
+
+example (op : Formal.Arch.ArchitectureOperation State BeforeWitness AfterWitness) :
+    op.generatedProofObligation.kind = op.kind :=
+  op.generatedProofObligationKind
+
+example (op : Formal.Arch.ArchitectureOperation State BeforeWitness AfterWitness) :
+    Formal.Arch.OperationProofObligation State AfterWitness :=
+  op.generatedProofObligation
+
+example (op : Formal.Arch.ArchitectureOperation State BeforeWitness AfterWitness) :
+    AfterWitness → BeforeWitness :=
+  op.witnessMap
+
+end OperationPresentation
+
+section PrincipalLocalization
+
+variable (k A : Type u) [CommRing k] [CommRing A] [Algebra k A] (f : A)
+
+local notation "Aaway" => Localization.Away f
+
+example : IsLocalization (Submonoid.powers f) (Localization.Away f) :=
+  inferInstance
+
+example : IsLocalizedModule (Submonoid.powers f)
+    (KaehlerDifferential.map k k A (Localization.Away f)) :=
+  inferInstance
+
+noncomputable example : LinearMap (RingHom.id Aaway)
+    (TensorProduct A Aaway (KaehlerDifferential k A))
+    (KaehlerDifferential k Aaway) :=
+  KaehlerDifferential.mapBaseChange k A (Localization.Away f)
+
+end PrincipalLocalization
+
+section QuotientValuedDerivation
+
+variable (k A : Type u) [CommRing k] [CommRing A] [Algebra k A]
+variable (I : Ideal A)
+
+example (d : Derivation k A A) : Derivation k A (A ⧸ I) :=
+  (Ideal.Quotient.mkₐ A I).toLinearMap.compDer d
+
+end QuotientValuedDerivation
+
+section SquareZeroLift
+
+variable (R A B : Type u) [CommSemiring R] [CommSemiring A] [CommRing B]
+variable [Algebra R A] [Algebra R B] [Algebra A B] [IsScalarTower R A B]
+variable (I : Ideal B) (hI : I ^ 2 = ⊥)
+
+example (d : Derivation R A I) :
+    { lift : A →ₐ[R] B //
+      (Ideal.Quotient.mkₐ R I).comp lift = IsScalarTower.toAlgHom R A (B ⧸ I) } :=
+  derivationToSquareZeroEquivLift I hI d
+
+example (b : B) :
+    TrivSqZeroExt.inr b * TrivSqZeroExt.inr b =
+      (0 : TrivSqZeroExt B B) :=
+  TrivSqZeroExt.inr_mul_inr B b b
+
+end SquareZeroLift
+
+section SheafImage
+
+variable {C : Type u} [Category.{v} C]
+variable (J : GrothendieckTopology C)
+variable (R : Type w) [CommRing R]
+variable [HasSheafify J (ModuleCat.{max u v w} R)]
+
+example : HasImages (Sheaf J (ModuleCat.{max u v w} R)) :=
+  inferInstance
+
+noncomputable example {F G : Sheaf J (ModuleCat.{max u v w} R)} (φ : F ⟶ G) :
+    Sheaf J (ModuleCat.{max u v w} R) :=
+  image φ
+
+end SheafImage
+
+section QuotientFactorization
+
+variable {R : Type u} {M : Type v} [Ring R] [AddCommGroup M] [Module R M]
+variable {p q : Submodule R M}
+
+example (h : p ≤ q) : M ⧸ p →ₗ[R] M ⧸ q :=
+  Submodule.factor h
+
+end QuotientFactorization
 ```
 
 ### Reuse and replacement map
@@ -144,9 +252,11 @@ import Mathlib.RingTheory.Etale.Kaehler
 - discharged material premises: none. BC0 is an implementation checkpoint,
   not a material-premise discharge.
 - checkpoint delta: BC0 statement/API compatibility, G-07 reuse map, G-08
-  replacement map, and exact current API names are fixed for J0.
+  replacement map, exact current API names, and concrete component adapters are
+  fixed for J0.
 - remaining: every target material premise listed by the GOAL, beginning with
-  the J0 typed operation presentation.
+  the J0 typed operation presentation. The selected-site `HasSheafify` instance
+  and full adapter composition are explicitly unresolved.
 
 ### Audits
 
@@ -158,9 +268,11 @@ import Mathlib.RingTheory.Etale.Kaehler
 - structure-field escape: none found. Restriction compatibility, sheaf
   condition, conormal response, and ideal preservation are not fields of the
   BC0 result.
-- route integrity: pass. The route starts from the selected operation schema,
-  ambient derivation realization, typed localization, canonical quotient, and
-  existing G-07 constructions.
+- route integrity: pass for the BC0 route choice. The component examples start
+  from the selected operation schema, principal localization, canonical
+  quotient, square-zero universal API, and categorical image construction.
+  Full route composition and the selected-site `HasSheafify` instance remain
+  J0-and-later obligations.
 - target-fitting construction: none found.
 - vacuity or degeneracy: none found at BC0; nonvacuity remains required for the
   typed Boolean-circle response at J6.
