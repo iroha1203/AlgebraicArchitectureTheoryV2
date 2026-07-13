@@ -953,8 +953,25 @@ def generatedCoreOperationMapsIdentification :=
 These aliases are the machine-elaborated Lean theorem index entries for the
 SD1 core-generation and SD2 selected-geometry surfaces. Complete signatures
 are checked by `StatementContractsAtomToRingedSite`; the namespace-wide
-standard-axiom assertion below audits the referenced declarations.
+kernel-dependency assertion below audits the referenced declarations.
 -/
+
+def sd1ExtractionDoctrineConstructor := @ExtractionDoctrine.mk
+def sd1AtomSystemConstructor := @AtomAxiomSystem.mk
+def sd1CompositionReadingConstructor := @CompositionReading.mk
+def sd1ObjectReadingConstructor := @ObjectReading.mk
+def sd1FiniteCircuitDatumConstructor := @FiniteCircuitDatum.mk
+def sd1CircuitReadingConstructor := @CircuitReading.mk
+def sd1LawReadingConstructor := @LawReading.mk
+def sd1ConfigurationHomConstructor := @ConfigurationHom.mk
+def sd1OperationConstructor := @Operation.mk
+def sd1OperationReadingConstructor := @OperationReading.mk
+def sd1CoreReadingConstructor := @CoreReading.mk
+def sd1ObjectAlgebraConstructor := @ObjectAlgebra.mk
+def sd1CorePackageConstructor := @AATCorePackage.mk
+noncomputable def sd1CircuitQueryRecursor := @CircuitQuery.rec
+noncomputable def sd1CircuitDetectorCodeRecursor := @CircuitDetectorCode.rec
+def sd1ReachableRecursor := @OperationReading.Reachable.rec
 
 def sd1AtomFamilyExt := @AtomFamily.ext
 def sd1AtomConfigurationExt := @AtomConfiguration.ext
@@ -1093,6 +1110,9 @@ def sd1FiniteCompleteCode := FiniteModel.completeCircuitReading_code
 def sd1FiniteCoreDetectorCode := FiniteModel.coreReading_circuit_code
 
 /- SD2 selected geometry and generated topology declarations. -/
+def sd2CoverageRequirementsConstructor := @Site.CoverageRequirements.mk
+def sd2SelectedGeometryConstructor := @Site.SelectedGeometryReading.mk
+def sd2SelectedGeometryToAATSite := @Site.SelectedGeometryReading.toAATSite
 def sd2SelectedGeometryExt := @Site.SelectedGeometryReading.ext
 def sd2SiteArchitectureObject :=
   @Site.SelectedGeometryReading.toAATSite_architectureObject
@@ -1775,8 +1795,14 @@ the complete generation route.
 noncomputable def rawAmbientRestrictionSystemToPresheaf :=
   @LawAlgebra.RawAmbientRestrictionSystem.toPresheaf
 
+def rawAmbientRestrictionSystemConstructor :=
+  @LawAlgebra.RawAmbientRestrictionSystem.mk
+
 def rawAmbientRestrictionSystemExt :=
   @LawAlgebra.RawAmbientRestrictionSystem.ext
+
+noncomputable def rawAmbientRestrictionSystemObjectIso :=
+  @LawAlgebra.RawAmbientRestrictionSystem.toPresheafObjectIso
 
 def typedCoordinateRestrictionPolynomialMapC :=
   @LawAlgebra.TypedCoordinateRestriction.polynomialMap_C
