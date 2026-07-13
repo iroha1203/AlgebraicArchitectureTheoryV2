@@ -17,7 +17,9 @@
 - AAT は Atom を公理とする純粋数学理論であり、測定境界は SFT / ArchSig / empirical artifact 側にある。
   SFT 側でも、AAT の外部にある観測限界を AAT の未完了 theorem として扱わない。
 - `docs/sft/software_field_theory.md` は SFT 本文、`docs/sft/aat_interface.md` は AAT / SFT 境界の source of truth である。
-- `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT / interface の根幹文書である。ユーザーの明示的な指示なしに更新しない。
+- `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT / interface の根幹文書である。
+  更新は、人間の明示的な編集指示、実装者以外の LLM によるレビュー、人間による差分確認と merge の
+  3条件がすべて揃う場合に限る(正本は AGENTS.md「作業規律」)。
 - 文書 lifecycle は [repository documentation guideline](../guideline.md) に従う。SFT の恒久情報は
   現行本文、interface、台帳、artifact contract に置く。
 

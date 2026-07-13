@@ -84,7 +84,12 @@
 - ユーザーへの応答、commit message、PR / Issue の title と本文は日本語で書く。
   Lean 識別子、ファイル名、コマンド名、定理名、既存の英語技術用語はそのまま扱う。
 - `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、
-  `docs/sft/aat_interface.md` は、明示的な本文編集タスクの対象になった場合だけ更新する。
+  `docs/sft/aat_interface.md` の更新は、次の3条件がすべて揃う場合に限る。
+  1. 人間の明示的な編集指示がある。対象文書と変更方針を特定した指示に限り、
+     曖昧な依頼や他作業からの派生判断を編集許可と読まない。
+  2. 実装者以外の LLM がレビューする(Codex 実装なら Claude レビュー、
+     Claude 実装なら Codex レビュー)。
+  3. 人間が差分を確認して merge する。LLM はこれらのファイルを含む PR を merge しない。
 - 完了レビューや残タスク整理では、対象 Issue / PRD / 計画書 / acceptance test が要求する
   concrete condition だけを判定する。
 - PRDの責務、参照禁止、完了後archiveの正本は [Repository documentation guideline](docs/guideline.md)
