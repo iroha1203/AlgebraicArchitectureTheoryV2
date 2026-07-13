@@ -260,13 +260,16 @@ def coverageRequirements : Site.CoverageRequirements FiniteModel.object
   requiredSupport := fun atom =>
     atom = FiniteModel.FiniteAtom.componentA ∨
     atom = FiniteModel.FiniteAtom.componentB ∨
-    atom = FiniteModel.FiniteAtom.componentC
+    atom = FiniteModel.FiniteAtom.dependsAB
   requiredWitness := fun _ => False
   requiredAxis := fun _ => False
   supportVisibleOn := fun W atom =>
-    (W = context (chartContextIndex 0) ∧ atom = FiniteModel.FiniteAtom.componentA) ∨
-    (W = context (chartContextIndex 1) ∧ atom = FiniteModel.FiniteAtom.componentB) ∨
-    (W = context (chartContextIndex 2) ∧ atom = FiniteModel.FiniteAtom.componentC)
+    (W = context (chartContextIndex 0) ∧ atom = FiniteModel.FiniteAtom.componentA ∧
+      ∃ support : W.minimal.Support, W.minimal.supportReads support atom) ∨
+    (W = context (chartContextIndex 1) ∧ atom = FiniteModel.FiniteAtom.componentB ∧
+      ∃ support : W.minimal.Support, W.minimal.supportReads support atom) ∨
+    (W = context (chartContextIndex 2) ∧ atom = FiniteModel.FiniteAtom.dependsAB ∧
+      ∃ support : W.minimal.Support, W.minimal.supportReads support atom)
   witnessVisibleOn := fun _ _ => False
   axisReadableOn := fun _ _ => False
   boundaryVisibleOn := fun _ _ => True
@@ -303,9 +306,12 @@ noncomputable def cover :
     atomSupportCoverage := by
       intro atom h
       rcases h with rfl | rfl | rfl
-      · exact ⟨0, Or.inl ⟨rfl, rfl⟩⟩
-      · exact ⟨1, Or.inr (Or.inl ⟨rfl, rfl⟩)⟩
-      · exact ⟨2, Or.inr (Or.inr ⟨rfl, rfl⟩)⟩
+      · exact ⟨0, Or.inl ⟨rfl, rfl, PUnit.unit,
+          FiniteModel.allFamily_mem _ (by simp)⟩⟩
+      · exact ⟨1, Or.inr (Or.inl
+          ⟨rfl, rfl, PUnit.unit, FiniteModel.allFamily_mem _ (by simp)⟩)⟩
+      · exact ⟨2, Or.inr (Or.inr
+          ⟨rfl, rfl, PUnit.unit, FiniteModel.allFamily_mem _ (by simp)⟩)⟩
     lawWitnessCoverage := by simp [coverageRequirements]
     signatureAxisCoverage := by simp [coverageRequirements]
     boundaryCoverage := by simp [coverageRequirements]

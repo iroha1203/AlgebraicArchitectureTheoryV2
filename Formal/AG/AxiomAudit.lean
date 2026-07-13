@@ -1100,6 +1100,9 @@ def sd2FiniteTopologyGenerated := FiniteModel.site_topology_eq_generated
 def sd2FiniteSingletonTopologyCover := FiniteModel.siteSingletonCover_topologyCover
 def sd2FiniteTwoPatchTopologyGenerated :=
   FiniteModel.twoPatchSite_topology_eq_generated
+def sd2FiniteTwoPatchTopologyCover := FiniteModel.twoPatchCover_topologyCover
+def sd2CircleTopologyGenerated :=
+  Examples.SemanticRepairPart10.circleSite_topology_eq_generated
 
 theorem finiteSeedWitnessClosureAdmissible :
     Site.AdmissibleCover FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap
