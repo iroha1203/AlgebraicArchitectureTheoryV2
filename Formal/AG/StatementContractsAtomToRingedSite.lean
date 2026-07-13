@@ -838,6 +838,20 @@ example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     (R : LawAlgebra.RingedAATSite S k)
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :
+    LawAlgebra.LawAlgebraSheafificationBridge S k :=
+  R.sheafificationBridge
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :
+    R.sheafificationBridge.raw = R.raw :=
+  R.sheafificationBridge_raw
+
+example {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : LawAlgebra.RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :
     LawAlgebra.LawAlgebraSheaf S k :=
   R.structureSheaf
 

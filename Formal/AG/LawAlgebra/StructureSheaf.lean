@@ -454,7 +454,26 @@ noncomputable def ofMathlibSheafification
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     (raw : AlgebraValuedAATPresheaf S k) : RingedAATSite S k where
-  raw := raw
+  raw := (LawAlgebraSheafificationBridge.ofMathlibSheafification raw).raw
+
+/-- The existing Mathlib-facing bridge selected by the ringed presentation. -/
+noncomputable def sheafificationBridge
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    LawAlgebraSheafificationBridge S k :=
+  LawAlgebraSheafificationBridge.ofMathlibSheafification R.raw
+
+/-- The selected bridge has the presentation's raw presheaf as its source. -/
+@[simp]
+theorem sheafificationBridge_raw
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (R : RingedAATSite S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    R.sheafificationBridge.raw = R.raw :=
+  rfl
 
 /-- The actual commutative-algebra-valued structure sheaf. -/
 noncomputable def structureSheaf
@@ -463,7 +482,7 @@ noncomputable def structureSheaf
     (R : RingedAATSite S k)
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
     LawAlgebraSheaf S k :=
-  (CategoryTheory.presheafToSheaf S.topology (AATCommAlgCat k)).obj R.raw
+  R.sheafificationBridge.plus
 
 /-- The canonical unit from raw sections to the structure sheaf. -/
 noncomputable def canonical
@@ -472,7 +491,7 @@ noncomputable def canonical
     (R : RingedAATSite S k)
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
     R.raw ⟶ R.structureSheaf.val :=
-  CategoryTheory.toSheafify S.topology R.raw
+  R.sheafificationBridge.canonical
 
 /-- The structure sheaf is exactly Mathlib sheafification. -/
 @[simp]
@@ -503,7 +522,7 @@ theorem lift_unique
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     (F : LawAlgebraSheaf S k) (η : R.raw ⟶ F.val) :
     ∃! lift : R.structureSheaf.val ⟶ F.val, R.canonical ≫ lift = η :=
-  LawAlgebraSheafificationBridge.mathlib_sheafification_lift_unique R.raw F η
+  R.sheafificationBridge.isSheafification F η
 
 end RingedAATSite
 

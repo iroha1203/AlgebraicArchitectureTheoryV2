@@ -1827,6 +1827,12 @@ def ringedAATSiteExt :=
 noncomputable def ringedAATSiteOfMathlibSheafification :=
   @LawAlgebra.RingedAATSite.ofMathlibSheafification
 
+noncomputable def ringedAATSiteSheafificationBridge :=
+  @LawAlgebra.RingedAATSite.sheafificationBridge
+
+def ringedAATSiteSheafificationBridgeRaw :=
+  @LawAlgebra.RingedAATSite.sheafificationBridge_raw
+
 noncomputable def ringedAATSiteStructureSheaf :=
   @LawAlgebra.RingedAATSite.structureSheaf
 
