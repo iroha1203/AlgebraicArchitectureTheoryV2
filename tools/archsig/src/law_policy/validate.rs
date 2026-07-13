@@ -9,6 +9,7 @@ use crate::{
     LawPolicyValidationReportV1, LawPolicyValidationSummaryV1, MEASUREMENT_PROFILE_V1_SCHEMA,
     MeasurementProfileV1, ValidationCheck, ValidationExample,
 };
+use serde_json::Value;
 
 pub fn validate_law_policy_v1_report(
     policy: &LawPolicyDocumentV1,
@@ -21,6 +22,7 @@ pub fn validate_law_policy_v1_report(
         check_v1_schema(policy),
         check_v1_identity(policy),
         check_v1_policy_entries(policy),
+        check_v1_policy_profile_refs(policy, measurement_profile),
         check_v1_basis(policy),
         check_v1_pack_and_evaluator_vocabulary(policy),
         check_v1_reserved_fields(policy),
@@ -178,11 +180,15 @@ fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
                 "pack entry expands through registry and must not override evaluator",
             ));
         }
-        if entry.profile_ref.is_some() {
+        if entry
+            .profile_ref
+            .as_deref()
+            .is_some_and(|profile_ref| profile_ref.trim().is_empty())
+        {
             examples.push(generic_validation_example(
                 &format!("policies[{index}].profileRef"),
-                "reserved",
-                "policies[].profileRef is reserved for Stage 2 and is not accepted in Stage 1",
+                "empty",
+                "policies[].profileRef must be a non-empty profile id when supplied",
             ));
         }
         if entry.severity.trim().is_empty() {
@@ -203,6 +209,30 @@ fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     check_examples(
         "law-policy-schema052-entry-shape",
         "policy entries select pack, law, or lawPair and carry scope / severity",
+        examples,
+    )
+}
+
+fn check_v1_policy_profile_refs(
+    policy: &LawPolicyDocumentV1,
+    measurement_profile: Option<&MeasurementProfileV1>,
+) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for (index, entry) in policy.policies.iter().enumerate() {
+        let Some(profile_ref) = entry.profile_ref.as_deref() else {
+            continue;
+        };
+        if !measurement_profile.is_some_and(|profile| profile.profile_id == profile_ref) {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].profileRef"),
+                profile_ref,
+                "policies[].profileRef must resolve to one of the supplied measurement profile ids",
+            ));
+        }
+    }
+    check_examples(
+        "law-policy-schema052-policy-profile-resolution",
+        "policy rows resolve profileRef against the supplied measurement profile",
         examples,
     )
 }
@@ -474,16 +504,45 @@ fn measurement_profile_v1_checks(profile: &MeasurementProfileV1) -> Vec<Validati
 
 fn check_measurement_profile_reserved_fields(profile: &MeasurementProfileV1) -> ValidationCheck {
     let mut examples = Vec::new();
-    if profile.diagnostic_ceiling.is_some() {
+    if let Some(value) = profile.diagnostic_ceiling.as_ref() {
+        let valid = value
+            .as_ref()
+            .and_then(Value::as_str)
+            .is_some_and(|ceiling| {
+                matches!(
+                    ceiling,
+                    "raw-values"
+                        | "boundary-membership"
+                        | "descent"
+                        | "class-transfer"
+                        | "law-grounded"
+                )
+            });
+        if !valid {
+            examples.push(generic_validation_example(
+                "diagnosticCeiling",
+                value
+                    .as_ref()
+                    .and_then(Value::as_str)
+                    .unwrap_or("invalid"),
+                "diagnosticCeiling must be one of raw-values, boundary-membership, descent, class-transfer, or law-grounded",
+            ));
+        }
+    }
+    if profile
+        .diagnostic_ceiling
+        .as_ref()
+        .is_some_and(|value| value.is_none())
+    {
         examples.push(generic_validation_example(
             "diagnosticCeiling",
-            "present",
-            "diagnosticCeiling is reserved for Stage 3 and must fail closed",
+            "null",
+            "diagnosticCeiling must be a non-null stage name when supplied",
         ));
     }
     check_examples(
-        "measurement-profile-schema052-reserved-fields",
-        "Stage 3 measurement-profile reservation fields fail closed when written",
+        "measurement-profile-schema052-diagnostic-ceiling",
+        "MeasurementProfile v0.5.2 accepts only registered diagnostic ceiling stages",
         examples,
     )
 }

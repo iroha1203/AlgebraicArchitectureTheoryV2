@@ -66,8 +66,9 @@ law surface and use the evaluator's accepted witness binding.
 `lawPair` is the selector for Tor. Do not infer Tor participants from law-id
 prefixes or from every law present in the supplied surface.
 
-`policies[].profileRef` is reserved for multi-profile selection and fails closed
-when present.
+`policies[].profileRef` optionally selects the supplied MeasurementProfile by
+profile id. An unresolved id fails validation; the selected profile's site and
+cover remain subject to the normal ArchMap reference checks.
 
 ## Known Built-In Selectors
 
@@ -116,6 +117,12 @@ external `--measurement-profile` artifact's `profileId`.
   }
 }
 ```
+
+Stage 3 profiles may also declare `diagnosticCeiling` as one of
+`raw-values`, `boundary-membership`, `descent`, `class-transfer`, or
+`law-grounded`. If the selected evaluator has not reached the declared stage,
+ArchSig records a `silence_by_design` boundary instead of promoting a lower
+stage reading.
 
 Rules:
 
