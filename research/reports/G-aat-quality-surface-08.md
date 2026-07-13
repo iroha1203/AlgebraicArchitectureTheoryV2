@@ -427,7 +427,7 @@ accepted and that replacing either coordinate by a distinct value is rejected.
 
 ```text
 cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ArchitectureOperationPresentation.lean
-axiom audit: 21 declarations, standard axioms only
+axiom audit: 20 declarations, standard axioms only
 ```
 
 `git diff --check`, hidden / bidirectional Unicode scan, placeholder scan, and
