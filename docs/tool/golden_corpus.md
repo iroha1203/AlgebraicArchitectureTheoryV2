@@ -23,8 +23,10 @@ R9 numeric locks are executable in `cli_r9_numeric_locks_preserve_ag_measurement
 - pseudo-circle H¹ over `F2`: `H1 = 1`, `measured_nonzero`;
 - circle-nerve fixture: `H1 = 1`, `classNonzero = true`, and the declared
   mismatch support remains `atom:b8-cocycle-P`;
-- square-free repair: minimal hitting sets
-  `{x_inventory}` and `{x_checkout,x_payment}`;
+- square-free repair: observed co-occurrence gives `measured_nonzero` and minimal
+  hitting sets `{x_inventory}` and `{x_checkout,x_payment}`; the same declaration
+  with all support atoms absent gives `measured_zero` plus `silence_by_design`
+  boundaries;
 - Tor conflict: degree-1 class count `1`, `measured_nonzero`;
 - repeated circle-nerve runs: byte-identical packet, summary, viewer, and
   manifest artifacts.

@@ -362,6 +362,60 @@ fn boundary_statements_for_measurement_packet(
         }
     }
 
+    for (index, row) in packet.structural_verdict.iter().enumerate() {
+        if row.evaluator != "ag.square-free-repair" {
+            continue;
+        }
+        let scope_ref = structural_verdict_ref(row);
+        let Some(invariant) = packet
+            .computed_invariants
+            .iter()
+            .find(|invariant| invariant["evaluator"] == "ag.square-free-repair")
+        else {
+            continue;
+        };
+        let invariant_ref = invariant["invariantId"].as_str();
+        for (generator_index, generator) in invariant["obstructionIdeal"]["generators"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+        {
+            let has_support_atom_refs = generator["supportAtomRefs"]
+                .as_array()
+                .map(|refs| !refs.is_empty())
+                .unwrap_or(false);
+            if has_support_atom_refs {
+                continue;
+            }
+            let generator_id = generator["generatorId"]
+                .as_str()
+                .unwrap_or("unknown-generator");
+            let support = generator["support"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .collect::<Vec<_>>()
+                .join(",");
+            let mut scope_refs = vec![scope_ref.clone()];
+            if let Some(invariant_ref) = invariant_ref {
+                scope_refs.push(invariant_ref.to_string());
+            }
+            statements.push(BoundaryStatementV1 {
+                id: format!(
+                    "boundary:silence-by-design:square-free:{index}:{generator_index}"
+                ),
+                kind: "silence_by_design".to_string(),
+                scope_refs,
+                reason: "declared_generator_unobserved".to_string(),
+                text: format!(
+                    "Declared square-free generator {generator_id} ({support}) has no selected support atom occurrence; its structural reading is silent under this measurement profile."
+                ),
+            });
+        }
+    }
+
     for (index, reading) in packet.analytic_readings.iter().enumerate() {
         if reading.regime.as_deref() == Some("theorem-candidate")
             && reading.structural_verdict_ref.is_none()
@@ -1888,17 +1942,20 @@ fn evaluate_square_free_repair_v1(
         &generators,
         witness_variables.len(),
     )?;
-    let has_obstruction = !minimal_forbidden_supports.is_empty();
-    let (verdict, zero, non_zero, method_status, cert_ref, reason) = if !has_obstruction {
+    let has_observed_support = generators
+        .iter()
+        .any(|generator| !generator.support_atom_refs.is_empty());
+    let (verdict, zero, non_zero, method_status, cert_ref, reason) = if !has_observed_support {
         (
             "measured_zero".to_string(),
             true,
             false,
-            "square_free_ideal_computed".to_string(),
+            "square_free_observation_empty".to_string(),
             certificate
                 .as_ref()
                 .map(|certificate| certificate.cert_ref.clone()),
-            "square-free obstruction ideal has no selected generators".to_string(),
+            "no selected square-free support atom realizes any declared obstruction generator"
+                .to_string(),
         )
     } else if let Some(certificate) = &certificate {
         if matches!(certificate.status.as_str(), "verified" | "computed") {
@@ -1908,26 +1965,32 @@ fn evaluate_square_free_repair_v1(
                 true,
                 "nsdepth_certificate_computed".to_string(),
                 Some(certificate.cert_ref.clone()),
-                "square-free obstruction generators were found and ArchSig computed the finite NSdepth certificate from the selected obstruction ideal".to_string(),
+                "observed square-free obstruction support was found and ArchSig computed the finite NSdepth certificate from the selected obstruction ideal".to_string(),
             )
         } else {
             (
-                "unknown".to_string(),
+                "measured_nonzero".to_string(),
                 false,
-                false,
-                format!("nsdepth_certificate_{}", certificate.status),
+                true,
+                format!(
+                    "observed_support_nsdepth_certificate_{}",
+                    certificate.status
+                ),
                 Some(certificate.cert_ref.clone()),
-                certificate.effect.clone(),
+                format!(
+                    "observed square-free obstruction support was found; structural verdict follows observed support atoms while the NSdepth certificate is {}",
+                    certificate.status
+                ),
             )
         }
     } else {
         (
-            "unknown".to_string(),
+            "measured_nonzero".to_string(),
             false,
-            false,
-            "nsdepth_certificate_not_computed".to_string(),
+            true,
+            "square_free_observed_support".to_string(),
             None,
-            "square-free obstruction generators were found, but ArchSig could not compute the NSdepth certificate".to_string(),
+            "observed square-free obstruction support was found; structural verdict follows observed support atoms even though the NSdepth certificate was not computed".to_string(),
         )
     };
 
@@ -1971,7 +2034,7 @@ fn evaluate_square_free_repair_v1(
                 "effect": certificate.effect
             })).unwrap_or_else(|| json!({
                 "status": "missing",
-                "effect": "structural verdict remains unknown when obstruction generators are present"
+                "effect": "NSdepth certificate is not computed; structural verdict follows observed support atom occurrence"
             }))
         }),
         lawful_locus_arrangement_invariant(
@@ -3841,12 +3904,16 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             && invariant["theorem12_4Discharge"]["coverShapeExcludesGluingObstruction"].as_bool()
                 == Some(true)
     });
-    let repair_targets_identified = packet.computed_invariants.iter().any(|invariant| {
-        invariant["evaluator"] == "ag.square-free-repair"
-            && invariant["alexanderDualRepair"]["minimalHittingSets"]
-                .as_array()
-                .is_some_and(|sets| !sets.is_empty())
+    let square_free_nonzero = packet.structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.square-free-repair" && verdict.verdict == "measured_nonzero"
     });
+    let repair_targets_identified = square_free_nonzero
+        && packet.computed_invariants.iter().any(|invariant| {
+            invariant["evaluator"] == "ag.square-free-repair"
+                && invariant["alexanderDualRepair"]["minimalHittingSets"]
+                    .as_array()
+                    .is_some_and(|sets| !sets.is_empty())
+        });
     let saga_non_gluing = packet.structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
             && verdict.law == "saga.residual-boundary-membership"
@@ -10414,7 +10481,7 @@ fn compute_square_free_nsdepth_certificate(
         verified_minimal_forbidden_supports: minimal_forbidden_supports.to_vec(),
         status: "computed".to_string(),
         effect:
-            "ArchSig computed NSdepth from selected raw supports, minimal forbidden supports, and the finite Alexander-dual hitting-set depth rule; structural verdict is measured_nonzero"
+            "ArchSig computed NSdepth from selected raw supports, minimal forbidden supports, and the finite Alexander-dual hitting-set depth rule; structural verdict follows observed support atom occurrence"
                 .to_string(),
     }
 }

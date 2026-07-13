@@ -9,7 +9,9 @@
 
 ## R4
 
-square-free forbidden supportとrepair候補を結ぶ入力。
+observed square-free forbidden supportとrepair候補を結ぶ入力。宣言された生成元が
+選択されたArchMapで生起しない場合、構造verdictは`measured_zero`となり、未生起は
+boundary statementとして残る。
 
 ## R5
 
