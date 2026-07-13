@@ -95,7 +95,7 @@ pub struct LawPolicyEntryV1 {
     #[serde(default)]
     pub basis: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub profile_ref: Option<Value>,
+    pub profile_ref: Option<String>,
     #[serde(default)]
     pub scope: Vec<String>,
     pub severity: String,
@@ -194,6 +194,8 @@ pub struct ExpandedLawPolicyEntryV1 {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub law_pair: Option<Vec<String>>,
     pub evaluator: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub profile_ref: Option<String>,
     pub basis: Vec<String>,
     pub scope: Vec<String>,
     pub severity: String,

@@ -48,8 +48,43 @@ fn cli_law_surface_v052_validates_contract_and_rejects_shortcuts() {
         "law-equation-surface-validation-report/v0.5.2"
     );
 
+    let mut stage3 = read_json(&input);
+    stage3["skeleton"] = json!([{
+        "simplex": "vertex:order",
+        "supportAtomRef": "atom:order",
+        "requiredLawId": "ag.square-free-equation"
+    }]);
+    stage3["defectSources"] = json!([{
+        "lawId": "ag.square-free-equation",
+        "coverRef": "cover:order-inventory",
+        "chartDefects": [{
+            "chart": "ctx:order",
+            "defectObservable": { "axis": "cech", "predicate": "sectionValue" }
+        }],
+        "holdsCriterion": {
+            "kind": "defect-raw-value-zero",
+            "zeroSense": "empty-witness-set"
+        }
+    }]);
+    stage3["quotientSheafCondition"] = json!({"mode": "single-context-theorem"});
+    let stage3_path = out_dir.join("stage3.json");
+    fs::write(
+        &stage3_path,
+        serde_json::to_vec_pretty(&stage3).expect("stage3 surface serializes"),
+    )
+    .expect("stage3 surface writes");
+    let stage3_report = out_dir.join("stage3-report.json");
+    run_sig0(&[
+        "law-surface",
+        "--law-surface",
+        stage3_path.to_str().expect("path is utf-8"),
+        "--out",
+        stage3_report.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(read_json(&stage3_report)["summary"]["result"], "pass");
+
     let mut reserved = read_json(&input);
-    reserved["skeleton"] = json!({"reserved": true});
+    reserved["skeleton"] = json!([]);
     let reserved_path = out_dir.join("reserved.json");
     fs::write(
         &reserved_path,
@@ -71,13 +106,17 @@ fn cli_law_surface_v052_validates_contract_and_rejects_shortcuts() {
     assert_eq!(reserved_json["summary"]["result"], "fail");
     assert!(reserved_json["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "law-equation-surface-v052-reserved-fields" && check["result"] == "fail"
+            check["id"] == "law-equation-surface-v052-stage3-contract" && check["result"] == "fail"
         })
     }));
 
     for field in ["defectSources", "quotientSheafCondition"] {
         let mut reserved = read_json(&input);
-        reserved[field] = json!({"reserved": true});
+        reserved[field] = if field == "quotientSheafCondition" {
+            json!({"mode": "invalid"})
+        } else {
+            json!([])
+        };
         let reserved_path = out_dir.join(format!("reserved-{field}.json"));
         fs::write(
             &reserved_path,
@@ -791,6 +830,30 @@ fn cli_law_policy_stage1_reserved_fields_fail_closed_and_basis_ledger_resolves()
     let root = ag_measurement_root();
     let profile = root.join("measurement_profile_ag.json");
 
+    let mut selected = read_json(&root.join("law_policy_ag.json"));
+    selected["policies"][0]["profileRef"] = json!("profile:ag-default@1");
+    let selected_path = out_dir.join("law_policy_profile_ref.json");
+    fs::write(
+        &selected_path,
+        serde_json::to_vec_pretty(&selected).expect("selected profile policy serializes"),
+    )
+    .expect("selected profile policy writes");
+    let selected_report = out_dir.join("profile-ref-report.json");
+    run_sig0(&[
+        "law-policy",
+        "--law-policy",
+        selected_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        profile.to_str().expect("path is utf-8"),
+        "--law-surface",
+        root.join("law_surface_ag_v052.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        selected_report.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(read_json(&selected_report)["summary"]["result"], "pass");
+
     let mut reserved = read_json(&root.join("law_policy_ag.json"));
     reserved["lawSurfaceRef"] = json!("law-surface:future");
     reserved["policies"][0]["profileRef"] = json!("profile:future");
@@ -826,7 +889,10 @@ fn cli_law_policy_stage1_reserved_fields_fail_closed_and_basis_ledger_resolves()
         "fail"
     );
     assert_eq!(
-        check_by_id(&reserved_json, "law-policy-schema052-entry-shape")["result"],
+        check_by_id(
+            &reserved_json,
+            "law-policy-schema052-policy-profile-resolution",
+        )["result"],
         "fail"
     );
 
@@ -2871,7 +2937,7 @@ fn cli_measurement_profile_finite_bounds_cap_and_effective_lowering() {
     assert_eq!(
         check_by_id(
             &read_json(&reserved_profile_report),
-            "measurement-profile-schema052-reserved-fields"
+            "measurement-profile-schema052-diagnostic-ceiling"
         )["result"],
         "fail"
     );
@@ -2901,9 +2967,31 @@ fn cli_measurement_profile_finite_bounds_cap_and_effective_lowering() {
     assert_eq!(
         check_by_id(
             &read_json(&null_reserved_profile_report),
-            "measurement-profile-schema052-reserved-fields"
+            "measurement-profile-schema052-diagnostic-ceiling"
         )["result"],
         "fail"
+    );
+
+    let mut selected_ceiling_profile = read_json(&root.join("measurement_profile_ag.json"));
+    selected_ceiling_profile["diagnosticCeiling"] = json!("descent");
+    let selected_ceiling_path = out_dir.join("measurement_profile_ceiling.json");
+    fs::write(
+        &selected_ceiling_path,
+        serde_json::to_vec_pretty(&selected_ceiling_profile)
+            .expect("selected ceiling profile serializes"),
+    )
+    .expect("selected ceiling profile writes");
+    let selected_ceiling_report = out_dir.join("selected-ceiling-report.json");
+    run_sig0(&[
+        "measurement-profile",
+        "--measurement-profile",
+        selected_ceiling_path.to_str().expect("path is utf-8"),
+        "--out",
+        selected_ceiling_report.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(
+        read_json(&selected_ceiling_report)["summary"]["result"],
+        "pass"
     );
 
     let (lowered_policy, mut lowered_profile) =
@@ -2987,6 +3075,39 @@ fn cli_analyze_rejects_measurement_profile_witness_family() {
 fn cli_analyze_v2_writes_measurement_packet_foundation() {
     let out_dir = temp_dir("ag-measurement-analyze");
     let root = ag_measurement_root();
+    let profile_path = out_dir.join("measurement_profile_ceiling.json");
+    let mut profile = read_json(&root.join("measurement_profile_ag.json"));
+    profile["diagnosticCeiling"] = json!("descent");
+    fs::write(
+        &profile_path,
+        serde_json::to_vec_pretty(&profile).expect("ceiling profile serializes"),
+    )
+    .expect("ceiling profile writes");
+    let law_surface_path = out_dir.join("law_surface_stage3.json");
+    let mut law_surface = read_json(&root.join("law_surface_ag_v052.json"));
+    law_surface["skeleton"] = json!([{
+        "simplex": "vertex:order",
+        "supportAtomRef": "atom:order",
+        "requiredLawId": "law:checkout"
+    }]);
+    law_surface["defectSources"] = json!([{
+        "lawId": "law:checkout",
+        "coverRef": "cover:order-inventory",
+        "chartDefects": [{
+            "chart": "ctx:order",
+            "defectObservable": { "axis": "cech", "predicate": "sectionValue" }
+        }],
+        "holdsCriterion": {
+            "kind": "defect-raw-value-zero",
+            "zeroSense": "empty-witness-set"
+        }
+    }]);
+    law_surface["quotientSheafCondition"] = json!({"mode": "assumed"});
+    fs::write(
+        &law_surface_path,
+        serde_json::to_vec_pretty(&law_surface).expect("stage3 law surface serializes"),
+    )
+    .expect("stage3 law surface writes");
 
     run_sig0(&[
         "analyze",
@@ -2999,13 +3120,9 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
             .to_str()
             .expect("path is utf-8"),
         "--measurement-profile",
-        root.join("measurement_profile_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
+        profile_path.to_str().expect("path is utf-8"),
         "--law-surface",
-        root.join("law_surface_ag_v052.json")
-            .to_str()
-            .expect("path is utf-8"),
+        law_surface_path.to_str().expect("path is utf-8"),
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
     ]);
@@ -3026,6 +3143,17 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     assert!(packet["assumptions"].is_array());
     assert!(packet["boundaryStatements"].is_array());
     assert!(packet["nonConclusions"].is_array());
+    assert!(
+        packet["nonConclusions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|text| {
+                text.as_str().is_some_and(|text| {
+                    text.contains("silence_by_design: diagnostic ceiling descent")
+                })
+            })
+    );
     let boundary_texts = packet["boundaryStatements"]
         .as_array()
         .unwrap()

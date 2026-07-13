@@ -41,10 +41,13 @@ pub use law_policy::{
 };
 pub use law_surface::{
     LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_EQUATION_SURFACE_VALIDATION_REPORT_SCHEMA,
-    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, LawBindingV1, LawEquationSurfaceV1, LawEquationV1,
-    LawForbiddenSupportGeneratorV1, LawSurfaceBindingPairV1, LawSurfaceBindingVocabularyV1,
-    LawSurfaceValidationInputV1, LawSurfaceValidationReportV1, LawSurfaceValidationSummaryV1,
-    LawWitnessVariableV1, static_law_surface_binding_vocabulary_v1, validate_law_surface_v1_report,
+    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, LawBindingV1, LawChartDefectV1, LawDefectObservableV1,
+    LawDefectSourceV1, LawEquationSurfaceV1, LawEquationV1, LawForbiddenSupportGeneratorV1,
+    LawHoldsCriterionV1, LawQuotientSheafConditionV1, LawSkeletonSimplexV1,
+    LawSurfaceBindingPairV1, LawSurfaceBindingVocabularyV1, LawSurfaceValidationInputV1,
+    LawSurfaceValidationReportV1, LawSurfaceValidationSummaryV1, LawWitnessVariableV1,
+    static_law_surface_binding_vocabulary_v1, validate_law_surface_stage3_against_archmap_v1,
+    validate_law_surface_v1_report,
 };
 pub use normalizer::normalize_archmap_v2;
 pub use policy_bundle::{

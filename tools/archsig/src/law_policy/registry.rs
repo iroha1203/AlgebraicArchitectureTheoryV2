@@ -44,6 +44,7 @@ pub fn expand_law_policy_v1(policy: &LawPolicyDocumentV1) -> Vec<ExpandedLawPoli
                 law,
                 law_pair,
                 evaluator: evaluator.to_string(),
+                profile_ref: entry.profile_ref.clone(),
                 basis: entry.basis.clone(),
                 scope: entry.scope.clone(),
                 severity: entry.severity.clone(),

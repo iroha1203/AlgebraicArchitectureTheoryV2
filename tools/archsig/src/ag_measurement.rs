@@ -609,6 +609,24 @@ pub fn build_foundation_measurement_packet_v1(
         );
     }
     let profile = profile_with_law_surface_witnesses(policy, &selected_profile, law_surface)?;
+    let stage3_examples =
+        crate::validate_law_surface_stage3_against_archmap_v1(law_surface, &profile, normalized);
+    if !stage3_examples.is_empty() {
+        return Err(format!(
+            "law-equation-surface Stage 3 contract failed: {}",
+            stage3_examples
+                .iter()
+                .map(|example| {
+                    format!(
+                        "{}={}",
+                        example.source.as_deref().unwrap_or("unknown"),
+                        example.target.as_deref().unwrap_or("invalid")
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+    }
     validate_profile_refs(&profile, normalized)?;
     let mut structural_verdict = Vec::new();
     let mut computed_invariants = vec![json!({
@@ -974,7 +992,7 @@ pub fn build_foundation_measurement_packet_v1(
         &structural_verdict,
     ));
 
-    let non_conclusions = vec![
+    let mut non_conclusions = vec![
         format!(
             "ArchSig v0.5.2 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
         ),
@@ -982,6 +1000,17 @@ pub fn build_foundation_measurement_packet_v1(
         "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
             .to_string(),
     ];
+    if let Some(ceiling) = profile
+        .diagnostic_ceiling
+        .as_ref()
+        .and_then(|value| value.as_ref())
+        .and_then(Value::as_str)
+        .filter(|ceiling| *ceiling != "raw-values")
+    {
+        non_conclusions.push(format!(
+            "silence_by_design: diagnostic ceiling {ceiling} is not reached by the foundation evaluator; supply the corresponding SAGA data before emitting that stage"
+        ));
+    }
     let mut packet = ArchSigMeasurementPacketV1 {
         schema: ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA.to_string(),
         packet_id: format!("measurement:{}", normalized.source_archmap_id),
@@ -12177,6 +12206,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             "nonZeroPredicate",
             "certSelector",
             "verdictDiscipline",
+            "diagnosticCeiling",
             "finiteBounds",
         ],
         &mut examples,
