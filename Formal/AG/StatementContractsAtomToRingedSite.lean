@@ -5,10 +5,13 @@ import Formal.AG.LawAlgebra.RingedSiteFiniteExample
 noncomputable section
 
 /-!
-Executable statement contracts for the Atom-to-ringed-site generation surface.
+Executable proof-obligation ledger for the Atom-to-ringed-site generation
+surface.
 
-The SD1 constructor and characterization surface remains fixed below. Later
-sections extend the same executable contract through SD2--SD6/R6.
+Each `example` fixes a complete implementation signature and elaborates against
+the corresponding declaration. The SD1 constructor and characterization
+surface remains fixed below; later sections extend the same executable ledger
+through SD2--SD6/R6.
 -/
 
 namespace AAT.AG

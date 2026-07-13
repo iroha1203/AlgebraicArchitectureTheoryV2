@@ -947,7 +947,14 @@ def generatedCoreOperationMapsRelation :=
 def generatedCoreOperationMapsIdentification :=
   @AATCorePackage.generate_algebra_operation_maps_identification
 
-/- SD1 target and finite-firing declarations added by the core-generation slice. -/
+/-!
+### Atom-to-ringed-site Lean theorem index: SD1--SD2
+
+These aliases are the machine-elaborated Lean theorem index entries for the
+SD1 core-generation and SD2 selected-geometry surfaces. Complete signatures
+are checked by `StatementContractsAtomToRingedSite`; the namespace-wide
+standard-axiom assertion below audits the referenced declarations.
+-/
 
 def sd1AtomFamilyExt := @AtomFamily.ext
 def sd1AtomConfigurationExt := @AtomConfiguration.ext
@@ -1755,6 +1762,15 @@ def transportDescentZeroToyModelNonempty :=
 
 def transportDescentNonzeroToyModelNonempty :=
   @FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero
+
+/-!
+### Atom-to-ringed-site Lean theorem index: SD3--SD6/R6
+
+The entries from the raw restriction system through the finite ringed-site
+firing record the remaining target declarations and examples. Together with
+the SD1--SD2 entries above, they form the current machine-elaborated index for
+the complete generation route.
+-/
 
 noncomputable def rawAmbientRestrictionSystemToPresheaf :=
   @LawAlgebra.RawAmbientRestrictionSystem.toPresheaf
