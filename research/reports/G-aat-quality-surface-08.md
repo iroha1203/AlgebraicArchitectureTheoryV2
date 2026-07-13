@@ -1181,8 +1181,17 @@ premise_delta:
     - left and right image-section restriction naturality
   remaining:
     - J4 conormal Jacobian and labeled response restriction
-    - ideal-preserving kernel characterization and labeled conormal generation
-    - nonzero response, cover adequacy, and witness nonvacuity
+    - J5a ideal-preserving full conormal-response kernel characterization
+    - J5b labeled conormal generation
+    - J6 typed nonzero response, cover adequacy, and witness nonvacuity
+    - L0 finite repair and support-minimal circuit theorem
+    - C0 kernel base change, support comparison, and fiber circuit locus
+    - D0-D2 image sequence, Cech instance, actual gluing, and zero iff global normalized section
+    - E-pre local-circuit and pure-descent witness pair
+    - N0 strict labeled presentation naturality and unit rescaling transport
+    - M0 finite measurement chain map and effective certificate
+    - E-cert certified witness pair
+    - main theorem package and independent final gate
 certificate_provenance:
   discharged:
     - compatible families from restriction of J3a global sections
