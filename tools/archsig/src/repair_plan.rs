@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
@@ -59,6 +60,11 @@ pub fn build_repair_plan_validation_report_v1(
             "warningCheckCount": warning_check_count
         }
     })
+}
+
+pub(crate) fn comparison_complex_fingerprint(plan: &RepairPlanDocumentV1) -> String {
+    let bytes = serde_json::to_vec(&plan.complex).unwrap_or_default();
+    format!("{:x}", Sha256::digest(bytes))
 }
 
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
@@ -297,6 +303,159 @@ fn check_supplied_slots(
                             path,
                             "overlap-section-membership-invalid",
                             "gluing data must name every selected overlap exactly once and provide a non-empty sectionRef for each overlap",
+                        ));
+                    }
+                }
+                "comparison" if kind == "saga-comparison" => {
+                    for key in object.keys() {
+                        if !matches!(
+                            key.as_str(),
+                            "kind" | "incidenceBridge" | "h1ComparisonData"
+                        ) {
+                            examples.push(generic_validation_example(
+                                &format!("{path}.{key}"),
+                                "unknown-field",
+                                "comparison has no unregistered supplied fields",
+                            ));
+                        }
+                    }
+                    let bridge = object.get("incidenceBridge").and_then(Value::as_object);
+                    let h1 = object.get("h1ComparisonData").and_then(Value::as_object);
+                    let mut nested_unknown = false;
+                    if let Some(bridge) = bridge {
+                        for key in bridge.keys() {
+                            let allowed = match bridge.get("kind").and_then(Value::as_str) {
+                                Some("chart-indexed") => {
+                                    ["kind", "repairChartRefs", "cechChartRefs"].as_slice()
+                                }
+                                Some("explicit") => {
+                                    ["kind", "sourceComplexRef", "targetComplexRef"].as_slice()
+                                }
+                                _ => ["kind"].as_slice(),
+                            };
+                            if !allowed.contains(&key.as_str()) {
+                                nested_unknown = true;
+                                examples.push(generic_validation_example(
+                                    &format!("{path}.incidenceBridge.{key}"),
+                                    "unknown-field",
+                                    "incidence bridge has no unregistered supplied fields",
+                                ));
+                            }
+                        }
+                    }
+                    if let Some(h1) = h1 {
+                        for key in h1.keys() {
+                            let allowed = match h1.get("kind").and_then(Value::as_str) {
+                                Some("identity") => {
+                                    ["schema", "kind", "complexFingerprint"].as_slice()
+                                }
+                                Some("explicit") => [
+                                    "schema",
+                                    "kind",
+                                    "cochainMapRef",
+                                    "degreeOneLeftInverse",
+                                    "degreeOneRightInverse",
+                                    "differencePreserving",
+                                    "degreeTwoZeroPreserving",
+                                    "differentialCommutative",
+                                ]
+                                .as_slice(),
+                                _ => ["kind"].as_slice(),
+                            };
+                            if !allowed.contains(&key.as_str()) {
+                                nested_unknown = true;
+                                examples.push(generic_validation_example(
+                                    &format!("{path}.h1ComparisonData.{key}"),
+                                    "unknown-field",
+                                    "H1 comparison data has no unregistered supplied fields",
+                                ));
+                            }
+                        }
+                    }
+                    let bridge_ok = !nested_unknown
+                        && bridge.is_some_and(|bridge| {
+                            let bridge_kind = bridge.get("kind").and_then(Value::as_str);
+                            match bridge_kind {
+                                Some("chart-indexed") => {
+                                    let expected = plan
+                                        .complex
+                                        .charts
+                                        .iter()
+                                        .map(String::as_str)
+                                        .collect::<BTreeSet<_>>();
+                                    let parse_refs = |key: &str| {
+                                        bridge.get(key).and_then(Value::as_array).and_then(
+                                            |items| {
+                                                items
+                                                    .iter()
+                                                    .map(Value::as_str)
+                                                    .collect::<Option<Vec<_>>>()
+                                            },
+                                        )
+                                    };
+                                    let repair = parse_refs("repairChartRefs");
+                                    let cech = parse_refs("cechChartRefs");
+                                    repair.as_ref().is_some_and(|refs| {
+                                        cech.as_ref().is_some_and(|cech_refs| {
+                                            refs.len() == expected.len()
+                                                && cech_refs.len() == expected.len()
+                                                && refs.iter().copied().collect::<BTreeSet<_>>()
+                                                    == expected
+                                                && cech_refs
+                                                    .iter()
+                                                    .copied()
+                                                    .collect::<BTreeSet<_>>()
+                                                    == expected
+                                        })
+                                    })
+                                }
+                                Some("explicit") => {
+                                    ["sourceComplexRef", "targetComplexRef"].iter().all(|key| {
+                                        bridge
+                                            .get(*key)
+                                            .and_then(Value::as_str)
+                                            .is_some_and(|value| !value.is_empty())
+                                    })
+                                }
+                                _ => false,
+                            }
+                        });
+                    let h1_ok = !nested_unknown
+                        && h1.is_some_and(|h1| {
+                            let kind = h1.get("kind").and_then(Value::as_str);
+                            match kind {
+                                Some("identity") => {
+                                    h1.get("schema").and_then(Value::as_str)
+                                        == Some("h1-comparison-data/v0.5.2")
+                                        && h1.get("complexFingerprint").and_then(Value::as_str)
+                                            == Some(comparison_complex_fingerprint(plan).as_str())
+                                }
+                                Some("explicit") => {
+                                    let bool_keys = [
+                                        "degreeOneLeftInverse",
+                                        "degreeOneRightInverse",
+                                        "differencePreserving",
+                                        "degreeTwoZeroPreserving",
+                                        "differentialCommutative",
+                                    ];
+                                    h1.get("schema").and_then(Value::as_str)
+                                        == Some("h1-comparison-data/v0.5.2")
+                                        && h1
+                                            .get("cochainMapRef")
+                                            .and_then(Value::as_str)
+                                            .is_some_and(|value| !value.is_empty())
+                                        && bool_keys
+                                            .iter()
+                                            .all(|key| h1.get(*key) == Some(&Value::Bool(true)))
+                                }
+                                _ => false,
+                            }
+                        });
+                    if !bridge_ok || !h1_ok {
+                        examples.push(generic_validation_example(
+                            path,
+                            "comparison-contract-invalid",
+                            "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a validated identity or explicit finite H1 comparison contract",
                         ));
                     }
                 }

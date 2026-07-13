@@ -27,7 +27,7 @@ const VERDICTS: [&str; 5] = [
     "unknown",
     "not_computed",
 ];
-const STRUCTURAL_VERDICT_EVALUATORS: [&str; 10] = [
+const STRUCTURAL_VERDICT_EVALUATORS: [&str; 11] = [
     "ag.cech-obstruction",
     "ag.restriction-compatibility",
     "ag.section-factorization",
@@ -38,8 +38,9 @@ const STRUCTURAL_VERDICT_EVALUATORS: [&str; 10] = [
     "ag.sheaf-laplacian",
     "ag.period-stokes-audit",
     "ag.saga-descent",
+    "ag.saga-comparison",
 ];
-const COMPUTED_INVARIANT_KINDS: [&str; 16] = [
+const COMPUTED_INVARIANT_KINDS: [&str; 17] = [
     "measurement-invariant",
     "cech-h1-rank",
     "minimal-forbidden-supports",
@@ -56,6 +57,7 @@ const COMPUTED_INVARIANT_KINDS: [&str; 16] = [
     "period-stokes-audit",
     "support-transfer-rank",
     "topological-debt-capacity",
+    "h1-comparison-transfer",
 ];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_COHERENCE_CONTEXTS: usize = 12;
@@ -12211,6 +12213,8 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "doctrineFingerprint",
         "boundaryNote",
         "claimScope",
+        "conclusionCode",
+        "contract",
         "classSupport",
         "coefficient",
         "coverNerveProjection",
@@ -12276,6 +12280,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "facetDimensionReading",
         "facets",
         "faithfulnessBasis",
+        "failureCode",
         "forms",
         "h2Dimension",
         "imageMembership",
@@ -12297,6 +12302,8 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "representative",
         "residualClassSupport",
         "suppliedSlots",
+        "suppliedCochainMap",
+        "generatedQuotientTransfer",
         "resolutionSelector",
         "restrictionMatrix",
         "sectionAssignment",

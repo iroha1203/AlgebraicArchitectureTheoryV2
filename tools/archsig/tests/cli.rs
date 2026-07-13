@@ -14,9 +14,10 @@ use archsig::{
     ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
     ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV1,
-    compare_archmap_v2_doctrine,
+    RepairPlanDocumentV1, compare_archmap_v2_doctrine,
 };
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 
 fn practical_rust_service_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("examples/practical-rust-service")
@@ -944,10 +945,111 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         "pass"
     );
 
+    let mut explicit_comparison = read_json(&supplied_path);
+    explicit_comparison["comparison"] = json!({
+        "kind": "saga-comparison",
+        "incidenceBridge": {
+            "kind": "explicit",
+            "sourceComplexRef": "complex:repair",
+            "targetComplexRef": "complex:cech"
+        },
+        "h1ComparisonData": {
+            "schema": "h1-comparison-data/v0.5.2",
+            "kind": "explicit",
+            "cochainMapRef": "comparison:cochain-map",
+            "degreeOneLeftInverse": true,
+            "degreeOneRightInverse": true,
+            "differencePreserving": true,
+            "degreeTwoZeroPreserving": true,
+            "differentialCommutative": true
+        }
+    });
+    let explicit_comparison_path = out_dir.join("repair_plan_comparison_explicit.json");
+    fs::write(
+        &explicit_comparison_path,
+        serde_json::to_vec_pretty(&explicit_comparison).expect("comparison plan serializes"),
+    )
+    .expect("comparison plan writes");
+    let explicit_comparison_report = out_dir.join("repair-plan-comparison-explicit.json");
+    run_sig0(&[
+        "repair-plan",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--repair-plan",
+        explicit_comparison_path.to_str().expect("path is utf-8"),
+        "--out",
+        explicit_comparison_report.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(
+        check_by_id(
+            &read_json(&explicit_comparison_report),
+            "repair-plan-schema052-supplied-slots"
+        )["result"],
+        "pass"
+    );
+
+    for (case, mutation) in [
+        ("comparison-identity-fingerprint", json!("sha256:wrong")),
+        ("comparison-explicit-false-premise", json!(false)),
+        ("comparison-unknown-field", json!("forged")),
+    ] {
+        let mut invalid = explicit_comparison.clone();
+        if case == "comparison-identity-fingerprint" {
+            invalid["comparison"]["incidenceBridge"]["kind"] = json!("chart-indexed");
+            invalid["comparison"]["incidenceBridge"]["repairChartRefs"] =
+                json!(["ctx:order", "ctx:inventory", "ctx:shared"]);
+            invalid["comparison"]["incidenceBridge"]["cechChartRefs"] =
+                json!(["ctx:order", "ctx:inventory", "ctx:shared"]);
+            invalid["comparison"]["h1ComparisonData"] = json!({
+                "schema": "h1-comparison-data/v0.5.2",
+                "kind": "identity",
+                "complexFingerprint": mutation
+            });
+        } else if case == "comparison-explicit-false-premise" {
+            invalid["comparison"]["h1ComparisonData"]["differencePreserving"] = mutation;
+        } else {
+            invalid["comparison"]["incidenceBridge"]["forgedField"] = mutation;
+        }
+        let path = out_dir.join(format!("{case}.json"));
+        fs::write(
+            &path,
+            serde_json::to_vec_pretty(&invalid).expect("invalid comparison serializes"),
+        )
+        .expect("invalid comparison writes");
+        let report = out_dir.join(format!("{case}.report.json"));
+        run_sig0_expect_code(
+            &[
+                "repair-plan",
+                "--archmap",
+                root.join("archmap_v2.json")
+                    .to_str()
+                    .expect("path is utf-8"),
+                "--repair-plan",
+                path.to_str().expect("path is utf-8"),
+                "--out",
+                report.to_str().expect("path is utf-8"),
+            ],
+            1,
+        );
+        let report_json = read_json(&report);
+        assert_eq!(
+            check_by_id(&report_json, "repair-plan-schema052-supplied-slots")["result"],
+            "fail",
+            "invalid comparison case {case} must fail closed"
+        );
+        assert!(
+            json_contains_substring(&report_json, "COMPARISON_DATA_CONTRACT_VIOLATION"),
+            "invalid comparison case {case} must retain the comparison contract violation code"
+        );
+    }
+
     for fixture in [
         "repair_plan_supplied_coefficient.json",
         "repair_plan_true_sheaf.json",
         "repair_plan_gluing_data.json",
+        "repair_plan_comparison.json",
     ] {
         let report = out_dir.join(format!("{fixture}.report.json"));
         run_sig0(&[
@@ -1668,6 +1770,14 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         global["verdictData"]["methodStatus"],
         "complete_support_global_coherent"
     );
+    let comparison = packet["computedInvariants"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["invariantId"] == "saga-comparison:h1-transfer")
+        .expect("saga comparison silence invariant exists");
+    assert_eq!(comparison["status"], "silence_by_design");
+    assert_eq!(comparison["reason"], "comparison_data_not_supplied");
     let closure = packet["computedInvariants"]
         .as_array()
         .unwrap()
@@ -1823,6 +1933,27 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
             "faithfulnessLaw": "Q is faithful on the supplied residual support"
         }
     });
+    let typed_plan: RepairPlanDocumentV1 =
+        serde_json::from_value(plan.clone()).expect("comparison plan matches RepairPlan schema");
+    let complex_fingerprint = format!(
+        "{:x}",
+        Sha256::digest(
+            serde_json::to_vec(&typed_plan.complex).expect("comparison complex serializes")
+        )
+    );
+    plan["comparison"] = json!({
+        "kind": "saga-comparison",
+        "incidenceBridge": {
+            "kind": "chart-indexed",
+            "repairChartRefs": ["ctx:order", "ctx:inventory", "ctx:shared"],
+            "cechChartRefs": ["ctx:order", "ctx:inventory", "ctx:shared"]
+        },
+        "h1ComparisonData": {
+            "schema": "h1-comparison-data/v0.5.2",
+            "kind": "identity",
+            "complexFingerprint": complex_fingerprint
+        }
+    });
     let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-class", plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let class = saga_row(&packet, "saga.residual-class");
@@ -1847,6 +1978,20 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         invariant["residualClassSupport"]["cocycle"]["deltaOne"],
         "zero"
     );
+    let comparison = packet["computedInvariants"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["invariantId"] == "saga-comparison:h1-transfer")
+        .expect("SAGA comparison invariant");
+    assert_eq!(comparison["kind"], "h1-comparison-transfer");
+    assert_eq!(comparison["status"], "established");
+    assert_eq!(
+        comparison["conclusionCode"],
+        "SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA"
+    );
+    assert_eq!(comparison["suppliedCochainMap"]["level"], "cochain");
+    assert_eq!(comparison["generatedQuotientTransfer"]["level"], "quotient");
     let closure = packet["computedInvariants"]
         .as_array()
         .unwrap()
