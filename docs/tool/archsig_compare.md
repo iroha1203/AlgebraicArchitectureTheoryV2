@@ -14,6 +14,12 @@ explicit comparison では `cochainMap.degreeZero` / `degreeOne` / `degreeTwo.ba
 analyze の転送 invariant が立つ。
 compare の run-pair 記録はこの run 内写像を自動生成しない。
 
+SAGA の run 内 comparison は、source の `saga.residual-class` が未計測なら
+`silence_by_design`、reason `residual_class_prerequisite_not_measured` と
+`whatNext` を記録する。この前提未供給は比較違反として扱わない。source class が計測済みで、
+有限 map の適合検査または target class の zero predicate が不一致になった場合だけ
+`COMPARISON_DATA_CONTRACT_VIOLATION` を記録する。
+
 ## Inputs and outputs
 
 Input run directory must contain:

@@ -197,7 +197,7 @@ pub fn build_gate_report_v1(
     let rules = policy["rules"]
         .as_array()
         .ok_or("validated gate policy unexpectedly has no rules")?;
-    let verdict_rows = structural_verdict_rows(&packet);
+    let verdict_rows = gate_verdict_rows(&packet);
     let boundary_statements = packet_boundary_statements_by_scope(&packet);
     let violated_assumptions = violated_assumption_ids(&packet);
     let mut rule_outcomes = Vec::new();
@@ -397,8 +397,8 @@ fn validate_gate_packet_v1(packet: &Value) -> Vec<Value> {
             &mut checks,
             &mut fail_count,
             "gate-packet-structural-verdict-nonempty",
-            !rows.is_empty(),
-            "structuralVerdict must contain at least one row for gate mapping",
+            !rows.is_empty() || !analytic_silence_rows(packet).is_empty(),
+            "structuralVerdict must contain a row, or analytic silence must be explicitly boundary-scoped for gate mapping",
         );
         for (index, row) in rows.iter().enumerate() {
             let verdict = row.get("verdict").and_then(Value::as_str);
@@ -605,6 +605,47 @@ fn structural_verdict_rows(packet: &Value) -> Vec<Value> {
         .flatten()
         .cloned()
         .collect()
+}
+
+fn analytic_silence_rows(packet: &Value) -> Vec<Value> {
+    let boundaries_by_scope = packet_boundary_statements_by_scope(packet);
+    packet["analyticReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|reading| {
+            let reading_id = reading["readingId"].as_str()?;
+            let has_silence_boundary = boundaries_by_scope
+                .get(reading_id)
+                .into_iter()
+                .flatten()
+                .any(|kind| kind == "silence_by_design");
+            has_silence_boundary.then(|| {
+                json!({
+                    "verdictRef": reading_id,
+                    "evaluator": reading["evaluator"],
+                    "law": reading["evaluator"],
+                    "verdict": "not_computed",
+                    "verdictData": {
+                        "inScope": true,
+                        "zero": false,
+                        "nonZero": false,
+                        "methodStatus": "analytic_reading_silence_by_design"
+                    },
+                    "dependsOnAssumptions": []
+                })
+            })
+        })
+        .collect()
+}
+
+fn gate_verdict_rows(packet: &Value) -> Vec<Value> {
+    let structural = structural_verdict_rows(packet);
+    if structural.is_empty() {
+        analytic_silence_rows(packet)
+    } else {
+        structural
+    }
 }
 
 fn violated_assumption_ids(packet: &Value) -> BTreeSet<String> {

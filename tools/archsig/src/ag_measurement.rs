@@ -418,6 +418,19 @@ fn boundary_statements_for_measurement_packet(
                         .to_string()
                 }),
             });
+        } else if row.verdict == "not_computed"
+            && row.verdict_data.method_status == "diagnostic_ceiling_not_reached"
+        {
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:silence-by-design:diagnostic-ceiling:{index}"),
+                kind: "silence_by_design".to_string(),
+                scope_refs: vec![scope_ref.clone()],
+                reason: row.verdict_data.method_status.clone(),
+                text: row.reason.clone().unwrap_or_else(|| {
+                    "The selected diagnostic ceiling does not include this evaluator stage."
+                        .to_string()
+                }),
+            });
         } else if row.verdict == "not_computed" {
             statements.push(BoundaryStatementV1 {
                 id: format!("boundary:blocked-method:{index}"),
@@ -491,6 +504,17 @@ fn boundary_statements_for_measurement_packet(
     }
 
     for (index, reading) in packet.analytic_readings.iter().enumerate() {
+        if reading.evaluator == "ag.harmonic-debt"
+            && reading.value["lowerBoundStatus"] == "cost_model_not_supplied"
+        {
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:silence-by-design:harmonic-debt-cost-model:{index}"),
+                kind: "silence_by_design".to_string(),
+                scope_refs: vec![reading.reading_id.clone()],
+                reason: "cost_model_not_supplied".to_string(),
+                text: "Supply analytic.costModel with a positive Lipschitz constant and harmonic resolution before reading essentialRepairLowerBound.".to_string(),
+            });
+        }
         if reading.regime.as_deref() == Some("theorem-candidate")
             && reading.structural_verdict_ref.is_none()
         {
@@ -12630,6 +12654,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "selectedCoverRef",
         "selectedH2",
         "status",
+        "whatNext",
         "theorem12_4Discharge",
         "b1NerveReading",
         "capacityFormula",

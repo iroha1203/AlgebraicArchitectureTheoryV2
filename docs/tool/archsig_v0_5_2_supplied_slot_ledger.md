@@ -2,6 +2,11 @@
 
 この台帳は `docs/tool/archsig_v0_5_2_prd_saga_full.md` R1 の受け入れ表である。supplied はこの表の artifact を入力として読み、対応する validator が pass した場合に限り、右端の語彙を解禁する。global な列挙完全性や sheaf 条件のように有限検査で放電できないものは、assumption ledger に記録する。
 
+## R13 witness 帰属
+
+- 3-chart の circle nerve は `circleSimplex` / `circleNext`、係数 `Z/(2)` に対応する Lean witness として扱う。
+- 2頂点・逆向き2辺の circle nerve は本文の例9.2 / 付録 B.9 の worked example を固定する補助 fixture `tests/fixtures/ag_measurement/circle_nerve_two_vertex_body_v052.json` として扱う。この形を Lean proved witness として帰属させない。
+
 | supplied 成分 | 理論典拠 | artifact の置き場 | validator | fixture | 解禁される語彙 | 実装段 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 観測(atoms / contexts / covers) | PRD R1 / 第X部 (A) | `archmap/v0.5.2` | ArchMap R1-R3 | `tests/fixtures/ag_measurement/archmap_v2.json` | 層 B の生値 | PR-1済 |
