@@ -13913,14 +13913,17 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
     let zero_plan = zero_plan_for_refinement_test(&root);
 
     let base_archmap = read_json(&root.join("archmap_v2.json"));
-    let base_run =
-        run_saga_compare_fixture("refinement-coarse-zero", base_archmap, zero_plan.clone());
-    let mut fine_archmap = read_json(&root.join("archmap_v2.json"));
-    fine_archmap["contexts"][2]["atoms"]
-        .as_array_mut()
-        .expect("fine context atoms are array")
-        .push(json!("atom:order"));
-    let fine_run = run_saga_compare_fixture("refinement-fine-zero", fine_archmap, zero_plan);
+    let base_run = run_saga_compare_fixture(
+        "refinement-coarse-zero",
+        base_archmap.clone(),
+        zero_plan.clone(),
+    );
+    let fine_archmap = refinement_fine_archmap_for_test(&root);
+    let fine_run = run_saga_compare_fixture(
+        "refinement-fine-zero",
+        fine_archmap.clone(),
+        zero_plan.clone(),
+    );
 
     let refinement_path = out_dir.join("refinement.json");
     let refinement_for = |coarse: &Path, fine: &Path| {
@@ -13968,6 +13971,7 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
     ]);
     let positive = read_json(&positive_out.join("archsig-comparison-report.json"));
     assert_eq!(positive["comparability"]["level"], "not-comparable");
+    assert_eq!(positive["comparability"]["sameSiteCoverDigest"], false);
     assert_eq!(positive["classTransport"]["status"], "established");
     assert_eq!(
         positive["classTransport"]["conclusionCode"],
@@ -14047,7 +14051,7 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
     let nonzero_head = run_saga_compare_fixture(
         "refinement-fine-nonzero",
         read_json(&root.join("archmap_v2.json")),
-        nonzero_plan,
+        nonzero_plan.clone(),
     );
     let nonzero_refinement_path = out_dir.join("nonzero-refinement.json");
     fs::write(
@@ -14071,10 +14075,55 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
         nonzero_out.to_str().expect("nonzero output path is utf-8"),
     ]);
     let nonzero = read_json(&nonzero_out.join("archsig-comparison-report.json"));
+    assert_eq!(nonzero["classTransport"]["sourceClassNonZero"], true);
+    assert_eq!(nonzero["classTransport"]["targetClassNonZero"], true);
+    assert_eq!(nonzero["classTransport"]["zeroPreserved"], false);
     assert_eq!(nonzero["classTransport"]["status"], "not_computed");
     assert_eq!(nonzero["classTransport"]["conclusionCode"], Value::Null);
     assert_eq!(
         nonzero["classTransport"]["boundaryStatement"]["kind"],
+        "class_zero_transport_not_established"
+    );
+
+    let mixed_base = run_saga_compare_fixture(
+        "refinement-coarse-nonzero-to-zero",
+        base_archmap,
+        nonzero_plan,
+    );
+    let mixed_head = run_saga_compare_fixture(
+        "refinement-fine-nonzero-to-zero",
+        fine_archmap,
+        zero_plan_for_refinement_test(&root),
+    );
+    let mixed_refinement_path = out_dir.join("mixed-refinement.json");
+    fs::write(
+        &mixed_refinement_path,
+        serde_json::to_vec_pretty(&refinement_for(&mixed_base, &mixed_head))
+            .expect("mixed refinement serializes"),
+    )
+    .expect("mixed refinement writes");
+    let mixed_out = out_dir.join("mixed-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        mixed_base.to_str().expect("mixed base path is utf-8"),
+        "--head-run",
+        mixed_head.to_str().expect("mixed head path is utf-8"),
+        "--refinement",
+        mixed_refinement_path
+            .to_str()
+            .expect("mixed refinement path is utf-8"),
+        "--out-dir",
+        mixed_out.to_str().expect("mixed output path is utf-8"),
+    ]);
+    let mixed = read_json(&mixed_out.join("archsig-comparison-report.json"));
+    assert_eq!(mixed["classTransport"]["sourceClassNonZero"], true);
+    assert_eq!(mixed["classTransport"]["targetClassNonZero"], false);
+    assert_eq!(mixed["classTransport"]["zeroPreserved"], false);
+    assert_eq!(mixed["classTransport"]["status"], "not_computed");
+    assert_eq!(mixed["classTransport"]["conclusionCode"], Value::Null);
+    assert_eq!(
+        mixed["classTransport"]["boundaryStatement"]["kind"],
         "class_zero_transport_not_established"
     );
 
@@ -14150,6 +14199,33 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
     assert!(
         String::from_utf8_lossy(&reverse_output.stderr)
             .contains("direction must be coarse-to-fine")
+    );
+}
+
+#[test]
+fn cli_refinement_fixture_binds_to_generated_run_fingerprints() {
+    let root = ag_measurement_root();
+    let coarse = run_saga_compare_fixture(
+        "refinement-static-fixture-coarse",
+        read_json(&root.join("archmap_v2.json")),
+        zero_plan_for_refinement_test(&root),
+    );
+    let fine = run_saga_compare_fixture(
+        "refinement-static-fixture-fine",
+        refinement_fine_archmap_for_test(&root),
+        zero_plan_for_refinement_test(&root),
+    );
+    let fixture = read_json(&root.join("refinement_comparison.json"));
+    let coarse_manifest = read_json(&coarse.join("archsig-run-manifest.json"));
+    let fine_manifest = read_json(&fine.join("archsig-run-manifest.json"));
+    assert_eq!(fixture["direction"], "coarse-to-fine");
+    assert_eq!(
+        fixture["coarse"]["complexFingerprint"],
+        coarse_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
+    );
+    assert_eq!(
+        fixture["fine"]["complexFingerprint"],
+        fine_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
     );
 }
 
@@ -14678,6 +14754,15 @@ fn zero_plan_for_refinement_test(root: &Path) -> Value {
     plan["gluingData"] =
         read_json(&root.join("repair_plan_gluing_data.json"))["gluingData"].clone();
     plan
+}
+
+fn refinement_fine_archmap_for_test(root: &Path) -> Value {
+    let mut fine_archmap = read_json(&root.join("archmap_v2.json"));
+    fine_archmap["contexts"][2]["atoms"]
+        .as_array_mut()
+        .expect("fine context atoms are array")
+        .push(json!("atom:order"));
+    fine_archmap
 }
 
 fn run_saga_compare_fixture(case_id: &str, archmap: Value, repair_plan: Value) -> PathBuf {
