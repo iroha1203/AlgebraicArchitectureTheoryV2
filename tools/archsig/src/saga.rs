@@ -469,6 +469,27 @@ pub(crate) fn evaluate_saga_descent_v1(
         assumed_by: Some("repair-plan author".to_string()),
     };
     let enumeration_assumption_id = assumption_id_for_schema(&enumeration_assumption);
+    let comparison_target_enumeration_assumption = plan
+        .comparison
+        .as_ref()
+        .filter(|comparison| {
+            comparison
+                .get("incidenceBridge")
+                .and_then(|bridge| bridge.get("kind"))
+                .and_then(Value::as_str)
+                == Some("explicit")
+        })
+        .and_then(|comparison| comparison_target_complex(plan, comparison))
+        .map(|_| AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part10/repair-plan-enumeration".to_string(),
+            assumption: format!(
+                "comparison target complex enumeration completeness for {}",
+                plan.id
+            ),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some("comparison author".to_string()),
+        });
     let sheaf_assumption =
         plan.true_sheaf_certificate
             .as_ref()
@@ -492,6 +513,9 @@ pub(crate) fn evaluate_saga_descent_v1(
             assumed_by: Some("RepairPlan author".to_string()),
         });
     let mut evaluator_assumption_ids = vec![enumeration_assumption_id.clone()];
+    if let Some(assumption) = comparison_target_enumeration_assumption.as_ref() {
+        evaluator_assumption_ids.push(assumption_id_for_schema(assumption));
+    }
     if let Some(assumption) = faithfulness_assumption.as_ref() {
         evaluator_assumption_ids.push(assumption_id_for_schema(assumption));
     }
@@ -684,6 +708,10 @@ pub(crate) fn evaluate_saga_descent_v1(
     }
     computed_invariants.push(evaluate_saga_comparison_v1(plan, &structural_verdict));
     let mut assumptions = vec![enumeration_assumption];
+    if let Some(comparison_target_enumeration_assumption) = comparison_target_enumeration_assumption
+    {
+        assumptions.push(comparison_target_enumeration_assumption);
+    }
     if let Some(sheaf_assumption) = sheaf_assumption {
         assumptions.push(sheaf_assumption);
     }

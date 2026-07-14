@@ -173,12 +173,51 @@ fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) -> bool {
             .iter()
             .all(|overlap| charts.contains(&overlap.left) && charts.contains(&overlap.right))
         && complex.triple_overlaps.iter().all(|triple| {
-            triple.overlap_refs.len() == 3
-                && triple.overlap_refs.iter().collect::<BTreeSet<_>>().len() == 3
-                && triple
+            if triple.overlap_refs.len() != 3
+                || triple.overlap_refs.iter().collect::<BTreeSet<_>>().len() != 3
+                || triple
                     .overlap_refs
                     .iter()
-                    .all(|overlap_ref| overlap_ids.contains(overlap_ref))
+                    .any(|overlap_ref| !overlap_ids.contains(overlap_ref))
+            {
+                return false;
+            }
+            let triple_overlaps = triple
+                .overlap_refs
+                .iter()
+                .filter_map(|overlap_ref| {
+                    complex
+                        .overlaps
+                        .iter()
+                        .find(|overlap| &overlap.id == overlap_ref)
+                })
+                .collect::<Vec<_>>();
+            let vertices = triple_overlaps
+                .iter()
+                .flat_map(|overlap| [&overlap.left, &overlap.right])
+                .cloned()
+                .collect::<BTreeSet<_>>();
+            if vertices.len() != 3 {
+                return false;
+            }
+            let edge_pairs = triple_overlaps
+                .iter()
+                .filter_map(|overlap| {
+                    if overlap.left == overlap.right {
+                        None
+                    } else if overlap.left < overlap.right {
+                        Some((overlap.left.clone(), overlap.right.clone()))
+                    } else {
+                        Some((overlap.right.clone(), overlap.left.clone()))
+                    }
+                })
+                .collect::<BTreeSet<_>>();
+            let vertices = vertices.into_iter().collect::<Vec<_>>();
+            let expected_pairs = [(0, 1), (0, 2), (1, 2)]
+                .into_iter()
+                .map(|(left, right)| (vertices[left].clone(), vertices[right].clone()))
+                .collect::<BTreeSet<_>>();
+            edge_pairs == expected_pairs
         })
 }
 
