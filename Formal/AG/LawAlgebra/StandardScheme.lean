@@ -402,8 +402,9 @@ def lawUniverse
     (raw : RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
-    (_D : AATReadingDecoration raw X) : LawUniverse U :=
-  S.lawUniverse
+    (D : AATReadingDecoration raw X) : LawUniverse U :=
+  match D with
+  | ⟨_, _⟩ => S.lawUniverse
 
 /-- The architecture signature read from the ambient AAT site. -/
 def signature
@@ -412,8 +413,9 @@ def signature
     (raw : RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
-    (_D : AATReadingDecoration raw X) : ArchitectureSignature U :=
-  S.signature
+    (D : AATReadingDecoration raw X) : ArchitectureSignature U :=
+  match D with
+  | ⟨_, _⟩ => S.signature
 
 /-- The coefficient reading obtained from the canonical section-algebra map. -/
 noncomputable def coefficientMap
@@ -500,7 +502,8 @@ def Preserves
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
     (D : AATReadingDecoration raw X) :
-    D.lawUniverse raw = S.lawUniverse :=
+    D.lawUniverse raw = S.lawUniverse := by
+  cases D
   rfl
 
 /-- The signature projection is the selected site's architecture signature. -/
@@ -511,7 +514,8 @@ def Preserves
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
     (D : AATReadingDecoration raw X) :
-    D.signature raw = S.signature :=
+    D.signature raw = S.signature := by
+  cases D
   rfl
 
 /-- The coefficient map is the canonical section-algebra map followed by interpretation. -/
