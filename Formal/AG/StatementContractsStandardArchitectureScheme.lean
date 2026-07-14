@@ -362,7 +362,7 @@ example {X : AlgebraicGeometry.Scheme}
     (AATReadingDecoration.ofContext raw C.context).Preserves raw C.map D :=
   C.localDecoration_preserves hC
 
-namespace FiniteExamples.StandardSchemeReading
+namespace FiniteExamples.StandardArchitectureScheme
 
 open RingedSite.FiniteModel
 
@@ -384,6 +384,6 @@ example :
 example : ¬ IsArchitectureAffineChart rawSystem interpretationBrokenChart :=
   interpretationBrokenChart_not_valid
 
-end FiniteExamples.StandardSchemeReading
+end FiniteExamples.StandardArchitectureScheme
 
 end AAT.AG.LawAlgebra

@@ -2450,15 +2450,15 @@ def standardSchemeReadingFinitePreservesNegative :=
 
 /-- Audit alias for the finite interpretation-broken chart. -/
 noncomputable def standardSchemeFiniteInterpretationBrokenChart :=
-  LawAlgebra.FiniteExamples.StandardSchemeReading.interpretationBrokenChart
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.interpretationBrokenChart
 
 /-- Audit alias for the finite broken chart's failed interpretation equation. -/
 def standardSchemeFiniteInterpretationBrokenChartEquationNe :=
-  LawAlgebra.FiniteExamples.StandardSchemeReading.interpretationBrokenChart_equation_ne
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.interpretationBrokenChart_equation_ne
 
 /-- Audit alias for invalidity of the finite interpretation-broken chart. -/
 def standardSchemeFiniteInterpretationBrokenChartNotValid :=
-  LawAlgebra.FiniteExamples.StandardSchemeReading.interpretationBrokenChart_not_valid
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.interpretationBrokenChart_not_valid
 
 end AAT.AG.AxiomAudit
 

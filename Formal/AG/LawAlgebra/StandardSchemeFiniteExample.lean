@@ -201,6 +201,17 @@ theorem preserves_negative_example :
           baseCoordinateSection at ha
   rwa [hid] at ha
 
+end AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading
+
+namespace AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme
+
+open CategoryTheory Opposite
+open AlgebraicGeometry
+open scoped AlgebraicGeometry
+
+open RingedSite.FiniteModel
+open AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading
+
 /-!
 ### Finite invalid-chart witness
 
@@ -263,4 +274,4 @@ theorem interpretationBrokenChart_not_valid :
   intro h
   exact interpretationBrokenChart_equation_ne h.interpretation_compatible
 
-end AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading
+end AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme
