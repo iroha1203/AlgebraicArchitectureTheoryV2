@@ -12799,15 +12799,17 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             COMPUTED_INVARIANT_FIELDS,
             &mut examples,
         );
-        if let Some(contract) = invariant.get("contract") {
+        if invariant["evaluator"] == "ag.saga-comparison" {
             let contract_label = format!("computedInvariants[{index}].contract");
-            if invariant["evaluator"] != "ag.saga-comparison" {
+            let Some(contract) = invariant.get("contract") else {
                 examples.push(generic_validation_example(
                     &contract_label,
                     "contract",
-                    "contract is reserved for ag.saga-comparison computed invariants",
+                    "ag.saga-comparison computed invariants must carry contract",
                 ));
-            } else if !contract.is_object() {
+                continue;
+            };
+            if !contract.is_object() {
                 examples.push(generic_validation_example(
                     &contract_label,
                     "contract",
@@ -12859,6 +12861,13 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                     }
                 }
             }
+        } else if invariant.get("contract").is_some() {
+            let contract_label = format!("computedInvariants[{index}].contract");
+            examples.push(generic_validation_example(
+                &contract_label,
+                "contract",
+                "contract is reserved for ag.saga-comparison computed invariants",
+            ));
         }
     }
     for (index, row) in packet_value["structuralVerdict"]
@@ -14287,6 +14296,21 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
                     "boundaryStatements",
                     "silence_by_design invariants must have a typed boundary scoped to the invariant",
                 ));
+            } else if let Some(statement) = packet.boundary_statements.iter().find(|statement| {
+                statement.kind == "silence_by_design"
+                    && statement
+                        .scope_refs
+                        .iter()
+                        .any(|scope_ref| scope_ref == invariant_id)
+            }) {
+                let what_next = invariant["whatNext"].as_str().unwrap_or_default();
+                if !statement.text.contains(what_next) {
+                    examples.push(generic_validation_example(
+                        invariant_id,
+                        "boundaryStatements.text",
+                        "typed silence boundary text must include the invariant whatNext guidance",
+                    ));
+                }
             }
         }
     }
@@ -14863,6 +14887,25 @@ mod tests {
                         && example.target.as_deref() == Some("classPrerequisite")
                 })
         }));
+
+        let mut missing_contract =
+            serde_json::to_value(packet_fixture()).expect("packet serializes");
+        missing_contract["computedInvariants"] = json!([{
+            "invariantId": "saga-comparison:h1-transfer",
+            "kind": "h1-comparison-transfer",
+            "evaluator": "ag.saga-comparison",
+            "status": "not_computed",
+            "value": {"status": "not_computed"},
+            "representation": {"basis": "test"}
+        }]);
+        let missing_contract_checks = validate_measurement_packet_value_v1(&missing_contract);
+        assert!(missing_contract_checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-unknown-fields"
+                && check.examples.iter().any(|example| {
+                    example.source.as_deref() == Some("computedInvariants[0].contract")
+                        && example.target.as_deref() == Some("contract")
+                })
+        }));
     }
 
     #[test]
@@ -15123,7 +15166,15 @@ mod tests {
             "status": "silence_by_design",
             "whatNext": "supply the missing comparison input",
             "value": {"status": "silence_by_design"},
-            "representation": {"basis": "typed-silence"}
+            "representation": {"basis": "typed-silence"},
+            "contract": {
+                "incidenceBridgeKind": "unknown",
+                "h1ComparisonDataKind": "unknown",
+                "normalizedComplexFingerprint": "unknown",
+                "classPrerequisite": false,
+                "targetClassComputed": false,
+                "contractChecked": false
+            }
         }));
         packet.boundary_statements.push(BoundaryStatementV1 {
             id: "boundary:saga-comparison".to_string(),
@@ -15147,9 +15198,20 @@ mod tests {
             check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
         }));
 
-        let mut missing_boundary = packet;
+        let mut missing_boundary = packet.clone();
         missing_boundary.boundary_statements.pop();
         let checks = validate_measurement_packet_v1(&missing_boundary);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
+        }));
+
+        let mut mismatched_boundary = packet;
+        mismatched_boundary
+            .boundary_statements
+            .last_mut()
+            .unwrap()
+            .text = "different guidance".to_string();
+        let checks = validate_measurement_packet_v1(&mismatched_boundary);
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
         }));

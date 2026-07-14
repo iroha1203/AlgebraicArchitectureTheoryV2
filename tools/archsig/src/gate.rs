@@ -46,6 +46,14 @@ const NON_TERMINAL_KEYS: [&str; 4] = [
     "not_computed",
     "violated_assumption_dependency",
 ];
+const BOUNDARY_OVERRIDE_KEYS: [&str; 6] = [
+    "silence_by_design",
+    "out_of_selected_vocabulary",
+    "unmeasured_support",
+    "violated_assumption",
+    "blocked_method",
+    "not_applicable",
+];
 
 pub fn validate_gate_policy_v1(policy: &Value) -> Vec<Value> {
     let mut checks = Vec::new();
@@ -215,8 +223,11 @@ pub fn build_gate_report_v1(
                     .iter()
                     .map(|row| {
                         let key = mapping_key_for_row(row, &violated_assumptions);
-                        let boundary_override =
-                            override_action(row, &boundary_statements, overrides);
+                        let boundary_override = if key == "violated_assumption_dependency" {
+                            None
+                        } else {
+                            override_action(row, &boundary_statements, overrides)
+                        };
                         let action = boundary_override
                             .as_deref()
                             .or_else(|| mapping.get(&key).and_then(Value::as_str))
@@ -502,6 +513,13 @@ fn validate_boundary_overrides(
         return;
     };
     for (kind, action) in object {
+        push_check(
+            checks,
+            fail_count,
+            &format!("gate-policy-rule-{index}-boundary-override-{kind}-known-key"),
+            BOUNDARY_OVERRIDE_KEYS.contains(&kind.as_str()),
+            "boundaryKindOverrides key must be a known boundary statement kind",
+        );
         let action = action.as_str();
         push_check(
             checks,

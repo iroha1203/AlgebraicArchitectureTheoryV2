@@ -13612,6 +13612,39 @@ fn cli_gate_rejects_unknown_packet_verdict_and_policy_mapping_keys() {
                 == "gate-policy-rule-0-verdictMapping-alien_verdict-known-key"
                 && check["result"] == "fail")
     );
+
+    let bad_override_policy_path = out_dir.join("bad-boundary-override-key.json");
+    let mut bad_override_policy = read_json(&policy_path);
+    bad_override_policy["rules"][0]["boundaryKindOverrides"]["alien_boundary"] =
+        json!("pass_with_boundary");
+    fs::write(
+        &bad_override_policy_path,
+        serde_json::to_vec_pretty(&bad_override_policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+    let bad_override_report = out_dir.join("bad-boundary-override-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            valid_packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            bad_override_policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            bad_override_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let bad_override_json = read_json(&bad_override_report);
+    assert!(
+        bad_override_json["policyValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| check["id"]
+                == "gate-policy-rule-0-boundary-override-alien_boundary-known-key"
+                && check["result"] == "fail")
+    );
 }
 
 #[test]
@@ -13688,7 +13721,15 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
         "status": "silence_by_design",
         "whatNext": "supply the missing comparison input",
         "value": {"status": "silence_by_design"},
-        "representation": {"basis": "typed-silence"}
+        "representation": {"basis": "typed-silence"},
+        "contract": {
+            "incidenceBridgeKind": "unknown",
+            "h1ComparisonDataKind": "unknown",
+            "normalizedComplexFingerprint": "unknown",
+            "classPrerequisite": false,
+            "targetClassComputed": false,
+            "contractChecked": false
+        }
     }]);
     comparison_only["boundaryStatements"] = json!([{
         "id": "boundary:saga-comparison",
