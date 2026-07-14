@@ -956,43 +956,82 @@ are checked by `StatementContractsAtomToRingedSite`; the namespace-wide
 kernel-dependency assertion below audits the referenced declarations.
 -/
 
+/-- SD1 index entry for the extraction-doctrine constructor fixed by the ledger. -/
 def sd1ExtractionDoctrineConstructor := @ExtractionDoctrine.mk
+/-- SD1 index entry for the primitive-system constructor fixed by the ledger. -/
 def sd1AtomSystemConstructor := @AtomAxiomSystem.mk
+/-- SD1 index entry for the composition-reading constructor fixed by the ledger. -/
 def sd1CompositionReadingConstructor := @CompositionReading.mk
+/-- SD1 index entry for the object-reading constructor fixed by the ledger. -/
 def sd1ObjectReadingConstructor := @ObjectReading.mk
+/-- SD1 index entry for the finite circuit-datum constructor fixed by the ledger. -/
 def sd1FiniteCircuitDatumConstructor := @FiniteCircuitDatum.mk
+/-- SD1 index entry for the circuit-reading constructor fixed by the ledger. -/
 def sd1CircuitReadingConstructor := @CircuitReading.mk
+/-- SD1 index entry for the law-reading constructor fixed by the ledger. -/
 def sd1LawReadingConstructor := @LawReading.mk
+/-- SD1 index entry for the configuration-hom constructor fixed by the ledger. -/
 def sd1ConfigurationHomConstructor := @ConfigurationHom.mk
+/-- SD1 index entry for the architecture-operation constructor fixed by the ledger. -/
 def sd1OperationConstructor := @Operation.mk
+/-- SD1 index entry for the indexed operation-reading constructor. -/
 def sd1OperationReadingConstructor := @OperationReading.mk
+/-- SD1 index entry for the admissible core-reading constructor. -/
 def sd1CoreReadingConstructor := @CoreReading.mk
+/-- SD1 index entry for the indexed object-algebra constructor. -/
 def sd1ObjectAlgebraConstructor := @ObjectAlgebra.mk
+/-- SD1 index entry for the generated-core input package constructor. -/
 def sd1CorePackageConstructor := @AATCorePackage.mk
+/-- SD1 index entry for elimination from the fixed finite query grammar. -/
 noncomputable def sd1CircuitQueryRecursor := @CircuitQuery.rec
+/-- SD1 index entry for elimination from the fixed detector grammar. -/
 noncomputable def sd1CircuitDetectorCodeRecursor := @CircuitDetectorCode.rec
+/-- SD1 index entry for induction over operation-generated reachability. -/
 def sd1ReachableRecursor := @OperationReading.Reachable.rec
+/-- SD1 index entry for extraction from all selected reading inputs. -/
 def sd1ExtractionDoctrineExtracts := @ExtractionDoctrine.extracts
+/-- SD1 index entry for canonical Atom-family generation from a source. -/
 def sd1ExtractionDoctrineAtomize := @ExtractionDoctrine.atomize
+/-- SD1 index entry for the extraction-membership characterization. -/
 def sd1ExtractionDoctrineAtomizes := @ExtractionDoctrine.Atomizes
+/-- SD1 index entry for the semantic reading of a finite circuit query. -/
 def sd1CircuitQueryHolds := @CircuitQuery.Holds
+/-- SD1 index entry for signed finite datum matching on an object. -/
 def sd1FiniteCircuitDatumMatches := @FiniteCircuitDatum.Matches
+/-- SD1 index entry for evaluation of the finite detector grammar. -/
 noncomputable def sd1CircuitDetectorCodeEval := @CircuitDetectorCode.eval
+/-- SD1 index entry for Boolean acceptance by the selected circuit reading. -/
 noncomputable def sd1CircuitReadingAccepts := @CircuitReading.accepts
+/-- SD1 index entry for the object- and law-indexed circuit fiber. -/
 def sd1CircuitReadingCircuit := @CircuitReading.Circuit
+/-- SD1 index entry for the required-circuit completeness predicate. -/
 def sd1CircuitReadingRequiredComplete := @CircuitReading.RequiredComplete
+/-- SD1 index entry for identity on an actual Atom configuration. -/
 def sd1ConfigurationHomIdentity := @ConfigurationHom.id
+/-- SD1 index entry for composition of actual configuration homomorphisms. -/
 def sd1ConfigurationHomComposition := @ConfigurationHom.comp
+/-- SD1 index entry for packaging an indexed operation with its configuration map. -/
 def sd1OperationReadingOperation := @OperationReading.operation
+/-- SD1 index entry for the least operation-closed object family. -/
 def sd1OperationReadingReachable := @OperationReading.Reachable
+/-- SD1 index entry for the object- and law-indexed algebra circuit fiber. -/
 def sd1ObjectAlgebraCircuit := @ObjectAlgebra.Circuit
+/-- SD1 index entry for packaging an indexed object-algebra operation. -/
 def sd1ObjectAlgebraOperation := @ObjectAlgebra.operation
+/-- SD1 index entry for generation from the primitive system and core reading. -/
 def sd1CoreGenerate := @AATCorePackage.generate
+/-- SD1 index entry for the generated canonical Atom family. -/
 def sd1CoreFamily := @AATCorePackage.family
+/-- SD1 index entry for the generated Atom configuration. -/
 def sd1CoreConfiguration := @AATCorePackage.configuration
+/-- SD1 index entry for the generated architecture object. -/
 def sd1CoreObject := @AATCorePackage.object
+/-- SD1 index entry for the generated operation-closed object algebra. -/
 def sd1CoreAlgebra := @AATCorePackage.algebra
+/-- SD1 index entry for the distinguished generated algebra object. -/
 def sd1CoreBaseObject := @AATCorePackage.baseObject
+/-- SD1 index entry for semantic law failure on an architecture object. -/
+def sd1SemanticObstruction := @SemanticObstruction
 
 def sd1AtomFamilyExt := @AtomFamily.ext
 def sd1AtomConfigurationExt := @AtomConfiguration.ext
@@ -1131,8 +1170,11 @@ def sd1FiniteCompleteCode := FiniteModel.completeCircuitReading_code
 def sd1FiniteCoreDetectorCode := FiniteModel.coreReading_circuit_code
 
 /- SD2 selected geometry and generated topology declarations. -/
+/-- SD2 index entry for typed coverage requirements on the generated core. -/
 def sd2CoverageRequirementsConstructor := @Site.CoverageRequirements.mk
+/-- SD2 index entry for the selected generated-geometry reading. -/
 def sd2SelectedGeometryConstructor := @Site.SelectedGeometryReading.mk
+/-- SD2 index entry for constructing the selected AAT site. -/
 def sd2SelectedGeometryToAATSite := @Site.SelectedGeometryReading.toAATSite
 def sd2SelectedGeometryExt := @Site.SelectedGeometryReading.ext
 def sd2SiteArchitectureObject :=
@@ -1816,12 +1858,18 @@ the complete generation route.
 noncomputable def rawAmbientRestrictionSystemToPresheaf :=
   @LawAlgebra.RawAmbientRestrictionSystem.toPresheaf
 
+/-- SD3 index entry for the typed raw restriction-system constructor. -/
 def rawAmbientRestrictionSystemConstructor :=
   @LawAlgebra.RawAmbientRestrictionSystem.mk
 
 def rawAmbientRestrictionSystemExt :=
   @LawAlgebra.RawAmbientRestrictionSystem.ext
 
+/-- SD3 index entry for the objectwise structural quotient algebra. -/
+def rawAmbientRestrictionSystemRawAlgebra :=
+  @LawAlgebra.RawAmbientRestrictionSystem.rawAlgebra
+
+/-- SD3 index entry for the objectwise quotient identification. -/
 noncomputable def rawAmbientRestrictionSystemObjectIso :=
   @LawAlgebra.RawAmbientRestrictionSystem.toPresheafObjectIso
 
