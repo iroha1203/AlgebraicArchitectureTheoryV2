@@ -2303,11 +2303,21 @@ fn cli_saga_comparison_separates_missing_class_from_contract_violation() {
         missing_class["reason"],
         "residual_class_prerequisite_not_measured"
     );
-    assert!(
-        missing_class["whatNext"]
-            .as_str()
-            .is_some_and(|text| text.contains("saga.residual-class"))
-    );
+    let what_next = missing_class["whatNext"]
+        .as_str()
+        .expect("missing source class explains required input slots");
+    for slot in [
+        "complex.tripleOverlaps",
+        "coefficient",
+        "trueSheafCertificate",
+        "gluingData",
+    ] {
+        assert!(
+            what_next.contains(slot),
+            "whatNext omits required slot {slot}"
+        );
+    }
+    assert!(!what_next.contains("saga.residual-class"));
     assert!(missing_class.get("failureCode").is_none());
 }
 
@@ -13667,6 +13677,50 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
 
     let packet_path = out_dir.join("packet.json");
     write_gate_packet(&packet_path, "measured_zero");
+
+    let comparison_only_packet = out_dir.join("comparison-only-packet.json");
+    let mut comparison_only = read_json(&packet_path);
+    comparison_only["structuralVerdict"] = json!([]);
+    comparison_only["computedInvariants"] = json!([{
+        "invariantId": "saga-comparison:h1-transfer",
+        "kind": "h1-comparison-transfer",
+        "evaluator": "ag.saga-comparison",
+        "status": "silence_by_design",
+        "whatNext": "supply the missing comparison input",
+        "value": {"status": "silence_by_design"},
+        "representation": {"basis": "typed-silence"}
+    }]);
+    comparison_only["boundaryStatements"] = json!([{
+        "id": "boundary:saga-comparison",
+        "kind": "silence_by_design",
+        "scopeRefs": ["saga-comparison:h1-transfer"],
+        "reason": "comparison_data_not_supplied",
+        "text": "supply the missing comparison input"
+    }]);
+    comparison_only["nonConclusions"] = json!(["supply the missing comparison input"]);
+    fs::write(
+        &comparison_only_packet,
+        serde_json::to_vec_pretty(&comparison_only).expect("comparison-only packet serializes"),
+    )
+    .expect("comparison-only packet writes");
+    let comparison_only_report = out_dir.join("comparison-only-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            comparison_only_packet.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            comparison_only_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    assert_eq!(
+        read_json(&comparison_only_report)["decision"],
+        "NOT_EVALUABLE"
+    );
+
     let comparison_path = out_dir.join("comparison.json");
     fs::write(
         &comparison_path,

@@ -786,7 +786,7 @@ fn evaluate_saga_comparison_v1(
             "kind": "h1-comparison-transfer",
             "status": "silence_by_design",
             "reason": "residual_class_prerequisite_not_measured",
-            "whatNext": "supply a measured saga.residual-class row before evaluating H1 comparison transfer",
+            "whatNext": "supply valid inputs for complex.tripleOverlaps, coefficient, trueSheafCertificate, and gluingData so the source residual class can be measured before evaluating H1 comparison transfer",
             "contract": {
                 "incidenceBridgeKind": bridge_kind,
                 "h1ComparisonDataKind": h1_kind,

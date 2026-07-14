@@ -683,7 +683,9 @@ fn supplemental_silence_rows(packet: &Value) -> Vec<Value> {
     } else {
         Vec::new()
     };
-    rows.extend(comparison_silence_rows(packet));
+    if !structural.is_empty() || !rows.is_empty() {
+        rows.extend(comparison_silence_rows(packet));
+    }
     rows
 }
 
@@ -891,6 +893,11 @@ mod tests {
                 .iter()
                 .any(|row| row["verdictRef"] == "analytic:cost-model")
         );
+
+        let mut comparison_only_packet = fallback_packet;
+        comparison_only_packet["analyticReadings"] = json!([]);
+        let comparison_only_rows = gate_verdict_rows(&comparison_only_packet);
+        assert!(comparison_only_rows.is_empty());
     }
 }
 

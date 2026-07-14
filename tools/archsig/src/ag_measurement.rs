@@ -14173,6 +14173,58 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
         }
     }
 
+    for invariant in &packet.computed_invariants {
+        if invariant.get("whatNext").is_some() {
+            let Some(what_next) = invariant["whatNext"].as_str() else {
+                examples.push(generic_validation_example(
+                    invariant["invariantId"]
+                        .as_str()
+                        .unwrap_or("computed-invariant"),
+                    "whatNext",
+                    "whatNext must be a non-empty string when supplied",
+                ));
+                continue;
+            };
+            if what_next.trim().is_empty() {
+                examples.push(generic_validation_example(
+                    invariant["invariantId"]
+                        .as_str()
+                        .unwrap_or("computed-invariant"),
+                    "whatNext",
+                    "whatNext must be a non-empty string when supplied",
+                ));
+            }
+        }
+        if invariant["evaluator"].as_str() == Some("ag.saga-comparison")
+            && invariant["status"].as_str() == Some("silence_by_design")
+        {
+            let invariant_id = invariant["invariantId"].as_str().unwrap_or_default();
+            if invariant["whatNext"]
+                .as_str()
+                .is_none_or(|text| text.trim().is_empty())
+            {
+                examples.push(generic_validation_example(
+                    invariant_id,
+                    "whatNext",
+                    "silence_by_design comparison invariants must explain the next required input",
+                ));
+            }
+            if !packet.boundary_statements.iter().any(|statement| {
+                statement.kind == "silence_by_design"
+                    && statement
+                        .scope_refs
+                        .iter()
+                        .any(|scope_ref| scope_ref == invariant_id)
+            }) {
+                examples.push(generic_validation_example(
+                    invariant_id,
+                    "boundaryStatements",
+                    "silence_by_design comparison invariants must have a typed boundary scoped to the invariant",
+                ));
+            }
+        }
+    }
+
     for text in &packet.non_conclusions {
         if !boundary_texts.contains(text.as_str()) {
             examples.push(generic_validation_example(
@@ -14917,6 +14969,48 @@ mod tests {
         packet.boundary_statements[0].scope_refs = vec!["missing:scope".to_string()];
         let checks = validate_measurement_packet_v1(&packet);
 
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn comparison_silence_requires_next_input_and_typed_boundary() {
+        let mut packet = packet_fixture();
+        packet.computed_invariants.push(json!({
+            "invariantId": "saga-comparison:h1-transfer",
+            "kind": "h1-comparison-transfer",
+            "evaluator": "ag.saga-comparison",
+            "status": "silence_by_design",
+            "whatNext": "supply the missing comparison input",
+            "value": {"status": "silence_by_design"},
+            "representation": {"basis": "typed-silence"}
+        }));
+        packet.boundary_statements.push(BoundaryStatementV1 {
+            id: "boundary:saga-comparison".to_string(),
+            kind: "silence_by_design".to_string(),
+            scope_refs: vec!["saga-comparison:h1-transfer".to_string()],
+            reason: "comparison_data_not_supplied".to_string(),
+            text: "supply the missing comparison input".to_string(),
+        });
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "pass"
+        }));
+
+        let mut missing_what_next = packet.clone();
+        missing_what_next.computed_invariants[0]
+            .as_object_mut()
+            .unwrap()
+            .remove("whatNext");
+        let checks = validate_measurement_packet_v1(&missing_what_next);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
+        }));
+
+        let mut missing_boundary = packet;
+        missing_boundary.boundary_statements.pop();
+        let checks = validate_measurement_packet_v1(&missing_boundary);
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
         }));
