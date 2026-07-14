@@ -12799,20 +12799,66 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             COMPUTED_INVARIANT_FIELDS,
             &mut examples,
         );
-        if invariant["evaluator"] == "ag.saga-comparison" {
-            check_object_keys(
-                &invariant["contract"],
-                &format!("computedInvariants[{index}].contract"),
-                &[
-                    "incidenceBridgeKind",
-                    "h1ComparisonDataKind",
-                    "normalizedComplexFingerprint",
-                    "classPrerequisite",
-                    "targetClassComputed",
-                    "contractChecked",
-                ],
-                &mut examples,
-            );
+        if let Some(contract) = invariant.get("contract") {
+            let contract_label = format!("computedInvariants[{index}].contract");
+            if invariant["evaluator"] != "ag.saga-comparison" {
+                examples.push(generic_validation_example(
+                    &contract_label,
+                    "contract",
+                    "contract is reserved for ag.saga-comparison computed invariants",
+                ));
+            } else if !contract.is_object() {
+                examples.push(generic_validation_example(
+                    &contract_label,
+                    "contract",
+                    "ag.saga-comparison contract must be an object",
+                ));
+            } else {
+                check_object_keys(
+                    contract,
+                    &contract_label,
+                    &[
+                        "incidenceBridgeKind",
+                        "h1ComparisonDataKind",
+                        "normalizedComplexFingerprint",
+                        "classPrerequisite",
+                        "targetClassComputed",
+                        "contractChecked",
+                    ],
+                    &mut examples,
+                );
+                for (field, valid) in [
+                    (
+                        "incidenceBridgeKind",
+                        contract["incidenceBridgeKind"].is_string(),
+                    ),
+                    (
+                        "h1ComparisonDataKind",
+                        contract["h1ComparisonDataKind"].is_string(),
+                    ),
+                    (
+                        "normalizedComplexFingerprint",
+                        contract["normalizedComplexFingerprint"].is_string(),
+                    ),
+                    (
+                        "classPrerequisite",
+                        contract["classPrerequisite"].is_boolean(),
+                    ),
+                    (
+                        "targetClassComputed",
+                        contract["targetClassComputed"].is_boolean(),
+                    ),
+                    ("contractChecked", contract["contractChecked"].is_boolean()),
+                ] {
+                    if !valid {
+                        examples.push(generic_validation_example(
+                            &contract_label,
+                            field,
+                            "comparison contract field has the wrong type or is missing",
+                        ));
+                    }
+                }
+            }
         }
     }
     for (index, row) in packet_value["structuralVerdict"]
@@ -14768,6 +14814,53 @@ mod tests {
             check.id == "measurement-packet-schema052-unknown-fields"
                 && check.examples.iter().any(|example| {
                     example.source.as_deref() == Some("computedInvariants[0].contract.forgedField")
+                })
+        }));
+
+        let mut non_object_contract = nested_unknown.clone();
+        non_object_contract["computedInvariants"][0]["contract"] = json!("forged");
+        let non_object_checks = validate_measurement_packet_value_v1(&non_object_contract);
+        assert!(non_object_checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-unknown-fields"
+                && check.examples.iter().any(|example| {
+                    example.source.as_deref() == Some("computedInvariants[0].contract")
+                })
+        }));
+
+        let mut foreign_contract = nested_unknown;
+        foreign_contract["computedInvariants"][0]["evaluator"] = json!("ag.foundation");
+        let foreign_checks = validate_measurement_packet_value_v1(&foreign_contract);
+        assert!(foreign_checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-unknown-fields"
+                && check.examples.iter().any(|example| {
+                    example.source.as_deref() == Some("computedInvariants[0].contract")
+                })
+        }));
+
+        let mut wrong_contract_type =
+            serde_json::to_value(packet_fixture()).expect("packet serializes");
+        wrong_contract_type["computedInvariants"] = json!([{
+            "invariantId": "saga-comparison:h1-transfer",
+            "kind": "h1-comparison-transfer",
+            "evaluator": "ag.saga-comparison",
+            "status": "not_computed",
+            "value": {"status": "not_computed"},
+            "representation": {"basis": "test"},
+            "contract": {
+                "incidenceBridgeKind": "explicit",
+                "h1ComparisonDataKind": "explicit",
+                "normalizedComplexFingerprint": "fingerprint",
+                "classPrerequisite": "false",
+                "targetClassComputed": false,
+                "contractChecked": false
+            }
+        }]);
+        let wrong_type_checks = validate_measurement_packet_value_v1(&wrong_contract_type);
+        assert!(wrong_type_checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-unknown-fields"
+                && check.examples.iter().any(|example| {
+                    example.source.as_deref() == Some("computedInvariants[0].contract")
+                        && example.target.as_deref() == Some("classPrerequisite")
                 })
         }));
     }
