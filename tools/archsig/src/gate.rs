@@ -677,7 +677,12 @@ fn comparison_silence_rows(packet: &Value) -> Vec<Value> {
 }
 
 fn supplemental_silence_rows(packet: &Value) -> Vec<Value> {
-    let mut rows = analytic_silence_rows(packet);
+    let structural = structural_verdict_rows(packet);
+    let mut rows = if structural.is_empty() {
+        analytic_silence_rows(packet)
+    } else {
+        Vec::new()
+    };
     rows.extend(comparison_silence_rows(packet));
     rows
 }
@@ -827,6 +832,66 @@ fn not_evaluable_report(
             "No measurement verdict was rounded into a gate decision."
         ]
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn analytic_silence_is_fallback_only_while_comparison_silence_is_supplemental() {
+        let packet = json!({
+            "structuralVerdict": [{
+                "verdictRef": "structural:law",
+                "evaluator": "ag.structural",
+                "law": "law:structural",
+                "verdict": "measured_zero",
+                "verdictData": {},
+                "dependsOnAssumptions": []
+            }],
+            "analyticReadings": [{
+                "readingId": "analytic:cost-model",
+                "evaluator": "ag.harmonic-debt"
+            }],
+            "computedInvariants": [{
+                "invariantId": "saga-comparison:h1-transfer",
+                "evaluator": "ag.saga-comparison",
+                "status": "silence_by_design",
+                "reason": "comparison_data_not_supplied"
+            }],
+            "boundaryStatements": [
+                {
+                    "kind": "silence_by_design",
+                    "scopeRefs": ["analytic:cost-model"]
+                },
+                {
+                    "kind": "silence_by_design",
+                    "scopeRefs": ["saga-comparison:h1-transfer"]
+                }
+            ]
+        });
+
+        let rows = gate_verdict_rows(&packet);
+        assert!(rows.iter().any(|row| row["verdictRef"] == "structural:law"));
+        assert!(
+            rows.iter()
+                .any(|row| row["verdictRef"] == "saga-comparison:h1-transfer")
+        );
+        assert!(
+            !rows
+                .iter()
+                .any(|row| row["verdictRef"] == "analytic:cost-model")
+        );
+
+        let mut fallback_packet = packet;
+        fallback_packet["structuralVerdict"] = json!([]);
+        let fallback_rows = gate_verdict_rows(&fallback_packet);
+        assert!(
+            fallback_rows
+                .iter()
+                .any(|row| row["verdictRef"] == "analytic:cost-model")
+        );
+    }
 }
 
 fn artifact_input_ref(path: &Path) -> String {
