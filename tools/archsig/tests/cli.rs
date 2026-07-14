@@ -3727,8 +3727,10 @@ fn cli_r13_two_vertex_circle_nerve_fixture_locks_body_worked_example() {
             .as_str()
             .is_some_and(|note| note.contains("not a Lean-proved witness"))
     );
+    assert_eq!(fixture["coefficient"]["ring"], "Z");
     assert_eq!(fixture["coefficient"]["quotient"], "F2");
     assert_eq!(fixture["coefficient"]["ideal"], "(2)");
+    assert_eq!(fixture["coefficient"]["oneIsNonzero"], true);
     assert_eq!(fixture["vertices"], json!(["v_minus", "v_plus"]));
     let edges = fixture["edges"].as_array().expect("circle edges");
     assert_eq!(edges.len(), 2);
