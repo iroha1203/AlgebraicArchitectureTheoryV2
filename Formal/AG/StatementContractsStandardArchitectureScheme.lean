@@ -1,5 +1,15 @@
 import Formal.AG.LawAlgebra.StandardScheme
 
+/-!
+Executable statement contracts for the standard architecture scheme core.
+
+This file directly checks the 28 fixed SD0 signatures from
+`aat_lean_02_standard_architecture_scheme_prd.md` against their implementation
+declarations.  It contains elaboration examples only and introduces no new
+mathematical declarations.  Later PRD slices extend the same contract surface
+with the fixed SD1--SD8 signatures.
+-/
+
 noncomputable section
 
 namespace AAT.AG.LawAlgebra
