@@ -16,7 +16,7 @@
 | diagnostic ceiling / policy profileRef | PRD R5 / R9 | `measurement-profile/v0.5.2.diagnosticCeiling` + `policies[].profileRef` | registered ceiling stage、policy profile ID 解決、未到達時の `silence_by_design`、site/cover validator | `measurement_profile_*` CLI negative/positive locks | 選択診断段の boundary contract | PR-3実装済 |
 | cost model(Lipschitz L + harmonic resolution) | PRD R7 / 第VIII部 系8.7 | `measurement-profile/v0.5.2` analytic 宣言 | innerProduct weights + costModel kind/L/resolution、assumption ledger 記録 | `tests/fixtures/ag_measurement/measurement_profile_harmonic_debt.json` | harmonicDebtNorm、cost model供給時のみrepair下界行 | PR-5実装済 |
 | refactor morphism(site 射 + law / coefficient / witness 互換) | PRD R8 / 第VIII部 定理7.3 | `refactor-morphism/v0.5.2` | site / cover / law / coefficient / finite witness compatibility の fail-closed 検査 | `tests/fixtures/ag_measurement/refactor_morphism.json` | validated artifact + witness による analytic verdict transport | PR-6実装済 |
-| refinement data(粗→細) | PRD R8 / 命題4.10 | `refinement-comparison/v0.5.2` | coarse-to-fine direction + class-zero preservation の検査 | `tests/fixtures/ag_measurement/refinement_comparison.json` | compare の class-zero 引き継ぎ | PR-6実装済 |
+| refinement data(粗→細) | PRD R8 / 命題4.10 | `refinement-comparison/v0.5.2` | coarse-to-fine direction + `zeroTransport.checked` + coarse/fine `complexFingerprint` と base/head の `inputDigests.siteCoverDigest.sha256` の突合 | `tests/fixtures/ag_measurement/refinement_comparison.json`（`cli_refinement_fixture_binds_to_generated_run_fingerprints`でrun-bound lock） | compare の coarse-zero → fine-zero 引き継ぎ(`CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT`) | Issue #3377是正済 |
 
 ## 台帳外入力の扱い
 

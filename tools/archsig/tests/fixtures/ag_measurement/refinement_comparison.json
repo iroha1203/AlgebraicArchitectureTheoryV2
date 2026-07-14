@@ -1,16 +1,16 @@
 {
   "schema": "refinement-comparison/v0.5.2",
-  "id": "refinement-comparison:ag-contexts",
+  "id": "refinement-comparison:ag-contexts-run-bound",
   "direction": "coarse-to-fine",
   "coarse": {
     "siteRef": "archmap:/contexts",
     "coverRef": "cover:order-inventory",
-    "complexFingerprint": "sha256:coarse-finite-complex"
+    "complexFingerprint": "fa2a22a316e506c3e5c76efedf1ddcbf870d1812dce5fb3627212515dbd667aa"
   },
   "fine": {
     "siteRef": "archmap:/contexts",
     "coverRef": "cover:order-inventory",
-    "complexFingerprint": "sha256:fine-finite-complex"
+    "complexFingerprint": "47a9c0fceff1191953a00e7734414d5f0451e87e30f494bd4343bb1e44714601"
   },
   "zeroTransport": {
     "kind": "class-zero-preservation",

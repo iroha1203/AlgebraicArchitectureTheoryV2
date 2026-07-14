@@ -110,7 +110,7 @@ classSupport.supportAtomRefs
   }
 ]</code></pre>
               </figure>
-              <p>The comparison report grades comparability first (<code>identical</code> / <code>verdict-row</code> / <code>not-comparable</code>), then records row-level verdict transitions with refs into both runs. A validated <code>--refinement</code> artifact can add a class-zero preservation reading; without it, the report keeps the two profiles separate. <code>MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE</code> says the record changed, not that your commit caused the fix. The reasoning behind that discipline is in <a href="../concepts/#comparability">Concepts</a>.</p>
+              <p>The comparison report grades comparability first (<code>identical</code> / <code>verdict-row</code> / <code>not-comparable</code>), then records row-level verdict transitions with refs into both runs. A validated <code>--refinement</code> artifact must bind coarse and fine <code>complexFingerprint</code> values to the runs' normalized <code>siteCoverDigest</code> values; it can then add the dedicated <code>CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT</code> reading for coarse-zero → fine-zero. Cover changes may leave ordinary comparability at <code>not-comparable</code>; nonzero or mixed class shapes remain non-terminal. Without the artifact, the report keeps the two profiles separate. <code>MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE</code> says the record changed, not that your commit caused the fix. The reasoning behind that discipline is in <a href="../concepts/#comparability">Concepts</a>.</p>
             </section>
             <section id="recipes" class="article-section">
               <h2>Task recipes</h2>

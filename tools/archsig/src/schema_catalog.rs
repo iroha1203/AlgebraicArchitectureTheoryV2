@@ -7,13 +7,14 @@ use crate::{
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_POLICY_BUNDLE_V1_SCHEMA,
-    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
-    ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
-    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, LAW_SURFACE_BINDING_VOCABULARY_SCHEMA,
-    MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
-    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
-    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
-    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
+    ARCHSIG_REFINEMENT_CONCLUSION_CODES, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
+    ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
+    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
+    NORMALIZED_ARCHMAP_V2_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
+    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
+    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
+    SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -277,10 +278,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.2 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.5.2-ag-measurement"],
-                "A validated coarse-to-fine finite-complex comparison that permits comparison to emit the supplied class-zero preservation reading.",
+                &format!(
+                    "A validated coarse-to-fine finite-complex comparison that binds both run siteCoverDigest fingerprints and permits compare to emit the supplied class-zero preservation reading. Registered conclusionCode values are {}.",
+                    registry_sentence(&ARCHSIG_REFINEMENT_CONCLUSION_CODES),
+                ),
                 vec![
                     "Only coarse-to-fine direction is accepted.",
-                    "The artifact supplies a zero-preservation contract; it does not infer class transport from matching names or fingerprints alone.",
+                    "The artifact supplies a zero-preservation contract; compare requires its coarse and fine fingerprints to match the corresponding run siteCoverDigest values.",
                 ],
             ),
             artifact(
@@ -339,7 +343,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
                 ),
                 vec![
-                    "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence without the validated refinement-comparison/v0.5.2 artifact.",
+                    "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence without a validated refinement-comparison/v0.5.2 artifact whose fingerprints bind the corresponding run siteCoverDigest values.",
                     "Comparison report conclusion codes are record-level names only.",
                     "Cover or context changes are boundary data and map to other_transition for gate policy evaluation.",
                 ],

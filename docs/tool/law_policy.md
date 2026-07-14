@@ -81,7 +81,9 @@ compareのR8契約では、contextsまたはcoversに差分がある場合、pro
 
 R8 の class-zero reading は、`--refinement` で
 `refinement-comparison/v0.5.2` を供給し、その coarse-to-fine と
-`zeroTransport.checked` を検査した場合だけ追加される。refactor transport は
+`zeroTransport.checked`、および coarse/fine `complexFingerprint` と base/head の
+`inputDigests.siteCoverDigest.sha256` の一致を検査した場合だけ追加される。
+refactor transport は
 `--refactor-morphism refactor-morphism/v0.5.2` と matching witness の両方を必要とする。
 
 The current handoff to FieldSig is the serialized measurement packet. FieldSig

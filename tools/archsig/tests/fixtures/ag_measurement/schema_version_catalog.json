@@ -508,7 +508,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "A validated coarse-to-fine finite-complex comparison that permits comparison to emit the supplied class-zero preservation reading.",
+        "fieldMappingPolicy": "A validated coarse-to-fine finite-complex comparison that binds both run siteCoverDigest fingerprints and permits compare to emit the supplied class-zero preservation reading. Registered conclusionCode values are CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -519,7 +519,7 @@
         ],
         "nonConclusions": [
           "Only coarse-to-fine direction is accepted.",
-          "The artifact supplies a zero-preservation contract; it does not infer class transport from matching names or fingerprints alone."
+          "The artifact supplies a zero-preservation contract; compare requires its coarse and fine fingerprints to match the corresponding run siteCoverDigest values."
         ]
       }
     },
@@ -628,7 +628,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence without the validated refinement-comparison/v0.5.2 artifact.",
+          "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence without a validated refinement-comparison/v0.5.2 artifact whose fingerprints bind the corresponding run siteCoverDigest values.",
           "Comparison report conclusion codes are record-level names only.",
           "Cover or context changes are boundary data and map to other_transition for gate policy evaluation."
         ]

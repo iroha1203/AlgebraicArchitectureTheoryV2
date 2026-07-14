@@ -6,7 +6,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use archsig::{
     ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
-    ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, ARCHSIG_COMPARISON_CONCLUSION_CODES,
+    ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
+    ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT, ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
@@ -13765,7 +13766,7 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
     assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.2");
     assert_eq!(
         comparison["discipline"],
-        "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim class transport, causal repair, semantic equivalence, or preserved obstruction identity."
+        "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract."
     );
     assert!(
         comparison["inputDigests"]["headRun"]["measurementPacket"]["sha256"]
@@ -13902,6 +13903,329 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
     assert_eq!(
         mismatch["reason"],
         "comparison report headRun measurement packet digest does not match --packet"
+    );
+}
+
+#[test]
+fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
+    let out_dir = temp_dir("archsig-compare-refinement-zero-transport");
+    let root = ag_measurement_root();
+    let zero_plan = zero_plan_for_refinement_test(&root);
+
+    let base_archmap = read_json(&root.join("archmap_v2.json"));
+    let base_run = run_saga_compare_fixture(
+        "refinement-coarse-zero",
+        base_archmap.clone(),
+        zero_plan.clone(),
+    );
+    let fine_archmap = refinement_fine_archmap_for_test(&root);
+    let fine_run = run_saga_compare_fixture(
+        "refinement-fine-zero",
+        fine_archmap.clone(),
+        zero_plan.clone(),
+    );
+
+    let refinement_path = out_dir.join("refinement.json");
+    let refinement_for = |coarse: &Path, fine: &Path| {
+        let coarse_manifest = read_json(&coarse.join("archsig-run-manifest.json"));
+        let fine_manifest = read_json(&fine.join("archsig-run-manifest.json"));
+        json!({
+            "schema": "refinement-comparison/v0.5.2",
+            "id": "refinement-comparison:e2e",
+            "direction": "coarse-to-fine",
+            "coarse": {
+                "siteRef": "archmap:/contexts",
+                "coverRef": "cover:order-inventory",
+                "complexFingerprint": coarse_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
+            },
+            "fine": {
+                "siteRef": "archmap:/contexts",
+                "coverRef": "cover:order-inventory",
+                "complexFingerprint": fine_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
+            },
+            "zeroTransport": {
+                "kind": "class-zero-preservation",
+                "checked": true,
+                "map": "coarse-to-fine-supplied"
+            }
+        })
+    };
+    fs::write(
+        &refinement_path,
+        serde_json::to_vec_pretty(&refinement_for(&base_run, &fine_run))
+            .expect("refinement serializes"),
+    )
+    .expect("refinement writes");
+
+    let positive_out = out_dir.join("positive-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base path is utf-8"),
+        "--head-run",
+        fine_run.to_str().expect("fine path is utf-8"),
+        "--refinement",
+        refinement_path.to_str().expect("refinement path is utf-8"),
+        "--out-dir",
+        positive_out.to_str().expect("output path is utf-8"),
+    ]);
+    let positive = read_json(&positive_out.join("archsig-comparison-report.json"));
+    assert_eq!(positive["comparability"]["level"], "not-comparable");
+    assert_eq!(positive["comparability"]["sameSiteCoverDigest"], false);
+    assert_eq!(positive["classTransport"]["status"], "established");
+    assert_eq!(
+        positive["classTransport"]["conclusionCode"],
+        ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT
+    );
+    assert_eq!(
+        positive["classTransport"]["recordComparability"],
+        "not-comparable"
+    );
+    assert_eq!(
+        positive["classTransport"]["runBinding"]["coarse"]["complexFingerprint"],
+        read_json(&base_run.join("archsig-run-manifest.json"))["inputDigests"]["siteCoverDigest"]["sha256"]
+    );
+    assert_eq!(
+        positive["classTransport"]["runBinding"]["fine"]["complexFingerprint"],
+        read_json(&fine_run.join("archsig-run-manifest.json"))["inputDigests"]["siteCoverDigest"]["sha256"]
+    );
+    assert_eq!(positive["classTransport"]["boundaryStatement"], Value::Null);
+
+    let mut nonzero_plan = zero_plan_for_refinement_test(&root);
+    nonzero_plan["complex"]["overlaps"]
+        .as_array_mut()
+        .expect("nonzero overlaps are array")
+        .push(json!({
+            "id": "overlap:order-inventory-alt",
+            "left": "ctx:order",
+            "right": "ctx:inventory"
+        }));
+    nonzero_plan["primitives"]
+        .as_array_mut()
+        .expect("nonzero primitives are array")
+        .push(json!({
+            "id": "primitive:order-inventory-alt",
+            "overlapRef": "overlap:order-inventory-alt",
+            "resL": ["repair:cycle"],
+            "resR": [],
+            "support": {"kind": "supplied", "variables": ["repair:cycle"]}
+        }));
+    for primitive in nonzero_plan["primitives"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .take(3)
+    {
+        primitive["resL"] = json!([]);
+        primitive["resR"] = json!([]);
+        primitive["support"]["variables"] = json!([]);
+    }
+    nonzero_plan["faithfulness"] = json!({
+        "mode": "supplied",
+        "supplied": {
+            "zeroPrimitiveRef": "primitive:inventory-shared",
+            "residualSupportPredicate": {
+                "kind": "finite-support",
+                "supportVariables": ["repair:cycle"],
+                "zeroOnZeroPrimitive": true
+            },
+            "faithfulnessLaw": "Q is faithful on the supplied residual support"
+        }
+    });
+    nonzero_plan["gluingData"]["overlapRefs"]
+        .as_array_mut()
+        .expect("nonzero gluing overlap refs are array")
+        .push(json!("overlap:order-inventory-alt"));
+    nonzero_plan["gluingData"]["sectionRefs"]
+        .as_array_mut()
+        .expect("nonzero gluing section refs are array")
+        .push(json!({
+            "overlapRef": "overlap:order-inventory-alt",
+            "sectionRef": "section:order-inventory-alt"
+        }));
+    let nonzero_base = run_saga_compare_fixture(
+        "refinement-coarse-nonzero",
+        read_json(&root.join("archmap_v2.json")),
+        nonzero_plan.clone(),
+    );
+    let nonzero_head = run_saga_compare_fixture(
+        "refinement-fine-nonzero",
+        read_json(&root.join("archmap_v2.json")),
+        nonzero_plan.clone(),
+    );
+    let nonzero_refinement_path = out_dir.join("nonzero-refinement.json");
+    fs::write(
+        &nonzero_refinement_path,
+        serde_json::to_vec_pretty(&refinement_for(&nonzero_base, &nonzero_head))
+            .expect("nonzero refinement serializes"),
+    )
+    .expect("nonzero refinement writes");
+    let nonzero_out = out_dir.join("nonzero-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        nonzero_base.to_str().expect("nonzero base path is utf-8"),
+        "--head-run",
+        nonzero_head.to_str().expect("nonzero head path is utf-8"),
+        "--refinement",
+        nonzero_refinement_path
+            .to_str()
+            .expect("nonzero refinement path is utf-8"),
+        "--out-dir",
+        nonzero_out.to_str().expect("nonzero output path is utf-8"),
+    ]);
+    let nonzero = read_json(&nonzero_out.join("archsig-comparison-report.json"));
+    assert_eq!(nonzero["classTransport"]["sourceClassNonZero"], true);
+    assert_eq!(nonzero["classTransport"]["targetClassNonZero"], true);
+    assert_eq!(nonzero["classTransport"]["zeroPreserved"], false);
+    assert_eq!(nonzero["classTransport"]["status"], "not_computed");
+    assert_eq!(nonzero["classTransport"]["conclusionCode"], Value::Null);
+    assert_eq!(
+        nonzero["classTransport"]["boundaryStatement"]["kind"],
+        "class_zero_transport_not_established"
+    );
+
+    let mixed_base = run_saga_compare_fixture(
+        "refinement-coarse-nonzero-to-zero",
+        base_archmap,
+        nonzero_plan,
+    );
+    let mixed_head = run_saga_compare_fixture(
+        "refinement-fine-nonzero-to-zero",
+        fine_archmap,
+        zero_plan_for_refinement_test(&root),
+    );
+    let mixed_refinement_path = out_dir.join("mixed-refinement.json");
+    fs::write(
+        &mixed_refinement_path,
+        serde_json::to_vec_pretty(&refinement_for(&mixed_base, &mixed_head))
+            .expect("mixed refinement serializes"),
+    )
+    .expect("mixed refinement writes");
+    let mixed_out = out_dir.join("mixed-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        mixed_base.to_str().expect("mixed base path is utf-8"),
+        "--head-run",
+        mixed_head.to_str().expect("mixed head path is utf-8"),
+        "--refinement",
+        mixed_refinement_path
+            .to_str()
+            .expect("mixed refinement path is utf-8"),
+        "--out-dir",
+        mixed_out.to_str().expect("mixed output path is utf-8"),
+    ]);
+    let mixed = read_json(&mixed_out.join("archsig-comparison-report.json"));
+    assert_eq!(mixed["classTransport"]["sourceClassNonZero"], true);
+    assert_eq!(mixed["classTransport"]["targetClassNonZero"], false);
+    assert_eq!(mixed["classTransport"]["zeroPreserved"], false);
+    assert_eq!(mixed["classTransport"]["status"], "not_computed");
+    assert_eq!(mixed["classTransport"]["conclusionCode"], Value::Null);
+    assert_eq!(
+        mixed["classTransport"]["boundaryStatement"]["kind"],
+        "class_zero_transport_not_established"
+    );
+
+    let mut mismatched_refinement = refinement_for(&base_run, &fine_run);
+    mismatched_refinement["fine"]["complexFingerprint"] = json!("sha256:mismatch");
+    let mismatched_path = out_dir.join("mismatched-refinement.json");
+    fs::write(
+        &mismatched_path,
+        serde_json::to_vec_pretty(&mismatched_refinement)
+            .expect("mismatched refinement serializes"),
+    )
+    .expect("mismatched refinement writes");
+    let mismatch_output = run_sig0_output(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base path is utf-8"),
+        "--head-run",
+        fine_run.to_str().expect("fine path is utf-8"),
+        "--refinement",
+        mismatched_path.to_str().expect("mismatched path is utf-8"),
+        "--out-dir",
+        out_dir
+            .join("mismatched-compare")
+            .to_str()
+            .expect("mismatch output is utf-8"),
+    ]);
+    assert_eq!(mismatch_output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&mismatch_output.stderr)
+            .contains("COMPARISON_DATA_CONTRACT_VIOLATION")
+    );
+
+    let separate_out = out_dir.join("separate-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base path is utf-8"),
+        "--head-run",
+        fine_run.to_str().expect("fine path is utf-8"),
+        "--out-dir",
+        separate_out.to_str().expect("separate output is utf-8"),
+    ]);
+    let separate = read_json(&separate_out.join("archsig-comparison-report.json"));
+    assert_eq!(
+        separate["profileConclusionCode"],
+        "TWO_PROFILES_REPORTED_SEPARATELY"
+    );
+    assert_eq!(separate["classTransport"]["status"], "silence_by_design");
+
+    let mut reverse = refinement_for(&base_run, &fine_run);
+    reverse["direction"] = json!("fine-to-coarse");
+    let reverse_path = out_dir.join("reverse-refinement.json");
+    fs::write(
+        &reverse_path,
+        serde_json::to_vec_pretty(&reverse).expect("reverse refinement serializes"),
+    )
+    .expect("reverse refinement writes");
+    let reverse_output = run_sig0_output(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base path is utf-8"),
+        "--head-run",
+        fine_run.to_str().expect("fine path is utf-8"),
+        "--refinement",
+        reverse_path.to_str().expect("reverse path is utf-8"),
+        "--out-dir",
+        out_dir
+            .join("reverse-compare")
+            .to_str()
+            .expect("reverse output is utf-8"),
+    ]);
+    assert_eq!(reverse_output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&reverse_output.stderr)
+            .contains("direction must be coarse-to-fine")
+    );
+}
+
+#[test]
+fn cli_refinement_fixture_binds_to_generated_run_fingerprints() {
+    let root = ag_measurement_root();
+    let coarse = run_saga_compare_fixture(
+        "refinement-static-fixture-coarse",
+        read_json(&root.join("archmap_v2.json")),
+        zero_plan_for_refinement_test(&root),
+    );
+    let fine = run_saga_compare_fixture(
+        "refinement-static-fixture-fine",
+        refinement_fine_archmap_for_test(&root),
+        zero_plan_for_refinement_test(&root),
+    );
+    let fixture = read_json(&root.join("refinement_comparison.json"));
+    let coarse_manifest = read_json(&coarse.join("archsig-run-manifest.json"));
+    let fine_manifest = read_json(&fine.join("archsig-run-manifest.json"));
+    assert_eq!(fixture["direction"], "coarse-to-fine");
+    assert_eq!(
+        fixture["coarse"]["complexFingerprint"],
+        coarse_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
+    );
+    assert_eq!(
+        fixture["fine"]["complexFingerprint"],
+        fine_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
     );
 }
 
@@ -14421,6 +14745,91 @@ fn assert_saga_summary_has_no_class_vocabulary(summary: &Value) {
         !json_contains_substring(summary, "class"),
         "SAGA summary must not introduce layer C class vocabulary"
     );
+}
+
+fn zero_plan_for_refinement_test(root: &Path) -> Value {
+    let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
+    plan["trueSheafCertificate"] =
+        read_json(&root.join("repair_plan_true_sheaf.json"))["trueSheafCertificate"].clone();
+    plan["gluingData"] =
+        read_json(&root.join("repair_plan_gluing_data.json"))["gluingData"].clone();
+    plan
+}
+
+fn refinement_fine_archmap_for_test(root: &Path) -> Value {
+    let mut fine_archmap = read_json(&root.join("archmap_v2.json"));
+    fine_archmap["contexts"][2]["atoms"]
+        .as_array_mut()
+        .expect("fine context atoms are array")
+        .push(json!("atom:order"));
+    fine_archmap
+}
+
+fn run_saga_compare_fixture(case_id: &str, archmap: Value, repair_plan: Value) -> PathBuf {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir(case_id);
+    let archmap_path = out_dir.join("archmap.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("compare ArchMap serializes"),
+    )
+    .expect("compare ArchMap writes");
+    let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
+    policy["policies"] = json!([{
+        "law": "ag.saga-descent",
+        "evaluator": "ag.saga-descent",
+        "basis": ["policy-basis:layering"],
+        "scope": ["src/"],
+        "severity": "high"
+    }]);
+    let policy_path = out_dir.join("law_policy.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+    let repair_plan_path = out_dir.join("repair_plan.json");
+    fs::write(
+        &repair_plan_path,
+        serde_json::to_vec_pretty(&repair_plan).expect("compare RepairPlan serializes"),
+    )
+    .expect("compare RepairPlan writes");
+    let measurement_profile_path = test_measurement_profile_path(&policy_path);
+    let law_surface_path = policy_path.with_file_name("law_surface.json");
+    let analyze_args = [
+        "analyze",
+        "--archmap",
+        archmap_path
+            .to_str()
+            .expect("compare ArchMap path is utf-8"),
+        "--law-policy",
+        policy_path
+            .to_str()
+            .expect("compare LawPolicy path is utf-8"),
+        "--measurement-profile",
+        measurement_profile_path
+            .to_str()
+            .expect("compare MeasurementProfile path is utf-8"),
+        "--law-surface",
+        law_surface_path
+            .to_str()
+            .expect("compare law surface path is utf-8"),
+        "--repair-plan",
+        repair_plan_path
+            .to_str()
+            .expect("compare RepairPlan path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("compare output path is utf-8"),
+    ];
+    let output = run_sig0_output(&analyze_args);
+    assert!(
+        output.status.success(),
+        "compare fixture analyze failed\nstdout:\n{}\nstderr:\n{}\nvalidation:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+        ["archmap-validation.json", "repair-plan-validation.json"]
+            .iter()
+            .filter_map(|name| fs::read_to_string(out_dir.join(name)).ok())
+            .collect::<Vec<_>>()
+            .join("\n")
+    );
+    out_dir
 }
 
 fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
