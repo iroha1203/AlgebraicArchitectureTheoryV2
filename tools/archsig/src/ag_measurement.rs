@@ -528,6 +528,29 @@ fn boundary_statements_for_measurement_packet(
         }
     }
 
+    for (index, invariant) in packet.computed_invariants.iter().enumerate() {
+        if invariant["evaluator"] == "ag.saga-comparison"
+            && invariant["status"] == "silence_by_design"
+        {
+            let invariant_id = invariant["invariantId"]
+                .as_str()
+                .unwrap_or("unknown-invariant");
+            let reason = invariant["reason"]
+                .as_str()
+                .unwrap_or("comparison_prerequisite_not_measured");
+            let what_next = invariant["whatNext"]
+                .as_str()
+                .unwrap_or("supply the missing comparison prerequisite before reading H1 transfer");
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:silence-by-design:saga-comparison:{index}"),
+                kind: "silence_by_design".to_string(),
+                scope_refs: vec![invariant_id.to_string()],
+                reason: reason.to_string(),
+                text: format!("{reason}: {what_next}"),
+            });
+        }
+    }
+
     for (index, assumption) in packet.assumptions.iter().enumerate() {
         if assumption.status == "violated" {
             let assumption_id = assumption_id_for_schema(assumption);

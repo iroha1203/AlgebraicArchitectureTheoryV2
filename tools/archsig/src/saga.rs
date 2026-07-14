@@ -735,7 +735,8 @@ fn evaluate_saga_comparison_v1(
             "evaluator": "ag.saga-comparison",
             "kind": "h1-comparison-transfer",
             "status": "silence_by_design",
-            "reason": "comparison_data_not_supplied"
+            "reason": "comparison_data_not_supplied",
+            "whatNext": "supply a validated incidence bridge and H1 comparison contract before evaluating transfer"
         });
     };
     let class_available = structural_verdict.iter().any(|verdict| {

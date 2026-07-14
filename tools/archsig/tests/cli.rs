@@ -2650,6 +2650,9 @@ fn cli_gate_allows_saga_silence_by_design_with_boundary_override() {
     let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
     assert_eq!(comparison["status"], "silence_by_design");
     assert_eq!(comparison["reason"], "comparison_data_not_supplied");
+    assert!(comparison["whatNext"].as_str().is_some_and(|text| {
+        text.contains("incidence bridge") && text.contains("H1 comparison contract")
+    }));
 
     let report_path = out_dir.join("archsig-gate-report.json");
     run_sig0(&[
@@ -2680,6 +2683,14 @@ fn cli_gate_allows_saga_silence_by_design_with_boundary_override() {
         .expect("saga global coherence mapping exists");
     assert_eq!(saga_mapping["action"], "pass_with_boundary");
     assert_eq!(saga_mapping["boundaryOverrideApplied"], true);
+    let comparison_mapping = report["ruleOutcomes"][0]["appliedMapping"]
+        .as_array()
+        .expect("applied mappings")
+        .iter()
+        .find(|mapping| mapping["rowRef"] == "saga-comparison:h1-transfer")
+        .expect("comparison silence mapping exists");
+    assert_eq!(comparison_mapping["action"], "pass_with_boundary");
+    assert_eq!(comparison_mapping["boundaryOverrideApplied"], true);
 }
 
 #[test]
@@ -3723,8 +3734,12 @@ fn cli_r13_two_vertex_circle_nerve_fixture_locks_body_worked_example() {
     assert_eq!(edges.len(), 2);
     assert_eq!(edges[0]["source"], "v_minus");
     assert_eq!(edges[0]["target"], "v_plus");
+    assert_eq!(edges[0]["id"], "e_plus");
+    assert_eq!(edges[0]["value"], 1);
     assert_eq!(edges[1]["source"], "v_plus");
     assert_eq!(edges[1]["target"], "v_minus");
+    assert_eq!(edges[1]["id"], "e_minus");
+    assert_eq!(edges[1]["value"], 0);
     assert_eq!(
         edges
             .iter()

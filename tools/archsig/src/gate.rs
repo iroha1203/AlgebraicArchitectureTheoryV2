@@ -397,8 +397,8 @@ fn validate_gate_packet_v1(packet: &Value) -> Vec<Value> {
             &mut checks,
             &mut fail_count,
             "gate-packet-structural-verdict-nonempty",
-            !rows.is_empty() || !analytic_silence_rows(packet).is_empty(),
-            "structuralVerdict must contain a row, or analytic silence must be explicitly boundary-scoped for gate mapping",
+            !rows.is_empty() || !supplemental_silence_rows(packet).is_empty(),
+            "structuralVerdict must contain a row, or a typed silence row must be explicitly boundary-scoped for gate mapping",
         );
         for (index, row) in rows.iter().enumerate() {
             let verdict = row.get("verdict").and_then(Value::as_str);
@@ -639,13 +639,54 @@ fn analytic_silence_rows(packet: &Value) -> Vec<Value> {
         .collect()
 }
 
+fn comparison_silence_rows(packet: &Value) -> Vec<Value> {
+    let boundaries_by_scope = packet_boundary_statements_by_scope(packet);
+    packet["computedInvariants"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|invariant| {
+            if invariant["evaluator"] != "ag.saga-comparison"
+                || invariant["status"] != "silence_by_design"
+            {
+                return None;
+            }
+            let invariant_id = invariant["invariantId"].as_str()?;
+            let has_silence_boundary = boundaries_by_scope
+                .get(invariant_id)
+                .into_iter()
+                .flatten()
+                .any(|kind| kind == "silence_by_design");
+            has_silence_boundary.then(|| {
+                json!({
+                    "verdictRef": invariant_id,
+                    "evaluator": invariant["evaluator"],
+                    "law": invariant["evaluator"],
+                    "verdict": "not_computed",
+                    "verdictData": {
+                        "inScope": true,
+                        "zero": false,
+                        "nonZero": false,
+                        "methodStatus": invariant["reason"]
+                    },
+                    "dependsOnAssumptions": []
+                })
+            })
+        })
+        .collect()
+}
+
+fn supplemental_silence_rows(packet: &Value) -> Vec<Value> {
+    let mut rows = analytic_silence_rows(packet);
+    rows.extend(comparison_silence_rows(packet));
+    rows
+}
+
 fn gate_verdict_rows(packet: &Value) -> Vec<Value> {
     let structural = structural_verdict_rows(packet);
-    if structural.is_empty() {
-        analytic_silence_rows(packet)
-    } else {
-        structural
-    }
+    let mut rows = structural;
+    rows.extend(supplemental_silence_rows(packet));
+    rows
 }
 
 fn violated_assumption_ids(packet: &Value) -> BTreeSet<String> {
