@@ -1033,6 +1033,20 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             })
         })
         .collect::<Vec<_>>();
+    let explicit_variables = typed_explicit
+        .primitives
+        .iter()
+        .flat_map(|primitive| primitive.support.variables.iter().cloned())
+        .collect::<BTreeSet<_>>();
+    let explicit_variable_map = explicit_variables
+        .iter()
+        .map(|variable| {
+            json!({
+                "source": variable,
+                "target": variable
+            })
+        })
+        .collect::<Vec<_>>();
     explicit_comparison["comparison"] = json!({
         "kind": "saga-comparison",
         "incidenceBridge": {
@@ -1049,11 +1063,22 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             "sourceComplexFingerprint": explicit_fingerprint,
             "targetComplexFingerprint": explicit_fingerprint,
             "targetCochainSupport": explicit_target_support,
-            "degreeOneLeftInverse": true,
-            "degreeOneRightInverse": true,
-            "differencePreserving": true,
-            "degreeTwoZeroPreserving": true,
-            "differentialCommutative": true
+            "cochainMap": {
+                "degreeZero": typed_explicit.complex.charts.iter().map(|chart| json!({
+                    "sourceChartRef": chart,
+                    "targetChartRef": chart,
+                    "variableMap": explicit_variable_map.clone()
+                })).collect::<Vec<_>>(),
+                "degreeOne": typed_explicit.complex.overlaps.iter().map(|overlap| json!({
+                    "sourceOverlapRef": overlap.id,
+                    "targetOverlapRef": overlap.id,
+                    "variableMap": explicit_variable_map.clone()
+                })).collect::<Vec<_>>(),
+                "degreeTwo": typed_explicit.complex.triple_overlaps.iter().map(|triple| json!({
+                    "sourceTripleRef": triple.id,
+                    "targetTripleRef": triple.id
+                })).collect::<Vec<_>>()
+            }
         }
     });
     let explicit_comparison_path = out_dir.join("repair_plan_comparison_explicit.json");
@@ -1088,7 +1113,8 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             "comparison-identity-target-fingerprint",
             json!("sha256:target-wrong"),
         ),
-        ("comparison-explicit-false-premise", json!(false)),
+        ("comparison-explicit-map-difference", json!("src:forged")),
+        ("comparison-legacy-boolean", json!(true)),
         ("comparison-unknown-field", json!("forged")),
         ("comparison-unresolved-reference", json!("complex:forged")),
         ("comparison-target-support-mismatch", json!([])),
@@ -1120,8 +1146,11 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
                 "targetComplexFingerprint": mutation,
                 "targetCochainSupport": explicit_target_support
             });
-        } else if case == "comparison-explicit-false-premise" {
-            invalid["comparison"]["h1ComparisonData"]["differencePreserving"] = mutation;
+        } else if case == "comparison-explicit-map-difference" {
+            invalid["comparison"]["h1ComparisonData"]["cochainMap"]["degreeOne"][0]["variableMap"]
+                [0]["target"] = mutation;
+        } else if case == "comparison-legacy-boolean" {
+            invalid["comparison"]["h1ComparisonData"]["degreeOneLeftInverse"] = mutation;
         } else if case == "comparison-unresolved-reference" {
             invalid["comparison"]["incidenceBridge"]["sourceComplexRef"] = mutation;
         } else if case == "comparison-target-support-mismatch" {
@@ -2127,7 +2156,9 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         "SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA"
     );
     assert_eq!(comparison["contract"]["targetClassComputed"], true);
+    assert_eq!(comparison["contract"]["contractChecked"], true);
     assert_eq!(comparison["suppliedCochainMap"]["level"], "cochain");
+    assert_eq!(comparison["suppliedCochainMap"]["contractChecked"], true);
     assert_eq!(comparison["generatedQuotientTransfer"]["level"], "quotient");
     assert_eq!(
         comparison["generatedQuotientTransfer"]["preservesZeroPredicate"],

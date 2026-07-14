@@ -8,6 +8,11 @@
 不一致は `COMPARISON_DATA_CONTRACT_VIOLATION` で fail-closed とする。
 fingerprint 不一致かつ refinement 不在の場合は `profileConclusionCode: TWO_PROFILES_REPORTED_SEPARATELY` を記録する。
 
+SAGA の run 内 H¹ comparison は `RepairPlan.comparison.h1ComparisonData` が所有する。
+explicit comparison では `cochainMap.degreeZero` / `degreeOne` / `degreeTwo` の有限写像表を
+validator が再計算し、適合条件を満たす場合だけ analyze の転送 invariant が立つ。
+compare の run-pair 記録はこの run 内写像を自動生成しない。
+
 ## Inputs and outputs
 
 Input run directory must contain:

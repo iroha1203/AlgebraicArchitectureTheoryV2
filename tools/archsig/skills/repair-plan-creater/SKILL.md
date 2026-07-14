@@ -42,6 +42,15 @@ For a grounded Stage 3 run, add the validated supplied slots
 `skeleton`, `defectSources[].holdsCriterion`, and the quotient sheaf condition;
 do not place those equation fields in the RepairPlan.
 
+For `h1ComparisonData.kind = explicit`, author an evidence-shaped
+`cochainMap` with `degreeZero`, `degreeOne`, and `degreeTwo` finite basis maps.
+Each degree-zero/chart and degree-one/overlap row carries a `variableMap`; each
+degree-two/triple row carries its source and target triple refs. The validator
+recomputes inverse, difference, zero, and differential conditions from these
+tables. Do not add `degreeOneLeftInverse`, `degreeOneRightInverse`,
+`differencePreserving`, `degreeTwoZeroPreserving`, or
+`differentialCommutative` declaration booleans.
+
 ## Boundaries
 
 - Do not author a supplied slot from a conclusion value. Comparison, gluing,

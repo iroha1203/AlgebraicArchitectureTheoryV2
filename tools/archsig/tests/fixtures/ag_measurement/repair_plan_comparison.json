@@ -98,11 +98,39 @@
         { "overlapRef": "overlap:inventory-shared", "support": [] },
         { "overlapRef": "overlap:order-shared", "support": ["src:inventory", "src:order"] }
       ],
-      "degreeOneLeftInverse": true,
-      "degreeOneRightInverse": true,
-      "differencePreserving": true,
-      "degreeTwoZeroPreserving": true,
-      "differentialCommutative": true
+      "cochainMap": {
+        "degreeZero": [
+          { "sourceChartRef": "ctx:order", "targetChartRef": "ctx:order", "variableMap": [
+            { "source": "src:inventory", "target": "src:inventory" },
+            { "source": "src:order", "target": "src:order" }
+          ] },
+          { "sourceChartRef": "ctx:inventory", "targetChartRef": "ctx:inventory", "variableMap": [
+            { "source": "src:inventory", "target": "src:inventory" },
+            { "source": "src:order", "target": "src:order" }
+          ] },
+          { "sourceChartRef": "ctx:shared", "targetChartRef": "ctx:shared", "variableMap": [
+            { "source": "src:inventory", "target": "src:inventory" },
+            { "source": "src:order", "target": "src:order" }
+          ] }
+        ],
+        "degreeOne": [
+          { "sourceOverlapRef": "overlap:order-inventory", "targetOverlapRef": "overlap:order-inventory", "variableMap": [
+            { "source": "src:inventory", "target": "src:inventory" },
+            { "source": "src:order", "target": "src:order" }
+          ] },
+          { "sourceOverlapRef": "overlap:inventory-shared", "targetOverlapRef": "overlap:inventory-shared", "variableMap": [
+            { "source": "src:inventory", "target": "src:inventory" },
+            { "source": "src:order", "target": "src:order" }
+          ] },
+          { "sourceOverlapRef": "overlap:order-shared", "targetOverlapRef": "overlap:order-shared", "variableMap": [
+            { "source": "src:inventory", "target": "src:inventory" },
+            { "source": "src:order", "target": "src:order" }
+          ] }
+        ],
+        "degreeTwo": [
+          { "sourceTripleRef": "triple:order-inventory-shared", "targetTripleRef": "triple:order-inventory-shared" }
+        ]
+      }
     }
   }
 }
