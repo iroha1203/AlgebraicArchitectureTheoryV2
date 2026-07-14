@@ -12641,9 +12641,34 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                         ARCHSIG_SAGA_CONCLUSION_CODES
                             .iter()
                             .all(|code| description.contains(code))
+                            && [
+                                "incidenceBridgeKind",
+                                "h1ComparisonDataKind",
+                                "normalizedComplexFingerprint",
+                                "classPrerequisite",
+                                "targetClassComputed",
+                                "contractChecked",
+                                "strings",
+                                "booleans",
+                            ]
+                            .iter()
+                            .all(|field| description.contains(field))
                     })
         }),
         "schema catalog must register SAGA conclusionCode values"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-gate-policy/v0.5.2"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        description
+                            .contains("violated_assumption_dependency must map exactly to block")
+                            && description.contains("cannot map to plain pass")
+                    })
+        }),
+        "schema catalog must register the exact gate action for violated assumption dependency"
     );
     assert!(
         artifacts.iter().any(|entry| {
@@ -13444,6 +13469,53 @@ fn cli_gate_rejects_supplied_vacuous_measured_zero_packet() {
             .iter()
             .any(|check| {
                 check["id"] == "measurement-packet-schema052-structural-verdict-new-shape"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
+fn cli_gate_rejects_silence_scope_on_measured_nonzero() {
+    let out_dir = temp_dir("archsig-gate-silence-on-measured-nonzero");
+    let packet_path = out_dir.join("packet.json");
+    write_gate_packet(&packet_path, "measured_nonzero");
+    let mut packet = read_json(&packet_path);
+    let structural_ref = packet["structuralVerdict"][0]["verdictRef"]
+        .as_str()
+        .expect("structural verdict ref")
+        .to_string();
+    packet["boundaryStatements"][0]["scopeRefs"] = json!([structural_ref]);
+    fs::write(
+        &packet_path,
+        serde_json::to_vec_pretty(&packet).expect("packet serializes"),
+    )
+    .expect("packet writes");
+    let report_path = out_dir.join("gate-report.json");
+
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            ag_measurement_root()
+                .join("gate_policy_conservative.json")
+                .to_str()
+                .expect("policy path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let report = read_json(&report_path);
+    assert_eq!(report["decision"], "NOT_EVALUABLE");
+    assert!(
+        report["packetValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| {
+                check["id"] == "measurement-packet-schema052-boundary-statements"
                     && check["result"] == "fail"
             })
     );

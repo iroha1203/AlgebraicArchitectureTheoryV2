@@ -15,7 +15,7 @@
 - `violated_assumption_dependency`
 
 action 語彙は `pass`, `pass_with_boundary`, `block` の 3 つだけである。
-`unmeasured`, `unknown`, `not_computed`, `violated_assumption_dependency` は plain `pass` にできない。
+`unmeasured`, `unknown`, `not_computed` は plain `pass` にできず、`violated_assumption_dependency` は必ず `block` にする。
 
 `introduced-by-change` rule は comparison report があるときだけ有効になる。comparison 不在時は
 `not_applicable` として skip され、pass には丸めない。

@@ -782,13 +782,9 @@ fn override_action(
     boundaries_by_scope: &BTreeMap<String, Vec<String>>,
     overrides: Option<&Map<String, Value>>,
 ) -> Option<String> {
-    // Square-free generator-level silence may qualify an all-unobserved
-    // measured_zero row, but it must never turn a mixed measured_nonzero row
-    // into pass_with_boundary. Other evaluator-specific boundary overrides
-    // retain their existing policy semantics.
-    if row["evaluator"].as_str() == Some("ag.square-free-repair")
-        && row["verdict"].as_str() != Some("measured_zero")
-    {
+    // Typed silence may qualify an unmeasured/not-computed row, but it must
+    // never turn any measured_nonzero row into pass_with_boundary.
+    if row["verdict"].as_str() == Some("measured_nonzero") {
         return None;
     }
     let overrides = overrides?;

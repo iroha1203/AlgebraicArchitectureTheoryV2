@@ -234,7 +234,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig v0.5.2 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.5.2-ag-measurement"],
                 &format!(
-                    "ArchSig measurement packet v0.5.2 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed six-field comparison contract. Registered SAGA conclusionCode values include {}.",
+                    "ArchSig measurement packet v0.5.2 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed six-field comparison contract: incidenceBridgeKind, h1ComparisonDataKind, and normalizedComplexFingerprint are strings; classPrerequisite, targetClassComputed, and contractChecked are booleans. Registered SAGA conclusionCode values include {}.",
                     registry_sentence(&ARCHSIG_SAGA_CONCLUSION_CODES),
                 ),
                 vec![
@@ -307,7 +307,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.2"],
-                "Gate policy v0.5.2 records institutional verdict-to-action mappings for absolute and introduced-by-change rules. Absolute rules must map measured_zero, measured_nonzero, unmeasured, unknown, not_computed, and violated_assumption_dependency; introduced-by-change rules must map new, cleared, preexisting, removed, and other.",
+                "Gate policy v0.5.2 records institutional verdict-to-action mappings for absolute and introduced-by-change rules. Absolute rules must map measured_zero, measured_nonzero, unmeasured, unknown, not_computed, and violated_assumption_dependency; violated_assumption_dependency must map exactly to block, while unmeasured, unknown, and not_computed cannot map to plain pass. Introduced-by-change rules must map new, cleared, preexisting, removed, and other.",
                 vec![
                     "Gate policy is authored institutional judgment, not a measurement packet verdict.",
                     "Non-terminal measurement states and removed / other transitions cannot be mapped to plain pass.",

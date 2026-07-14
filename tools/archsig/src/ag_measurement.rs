@@ -12955,14 +12955,15 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                             "not_computed comparison cannot carry the established conclusionCode",
                         ));
                     }
-                    if failure_code
-                        .is_some_and(|code| code == ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
-                        && (class_prerequisite != Some(true) || target_class_computed != Some(true))
+                    let measured_source_and_target =
+                        class_prerequisite == Some(true) && target_class_computed == Some(true);
+                    if measured_source_and_target
+                        && failure_code != Some(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
                     {
                         examples.push(generic_validation_example(
                             &contract_label,
                             "failureCode",
-                            "comparison contract violation requires measured source and target classes",
+                            "not_computed comparison with measured source and target classes requires COMPARISON_DATA_CONTRACT_VIOLATION",
                         ));
                     }
                 }
@@ -14392,19 +14393,32 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
                 "violated_assumption boundary must scope to a not_computed or unmeasured packet surface",
             ));
         }
+        if statement.kind == "silence_by_design"
+            && statement.scope_refs.iter().any(|scope_ref| {
+                packet.structural_verdict.iter().any(|row| {
+                    structural_verdict_ref(row) == *scope_ref && row.verdict == "measured_nonzero"
+                })
+            })
+        {
+            examples.push(generic_validation_example(
+                &statement.id,
+                "scopeRefs",
+                "silence_by_design boundary must not scope to a measured_nonzero structural verdict",
+            ));
+        }
     }
 
     for invariant in &packet.computed_invariants {
         let invariant_id = invariant["invariantId"].as_str().unwrap_or_default();
         let status = invariant["status"].as_str();
+        if invariant.get("whatNext").is_some() && status != Some("silence_by_design") {
+            examples.push(generic_validation_example(
+                invariant_id,
+                "whatNext",
+                "whatNext is reserved for silence_by_design invariants",
+            ));
+        }
         if status.is_some() && status != Some("silence_by_design") {
-            if invariant.get("whatNext").is_some() {
-                examples.push(generic_validation_example(
-                    invariant_id,
-                    "whatNext",
-                    "whatNext is reserved for silence_by_design invariants",
-                ));
-            }
             if packet.boundary_statements.iter().any(|statement| {
                 statement.kind == "silence_by_design"
                     && statement
@@ -15432,6 +15446,46 @@ mod tests {
                 && check.examples.iter().any(|example| {
                     example.source.as_deref() == Some("computedInvariants[0].contract")
                 })
+        }));
+
+        let mut missing_failure = packet_fixture();
+        missing_failure.computed_invariants.push(json!({
+            "invariantId": "comparison-contract-failure-without-code",
+            "kind": "h1-comparison-transfer",
+            "evaluator": "ag.saga-comparison",
+            "status": "not_computed",
+            "value": {"status": "not_computed"},
+            "representation": {"basis": "typed-comparison"},
+            "contract": {
+                "incidenceBridgeKind": "explicit",
+                "h1ComparisonDataKind": "explicit",
+                "normalizedComplexFingerprint": "fingerprint",
+                "classPrerequisite": true,
+                "targetClassComputed": true,
+                "contractChecked": false
+            }
+        }));
+        let checks = validate_measurement_packet_v1(&missing_failure);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-unknown-fields"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example.source.as_deref() == Some("computedInvariants[0].contract")
+                })
+        }));
+
+        let mut missing_status = packet_fixture();
+        missing_status.computed_invariants.push(json!({
+            "invariantId": "what-next-without-status",
+            "kind": "measurement-invariant",
+            "evaluator": "ag.foundation",
+            "value": {},
+            "representation": {},
+            "whatNext": "supply missing input"
+        }));
+        let checks = validate_measurement_packet_v1(&missing_status);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
         }));
     }
 
