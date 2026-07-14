@@ -6,6 +6,7 @@ import Formal.AG.Examples.SingularityMonodromyStackPart6
 import Formal.AG.LawAlgebra.FiniteExamples
 import Formal.AG.LawAlgebra.RawPresheafFiniteExample
 import Formal.AG.LawAlgebra.RingedSiteFiniteExample
+import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -2344,6 +2345,52 @@ def standardSchemeReadingOfContextContext :=
 /-- Audit alias for the canonical affine reading's interpretation. -/
 def standardSchemeReadingOfContextInterpretation :=
   @LawAlgebra.AATReadingDecoration.ofContext_interpretation
+
+/-! Finite negative instance for reading preservation. -/
+
+/-- Audit alias for invertibility of finite canonical components. -/
+def standardSchemeReadingFiniteCanonicalComponentIsIso :=
+  @LawAlgebra.FiniteExamples.StandardSchemeReading.canonicalComponentIsIso
+
+/-- Audit alias for the identity map between the finite raw quotients. -/
+def standardSchemeReadingFiniteRawIdentityToLeft :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.rawIdentityToLeft
+
+/-- Audit alias for the transported identity map between finite section rings. -/
+noncomputable def standardSchemeReadingFiniteIdentitySheafifiedMap :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.identitySheafifiedMap
+
+/-- Audit alias for the finite base coordinate section. -/
+noncomputable def standardSchemeReadingFiniteBaseCoordinateSection :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.baseCoordinateSection
+
+/-- Audit alias for the finite left coordinate section. -/
+noncomputable def standardSchemeReadingFiniteLeftCoordinateSection :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.leftCoordinateSection
+
+/-- Audit alias for coordinate preservation by the transported identity map. -/
+def standardSchemeReadingFiniteIdentityCoordinate :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.identitySheafifiedMap_coordinate
+
+/-- Audit alias for injectivity of the finite left canonical component. -/
+def standardSchemeReadingFiniteCanonicalLeftInjective :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.canonicalLeftInjective
+
+/-- Audit alias for the finite coordinate-changing sheafified restriction. -/
+def standardSchemeReadingFiniteRestrictionChangesCoordinate :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.sheafifiedLeftToBaseCoordinate_ne
+
+/-- Audit alias for the finite negative source decoration. -/
+noncomputable def standardSchemeReadingFiniteNegativeSourceDecoration :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.negativeSourceDecoration
+
+/-- Audit alias for the concrete interpretation mismatch. -/
+def standardSchemeReadingFiniteNegativeCoordinate :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.negativeSourceDecoration_coordinate_ne
+
+/-- Audit alias for the concrete failure of reading preservation. -/
+def standardSchemeReadingFinitePreservesNegative :=
+  LawAlgebra.FiniteExamples.StandardSchemeReading.preserves_negative_example
 
 end AAT.AG.AxiomAudit
 
