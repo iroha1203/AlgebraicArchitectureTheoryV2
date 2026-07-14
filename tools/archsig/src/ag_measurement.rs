@@ -529,20 +529,26 @@ fn boundary_statements_for_measurement_packet(
     }
 
     for (index, invariant) in packet.computed_invariants.iter().enumerate() {
-        if invariant["evaluator"] == "ag.saga-comparison"
-            && invariant["status"] == "silence_by_design"
-        {
+        if invariant["status"] == "silence_by_design" {
             let invariant_id = invariant["invariantId"]
                 .as_str()
                 .unwrap_or("unknown-invariant");
             let reason = invariant["reason"]
                 .as_str()
-                .unwrap_or("comparison_prerequisite_not_measured");
-            let what_next = invariant["whatNext"]
-                .as_str()
-                .unwrap_or("supply the missing comparison prerequisite before reading H1 transfer");
+                .unwrap_or("measurement_prerequisite_not_measured");
+            let what_next = invariant["whatNext"].as_str().unwrap_or(
+                "supply the missing measurement prerequisite before reading this invariant",
+            );
+            let boundary_id = if invariant["evaluator"] == "ag.saga-comparison" {
+                format!("boundary:silence-by-design:saga-comparison:{index}")
+            } else {
+                format!(
+                    "boundary:silence-by-design:{}:{index}",
+                    measurement_ref_segment(invariant["evaluator"].as_str().unwrap_or("unknown"))
+                )
+            };
             statements.push(BoundaryStatementV1 {
-                id: format!("boundary:silence-by-design:saga-comparison:{index}"),
+                id: boundary_id,
                 kind: "silence_by_design".to_string(),
                 scope_refs: vec![invariant_id.to_string()],
                 reason: reason.to_string(),
@@ -3599,7 +3605,8 @@ fn evaluate_harmonic_debt_v1(
                 "kind": "harmonic-debt",
                 "evaluator": "ag.harmonic-debt",
                 "status": "silence_by_design",
-                "reason": "cellular_model_missing"
+                "reason": "cellular_model_missing",
+                "whatNext": "supply a validated cellular Laplacian model and witness before evaluating harmonic debt"
             })],
             analytic_readings: Vec::new(),
             assumptions: laplacian.assumptions,
@@ -12792,6 +12799,21 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             COMPUTED_INVARIANT_FIELDS,
             &mut examples,
         );
+        if invariant["evaluator"] == "ag.saga-comparison" {
+            check_object_keys(
+                &invariant["contract"],
+                &format!("computedInvariants[{index}].contract"),
+                &[
+                    "incidenceBridgeKind",
+                    "h1ComparisonDataKind",
+                    "normalizedComplexFingerprint",
+                    "classPrerequisite",
+                    "targetClassComputed",
+                    "contractChecked",
+                ],
+                &mut examples,
+            );
+        }
     }
     for (index, row) in packet_value["structuralVerdict"]
         .as_array()
@@ -14195,9 +14217,7 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
                 ));
             }
         }
-        if invariant["evaluator"].as_str() == Some("ag.saga-comparison")
-            && invariant["status"].as_str() == Some("silence_by_design")
-        {
+        if invariant["status"].as_str() == Some("silence_by_design") {
             let invariant_id = invariant["invariantId"].as_str().unwrap_or_default();
             if invariant["whatNext"]
                 .as_str()
@@ -14206,7 +14226,7 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
                 examples.push(generic_validation_example(
                     invariant_id,
                     "whatNext",
-                    "silence_by_design comparison invariants must explain the next required input",
+                    "silence_by_design invariants must explain the next required input",
                 ));
             }
             if !packet.boundary_statements.iter().any(|statement| {
@@ -14219,7 +14239,7 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
                 examples.push(generic_validation_example(
                     invariant_id,
                     "boundaryStatements",
-                    "silence_by_design comparison invariants must have a typed boundary scoped to the invariant",
+                    "silence_by_design invariants must have a typed boundary scoped to the invariant",
                 ));
             }
         }
@@ -14723,6 +14743,32 @@ mod tests {
         assert!(certified_checks.iter().any(|check| {
             check.id == "measurement-packet-schema052-theorem-candidate-analytic-only"
                 && check.result == "fail"
+        }));
+
+        let mut nested_unknown = serde_json::to_value(packet_fixture()).expect("packet serializes");
+        nested_unknown["computedInvariants"] = json!([{
+            "invariantId": "saga-comparison:h1-transfer",
+            "kind": "h1-comparison-transfer",
+            "evaluator": "ag.saga-comparison",
+            "status": "not_computed",
+            "value": {"status": "not_computed"},
+            "representation": {"basis": "test"},
+            "contract": {
+                "incidenceBridgeKind": "explicit",
+                "h1ComparisonDataKind": "explicit",
+                "normalizedComplexFingerprint": "fingerprint",
+                "classPrerequisite": false,
+                "targetClassComputed": false,
+                "contractChecked": false,
+                "forgedField": true
+            }
+        }]);
+        let nested_checks = validate_measurement_packet_value_v1(&nested_unknown);
+        assert!(nested_checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-unknown-fields"
+                && check.examples.iter().any(|example| {
+                    example.source.as_deref() == Some("computedInvariants[0].contract.forgedField")
+                })
         }));
     }
 
