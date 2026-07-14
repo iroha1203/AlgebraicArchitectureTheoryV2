@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
-use crate::schema::RepairPlanComplexV1;
+use crate::schema::{H1ComparisonDataV052, RepairPlanComplexV1};
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, RepairPlanDocumentV1, ValidationCheck,
@@ -45,6 +45,7 @@ struct ExplicitCochainMap {
     degree_zero: BTreeMap<String, ComparisonBasisMap>,
     degree_one: BTreeMap<String, ComparisonBasisMap>,
     degree_two: BTreeMap<String, String>,
+    degree_two_zero_image: BTreeSet<String>,
 }
 
 pub fn validate_repair_plan_v1_checks(
@@ -144,11 +145,41 @@ fn comparison_target_complex_from_bridge(
         .iter()
         .map(|overlap| overlap.id.as_str())
         .collect::<BTreeSet<_>>();
-    let valid = source_overlap_ids == target_overlap_ids
-        && target.overlaps.iter().all(|overlap| {
-            target.charts.contains(&overlap.left) && target.charts.contains(&overlap.right)
-        });
+    let valid = plan.complex.enumeration_complete
+        && target.enumeration_complete
+        && complex_has_valid_finite_incidence(&plan.complex)
+        && complex_has_valid_finite_incidence(&target)
+        && source_overlap_ids == target_overlap_ids;
     valid.then_some(target)
+}
+
+fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) -> bool {
+    let charts = complex.charts.iter().cloned().collect::<BTreeSet<_>>();
+    let overlap_ids = complex
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.clone())
+        .collect::<BTreeSet<_>>();
+    let triple_ids = complex
+        .triple_overlaps
+        .iter()
+        .map(|triple| triple.id.clone())
+        .collect::<BTreeSet<_>>();
+    charts.len() == complex.charts.len()
+        && overlap_ids.len() == complex.overlaps.len()
+        && triple_ids.len() == complex.triple_overlaps.len()
+        && complex
+            .overlaps
+            .iter()
+            .all(|overlap| charts.contains(&overlap.left) && charts.contains(&overlap.right))
+        && complex.triple_overlaps.iter().all(|triple| {
+            triple.overlap_refs.len() == 3
+                && triple.overlap_refs.iter().collect::<BTreeSet<_>>().len() == 3
+                && triple
+                    .overlap_refs
+                    .iter()
+                    .all(|overlap_ref| overlap_ids.contains(overlap_ref))
+        })
 }
 
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
@@ -757,7 +788,8 @@ pub(crate) fn explicit_h1_comparison_checks(
         );
     let degree_two_zero_preserving = map_complete
         && map_degree_two_support(&BTreeSet::new(), &cochain_map.degree_two)
-            == Some(BTreeSet::new());
+            == Some(cochain_map.degree_two_zero_image.clone())
+        && cochain_map.degree_two_zero_image.is_empty();
     let differential_commutative =
         map_complete && differential_is_commutative(plan, target_complex, &cochain_map);
 
@@ -782,6 +814,13 @@ fn parse_explicit_cochain_map(
     source_variables: &BTreeSet<String>,
     target_variables: &BTreeSet<String>,
 ) -> Option<ExplicitCochainMap> {
+    let typed: H1ComparisonDataV052 = serde_json::from_value(Value::Object(h1.clone())).ok()?;
+    if typed.schema != crate::H1_COMPARISON_DATA_V052_SCHEMA
+        || typed.kind != "explicit"
+        || typed.cochain_map.is_none()
+    {
+        return None;
+    }
     let object = h1.get("cochainMap")?.as_object()?;
     if object
         .keys()
@@ -807,7 +846,14 @@ fn parse_explicit_cochain_map(
         source_variables,
         target_variables,
     )?;
-    let degree_two_items = object.get("degreeTwo")?.as_array()?;
+    let degree_two_object = object.get("degreeTwo")?.as_object()?;
+    if degree_two_object
+        .keys()
+        .any(|key| !matches!(key.as_str(), "basisMap" | "zeroImage"))
+    {
+        return None;
+    }
+    let degree_two_items = degree_two_object.get("basisMap")?.as_array()?;
     let mut degree_two = BTreeMap::new();
     for item in degree_two_items {
         let item = item.as_object()?;
@@ -828,10 +874,23 @@ fn parse_explicit_cochain_map(
     {
         return None;
     }
+    let zero_image = degree_two_object
+        .get("zeroImage")?
+        .as_array()?
+        .iter()
+        .map(|value| value.as_str().map(str::to_string))
+        .collect::<Option<BTreeSet<_>>>()?;
+    if zero_image
+        .iter()
+        .any(|triple| !target_triples.contains(triple))
+    {
+        return None;
+    }
     Some(ExplicitCochainMap {
         degree_zero,
         degree_one,
         degree_two,
+        degree_two_zero_image: zero_image,
     })
 }
 

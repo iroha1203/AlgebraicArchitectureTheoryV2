@@ -739,7 +739,11 @@ fn evaluate_saga_comparison_v1(
     } else {
         None
     };
-    let contract_checked = explicit_checks.is_none_or(|checks| checks.all_pass());
+    let contract_checked = if h1_kind == "explicit" {
+        explicit_checks.is_some_and(|checks| checks.all_pass())
+    } else {
+        true
+    };
     let target_class_nonzero = comparison_target_class_nonzero(plan, comparison);
     let preserves_zero_predicate =
         target_class_nonzero.is_some_and(|target| target == class_nonzero);
@@ -784,7 +788,11 @@ fn evaluate_saga_comparison_v1(
         } else {
             Value::Null
         },
-        "failureCode": if established { Value::Null } else { json!(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION) },
+        "failureCode": if !contract_checked {
+            json!(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
+        } else {
+            Value::Null
+        },
         "nonConclusions": [
             "Supplied cochain data and generated quotient-level transfer are separate structures.",
             "The transfer reading is relative to the supplied finite comparison contract."

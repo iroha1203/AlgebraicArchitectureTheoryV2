@@ -1074,10 +1074,13 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
                     "targetOverlapRef": overlap.id,
                     "variableMap": explicit_variable_map.clone()
                 })).collect::<Vec<_>>(),
-                "degreeTwo": typed_explicit.complex.triple_overlaps.iter().map(|triple| json!({
-                    "sourceTripleRef": triple.id,
-                    "targetTripleRef": triple.id
-                })).collect::<Vec<_>>()
+                "degreeTwo": {
+                    "basisMap": typed_explicit.complex.triple_overlaps.iter().map(|triple| json!({
+                        "sourceTripleRef": triple.id,
+                        "targetTripleRef": triple.id
+                    })).collect::<Vec<_>>(),
+                    "zeroImage": []
+                }
             }
         }
     });
@@ -1113,8 +1116,19 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             "comparison-identity-target-fingerprint",
             json!("sha256:target-wrong"),
         ),
-        ("comparison-explicit-map-difference", json!("src:forged")),
-        ("comparison-legacy-boolean", json!(true)),
+        (
+            "comparison-explicit-map-difference",
+            json!("overlap:inventory-shared"),
+        ),
+        (
+            "comparison-explicit-zero-image",
+            json!("triple:order-inventory-shared"),
+        ),
+        ("comparison-legacy-degreeOneLeftInverse", json!(true)),
+        ("comparison-legacy-degreeOneRightInverse", json!(true)),
+        ("comparison-legacy-differencePreserving", json!(true)),
+        ("comparison-legacy-degreeTwoZeroPreserving", json!(true)),
+        ("comparison-legacy-differentialCommutative", json!(true)),
         ("comparison-unknown-field", json!("forged")),
         ("comparison-unresolved-reference", json!("complex:forged")),
         ("comparison-target-support-mismatch", json!([])),
@@ -1147,10 +1161,15 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
                 "targetCochainSupport": explicit_target_support
             });
         } else if case == "comparison-explicit-map-difference" {
-            invalid["comparison"]["h1ComparisonData"]["cochainMap"]["degreeOne"][0]["variableMap"]
-                [0]["target"] = mutation;
-        } else if case == "comparison-legacy-boolean" {
-            invalid["comparison"]["h1ComparisonData"]["degreeOneLeftInverse"] = mutation;
+            invalid["comparison"]["h1ComparisonData"]["cochainMap"]["degreeOne"][0]["targetOverlapRef"] =
+                mutation.clone();
+            invalid["comparison"]["h1ComparisonData"]["cochainMap"]["degreeOne"][1]["targetOverlapRef"] =
+                json!("overlap:order-inventory");
+        } else if case == "comparison-explicit-zero-image" {
+            invalid["comparison"]["h1ComparisonData"]["cochainMap"]["degreeTwo"]["zeroImage"] =
+                json!([mutation]);
+        } else if let Some(legacy_key) = case.strip_prefix("comparison-legacy-") {
+            invalid["comparison"]["h1ComparisonData"][legacy_key] = mutation;
         } else if case == "comparison-unresolved-reference" {
             invalid["comparison"]["incidenceBridge"]["sourceComplexRef"] = mutation;
         } else if case == "comparison-target-support-mismatch" {
@@ -2094,6 +2113,33 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
             serde_json::to_vec(&typed_plan.complex).expect("comparison complex serializes")
         )
     );
+    let saga_variable_map = typed_plan
+        .primitives
+        .iter()
+        .flat_map(|primitive| primitive.support.variables.iter().cloned())
+        .collect::<BTreeSet<_>>()
+        .iter()
+        .map(|variable| json!({"source": variable, "target": variable}))
+        .collect::<Vec<_>>();
+    let saga_cochain_map = json!({
+        "degreeZero": typed_plan.complex.charts.iter().map(|chart| json!({
+            "sourceChartRef": chart,
+            "targetChartRef": chart,
+            "variableMap": saga_variable_map.clone()
+        })).collect::<Vec<_>>(),
+        "degreeOne": typed_plan.complex.overlaps.iter().map(|overlap| json!({
+            "sourceOverlapRef": overlap.id,
+            "targetOverlapRef": overlap.id,
+            "variableMap": saga_variable_map.clone()
+        })).collect::<Vec<_>>(),
+        "degreeTwo": {
+            "basisMap": typed_plan.complex.triple_overlaps.iter().map(|triple| json!({
+                "sourceTripleRef": triple.id,
+                "targetTripleRef": triple.id
+            })).collect::<Vec<_>>(),
+            "zeroImage": []
+        }
+    });
     plan["comparison"] = json!({
         "kind": "saga-comparison",
         "incidenceBridge": {
@@ -2103,7 +2149,8 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         },
         "h1ComparisonData": {
             "schema": "h1-comparison-data/v0.5.2",
-            "kind": "identity",
+            "kind": "explicit",
+            "cochainMapRef": "comparison:cochain-map",
             "sourceComplexFingerprint": complex_fingerprint,
             "targetComplexFingerprint": complex_fingerprint,
             "targetCochainSupport": plan["primitives"]
@@ -2116,7 +2163,8 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
                         "support": primitive["support"]["variables"]
                     })
                 })
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
+            "cochainMap": saga_cochain_map
         }
     });
     let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-class", plan);
@@ -2159,6 +2207,18 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
     assert_eq!(comparison["contract"]["contractChecked"], true);
     assert_eq!(comparison["suppliedCochainMap"]["level"], "cochain");
     assert_eq!(comparison["suppliedCochainMap"]["contractChecked"], true);
+    for property in [
+        "degreeOneLeftInverse",
+        "degreeOneRightInverse",
+        "differencePreserving",
+        "degreeTwoZeroPreserving",
+        "differentialCommutative",
+    ] {
+        assert_eq!(
+            comparison["suppliedCochainMap"]["checkedProperties"][property],
+            true
+        );
+    }
     assert_eq!(comparison["generatedQuotientTransfer"]["level"], "quotient");
     assert_eq!(
         comparison["generatedQuotientTransfer"]["preservesZeroPredicate"],
@@ -12236,6 +12296,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archsig-policy-bundle/v0.5.2",
             "measurement-profile/v0.5.2",
             "archsig-repair-plan/v0.5.2",
+            "h1-comparison-data/v0.5.2",
             "law-evaluator-registry/v0.5.2",
             "normalized-archmap-current",
             "archsig-measurement-packet/v0.5.2",

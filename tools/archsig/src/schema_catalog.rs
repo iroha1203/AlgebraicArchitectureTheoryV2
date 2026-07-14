@@ -185,6 +185,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
+                "h1-comparison-data/v0.5.2",
+                "ArchSig H1 comparison data v0.5.2",
+                "h1-comparison-data/v0.5.2",
+                "primary",
+                "ArchSig v0.5.2 Algebraic Geometry Measurement",
+                vec!["archsig-contract:saga-stage2-v0.5.2"],
+                "H1 comparison data v0.5.2 supplies an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, including the declared image of zero. The validator recomputes basis bijections, difference preservation, zero preservation, and differential commutativity from the finite map.",
+                vec![
+                    "The cochain map contract validates supplied finite data; it does not itself prove a theorem or generate a quotient-level conclusion.",
+                    "H1 transfer is generated only after the supplied class prerequisite and target class computation are available.",
+                ],
+            ),
+            artifact(
                 "law-evaluator-registry/v0.5.2",
                 "Law evaluator registry v0.5.2",
                 "law-evaluator-registry/v0.5.2",
@@ -535,6 +548,7 @@ mod tests {
                 "law-evaluator-registry/v0.5.2",
                 "measurement-profile/v0.5.2",
                 "archsig-repair-plan/v0.5.2",
+                "h1-comparison-data/v0.5.2",
                 "normalized-archmap-current",
                 "archsig-measurement-packet/v0.5.2",
                 "archsig-saga-conclusions/v0.5.2",

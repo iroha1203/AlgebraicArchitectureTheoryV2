@@ -127,9 +127,12 @@
             { "source": "src:order", "target": "src:order" }
           ] }
         ],
-        "degreeTwo": [
-          { "sourceTripleRef": "triple:order-inventory-shared", "targetTripleRef": "triple:order-inventory-shared" }
-        ]
+        "degreeTwo": {
+          "basisMap": [
+            { "sourceTripleRef": "triple:order-inventory-shared", "targetTripleRef": "triple:order-inventory-shared" }
+          ],
+          "zeroImage": []
+        }
       }
     }
   }

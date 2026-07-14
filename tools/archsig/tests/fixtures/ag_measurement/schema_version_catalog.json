@@ -331,6 +331,33 @@
       }
     },
     {
+      "artifactId": "h1-comparison-data/v0.5.2",
+      "artifactName": "ArchSig H1 comparison data v0.5.2",
+      "schemaName": "h1-comparison-data/v0.5.2",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.5.2 Algebraic Geometry Measurement",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:saga-stage2-v0.5.2"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "H1 comparison data v0.5.2 supplies an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, including the declared image of zero. The validator recomputes basis bijections, difference preservation, zero preservation, and differential commutativity from the finite map.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "The cochain map contract validates supplied finite data; it does not itself prove a theorem or generate a quotient-level conclusion.",
+          "H1 transfer is generated only after the supplied class prerequisite and target class computation are available."
+        ]
+      }
+    },
+    {
       "artifactId": "law-evaluator-registry/v0.5.2",
       "artifactName": "Law evaluator registry v0.5.2",
       "schemaName": "law-evaluator-registry/v0.5.2",
