@@ -12,7 +12,23 @@ open CategoryTheory CategoryTheory.Limits Opposite
 open AlgebraicGeometry
 open scoped AlgebraicGeometry
 
-/-! ### The canonical section-ring route to affine scheme charts -/
+/-!
+### The canonical section-ring route to affine scheme charts
+
+This module keeps every chart on the single sheafification selected by `raw`.
+Section rings are the right objects of the resulting Under-valued structure
+sheaf, and the `k`-algebra maps are obtained by composing their structure maps
+with the canonical equivalence from `k` to `ULift k`.  Restrictions and the
+sheafification unit retain the underlying maps of the actual Under-morphisms,
+so their algebra compatibility is discharged by `Under.w` rather than by a
+separately supplied equation.
+
+Affine charts use Mathlib `Scheme.Spec` directly.  Consequently transition
+functoriality comes from the structure-sheaf functor and `Spec`, while the
+global-section comparison is Mathlib's `Scheme.ΓSpecIso_naturality`.  This
+choice rules out storing independently selected rings, restrictions, affine
+objects, or compatibility witnesses in the standard chart route.
+-/
 
 /-- The ringed AAT site obtained from the selected raw restriction system. -/
 noncomputable def RawAmbientRestrictionSystem.toRingedSite
@@ -124,6 +140,7 @@ noncomputable def architectureChartRestriction
     architectureChartSpec raw W ⟶ architectureChartSpec raw V :=
   AlgebraicGeometry.Scheme.Spec.map (sheafifiedRestriction raw f).op
 
+/-- The selected ringed site retains exactly the raw algebra presheaf. -/
 @[simp] theorem RawAmbientRestrictionSystem.toRingedSite_raw
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -132,6 +149,7 @@ noncomputable def architectureChartRestriction
     (raw.toRingedSite).raw = raw.toPresheaf :=
   rfl
 
+/-- A sheafified section ring is the right object of the structure sheaf. -/
 theorem SheafifiedSectionRing_eq_structureSheaf
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -142,6 +160,7 @@ theorem SheafifiedSectionRing_eq_structureSheaf
       (raw.toRingedSite.structureSheaf.val.obj (op W)).right :=
   rfl
 
+/-- The section-ring algebra map is the canonical Under-object structure map. -/
 @[simp] theorem SheafifiedSectionRing_algebraMap
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -152,6 +171,7 @@ theorem SheafifiedSectionRing_eq_structureSheaf
       sheafifiedSectionAlgebraMap raw W :=
   rfl
 
+/-- Sheafified restriction is the underlying structure-sheaf map. -/
 theorem sheafifiedRestriction_eq_structureSheafMap
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -162,6 +182,7 @@ theorem sheafifiedRestriction_eq_structureSheafMap
       (raw.toRingedSite.structureSheaf.val.map f.op).right :=
   rfl
 
+/-- The algebra-hom restriction retains the canonical underlying ring hom. -/
 theorem sheafifiedRestrictionAlgHom_toRingHom
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -172,6 +193,7 @@ theorem sheafifiedRestrictionAlgHom_toRingHom
       (sheafifiedRestriction raw f).hom :=
   rfl
 
+/-- The algebra-hom unit retains the canonical sheafification component. -/
 theorem sheafificationUnitAlgHom_toRingHom
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -182,6 +204,7 @@ theorem sheafificationUnitAlgHom_toRingHom
       (raw.toRingedSite.canonical.app (op W)).right.hom :=
   rfl
 
+/-- An architecture chart is definitionally the Mathlib spectrum of its section ring. -/
 theorem architectureChartSpec_eq_Spec
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -193,6 +216,7 @@ theorem architectureChartSpec_eq_Spec
         (op (SheafifiedSectionRing raw W)) :=
   rfl
 
+/-- A chart transition is the spectrum map of the same sheafified restriction. -/
 theorem architectureChartRestriction_eq_SpecMap
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -204,6 +228,7 @@ theorem architectureChartRestriction_eq_SpecMap
         (sheafifiedRestriction raw f).op :=
   rfl
 
+/-- Restriction along an identity context morphism is the identity ring morphism. -/
 @[simp] theorem sheafifiedRestriction_id
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -219,6 +244,7 @@ theorem architectureChartRestriction_eq_SpecMap
   exact congrArg (fun q => q.right)
     (raw.toRingedSite.structureSheaf.val.map_id (op W))
 
+/-- Sheafified restrictions compose contravariantly with context morphisms. -/
 @[simp] theorem sheafifiedRestriction_comp
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -229,6 +255,7 @@ theorem architectureChartRestriction_eq_SpecMap
       sheafifiedRestriction raw g ≫ sheafifiedRestriction raw f := by
   simp [sheafifiedRestriction]
 
+/-- The chart transition attached to an identity is the identity Scheme morphism. -/
 @[simp] theorem architectureChartRestriction_id
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -238,6 +265,7 @@ theorem architectureChartRestriction_eq_SpecMap
     architectureChartRestriction raw (𝟙 W) = 𝟙 (architectureChartSpec raw W) := by
   simp [architectureChartRestriction]
 
+/-- Architecture chart transitions compose covariantly in the context category. -/
 @[simp] theorem architectureChartRestriction_comp
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -260,6 +288,7 @@ noncomputable def architectureChartFunctor
   map_id W := architectureChartRestriction_id raw W
   map_comp f g := architectureChartRestriction_comp raw f g
 
+/-- The chart functor sends a context to its canonical affine chart. -/
 @[simp] theorem architectureChartFunctor_obj
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -269,6 +298,7 @@ noncomputable def architectureChartFunctor
     (architectureChartFunctor raw).obj W = architectureChartSpec raw W :=
   rfl
 
+/-- The chart functor sends a context morphism to its canonical transition. -/
 @[simp] theorem architectureChartFunctor_map
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -289,6 +319,7 @@ noncomputable def architectureChartIso
     architectureChartSpec raw W ≅ architectureChartSpec raw V :=
   (architectureChartFunctor raw).mapIso e
 
+/-- The forward map of a chart isomorphism is the induced chart transition. -/
 @[simp] theorem architectureChartIso_hom
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -299,6 +330,7 @@ noncomputable def architectureChartIso
       architectureChartRestriction raw e.hom :=
   rfl
 
+/-- The inverse map of a chart isomorphism is the transition along the inverse context map. -/
 @[simp] theorem architectureChartIso_inv
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -309,6 +341,7 @@ noncomputable def architectureChartIso
       architectureChartRestriction raw e.inv :=
   rfl
 
+/-- Global sections of a chart transition recover the originating restriction via `ΓSpecIso`. -/
 theorem architectureChartRestriction_appTop
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]

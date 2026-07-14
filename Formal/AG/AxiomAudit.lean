@@ -2127,87 +2127,115 @@ def r6FiniteReachableNonidentityOperation :=
 
 /-! Standard Architecture Scheme SD0: canonical section rings and affine Spec charts. -/
 
+/-- Audit alias for the raw restriction system's canonical ringed site. -/
 noncomputable def standardSchemeToRingedSite :=
   @LawAlgebra.RawAmbientRestrictionSystem.toRingedSite
 
+/-- Audit alias for sheafified section rings. -/
 noncomputable def standardSchemeSheafifiedSectionRing :=
   @LawAlgebra.SheafifiedSectionRing
 
+/-- Audit alias for canonical section-ring coefficient maps. -/
 noncomputable def standardSchemeSectionAlgebraMap :=
   @LawAlgebra.sheafifiedSectionAlgebraMap
 
+/-- Audit alias for canonical section-ring algebra instances. -/
 noncomputable def standardSchemeSectionAlgebra :=
   @LawAlgebra.SheafifiedSectionRing.instAlgebra
 
+/-- Audit alias for sheafified restriction morphisms. -/
 noncomputable def standardSchemeRestriction :=
   @LawAlgebra.sheafifiedRestriction
 
+/-- Audit alias for sheafified restriction algebra homomorphisms. -/
 noncomputable def standardSchemeRestrictionAlgHom :=
   @LawAlgebra.sheafifiedRestrictionAlgHom
 
+/-- Audit alias for canonical sheafification-unit algebra homomorphisms. -/
 noncomputable def standardSchemeUnitAlgHom :=
   @LawAlgebra.sheafificationUnitAlgHom
 
+/-- Audit alias for canonical affine chart spectra. -/
 noncomputable def standardSchemeChartSpec :=
   @LawAlgebra.architectureChartSpec
 
+/-- Audit alias for canonical affine chart transitions. -/
 noncomputable def standardSchemeChartRestriction :=
   @LawAlgebra.architectureChartRestriction
 
+/-- Audit alias for identification of the selected raw presheaf. -/
 def standardSchemeToRingedSiteRaw :=
   @LawAlgebra.RawAmbientRestrictionSystem.toRingedSite_raw
 
+/-- Audit alias for the structure-sheaf section-ring identification. -/
 def standardSchemeSectionRingEqStructureSheaf :=
   @LawAlgebra.SheafifiedSectionRing_eq_structureSheaf
 
+/-- Audit alias for the canonical section-ring algebra map theorem. -/
 def standardSchemeSectionRingAlgebraMap :=
   @LawAlgebra.SheafifiedSectionRing_algebraMap
 
+/-- Audit alias for the structure-sheaf restriction identification. -/
 def standardSchemeRestrictionEqStructureSheafMap :=
   @LawAlgebra.sheafifiedRestriction_eq_structureSheafMap
 
+/-- Audit alias for the restriction algebra homomorphism's underlying map. -/
 def standardSchemeRestrictionAlgHomToRingHom :=
   @LawAlgebra.sheafifiedRestrictionAlgHom_toRingHom
 
+/-- Audit alias for the sheafification unit's underlying map. -/
 def standardSchemeUnitAlgHomToRingHom :=
   @LawAlgebra.sheafificationUnitAlgHom_toRingHom
 
+/-- Audit alias for the chart spectrum identification. -/
 def standardSchemeChartSpecEqSpec :=
   @LawAlgebra.architectureChartSpec_eq_Spec
 
+/-- Audit alias for the chart transition's spectrum-map identification. -/
 def standardSchemeChartRestrictionEqSpecMap :=
   @LawAlgebra.architectureChartRestriction_eq_SpecMap
 
+/-- Audit alias for identity restriction. -/
 def standardSchemeRestrictionId :=
   @LawAlgebra.sheafifiedRestriction_id
 
+/-- Audit alias for composition of restrictions. -/
 def standardSchemeRestrictionComp :=
   @LawAlgebra.sheafifiedRestriction_comp
 
+/-- Audit alias for the identity chart transition. -/
 def standardSchemeChartRestrictionId :=
   @LawAlgebra.architectureChartRestriction_id
 
+/-- Audit alias for composition of chart transitions. -/
 def standardSchemeChartRestrictionComp :=
   @LawAlgebra.architectureChartRestriction_comp
 
+/-- Audit alias for the canonical affine chart functor. -/
 noncomputable def standardSchemeChartFunctor :=
   @LawAlgebra.architectureChartFunctor
 
+/-- Audit alias for the chart functor's object equation. -/
 def standardSchemeChartFunctorObj :=
   @LawAlgebra.architectureChartFunctor_obj
 
+/-- Audit alias for the chart functor's map equation. -/
 def standardSchemeChartFunctorMap :=
   @LawAlgebra.architectureChartFunctor_map
 
+/-- Audit alias for affine chart isomorphisms induced by context isomorphisms. -/
 noncomputable def standardSchemeChartIso :=
   @LawAlgebra.architectureChartIso
 
+/-- Audit alias for the forward map of a chart isomorphism. -/
 def standardSchemeChartIsoHom :=
   @LawAlgebra.architectureChartIso_hom
 
+/-- Audit alias for the inverse map of a chart isomorphism. -/
 def standardSchemeChartIsoInv :=
   @LawAlgebra.architectureChartIso_inv
 
+/-- Audit alias for the global-section naturality of chart restrictions. -/
 def standardSchemeChartRestrictionAppTop :=
   @LawAlgebra.architectureChartRestriction_appTop
 
