@@ -2426,6 +2426,188 @@ def standardSchemeAffineAtlasToOpenCoverF :=
 def standardSchemeAffineAtlasJointlyCovers :=
   @LawAlgebra.ArchitectureAffineAtlas.jointlyCovers
 
+/-! Standard Architecture Scheme SD3: pair and triple overlap geometry. -/
+
+/-- Audit alias for selected pair contexts. -/
+noncomputable def standardSchemeAffineAtlasPairContext :=
+  @LawAlgebra.ArchitectureAffineAtlas.pairContext
+
+/-- Audit alias for the left pair-context map. -/
+noncomputable def standardSchemeAffineAtlasPairToLeft :=
+  @LawAlgebra.ArchitectureAffineAtlas.pairToLeft
+
+/-- Audit alias for the right pair-context map. -/
+noncomputable def standardSchemeAffineAtlasPairToRight :=
+  @LawAlgebra.ArchitectureAffineAtlas.pairToRight
+
+/-- Audit alias for the base pair-context map. -/
+noncomputable def standardSchemeAffineAtlasPairToBase :=
+  @LawAlgebra.ArchitectureAffineAtlas.pairToBase
+
+/-- Audit alias for the chart-to-self-pair map. -/
+noncomputable def standardSchemeAffineAtlasSelfToPair :=
+  @LawAlgebra.ArchitectureAffineAtlas.selfToPair
+
+/-- Audit alias for the self-pair context isomorphism. -/
+noncomputable def standardSchemeAffineAtlasSelfPairContextIso :=
+  @LawAlgebra.ArchitectureAffineAtlas.selfPairContextIso
+
+/-- Audit alias for selected triple contexts. -/
+noncomputable def standardSchemeAffineAtlasTripleContext :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleContext
+
+/-- Audit alias for the first triple-to-pair map. -/
+noncomputable def standardSchemeAffineAtlasTripleToFirstPair :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleToFirstPair
+
+/-- Audit alias for the second triple-to-pair map. -/
+noncomputable def standardSchemeAffineAtlasTripleToSecondPair :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleToSecondPair
+
+/-- Audit alias for the selected triple-to-left map. -/
+noncomputable def standardSchemeAffineAtlasTripleToLeft :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleToLeft
+
+/-- Audit alias for the selected triple-to-middle map. -/
+noncomputable def standardSchemeAffineAtlasTripleToMiddle :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleToMiddle
+
+/-- Audit alias for the selected triple-to-right map. -/
+noncomputable def standardSchemeAffineAtlasTripleToRight :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleToRight
+
+/-- Audit alias for the pair-context characterization. -/
+def standardSchemeAffineAtlasPairContextCtx :=
+  @LawAlgebra.ArchitectureAffineAtlas.pairContext_ctx
+
+/-- Audit alias for the triple-context characterization. -/
+def standardSchemeAffineAtlasTripleContextCtx :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleContext_ctx
+
+/-- Audit alias for the left route to the pair base. -/
+def standardSchemeAffineAtlasPairToBaseEqLeft :=
+  @LawAlgebra.ArchitectureAffineAtlas.pairToBase_eq_left
+
+/-- Audit alias for the right route to the pair base. -/
+def standardSchemeAffineAtlasPairToBaseEqRight :=
+  @LawAlgebra.ArchitectureAffineAtlas.pairToBase_eq_right
+
+/-- Audit alias for the self-pair isomorphism's forward map. -/
+def standardSchemeAffineAtlasSelfPairContextIsoHom :=
+  @LawAlgebra.ArchitectureAffineAtlas.selfPairContextIso_hom
+
+/-- Audit alias for the self-pair isomorphism's inverse map. -/
+def standardSchemeAffineAtlasSelfPairContextIsoInv :=
+  @LawAlgebra.ArchitectureAffineAtlas.selfPairContextIso_inv
+
+/-- Audit alias for the triple-to-left route. -/
+def standardSchemeAffineAtlasTripleToLeftEq :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleToLeft_eq
+
+/-- Audit alias for the first triple-to-middle route. -/
+def standardSchemeAffineAtlasTripleToMiddleEqFirst :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleToMiddle_eq_first
+
+/-- Audit alias for the second triple-to-middle route. -/
+def standardSchemeAffineAtlasTripleToMiddleEqSecond :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleToMiddle_eq_second
+
+/-- Audit alias for the triple-to-right route. -/
+def standardSchemeAffineAtlasTripleToRightEq :=
+  @LawAlgebra.ArchitectureAffineAtlas.tripleToRight_eq
+
+/-- Audit alias for the actual pair overlap. -/
+noncomputable def standardSchemeAffineAtlasActualOverlap :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualOverlap
+
+/-- Audit alias for the actual pair overlap map to the Scheme. -/
+noncomputable def standardSchemeAffineAtlasActualOverlapToUnderlying :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualOverlapToUnderlying
+
+/-- Audit alias for the actual triple overlap. -/
+noncomputable def standardSchemeAffineAtlasActualTripleOverlap :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualTripleOverlap
+
+/-- Audit alias for the actual triple-to-left map. -/
+noncomputable def standardSchemeAffineAtlasActualTripleToLeft :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualTripleToLeft
+
+/-- Audit alias for the actual triple-to-middle map. -/
+noncomputable def standardSchemeAffineAtlasActualTripleToMiddle :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualTripleToMiddle
+
+/-- Audit alias for the actual triple-to-right map. -/
+noncomputable def standardSchemeAffineAtlasActualTripleToRight :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualTripleToRight
+
+/-- Audit alias for the actual pair-pullback characterization. -/
+def standardSchemeAffineAtlasActualOverlapEqPullback :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualOverlap_eq_pullback
+
+/-- Audit alias for the actual triple-pullback characterization. -/
+def standardSchemeAffineAtlasActualTripleOverlapEqPullback :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualTripleOverlap_eq_pullback
+
+/-- Audit alias for the left form of the overlap map to the Scheme. -/
+def standardSchemeAffineAtlasActualOverlapToUnderlyingEqLeft :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualOverlapToUnderlying_eq_left
+
+/-- Audit alias for the actual triple-to-left characterization. -/
+def standardSchemeAffineAtlasActualTripleToLeftEq :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualTripleToLeft_eq
+
+/-- Audit alias for the actual triple-to-middle characterization. -/
+def standardSchemeAffineAtlasActualTripleToMiddleEq :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualTripleToMiddle_eq
+
+/-- Audit alias for the actual triple-to-right characterization. -/
+def standardSchemeAffineAtlasActualTripleToRightEq :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualTripleToRight_eq
+
+/-- Audit alias for overlap presentation data. -/
+def standardSchemeOverlapPresentation :=
+  @LawAlgebra.ArchitectureOverlapPresentation
+
+/-- Audit alias for actual overlap presentation validity. -/
+def standardSchemeIsOverlapPresentation :=
+  @LawAlgebra.IsArchitectureOverlapPresentation
+
+/-- Audit alias for open immersion of the left overlap projection. -/
+def standardSchemeAffineAtlasOverlapLeftIsOpenImmersion :=
+  @LawAlgebra.ArchitectureAffineAtlas.overlap_left_isOpenImmersion
+
+/-- Audit alias for open immersion of the right overlap projection. -/
+def standardSchemeAffineAtlasOverlapRightIsOpenImmersion :=
+  @LawAlgebra.ArchitectureAffineAtlas.overlap_right_isOpenImmersion
+
+/-- Audit alias for the right form of the overlap map to the Scheme. -/
+def standardSchemeAffineAtlasActualOverlapToUnderlyingEqRight :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualOverlapToUnderlying_eq_right
+
+/-- Audit alias for commutation of presented overlaps. -/
+def standardSchemeAffineAtlasOverlapCommutes :=
+  @LawAlgebra.ArchitectureAffineAtlas.overlap_commutes
+
+/-- Audit alias for preservation along the left overlap restriction. -/
+def standardSchemeAffineAtlasOverlapToLeftPreserves :=
+  @LawAlgebra.ArchitectureAffineAtlas.overlap_toLeft_preserves
+
+/-- Audit alias for preservation along the right overlap restriction. -/
+def standardSchemeAffineAtlasOverlapToRightPreserves :=
+  @LawAlgebra.ArchitectureAffineAtlas.overlap_toRight_preserves
+
+/-- Audit alias for equality of pair-overlap decoration restrictions. -/
+def standardSchemeAffineAtlasDecorationOverlap :=
+  @LawAlgebra.ArchitectureAffineAtlas.decoration_overlap
+
+/-- Audit alias for actual triple-overlap coherence. -/
+def standardSchemeAffineAtlasActualTripleCocycle :=
+  @LawAlgebra.ArchitectureAffineAtlas.actualTriple_cocycle
+
+/-- Audit alias for selected-context triple coherence. -/
+def standardSchemeAffineAtlasContextTripleCocycle :=
+  @LawAlgebra.ArchitectureAffineAtlas.contextTriple_cocycle
+
 /-! Finite negative instance for reading preservation. -/
 
 /-- Audit alias for invertibility of finite canonical components. -/
@@ -2507,6 +2689,44 @@ noncomputable def standardSchemeFiniteIdentityAtlas :=
 /-- Audit alias for validity of the finite identity atlas. -/
 def standardSchemeFiniteIdentityAtlasValid :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.identityAtlas_valid
+
+/-! Finite positive and negative instances for actual overlap presentation. -/
+
+/-- Audit alias for the finite identity-atlas overlap presentation. -/
+noncomputable def standardSchemeFiniteIdentityAtlasPresentation :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.identityAtlasPresentation
+
+/-- Audit alias for validity of the finite identity-atlas overlap presentation. -/
+def standardSchemeFiniteIdentityAtlasPresentationValid :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.identityAtlasPresentation_valid
+
+/-- Audit alias for the mixed finite atlas. -/
+noncomputable def standardSchemeFiniteMixedAtlas :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlas
+
+/-- Audit alias for the mixed pair-context isomorphism in `false,true` order. -/
+noncomputable def standardSchemeFiniteMixedAtlasFalseTruePairIso :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlasFalseTruePairIso
+
+/-- Audit alias for the mixed pair-context isomorphism in `true,false` order. -/
+noncomputable def standardSchemeFiniteMixedAtlasTrueFalsePairIso :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlasTrueFalsePairIso
+
+/-- Audit alias for the broken-map self-pullback square. -/
+def standardSchemeFiniteBrokenMapSelfIsPullback :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.brokenMapSelf_isPullback
+
+/-- Audit alias for the mixed identity/broken-map pullback square. -/
+def standardSchemeFiniteMixedFalseTrueIsPullback :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedFalseTrue_isPullback
+
+/-- Audit alias for the mixed finite overlap presentation. -/
+noncomputable def standardSchemeFiniteMixedAtlasPresentation :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlasPresentation
+
+/-- Audit alias for invalidity of the mixed finite overlap presentation. -/
+def standardSchemeFiniteMixedAtlasPresentationNotValid :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlasPresentation_not_valid
 
 /-- Audit alias for the finite empty-index atlas. -/
 noncomputable def standardSchemeFiniteUncoveredAtlas :=
