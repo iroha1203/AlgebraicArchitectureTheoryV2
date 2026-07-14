@@ -3205,13 +3205,13 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
             "boundary:m8:higher-hn-silence",
             "silence_by_design",
             "higher_hn_n_ge_3_part_iv_scope_boundary",
-            "Higher H^n for n>=3",
+            "Cohomological readings in degrees n>=3",
         ),
         (
             "boundary:m8:non-abelian-stack-gerbe-vocabulary",
             "out_of_selected_vocabulary",
             "non_abelian_stack_gerbe_outside_abelian_f2_vocabulary",
-            "Non-abelian stack/gerbe",
+            "Non-abelian stack/gerbe degree-2 descent data",
         ),
         (
             "boundary:m8:higher-tor-unmeasured-support",
@@ -3244,8 +3244,8 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
             .iter()
             .filter_map(Value::as_str)
             .all(|text| {
-                !text.contains("Higher H^n")
-                    && !text.contains("Non-abelian stack/gerbe")
+                !text.contains("Cohomological readings in degrees n>=3")
+                    && !text.contains("Non-abelian stack/gerbe degree-2 descent data")
                     && !text.contains("Higher Tor_i")
             }),
         "M8 silence must be a typed boundary, not a nonConclusions headline"
@@ -3291,6 +3291,100 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
         summary["conclusion"],
         "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     );
+}
+
+#[test]
+fn cli_representative_output_surfaces_omit_absolute_sheaf_cohomology_notation() {
+    let base_run = run_analyze_fixture_lock(
+        "full-sheaf-output-lint-base",
+        "archmap_v2.json",
+        "law_policy_ag.json",
+        "law_surface_ag_v052.json",
+        None,
+    );
+    let head_run = run_analyze_fixture_lock(
+        "full-sheaf-output-lint-head",
+        "archmap_v2.json",
+        "law_policy_ag.json",
+        "law_surface_ag_v052.json",
+        None,
+    );
+
+    let comparison_dir = temp_dir("full-sheaf-output-lint-comparison");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base run path is utf-8"),
+        "--head-run",
+        head_run.to_str().expect("head run path is utf-8"),
+        "--out-dir",
+        comparison_dir
+            .to_str()
+            .expect("comparison output path is utf-8"),
+    ]);
+
+    let gate_report_path = temp_dir("full-sheaf-output-lint-gate").join("archsig-gate-report.json");
+    run_sig0(&[
+        "gate",
+        "--packet",
+        head_run
+            .join("archsig-measurement-packet.json")
+            .to_str()
+            .expect("packet path is utf-8"),
+        "--policy",
+        ag_measurement_root()
+            .join("gate_policy_conservative.json")
+            .to_str()
+            .expect("gate policy path is utf-8"),
+        "--out",
+        gate_report_path
+            .to_str()
+            .expect("gate report path is utf-8"),
+    ]);
+
+    let output_surfaces = [
+        (
+            "measurement packet",
+            head_run.join("archsig-measurement-packet.json"),
+        ),
+        (
+            "analysis summary",
+            head_run.join("archsig-analysis-summary.json"),
+        ),
+        (
+            "insight report",
+            head_run.join("archsig-insight-report.json"),
+        ),
+        ("insight brief", head_run.join("archsig-insight-brief.md")),
+        (
+            "viewer data",
+            head_run.join("archsig-atom-viewer-data.json"),
+        ),
+        (
+            "comparison report",
+            comparison_dir.join("archsig-comparison-report.json"),
+        ),
+        ("gate report", gate_report_path),
+    ];
+    for (surface, path) in output_surfaces {
+        let content = fs::read_to_string(&path).unwrap_or_else(|error| {
+            panic!(
+                "{surface} output must be readable at {}: {error}",
+                path.display()
+            )
+        });
+        assert!(
+            !has_absolute_sheaf_cohomology_notation(&content),
+            "{surface} must not emit absolute H^n(X, ...) sheaf notation"
+        );
+    }
+
+    assert!(has_absolute_sheaf_cohomology_notation("H^1(X, Ob_U)"));
+    assert!(has_absolute_sheaf_cohomology_notation("H^n(X, Ob_U)"));
+    assert!(!has_absolute_sheaf_cohomology_notation(
+        "selected cover H^1"
+    ));
+    assert!(!has_absolute_sheaf_cohomology_notation("coverRelativeH1"));
 }
 
 #[test]
@@ -14469,6 +14563,31 @@ fn json_contains_exact_string(value: &Value, needle: &str) -> bool {
             .any(|item| json_contains_exact_string(item, needle)),
         _ => false,
     }
+}
+
+fn has_absolute_sheaf_cohomology_notation(text: &str) -> bool {
+    let bytes = text.as_bytes();
+    let mut index = 0;
+    while index + 1 < bytes.len() {
+        if bytes[index] == b'H' && bytes[index + 1] == b'^' {
+            let mut degree_end = index + 2;
+            if degree_end < bytes.len() && bytes[degree_end] == b'n' {
+                degree_end += 1;
+            } else if degree_end < bytes.len() && bytes[degree_end].is_ascii_digit() {
+                while degree_end < bytes.len() && bytes[degree_end].is_ascii_digit() {
+                    degree_end += 1;
+                }
+            } else {
+                index += 1;
+                continue;
+            }
+            if bytes.get(degree_end) == Some(&b'(') {
+                return true;
+            }
+        }
+        index += 1;
+    }
+    false
 }
 
 fn json_contains_substring(value: &Value, needle: &str) -> bool {

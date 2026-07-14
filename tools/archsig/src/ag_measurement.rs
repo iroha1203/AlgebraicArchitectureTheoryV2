@@ -539,14 +539,14 @@ fn m8_silence_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> Vec<Bo
             kind: "silence_by_design".to_string(),
             scope_refs: vec![packet.packet_id.clone()],
             reason: "higher_hn_n_ge_3_part_iv_scope_boundary".to_string(),
-            text: "Higher H^n for n>=3 is silent by design in this finite AG measurement packet: it is a Part IV scope boundary, not a measured zero result or a remaining task.".to_string(),
+            text: "Cohomological readings in degrees n>=3 are silent by design in this finite AG measurement packet: they are a Part IV scope boundary, not a measured zero result or a remaining task.".to_string(),
         },
         BoundaryStatementV1 {
             id: "boundary:m8:non-abelian-stack-gerbe-vocabulary".to_string(),
             kind: "out_of_selected_vocabulary".to_string(),
             scope_refs: vec![packet.packet_id.clone()],
             reason: "non_abelian_stack_gerbe_outside_abelian_f2_vocabulary".to_string(),
-            text: "Non-abelian stack/gerbe H^2(X,Aut(Dec_U)) is outside the selected banded abelian F2 vocabulary; banding-violated inputs remain outside this measurement lens.".to_string(),
+            text: "Non-abelian stack/gerbe degree-2 descent data is outside the selected banded abelian F2 vocabulary; banding-violated inputs remain outside this measurement lens.".to_string(),
         },
         BoundaryStatementV1 {
             id: "boundary:m8:higher-tor-unmeasured-support".to_string(),
