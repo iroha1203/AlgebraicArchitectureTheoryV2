@@ -2271,7 +2271,7 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         row["assumption"]
             .as_str()
             .is_some_and(|text| text.contains("comparison target complex enumeration"))
-            && row["theoremRef"] == "part10/3.1"
+            && row["theoremRef"] == "part10/6.2"
             && row["status"] == "assumed"
     }));
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));

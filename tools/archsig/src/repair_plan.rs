@@ -221,6 +221,41 @@ fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) -> bool {
         })
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::schema::{RepairPlanOverlapV1, RepairPlanTripleOverlapV1};
+
+    fn complex_with_edges(edges: [(&str, &str, &str); 3]) -> RepairPlanComplexV1 {
+        RepairPlanComplexV1 {
+            charts: vec!["A".to_string(), "B".to_string(), "C".to_string()],
+            overlaps: edges
+                .into_iter()
+                .map(|(id, left, right)| RepairPlanOverlapV1 {
+                    id: id.to_string(),
+                    left: left.to_string(),
+                    right: right.to_string(),
+                })
+                .collect(),
+            triple_overlaps: vec![RepairPlanTripleOverlapV1 {
+                id: "t".to_string(),
+                overlap_refs: vec!["e1".to_string(), "e2".to_string(), "e3".to_string()],
+            }],
+            enumeration_complete: true,
+        }
+    }
+
+    #[test]
+    fn finite_incidence_requires_all_three_triangle_edges() {
+        let triangle = complex_with_edges([("e1", "A", "B"), ("e2", "B", "C"), ("e3", "A", "C")]);
+        assert!(complex_has_valid_finite_incidence(&triangle));
+
+        let repeated_edge =
+            complex_with_edges([("e1", "A", "B"), ("e2", "B", "C"), ("e3", "A", "B")]);
+        assert!(!complex_has_valid_finite_incidence(&repeated_edge));
+    }
+}
+
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
         "repair-plan-schema052-schema",
