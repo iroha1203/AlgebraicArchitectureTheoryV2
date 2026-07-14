@@ -2346,6 +2346,60 @@ def standardSchemeReadingOfContextContext :=
 def standardSchemeReadingOfContextInterpretation :=
   @LawAlgebra.AATReadingDecoration.ofContext_interpretation
 
+/-! Standard Architecture Scheme SD2: actual affine chart. -/
+
+/-- Audit alias for actual architecture affine chart data. -/
+def standardSchemeAffineChart :=
+  @LawAlgebra.ArchitectureAffineChart
+
+/-- Audit alias for actual architecture affine chart validity. -/
+def standardSchemeIsAffineChart :=
+  @LawAlgebra.IsArchitectureAffineChart
+
+/-- Audit alias for the canonical affine chart domain. -/
+noncomputable def standardSchemeAffineChartDomain :=
+  @LawAlgebra.ArchitectureAffineChart.domain
+
+/-- Audit alias for the chart domain's locally ringed space. -/
+noncomputable def standardSchemeAffineChartDomainLocallyRingedSpace :=
+  @LawAlgebra.ArchitectureAffineChart.domainLocallyRingedSpace
+
+/-- Audit alias for affineness of canonical chart domains. -/
+def standardSchemeAffineChartDomainIsAffine :=
+  @LawAlgebra.ArchitectureAffineChart.domain_isAffine
+
+/-- Audit alias for the chart-domain characterization. -/
+def standardSchemeAffineChartDomainEq :=
+  @LawAlgebra.ArchitectureAffineChart.domain_eq
+
+/-- Audit alias for the open image of a valid affine chart. -/
+noncomputable def standardSchemeAffineChartImage :=
+  @LawAlgebra.ArchitectureAffineChart.image
+
+/-- Audit alias for identity affine charts. -/
+noncomputable def standardSchemeAffineChartIdentity :=
+  @LawAlgebra.ArchitectureAffineChart.identity
+
+/-- Audit alias for the context of an identity affine chart. -/
+def standardSchemeAffineChartIdentityContext :=
+  @LawAlgebra.ArchitectureAffineChart.identity_context
+
+/-- Audit alias for the context morphism of an identity affine chart. -/
+def standardSchemeAffineChartIdentityContextHom :=
+  @LawAlgebra.ArchitectureAffineChart.identity_contextHom
+
+/-- Audit alias for the Scheme map of an identity affine chart. -/
+def standardSchemeAffineChartIdentityMap :=
+  @LawAlgebra.ArchitectureAffineChart.identity_map
+
+/-- Audit alias for actual validity of identity affine charts. -/
+def standardSchemeAffineChartIdentityValid :=
+  @LawAlgebra.ArchitectureAffineChart.identity_isArchitectureAffineChart
+
+/-- Audit alias for local-decoration preservation by valid affine charts. -/
+def standardSchemeAffineChartLocalDecorationPreserves :=
+  @LawAlgebra.ArchitectureAffineChart.localDecoration_preserves
+
 /-! Finite negative instance for reading preservation. -/
 
 /-- Audit alias for invertibility of finite canonical components. -/
@@ -2391,6 +2445,20 @@ def standardSchemeReadingFiniteNegativeCoordinate :=
 /-- Audit alias for the concrete failure of reading preservation. -/
 def standardSchemeReadingFinitePreservesNegative :=
   LawAlgebra.FiniteExamples.StandardSchemeReading.preserves_negative_example
+
+/-! Finite negative instance for actual affine-chart validity. -/
+
+/-- Audit alias for the finite interpretation-broken chart. -/
+noncomputable def standardSchemeFiniteInterpretationBrokenChart :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.interpretationBrokenChart
+
+/-- Audit alias for the finite broken chart's failed interpretation equation. -/
+def standardSchemeFiniteInterpretationBrokenChartEquationNe :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.interpretationBrokenChart_equation_ne
+
+/-- Audit alias for invalidity of the finite interpretation-broken chart. -/
+def standardSchemeFiniteInterpretationBrokenChartNotValid :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.interpretationBrokenChart_not_valid
 
 end AAT.AG.AxiomAudit
 

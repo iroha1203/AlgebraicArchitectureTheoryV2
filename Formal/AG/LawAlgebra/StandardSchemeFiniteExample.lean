@@ -202,3 +202,76 @@ theorem preserves_negative_example :
   rwa [hid] at ha
 
 end AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading
+
+namespace AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme
+
+open CategoryTheory Opposite
+open AlgebraicGeometry
+open scoped AlgebraicGeometry
+
+open RingedSite.FiniteModel
+open AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading
+
+/-!
+### Finite invalid-chart witness
+
+The selected chart context uses the actual sign-changing context restriction, while its Scheme
+map is induced by the identity transport between the definitionally equal quotient rings.  The
+selected coordinate therefore refutes the chart interpretation equation without accepting an
+inequality or failed validity proof as input.
+-/
+
+/-- A chart whose selected context restriction disagrees with its actual Spec map. -/
+noncomputable def interpretationBrokenChart :
+    ArchitectureAffineChart rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) where
+  context := RawPresheaf.left
+  contextHom := RawPresheaf.leftToBase
+  map := AlgebraicGeometry.Spec.map identitySheafifiedMap
+
+/-- The broken chart's actual interpretation equation fails on the selected coordinate. -/
+theorem interpretationBrokenChart_equation_ne :
+    sheafifiedRestriction rawSystem interpretationBrokenChart.contextHom ≠
+      (AATReadingDecoration.ofContext rawSystem base).interpretation ≫
+        interpretationBrokenChart.map.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem
+            interpretationBrokenChart.context)).hom := by
+  intro h
+  apply sheafifiedLeftToBaseCoordinate_ne
+  have ha := congrArg (fun q => q baseCoordinateSection) h
+  calc
+    sheafifiedRestriction rawSystem RawPresheaf.leftToBase baseCoordinateSection =
+        ((AATReadingDecoration.ofContext rawSystem base).interpretation ≫
+          (AlgebraicGeometry.Spec.map identitySheafifiedMap).appTop ≫
+          (AlgebraicGeometry.Scheme.ΓSpecIso
+            (SheafifiedSectionRing rawSystem RawPresheaf.left)).hom)
+            baseCoordinateSection := by simpa [interpretationBrokenChart] using ha
+    _ = identitySheafifiedMap baseCoordinateSection := by
+      have hm :
+          (AATReadingDecoration.ofContext rawSystem base).interpretation ≫
+              (AlgebraicGeometry.Spec.map identitySheafifiedMap).appTop ≫
+              (AlgebraicGeometry.Scheme.ΓSpecIso
+                (SheafifiedSectionRing rawSystem RawPresheaf.left)).hom =
+            identitySheafifiedMap := by
+        change
+          (AlgebraicGeometry.Scheme.ΓSpecIso
+                (SheafifiedSectionRing rawSystem base)).inv ≫
+              (AlgebraicGeometry.Spec.map identitySheafifiedMap).appTop ≫
+              (AlgebraicGeometry.Scheme.ΓSpecIso
+                (SheafifiedSectionRing rawSystem RawPresheaf.left)).hom =
+            identitySheafifiedMap
+        rw [← Category.assoc,
+          ← AlgebraicGeometry.Scheme.ΓSpecIso_inv_naturality]
+        simp
+      exact congrArg (fun q => q baseCoordinateSection) hm
+    _ = leftCoordinateSection := identitySheafifiedMap_coordinate
+
+/-- The finite broken chart does not satisfy actual affine-chart validity. -/
+theorem interpretationBrokenChart_not_valid :
+    ¬ IsArchitectureAffineChart rawSystem interpretationBrokenChart := by
+  intro h
+  exact interpretationBrokenChart_equation_ne h.interpretation_compatible
+
+end AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme

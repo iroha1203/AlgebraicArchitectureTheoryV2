@@ -1,4 +1,6 @@
 import Formal.AG.LawAlgebra.StructureSheaf
+import Mathlib.AlgebraicGeometry.AffineScheme
+import Mathlib.AlgebraicGeometry.OpenImmersion
 import Mathlib.AlgebraicGeometry.Scheme
 
 namespace AAT.AG
@@ -725,6 +727,187 @@ noncomputable def ofContext
   rfl
 
 end AATReadingDecoration
+
+/-!
+### Actual affine charts
+
+An architecture affine chart stores only a selected context, its actual morphism into the
+decoration context, and the Scheme map from the canonical Spec of the selected sheafified
+section ring.  Chart validity remains a separate proposition consisting of Mathlib open
+immersion data and the actual interpretation equation.
+-/
+
+/-- A selected affine chart whose domain is the canonical Spec of a sheafified section ring. -/
+structure ArchitectureAffineChart
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X) where
+  /-- The local context selecting the chart's section ring. -/
+  context : S.category
+  /-- The actual context morphism into the decoration's selected context. -/
+  contextHom : context ⟶ D.context
+  /-- The actual Scheme morphism from the canonical affine domain. -/
+  map : architectureChartSpec raw context ⟶ X
+
+/-- Actual validity of a selected architecture affine chart. -/
+structure IsArchitectureAffineChart
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) : Prop where
+  /-- The actual chart map is an open immersion. -/
+  isOpenImmersion : AlgebraicGeometry.IsOpenImmersion C.map
+  /-- Context restriction agrees with global interpretation along the chart map. -/
+  interpretation_compatible :
+    sheafifiedRestriction raw C.contextHom =
+      D.interpretation ≫ C.map.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw C.context)).hom
+
+namespace ArchitectureAffineChart
+
+/-- The chart domain, definitionally the Spec of its canonical sheafified section ring. -/
+def domain
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) : AlgebraicGeometry.Scheme :=
+  architectureChartSpec raw C.context
+
+/-- The locally ringed space underlying the canonical affine chart domain. -/
+def domainLocallyRingedSpace
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) : LocallyRingedSpace :=
+  C.domain.toLocallyRingedSpace
+
+/-- Every canonical chart domain is affine. -/
+theorem domain_isAffine
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) :
+    AlgebraicGeometry.IsAffine C.domain := by
+  change AlgebraicGeometry.IsAffine
+    (AlgebraicGeometry.Spec (SheafifiedSectionRing raw C.context))
+  infer_instance
+
+/-- The chart domain unfolds to the canonical Spec selected by its context. -/
+@[simp] theorem domain_eq
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) :
+    C.domain = architectureChartSpec raw C.context :=
+  rfl
+
+/-- The open image of a valid affine chart. -/
+def image
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D)
+    (hC : IsArchitectureAffineChart raw C) : X.Opens := by
+  letI : AlgebraicGeometry.IsOpenImmersion C.map := hC.isOpenImmersion
+  exact C.map.opensRange
+
+/-- The identity chart on a selected context. -/
+noncomputable def identity
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) :
+    ArchitectureAffineChart raw
+      (architectureChartSpec raw W)
+      (AATReadingDecoration.ofContext raw W) where
+  context := W
+  contextHom := 𝟙 W
+  map := 𝟙 (architectureChartSpec raw W)
+
+/-- The identity chart retains its selected context. -/
+@[simp] theorem identity_context
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) :
+    (ArchitectureAffineChart.identity raw W).context = W :=
+  rfl
+
+/-- The identity chart uses the identity context morphism. -/
+@[simp] theorem identity_contextHom
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) :
+    (ArchitectureAffineChart.identity raw W).contextHom = 𝟙 W :=
+  rfl
+
+/-- The identity chart uses the identity Scheme morphism. -/
+@[simp] theorem identity_map
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) :
+    (ArchitectureAffineChart.identity raw W).map =
+      𝟙 (architectureChartSpec raw W) :=
+  rfl
+
+/-- The identity chart satisfies actual open-immersion and interpretation compatibility. -/
+theorem identity_isArchitectureAffineChart
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) :
+    IsArchitectureAffineChart raw (ArchitectureAffineChart.identity raw W) := by
+  constructor
+  · change AlgebraicGeometry.IsOpenImmersion
+      (𝟙 (architectureChartSpec raw W))
+    infer_instance
+  · simp
+
+/-- A valid chart preserves the canonical local decoration along its actual map. -/
+theorem localDecoration_preserves
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D)
+    (hC : IsArchitectureAffineChart raw C) :
+    (AATReadingDecoration.ofContext raw C.context).Preserves raw C.map D := by
+  refine ⟨C.contextHom, ?_⟩
+  rw [hC.interpretation_compatible]
+  simp
+
+end ArchitectureAffineChart
 
 end
 end LawAlgebra

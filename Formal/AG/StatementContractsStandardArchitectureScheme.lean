@@ -1,13 +1,14 @@
-import Formal.AG.LawAlgebra.StandardScheme
+import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 
 /-!
 Executable statement contracts for the standard architecture scheme core.
 
-This file directly checks the fixed SD0 and SD1 signatures from
+This file directly checks the fixed SD0--SD2 signatures and the SD8 finite
+invalid-chart witness from
 `aat_lean_02_standard_architecture_scheme_prd.md` against their implementation
 declarations.  It contains elaboration examples only and introduces no new
 mathematical declarations.  Later PRD slices extend the same contract surface
-with the fixed SD2--SD8 signatures.
+with the remaining fixed SD3--SD8 signatures.
 -/
 
 noncomputable section
@@ -292,5 +293,97 @@ example (W : S.category) :
       (AlgebraicGeometry.Scheme.ΓSpecIso
         (SheafifiedSectionRing raw W)).inv :=
   AATReadingDecoration.ofContext_interpretation raw W
+
+example (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X) : Type _ :=
+  ArchitectureAffineChart raw X D
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) : Prop :=
+  IsArchitectureAffineChart raw C
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) : AlgebraicGeometry.Scheme :=
+  C.domain
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) : LocallyRingedSpace :=
+  C.domainLocallyRingedSpace
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) :
+    AlgebraicGeometry.IsAffine C.domain :=
+  C.domain_isAffine
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D) :
+    C.domain = architectureChartSpec raw C.context :=
+  C.domain_eq
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D)
+    (hC : IsArchitectureAffineChart raw C) : X.Opens :=
+  C.image hC
+
+example (W : S.category) :
+    ArchitectureAffineChart raw
+      (architectureChartSpec raw W)
+      (AATReadingDecoration.ofContext raw W) :=
+  ArchitectureAffineChart.identity raw W
+
+example (W : S.category) :
+    (ArchitectureAffineChart.identity raw W).context = W :=
+  ArchitectureAffineChart.identity_context raw W
+
+example (W : S.category) :
+    (ArchitectureAffineChart.identity raw W).contextHom = 𝟙 W :=
+  ArchitectureAffineChart.identity_contextHom raw W
+
+example (W : S.category) :
+    (ArchitectureAffineChart.identity raw W).map =
+      𝟙 (architectureChartSpec raw W) :=
+  ArchitectureAffineChart.identity_map raw W
+
+example (W : S.category) :
+    IsArchitectureAffineChart raw
+      (ArchitectureAffineChart.identity raw W) :=
+  ArchitectureAffineChart.identity_isArchitectureAffineChart raw W
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (C : ArchitectureAffineChart raw X D)
+    (hC : IsArchitectureAffineChart raw C) :
+    (AATReadingDecoration.ofContext raw C.context).Preserves raw C.map D :=
+  C.localDecoration_preserves hC
+
+namespace FiniteExamples.StandardArchitectureScheme
+
+open RingedSite.FiniteModel
+
+example :
+    ArchitectureAffineChart rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) :=
+  interpretationBrokenChart
+
+example :
+    sheafifiedRestriction rawSystem interpretationBrokenChart.contextHom ≠
+      (AATReadingDecoration.ofContext rawSystem base).interpretation ≫
+        interpretationBrokenChart.map.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem
+            interpretationBrokenChart.context)).hom :=
+  interpretationBrokenChart_equation_ne
+
+example : ¬ IsArchitectureAffineChart rawSystem interpretationBrokenChart :=
+  interpretationBrokenChart_not_valid
+
+end FiniteExamples.StandardArchitectureScheme
 
 end AAT.AG.LawAlgebra
