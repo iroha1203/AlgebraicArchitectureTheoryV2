@@ -395,27 +395,31 @@ def coordinateFamily
     CoordinateFamily D.context.ctx :=
   raw.coordFamily D.context
 
-/-- The selected law universe read from the ambient AAT site. -/
+/--
+The selected law universe read from the ambient AAT site.  The decoration receiver fixes the
+same `raw` and site for dot notation; the returned universe is intentionally site-level data.
+-/
 def lawUniverse
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     (raw : RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
-    (D : AATReadingDecoration raw X) : LawUniverse U :=
-  match D with
-  | ⟨_, _⟩ => S.lawUniverse
+    (_D : AATReadingDecoration raw X) : LawUniverse U :=
+  S.lawUniverse
 
-/-- The architecture signature read from the ambient AAT site. -/
+/--
+The architecture signature read from the ambient AAT site.  The decoration receiver fixes the
+same `raw` and site for dot notation; the returned signature is intentionally site-level data.
+-/
 def signature
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     (raw : RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
-    (D : AATReadingDecoration raw X) : ArchitectureSignature U :=
-  match D with
-  | ⟨_, _⟩ => S.signature
+    (_D : AATReadingDecoration raw X) : ArchitectureSignature U :=
+  S.signature
 
 /-- The coefficient reading obtained from the canonical section-algebra map. -/
 noncomputable def coefficientMap
@@ -502,8 +506,7 @@ def Preserves
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
     (D : AATReadingDecoration raw X) :
-    D.lawUniverse raw = S.lawUniverse := by
-  cases D
+    D.lawUniverse raw = S.lawUniverse :=
   rfl
 
 /-- The signature projection is the selected site's architecture signature. -/
@@ -514,8 +517,7 @@ def Preserves
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
     (D : AATReadingDecoration raw X) :
-    D.signature raw = S.signature := by
-  cases D
+    D.signature raw = S.signature :=
   rfl
 
 /-- The coefficient map is the canonical section-algebra map followed by interpretation. -/
