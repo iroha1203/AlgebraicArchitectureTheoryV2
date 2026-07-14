@@ -3,7 +3,7 @@ import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 /-!
 Executable statement contracts for the standard architecture scheme core.
 
-This file directly checks the fixed SD0--SD3 signatures implemented so far and the SD8 finite
+This file directly checks the fixed SD0--SD3 signatures and the SD8 finite
 positive and negative witnesses from
 `aat_lean_02_standard_architecture_scheme_prd.md` against their implementation
 declarations.  It contains elaboration examples only and introduces no new
@@ -400,6 +400,365 @@ example {X : AlgebraicGeometry.Scheme}
     (h : IsArchitectureAffineAtlas raw atlas) :
     ⨆ i, ((atlas.toAffineOpenCover raw h).f i).opensRange = ⊤ :=
   atlas.jointlyCovers raw h
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) : S.category :=
+  atlas.pairContext raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    atlas.pairContext raw i j ⟶ (atlas.chart i).context :=
+  atlas.pairToLeft raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    atlas.pairContext raw i j ⟶ (atlas.chart j).context :=
+  atlas.pairToRight raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    atlas.pairContext raw i j ⟶ D.context :=
+  atlas.pairToBase raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i : atlas.Index) :
+    (atlas.chart i).context ⟶ atlas.pairContext raw i i :=
+  atlas.selfToPair raw i
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i : atlas.Index) :
+    atlas.pairContext raw i i ≅ (atlas.chart i).context :=
+  atlas.selfPairContextIso raw i
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) : S.category :=
+  atlas.tripleContext raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.tripleContext raw i j l ⟶ atlas.pairContext raw i j :=
+  atlas.tripleToFirstPair raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.tripleContext raw i j l ⟶ atlas.pairContext raw j l :=
+  atlas.tripleToSecondPair raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.tripleContext raw i j l ⟶ (atlas.chart i).context :=
+  atlas.tripleToLeft raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.tripleContext raw i j l ⟶ (atlas.chart j).context :=
+  atlas.tripleToMiddle raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.tripleContext raw i j l ⟶ (atlas.chart l).context :=
+  atlas.tripleToRight raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    (atlas.pairContext raw i j).ctx =
+      S.overlap.overlap D.context.ctx
+        (atlas.chart i).context.ctx (atlas.chart j).context.ctx :=
+  atlas.pairContext_ctx raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    (atlas.tripleContext raw i j l).ctx =
+      S.overlap.overlap D.context.ctx
+        (atlas.pairContext raw i j).ctx (atlas.pairContext raw j l).ctx :=
+  atlas.tripleContext_ctx raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    atlas.pairToBase raw i j =
+      atlas.pairToLeft raw i j ≫ (atlas.chart i).contextHom :=
+  atlas.pairToBase_eq_left raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    atlas.pairToBase raw i j =
+      atlas.pairToRight raw i j ≫ (atlas.chart j).contextHom :=
+  atlas.pairToBase_eq_right raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i : atlas.Index) :
+    (atlas.selfPairContextIso raw i).hom = atlas.pairToLeft raw i i :=
+  atlas.selfPairContextIso_hom raw i
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i : atlas.Index) :
+    (atlas.selfPairContextIso raw i).inv = atlas.selfToPair raw i :=
+  atlas.selfPairContextIso_inv raw i
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.tripleToLeft raw i j l =
+      atlas.tripleToFirstPair raw i j l ≫ atlas.pairToLeft raw i j :=
+  atlas.tripleToLeft_eq raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.tripleToMiddle raw i j l =
+      atlas.tripleToFirstPair raw i j l ≫ atlas.pairToRight raw i j :=
+  atlas.tripleToMiddle_eq_first raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.tripleToMiddle raw i j l =
+      atlas.tripleToSecondPair raw i j l ≫ atlas.pairToLeft raw j l :=
+  atlas.tripleToMiddle_eq_second raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.tripleToRight raw i j l =
+      atlas.tripleToSecondPair raw i j l ≫ atlas.pairToRight raw j l :=
+  atlas.tripleToRight_eq raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) : AlgebraicGeometry.Scheme :=
+  atlas.actualOverlap raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) : atlas.actualOverlap raw i j ⟶ X :=
+  atlas.actualOverlapToUnderlying raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) : AlgebraicGeometry.Scheme :=
+  atlas.actualTripleOverlap raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.actualTripleOverlap raw i j l ⟶
+      architectureChartSpec raw (atlas.chart i).context :=
+  atlas.actualTripleToLeft raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.actualTripleOverlap raw i j l ⟶
+      architectureChartSpec raw (atlas.chart j).context :=
+  atlas.actualTripleToMiddle raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.actualTripleOverlap raw i j l ⟶
+      architectureChartSpec raw (atlas.chart l).context :=
+  atlas.actualTripleToRight raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    atlas.actualOverlap raw i j =
+      pullback (atlas.chart i).map (atlas.chart j).map :=
+  atlas.actualOverlap_eq_pullback raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.actualTripleOverlap raw i j l =
+      pullback (atlas.actualOverlapToUnderlying raw i j) (atlas.chart l).map :=
+  atlas.actualTripleOverlap_eq_pullback raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    atlas.actualOverlapToUnderlying raw i j =
+      pullback.fst (atlas.chart i).map (atlas.chart j).map ≫
+        (atlas.chart i).map :=
+  atlas.actualOverlapToUnderlying_eq_left raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.actualTripleToLeft raw i j l =
+      pullback.fst (atlas.actualOverlapToUnderlying raw i j) (atlas.chart l).map ≫
+        pullback.fst (atlas.chart i).map (atlas.chart j).map :=
+  atlas.actualTripleToLeft_eq raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.actualTripleToMiddle raw i j l =
+      pullback.fst (atlas.actualOverlapToUnderlying raw i j) (atlas.chart l).map ≫
+        pullback.snd (atlas.chart i).map (atlas.chart j).map :=
+  atlas.actualTripleToMiddle_eq raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.actualTripleToRight raw i j l =
+      pullback.snd (atlas.actualOverlapToUnderlying raw i j) (atlas.chart l).map :=
+  atlas.actualTripleToRight_eq raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D) : Type _ :=
+  ArchitectureOverlapPresentation raw atlas
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    {atlas : ArchitectureAffineAtlas raw X D}
+    (P : ArchitectureOverlapPresentation raw atlas) : Prop :=
+  IsArchitectureOverlapPresentation raw P
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    {atlas : ArchitectureAffineAtlas raw X D}
+    (h : IsArchitectureAffineAtlas raw atlas)
+    (i j : atlas.Index) :
+    AlgebraicGeometry.IsOpenImmersion
+      (pullback.fst (atlas.chart i).map (atlas.chart j).map) :=
+  ArchitectureAffineAtlas.overlap_left_isOpenImmersion raw h i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    {atlas : ArchitectureAffineAtlas raw X D}
+    (h : IsArchitectureAffineAtlas raw atlas)
+    (i j : atlas.Index) :
+    AlgebraicGeometry.IsOpenImmersion
+      (pullback.snd (atlas.chart i).map (atlas.chart j).map) :=
+  ArchitectureAffineAtlas.overlap_right_isOpenImmersion raw h i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    atlas.actualOverlapToUnderlying raw i j =
+      pullback.snd (atlas.chart i).map (atlas.chart j).map ≫
+        (atlas.chart j).map :=
+  atlas.actualOverlapToUnderlying_eq_right raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    {atlas : ArchitectureAffineAtlas raw X D}
+    (P : ArchitectureOverlapPresentation raw atlas)
+    (hP : IsArchitectureOverlapPresentation raw P)
+    (i j : atlas.Index) :
+    architectureChartRestriction raw (atlas.pairToLeft raw i j) ≫
+        (atlas.chart i).map =
+      architectureChartRestriction raw (atlas.pairToRight raw i j) ≫
+        (atlas.chart j).map :=
+  atlas.overlap_commutes raw P hP i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    (AATReadingDecoration.ofContext raw (atlas.pairContext raw i j)).Preserves raw
+      (architectureChartRestriction raw (atlas.pairToLeft raw i j))
+      (AATReadingDecoration.ofContext raw (atlas.chart i).context) :=
+  atlas.overlap_toLeft_preserves raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    (AATReadingDecoration.ofContext raw (atlas.pairContext raw i j)).Preserves raw
+      (architectureChartRestriction raw (atlas.pairToRight raw i j))
+      (AATReadingDecoration.ofContext raw (atlas.chart j).context) :=
+  atlas.overlap_toRight_preserves raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j : atlas.Index) :
+    sheafifiedRestriction raw
+        (atlas.pairToLeft raw i j ≫ (atlas.chart i).contextHom) =
+      sheafifiedRestriction raw
+        (atlas.pairToRight raw i j ≫ (atlas.chart j).contextHom) :=
+  atlas.decoration_overlap raw i j
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (i j l : atlas.Index) :
+    atlas.actualTripleToLeft raw i j l ≫ (atlas.chart i).map =
+      atlas.actualTripleToMiddle raw i j l ≫ (atlas.chart j).map ∧
+    atlas.actualTripleToMiddle raw i j l ≫ (atlas.chart j).map =
+      atlas.actualTripleToRight raw i j l ≫ (atlas.chart l).map :=
+  atlas.actualTriple_cocycle raw i j l
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    {atlas : ArchitectureAffineAtlas raw X D}
+    (P : ArchitectureOverlapPresentation raw atlas)
+    (hP : IsArchitectureOverlapPresentation raw P)
+    (i j l : atlas.Index) :
+    architectureChartRestriction raw
+          (atlas.tripleToLeft raw i j l) ≫ (atlas.chart i).map =
+      architectureChartRestriction raw
+          (atlas.tripleToMiddle raw i j l) ≫ (atlas.chart j).map ∧
+    architectureChartRestriction raw
+          (atlas.tripleToMiddle raw i j l) ≫ (atlas.chart j).map =
+      architectureChartRestriction raw
+          (atlas.tripleToRight raw i j l) ≫ (atlas.chart l).map :=
+  atlas.contextTriple_cocycle raw P hP i j l
 
 namespace FiniteExamples.StandardArchitectureScheme
 
