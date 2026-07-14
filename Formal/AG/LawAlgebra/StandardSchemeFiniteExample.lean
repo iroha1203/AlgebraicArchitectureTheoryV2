@@ -274,4 +274,90 @@ theorem interpretationBrokenChart_not_valid :
   intro h
   exact interpretationBrokenChart_equation_ne h.interpretation_compatible
 
+/-!
+### Finite valid and invalid atlas witnesses
+
+The existing sign-separated quotient makes the base raw algebra nontrivial.  Invertibility of
+the canonical sheafification component transfers this witness to the section ring, so the base
+Spec has an actual point.  The identity atlas covers it, while an empty-index atlas cannot.
+-/
+
+/-- The finite raw algebra at the base context is nontrivial. -/
+theorem rawBaseNontrivial : Nontrivial (rawSystem.rawAlgebra base) := by
+  refine ⟨⟨
+    (rawSystem.relationFamily base).quotientMap (MvPolynomial.X ()),
+    (rawSystem.relationFamily base).quotientMap (-(MvPolynomial.X ())),
+    ?_⟩⟩
+  exact RawPresheaf.quotient_X_ne_neg_X
+
+/-- The canonical component on the finite base context is injective. -/
+theorem canonicalBaseInjective :
+    Function.Injective
+      (rawSystem.toRingedSite.canonical.app (op base)).right := by
+  letI := canonicalComponentIsIso base
+  intro x y h
+  have hx := congrArg (fun q => q.right x)
+    (IsIso.hom_inv_id (rawSystem.toRingedSite.canonical.app (op base)))
+  have hy := congrArg (fun q => q.right y)
+    (IsIso.hom_inv_id (rawSystem.toRingedSite.canonical.app (op base)))
+  calc
+    x = (inv (rawSystem.toRingedSite.canonical.app (op base))).right
+        ((rawSystem.toRingedSite.canonical.app (op base)).right x) := by
+      simpa only [Under.comp_right, Under.id_right, CommRingCat.comp_apply,
+        CommRingCat.id_apply] using hx.symm
+    _ = (inv (rawSystem.toRingedSite.canonical.app (op base))).right
+        ((rawSystem.toRingedSite.canonical.app (op base)).right y) := by rw [h]
+    _ = y := by
+      simpa only [Under.comp_right, Under.id_right, CommRingCat.comp_apply,
+        CommRingCat.id_apply] using hy
+
+/-- The canonical finite base Spec has an actual point. -/
+theorem baseSpec_nonempty :
+    Nonempty (architectureChartSpec rawSystem base) := by
+  letI := canonicalComponentIsIso base
+  letI : Nontrivial (rawSystem.rawAlgebra base) := rawBaseNontrivial
+  letI : Nontrivial ((rawSystem.toPresheaf.obj (op base)).right) :=
+    Function.Injective.nontrivial (rawSystem.toPresheafObjectIso base).injective
+  letI : Nontrivial ((rawSystem.toRingedSite.raw.obj (op base)).right) := by
+    rw [RawAmbientRestrictionSystem.toRingedSite_raw]
+    infer_instance
+  letI : Nontrivial (SheafifiedSectionRing rawSystem base) :=
+    Function.Injective.nontrivial canonicalBaseInjective
+  change Nonempty (AlgebraicGeometry.Spec
+    (SheafifiedSectionRing rawSystem base))
+  infer_instance
+
+/-- A one-chart finite atlas carried by the identity chart. -/
+noncomputable def identityAtlas :
+    ArchitectureAffineAtlas rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) where
+  Index := PUnit
+  chart _ := ArchitectureAffineChart.identity rawSystem base
+
+/-- The one-chart finite identity atlas is valid. -/
+theorem identityAtlas_valid :
+    IsArchitectureAffineAtlas rawSystem identityAtlas := by
+  constructor
+  · intro i
+    exact ArchitectureAffineChart.identity_isArchitectureAffineChart rawSystem base
+  · intro x
+    exact ⟨PUnit.unit, x, rfl⟩
+
+/-- The empty-index finite atlas. -/
+noncomputable def uncoveredAtlas :
+    ArchitectureAffineAtlas rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) where
+  Index := Empty
+  chart := Empty.elim
+
+/-- The empty-index finite atlas does not cover the nonempty base Spec. -/
+theorem uncoveredAtlas_not_valid :
+    ¬ IsArchitectureAffineAtlas rawSystem uncoveredAtlas := by
+  intro h
+  let x := Classical.choice baseSpec_nonempty
+  obtain ⟨i, _, _⟩ := h.covers x
+  exact i.elim
+
 end AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme

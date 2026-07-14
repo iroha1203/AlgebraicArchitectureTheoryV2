@@ -1,5 +1,6 @@
 import Formal.AG.LawAlgebra.StructureSheaf
 import Mathlib.AlgebraicGeometry.AffineScheme
+import Mathlib.AlgebraicGeometry.Cover.Open
 import Mathlib.AlgebraicGeometry.OpenImmersion
 import Mathlib.AlgebraicGeometry.Scheme
 
@@ -908,6 +909,99 @@ theorem localDecoration_preserves
   simp
 
 end ArchitectureAffineChart
+
+/-- A selected family of canonical affine charts on a Scheme. -/
+structure ArchitectureAffineAtlas
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X) where
+  /-- Index type of selected charts. -/
+  Index : Type u
+  /-- The selected actual affine chart at an index. -/
+  chart : Index → ArchitectureAffineChart raw X D
+
+/-- Actual validity and pointwise coverage of an architecture affine atlas. -/
+structure IsArchitectureAffineAtlas
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D) : Prop where
+  /-- Every selected chart satisfies actual affine-chart validity. -/
+  chart_valid : ∀ i, IsArchitectureAffineChart raw (atlas.chart i)
+  /-- Every point of the Scheme lies in the image of a selected chart. -/
+  covers : ∀ x : X, ∃ i y, (atlas.chart i).map y = x
+
+namespace ArchitectureAffineAtlas
+
+/-- The Mathlib affine open cover induced by a valid architecture affine atlas. -/
+noncomputable def toAffineOpenCover
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (h : IsArchitectureAffineAtlas raw atlas) : X.AffineOpenCover where
+  I₀ := atlas.Index
+  X i := SheafifiedSectionRing raw (atlas.chart i).context
+  f i := (atlas.chart i).map
+  idx x := (h.covers x).choose
+  covers x := by
+    change x ∈ Set.range (atlas.chart ((h.covers x).choose)).map
+    exact ⟨(h.covers x).choose_spec.choose,
+      (h.covers x).choose_spec.choose_spec⟩
+  map_prop i := (h.chart_valid i).isOpenImmersion
+
+/-- The component ring of the induced affine open cover is the canonical section ring. -/
+@[simp] theorem toAffineOpenCover_X
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (h : IsArchitectureAffineAtlas raw atlas)
+    (i : atlas.Index) :
+    (atlas.toAffineOpenCover raw h).X i =
+      SheafifiedSectionRing raw (atlas.chart i).context :=
+  rfl
+
+/-- The component map of the induced affine open cover is the selected chart map. -/
+@[simp] theorem toAffineOpenCover_f
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (h : IsArchitectureAffineAtlas raw atlas)
+    (i : atlas.Index) :
+    (atlas.toAffineOpenCover raw h).f i = (atlas.chart i).map :=
+  rfl
+
+/-- The open ranges of a valid architecture affine atlas cover the Scheme. -/
+theorem jointlyCovers
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (h : IsArchitectureAffineAtlas raw atlas) :
+    ⨆ i, ((atlas.toAffineOpenCover raw h).f i).opensRange = ⊤ := by
+  exact (atlas.toAffineOpenCover raw h).openCover.iSup_opensRange
+
+end ArchitectureAffineAtlas
 
 end
 end LawAlgebra
