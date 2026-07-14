@@ -254,6 +254,21 @@ mod tests {
             complex_with_edges([("e1", "A", "B"), ("e2", "B", "C"), ("e3", "A", "B")]);
         assert!(!complex_has_valid_finite_incidence(&repeated_edge));
     }
+
+    #[test]
+    fn comparison_bridge_rejects_non_triangle_target_before_map_checks() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_comparison.json"
+        ))
+        .expect("comparison fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let mut bridge = comparison["incidenceBridge"]
+            .as_object()
+            .expect("incidence bridge is an object")
+            .clone();
+        bridge["targetComplex"]["overlaps"][2]["right"] = Value::String("ctx:inventory".into());
+        assert!(comparison_target_complex_from_bridge(&plan, &bridge).is_none());
+    }
 }
 
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
