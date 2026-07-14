@@ -459,7 +459,7 @@ pub(crate) fn evaluate_saga_descent_v1(
     let boundary = solve_boundary_membership(plan);
     let closure = closure_diagnostics(archmap, plan);
     let enumeration_assumption = AgAssumptionLedgerEntryV1 {
-        theorem_ref: "part10/repair-plan-enumeration".to_string(),
+        theorem_ref: "part10/3.1".to_string(),
         assumption: format!(
             "repair-plan complex enumeration completeness for {}",
             plan.id
@@ -481,7 +481,7 @@ pub(crate) fn evaluate_saga_descent_v1(
         })
         .and_then(|comparison| comparison_target_complex(plan, comparison))
         .map(|_| AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part10/repair-plan-enumeration".to_string(),
+            theorem_ref: "part10/3.1".to_string(),
             assumption: format!(
                 "comparison target complex enumeration completeness for {}",
                 plan.id

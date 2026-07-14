@@ -88,7 +88,7 @@ pub fn build_repair_plan_validation_report_v1(
         },
         "checks": checks,
         "assumptionLedger": [{
-            "theoremRef": "part10/repair-plan-enumeration",
+            "theoremRef": "part10/3.1",
             "assumption": "repair-plan complex enumeration completeness",
             "status": "assumed",
             "assumedBy": "repair-plan author",
@@ -583,6 +583,7 @@ fn check_supplied_slots(
                                 _ => false,
                             }
                         });
+                    let mut explicit_checks = None;
                     let h1_ok = !nested_unknown
                         && h1.is_some_and(|h1| {
                             let source_complex_fingerprint = comparison_complex_fingerprint(plan);
@@ -613,19 +614,33 @@ fn check_supplied_slots(
                                         && h1.get("cochainMapRef").and_then(Value::as_str)
                                             == Some(COMPARISON_COCHAIN_MAP_REF)
                                         && target_complex.as_ref().is_some_and(|complex| {
+                                            let checks =
+                                                explicit_h1_comparison_checks(plan, complex, h1);
+                                            explicit_checks = Some(checks);
                                             comparison_target_cochain_support_matches(complex, h1)
-                                                && explicit_h1_comparison_checks(plan, complex, h1)
-                                                    .all_pass()
+                                                && checks.all_pass()
                                         })
                                 }
                                 _ => false,
                             }
                         });
                     if !bridge_ok || !h1_ok {
+                        let reason = explicit_checks
+                            .map(|checks| {
+                                format!(
+                                    "COMPARISON_DATA_CONTRACT_VIOLATION: checkedProperties degreeOneLeftInverse={} degreeOneRightInverse={} differencePreserving={} degreeTwoZeroPreserving={} differentialCommutative={}",
+                                    checks.degree_one_left_inverse,
+                                    checks.degree_one_right_inverse,
+                                    checks.difference_preserving,
+                                    checks.degree_two_zero_preserving,
+                                    checks.differential_commutative,
+                                )
+                            })
+                            .unwrap_or_else(|| "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a validated identity or explicit finite H1 comparison contract".to_string());
                         examples.push(generic_validation_example(
                             path,
                             "comparison-contract-invalid",
-                            "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a validated identity or explicit finite H1 comparison contract",
+                            &reason,
                         ));
                     }
                 }

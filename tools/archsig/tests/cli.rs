@@ -1124,6 +1124,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             "comparison-explicit-zero-image",
             json!("triple:order-inventory-shared"),
         ),
+        ("comparison-target-star-incidence", Value::Null),
         ("comparison-legacy-degreeOneLeftInverse", json!(true)),
         ("comparison-legacy-degreeOneRightInverse", json!(true)),
         ("comparison-legacy-differencePreserving", json!(true)),
@@ -1168,6 +1169,16 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         } else if case == "comparison-explicit-zero-image" {
             invalid["comparison"]["h1ComparisonData"]["cochainMap"]["degreeTwo"]["zeroImage"] =
                 json!([mutation]);
+        } else if case == "comparison-target-star-incidence" {
+            let mut target = invalid["comparison"]["incidenceBridge"]["targetComplex"].clone();
+            target["overlaps"][2]["right"] = json!("ctx:inventory");
+            let target_fingerprint = format!(
+                "{:x}",
+                Sha256::digest(serde_json::to_vec(&target).expect("star target serializes"))
+            );
+            invalid["comparison"]["incidenceBridge"]["targetComplex"] = target;
+            invalid["comparison"]["h1ComparisonData"]["targetComplexFingerprint"] =
+                json!(target_fingerprint);
         } else if let Some(legacy_key) = case.strip_prefix("comparison-legacy-") {
             invalid["comparison"]["h1ComparisonData"][legacy_key] = mutation;
         } else if case == "comparison-unresolved-reference" {
@@ -1209,6 +1220,18 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
                 check_by_id(&report_json, "repair-plan-schema052-reference-resolution")["result"],
                 "fail",
                 "unresolved comparison references must fail the reference-resolution check"
+            );
+        }
+        if case == "comparison-explicit-map-difference" {
+            assert!(
+                json_contains_substring(&report_json, "differencePreserving=false"),
+                "difference-breaking map must report differencePreserving=false"
+            );
+        }
+        if case == "comparison-explicit-zero-image" {
+            assert!(
+                json_contains_substring(&report_json, "degreeTwoZeroPreserving=false"),
+                "nonzero zeroImage must report degreeTwoZeroPreserving=false"
             );
         }
         assert!(
@@ -2143,9 +2166,11 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
     plan["comparison"] = json!({
         "kind": "saga-comparison",
         "incidenceBridge": {
-            "kind": "chart-indexed",
-            "repairChartRefs": ["ctx:order", "ctx:inventory", "ctx:shared"],
-            "cechChartRefs": ["ctx:order", "ctx:inventory", "ctx:shared"]
+            "kind": "explicit",
+            "sourceComplexRef": "complex:repair",
+            "targetComplexRef": "complex:cech",
+            "targetComplex": serde_json::to_value(&typed_plan.complex)
+                .expect("explicit target complex serializes")
         },
         "h1ComparisonData": {
             "schema": "h1-comparison-data/v0.5.2",
@@ -2242,6 +2267,13 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
             .iter()
             .any(|row| { row["theoremRef"] == "part4/4.6" && row["status"] == "assumed" })
     );
+    assert!(packet["assumptions"].as_array().unwrap().iter().any(|row| {
+        row["assumption"]
+            .as_str()
+            .is_some_and(|text| text.contains("comparison target complex enumeration"))
+            && row["theoremRef"] == "part10/3.1"
+            && row["status"] == "assumed"
+    }));
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],
