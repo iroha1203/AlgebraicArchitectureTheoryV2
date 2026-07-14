@@ -2690,6 +2690,44 @@ noncomputable def standardSchemeFiniteIdentityAtlas :=
 def standardSchemeFiniteIdentityAtlasValid :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.identityAtlas_valid
 
+/-! Finite positive and negative instances for actual overlap presentation. -/
+
+/-- Audit alias for the finite identity-atlas overlap presentation. -/
+noncomputable def standardSchemeFiniteIdentityAtlasPresentation :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.identityAtlasPresentation
+
+/-- Audit alias for validity of the finite identity-atlas overlap presentation. -/
+def standardSchemeFiniteIdentityAtlasPresentationValid :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.identityAtlasPresentation_valid
+
+/-- Audit alias for the mixed finite atlas. -/
+noncomputable def standardSchemeFiniteMixedAtlas :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlas
+
+/-- Audit alias for the mixed pair-context isomorphism in `false,true` order. -/
+noncomputable def standardSchemeFiniteMixedAtlasFalseTruePairIso :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlasFalseTruePairIso
+
+/-- Audit alias for the mixed pair-context isomorphism in `true,false` order. -/
+noncomputable def standardSchemeFiniteMixedAtlasTrueFalsePairIso :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlasTrueFalsePairIso
+
+/-- Audit alias for the broken-map self-pullback square. -/
+def standardSchemeFiniteBrokenMapSelfIsPullback :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.brokenMapSelf_isPullback
+
+/-- Audit alias for the mixed identity/broken-map pullback square. -/
+def standardSchemeFiniteMixedFalseTrueIsPullback :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedFalseTrue_isPullback
+
+/-- Audit alias for the mixed finite overlap presentation. -/
+noncomputable def standardSchemeFiniteMixedAtlasPresentation :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlasPresentation
+
+/-- Audit alias for invalidity of the mixed finite overlap presentation. -/
+def standardSchemeFiniteMixedAtlasPresentationNotValid :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.mixedAtlasPresentation_not_valid
+
 /-- Audit alias for the finite empty-index atlas. -/
 noncomputable def standardSchemeFiniteUncoveredAtlas :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.uncoveredAtlas

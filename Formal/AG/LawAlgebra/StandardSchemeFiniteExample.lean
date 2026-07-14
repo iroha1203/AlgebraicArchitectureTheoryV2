@@ -1,5 +1,6 @@
 import Formal.AG.LawAlgebra.StandardScheme
 import Formal.AG.LawAlgebra.RingedSiteFiniteExample
+import Mathlib.AlgebraicGeometry.GammaSpecAdjunction
 
 /-!
 # Finite reading-preservation counterexample
@@ -205,7 +206,7 @@ end AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading
 
 namespace AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme
 
-open CategoryTheory Opposite
+open CategoryTheory CategoryTheory.Limits Opposite
 open AlgebraicGeometry
 open scoped AlgebraicGeometry
 
@@ -343,6 +344,191 @@ theorem identityAtlas_valid :
     exact ArchitectureAffineChart.identity_isArchitectureAffineChart rawSystem base
   · intro x
     exact ⟨PUnit.unit, x, rfl⟩
+
+/-!
+### Finite positive and negative overlap-presentation witnesses
+
+The identity atlas supplies the positive witness.  For the negative witness, a second chart
+uses the existing identity-transport Scheme map on the left finite context.  Its selected
+context restriction is the actual sign-changing map, so the mixed comparison's first
+projection fails on the selected coordinate.
+-/
+
+local instance identitySheafifiedMap_isIso :
+    IsIso identitySheafifiedMap := by
+  letI := canonicalComponentIsIso base
+  letI := canonicalComponentIsIso RawPresheaf.left
+  haveI : IsIso
+      (inv (rawSystem.toRingedSite.canonical.app (op base))).right := by
+    infer_instance
+  haveI : IsIso
+      (rawSystem.toRingedSite.canonical.app (op RawPresheaf.left)).right := by
+    infer_instance
+  haveI : IsIso rawIdentityToLeft := by
+    dsimp [rawIdentityToLeft]
+    infer_instance
+  haveI : IsIso
+      (rawIdentityToLeft ≫
+        (rawSystem.toRingedSite.canonical.app (op RawPresheaf.left)).right) := by
+    infer_instance
+  exact inferInstanceAs (IsIso
+    ((inv (rawSystem.toRingedSite.canonical.app (op base))).right ≫
+      (rawIdentityToLeft ≫
+        (rawSystem.toRingedSite.canonical.app (op RawPresheaf.left)).right)))
+
+/-- Comparison of the identity atlas with the pullback of the identity chart map. -/
+noncomputable def identityAtlasPresentation :
+    ArchitectureOverlapPresentation rawSystem identityAtlas where
+  comparison i j := by
+    cases i
+    cases j
+    exact architectureChartIso rawSystem
+        (identityAtlas.selfPairContextIso rawSystem PUnit.unit) ≪≫
+      (IsPullback.of_id_fst
+        (f := 𝟙 (architectureChartSpec rawSystem base))).isoPullback
+
+/-- The identity-atlas comparison satisfies both actual projection equations. -/
+theorem identityAtlasPresentation_valid :
+    IsArchitectureOverlapPresentation rawSystem identityAtlasPresentation := by
+  constructor
+  · intro i j
+    cases i
+    cases j
+    change
+      (architectureChartIso rawSystem
+          (identityAtlas.selfPairContextIso rawSystem PUnit.unit)).hom ≫
+        ((IsPullback.of_id_fst
+          (f := 𝟙 (architectureChartSpec rawSystem base))).isoPullback).hom ≫
+        pullback.fst (𝟙 (architectureChartSpec rawSystem base))
+          (𝟙 (architectureChartSpec rawSystem base)) = _
+    rw [IsPullback.isoPullback_hom_fst]
+    change architectureChartRestriction rawSystem
+      (identityAtlas.pairToLeft rawSystem PUnit.unit PUnit.unit) ≫ 𝟙 _ = _
+    rw [Category.comp_id]
+  · intro i j
+    cases i
+    cases j
+    change
+      (architectureChartIso rawSystem
+          (identityAtlas.selfPairContextIso rawSystem PUnit.unit)).hom ≫
+        ((IsPullback.of_id_fst
+          (f := 𝟙 (architectureChartSpec rawSystem base))).isoPullback).hom ≫
+        pullback.snd (𝟙 (architectureChartSpec rawSystem base))
+          (𝟙 (architectureChartSpec rawSystem base)) = _
+    rw [IsPullback.isoPullback_hom_snd]
+    change architectureChartRestriction rawSystem
+      (identityAtlas.pairToLeft rawSystem PUnit.unit PUnit.unit) ≫ 𝟙 _ = _
+    rw [Category.comp_id]
+    exact congrArg (architectureChartRestriction rawSystem) (Subsingleton.elim _ _)
+
+/-- Two charts with the identity base chart and the finite interpretation-broken left chart. -/
+noncomputable def mixedAtlas :
+    ArchitectureAffineAtlas rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) where
+  Index := Bool
+  chart
+    | false => ArchitectureAffineChart.identity rawSystem base
+    | true => interpretationBrokenChart
+
+/-- The selected `false,true` pair context is isomorphic to the left chart context. -/
+noncomputable def mixedAtlasFalseTruePairIso :
+    mixedAtlas.pairContext rawSystem false true ≅ RawPresheaf.left where
+  hom := mixedAtlas.pairToRight rawSystem false true
+  inv := homOfLE (site.overlap.lift
+    (leOfHom (mixedAtlas.chart false).contextHom)
+    (leOfHom (mixedAtlas.chart true).contextHom)
+    (leOfHom RawPresheaf.leftToBase)
+    (site.contextPreorder.refl _))
+  hom_inv_id := Subsingleton.elim _ _
+  inv_hom_id := Subsingleton.elim _ _
+
+/-- The selected `true,false` pair context is isomorphic to the left chart context. -/
+noncomputable def mixedAtlasTrueFalsePairIso :
+    mixedAtlas.pairContext rawSystem true false ≅ RawPresheaf.left where
+  hom := mixedAtlas.pairToLeft rawSystem true false
+  inv := homOfLE (site.overlap.lift
+    (leOfHom (mixedAtlas.chart true).contextHom)
+    (leOfHom (mixedAtlas.chart false).contextHom)
+    (site.contextPreorder.refl _)
+    (leOfHom RawPresheaf.leftToBase))
+  hom_inv_id := Subsingleton.elim _ _
+  inv_hom_id := Subsingleton.elim _ _
+
+/-- The square of two copies of the broken chart map is a pullback square. -/
+theorem brokenMapSelf_isPullback :
+    IsPullback
+      (𝟙 (architectureChartSpec rawSystem RawPresheaf.left))
+      (𝟙 (architectureChartSpec rawSystem RawPresheaf.left))
+      (AlgebraicGeometry.Spec.map identitySheafifiedMap)
+      (AlgebraicGeometry.Spec.map identitySheafifiedMap) := by
+  apply IsPullback.of_horiz_isIso
+  exact ⟨by simp⟩
+
+/-- The identity map and broken map form the standard pullback square. -/
+theorem mixedFalseTrue_isPullback :
+    IsPullback
+      (AlgebraicGeometry.Spec.map identitySheafifiedMap)
+      (𝟙 (architectureChartSpec rawSystem RawPresheaf.left))
+      (𝟙 (architectureChartSpec rawSystem base))
+      (AlgebraicGeometry.Spec.map identitySheafifiedMap) :=
+  IsPullback.of_id_snd
+
+/-- Pullback comparison data for all four pairs of the mixed atlas. -/
+noncomputable def mixedAtlasPresentation :
+    ArchitectureOverlapPresentation rawSystem mixedAtlas where
+  comparison i j := by
+    cases i <;> cases j
+    · exact architectureChartIso rawSystem
+          (mixedAtlas.selfPairContextIso rawSystem false) ≪≫
+        (IsPullback.of_id_fst
+          (f := 𝟙 (architectureChartSpec rawSystem base))).isoPullback
+    · exact architectureChartIso rawSystem mixedAtlasFalseTruePairIso ≪≫
+        mixedFalseTrue_isPullback.isoPullback
+    · exact architectureChartIso rawSystem mixedAtlasTrueFalsePairIso ≪≫
+        (IsPullback.of_id_fst
+          (f := AlgebraicGeometry.Spec.map identitySheafifiedMap)).isoPullback
+    · exact architectureChartIso rawSystem
+          (mixedAtlas.selfPairContextIso rawSystem true) ≪≫
+        brokenMapSelf_isPullback.isoPullback
+
+/-- The mixed comparison fails the selected left-projection equation. -/
+theorem mixedAtlasPresentation_not_valid :
+    ¬ IsArchitectureOverlapPresentation rawSystem mixedAtlasPresentation := by
+  intro h
+  have hf := h.comparison_fst false true
+  change
+    (architectureChartIso rawSystem mixedAtlasFalseTruePairIso).hom ≫
+        mixedFalseTrue_isPullback.isoPullback.hom ≫
+        pullback.fst (𝟙 (architectureChartSpec rawSystem base))
+          (AlgebraicGeometry.Spec.map identitySheafifiedMap) =
+      architectureChartRestriction rawSystem
+        (mixedAtlas.pairToLeft rawSystem false true) at hf
+  rw [IsPullback.isoPullback_hom_fst mixedFalseTrue_isPullback] at hf
+  rw [architectureChartIso_hom] at hf
+  have hctx :
+      mixedAtlas.pairToLeft rawSystem false true =
+        mixedAtlas.pairToRight rawSystem false true ≫
+          RawPresheaf.leftToBase :=
+    Subsingleton.elim _ _
+  rw [hctx, architectureChartRestriction_comp] at hf
+  have hscheme :
+      AlgebraicGeometry.Spec.map identitySheafifiedMap =
+        architectureChartRestriction rawSystem RawPresheaf.leftToBase := by
+    rw [← cancel_epi
+      (architectureChartIso rawSystem mixedAtlasFalseTruePairIso).hom]
+    simpa only [architectureChartIso_hom] using hf
+  have hring :
+      identitySheafifiedMap =
+        sheafifiedRestriction rawSystem RawPresheaf.leftToBase := by
+    apply AlgebraicGeometry.Spec.map_injective
+    simpa only [architectureChartRestriction_eq_SpecMap] using hscheme
+  apply sheafifiedLeftToBaseCoordinate_ne
+  calc
+    sheafifiedRestriction rawSystem RawPresheaf.leftToBase baseCoordinateSection =
+        identitySheafifiedMap baseCoordinateSection := by
+      exact congrArg (fun q => q baseCoordinateSection) hring.symm
+    _ = leftCoordinateSection := identitySheafifiedMap_coordinate
 
 /-- The empty-index finite atlas. -/
 noncomputable def uncoveredAtlas :

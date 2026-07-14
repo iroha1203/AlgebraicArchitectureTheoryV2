@@ -1511,6 +1511,12 @@ structure IsArchitectureOverlapPresentation
 
 namespace ArchitectureAffineAtlas
 
+/-- The left projection of an overlap in a valid atlas is an open immersion.
+
+The fixed atlas-level API accepts the complete validity package.  Pullback stability for this
+projection is local to the selected right chart, so the proof intentionally reads
+`h.chart_valid j`; atlas coverage remains part of the validity package used by atlas-level
+constructions such as `toAffineOpenCover` rather than this projection calculation. -/
 theorem overlap_left_isOpenImmersion
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -1527,6 +1533,12 @@ theorem overlap_left_isOpenImmersion
     (P := @AlgebraicGeometry.IsOpenImmersion) _ _
     (h.chart_valid j).isOpenImmersion
 
+/-- The right projection of an overlap in a valid atlas is an open immersion.
+
+The fixed atlas-level API accepts the complete validity package.  Pullback stability for this
+projection is local to the selected left chart, so the proof intentionally reads
+`h.chart_valid i`; atlas coverage remains part of the validity package used by atlas-level
+constructions such as `toAffineOpenCover` rather than this projection calculation. -/
 theorem overlap_right_isOpenImmersion
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]

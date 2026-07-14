@@ -803,6 +803,56 @@ example : IsArchitectureAffineAtlas rawSystem identityAtlas :=
   identityAtlas_valid
 
 example :
+    ArchitectureOverlapPresentation rawSystem identityAtlas :=
+  identityAtlasPresentation
+
+example :
+    IsArchitectureOverlapPresentation rawSystem identityAtlasPresentation :=
+  identityAtlasPresentation_valid
+
+example :
+    ArchitectureAffineAtlas rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) :=
+  mixedAtlas
+
+example :
+    mixedAtlas.pairContext rawSystem false true ≅ RawPresheaf.left :=
+  mixedAtlasFalseTruePairIso
+
+example :
+    mixedAtlas.pairContext rawSystem true false ≅ RawPresheaf.left :=
+  mixedAtlasTrueFalsePairIso
+
+example :
+    IsPullback
+      (𝟙 (architectureChartSpec rawSystem RawPresheaf.left))
+      (𝟙 (architectureChartSpec rawSystem RawPresheaf.left))
+      (AlgebraicGeometry.Spec.map
+        AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading.identitySheafifiedMap)
+      (AlgebraicGeometry.Spec.map
+        AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading.identitySheafifiedMap) :=
+  brokenMapSelf_isPullback
+
+example :
+    IsPullback
+      (AlgebraicGeometry.Spec.map
+        AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading.identitySheafifiedMap)
+      (𝟙 (architectureChartSpec rawSystem RawPresheaf.left))
+      (𝟙 (architectureChartSpec rawSystem base))
+      (AlgebraicGeometry.Spec.map
+        AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading.identitySheafifiedMap) :=
+  mixedFalseTrue_isPullback
+
+example :
+    ArchitectureOverlapPresentation rawSystem mixedAtlas :=
+  mixedAtlasPresentation
+
+example :
+    ¬ IsArchitectureOverlapPresentation rawSystem mixedAtlasPresentation :=
+  mixedAtlasPresentation_not_valid
+
+example :
     ArchitectureAffineAtlas rawSystem
       (architectureChartSpec rawSystem base)
       (AATReadingDecoration.ofContext rawSystem base) :=
