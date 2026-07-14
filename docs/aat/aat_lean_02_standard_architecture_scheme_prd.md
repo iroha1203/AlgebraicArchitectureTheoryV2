@@ -1049,7 +1049,7 @@ theorem StandardArchitectureScheme.chart_sectionRing
     (X.affineOpenCover raw).X i =
       SheafifiedSectionRing raw (X.atlas.chart i).context
 
-theorem StandardArchitectureScheme.overlap_is_actual_pullback
+noncomputable def StandardArchitectureScheme.overlap_is_actual_pullback
     (X : StandardArchitectureScheme raw) (i j : X.atlas.Index) :
     architectureChartSpec raw (X.atlas.pairContext raw i j) ≅
       pullback (X.atlas.chart i).map (X.atlas.chart j).map :=
@@ -1107,7 +1107,7 @@ def StandardArchitectureScheme.forget :
   map f := f.base
 
 instance StandardArchitectureScheme.forget_faithful :
-    Faithful (StandardArchitectureScheme.forget raw)
+    (StandardArchitectureScheme.forget raw).Faithful
 
 @[simp] theorem StandardArchitectureScheme.forget_obj
     (X : StandardArchitectureScheme raw) :
