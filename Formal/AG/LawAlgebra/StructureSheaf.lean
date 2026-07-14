@@ -1,5 +1,7 @@
+import Formal.AG.Atom.AATCore
 import Formal.AG.LawAlgebra.StructuralRelation
 import Formal.AG.Site.Descent
+import Formal.AG.Site.Geometry
 import Mathlib.Algebra.Category.Ring.Under.Basic
 import Mathlib.CategoryTheory.Sites.Sheafification
 import Mathlib.CategoryTheory.Sites.Whiskering
