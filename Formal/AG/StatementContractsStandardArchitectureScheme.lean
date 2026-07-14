@@ -762,8 +762,39 @@ example {X : AlgebraicGeometry.Scheme}
 
 /-! SD4 contracts for the reading-decorated standard architecture scheme core. -/
 
-example : Type _ :=
-  StandardArchitectureScheme raw
+example :
+    (underlying : AlgebraicGeometry.Scheme) →
+    (decoration : AATReadingDecoration raw underlying) →
+    (atlas : ArchitectureAffineAtlas raw underlying decoration) →
+    IsArchitectureAffineAtlas raw atlas →
+    (overlaps : ArchitectureOverlapPresentation raw atlas) →
+    IsArchitectureOverlapPresentation raw overlaps →
+    StandardArchitectureScheme raw :=
+  @StandardArchitectureScheme.mk U A S k _ raw _
+
+example (X : StandardArchitectureScheme raw) :
+    AlgebraicGeometry.Scheme :=
+  X.underlying
+
+example (X : StandardArchitectureScheme raw) :
+    AATReadingDecoration raw X.underlying :=
+  X.decoration
+
+example (X : StandardArchitectureScheme raw) :
+    ArchitectureAffineAtlas raw X.underlying X.decoration :=
+  X.atlas
+
+example (X : StandardArchitectureScheme raw) :
+    IsArchitectureAffineAtlas raw X.atlas :=
+  X.atlasValid
+
+example (X : StandardArchitectureScheme raw) :
+    ArchitectureOverlapPresentation raw X.atlas :=
+  X.overlaps
+
+example (X : StandardArchitectureScheme raw) :
+    IsArchitectureOverlapPresentation raw X.overlaps :=
+  X.overlapsValid
 
 example (X : StandardArchitectureScheme raw) : X.underlying.AffineOpenCover :=
   X.affineOpenCover raw
@@ -795,8 +826,21 @@ example (X Y : StandardArchitectureScheme raw)
 
 /-! SD5 contracts for decorated morphisms and the faithful forgetful functor. -/
 
-example (X Y : StandardArchitectureScheme raw) : Type _ :=
-  StandardArchitectureScheme.Hom X Y
+example (X Y : StandardArchitectureScheme raw) :
+    (base : X.underlying ⟶ Y.underlying) →
+    X.decoration.Preserves raw base Y.decoration →
+    StandardArchitectureScheme.Hom X Y :=
+  @StandardArchitectureScheme.Hom.mk U A S k _ raw _ X Y
+
+example {X Y : StandardArchitectureScheme raw}
+    (f : StandardArchitectureScheme.Hom X Y) :
+    X.underlying ⟶ Y.underlying :=
+  f.base
+
+example {X Y : StandardArchitectureScheme raw}
+    (f : StandardArchitectureScheme.Hom X Y) :
+    X.decoration.Preserves raw f.base Y.decoration :=
+  f.preserves
 
 example (X : StandardArchitectureScheme raw) :
     StandardArchitectureScheme.Hom X X :=
