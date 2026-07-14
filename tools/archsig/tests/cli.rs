@@ -3398,6 +3398,32 @@ fn cli_representative_output_surfaces_omit_absolute_sheaf_cohomology_notation() 
                 .is_some_and(|id| id.starts_with("boundary:m8:"))
         })
         .collect::<Vec<_>>();
+    assert_eq!(period_m8.len(), 2);
+    for (id, kind, reason) in [
+        (
+            "boundary:m8:higher-hn-silence",
+            "silence_by_design",
+            "higher_hn_n_ge_3_part_iv_scope_boundary",
+        ),
+        (
+            "boundary:m8:higher-tor-unmeasured-support",
+            "unmeasured_support",
+            "higher_tor_i_ge_2_unmeasured_support",
+        ),
+    ] {
+        let statement = period_m8
+            .iter()
+            .find(|statement| statement["id"] == id)
+            .unwrap_or_else(|| panic!("period M8 boundary {id} is missing"));
+        assert_eq!(statement["kind"], kind);
+        assert_eq!(statement["reason"], reason);
+        assert_eq!(
+            statement["scopeRefs"],
+            json!([period_packet["packetId"]
+                .as_str()
+                .expect("packet id is string")])
+        );
+    }
     assert!(
         period_m8
             .iter()
