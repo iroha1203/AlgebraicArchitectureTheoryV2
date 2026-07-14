@@ -2239,6 +2239,112 @@ def standardSchemeChartIsoInv :=
 def standardSchemeChartRestrictionAppTop :=
   @LawAlgebra.architectureChartRestriction_appTop
 
+/-! Standard Architecture Scheme SD1: global reading decoration. -/
+
+/-- Audit alias for the global reading decoration structure. -/
+def standardSchemeReadingDecoration :=
+  @LawAlgebra.AATReadingDecoration
+
+/-- Audit alias for the coordinate-family projection. -/
+def standardSchemeReadingCoordinateFamily :=
+  @LawAlgebra.AATReadingDecoration.coordinateFamily
+
+/-- Audit alias for the selected law-universe projection. -/
+def standardSchemeReadingLawUniverse :=
+  @LawAlgebra.AATReadingDecoration.lawUniverse
+
+/-- Audit alias for the selected architecture-signature projection. -/
+def standardSchemeReadingSignature :=
+  @LawAlgebra.AATReadingDecoration.signature
+
+/-- Audit alias for canonical coefficient readings. -/
+noncomputable def standardSchemeReadingCoefficientMap :=
+  @LawAlgebra.AATReadingDecoration.coefficientMap
+
+/-- Audit alias for canonical coordinate sections. -/
+noncomputable def standardSchemeReadingCoordinateSection :=
+  @LawAlgebra.AATReadingDecoration.coordinateSection
+
+/-- Audit alias for pullback of reading decorations. -/
+noncomputable def standardSchemeReadingPullback :=
+  @LawAlgebra.AATReadingDecoration.pullback
+
+/-- Audit alias for the actual reading-preservation predicate. -/
+def standardSchemeReadingPreserves :=
+  @LawAlgebra.AATReadingDecoration.Preserves
+
+/-- Audit alias for extensionality of reading decorations. -/
+def standardSchemeReadingExt :=
+  @LawAlgebra.AATReadingDecoration.ext
+
+/-- Audit alias for the coordinate-family characterization. -/
+def standardSchemeReadingCoordinateFamilyEq :=
+  @LawAlgebra.AATReadingDecoration.coordinateFamily_eq
+
+/-- Audit alias for the law-universe characterization. -/
+def standardSchemeReadingLawUniverseEq :=
+  @LawAlgebra.AATReadingDecoration.lawUniverse_eq
+
+/-- Audit alias for the architecture-signature characterization. -/
+def standardSchemeReadingSignatureEq :=
+  @LawAlgebra.AATReadingDecoration.signature_eq
+
+/-- Audit alias for the coefficient-map characterization. -/
+def standardSchemeReadingCoefficientMapEq :=
+  @LawAlgebra.AATReadingDecoration.coefficientMap_eq
+
+/-- Audit alias for coordinate-section evaluation. -/
+def standardSchemeReadingCoordinateSectionApply :=
+  @LawAlgebra.AATReadingDecoration.coordinateSection_apply
+
+/-- Audit alias for the context of a pulled-back reading. -/
+def standardSchemeReadingPullbackContext :=
+  @LawAlgebra.AATReadingDecoration.pullback_context
+
+/-- Audit alias for the interpretation of a pulled-back reading. -/
+def standardSchemeReadingPullbackInterpretation :=
+  @LawAlgebra.AATReadingDecoration.pullback_interpretation
+
+/-- Audit alias for pullback of coefficient readings. -/
+def standardSchemeReadingPullbackCoefficientMap :=
+  @LawAlgebra.AATReadingDecoration.pullback_coefficientMap
+
+/-- Audit alias for identity pullback of readings. -/
+def standardSchemeReadingPullbackId :=
+  @LawAlgebra.AATReadingDecoration.pullback_id
+
+/-- Audit alias for composition of reading pullbacks. -/
+def standardSchemeReadingPullbackComp :=
+  @LawAlgebra.AATReadingDecoration.pullback_comp
+
+/-- Audit alias for pullback of coordinate sections. -/
+def standardSchemeReadingCoordinateSectionPullback :=
+  @LawAlgebra.AATReadingDecoration.coordinateSection_pullback
+
+/-- Audit alias for identity preservation of readings. -/
+def standardSchemeReadingPreservesId :=
+  @LawAlgebra.AATReadingDecoration.preserves_id
+
+/-- Audit alias for composition of reading-preservation proofs. -/
+def standardSchemeReadingPreservesComp :=
+  @LawAlgebra.AATReadingDecoration.preserves_comp
+
+/-- Audit alias for preservation of coefficient readings. -/
+def standardSchemeReadingPreservesCoefficientMap :=
+  @LawAlgebra.AATReadingDecoration.Preserves.coefficientMap
+
+/-- Audit alias for the canonical reading of an affine context. -/
+noncomputable def standardSchemeReadingOfContext :=
+  @LawAlgebra.AATReadingDecoration.ofContext
+
+/-- Audit alias for the canonical affine reading's context. -/
+def standardSchemeReadingOfContextContext :=
+  @LawAlgebra.AATReadingDecoration.ofContext_context
+
+/-- Audit alias for the canonical affine reading's interpretation. -/
+def standardSchemeReadingOfContextInterpretation :=
+  @LawAlgebra.AATReadingDecoration.ofContext_interpretation
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
