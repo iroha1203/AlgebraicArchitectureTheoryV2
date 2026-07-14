@@ -2125,6 +2125,92 @@ def r6FiniteOperationTransportsIdentification :=
 def r6FiniteReachableNonidentityOperation :=
   LawAlgebra.FiniteExamples.RingedSite.FiniteModel.reachable_nonidentity_operation
 
+/-! Standard Architecture Scheme SD0: canonical section rings and affine Spec charts. -/
+
+noncomputable def standardSchemeToRingedSite :=
+  @LawAlgebra.RawAmbientRestrictionSystem.toRingedSite
+
+noncomputable def standardSchemeSheafifiedSectionRing :=
+  @LawAlgebra.SheafifiedSectionRing
+
+noncomputable def standardSchemeSectionAlgebraMap :=
+  @LawAlgebra.sheafifiedSectionAlgebraMap
+
+noncomputable def standardSchemeSectionAlgebra :=
+  @LawAlgebra.SheafifiedSectionRing.instAlgebra
+
+noncomputable def standardSchemeRestriction :=
+  @LawAlgebra.sheafifiedRestriction
+
+noncomputable def standardSchemeRestrictionAlgHom :=
+  @LawAlgebra.sheafifiedRestrictionAlgHom
+
+noncomputable def standardSchemeUnitAlgHom :=
+  @LawAlgebra.sheafificationUnitAlgHom
+
+noncomputable def standardSchemeChartSpec :=
+  @LawAlgebra.architectureChartSpec
+
+noncomputable def standardSchemeChartRestriction :=
+  @LawAlgebra.architectureChartRestriction
+
+def standardSchemeToRingedSiteRaw :=
+  @LawAlgebra.RawAmbientRestrictionSystem.toRingedSite_raw
+
+def standardSchemeSectionRingEqStructureSheaf :=
+  @LawAlgebra.SheafifiedSectionRing_eq_structureSheaf
+
+def standardSchemeSectionRingAlgebraMap :=
+  @LawAlgebra.SheafifiedSectionRing_algebraMap
+
+def standardSchemeRestrictionEqStructureSheafMap :=
+  @LawAlgebra.sheafifiedRestriction_eq_structureSheafMap
+
+def standardSchemeRestrictionAlgHomToRingHom :=
+  @LawAlgebra.sheafifiedRestrictionAlgHom_toRingHom
+
+def standardSchemeUnitAlgHomToRingHom :=
+  @LawAlgebra.sheafificationUnitAlgHom_toRingHom
+
+def standardSchemeChartSpecEqSpec :=
+  @LawAlgebra.architectureChartSpec_eq_Spec
+
+def standardSchemeChartRestrictionEqSpecMap :=
+  @LawAlgebra.architectureChartRestriction_eq_SpecMap
+
+def standardSchemeRestrictionId :=
+  @LawAlgebra.sheafifiedRestriction_id
+
+def standardSchemeRestrictionComp :=
+  @LawAlgebra.sheafifiedRestriction_comp
+
+def standardSchemeChartRestrictionId :=
+  @LawAlgebra.architectureChartRestriction_id
+
+def standardSchemeChartRestrictionComp :=
+  @LawAlgebra.architectureChartRestriction_comp
+
+noncomputable def standardSchemeChartFunctor :=
+  @LawAlgebra.architectureChartFunctor
+
+def standardSchemeChartFunctorObj :=
+  @LawAlgebra.architectureChartFunctor_obj
+
+def standardSchemeChartFunctorMap :=
+  @LawAlgebra.architectureChartFunctor_map
+
+noncomputable def standardSchemeChartIso :=
+  @LawAlgebra.architectureChartIso
+
+def standardSchemeChartIsoHom :=
+  @LawAlgebra.architectureChartIso_hom
+
+def standardSchemeChartIsoInv :=
+  @LawAlgebra.architectureChartIso_inv
+
+def standardSchemeChartRestrictionAppTop :=
+  @LawAlgebra.architectureChartRestriction_appTop
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

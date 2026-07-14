@@ -5,6 +5,7 @@ import Formal.AG.RepresentationAnalysis.GraphMatrix
 import Formal.AG.RepresentationAnalysis.Synthesis
 import Formal.AG.Examples.RepresentationAnalysisPart7
 import Formal.AG.StatementContractsAtomToRingedSite
+import Formal.AG.StatementContractsStandardArchitectureScheme
 
 noncomputable section
 
