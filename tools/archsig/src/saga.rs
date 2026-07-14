@@ -735,7 +735,16 @@ fn evaluate_saga_comparison_v1(
             "evaluator": "ag.saga-comparison",
             "kind": "h1-comparison-transfer",
             "status": "silence_by_design",
-            "reason": "comparison_data_not_supplied"
+            "reason": "comparison_data_not_supplied",
+            "whatNext": "supply a validated incidence bridge and H1 comparison contract before evaluating transfer",
+            "contract": {
+                "incidenceBridgeKind": "not_supplied",
+                "h1ComparisonDataKind": "not_supplied",
+                "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
+                "classPrerequisite": false,
+                "targetClassComputed": false,
+                "contractChecked": false
+            }
         });
     };
     let class_available = structural_verdict.iter().any(|verdict| {
@@ -775,6 +784,31 @@ fn evaluate_saga_comparison_v1(
     let target_class_nonzero = comparison_target_class_nonzero(plan, comparison);
     let preserves_zero_predicate =
         target_class_nonzero.is_some_and(|target| target == class_nonzero);
+    let comparison_contract_violation = class_available
+        && target_class_nonzero.is_some()
+        && (!contract_checked || !preserves_zero_predicate);
+    if !class_available {
+        return json!({
+            "invariantId": "saga-comparison:h1-transfer",
+            "evaluator": "ag.saga-comparison",
+            "kind": "h1-comparison-transfer",
+            "status": "silence_by_design",
+            "reason": "residual_class_prerequisite_not_measured",
+            "whatNext": "supply valid inputs for complex.tripleOverlaps, coefficient, trueSheafCertificate, and gluingData so the source residual class can be measured before evaluating H1 comparison transfer",
+            "contract": {
+                "incidenceBridgeKind": bridge_kind,
+                "h1ComparisonDataKind": h1_kind,
+                "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
+                "classPrerequisite": false,
+                "targetClassComputed": target_class_nonzero.is_some(),
+                "contractChecked": contract_checked
+            },
+            "nonConclusions": [
+                "The comparison contract is not a replacement for the measured source residual class.",
+                "No comparison failure code is emitted until the residual-class prerequisite is measured."
+            ]
+        });
+    }
     let established = contract_checked && class_available && preserves_zero_predicate;
     json!({
         "invariantId": "saga-comparison:h1-transfer",
@@ -816,7 +850,7 @@ fn evaluate_saga_comparison_v1(
         } else {
             Value::Null
         },
-        "failureCode": if !contract_checked {
+        "failureCode": if comparison_contract_violation {
             json!(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
         } else {
             Value::Null
@@ -1174,5 +1208,56 @@ fn closure_diagnostics(
         residual_component_covered,
         residual_component_faithful: alias_witnesses.is_empty(),
         alias_witnesses,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn comparison_fixture() -> RepairPlanDocumentV1 {
+        serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_comparison.json"
+        ))
+        .expect("comparison fixture parses as RepairPlanDocumentV1")
+    }
+
+    fn measured_class_verdict() -> AgStructuralVerdictV1 {
+        AgStructuralVerdictV1 {
+            evaluator: "ag.saga-descent".to_string(),
+            law: "saga.residual-class".to_string(),
+            verdict: "measured_nonzero".to_string(),
+            verdict_data: AgVerdictDataV1 {
+                in_scope: true,
+                zero: false,
+                non_zero: true,
+                method_status: "nonzero_class_representative".to_string(),
+                cert_ref: Some("computedInvariants/saga-descent:residual-class".to_string()),
+            },
+            depends_on_assumptions: Vec::new(),
+            reason: None,
+        }
+    }
+
+    #[test]
+    fn comparison_silence_precedes_contract_failure_when_class_is_missing() {
+        let plan = comparison_fixture();
+        let result = evaluate_saga_comparison_v1(&plan, &[]);
+        assert_eq!(result["status"], "silence_by_design");
+        assert_eq!(result["reason"], "residual_class_prerequisite_not_measured");
+        assert!(result.get("failureCode").is_none());
+    }
+
+    #[test]
+    fn comparison_class_predicate_mismatch_emits_contract_failure() {
+        let plan = comparison_fixture();
+        let result = evaluate_saga_comparison_v1(&plan, &[measured_class_verdict()]);
+        assert_eq!(result["status"], "not_computed");
+        assert_eq!(
+            result["failureCode"],
+            ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION
+        );
+        assert_eq!(result["contract"]["classPrerequisite"], true);
+        assert_eq!(result["contract"]["targetClassComputed"], true);
     }
 }

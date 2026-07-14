@@ -2287,6 +2287,41 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
 }
 
 #[test]
+fn cli_saga_comparison_separates_missing_class_from_contract_violation() {
+    let root = ag_measurement_root();
+
+    let missing_class_plan = read_json(&root.join("repair_plan_comparison.json"));
+    let missing_class_out = run_saga_fixture_lock(
+        "ag-saga-comparison-class-prerequisite-missing",
+        missing_class_plan,
+    );
+    let missing_class_packet =
+        read_json(&missing_class_out.join("archsig-measurement-packet.json"));
+    let missing_class = invariant_by_id(&missing_class_packet, "saga-comparison:h1-transfer");
+    assert_eq!(missing_class["status"], "silence_by_design");
+    assert_eq!(
+        missing_class["reason"],
+        "residual_class_prerequisite_not_measured"
+    );
+    let what_next = missing_class["whatNext"]
+        .as_str()
+        .expect("missing source class explains required input slots");
+    for slot in [
+        "complex.tripleOverlaps",
+        "coefficient",
+        "trueSheafCertificate",
+        "gluingData",
+    ] {
+        assert!(
+            what_next.contains(slot),
+            "whatNext omits required slot {slot}"
+        );
+    }
+    assert!(!what_next.contains("saga.residual-class"));
+    assert!(missing_class.get("failureCode").is_none());
+}
+
+#[test]
 fn cli_analyze_saga_descent_uncovered_residual_blocks_global_coherence() {
     let out_dir = temp_dir("ag-saga-descent-uncovered");
     let root = ag_measurement_root();
@@ -2621,6 +2656,14 @@ fn cli_gate_allows_saga_silence_by_design_with_boundary_override() {
         out_dir.to_str().expect("path is utf-8"),
     ]);
 
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
+    assert_eq!(comparison["status"], "silence_by_design");
+    assert_eq!(comparison["reason"], "comparison_data_not_supplied");
+    assert!(comparison["whatNext"].as_str().is_some_and(|text| {
+        text.contains("incidence bridge") && text.contains("H1 comparison contract")
+    }));
+
     let report_path = out_dir.join("archsig-gate-report.json");
     run_sig0(&[
         "gate",
@@ -2650,6 +2693,104 @@ fn cli_gate_allows_saga_silence_by_design_with_boundary_override() {
         .expect("saga global coherence mapping exists");
     assert_eq!(saga_mapping["action"], "pass_with_boundary");
     assert_eq!(saga_mapping["boundaryOverrideApplied"], true);
+    let comparison_mapping = report["ruleOutcomes"][0]["appliedMapping"]
+        .as_array()
+        .expect("applied mappings")
+        .iter()
+        .find(|mapping| mapping["rowRef"] == "saga-comparison:h1-transfer")
+        .expect("comparison silence mapping exists");
+    assert_eq!(comparison_mapping["action"], "pass_with_boundary");
+    assert_eq!(comparison_mapping["boundaryOverrideApplied"], true);
+}
+
+#[test]
+fn cli_gate_allows_diagnostic_ceiling_silence_with_boundary_override() {
+    let out_dir = temp_dir("ag-diagnostic-ceiling-gate-boundary-override");
+    let root = ag_measurement_root();
+    let (mut policy, mut profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
+    policy["policies"] = json!([{
+        "law": "law:saga-grounded",
+        "evaluator": "ag.saga-grounded",
+        "basis": ["policy-basis:layering"],
+        "scope": ["src/"],
+        "severity": "high"
+    }]);
+    profile["diagnosticCeiling"] = json!("descent");
+    profile["witnessFamily"] = json!([{
+        "law": "ag.saga-grounded",
+        "variable": "atom:order"
+    }]);
+    let policy_path = out_dir.join("law_policy_saga_grounded.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json").to_str().unwrap(),
+        "--law-policy",
+        policy_path.to_str().unwrap(),
+        "--measurement-profile",
+        test_measurement_profile_path(&policy_path)
+            .to_str()
+            .unwrap(),
+        "--law-surface",
+        policy_path
+            .with_file_name("law_surface.json")
+            .to_str()
+            .unwrap(),
+        "--out-dir",
+        out_dir.to_str().unwrap(),
+    ]);
+
+    let packet_path = out_dir.join("archsig-measurement-packet.json");
+    let packet = read_json(&packet_path);
+    let ceiling_row = packet["structuralVerdict"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["evaluator"] == "ag.saga-grounded")
+        .expect("diagnostic ceiling row");
+    assert_eq!(ceiling_row["verdict"], "not_computed");
+    assert_eq!(
+        ceiling_row["verdictData"]["methodStatus"],
+        "diagnostic_ceiling_not_reached"
+    );
+    let ceiling_ref = ceiling_row["verdictRef"].as_str().unwrap();
+    assert!(
+        packet["boundaryStatements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|statement| {
+                statement["kind"] == "silence_by_design"
+                    && statement["scopeRefs"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|scope_ref| scope_ref == ceiling_ref)
+            })
+    );
+
+    let gate_report_path = out_dir.join("gate-report.json");
+    run_sig0(&[
+        "gate",
+        "--packet",
+        packet_path.to_str().unwrap(),
+        "--policy",
+        root.join("gate_policy_conservative.json").to_str().unwrap(),
+        "--out",
+        gate_report_path.to_str().unwrap(),
+    ]);
+    let gate_report = read_json(&gate_report_path);
+    assert_eq!(gate_report["decision"], "PASS_WITHIN_GATE_POLICY");
+    let mapping = gate_report["ruleOutcomes"][0]["appliedMapping"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|mapping| mapping["rowRef"] == ceiling_ref)
+        .expect("diagnostic ceiling row reaches gate mapping");
+    assert_eq!(mapping["action"], "pass_with_boundary");
+    assert_eq!(mapping["boundaryOverrideApplied"], true);
 }
 
 #[test]
@@ -3577,6 +3718,51 @@ fn cli_representative_output_surfaces_omit_absolute_sheaf_cohomology_notation() 
         "selected cover H^1"
     ));
     assert!(!has_absolute_sheaf_cohomology_notation("coverRelativeH1"));
+}
+
+#[test]
+fn cli_r13_two_vertex_circle_nerve_fixture_locks_body_worked_example() {
+    let fixture = read_json(&ag_measurement_root().join("circle_nerve_two_vertex_body_v052.json"));
+    assert_eq!(fixture["schema"], "ag-circle-nerve-fixture/v0.5.2");
+    assert_eq!(
+        fixture["provenance"]["reference"],
+        "part10/9.2 + appendix/B.9"
+    );
+    assert_eq!(
+        fixture["provenance"]["leanWitness"],
+        "circleSimplex/circleNext is the separate 3-edge Lean witness"
+    );
+    assert!(
+        fixture["provenance"]["note"]
+            .as_str()
+            .is_some_and(|note| note.contains("not a Lean-proved witness"))
+    );
+    assert_eq!(fixture["coefficient"]["ring"], "Z");
+    assert_eq!(fixture["coefficient"]["quotient"], "F2");
+    assert_eq!(fixture["coefficient"]["ideal"], "(2)");
+    assert_eq!(fixture["coefficient"]["oneIsNonzero"], true);
+    assert_eq!(fixture["vertices"], json!(["v_minus", "v_plus"]));
+    let edges = fixture["edges"].as_array().expect("circle edges");
+    assert_eq!(edges.len(), 2);
+    assert_eq!(edges[0]["source"], "v_minus");
+    assert_eq!(edges[0]["target"], "v_plus");
+    assert_eq!(edges[0]["id"], "e_plus");
+    assert_eq!(edges[0]["value"], 1);
+    assert_eq!(edges[1]["source"], "v_plus");
+    assert_eq!(edges[1]["target"], "v_minus");
+    assert_eq!(edges[1]["id"], "e_minus");
+    assert_eq!(edges[1]["value"], 0);
+    assert_eq!(
+        edges
+            .iter()
+            .map(|edge| edge["value"].as_u64().expect("F2 edge value") as u8)
+            .fold(0, |sum, value| sum ^ value),
+        1,
+        "the residual has nonzero reverse-edge parity in F2"
+    );
+    assert_eq!(fixture["higherSimplices"], json!([]));
+    assert_eq!(fixture["expected"]["cocycle"], true);
+    assert_eq!(fixture["expected"]["classNonzero"], true);
 }
 
 #[test]
@@ -9434,6 +9620,11 @@ fn cli_analyze_v2_harmonic_debt_requires_cost_model_for_lower_bound() {
         no_cost_invariant["lowerBoundStatus"],
         "cost_model_not_supplied"
     );
+    assert_eq!(no_cost_invariant["status"], "silence_by_design");
+    assert_eq!(
+        no_cost_invariant["whatNext"],
+        "supply analytic.costModel with a positive Lipschitz constant and harmonic resolution before evaluating essentialRepairLowerBound"
+    );
     assert!(no_cost_invariant.get("essentialRepairLowerBound").is_none());
     let no_cost_reading = no_cost_packet["analyticReadings"]
         .as_array()
@@ -9446,6 +9637,10 @@ fn cli_analyze_v2_harmonic_debt_requires_cost_model_for_lower_bound() {
             .get("essentialRepairLowerBound")
             .is_none()
     );
+    assert_eq!(
+        no_cost_reading["value"]["whatNext"],
+        no_cost_invariant["whatNext"]
+    );
     assert!(
         !no_cost_packet["assumptions"]
             .as_array()
@@ -9453,6 +9648,44 @@ fn cli_analyze_v2_harmonic_debt_requires_cost_model_for_lower_bound() {
             .iter()
             .any(|row| row["theoremRef"] == "part8/8.7")
     );
+    assert!(
+        no_cost_packet["boundaryStatements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|statement| {
+                statement["kind"] == "silence_by_design"
+                    && statement["reason"] == "cost_model_not_supplied"
+                    && statement["text"].as_str().is_some_and(|text| {
+                        text.contains("analytic.costModel")
+                            && text.contains("essentialRepairLowerBound")
+                    })
+            }),
+        "missing cost model must remain a typed silence_by_design boundary"
+    );
+    let no_cost_gate_report = no_cost_out.join("gate-report.json");
+    run_sig0(&[
+        "gate",
+        "--packet",
+        no_cost_out
+            .join("archsig-measurement-packet.json")
+            .to_str()
+            .unwrap(),
+        "--policy",
+        root.join("gate_policy_conservative.json").to_str().unwrap(),
+        "--out",
+        no_cost_gate_report.to_str().unwrap(),
+    ]);
+    let no_cost_gate = read_json(&no_cost_gate_report);
+    assert_eq!(no_cost_gate["decision"], "PASS_WITHIN_GATE_POLICY");
+    let no_cost_mapping = no_cost_gate["ruleOutcomes"][0]["appliedMapping"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|mapping| mapping["rowRef"] == "analytic:harmonic-debt:profile:ag-harmonic-debt@1")
+        .expect("analytic cost-model silence reaches gate mapping");
+    assert_eq!(no_cost_mapping["action"], "pass_with_boundary");
+    assert_eq!(no_cost_mapping["boundaryOverrideApplied"], true);
 
     let invalid_out = temp_dir("ag-measurement-harmonic-debt-invalid-cost");
     let mut invalid_profile = read_json(&profile_path);
@@ -11490,14 +11723,16 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
         grounded["lawIndependent"]["note"],
         "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。"
     );
+    let grounded_row = packet["structuralVerdict"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["evaluator"] == "ag.saga-grounded")
+        .expect("saga-grounded structural verdict");
+    assert_eq!(grounded_row["verdict"], "measured_zero");
     assert_eq!(
-        packet["structuralVerdict"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .find(|row| row["evaluator"] == "ag.saga-grounded")
-            .unwrap()["verdict"],
-        "measured_zero"
+        grounded_row["reason"],
+        "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS"
     );
 
     let mut bad_archmap = read_json(&root.join("archmap_v2.json"));
@@ -11543,15 +11778,14 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
         bad_grounded["detectorFindings"].as_array().map(Vec::len),
         Some(1)
     );
-    assert_eq!(
-        bad_packet["structuralVerdict"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .find(|row| row["evaluator"] == "ag.saga-grounded")
-            .unwrap()["verdict"],
-        "measured_nonzero"
-    );
+    let bad_grounded_row = bad_packet["structuralVerdict"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["evaluator"] == "ag.saga-grounded")
+        .expect("bad saga-grounded structural verdict");
+    assert_eq!(bad_grounded_row["verdict"], "measured_nonzero");
+    assert_eq!(bad_grounded_row["reason"], "MEASURED_LAW_DEFECT_AT_CHART");
     assert_eq!(
         bad_grounded["generatedQuotient"]["interpretation"]["class"],
         "nonzero"
@@ -12407,9 +12641,34 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                         ARCHSIG_SAGA_CONCLUSION_CODES
                             .iter()
                             .all(|code| description.contains(code))
+                            && [
+                                "incidenceBridgeKind",
+                                "h1ComparisonDataKind",
+                                "normalizedComplexFingerprint",
+                                "classPrerequisite",
+                                "targetClassComputed",
+                                "contractChecked",
+                                "strings",
+                                "booleans",
+                            ]
+                            .iter()
+                            .all(|field| description.contains(field))
                     })
         }),
         "schema catalog must register SAGA conclusionCode values"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-gate-policy/v0.5.2"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        description
+                            .contains("violated_assumption_dependency must map exactly to block")
+                            && description.contains("cannot map to plain pass")
+                    })
+        }),
+        "schema catalog must register the exact gate action for violated assumption dependency"
     );
     assert!(
         artifacts.iter().any(|entry| {
@@ -13216,6 +13475,53 @@ fn cli_gate_rejects_supplied_vacuous_measured_zero_packet() {
 }
 
 #[test]
+fn cli_gate_rejects_silence_scope_on_measured_nonzero() {
+    let out_dir = temp_dir("archsig-gate-silence-on-measured-nonzero");
+    let packet_path = out_dir.join("packet.json");
+    write_gate_packet(&packet_path, "measured_nonzero");
+    let mut packet = read_json(&packet_path);
+    let structural_ref = packet["structuralVerdict"][0]["verdictRef"]
+        .as_str()
+        .expect("structural verdict ref")
+        .to_string();
+    packet["boundaryStatements"][0]["scopeRefs"] = json!([structural_ref]);
+    fs::write(
+        &packet_path,
+        serde_json::to_vec_pretty(&packet).expect("packet serializes"),
+    )
+    .expect("packet writes");
+    let report_path = out_dir.join("gate-report.json");
+
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            ag_measurement_root()
+                .join("gate_policy_conservative.json")
+                .to_str()
+                .expect("policy path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let report = read_json(&report_path);
+    assert_eq!(report["decision"], "NOT_EVALUABLE");
+    assert!(
+        report["packetValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| {
+                check["id"] == "measurement-packet-schema052-boundary-statements"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_gate_rejects_plain_pass_for_non_terminal_and_missing_mapping() {
     let out_dir = temp_dir("archsig-gate-invalid-policy");
     let packet_path = out_dir.join("packet.json");
@@ -13264,6 +13570,15 @@ fn cli_gate_rejects_plain_pass_for_non_terminal_and_missing_mapping() {
             .iter()
             .any(|check| check["id"]
                 == "gate-policy-rule-0-verdictMapping-unmeasured-no-plain-pass"
+                && check["result"] == "fail")
+    );
+    assert!(
+        report["policyValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| check["id"]
+                == "gate-policy-rule-0-verdictMapping-violated_assumption_dependency-must-block"
                 && check["result"] == "fail")
     );
     assert!(
@@ -13387,6 +13702,39 @@ fn cli_gate_rejects_unknown_packet_verdict_and_policy_mapping_keys() {
                 == "gate-policy-rule-0-verdictMapping-alien_verdict-known-key"
                 && check["result"] == "fail")
     );
+
+    let bad_override_policy_path = out_dir.join("bad-boundary-override-key.json");
+    let mut bad_override_policy = read_json(&policy_path);
+    bad_override_policy["rules"][0]["boundaryKindOverrides"]["alien_boundary"] =
+        json!("pass_with_boundary");
+    fs::write(
+        &bad_override_policy_path,
+        serde_json::to_vec_pretty(&bad_override_policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+    let bad_override_report = out_dir.join("bad-boundary-override-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            valid_packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            bad_override_policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            bad_override_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let bad_override_json = read_json(&bad_override_report);
+    assert!(
+        bad_override_json["policyValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| check["id"]
+                == "gate-policy-rule-0-boundary-override-alien_boundary-known-key"
+                && check["result"] == "fail")
+    );
 }
 
 #[test]
@@ -13452,6 +13800,58 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
 
     let packet_path = out_dir.join("packet.json");
     write_gate_packet(&packet_path, "measured_zero");
+
+    let comparison_only_packet = out_dir.join("comparison-only-packet.json");
+    let mut comparison_only = read_json(&packet_path);
+    comparison_only["structuralVerdict"] = json!([]);
+    comparison_only["computedInvariants"] = json!([{
+        "invariantId": "saga-comparison:h1-transfer",
+        "kind": "h1-comparison-transfer",
+        "evaluator": "ag.saga-comparison",
+        "status": "silence_by_design",
+        "whatNext": "supply the missing comparison input",
+        "value": {"status": "silence_by_design"},
+        "representation": {"basis": "typed-silence"},
+        "contract": {
+            "incidenceBridgeKind": "unknown",
+            "h1ComparisonDataKind": "unknown",
+            "normalizedComplexFingerprint": "unknown",
+            "classPrerequisite": false,
+            "targetClassComputed": false,
+            "contractChecked": false
+        }
+    }]);
+    comparison_only["boundaryStatements"] = json!([{
+        "id": "boundary:saga-comparison",
+        "kind": "silence_by_design",
+        "scopeRefs": ["saga-comparison:h1-transfer"],
+        "reason": "comparison_data_not_supplied",
+        "text": "supply the missing comparison input"
+    }]);
+    comparison_only["nonConclusions"] = json!(["supply the missing comparison input"]);
+    fs::write(
+        &comparison_only_packet,
+        serde_json::to_vec_pretty(&comparison_only).expect("comparison-only packet serializes"),
+    )
+    .expect("comparison-only packet writes");
+    let comparison_only_report = out_dir.join("comparison-only-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            comparison_only_packet.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            comparison_only_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    assert_eq!(
+        read_json(&comparison_only_report)["decision"],
+        "NOT_EVALUABLE"
+    );
+
     let comparison_path = out_dir.join("comparison.json");
     fs::write(
         &comparison_path,

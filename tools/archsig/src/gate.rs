@@ -46,6 +46,14 @@ const NON_TERMINAL_KEYS: [&str; 4] = [
     "not_computed",
     "violated_assumption_dependency",
 ];
+const BOUNDARY_OVERRIDE_KEYS: [&str; 6] = [
+    "silence_by_design",
+    "out_of_selected_vocabulary",
+    "unmeasured_support",
+    "violated_assumption",
+    "blocked_method",
+    "not_applicable",
+];
 
 pub fn validate_gate_policy_v1(policy: &Value) -> Vec<Value> {
     let mut checks = Vec::new();
@@ -197,7 +205,7 @@ pub fn build_gate_report_v1(
     let rules = policy["rules"]
         .as_array()
         .ok_or("validated gate policy unexpectedly has no rules")?;
-    let verdict_rows = structural_verdict_rows(&packet);
+    let verdict_rows = gate_verdict_rows(&packet);
     let boundary_statements = packet_boundary_statements_by_scope(&packet);
     let violated_assumptions = violated_assumption_ids(&packet);
     let mut rule_outcomes = Vec::new();
@@ -215,13 +223,20 @@ pub fn build_gate_report_v1(
                     .iter()
                     .map(|row| {
                         let key = mapping_key_for_row(row, &violated_assumptions);
-                        let boundary_override =
-                            override_action(row, &boundary_statements, overrides);
-                        let action = boundary_override
-                            .as_deref()
-                            .or_else(|| mapping.get(&key).and_then(Value::as_str))
-                            .unwrap_or("block")
-                            .to_string();
+                        let (boundary_override, action) = if key == "violated_assumption_dependency"
+                        {
+                            any_block = true;
+                            (None, "block".to_string())
+                        } else {
+                            let boundary_override =
+                                override_action(row, &boundary_statements, overrides);
+                            let action = boundary_override
+                                .as_deref()
+                                .or_else(|| mapping.get(&key).and_then(Value::as_str))
+                                .unwrap_or("block")
+                                .to_string();
+                            (boundary_override, action)
+                        };
                         if action == "block" {
                             any_block = true;
                         }
@@ -397,8 +412,8 @@ fn validate_gate_packet_v1(packet: &Value) -> Vec<Value> {
             &mut checks,
             &mut fail_count,
             "gate-packet-structural-verdict-nonempty",
-            !rows.is_empty(),
-            "structuralVerdict must contain at least one row for gate mapping",
+            !rows.is_empty() || !supplemental_silence_rows(packet).is_empty(),
+            "structuralVerdict must contain a row, or a typed silence row must be explicitly boundary-scoped for gate mapping",
         );
         for (index, row) in rows.iter().enumerate() {
             let verdict = row.get("verdict").and_then(Value::as_str);
@@ -482,6 +497,18 @@ fn validate_mapping(
             &format!("{field}.{key} must not map to plain pass"),
         );
     }
+    if field == "verdictMapping" && required_keys.contains(&"violated_assumption_dependency") {
+        push_check(
+            checks,
+            fail_count,
+            &format!("gate-policy-rule-{index}-{field}-violated_assumption_dependency-must-block"),
+            object
+                .get("violated_assumption_dependency")
+                .and_then(Value::as_str)
+                == Some("block"),
+            "verdictMapping.violated_assumption_dependency must map to block",
+        );
+    }
 }
 
 fn validate_boundary_overrides(
@@ -502,6 +529,13 @@ fn validate_boundary_overrides(
         return;
     };
     for (kind, action) in object {
+        push_check(
+            checks,
+            fail_count,
+            &format!("gate-policy-rule-{index}-boundary-override-{kind}-known-key"),
+            BOUNDARY_OVERRIDE_KEYS.contains(&kind.as_str()),
+            "boundaryKindOverrides key must be a known boundary statement kind",
+        );
         let action = action.as_str();
         push_check(
             checks,
@@ -607,6 +641,95 @@ fn structural_verdict_rows(packet: &Value) -> Vec<Value> {
         .collect()
 }
 
+fn analytic_silence_rows(packet: &Value) -> Vec<Value> {
+    let boundaries_by_scope = packet_boundary_statements_by_scope(packet);
+    packet["analyticReadings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|reading| {
+            let reading_id = reading["readingId"].as_str()?;
+            let has_silence_boundary = boundaries_by_scope
+                .get(reading_id)
+                .into_iter()
+                .flatten()
+                .any(|kind| kind == "silence_by_design");
+            has_silence_boundary.then(|| {
+                json!({
+                    "verdictRef": reading_id,
+                    "evaluator": reading["evaluator"],
+                    "law": reading["evaluator"],
+                    "verdict": "not_computed",
+                    "verdictData": {
+                        "inScope": true,
+                        "zero": false,
+                        "nonZero": false,
+                        "methodStatus": "analytic_reading_silence_by_design"
+                    },
+                    "dependsOnAssumptions": []
+                })
+            })
+        })
+        .collect()
+}
+
+fn comparison_silence_rows(packet: &Value) -> Vec<Value> {
+    let boundaries_by_scope = packet_boundary_statements_by_scope(packet);
+    packet["computedInvariants"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|invariant| {
+            if invariant["evaluator"] != "ag.saga-comparison"
+                || invariant["status"] != "silence_by_design"
+            {
+                return None;
+            }
+            let invariant_id = invariant["invariantId"].as_str()?;
+            let has_silence_boundary = boundaries_by_scope
+                .get(invariant_id)
+                .into_iter()
+                .flatten()
+                .any(|kind| kind == "silence_by_design");
+            has_silence_boundary.then(|| {
+                json!({
+                    "verdictRef": invariant_id,
+                    "evaluator": invariant["evaluator"],
+                    "law": invariant["evaluator"],
+                    "verdict": "not_computed",
+                    "verdictData": {
+                        "inScope": true,
+                        "zero": false,
+                        "nonZero": false,
+                        "methodStatus": invariant["reason"]
+                    },
+                    "dependsOnAssumptions": []
+                })
+            })
+        })
+        .collect()
+}
+
+fn supplemental_silence_rows(packet: &Value) -> Vec<Value> {
+    let structural = structural_verdict_rows(packet);
+    let mut rows = if structural.is_empty() {
+        analytic_silence_rows(packet)
+    } else {
+        Vec::new()
+    };
+    if !structural.is_empty() || !rows.is_empty() {
+        rows.extend(comparison_silence_rows(packet));
+    }
+    rows
+}
+
+fn gate_verdict_rows(packet: &Value) -> Vec<Value> {
+    let structural = structural_verdict_rows(packet);
+    let mut rows = structural;
+    rows.extend(supplemental_silence_rows(packet));
+    rows
+}
+
 fn violated_assumption_ids(packet: &Value) -> BTreeSet<String> {
     packet["assumptions"]
         .as_array()
@@ -659,13 +782,9 @@ fn override_action(
     boundaries_by_scope: &BTreeMap<String, Vec<String>>,
     overrides: Option<&Map<String, Value>>,
 ) -> Option<String> {
-    // Square-free generator-level silence may qualify an all-unobserved
-    // measured_zero row, but it must never turn a mixed measured_nonzero row
-    // into pass_with_boundary. Other evaluator-specific boundary overrides
-    // retain their existing policy semantics.
-    if row["evaluator"].as_str() == Some("ag.square-free-repair")
-        && row["verdict"].as_str() != Some("measured_zero")
-    {
+    // Typed silence may qualify an unmeasured/not-computed row, but it must
+    // never turn any measured_nonzero row into pass_with_boundary.
+    if row["verdict"].as_str() == Some("measured_nonzero") {
         return None;
     }
     let overrides = overrides?;
@@ -745,6 +864,71 @@ fn not_evaluable_report(
             "No measurement verdict was rounded into a gate decision."
         ]
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn analytic_silence_is_fallback_only_while_comparison_silence_is_supplemental() {
+        let packet = json!({
+            "structuralVerdict": [{
+                "verdictRef": "structural:law",
+                "evaluator": "ag.structural",
+                "law": "law:structural",
+                "verdict": "measured_zero",
+                "verdictData": {},
+                "dependsOnAssumptions": []
+            }],
+            "analyticReadings": [{
+                "readingId": "analytic:cost-model",
+                "evaluator": "ag.harmonic-debt"
+            }],
+            "computedInvariants": [{
+                "invariantId": "saga-comparison:h1-transfer",
+                "evaluator": "ag.saga-comparison",
+                "status": "silence_by_design",
+                "reason": "comparison_data_not_supplied"
+            }],
+            "boundaryStatements": [
+                {
+                    "kind": "silence_by_design",
+                    "scopeRefs": ["analytic:cost-model"]
+                },
+                {
+                    "kind": "silence_by_design",
+                    "scopeRefs": ["saga-comparison:h1-transfer"]
+                }
+            ]
+        });
+
+        let rows = gate_verdict_rows(&packet);
+        assert!(rows.iter().any(|row| row["verdictRef"] == "structural:law"));
+        assert!(
+            rows.iter()
+                .any(|row| row["verdictRef"] == "saga-comparison:h1-transfer")
+        );
+        assert!(
+            !rows
+                .iter()
+                .any(|row| row["verdictRef"] == "analytic:cost-model")
+        );
+
+        let mut fallback_packet = packet;
+        fallback_packet["structuralVerdict"] = json!([]);
+        let fallback_rows = gate_verdict_rows(&fallback_packet);
+        assert!(
+            fallback_rows
+                .iter()
+                .any(|row| row["verdictRef"] == "analytic:cost-model")
+        );
+
+        let mut comparison_only_packet = fallback_packet;
+        comparison_only_packet["analyticReadings"] = json!([]);
+        let comparison_only_rows = gate_verdict_rows(&comparison_only_packet);
+        assert!(comparison_only_rows.is_empty());
+    }
 }
 
 fn artifact_input_ref(path: &Path) -> String {
