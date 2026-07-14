@@ -223,16 +223,20 @@ pub fn build_gate_report_v1(
                     .iter()
                     .map(|row| {
                         let key = mapping_key_for_row(row, &violated_assumptions);
-                        let boundary_override = if key == "violated_assumption_dependency" {
-                            None
+                        let (boundary_override, action) = if key == "violated_assumption_dependency"
+                        {
+                            any_block = true;
+                            (None, "block".to_string())
                         } else {
-                            override_action(row, &boundary_statements, overrides)
+                            let boundary_override =
+                                override_action(row, &boundary_statements, overrides);
+                            let action = boundary_override
+                                .as_deref()
+                                .or_else(|| mapping.get(&key).and_then(Value::as_str))
+                                .unwrap_or("block")
+                                .to_string();
+                            (boundary_override, action)
                         };
-                        let action = boundary_override
-                            .as_deref()
-                            .or_else(|| mapping.get(&key).and_then(Value::as_str))
-                            .unwrap_or("block")
-                            .to_string();
                         if action == "block" {
                             any_block = true;
                         }
@@ -491,6 +495,18 @@ fn validate_mapping(
             &format!("gate-policy-rule-{index}-{field}-{key}-no-plain-pass"),
             object.get(*key).and_then(Value::as_str) != Some("pass"),
             &format!("{field}.{key} must not map to plain pass"),
+        );
+    }
+    if field == "verdictMapping" && required_keys.contains(&"violated_assumption_dependency") {
+        push_check(
+            checks,
+            fail_count,
+            &format!("gate-policy-rule-{index}-{field}-violated_assumption_dependency-must-block"),
+            object
+                .get("violated_assumption_dependency")
+                .and_then(Value::as_str)
+                == Some("block"),
+            "verdictMapping.violated_assumption_dependency must map to block",
         );
     }
 }

@@ -8,9 +8,10 @@ use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
     ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
-    ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
-    ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE,
+    ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
+    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
+    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
     AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
@@ -63,6 +64,8 @@ const COMPUTED_INVARIANT_KINDS: [&str; 19] = [
     "saga-grounded-conclusions",
     "harmonic-debt",
 ];
+const COMPUTED_INVARIANT_KIND_OWNERS: [(&str, &str); 1] =
+    [("h1-comparison-transfer", "ag.saga-comparison")];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_COHERENCE_CONTEXTS: usize = 12;
 const MAX_TOR_WITNESS_VARIABLES: usize = 12;
@@ -70,6 +73,7 @@ const MAX_BOUNDARY_RESIDUE_VARIABLES: usize = 16;
 const MAX_LAPLACIAN_CELLS: usize = 16;
 const MAX_PERIOD_CYCLES: usize = 16;
 const MAX_TRANSFER_TARGETS: usize = 16;
+const HARMONIC_COST_MODEL_WHAT_NEXT: &str = "supply analytic.costModel with a positive Lipschitz constant and harmonic resolution before evaluating essentialRepairLowerBound";
 const GLUING_TRIANGLE_RENDER_LIMIT: usize = 80;
 const GLUING_COCYCLE_EDGE_RENDER_LIMIT: usize = 80;
 const GLUING_FIELD_ROW_RENDER_LIMIT: usize = 64;
@@ -3697,6 +3701,9 @@ fn evaluate_harmonic_debt_v1(
         "nonConclusion": "analytic harmonic debt is not a structural lawfulness verdict"
     });
     if lower_bound.is_none() {
+        invariant["status"] = json!("silence_by_design");
+        invariant["reason"] = json!("cost_model_not_supplied");
+        invariant["whatNext"] = json!(HARMONIC_COST_MODEL_WHAT_NEXT);
         invariant
             .as_object_mut()
             .expect("harmonic debt invariant is object")
@@ -3705,6 +3712,7 @@ fn evaluate_harmonic_debt_v1(
             .as_object_mut()
             .expect("harmonic debt reading is object")
             .remove("essentialRepairLowerBound");
+        reading["whatNext"] = json!(HARMONIC_COST_MODEL_WHAT_NEXT);
     }
     Ok(HarmonicDebtMeasurementV1 {
         computed_invariants: vec![invariant],
@@ -12799,8 +12807,32 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
             COMPUTED_INVARIANT_FIELDS,
             &mut examples,
         );
-        if invariant["evaluator"] == "ag.saga-comparison" {
+        let is_comparison_kind = invariant["kind"].as_str() == Some("h1-comparison-transfer");
+        let is_comparison_evaluator = invariant["evaluator"].as_str() == Some("ag.saga-comparison");
+        if is_comparison_kind || is_comparison_evaluator {
             let contract_label = format!("computedInvariants[{index}].contract");
+            if is_comparison_kind && !is_comparison_evaluator {
+                examples.push(generic_validation_example(
+                    &format!("computedInvariants[{index}]"),
+                    "evaluator",
+                    "h1-comparison-transfer kind is owned by ag.saga-comparison",
+                ));
+            }
+            if is_comparison_evaluator && !is_comparison_kind {
+                examples.push(generic_validation_example(
+                    &format!("computedInvariants[{index}]"),
+                    "kind",
+                    "ag.saga-comparison evaluator is owned by h1-comparison-transfer kind",
+                ));
+            }
+            if is_comparison_kind && !is_comparison_evaluator && invariant.get("contract").is_some()
+            {
+                examples.push(generic_validation_example(
+                    &contract_label,
+                    "contract",
+                    "contract is reserved for ag.saga-comparison owned computed invariants",
+                ));
+            }
             let Some(contract) = invariant.get("contract") else {
                 examples.push(generic_validation_example(
                     &contract_label,
@@ -12857,6 +12889,80 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                             &contract_label,
                             field,
                             "comparison contract field has the wrong type or is missing",
+                        ));
+                    }
+                }
+                let status = invariant["status"].as_str();
+                let class_prerequisite = contract["classPrerequisite"].as_bool();
+                let target_class_computed = contract["targetClassComputed"].as_bool();
+                let contract_checked = contract["contractChecked"].as_bool();
+                let failure_code = invariant["failureCode"].as_str();
+                let conclusion_code = invariant["conclusionCode"].as_str();
+                if failure_code
+                    .is_some_and(|code| code != ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
+                {
+                    examples.push(generic_validation_example(
+                        &contract_label,
+                        "failureCode",
+                        "comparison failureCode must be COMPARISON_DATA_CONTRACT_VIOLATION",
+                    ));
+                }
+                if status == Some("silence_by_design") {
+                    if class_prerequisite != Some(false) {
+                        examples.push(generic_validation_example(
+                            &contract_label,
+                            "classPrerequisite",
+                            "silence_by_design comparison requires classPrerequisite=false",
+                        ));
+                    }
+                    if failure_code.is_some() || conclusion_code.is_some() {
+                        examples.push(generic_validation_example(
+                            &contract_label,
+                            "status",
+                            "silence_by_design comparison cannot carry failureCode or conclusionCode",
+                        ));
+                    }
+                }
+                if status == Some("established") {
+                    if class_prerequisite != Some(true)
+                        || target_class_computed != Some(true)
+                        || contract_checked != Some(true)
+                    {
+                        examples.push(generic_validation_example(
+                            &contract_label,
+                            "status",
+                            "established comparison requires all contract completion flags=true",
+                        ));
+                    }
+                    if conclusion_code
+                        != Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
+                        || failure_code.is_some()
+                    {
+                        examples.push(generic_validation_example(
+                            &contract_label,
+                            "conclusionCode",
+                            "established comparison requires its conclusionCode and no failureCode",
+                        ));
+                    }
+                }
+                if status == Some("not_computed") {
+                    if conclusion_code
+                        == Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
+                    {
+                        examples.push(generic_validation_example(
+                            &contract_label,
+                            "conclusionCode",
+                            "not_computed comparison cannot carry the established conclusionCode",
+                        ));
+                    }
+                    if failure_code
+                        .is_some_and(|code| code == ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
+                        && (class_prerequisite != Some(true) || target_class_computed != Some(true))
+                    {
+                        examples.push(generic_validation_example(
+                            &contract_label,
+                            "failureCode",
+                            "comparison contract violation requires measured source and target classes",
                         ));
                     }
                 }
@@ -13449,6 +13555,17 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
                     "computed invariant kind must be one of the closed measurement packet v0.5.2 kinds",
                 ));
             }
+            if let Some((_, owner)) = COMPUTED_INVARIANT_KIND_OWNERS
+                .iter()
+                .find(|(owned_kind, _)| *owned_kind == kind)
+                && invariant["evaluator"].as_str() != Some(owner)
+            {
+                examples.push(generic_validation_example(
+                    &label,
+                    "evaluator",
+                    &format!("computed invariant kind {kind} must be owned by {owner}"),
+                ));
+            }
         }
         if invariant["evaluator"].as_str() == Some("ag.saga-grounded")
             && invariant["kind"].as_str() == Some("saga-grounded-conclusions")
@@ -13905,6 +14022,33 @@ fn check_analytic_regime_boundary(
                 "certified analytic reading structuralVerdictRef must resolve to a structural verdict",
             ));
         }
+        if reading_value["evaluator"] == "ag.harmonic-debt"
+            && reading_value["value"]["lowerBoundStatus"] == "cost_model_not_supplied"
+        {
+            let next_input = reading_value["value"]["whatNext"].as_str();
+            if next_input.is_none_or(|text| text.trim().is_empty()) {
+                examples.push(generic_validation_example(
+                    &label,
+                    "value.whatNext",
+                    "harmonic cost-model silence must expose the next required input",
+                ));
+            }
+            let matching_invariant = packet_value["computedInvariants"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .find(|invariant| invariant["evaluator"] == "ag.harmonic-debt");
+            if matching_invariant.is_none_or(|invariant| {
+                invariant["status"] != "silence_by_design"
+                    || invariant["whatNext"].as_str() != next_input
+            }) {
+                examples.push(generic_validation_example(
+                    &label,
+                    "value.whatNext",
+                    "harmonic cost-model silence must match the computed invariant whatNext guidance",
+                ));
+            }
+        }
     }
     for reading in &packet.analytic_readings {
         if reading
@@ -14251,6 +14395,30 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
     }
 
     for invariant in &packet.computed_invariants {
+        let invariant_id = invariant["invariantId"].as_str().unwrap_or_default();
+        let status = invariant["status"].as_str();
+        if status.is_some() && status != Some("silence_by_design") {
+            if invariant.get("whatNext").is_some() {
+                examples.push(generic_validation_example(
+                    invariant_id,
+                    "whatNext",
+                    "whatNext is reserved for silence_by_design invariants",
+                ));
+            }
+            if packet.boundary_statements.iter().any(|statement| {
+                statement.kind == "silence_by_design"
+                    && statement
+                        .scope_refs
+                        .iter()
+                        .any(|scope_ref| scope_ref == invariant_id)
+            }) {
+                examples.push(generic_validation_example(
+                    invariant_id,
+                    "boundaryStatements",
+                    "typed silence boundaries must not scope to a non-silence invariant",
+                ));
+            }
+        }
         if invariant.get("whatNext").is_some() {
             let Some(what_next) = invariant["whatNext"].as_str() else {
                 examples.push(generic_validation_example(
@@ -14273,7 +14441,6 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
             }
         }
         if invariant["status"].as_str() == Some("silence_by_design") {
-            let invariant_id = invariant["invariantId"].as_str().unwrap_or_default();
             if invariant["whatNext"]
                 .as_str()
                 .is_none_or(|text| text.trim().is_empty())
@@ -15214,6 +15381,57 @@ mod tests {
         let checks = validate_measurement_packet_v1(&mismatched_boundary);
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-schema052-boundary-statements" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn comparison_contract_kind_owner_cannot_be_bypassed() {
+        let mut packet = packet_fixture();
+        packet.computed_invariants.push(json!({
+            "invariantId": "comparison-owner-bypass",
+            "kind": "h1-comparison-transfer",
+            "evaluator": "ag.foundation",
+            "status": "silence_by_design",
+            "whatNext": "supply the missing comparison input",
+            "value": {"status": "silence_by_design"},
+            "representation": {"basis": "typed-silence"}
+        }));
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-unknown-fields" && check.result == "fail"
+        }));
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-computed-invariants-typed"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn comparison_contract_status_flags_must_match_output_status() {
+        let mut packet = packet_fixture();
+        packet.computed_invariants.push(json!({
+            "invariantId": "comparison-established-without-conclusion",
+            "kind": "h1-comparison-transfer",
+            "evaluator": "ag.saga-comparison",
+            "status": "established",
+            "value": {"status": "established"},
+            "representation": {"basis": "typed-comparison"},
+            "contract": {
+                "incidenceBridgeKind": "explicit",
+                "h1ComparisonDataKind": "explicit",
+                "normalizedComplexFingerprint": "fingerprint",
+                "classPrerequisite": true,
+                "targetClassComputed": true,
+                "contractChecked": true
+            }
+        }));
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema052-unknown-fields"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example.source.as_deref() == Some("computedInvariants[0].contract")
+                })
         }));
     }
 

@@ -9620,6 +9620,11 @@ fn cli_analyze_v2_harmonic_debt_requires_cost_model_for_lower_bound() {
         no_cost_invariant["lowerBoundStatus"],
         "cost_model_not_supplied"
     );
+    assert_eq!(no_cost_invariant["status"], "silence_by_design");
+    assert_eq!(
+        no_cost_invariant["whatNext"],
+        "supply analytic.costModel with a positive Lipschitz constant and harmonic resolution before evaluating essentialRepairLowerBound"
+    );
     assert!(no_cost_invariant.get("essentialRepairLowerBound").is_none());
     let no_cost_reading = no_cost_packet["analyticReadings"]
         .as_array()
@@ -9631,6 +9636,10 @@ fn cli_analyze_v2_harmonic_debt_requires_cost_model_for_lower_bound() {
         no_cost_reading["value"]
             .get("essentialRepairLowerBound")
             .is_none()
+    );
+    assert_eq!(
+        no_cost_reading["value"]["whatNext"],
+        no_cost_invariant["whatNext"]
     );
     assert!(
         !no_cost_packet["assumptions"]
@@ -13489,6 +13498,15 @@ fn cli_gate_rejects_plain_pass_for_non_terminal_and_missing_mapping() {
             .iter()
             .any(|check| check["id"]
                 == "gate-policy-rule-0-verdictMapping-unmeasured-no-plain-pass"
+                && check["result"] == "fail")
+    );
+    assert!(
+        report["policyValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| check["id"]
+                == "gate-policy-rule-0-verdictMapping-violated_assumption_dependency-must-block"
                 && check["result"] == "fail")
     );
     assert!(

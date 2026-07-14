@@ -234,7 +234,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig v0.5.2 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.5.2-ag-measurement"],
                 &format!(
-                    "ArchSig measurement packet v0.5.2 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered SAGA conclusionCode values include {}.",
+                    "ArchSig measurement packet v0.5.2 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed six-field comparison contract. Registered SAGA conclusionCode values include {}.",
                     registry_sentence(&ARCHSIG_SAGA_CONCLUSION_CODES),
                 ),
                 vec![

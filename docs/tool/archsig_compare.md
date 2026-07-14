@@ -17,9 +17,10 @@ compare の run-pair 記録はこの run 内写像を自動生成しない。
 SAGA の run 内 comparison は、source の `saga.residual-class` が未計測なら
 `silence_by_design`、reason `residual_class_prerequisite_not_measured` と
 不足している入力slot (`complex.tripleOverlaps`, `coefficient`,
-`trueSheafCertificate`, `gluingData`) を案内する `whatNext` を記録する。この前提未供給は比較違反として扱わない。source class が計測済みで、
-有限 map の適合検査または target class の zero predicate が不一致になった場合だけ
-`COMPARISON_DATA_CONTRACT_VIOLATION` を記録する。
+`trueSheafCertificate`, `gluingData`) を案内する `whatNext` を記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
+
+`h1-comparison-transfer` は `ag.saga-comparison` evaluator が所有する computed invariant であり、`contract` を必須とする。contract は `incidenceBridgeKind`、`h1ComparisonDataKind`、`normalizedComplexFingerprint`（文字列）と、`classPrerequisite`、`targetClassComputed`、`contractChecked`（真偽値）の6フィールドを持ち、未知フィールドや別 evaluator への付け替えは受理しない。
+不一致になった場合だけ `COMPARISON_DATA_CONTRACT_VIOLATION` を記録する。
 
 ## Inputs and outputs
 
