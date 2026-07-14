@@ -10,17 +10,18 @@ use sha2::{Digest, Sha256};
 
 use crate::validate_refinement_comparison_v1;
 use crate::{
-    ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA,
+    ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA, ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT,
+    ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
-    ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
-    ArchSigMeasurementPacketV1, NORMALIZED_ARCHMAP_V2_SCHEMA, validate_measurement_packet_value_v1,
+    ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, ArchSigMeasurementPacketV1,
+    NORMALIZED_ARCHMAP_V2_SCHEMA, validate_measurement_packet_value_v1,
 };
 
-const RECORD_DISCIPLINE: &str = "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim class transport, causal repair, semantic equivalence, or preserved obstruction identity.";
+const RECORD_DISCIPLINE: &str = "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.";
 
 pub fn build_comparison_artifacts_v1(
     base_run: &Path,
@@ -93,7 +94,15 @@ pub fn build_comparison_artifacts_with_refinement_v1(
     let class_transport = if let Some(refinement_path) = refinement_path {
         let refinement = read_run_json_path(refinement_path)?;
         validate_refinement_comparison_v1(&refinement)?;
-        class_transport(&base_packet, &head_packet, &comparability, &refinement)
+        let run_binding =
+            validate_refinement_complex_fingerprints(&base_manifest, &head_manifest, &refinement)?;
+        class_transport(
+            &base_packet,
+            &head_packet,
+            &comparability,
+            &refinement,
+            &run_binding,
+        )
     } else {
         json!({
             "status": "silence_by_design",
@@ -130,7 +139,7 @@ pub fn build_comparison_artifacts_with_refinement_v1(
         "profileConclusionCode": profile_conclusion_code,
         "nonConclusions": [
             "Comparison report records run-local verdict rows and deterministic ArchMap diff intersections.",
-            "Comparison report does not implement class transport, obstruction identity transport, repair causality, or semantic equivalence.",
+            "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence without the checked refinement or comparison contract that supplies the corresponding data.",
             "Cover or context changes are boundary data and map to other_transition for gate policy evaluation."
         ]
     });
@@ -142,13 +151,8 @@ fn class_transport(
     head_packet: &Value,
     comparability: &Value,
     refinement: &Value,
+    run_binding: &Value,
 ) -> Value {
-    if comparability["level"].as_str() == Some("not-comparable") {
-        return json!({
-            "status": "not_computed",
-            "reason": "refinement_supplied_but_runs_not_comparable"
-        });
-    }
     let class = |packet: &Value| {
         packet["computedInvariants"]
             .as_array()
@@ -169,22 +173,71 @@ fn class_transport(
             "reason": "head_class_not_supplied"
         });
     };
-    let zero_preserved = base_nonzero == head_nonzero;
+    let zero_preserved = !base_nonzero && !head_nonzero;
     json!({
         "status": if zero_preserved { "established" } else { "not_computed" },
-        "conclusionCode": zero_preserved.then_some(ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR),
+        "conclusionCode": zero_preserved.then_some(ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT),
         "schema": "refinement-comparison/v0.5.2",
         "direction": refinement["direction"],
+        "recordComparability": comparability["level"],
+        "comparabilityBasis": "checked_refinement_complex_fingerprints_bind_each_run",
+        "runBinding": run_binding,
         "sourceClassNonZero": base_nonzero,
         "targetClassNonZero": head_nonzero,
         "zeroPreserved": zero_preserved,
+        "boundaryStatement": if zero_preserved { Value::Null } else { json!({
+            "kind": "class_zero_transport_not_established",
+            "scopeRefs": ["comparison:run-pair"],
+            "reason": "the supplied refinement contract does not establish coarse-zero to fine-zero",
+            "text": "The checked refinement supplies a class-zero reading only when both supplied residual classes are zero."
+        }) },
         "nonConclusion": "transport is limited to the supplied residual class zero predicate under the checked coarse-to-fine comparison"
     })
 }
 
+fn validate_refinement_complex_fingerprints(
+    base_manifest: &Value,
+    head_manifest: &Value,
+    refinement: &Value,
+) -> Result<Value, Box<dyn Error>> {
+    let mut bindings = serde_json::Map::new();
+    for (side, manifest, digest_label) in [
+        ("coarse", base_manifest, "base"),
+        ("fine", head_manifest, "head"),
+    ] {
+        let expected = digest_at(manifest, "siteCoverDigest").ok_or_else(|| {
+            format!(
+                "{ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION}: {digest_label} run lacks siteCoverDigest.sha256 for refinement binding"
+            )
+        })?;
+        let supplied = refinement[side]["complexFingerprint"]
+            .as_str()
+            .ok_or_else(|| {
+                format!(
+                    "{ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION}: refinement.{side}.complexFingerprint is required"
+                )
+            })?;
+        if supplied != expected {
+            return Err(format!(
+                "{ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION}: refinement.{side}.complexFingerprint does not match {digest_label} run inputDigests.siteCoverDigest.sha256"
+            )
+            .into());
+        }
+        bindings.insert(
+            side.to_string(),
+            json!({
+                "complexFingerprint": supplied,
+                "runDigest": {"field": "inputDigests.siteCoverDigest.sha256", "side": digest_label}
+            }),
+        );
+    }
+    Ok(Value::Object(bindings))
+}
+
 fn read_run_json_path(path: &Path) -> Result<Value, Box<dyn Error>> {
-    let file = File::open(path)?;
-    Ok(serde_json::from_reader(file)?)
+    let text = std::fs::read_to_string(path)?;
+    reject_duplicate_keys(&text)?;
+    Ok(serde_json::from_str(&text)?)
 }
 
 fn build_archmap_diff(
@@ -361,9 +414,9 @@ fn comparison_boundaries(comparability: &Value, cover_or_context_changed: bool) 
     vec![json!({
         "id": format!("boundary:comparison:{kind}"),
         "kind": kind,
-        "reason": "comparison data does not support class transport or causal transition claims",
+        "reason": "record-level comparison data does not support class identity or causal transition claims outside classTransport's checked refinement contract",
         "scopeRefs": ["comparison:run-pair"],
-        "text": "Runs are recorded side by side only; the comparison does not transport classes or identify the same obstruction across runs."
+        "text": "Record transitions remain side by side; any class-zero reading is limited to classTransport's checked coarse-to-fine refinement contract."
     })]
 }
 

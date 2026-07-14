@@ -1,7 +1,11 @@
 # ArchSig compare report guide
 
 `archsig compare` は 2 つの `archsig analyze` run directory を読み、record 水準の差分を出力する。
-`--refinement <refinement-comparison/v0.5.2>` を供給した場合に限り、検査済み粗→細データの下で class-zero preservation reading を追加する。
+`--refinement <refinement-comparison/v0.5.2>` を供給した場合は、coarse / fine の
+`complexFingerprint` がそれぞれ base / head run の正規化有限複体 fingerprint
+(`inputDigests.siteCoverDigest.sha256`)と一致することを検査してから、class-zero reading を追加する。
+この fingerprint 検査により、site cover が異なる coarse→fine run でも refinement 経路を受理できる。
+不一致は `COMPARISON_DATA_CONTRACT_VIOLATION` で fail-closed とする。
 fingerprint 不一致かつ refinement 不在の場合は `profileConclusionCode: TWO_PROFILES_REPORTED_SEPARATELY` を記録する。
 
 ## Inputs and outputs
@@ -35,6 +39,9 @@ digest, and tool version. A policy-bundle component change is therefore
 explicitly recorded as `not-comparable`.
 Other pairs are `not-comparable`; the report records both independent run conclusions and emits a typed boundary.
 
+When a checked refinement artifact binds both run site-cover fingerprints, `classTransport.recordComparability`
+may remain `not-comparable` while the separate refinement reading is established.
+
 Cover or context changes are boundary data. They are not architecture degradation claims.
 For gate policy, affected transitions are classified as `other_transition` and map through the policy key `other`.
 
@@ -47,12 +54,14 @@ Current conclusion codes are:
 - `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`
 - `RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA`
 
-Names that imply transport or causality without the corresponding supplied
-artifact, including `ZERO_PRESERVED...`,
-`..._INTRODUCED_BY_CHANGE`, and `..._CLEARED_BY_CHANGE`, are outside this artifact contract.
+`VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR` belongs to the `refactor-morphism/v0.5.2`
+analytic reading. Refinement compare uses the dedicated
+`CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT` token only for coarse-zero →
+fine-zero. Both nonzero and zero/nonzero pairs remain `not_computed` with a
+boundary statement; they do not establish class transport.
 
 ## Non-claims
 
-- compare does not transport cohomology classes or obstruction identity across runs.
+- compare does not transport nonzero cohomology classes or obstruction identity across runs; its dedicated refinement reading is limited to the checked class-zero predicate.
 - compare does not decide whether a code change caused a verdict change.
 - compare does not turn raw ArchMap differences into FieldSig evolution claims.

@@ -284,7 +284,7 @@ enum Command {
         #[arg(long = "out-dir")]
         out_dir: PathBuf,
 
-        /// Optional refinement-comparison/v0.5.2 artifact enabling class-zero transport.
+        /// Optional refinement-comparison/v0.5.2 artifact enabling fingerprint-bound class-zero transport.
         #[arg(long = "refinement")]
         refinement: Option<PathBuf>,
     },
