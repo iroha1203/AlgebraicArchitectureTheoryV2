@@ -2989,6 +2989,12 @@ UNUSED ARGUMENTS. -/
 #check AAT.AG.LawAlgebra.IdempotentCollapse.product_ideal_mul_self /- argument 4 inst✝¹ : Fintype
   E, argument 5 inst✝ : DecidableEq E -/
 
+-- Formal.AG.LawAlgebra.StandardScheme
+#check @AAT.AG.LawAlgebra.AATReadingDecoration.lawUniverse /- argument 9 _D : AAT.AG.LawAlgebra.AATReadingDecoration raw
+  X -/
+#check @AAT.AG.LawAlgebra.AATReadingDecoration.signature /- argument 9 _D : AAT.AG.LawAlgebra.AATReadingDecoration raw
+  X -/
+
 -- Formal.AG.LawAlgebra.StanleyReisner
 #check AAT.AG.LawAlgebra.StanleyReisner.squareFreeMonomial /- argument 4 inst✝ : DecidableEq E -/
 #check AAT.AG.LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.mem_delta_iff /- argument 2 inst✝ : DecidableEq E -/
