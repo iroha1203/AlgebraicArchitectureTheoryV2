@@ -1734,6 +1734,245 @@ theorem contextTriple_cocycle
 
 end ArchitectureAffineAtlas
 
+/-!
+### The reading-decorated standard architecture scheme core
+
+Implementation notes: the core stores an actual Mathlib `Scheme`, its selected reading
+decoration, the canonical affine-atlas presentation, and the corresponding validity data.
+The validity propositions remain separate from the presentation data, while constructors and
+finite models are responsible for producing them from primitive inputs.  Morphisms retain only
+the underlying Scheme map and the existing reading-preservation equation; chart-index actions,
+duplicate coefficient conditions, and category-law fields are deliberately omitted.  The
+category laws and faithful forgetful functor are derived from equality of underlying maps and
+proof irrelevance.
+-/
+
+/-- A reading-decorated Scheme with a valid canonical affine atlas and actual overlap data. -/
+structure StandardArchitectureScheme
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] where
+  /-- The actual Mathlib Scheme. -/
+  underlying : AlgebraicGeometry.Scheme
+  /-- The selected reading decoration on the Scheme. -/
+  decoration : AATReadingDecoration raw underlying
+  /-- The selected canonical affine atlas. -/
+  atlas : ArchitectureAffineAtlas raw underlying decoration
+  /-- Validity and pointwise coverage of the selected atlas. -/
+  atlasValid : IsArchitectureAffineAtlas raw atlas
+  /-- Comparison data between context overlaps and actual pullbacks. -/
+  overlaps : ArchitectureOverlapPresentation raw atlas
+  /-- Compatibility of each comparison with the actual pullback projections. -/
+  overlapsValid : IsArchitectureOverlapPresentation raw overlaps
+
+namespace StandardArchitectureScheme
+
+/-- The Mathlib affine open cover carried by a standard architecture scheme. -/
+noncomputable def affineOpenCover
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) : X.underlying.AffineOpenCover :=
+  X.atlas.toAffineOpenCover raw X.atlasValid
+
+/-- Every selected chart map of a standard architecture scheme is an open immersion. -/
+theorem chart_isOpenImmersion
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) (i : X.atlas.Index) :
+    AlgebraicGeometry.IsOpenImmersion (X.atlas.chart i).map :=
+  (X.atlasValid.chart_valid i).isOpenImmersion
+
+/-- The selected chart ranges jointly cover the underlying Scheme. -/
+theorem chart_jointlyCovers
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) :
+    ⨆ i, ((X.affineOpenCover raw).f i).opensRange = ⊤ :=
+  X.atlas.jointlyCovers raw X.atlasValid
+
+/-- Each affine-open-cover component is the selected chart's sheafified section ring. -/
+theorem chart_sectionRing
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) (i : X.atlas.Index) :
+    (X.affineOpenCover raw).X i =
+      SheafifiedSectionRing raw (X.atlas.chart i).context :=
+  X.atlas.toAffineOpenCover_X raw X.atlasValid i
+
+/-- The stored overlap comparison identifies the context Spec with the actual pullback. -/
+noncomputable def overlap_is_actual_pullback
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) (i j : X.atlas.Index) :
+    architectureChartSpec raw (X.atlas.pairContext raw i j) ≅
+      pullback (X.atlas.chart i).map (X.atlas.chart j).map :=
+  X.overlaps.comparison i j
+
+/-- Standard architecture schemes are determined by their four data-bearing fields. -/
+@[ext] theorem ext
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X Y : StandardArchitectureScheme raw)
+    (hunderlying : X.underlying = Y.underlying)
+    (hdecoration : HEq X.decoration Y.decoration)
+    (hatlas : HEq X.atlas Y.atlas)
+    (hoverlaps : HEq X.overlaps Y.overlaps) : X = Y := by
+  cases X
+  cases Y
+  cases hunderlying
+  cases hdecoration
+  cases hatlas
+  cases hoverlaps
+  rfl
+
+/-- A Scheme morphism equipped with preservation of the selected reading decoration. -/
+structure Hom
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X Y : StandardArchitectureScheme raw) where
+  /-- The underlying morphism of Mathlib Schemes. -/
+  base : X.underlying ⟶ Y.underlying
+  /-- Preservation of the actual reading equation along the underlying morphism. -/
+  preserves : X.decoration.Preserves raw base Y.decoration
+
+namespace Hom
+
+/-- Identity morphisms use identity preservation of the selected decoration. -/
+def id
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) : Hom X X where
+  base := 𝟙 X.underlying
+  preserves := X.decoration.preserves_id raw
+
+/-- Composition uses compositional preservation of reading decorations. -/
+def comp
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X Y Z : StandardArchitectureScheme raw}
+    (f : Hom X Y) (g : Hom Y Z) : Hom X Z where
+  base := f.base ≫ g.base
+  preserves := AATReadingDecoration.preserves_comp raw f.preserves g.preserves
+
+/-- Normalize the underlying map of identity to the Scheme identity. -/
+@[simp] theorem id_base
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) :
+    (id X).base = 𝟙 X.underlying :=
+  rfl
+
+/-- Normalize the underlying map of a composite to the composite of underlying maps. -/
+@[simp] theorem comp_base
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X Y Z : StandardArchitectureScheme raw}
+    (f : Hom X Y) (g : Hom Y Z) :
+    (comp f g).base = f.base ≫ g.base :=
+  rfl
+
+/-- Decorated morphisms are determined by their underlying Scheme maps. -/
+@[ext] theorem ext
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X Y : StandardArchitectureScheme raw}
+    (f g : Hom X Y) (hbase : f.base = g.base) : f = g := by
+  cases f
+  cases g
+  cases hbase
+  rfl
+
+end Hom
+
+/-- Standard architecture schemes and reading-preserving maps form a category. -/
+instance category
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    Category (StandardArchitectureScheme raw) where
+  Hom := Hom
+  id := Hom.id
+  comp := Hom.comp
+  id_comp f := by
+    apply Hom.ext
+    simp
+  comp_id f := by
+    apply Hom.ext
+    simp
+  assoc f g h := by
+    apply Hom.ext
+    simp
+
+/-- Forget the reading decoration and atlas presentation to the underlying Mathlib Scheme. -/
+def forget
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    StandardArchitectureScheme raw ⥤ AlgebraicGeometry.Scheme where
+  obj X := X.underlying
+  map f := f.base
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- The forgetful functor is faithful because decorated morphisms are determined by `base`. -/
+instance forget_faithful
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    (forget raw).Faithful where
+  map_injective h := Hom.ext _ _ h
+
+/-- Normalize a forgotten object to its stored underlying Scheme. -/
+@[simp] theorem forget_obj
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) :
+    (forget raw).obj X = X.underlying :=
+  rfl
+
+/-- Normalize a forgotten morphism to its stored underlying Scheme map. -/
+@[simp] theorem forget_map
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X Y : StandardArchitectureScheme raw}
+    (f : X ⟶ Y) :
+    (forget raw).map f = f.base :=
+  rfl
+
+end StandardArchitectureScheme
+
 end
 end LawAlgebra
 end AAT.AG

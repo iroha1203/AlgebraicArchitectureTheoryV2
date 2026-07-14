@@ -2608,6 +2608,80 @@ def standardSchemeAffineAtlasActualTripleCocycle :=
 def standardSchemeAffineAtlasContextTripleCocycle :=
   @LawAlgebra.ArchitectureAffineAtlas.contextTriple_cocycle
 
+/-! Reading-decorated standard architecture scheme core and morphisms. -/
+
+/-- Audit alias for the standard architecture scheme core. -/
+def standardSchemeCore :=
+  @LawAlgebra.StandardArchitectureScheme
+
+/-- Audit alias for the affine open cover carried by the standard core. -/
+noncomputable def standardSchemeCoreAffineOpenCover :=
+  @LawAlgebra.StandardArchitectureScheme.affineOpenCover
+
+/-- Audit alias for open immersion of every standard-core chart. -/
+def standardSchemeCoreChartIsOpenImmersion :=
+  @LawAlgebra.StandardArchitectureScheme.chart_isOpenImmersion
+
+/-- Audit alias for joint coverage by the standard-core charts. -/
+def standardSchemeCoreChartJointlyCovers :=
+  @LawAlgebra.StandardArchitectureScheme.chart_jointlyCovers
+
+/-- Audit alias for the section ring of each standard-core chart. -/
+def standardSchemeCoreChartSectionRing :=
+  @LawAlgebra.StandardArchitectureScheme.chart_sectionRing
+
+/-- Audit alias for the actual-pullback overlap comparison. -/
+noncomputable def standardSchemeCoreOverlapIsActualPullback :=
+  @LawAlgebra.StandardArchitectureScheme.overlap_is_actual_pullback
+
+/-- Audit alias for extensionality of standard architecture schemes. -/
+def standardSchemeCoreExt :=
+  @LawAlgebra.StandardArchitectureScheme.ext
+
+/-- Audit alias for standard-core decoration-preserving morphisms. -/
+def standardSchemeCoreHom :=
+  @LawAlgebra.StandardArchitectureScheme.Hom
+
+/-- Audit alias for identity standard-core morphisms. -/
+def standardSchemeCoreHomId :=
+  @LawAlgebra.StandardArchitectureScheme.Hom.id
+
+/-- Audit alias for composition of standard-core morphisms. -/
+def standardSchemeCoreHomComp :=
+  @LawAlgebra.StandardArchitectureScheme.Hom.comp
+
+/-- Audit alias for the underlying map of identity. -/
+def standardSchemeCoreHomIdBase :=
+  @LawAlgebra.StandardArchitectureScheme.Hom.id_base
+
+/-- Audit alias for the underlying map of a composite. -/
+def standardSchemeCoreHomCompBase :=
+  @LawAlgebra.StandardArchitectureScheme.Hom.comp_base
+
+/-- Audit alias for extensionality of standard-core morphisms. -/
+def standardSchemeCoreHomExt :=
+  @LawAlgebra.StandardArchitectureScheme.Hom.ext
+
+/-- Audit alias for the category instance on standard architecture schemes. -/
+def standardSchemeCoreCategory :=
+  @LawAlgebra.StandardArchitectureScheme.category
+
+/-- Audit alias for the forgetful functor to Mathlib Schemes. -/
+def standardSchemeCoreForget :=
+  @LawAlgebra.StandardArchitectureScheme.forget
+
+/-- Audit alias for faithfulness of the forgetful functor. -/
+def standardSchemeCoreForgetFaithful :=
+  @LawAlgebra.StandardArchitectureScheme.forget_faithful
+
+/-- Audit alias for object normalization of the forgetful functor. -/
+def standardSchemeCoreForgetObj :=
+  @LawAlgebra.StandardArchitectureScheme.forget_obj
+
+/-- Audit alias for morphism normalization of the forgetful functor. -/
+def standardSchemeCoreForgetMap :=
+  @LawAlgebra.StandardArchitectureScheme.forget_map
+
 /-! Finite negative instance for reading preservation. -/
 
 /-- Audit alias for invertibility of finite canonical components. -/
