@@ -3,7 +3,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::{Value, json};
 
 use crate::law_execution::LawExecutionPlanV1;
-use crate::repair_plan::{comparison_complex_fingerprint, comparison_target_complex};
+use crate::repair_plan::{
+    comparison_complex_fingerprint, comparison_target_complex, explicit_h1_comparison_checks,
+};
 use crate::{
     ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS,
     ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
@@ -457,7 +459,7 @@ pub(crate) fn evaluate_saga_descent_v1(
     let boundary = solve_boundary_membership(plan);
     let closure = closure_diagnostics(archmap, plan);
     let enumeration_assumption = AgAssumptionLedgerEntryV1 {
-        theorem_ref: "part10/repair-plan-enumeration".to_string(),
+        theorem_ref: "part10/3.1".to_string(),
         assumption: format!(
             "repair-plan complex enumeration completeness for {}",
             plan.id
@@ -467,6 +469,27 @@ pub(crate) fn evaluate_saga_descent_v1(
         assumed_by: Some("repair-plan author".to_string()),
     };
     let enumeration_assumption_id = assumption_id_for_schema(&enumeration_assumption);
+    let comparison_target_enumeration_assumption = plan
+        .comparison
+        .as_ref()
+        .filter(|comparison| {
+            comparison
+                .get("incidenceBridge")
+                .and_then(|bridge| bridge.get("kind"))
+                .and_then(Value::as_str)
+                == Some("explicit")
+        })
+        .and_then(|comparison| comparison_target_complex(plan, comparison))
+        .map(|_| AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part10/6.2".to_string(),
+            assumption: format!(
+                "comparison target complex enumeration completeness for {}",
+                plan.id
+            ),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some("comparison author".to_string()),
+        });
     let sheaf_assumption =
         plan.true_sheaf_certificate
             .as_ref()
@@ -490,6 +513,9 @@ pub(crate) fn evaluate_saga_descent_v1(
             assumed_by: Some("RepairPlan author".to_string()),
         });
     let mut evaluator_assumption_ids = vec![enumeration_assumption_id.clone()];
+    if let Some(assumption) = comparison_target_enumeration_assumption.as_ref() {
+        evaluator_assumption_ids.push(assumption_id_for_schema(assumption));
+    }
     if let Some(assumption) = faithfulness_assumption.as_ref() {
         evaluator_assumption_ids.push(assumption_id_for_schema(assumption));
     }
@@ -682,6 +708,10 @@ pub(crate) fn evaluate_saga_descent_v1(
     }
     computed_invariants.push(evaluate_saga_comparison_v1(plan, &structural_verdict));
     let mut assumptions = vec![enumeration_assumption];
+    if let Some(comparison_target_enumeration_assumption) = comparison_target_enumeration_assumption
+    {
+        assumptions.push(comparison_target_enumeration_assumption);
+    }
     if let Some(sheaf_assumption) = sheaf_assumption {
         assumptions.push(sheaf_assumption);
     }
@@ -727,10 +757,25 @@ fn evaluate_saga_comparison_v1(
     let h1_kind = comparison["h1ComparisonData"]["kind"]
         .as_str()
         .unwrap_or("unknown");
+    let explicit_checks = if h1_kind == "explicit" {
+        comparison_target_complex(plan, comparison).and_then(|target_complex| {
+            comparison
+                .get("h1ComparisonData")
+                .and_then(Value::as_object)
+                .map(|h1| explicit_h1_comparison_checks(plan, &target_complex, h1))
+        })
+    } else {
+        None
+    };
+    let contract_checked = if h1_kind == "explicit" {
+        explicit_checks.is_some_and(|checks| checks.all_pass())
+    } else {
+        true
+    };
     let target_class_nonzero = comparison_target_class_nonzero(plan, comparison);
     let preserves_zero_predicate =
         target_class_nonzero.is_some_and(|target| target == class_nonzero);
-    let established = class_available && preserves_zero_predicate;
+    let established = contract_checked && class_available && preserves_zero_predicate;
     json!({
         "invariantId": "saga-comparison:h1-transfer",
         "evaluator": "ag.saga-comparison",
@@ -742,12 +787,20 @@ fn evaluate_saga_comparison_v1(
             "h1ComparisonDataKind": h1_kind,
             "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
             "classPrerequisite": class_available,
-            "targetClassComputed": target_class_nonzero.is_some()
+            "targetClassComputed": target_class_nonzero.is_some(),
+            "contractChecked": contract_checked
         },
         "suppliedCochainMap": {
             "level": "cochain",
             "kind": h1_kind,
-            "contractChecked": true,
+            "contractChecked": contract_checked,
+            "checkedProperties": explicit_checks.map(|checks| json!({
+                "degreeOneLeftInverse": checks.degree_one_left_inverse,
+                "degreeOneRightInverse": checks.degree_one_right_inverse,
+                "differencePreserving": checks.difference_preserving,
+                "degreeTwoZeroPreserving": checks.degree_two_zero_preserving,
+                "differentialCommutative": checks.differential_commutative
+            })),
             "targetSupportComputed": target_class_nonzero.is_some()
         },
         "generatedQuotientTransfer": if established {
@@ -763,7 +816,11 @@ fn evaluate_saga_comparison_v1(
         } else {
             Value::Null
         },
-        "failureCode": if established { Value::Null } else { json!(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION) },
+        "failureCode": if !contract_checked {
+            json!(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
+        } else {
+            Value::Null
+        },
         "nonConclusions": [
             "Supplied cochain data and generated quotient-level transfer are separate structures.",
             "The transfer reading is relative to the supplied finite comparison contract."

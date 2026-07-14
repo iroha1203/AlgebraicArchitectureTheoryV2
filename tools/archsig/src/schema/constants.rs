@@ -6,6 +6,7 @@ pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-valida
 pub const NORMALIZED_ARCHMAP_V2_SCHEMA: &str = "normalized-archmap/v0.5.2";
 pub const MEASUREMENT_PROFILE_V1_SCHEMA: &str = "measurement-profile/v0.5.2";
 pub const ARCHSIG_REPAIR_PLAN_V1_SCHEMA: &str = "archsig-repair-plan/v0.5.2";
+pub const H1_COMPARISON_DATA_V052_SCHEMA: &str = "h1-comparison-data/v0.5.2";
 pub const ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA: &str = "archsig-boundary-statement/v0.5.2";
 pub const ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA: &str = "archsig-measurement-packet/v0.5.2";
 pub const ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA: &str = "archsig-saga-conclusions/v0.5.2";

@@ -126,6 +126,8 @@ source extraction の健全性、semantic の正しさ、global lawfulness、未
 `refactor-morphism/v0.5.2` は既存 verdict の declared transport compatibility を供給し、
 `refinement-comparison/v0.5.2` は coarse-to-fine の class-zero preservation data を供給する。
 いずれも conclusion 相当の値を supplied block に入れず、validator 通過時だけ対応する analytic reading を解放する。
+RepairPlan の explicit H¹ comparison は、次数0/1/2の有限基底写像表、次数2の `zeroImage`、
+および変数対応を供給し、ArchSig が差保存・零保存・微分可換性を再計算する。適合条件の宣言booleanは入力として採用しない。
 
 ## 三層を混同すると何が壊れるか
 

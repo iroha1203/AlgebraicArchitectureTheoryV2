@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
-use crate::schema::RepairPlanComplexV1;
+use crate::schema::{H1ComparisonDataV052, RepairPlanComplexV1};
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, RepairPlanDocumentV1, ValidationCheck,
@@ -12,6 +12,41 @@ use crate::{
 const COMPARISON_SOURCE_COMPLEX_REF: &str = "complex:repair";
 const COMPARISON_TARGET_COMPLEX_REF: &str = "complex:cech";
 const COMPARISON_COCHAIN_MAP_REF: &str = "comparison:cochain-map";
+
+#[derive(Debug, Default, Clone, Copy)]
+pub(crate) struct ExplicitH1ComparisonChecks {
+    pub degree_one_left_inverse: bool,
+    pub degree_one_right_inverse: bool,
+    pub difference_preserving: bool,
+    pub degree_two_zero_preserving: bool,
+    pub differential_commutative: bool,
+    map_complete: bool,
+}
+
+impl ExplicitH1ComparisonChecks {
+    pub(crate) fn all_pass(self) -> bool {
+        self.map_complete
+            && self.degree_one_left_inverse
+            && self.degree_one_right_inverse
+            && self.difference_preserving
+            && self.degree_two_zero_preserving
+            && self.differential_commutative
+    }
+}
+
+#[derive(Debug, Clone)]
+struct ComparisonBasisMap {
+    target_ref: String,
+    variables: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Clone)]
+struct ExplicitCochainMap {
+    degree_zero: BTreeMap<String, ComparisonBasisMap>,
+    degree_one: BTreeMap<String, ComparisonBasisMap>,
+    degree_two: BTreeMap<String, String>,
+    degree_two_zero_image: BTreeSet<String>,
+}
 
 pub fn validate_repair_plan_v1_checks(
     plan: &RepairPlanDocumentV1,
@@ -53,7 +88,7 @@ pub fn build_repair_plan_validation_report_v1(
         },
         "checks": checks,
         "assumptionLedger": [{
-            "theoremRef": "part10/repair-plan-enumeration",
+            "theoremRef": "part10/3.1",
             "assumption": "repair-plan complex enumeration completeness",
             "status": "assumed",
             "assumedBy": "repair-plan author",
@@ -110,11 +145,130 @@ fn comparison_target_complex_from_bridge(
         .iter()
         .map(|overlap| overlap.id.as_str())
         .collect::<BTreeSet<_>>();
-    let valid = source_overlap_ids == target_overlap_ids
-        && target.overlaps.iter().all(|overlap| {
-            target.charts.contains(&overlap.left) && target.charts.contains(&overlap.right)
-        });
+    let valid = plan.complex.enumeration_complete
+        && target.enumeration_complete
+        && complex_has_valid_finite_incidence(&plan.complex)
+        && complex_has_valid_finite_incidence(&target)
+        && source_overlap_ids == target_overlap_ids;
     valid.then_some(target)
+}
+
+fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) -> bool {
+    let charts = complex.charts.iter().cloned().collect::<BTreeSet<_>>();
+    let overlap_ids = complex
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.clone())
+        .collect::<BTreeSet<_>>();
+    let triple_ids = complex
+        .triple_overlaps
+        .iter()
+        .map(|triple| triple.id.clone())
+        .collect::<BTreeSet<_>>();
+    charts.len() == complex.charts.len()
+        && overlap_ids.len() == complex.overlaps.len()
+        && triple_ids.len() == complex.triple_overlaps.len()
+        && complex
+            .overlaps
+            .iter()
+            .all(|overlap| charts.contains(&overlap.left) && charts.contains(&overlap.right))
+        && complex.triple_overlaps.iter().all(|triple| {
+            if triple.overlap_refs.len() != 3
+                || triple.overlap_refs.iter().collect::<BTreeSet<_>>().len() != 3
+                || triple
+                    .overlap_refs
+                    .iter()
+                    .any(|overlap_ref| !overlap_ids.contains(overlap_ref))
+            {
+                return false;
+            }
+            let triple_overlaps = triple
+                .overlap_refs
+                .iter()
+                .filter_map(|overlap_ref| {
+                    complex
+                        .overlaps
+                        .iter()
+                        .find(|overlap| &overlap.id == overlap_ref)
+                })
+                .collect::<Vec<_>>();
+            let vertices = triple_overlaps
+                .iter()
+                .flat_map(|overlap| [&overlap.left, &overlap.right])
+                .cloned()
+                .collect::<BTreeSet<_>>();
+            if vertices.len() != 3 {
+                return false;
+            }
+            let edge_pairs = triple_overlaps
+                .iter()
+                .filter_map(|overlap| {
+                    if overlap.left == overlap.right {
+                        None
+                    } else if overlap.left < overlap.right {
+                        Some((overlap.left.clone(), overlap.right.clone()))
+                    } else {
+                        Some((overlap.right.clone(), overlap.left.clone()))
+                    }
+                })
+                .collect::<BTreeSet<_>>();
+            let vertices = vertices.into_iter().collect::<Vec<_>>();
+            let expected_pairs = [(0, 1), (0, 2), (1, 2)]
+                .into_iter()
+                .map(|(left, right)| (vertices[left].clone(), vertices[right].clone()))
+                .collect::<BTreeSet<_>>();
+            edge_pairs == expected_pairs
+        })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::schema::{RepairPlanOverlapV1, RepairPlanTripleOverlapV1};
+
+    fn complex_with_edges(edges: [(&str, &str, &str); 3]) -> RepairPlanComplexV1 {
+        RepairPlanComplexV1 {
+            charts: vec!["A".to_string(), "B".to_string(), "C".to_string()],
+            overlaps: edges
+                .into_iter()
+                .map(|(id, left, right)| RepairPlanOverlapV1 {
+                    id: id.to_string(),
+                    left: left.to_string(),
+                    right: right.to_string(),
+                })
+                .collect(),
+            triple_overlaps: vec![RepairPlanTripleOverlapV1 {
+                id: "t".to_string(),
+                overlap_refs: vec!["e1".to_string(), "e2".to_string(), "e3".to_string()],
+            }],
+            enumeration_complete: true,
+        }
+    }
+
+    #[test]
+    fn finite_incidence_requires_all_three_triangle_edges() {
+        let triangle = complex_with_edges([("e1", "A", "B"), ("e2", "B", "C"), ("e3", "A", "C")]);
+        assert!(complex_has_valid_finite_incidence(&triangle));
+
+        let repeated_edge =
+            complex_with_edges([("e1", "A", "B"), ("e2", "B", "C"), ("e3", "A", "B")]);
+        assert!(!complex_has_valid_finite_incidence(&repeated_edge));
+    }
+
+    #[test]
+    fn comparison_bridge_rejects_non_triangle_target_before_map_checks() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_comparison.json"
+        ))
+        .expect("comparison fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let mut bridge = comparison["incidenceBridge"]
+            .as_object()
+            .expect("incidence bridge is an object")
+            .clone();
+        bridge["targetComplex"]["overlaps"][2]["right"] = Value::String("ctx:inventory".into());
+        assert!(comparison_target_complex_from_bridge(&plan, &bridge).is_none());
+    }
 }
 
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
@@ -417,11 +571,7 @@ fn check_supplied_slots(
                                     "sourceComplexFingerprint",
                                     "targetComplexFingerprint",
                                     "targetCochainSupport",
-                                    "degreeOneLeftInverse",
-                                    "degreeOneRightInverse",
-                                    "differencePreserving",
-                                    "degreeTwoZeroPreserving",
-                                    "differentialCommutative",
+                                    "cochainMap",
                                 ]
                                 .as_slice(),
                                 _ => ["kind"].as_slice(),
@@ -483,6 +633,7 @@ fn check_supplied_slots(
                                 _ => false,
                             }
                         });
+                    let mut explicit_checks = None;
                     let h1_ok = !nested_unknown
                         && h1.is_some_and(|h1| {
                             let source_complex_fingerprint = comparison_complex_fingerprint(plan);
@@ -507,33 +658,39 @@ fn check_supplied_slots(
                                         })
                                 }
                                 Some("explicit") => {
-                                    let bool_keys = [
-                                        "degreeOneLeftInverse",
-                                        "degreeOneRightInverse",
-                                        "differencePreserving",
-                                        "degreeTwoZeroPreserving",
-                                        "differentialCommutative",
-                                    ];
                                     h1.get("schema").and_then(Value::as_str)
                                         == Some("h1-comparison-data/v0.5.2")
                                         && fingerprints_ok
                                         && h1.get("cochainMapRef").and_then(Value::as_str)
                                             == Some(COMPARISON_COCHAIN_MAP_REF)
                                         && target_complex.as_ref().is_some_and(|complex| {
+                                            let checks =
+                                                explicit_h1_comparison_checks(plan, complex, h1);
+                                            explicit_checks = Some(checks);
                                             comparison_target_cochain_support_matches(complex, h1)
+                                                && checks.all_pass()
                                         })
-                                        && bool_keys
-                                            .iter()
-                                            .all(|key| h1.get(*key) == Some(&Value::Bool(true)))
                                 }
                                 _ => false,
                             }
                         });
                     if !bridge_ok || !h1_ok {
+                        let reason = explicit_checks
+                            .map(|checks| {
+                                format!(
+                                    "COMPARISON_DATA_CONTRACT_VIOLATION: checkedProperties degreeOneLeftInverse={} degreeOneRightInverse={} differencePreserving={} degreeTwoZeroPreserving={} differentialCommutative={}",
+                                    checks.degree_one_left_inverse,
+                                    checks.degree_one_right_inverse,
+                                    checks.difference_preserving,
+                                    checks.degree_two_zero_preserving,
+                                    checks.differential_commutative,
+                                )
+                            })
+                            .unwrap_or_else(|| "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a validated identity or explicit finite H1 comparison contract".to_string());
                         examples.push(generic_validation_example(
                             path,
                             "comparison-contract-invalid",
-                            "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a validated identity or explicit finite H1 comparison contract",
+                            &reason,
                         ));
                     }
                 }
@@ -582,44 +739,493 @@ fn comparison_target_cochain_support_matches(
     complex: &RepairPlanComplexV1,
     h1: &serde_json::Map<String, Value>,
 ) -> bool {
+    comparison_target_cochain_support(complex, h1).is_some()
+}
+
+fn comparison_target_cochain_support(
+    complex: &RepairPlanComplexV1,
+    h1: &serde_json::Map<String, Value>,
+) -> Option<BTreeMap<String, BTreeSet<String>>> {
     let expected = complex
         .overlaps
         .iter()
-        .map(|overlap| overlap.id.as_str())
+        .map(|overlap| overlap.id.clone())
         .collect::<BTreeSet<_>>();
-    let Some(items) = h1.get("targetCochainSupport").and_then(Value::as_array) else {
-        return false;
-    };
+    let items = h1.get("targetCochainSupport")?.as_array()?;
     let mut actual = BTreeMap::new();
     for item in items {
-        let Some(object) = item.as_object() else {
-            return false;
-        };
+        let object = item.as_object()?;
         if object
             .keys()
             .any(|key| !matches!(key.as_str(), "overlapRef" | "support"))
         {
-            return false;
+            return None;
         }
-        let Some(overlap_ref) = object.get("overlapRef").and_then(Value::as_str) else {
-            return false;
-        };
-        let Some(support) = object.get("support").and_then(Value::as_array) else {
-            return false;
-        };
-        let Some(support) = support
+        let overlap_ref = object.get("overlapRef")?.as_str()?.to_string();
+        let support = object.get("support")?.as_array()?;
+        let support = support
             .iter()
             .map(Value::as_str)
-            .collect::<Option<Vec<_>>>()
+            .collect::<Option<Vec<_>>>()?;
+        let support_set = support
+            .iter()
+            .map(|variable| (*variable).to_string())
+            .collect::<BTreeSet<_>>();
+        if support.len() != support_set.len() || actual.insert(overlap_ref, support_set).is_some() {
+            return None;
+        }
+    }
+    (actual.keys().cloned().collect::<BTreeSet<_>>() == expected).then_some(actual)
+}
+
+pub(crate) fn explicit_h1_comparison_checks(
+    plan: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    h1: &serde_json::Map<String, Value>,
+) -> ExplicitH1ComparisonChecks {
+    let Some(target_support) = comparison_target_cochain_support(target_complex, h1) else {
+        return ExplicitH1ComparisonChecks::default();
+    };
+    let source_variables = plan
+        .primitives
+        .iter()
+        .flat_map(|primitive| primitive.support.variables.iter().cloned())
+        .collect::<BTreeSet<_>>();
+    let target_variables = target_support
+        .values()
+        .flat_map(|support| support.iter().cloned())
+        .collect::<BTreeSet<_>>();
+    let source_charts = plan.complex.charts.iter().cloned().collect::<BTreeSet<_>>();
+    let target_charts = target_complex
+        .charts
+        .iter()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let source_overlaps = plan
+        .complex
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.clone())
+        .collect::<BTreeSet<_>>();
+    let target_overlaps = target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| overlap.id.clone())
+        .collect::<BTreeSet<_>>();
+    let source_triples = plan
+        .complex
+        .triple_overlaps
+        .iter()
+        .map(|triple| triple.id.clone())
+        .collect::<BTreeSet<_>>();
+    let target_triples = target_complex
+        .triple_overlaps
+        .iter()
+        .map(|triple| triple.id.clone())
+        .collect::<BTreeSet<_>>();
+    let Some(cochain_map) = parse_explicit_cochain_map(
+        h1,
+        &source_charts,
+        &target_charts,
+        &source_overlaps,
+        &target_overlaps,
+        &source_triples,
+        &target_triples,
+        &source_variables,
+        &target_variables,
+    ) else {
+        return ExplicitH1ComparisonChecks::default();
+    };
+
+    let degree_one_pairs = degree_one_basis_pairs(&cochain_map.degree_one);
+    let source_degree_one_basis = source_overlaps
+        .iter()
+        .flat_map(|overlap| {
+            source_variables
+                .iter()
+                .map(move |variable| (overlap.clone(), variable.clone()))
+        })
+        .collect::<BTreeSet<_>>();
+    let target_degree_one_basis = target_overlaps
+        .iter()
+        .flat_map(|overlap| {
+            target_variables
+                .iter()
+                .map(move |variable| (overlap.clone(), variable.clone()))
+        })
+        .collect::<BTreeSet<_>>();
+    let mapped_sources = degree_one_pairs
+        .iter()
+        .map(|(source, _)| source.clone())
+        .collect::<BTreeSet<_>>();
+    let mapped_targets = degree_one_pairs
+        .iter()
+        .map(|(_, target)| target.clone())
+        .collect::<BTreeSet<_>>();
+    let degree_one_left_inverse = mapped_sources == source_degree_one_basis;
+    let degree_one_right_inverse = mapped_targets == target_degree_one_basis;
+
+    let degree_zero_complete =
+        map_rows_cover_targets(&cochain_map.degree_zero, &source_charts, &target_charts);
+    let degree_one_complete =
+        map_rows_cover_targets(&cochain_map.degree_one, &source_overlaps, &target_overlaps);
+    let degree_two_complete = cochain_map.degree_two.len() == source_triples.len()
+        && cochain_map
+            .degree_two
+            .values()
+            .cloned()
+            .collect::<BTreeSet<_>>()
+            == target_triples;
+    let map_complete = degree_zero_complete
+        && degree_one_complete
+        && degree_two_complete
+        && degree_one_pairs.len() == source_degree_one_basis.len()
+        && degree_one_pairs.len() == target_degree_one_basis.len();
+
+    let difference_preserving = map_complete
+        && difference_is_preserved(
+            plan,
+            target_complex,
+            &cochain_map,
+            &target_support,
+            &source_variables,
+        );
+    let degree_two_zero_preserving = map_complete
+        && map_degree_two_support(&BTreeSet::new(), &cochain_map.degree_two)
+            == Some(cochain_map.degree_two_zero_image.clone())
+        && cochain_map.degree_two_zero_image.is_empty();
+    let differential_commutative =
+        map_complete && differential_is_commutative(plan, target_complex, &cochain_map);
+
+    ExplicitH1ComparisonChecks {
+        degree_one_left_inverse,
+        degree_one_right_inverse,
+        difference_preserving,
+        degree_two_zero_preserving,
+        differential_commutative,
+        map_complete,
+    }
+}
+
+fn parse_explicit_cochain_map(
+    h1: &serde_json::Map<String, Value>,
+    source_charts: &BTreeSet<String>,
+    target_charts: &BTreeSet<String>,
+    source_overlaps: &BTreeSet<String>,
+    target_overlaps: &BTreeSet<String>,
+    source_triples: &BTreeSet<String>,
+    target_triples: &BTreeSet<String>,
+    source_variables: &BTreeSet<String>,
+    target_variables: &BTreeSet<String>,
+) -> Option<ExplicitCochainMap> {
+    let typed: H1ComparisonDataV052 = serde_json::from_value(Value::Object(h1.clone())).ok()?;
+    if typed.schema != crate::H1_COMPARISON_DATA_V052_SCHEMA
+        || typed.kind != "explicit"
+        || typed.cochain_map.is_none()
+    {
+        return None;
+    }
+    let object = h1.get("cochainMap")?.as_object()?;
+    if object
+        .keys()
+        .any(|key| !matches!(key.as_str(), "degreeZero" | "degreeOne" | "degreeTwo"))
+    {
+        return None;
+    }
+    let degree_zero = parse_basis_map_rows(
+        object.get("degreeZero")?,
+        "sourceChartRef",
+        "targetChartRef",
+        source_charts,
+        target_charts,
+        source_variables,
+        target_variables,
+    )?;
+    let degree_one = parse_basis_map_rows(
+        object.get("degreeOne")?,
+        "sourceOverlapRef",
+        "targetOverlapRef",
+        source_overlaps,
+        target_overlaps,
+        source_variables,
+        target_variables,
+    )?;
+    let degree_two_object = object.get("degreeTwo")?.as_object()?;
+    if degree_two_object
+        .keys()
+        .any(|key| !matches!(key.as_str(), "basisMap" | "zeroImage"))
+    {
+        return None;
+    }
+    let degree_two_items = degree_two_object.get("basisMap")?.as_array()?;
+    let mut degree_two = BTreeMap::new();
+    for item in degree_two_items {
+        let item = item.as_object()?;
+        if item
+            .keys()
+            .any(|key| !matches!(key.as_str(), "sourceTripleRef" | "targetTripleRef"))
+        {
+            return None;
+        }
+        let source = item.get("sourceTripleRef")?.as_str()?.to_string();
+        let target = item.get("targetTripleRef")?.as_str()?.to_string();
+        if degree_two.insert(source, target).is_some() {
+            return None;
+        }
+    }
+    if degree_two.keys().cloned().collect::<BTreeSet<_>>() != *source_triples
+        || degree_two.values().cloned().collect::<BTreeSet<_>>() != *target_triples
+    {
+        return None;
+    }
+    let zero_image = degree_two_object
+        .get("zeroImage")?
+        .as_array()?
+        .iter()
+        .map(|value| value.as_str().map(str::to_string))
+        .collect::<Option<BTreeSet<_>>>()?;
+    if zero_image
+        .iter()
+        .any(|triple| !target_triples.contains(triple))
+    {
+        return None;
+    }
+    Some(ExplicitCochainMap {
+        degree_zero,
+        degree_one,
+        degree_two,
+        degree_two_zero_image: zero_image,
+    })
+}
+
+fn parse_basis_map_rows(
+    value: &Value,
+    source_ref_key: &str,
+    target_ref_key: &str,
+    source_refs: &BTreeSet<String>,
+    target_refs: &BTreeSet<String>,
+    source_variables: &BTreeSet<String>,
+    target_variables: &BTreeSet<String>,
+) -> Option<BTreeMap<String, ComparisonBasisMap>> {
+    let items = value.as_array()?;
+    let mut rows = BTreeMap::new();
+    let mut mapped_targets = BTreeSet::new();
+    for item in items {
+        let item = item.as_object()?;
+        if item
+            .keys()
+            .any(|key| key != source_ref_key && key != target_ref_key && key != "variableMap")
+        {
+            return None;
+        }
+        let source = item.get(source_ref_key)?.as_str()?.to_string();
+        let target = item.get(target_ref_key)?.as_str()?.to_string();
+        if !source_refs.contains(&source) || !target_refs.contains(&target) {
+            return None;
+        }
+        let variable_items = item.get("variableMap")?.as_array()?;
+        let mut variables = BTreeMap::new();
+        let mut mapped_variables = BTreeSet::new();
+        for variable_item in variable_items {
+            let variable_item = variable_item.as_object()?;
+            if variable_item
+                .keys()
+                .any(|key| !matches!(key.as_str(), "source" | "target"))
+            {
+                return None;
+            }
+            let source_variable = variable_item.get("source")?.as_str()?.to_string();
+            let target_variable = variable_item.get("target")?.as_str()?.to_string();
+            if !source_variables.contains(&source_variable)
+                || !target_variables.contains(&target_variable)
+                || variables
+                    .insert(source_variable, target_variable.clone())
+                    .is_some()
+                || !mapped_variables.insert(target_variable)
+            {
+                return None;
+            }
+        }
+        if variables.keys().cloned().collect::<BTreeSet<_>>() != *source_variables
+            || mapped_variables != *target_variables
+            || rows
+                .insert(
+                    source,
+                    ComparisonBasisMap {
+                        target_ref: target.clone(),
+                        variables,
+                    },
+                )
+                .is_some()
+            || !mapped_targets.insert(target)
+        {
+            return None;
+        }
+    }
+    if rows.keys().cloned().collect::<BTreeSet<_>>() != *source_refs
+        || mapped_targets != *target_refs
+    {
+        return None;
+    }
+    Some(rows)
+}
+
+fn map_rows_cover_targets(
+    rows: &BTreeMap<String, ComparisonBasisMap>,
+    source_refs: &BTreeSet<String>,
+    target_refs: &BTreeSet<String>,
+) -> bool {
+    rows.keys().cloned().collect::<BTreeSet<_>>() == *source_refs
+        && rows
+            .values()
+            .map(|row| row.target_ref.clone())
+            .collect::<BTreeSet<_>>()
+            == *target_refs
+}
+
+fn degree_one_basis_pairs(
+    rows: &BTreeMap<String, ComparisonBasisMap>,
+) -> BTreeSet<((String, String), (String, String))> {
+    rows.iter()
+        .flat_map(|(source_overlap, row)| {
+            row.variables.iter().map(move |(source, target)| {
+                (
+                    (source_overlap.clone(), source.clone()),
+                    (row.target_ref.clone(), target.clone()),
+                )
+            })
+        })
+        .collect()
+}
+
+fn difference_is_preserved(
+    plan: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    cochain_map: &ExplicitCochainMap,
+    target_support: &BTreeMap<String, BTreeSet<String>>,
+    source_variables: &BTreeSet<String>,
+) -> bool {
+    let target_overlap_by_id = target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| (overlap.id.as_str(), overlap))
+        .collect::<BTreeMap<_, _>>();
+    for source_overlap in &plan.complex.overlaps {
+        let Some(degree_one) = cochain_map.degree_one.get(&source_overlap.id) else {
+            return false;
+        };
+        let Some(target_overlap) = target_overlap_by_id.get(degree_one.target_ref.as_str()) else {
+            return false;
+        };
+        let Some(left_map) = cochain_map.degree_zero.get(&source_overlap.left) else {
+            return false;
+        };
+        let Some(right_map) = cochain_map.degree_zero.get(&source_overlap.right) else {
+            return false;
+        };
+        let mapped_endpoints = [left_map.target_ref.as_str(), right_map.target_ref.as_str()]
+            .into_iter()
+            .collect::<BTreeSet<_>>();
+        let target_endpoints = [target_overlap.left.as_str(), target_overlap.right.as_str()]
+            .into_iter()
+            .collect::<BTreeSet<_>>();
+        if mapped_endpoints != target_endpoints {
+            return false;
+        }
+        for variable in source_variables {
+            let Some(left_variable) = left_map.variables.get(variable) else {
+                return false;
+            };
+            let Some(right_variable) = right_map.variables.get(variable) else {
+                return false;
+            };
+            let Some(degree_one_variable) = degree_one.variables.get(variable) else {
+                return false;
+            };
+            if left_variable != right_variable || left_variable != degree_one_variable {
+                return false;
+            }
+        }
+        let Some(source_primitive) = plan
+            .primitives
+            .iter()
+            .find(|primitive| primitive.overlap_ref == source_overlap.id)
         else {
             return false;
         };
-        let support_set = support.iter().copied().collect::<BTreeSet<_>>();
-        if support.len() != support_set.len() || actual.insert(overlap_ref, support_set).is_some() {
+        let mapped_support = source_primitive
+            .support
+            .variables
+            .iter()
+            .filter_map(|variable| degree_one.variables.get(variable))
+            .cloned()
+            .collect::<BTreeSet<_>>();
+        if mapped_support
+            != *target_support
+                .get(&degree_one.target_ref)
+                .unwrap_or(&BTreeSet::new())
+        {
             return false;
         }
     }
-    actual.keys().copied().collect::<BTreeSet<_>>() == expected
+    true
+}
+
+fn map_degree_two_support(
+    support: &BTreeSet<String>,
+    map: &BTreeMap<String, String>,
+) -> Option<BTreeSet<String>> {
+    support
+        .iter()
+        .map(|source| map.get(source).cloned())
+        .collect()
+}
+
+fn differential_is_commutative(
+    source_complex: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    cochain_map: &ExplicitCochainMap,
+) -> bool {
+    let target_triples_by_overlap = target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| {
+            (
+                overlap.id.as_str(),
+                target_complex
+                    .triple_overlaps
+                    .iter()
+                    .filter(|triple| triple.overlap_refs.contains(&overlap.id))
+                    .map(|triple| triple.id.clone())
+                    .collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    for source_overlap in &source_complex.complex.overlaps {
+        let Some(degree_one) = cochain_map.degree_one.get(&source_overlap.id) else {
+            return false;
+        };
+        let source_incidence = source_complex
+            .complex
+            .triple_overlaps
+            .iter()
+            .filter(|triple| triple.overlap_refs.contains(&source_overlap.id))
+            .map(|triple| triple.id.clone())
+            .collect::<BTreeSet<_>>();
+        let Some(mapped_incidence) =
+            map_degree_two_support(&source_incidence, &cochain_map.degree_two)
+        else {
+            return false;
+        };
+        let Some(target_incidence) = target_triples_by_overlap.get(degree_one.target_ref.as_str())
+        else {
+            return false;
+        };
+        if mapped_incidence != *target_incidence {
+            return false;
+        }
+    }
+    true
 }
 
 fn check_conclusion_tokens(plan: &RepairPlanDocumentV1) -> ValidationCheck {

@@ -43,6 +43,72 @@ pub struct RepairPlanComplexV1 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1ComparisonSupportV052 {
+    pub overlap_ref: String,
+    pub support: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1ComparisonVariableMapV052 {
+    pub source: String,
+    pub target: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1ComparisonChartMapRowV052 {
+    pub source_chart_ref: String,
+    pub target_chart_ref: String,
+    pub variable_map: Vec<H1ComparisonVariableMapV052>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1ComparisonOverlapMapRowV052 {
+    pub source_overlap_ref: String,
+    pub target_overlap_ref: String,
+    pub variable_map: Vec<H1ComparisonVariableMapV052>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1ComparisonTripleMapRowV052 {
+    pub source_triple_ref: String,
+    pub target_triple_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1ComparisonDegreeTwoV052 {
+    pub basis_map: Vec<H1ComparisonTripleMapRowV052>,
+    pub zero_image: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1ComparisonCochainMapV052 {
+    pub degree_zero: Vec<H1ComparisonChartMapRowV052>,
+    pub degree_one: Vec<H1ComparisonOverlapMapRowV052>,
+    pub degree_two: H1ComparisonDegreeTwoV052,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1ComparisonDataV052 {
+    pub schema: String,
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cochain_map_ref: Option<String>,
+    pub source_complex_fingerprint: String,
+    pub target_complex_fingerprint: String,
+    pub target_cochain_support: Vec<H1ComparisonSupportV052>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cochain_map: Option<H1ComparisonCochainMapV052>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepairPlanOverlapV1 {
     pub id: String,
     pub left: String,

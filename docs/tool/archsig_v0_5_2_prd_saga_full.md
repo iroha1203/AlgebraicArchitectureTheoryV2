@@ -164,6 +164,9 @@ v0.5.0 設計からの継承裁定を 3 点固定する:
   定理7.2 / 7.4)の区別を構造で刻む。token `SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA`。
   comparison 不供給時は verdict 行を立てず `silence_by_design`
   (reason: `comparison_data_not_supplied`)1 行(エラーでも残タスクでもない)。
+  explicit の `cochainMap` は `degreeZero` / `degreeOne` / `degreeTwo.basisMap` の有限基底写像表
+  (chart・overlap・triple の対応と変数対応)と `degreeTwo.zeroImage` を供給し、ArchSig が5条件を表から再計算する。
+  `degreeOneLeftInverse` などの宣言booleanは入力schemaに置かない。
 
 ### 層 E — law-grounded 10 結論
 
