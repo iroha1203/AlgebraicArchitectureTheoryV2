@@ -2400,6 +2400,32 @@ def standardSchemeAffineChartIdentityValid :=
 def standardSchemeAffineChartLocalDecorationPreserves :=
   @LawAlgebra.ArchitectureAffineChart.localDecoration_preserves
 
+/-! Standard Architecture Scheme SD3: actual affine atlas and open cover. -/
+
+/-- Audit alias for selected architecture affine atlas data. -/
+def standardSchemeAffineAtlas :=
+  @LawAlgebra.ArchitectureAffineAtlas
+
+/-- Audit alias for actual affine-atlas validity. -/
+def standardSchemeIsAffineAtlas :=
+  @LawAlgebra.IsArchitectureAffineAtlas
+
+/-- Audit alias for the induced Mathlib affine open cover. -/
+noncomputable def standardSchemeAffineAtlasToOpenCover :=
+  @LawAlgebra.ArchitectureAffineAtlas.toAffineOpenCover
+
+/-- Audit alias for affine-open-cover component rings. -/
+def standardSchemeAffineAtlasToOpenCoverX :=
+  @LawAlgebra.ArchitectureAffineAtlas.toAffineOpenCover_X
+
+/-- Audit alias for affine-open-cover component maps. -/
+def standardSchemeAffineAtlasToOpenCoverF :=
+  @LawAlgebra.ArchitectureAffineAtlas.toAffineOpenCover_f
+
+/-- Audit alias for joint coverage by selected chart ranges. -/
+def standardSchemeAffineAtlasJointlyCovers :=
+  @LawAlgebra.ArchitectureAffineAtlas.jointlyCovers
+
 /-! Finite negative instance for reading preservation. -/
 
 /-- Audit alias for invertibility of finite canonical components. -/
@@ -2459,6 +2485,36 @@ def standardSchemeFiniteInterpretationBrokenChartEquationNe :=
 /-- Audit alias for invalidity of the finite interpretation-broken chart. -/
 def standardSchemeFiniteInterpretationBrokenChartNotValid :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.interpretationBrokenChart_not_valid
+
+/-! Finite positive and negative instances for actual affine-atlas validity. -/
+
+/-- Audit alias for nontriviality of the finite base raw algebra. -/
+def standardSchemeFiniteRawBaseNontrivial :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.rawBaseNontrivial
+
+/-- Audit alias for injectivity of the finite base canonical component. -/
+def standardSchemeFiniteCanonicalBaseInjective :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.canonicalBaseInjective
+
+/-- Audit alias for the actual point of the finite base Spec. -/
+def standardSchemeFiniteBaseSpecNonempty :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.baseSpec_nonempty
+
+/-- Audit alias for the finite identity atlas. -/
+noncomputable def standardSchemeFiniteIdentityAtlas :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.identityAtlas
+
+/-- Audit alias for validity of the finite identity atlas. -/
+def standardSchemeFiniteIdentityAtlasValid :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.identityAtlas_valid
+
+/-- Audit alias for the finite empty-index atlas. -/
+noncomputable def standardSchemeFiniteUncoveredAtlas :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.uncoveredAtlas
+
+/-- Audit alias for invalidity of the finite empty-index atlas. -/
+def standardSchemeFiniteUncoveredAtlasNotValid :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.uncoveredAtlas_not_valid
 
 end AAT.AG.AxiomAudit
 

@@ -3,8 +3,8 @@ import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 /-!
 Executable statement contracts for the standard architecture scheme core.
 
-This file directly checks the fixed SD0--SD2 signatures and the SD8 finite
-invalid-chart witness from
+This file directly checks the fixed SD0--SD3 signatures implemented so far and the SD8 finite
+positive and negative witnesses from
 `aat_lean_02_standard_architecture_scheme_prd.md` against their implementation
 declarations.  It contains elaboration examples only and introduces no new
 mathematical declarations.  Later PRD slices extend the same contract surface
@@ -362,6 +362,45 @@ example {X : AlgebraicGeometry.Scheme}
     (AATReadingDecoration.ofContext raw C.context).Preserves raw C.map D :=
   C.localDecoration_preserves hC
 
+example (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X) : Type _ :=
+  ArchitectureAffineAtlas raw X D
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D) : Prop :=
+  IsArchitectureAffineAtlas raw atlas
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (h : IsArchitectureAffineAtlas raw atlas) : X.AffineOpenCover :=
+  atlas.toAffineOpenCover raw h
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (h : IsArchitectureAffineAtlas raw atlas)
+    (i : atlas.Index) :
+    (atlas.toAffineOpenCover raw h).X i =
+      SheafifiedSectionRing raw (atlas.chart i).context :=
+  atlas.toAffineOpenCover_X raw h i
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (h : IsArchitectureAffineAtlas raw atlas)
+    (i : atlas.Index) :
+    (atlas.toAffineOpenCover raw h).f i = (atlas.chart i).map :=
+  atlas.toAffineOpenCover_f raw h i
+
+example {X : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw X}
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (h : IsArchitectureAffineAtlas raw atlas) :
+    ⨆ i, ((atlas.toAffineOpenCover raw h).f i).opensRange = ⊤ :=
+  atlas.jointlyCovers raw h
+
 namespace FiniteExamples.StandardArchitectureScheme
 
 open RingedSite.FiniteModel
@@ -383,6 +422,35 @@ example :
 
 example : ¬ IsArchitectureAffineChart rawSystem interpretationBrokenChart :=
   interpretationBrokenChart_not_valid
+
+example : Nontrivial (rawSystem.rawAlgebra base) :=
+  rawBaseNontrivial
+
+example :
+    Function.Injective
+      (rawSystem.toRingedSite.canonical.app (op base)).right :=
+  canonicalBaseInjective
+
+example : Nonempty (architectureChartSpec rawSystem base) :=
+  baseSpec_nonempty
+
+example :
+    ArchitectureAffineAtlas rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) :=
+  identityAtlas
+
+example : IsArchitectureAffineAtlas rawSystem identityAtlas :=
+  identityAtlas_valid
+
+example :
+    ArchitectureAffineAtlas rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) :=
+  uncoveredAtlas
+
+example : ¬ IsArchitectureAffineAtlas rawSystem uncoveredAtlas :=
+  uncoveredAtlas_not_valid
 
 end FiniteExamples.StandardArchitectureScheme
 
