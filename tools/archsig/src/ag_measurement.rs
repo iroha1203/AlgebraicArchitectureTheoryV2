@@ -533,29 +533,30 @@ fn boundary_statements_for_measurement_packet(
 }
 
 fn m8_silence_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> Vec<BoundaryStatementV1> {
-    vec![
-        BoundaryStatementV1 {
+    let mut statements = vec![BoundaryStatementV1 {
             id: "boundary:m8:higher-hn-silence".to_string(),
             kind: "silence_by_design".to_string(),
             scope_refs: vec![packet.packet_id.clone()],
             reason: "higher_hn_n_ge_3_part_iv_scope_boundary".to_string(),
             text: "Cohomological readings in degrees n>=3 are silent by design in this finite AG measurement packet: they are a Part IV scope boundary, not a measured zero result or a remaining task.".to_string(),
-        },
-        BoundaryStatementV1 {
+        }];
+    if packet.profile.coefficient == "F2" {
+        statements.push(BoundaryStatementV1 {
             id: "boundary:m8:non-abelian-stack-gerbe-vocabulary".to_string(),
             kind: "out_of_selected_vocabulary".to_string(),
             scope_refs: vec![packet.packet_id.clone()],
             reason: "non_abelian_stack_gerbe_outside_abelian_f2_vocabulary".to_string(),
             text: "Non-abelian stack/gerbe degree-2 descent data is outside the selected banded abelian F2 vocabulary; banding-violated inputs remain outside this measurement lens.".to_string(),
-        },
-        BoundaryStatementV1 {
+        });
+    }
+    statements.push(BoundaryStatementV1 {
             id: "boundary:m8:higher-tor-unmeasured-support".to_string(),
             kind: "unmeasured_support".to_string(),
             scope_refs: vec![packet.packet_id.clone()],
             reason: "higher_tor_i_ge_2_unmeasured_support".to_string(),
             text: "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing.".to_string(),
-        },
-    ]
+        });
+    statements
 }
 
 fn assumption_theorem_refs(assumptions: &[AgAssumptionLedgerEntryV1]) -> Vec<String> {

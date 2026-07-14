@@ -3379,6 +3379,49 @@ fn cli_representative_output_surfaces_omit_absolute_sheaf_cohomology_notation() 
         );
     }
 
+    let period_run = run_analyze_fixture_lock(
+        "full-sheaf-output-lint-period",
+        "archmap_v2_period_stokes.json",
+        "law_policy_period.json",
+        "law_surface_ag_v052.json",
+        None,
+    );
+    let period_packet = read_json(&period_run.join("archsig-measurement-packet.json"));
+    assert_eq!(period_packet["profile"]["coefficient"], "R");
+    let period_m8 = period_packet["boundaryStatements"]
+        .as_array()
+        .expect("period boundaryStatements is array")
+        .iter()
+        .filter(|statement| {
+            statement["id"]
+                .as_str()
+                .is_some_and(|id| id.starts_with("boundary:m8:"))
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        period_m8
+            .iter()
+            .any(|statement| { statement["id"] == "boundary:m8:higher-hn-silence" })
+    );
+    assert!(
+        period_m8
+            .iter()
+            .any(|statement| { statement["id"] == "boundary:m8:higher-tor-unmeasured-support" })
+    );
+    assert!(
+        !period_m8.iter().any(|statement| {
+            statement["id"] == "boundary:m8:non-abelian-stack-gerbe-vocabulary"
+        })
+    );
+    assert!(period_m8.iter().all(|statement| {
+        statement["reason"]
+            .as_str()
+            .is_some_and(|reason| !reason.contains("F2"))
+            && statement["text"]
+                .as_str()
+                .is_some_and(|text| !text.contains("F2"))
+    }));
+
     assert!(has_absolute_sheaf_cohomology_notation("H^1(X, Ob_U)"));
     assert!(has_absolute_sheaf_cohomology_notation("H^n(X, Ob_U)"));
     assert!(!has_absolute_sheaf_cohomology_notation(
