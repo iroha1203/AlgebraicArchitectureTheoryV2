@@ -9126,17 +9126,17 @@
   "runId": "run:02000103301e",
   "schema": "archsig-atom-viewer-data/v0.5.3",
   "sagaDescent": {
-    "projectionBoundary": "SAGA fields are absent from this static viewer packet; the viewer preserves that silence.",
+    "projectionBoundary": "Every displayed value is selected from the measurement packet or its boundary statements; no viewer verdict is synthesized.",
     "sourcePacketRef": "archsig-measurement-packet.json",
     "stages": [
-      {"stageId": "grounding", "order": 0, "status": "not_computed", "rows": [], "measurements": [], "visualRole": "grounding"},
-      {"stageId": "descent", "order": 1, "status": "not_computed", "rows": [], "measurements": [], "harmonicDebt": [], "visualRole": "descent-measurement"},
-      {"stageId": "comparison", "order": 2, "status": "not_computed", "rows": [], "visualRole": "transfer-comparison"},
+      {"stageId": "grounding", "order": 0, "status": "silence_by_design", "rows": [], "measurements": [], "visualRole": "grounding"},
+      {"stageId": "descent", "order": 1, "status": "silence_by_design", "rows": [], "measurements": [], "harmonicDebt": [], "visualRole": "descent-measurement"},
+      {"stageId": "comparison", "order": 2, "status": "silence_by_design", "rows": [], "visualRole": "transfer-comparison"},
       {"stageId": "silence", "order": 3, "status": "not_computed", "rows": [], "visualRole": "silence"}
     ],
     "silenceRows": [],
     "leafFieldMap": [],
-    "nonClaims": ["This static fixture contains no SAGA measurement rows."]
+    "nonClaims": ["The projection does not create structural verdicts, comparison results, or repair decisions.", "A missing packet field remains absent; silence_by_design remains visible as a silence row."]
   },
   "sourceArtifactRefs": {
     "insightBrief": "archsig-insight-brief.md",
@@ -9145,7 +9145,7 @@
     "normalizedArchMap": "normalized-archmap.json",
     "summary": "archsig-analysis-summary.json"
   },
-  "toolVersion": "0.5.2",
+  "toolVersion": "0.5.3",
   "viewerVisualScenes": [
     {
       "axisMapping": {

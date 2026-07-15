@@ -12316,16 +12316,21 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             "reason",
             "dependsOnAssumptions",
         ] {
-            field_map.push(json!({
-                "viewerPath": format!("{prefix}.{field}"),
-                "packetPath": if field == "rowRef" {
+            let packet_path = if field == "rowRef" {
                     format!("/structuralVerdict/{index}")
                 } else if field == "inScope" || field == "zero" || field == "nonZero" || field == "methodStatus" || field == "certRef" {
                     format!("/structuralVerdict/{index}/verdictData/{field}")
                 } else {
                     format!("/structuralVerdict/{index}/{field}")
-                }
-            }));
+                };
+            if let Some(value) = row_value.get(field) {
+                append_leaf_field_mappings(
+                    &mut field_map,
+                    &format!("{prefix}.{field}"),
+                    &packet_path,
+                    value,
+                );
+            }
         }
         if stage == "grounding" {
             grounding_rows.push(row_value);
@@ -12342,7 +12347,6 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             continue;
         };
         if invariant_id == "saga-generated-end-to-end-packet" {
-            let detector_findings = invariant["detectorFindings"].clone();
             let row_index = grounding_rows.len();
             let mut row = serde_json::Map::new();
             for (output_field, source_path) in [
@@ -12351,6 +12355,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
                 ("theoremRef", "theoremRef"),
                 ("premise", "lawDependent.premise"),
                 ("detectorFindings", "detectorFindings"),
+                ("detectorCount", "detectorCount"),
             ] {
                 let value = if source_path == "lawDependent.premise" {
                     invariant["lawDependent"]["premise"].clone()
@@ -12359,38 +12364,36 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
                 };
                 if !value.is_null() {
                     row.insert(output_field.to_string(), value);
-                    field_map.push(json!({
-                        "viewerPath": format!("stages[0].rows[{row_index}].{output_field}"),
-                        "packetPath": if source_path == "lawDependent.premise" {
-                            format!("/computedInvariants/{index}/lawDependent/premise")
-                        } else {
-                            format!("/computedInvariants/{index}/{source_path}")
-                        }
-                    }));
+                    let packet_path = if source_path == "lawDependent.premise" {
+                        format!("/computedInvariants/{index}/lawDependent/premise")
+                    } else {
+                        format!("/computedInvariants/{index}/{source_path}")
+                    };
+                    append_leaf_field_mappings(
+                        &mut field_map,
+                        &format!("stages[0].rows[{row_index}].{output_field}"),
+                        &packet_path,
+                        &row[output_field],
+                    );
                 }
             }
-            row.insert(
-                "detectorCount".to_string(),
-                json!(detector_findings.as_array().map_or(0, Vec::len)),
-            );
-            field_map.push(json!({
-                "viewerPath": format!("stages[0].rows[{row_index}].detectorCount"),
-                "packetPath": format!("/computedInvariants/{index}/detectorFindings")
-            }));
             grounding_rows.push(Value::Object(row));
         } else if invariant_id == "saga-descent:residual-class"
             || invariant_id == "saga-descent:boundary-membership"
             || invariant_id == "saga-descent:closure-diagnostics"
         {
+            let measurement_index = measurement_rows.len();
             let mut row = serde_json::Map::new();
             row.insert("invariantId".to_string(), json!(invariant_id));
-            for field in ["evaluator", "status", "reason", "whatNext"] {
+            for field in ["invariantId", "evaluator", "status", "reason", "whatNext"] {
                 if let Some(value) = invariant.get(field) {
                     row.insert(field.to_string(), value.clone());
-                    field_map.push(json!({
-                        "viewerPath": format!("stages[1].measurements[{invariant_id}].{field}"),
-                        "packetPath": format!("/computedInvariants/{index}/{field}")
-                    }));
+                    append_leaf_field_mappings(
+                        &mut field_map,
+                        &format!("stages[1].measurements[{measurement_index}].{field}"),
+                        &format!("/computedInvariants/{index}/{field}"),
+                        value,
+                    );
                 }
             }
             for (output_field, source_path) in [
@@ -12401,14 +12404,17 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             ] {
                 if let Some(value) = invariant.get(source_path) {
                     row.insert(output_field.to_string(), value.clone());
-                    field_map.push(json!({
-                        "viewerPath": format!("stages[1].measurements[{invariant_id}].{output_field}"),
-                        "packetPath": format!("/computedInvariants/{index}/{source_path}")
-                    }));
+                    append_leaf_field_mappings(
+                        &mut field_map,
+                        &format!("stages[1].measurements[{measurement_index}].{output_field}"),
+                        &format!("/computedInvariants/{index}/{source_path}"),
+                        value,
+                    );
                 }
             }
             measurement_rows.push(Value::Object(row));
         } else if invariant_id == "saga-comparison:h1-transfer" {
+            let comparison_index = comparison_rows.len();
             let mut row = serde_json::Map::new();
             for field in [
                 "invariantId",
@@ -12423,14 +12429,17 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             ] {
                 if let Some(value) = invariant.get(field) {
                     row.insert(field.to_string(), value.clone());
-                    field_map.push(json!({
-                        "viewerPath": format!("stages[2].rows[0].{field}"),
-                        "packetPath": format!("/computedInvariants/{index}/{field}")
-                    }));
+                    append_leaf_field_mappings(
+                        &mut field_map,
+                        &format!("stages[2].rows[{comparison_index}].{field}"),
+                        &format!("/computedInvariants/{index}/{field}"),
+                        value,
+                    );
                 }
             }
             comparison_rows.push(Value::Object(row));
         } else if invariant["evaluator"] == "ag.harmonic-debt" {
+            let harmonic_index = harmonic_rows.len();
             let mut row = serde_json::Map::new();
             for field in [
                 "invariantId",
@@ -12443,10 +12452,12 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             ] {
                 if let Some(value) = invariant.get(field) {
                     row.insert(field.to_string(), value.clone());
-                    field_map.push(json!({
-                        "viewerPath": format!("stages[1].measurements[harmonic-debt].{field}"),
-                        "packetPath": format!("/computedInvariants/{index}/{field}")
-                    }));
+                    append_leaf_field_mappings(
+                        &mut field_map,
+                        &format!("stages[1].harmonicDebt[{harmonic_index}].{field}"),
+                        &format!("/computedInvariants/{index}/{field}"),
+                        value,
+                    );
                 }
             }
             harmonic_rows.push(Value::Object(row));
@@ -12478,20 +12489,36 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         .filter(|(_, statement)| statement.kind == "silence_by_design")
         .enumerate()
         .map(|(row_index, (packet_index, statement))| {
-            for field in ["id", "kind", "scopeRefs", "reason", "text"] {
-                field_map.push(json!({
-                    "viewerPath": format!("silenceRows[{row_index}].{field}"),
-                    "packetPath": format!("/boundaryStatements/{packet_index}/{field}")
-                }));
-            }
-            json!({
+            let row = json!({
                 "id": statement.id,
-                "status": "silence_by_design",
+                "status": statement.kind,
                 "reason": statement.reason,
                 "whatNext": statement.text,
-                "scopeRefs": statement.scope_refs,
-                "sourceRef": format!("boundaryStatements/{packet_index}")
-            })
+                "scopeRefs": statement.scope_refs
+            });
+            for (field, packet_field) in [
+                ("id", "id"),
+                ("status", "kind"),
+                ("reason", "reason"),
+                ("whatNext", "text"),
+                ("scopeRefs", "scopeRefs"),
+            ] {
+                let value = &row[field];
+                let packet_path = format!("/boundaryStatements/{packet_index}/{packet_field}");
+                append_leaf_field_mappings(
+                    &mut field_map,
+                    &format!("silenceRows[{row_index}].{field}"),
+                    &packet_path,
+                    value,
+                );
+                append_leaf_field_mappings(
+                    &mut field_map,
+                    &format!("stages[3].rows[{row_index}].{field}"),
+                    &packet_path,
+                    value,
+                );
+            }
+            row
         })
         .collect::<Vec<_>>();
 
@@ -12500,21 +12527,38 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             continue;
         }
         let row_index = silence_rows.len();
-        let reason = invariant["reason"].as_str().unwrap_or("silence_by_design");
-        let what_next = invariant["whatNext"].as_str().unwrap_or("");
-        silence_rows.push(json!({
+        let mut row = json!({
             "id": invariant["invariantId"],
             "status": "silence_by_design",
-            "reason": reason,
-            "whatNext": what_next,
-            "sourceRef": format!("computedInvariants/{index}")
-        }));
-        for field in ["invariantId", "status", "reason", "whatNext"] {
-            field_map.push(json!({
-                "viewerPath": format!("silenceRows[{row_index}].{field}"),
-                "packetPath": format!("/computedInvariants/{index}/{}", if field == "status" { "status" } else { field })
-            }));
+        });
+        for field in ["reason", "whatNext"] {
+            if let Some(value) = invariant.get(field).filter(|value| !value.is_null()) {
+                row[field] = value.clone();
+            }
         }
+        for (field, packet_field) in [
+            ("id", "invariantId"),
+            ("status", "status"),
+            ("reason", "reason"),
+            ("whatNext", "whatNext"),
+        ] {
+            if let Some(value) = row.get(field).filter(|value| !value.is_null()) {
+                let packet_path = format!("/computedInvariants/{index}/{packet_field}");
+                append_leaf_field_mappings(
+                    &mut field_map,
+                    &format!("silenceRows[{row_index}].{field}"),
+                    &packet_path,
+                    value,
+                );
+                append_leaf_field_mappings(
+                    &mut field_map,
+                    &format!("stages[3].rows[{row_index}].{field}"),
+                    &packet_path,
+                    value,
+                );
+            }
+        }
+        silence_rows.push(row);
     }
 
     json!({
@@ -12560,6 +12604,40 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             "A missing packet field remains absent; silence_by_design remains visible as a silence row."
         ]
     })
+}
+
+fn append_leaf_field_mappings(
+    field_map: &mut Vec<Value>,
+    viewer_path: &str,
+    packet_path: &str,
+    value: &Value,
+) {
+    match value {
+        Value::Object(object) => {
+            for (key, child) in object {
+                append_leaf_field_mappings(
+                    field_map,
+                    &format!("{viewer_path}.{key}"),
+                    &format!("{packet_path}/{key}"),
+                    child,
+                );
+            }
+        }
+        Value::Array(array) => {
+            for (index, child) in array.iter().enumerate() {
+                append_leaf_field_mappings(
+                    field_map,
+                    &format!("{viewer_path}[{index}]"),
+                    &format!("{packet_path}/{index}"),
+                    child,
+                );
+            }
+        }
+        _ => field_map.push(json!({
+            "viewerPath": viewer_path,
+            "packetPath": packet_path
+        })),
+    }
 }
 
 fn top_insight_preserved_refs(insight_report: &Value) -> Vec<String> {
@@ -13084,6 +13162,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "degreeZeroLawContribution",
         "generatedQuotient",
         "detectorFindings",
+        "detectorCount",
         "harmonicDebtNorm",
         "essentialRepairLowerBound",
         "lowerBoundStatus",

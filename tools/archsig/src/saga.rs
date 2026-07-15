@@ -356,7 +356,8 @@ pub(crate) fn evaluate_saga_grounded_v1(
             "reading": "law 意味論が Čech 複体に到達する地点は正確に次数0。H^1 の内容は cover の幾何から来る(意味8.3)"
         },
         "generatedQuotient": generated_quotient,
-        "detectorFindings": nonzero_charts
+        "detectorFindings": nonzero_charts,
+        "detectorCount": nonzero_charts.len()
     });
     let mut assumptions = vec![AgAssumptionLedgerEntryV1 {
         theorem_ref: "part10/11.3".to_string(),

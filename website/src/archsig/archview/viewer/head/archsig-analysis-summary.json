@@ -64,7 +64,7 @@
     "rowCount": 1,
     "unmeasuredCount": 0
   },
-  "toolVersion": "0.5.2",
+  "toolVersion": "0.5.3",
   "translationRule": {
     "boundary": "Supply a different selected cover, coefficient sheaf, or restriction data before changing this profile-relative reading.",
     "conclusionCode": "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",

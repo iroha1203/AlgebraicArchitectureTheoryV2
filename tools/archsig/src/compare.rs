@@ -681,7 +681,7 @@ mod tests {
 
     fn manifest(law_surface: &str) -> serde_json::Value {
         json!({
-            "toolVersion": "0.5.2",
+            "toolVersion": "0.5.3",
             "inputDigests": {
                 "archmap": {"sha256": "same-archmap"},
                 "lawPolicy": {"sha256": "same-policy"},

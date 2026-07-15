@@ -7074,7 +7074,7 @@ fn cli_analyze_v2_validation_failure_emits_blocking_insight_projection() {
         manifest["conclusionCode"],
         "VALIDATION_FAILED_BEFORE_MEASUREMENT"
     );
-    assert_eq!(manifest["toolVersion"], "0.5.2");
+    assert_eq!(manifest["toolVersion"], "0.5.3");
     assert!(
         manifest["runId"]
             .as_str()
@@ -11738,6 +11738,7 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
     let saga_descent = grounded_viewer["sagaDescent"]
         .as_object()
         .expect("viewer must expose sagaDescent projection");
+    let saga_descent_value = &grounded_viewer["sagaDescent"];
     assert_eq!(
         saga_descent["stages"].as_array().map(Vec::len),
         Some(4),
@@ -11760,6 +11761,41 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
             })),
         "every saga viewer leaf must carry a packet field mapping"
     );
+    let mappings = saga_descent["leafFieldMap"]
+        .as_array()
+        .expect("leafFieldMap is an array");
+    for mapping in mappings {
+        let viewer_path = mapping["viewerPath"].as_str().expect("viewer path");
+        let packet_path = mapping["packetPath"].as_str().expect("packet path");
+        assert!(
+            value_at_viewer_path(saga_descent_value, viewer_path).is_some(),
+            "viewer mapping must resolve: {viewer_path}"
+        );
+        assert!(
+            value_at_json_pointer(&packet, packet_path).is_some(),
+            "packet mapping must resolve: {packet_path}"
+        );
+    }
+    for stage in saga_descent["stages"].as_array().expect("stages") {
+        for field in ["rows", "measurements", "harmonicDebt"] {
+            if let Some(values) = stage[field].as_array() {
+                let mut leaves = Vec::new();
+                for (index, value) in values.iter().enumerate() {
+                    collect_leaf_paths(
+                        value,
+                        &format!("stages[{}].{field}[{index}]", stage["order"]),
+                        &mut leaves,
+                    );
+                }
+                for leaf in leaves {
+                    assert!(
+                        mappings.iter().any(|mapping| mapping["viewerPath"] == leaf),
+                        "displayed SAGA leaf lacks packet mapping: {leaf}"
+                    );
+                }
+            }
+        }
+    }
 
     let mut bad_archmap = read_json(&root.join("archmap_v2.json"));
     bad_archmap["contexts"][0]["atoms"]
@@ -12120,7 +12156,7 @@ fn practical_rust_service_example_runs_current_analyze() {
 
     assert_eq!(manifest["schema"], "archsig-run-manifest/v0.5.3");
     assert_eq!(manifest["mode"], "measurement");
-    assert_eq!(manifest["toolVersion"], "0.5.2");
+    assert_eq!(manifest["toolVersion"], "0.5.3");
     assert!(
         manifest["runId"]
             .as_str()
@@ -12274,8 +12310,8 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     }
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
-    assert_eq!(manifest["toolVersion"], "0.5.2");
-    assert_eq!(manifest["runId"], "run:831d6aef180b");
+    assert_eq!(manifest["toolVersion"], "0.5.3");
+    assert_eq!(manifest["runId"], "run:c43fa5d5be2c");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "a15b66bc2ad1a73a1999e98daff923b8f7512e7bb7e0df69e325ade5726718f2"
@@ -12442,7 +12478,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:831d6aef180b-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:c43fa5d5be2c-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -15349,6 +15385,70 @@ fn removed_commands() -> &'static [&'static str] {
 fn read_json(path: &Path) -> Value {
     serde_json::from_slice(&fs::read(path).expect("json fixture can be read"))
         .expect("json fixture parses")
+}
+
+fn value_at_viewer_path<'a>(root: &'a Value, path: &str) -> Option<&'a Value> {
+    let bytes = path.as_bytes();
+    let mut cursor = root;
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] == b'.' {
+            index += 1;
+        }
+        let start = index;
+        while index < bytes.len() && bytes[index] != b'.' && bytes[index] != b'[' {
+            index += 1;
+        }
+        if start != index {
+            cursor = cursor.get(&path[start..index])?;
+        }
+        while index < bytes.len() && bytes[index] == b'[' {
+            index += 1;
+            let start = index;
+            while index < bytes.len() && bytes[index].is_ascii_digit() {
+                index += 1;
+            }
+            if start == index || index >= bytes.len() || bytes[index] != b']' {
+                return None;
+            }
+            let array_index = path[start..index].parse::<usize>().ok()?;
+            cursor = cursor.get(array_index)?;
+            index += 1;
+        }
+    }
+    Some(cursor)
+}
+
+fn value_at_json_pointer<'a>(root: &'a Value, pointer: &str) -> Option<&'a Value> {
+    let mut cursor = root;
+    if pointer.is_empty() {
+        return Some(cursor);
+    }
+    for segment in pointer.strip_prefix('/')?.split('/') {
+        let segment = segment.replace("~1", "/").replace("~0", "~");
+        cursor = match cursor {
+            Value::Array(values) => values.get(segment.parse::<usize>().ok()?)?,
+            Value::Object(values) => values.get(&segment)?,
+            _ => return None,
+        };
+    }
+    Some(cursor)
+}
+
+fn collect_leaf_paths(value: &Value, path: &str, leaves: &mut Vec<String>) {
+    match value {
+        Value::Object(object) => {
+            for (key, child) in object {
+                collect_leaf_paths(child, &format!("{path}.{key}"), leaves);
+            }
+        }
+        Value::Array(array) => {
+            for (index, child) in array.iter().enumerate() {
+                collect_leaf_paths(child, &format!("{path}[{index}]"), leaves);
+            }
+        }
+        _ => leaves.push(path.to_string()),
+    }
 }
 
 fn sidecar_measurement_profile_path(policy_path: &Path) -> PathBuf {
