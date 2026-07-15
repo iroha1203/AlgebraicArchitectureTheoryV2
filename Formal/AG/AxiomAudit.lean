@@ -3045,11 +3045,11 @@ def standardSchemeFiniteFstBrokenOverlapPresentationEquationNe :=
 def standardSchemeFiniteFstBrokenOverlapPresentationNotValid :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.fstBrokenOverlapPresentation_not_valid
 
-/-- Audit alias for the second-projection inverse-twisted overlap presentation. -/
+/-- Audit alias for the selected-pair-twisted overlap presentation. -/
 noncomputable def standardSchemeFiniteSndBrokenOverlapPresentation :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.sndBrokenOverlapPresentation
 
-/-- Audit alias for failure of the inverse-twisted second projection. -/
+/-- Audit alias for failure of the selected-pair-twisted second projection. -/
 def standardSchemeFiniteSndBrokenOverlapPresentationEquationNe :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.sndBrokenOverlapPresentation_equation_ne
 
