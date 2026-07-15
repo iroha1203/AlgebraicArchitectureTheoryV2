@@ -12347,7 +12347,9 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         let Some(invariant_id) = invariant["invariantId"].as_str() else {
             continue;
         };
-        if invariant_id == "saga-generated-end-to-end-packet" {
+        if invariant_id == "saga-generated-end-to-end-packet"
+            && invariant["evaluator"].as_str() == Some("ag.saga-grounded")
+        {
             let row_index = grounding_rows.len();
             let mut row = serde_json::Map::new();
             for (output_field, source_path) in [
@@ -12379,9 +12381,10 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
                 }
             }
             grounding_rows.push(Value::Object(row));
-        } else if invariant_id == "saga-descent:residual-class"
-            || invariant_id == "saga-descent:boundary-membership"
-            || invariant_id == "saga-descent:closure-diagnostics"
+        } else if invariant["evaluator"].as_str() == Some("ag.saga-descent")
+            && (invariant_id == "saga-descent:residual-class"
+                || invariant_id == "saga-descent:boundary-membership"
+                || invariant_id == "saga-descent:closure-diagnostics")
         {
             let measurement_index = measurement_rows.len();
             let mut row = serde_json::Map::new();
@@ -12414,7 +12417,9 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
                 }
             }
             measurement_rows.push(Value::Object(row));
-        } else if invariant_id == "saga-comparison:h1-transfer" {
+        } else if invariant_id == "saga-comparison:h1-transfer"
+            && invariant["evaluator"].as_str() == Some("ag.saga-comparison")
+        {
             let comparison_index = comparison_rows.len();
             let mut row = serde_json::Map::new();
             for field in [
@@ -12489,7 +12494,10 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         .enumerate()
         .filter(|(_, statement)| {
             statement.kind == "silence_by_design"
-                && (statement.id.contains(":saga-") || statement.id.contains(":harmonic-debt"))
+                && statement
+                    .scope_refs
+                    .iter()
+                    .any(|scope_ref| saga_scope_ref(packet, scope_ref))
         })
         .enumerate()
         .map(|(row_index, (packet_index, statement))| {
@@ -12652,6 +12660,40 @@ fn projected_stage_status(groups: &[&[Value]]) -> &'static str {
         return "not_computed";
     }
     "measured"
+}
+
+fn saga_scope_ref(packet: &ArchSigMeasurementPacketV1, scope_ref: &str) -> bool {
+    if let Some(index) = scope_ref
+        .strip_prefix("structuralVerdict/")
+        .and_then(|index| index.parse::<usize>().ok())
+    {
+        return packet
+            .structural_verdict
+            .get(index)
+            .is_some_and(|row| is_saga_evaluator(&row.evaluator));
+    }
+    if let Some(index) = scope_ref
+        .strip_prefix("computedInvariants/")
+        .and_then(|index| index.parse::<usize>().ok())
+    {
+        return packet
+            .computed_invariants
+            .get(index)
+            .is_some_and(|row| row["evaluator"].as_str().is_some_and(is_saga_evaluator));
+    }
+    packet.computed_invariants.iter().any(|row| {
+        row["invariantId"] == scope_ref && row["evaluator"].as_str().is_some_and(is_saga_evaluator)
+    }) || packet
+        .analytic_readings
+        .iter()
+        .any(|reading| reading.reading_id == scope_ref && is_saga_evaluator(&reading.evaluator))
+}
+
+fn is_saga_evaluator(evaluator: &str) -> bool {
+    matches!(
+        evaluator,
+        "ag.saga-grounded" | "ag.saga-descent" | "ag.saga-comparison" | "ag.harmonic-debt"
+    )
 }
 
 fn append_leaf_field_mappings(
