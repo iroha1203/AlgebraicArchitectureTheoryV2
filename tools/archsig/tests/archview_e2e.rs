@@ -393,11 +393,9 @@ fn archview_saga_projection_e2e_is_packet_grounded() {
                                 row["action"].as_str(),
                                 Some("pass") | Some("pass_with_boundary") | Some("block")
                             );
-                            let ref_valid = if row["rowRef"].is_string() {
-                                row["boundaryOverrideApplied"].is_boolean()
-                            } else {
-                                row["rowKey"].is_string()
-                            };
+                            let ref_valid = (row["rowRef"].is_string()
+                                || row["rowKey"].is_string())
+                                && row["boundaryOverrideApplied"].is_boolean();
                             action_valid && ref_valid
                         })
                     })

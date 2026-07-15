@@ -2701,11 +2701,7 @@ function validateGateReport(report, viewerData) {
       if (typeof rowRef !== "string" || !rowRef || typeof row.action !== "string") {
         throw new Error("gate report applied mapping row shape mismatch");
       }
-      if (Object.prototype.hasOwnProperty.call(row, "rowRef") && typeof row.boundaryOverrideApplied !== "boolean") {
-        throw new Error("gate report boundary override shape mismatch");
-      }
-      if (Object.prototype.hasOwnProperty.call(row, "boundaryOverrideApplied") &&
-        typeof row.boundaryOverrideApplied !== "boolean") {
+      if (typeof row.boundaryOverrideApplied !== "boolean") {
         throw new Error("gate report boundary override shape mismatch");
       }
     }
