@@ -1,4 +1,5 @@
 import Formal.AG.LawAlgebra.StandardScheme
+import Formal.AG.LawAlgebra.AffineChart
 import Formal.AG.LawAlgebra.RingedSiteFiniteExample
 import Mathlib.AlgebraicGeometry.GammaSpecAdjunction
 
@@ -212,6 +213,168 @@ open scoped AlgebraicGeometry
 
 open RingedSite.FiniteModel
 open AAT.AG.LawAlgebra.FiniteExamples.StandardSchemeReading
+
+/-!
+### Finite canonical sheafification and coordinate transport
+
+The right context completes the selected two-patch context pair.  The finite bottom topology
+makes every canonical sheafification component invertible, so the base presentation and its
+representability equivalence are constructed from the canonical unit alone.  Naturality of that
+same unit transports the selected coordinate through the actual left-to-base restriction.
+-/
+
+/-- The selected right patch as an object of the finite ringed site. -/
+def rightContext : site.category :=
+  Site.ContextCategoryObject.of site.contextPreorder
+    (AAT.AG.FiniteModel.twoPatchContext
+      AAT.AG.FiniteModel.TwoPatchContextIndex.right)
+
+/-- The selected right patch includes into the base context. -/
+def rightToBase : rightContext ⟶ base :=
+  CategoryTheory.homOfLE
+    (AAT.AG.FiniteModel.twoPatchContextLe_sound
+      (i := AAT.AG.FiniteModel.TwoPatchContextIndex.right)
+      (j := AAT.AG.FiniteModel.TwoPatchContextIndex.base)
+      (by simp [AAT.AG.FiniteModel.twoPatchContextIndexLe]))
+
+/-- The selected left and right patches are distinct context objects. -/
+theorem leftContext_ne_rightContext :
+    RawPresheaf.left ≠ rightContext := by
+  intro h
+  have hctx := congrArg Site.ContextCategoryObject.ctx h
+  have heq := congrArg
+    (fun W : Site.ArchitectureContext AAT.AG.FiniteModel.corePackage.object =>
+      (⟨W.Extension, W.extension⟩ : Sigma fun T : Type => T)) hctx
+  injection heq with _ hindex
+  exact AAT.AG.FiniteModel.TwoPatchContextIndex.noConfusion hindex
+
+/-- Bottom-topology sheafification is objectwise invertible in the finite model. -/
+theorem canonical_component_isIso (W : site.category) :
+    IsIso (rawSystem.toRingedSite.canonical.app (op W)) :=
+  canonicalComponentIsIso W
+
+/-- The finite base presentation whose only material condition is the canonical unit. -/
+noncomputable def baseSheafifiedPresentation :
+    AffineChart.AffineAATChart.SheafifiedChartPresentation
+      rawSystem base where
+  canonical_isIso := canonical_component_isIso base
+
+/-- The inverse comparison of the finite base presentation is the canonical unit itself. -/
+@[simp] theorem basePresentation_comparison_symm_toAlgHom :
+    baseSheafifiedPresentation.comparison.symm.toAlgHom =
+      sheafificationUnitAlgHom rawSystem base :=
+  AffineChart.AffineAATChart.SheafifiedChartPresentation.comparison_symm_toAlgHom
+    baseSheafifiedPresentation
+
+/-- Configurations on the finite base are represented by its sheafified section ring. -/
+noncomputable def baseSheafifiedRepresentability
+    (R : Type w) [CommRing R] [Algebra Int R] :
+    rawSystem.LocalConfiguration base R ≃
+      (SheafifiedSectionRing rawSystem base →ₐ[Int] R) :=
+  AffineChart.AffineAATChart.sheafifiedChartRepresentability
+    baseSheafifiedPresentation R
+
+/-- Forward evaluation of the finite base representability equivalence. -/
+@[simp] theorem baseSheafifiedRepresentability_apply
+    (R : Type w) [CommRing R] [Algebra Int R]
+    (a : rawSystem.LocalConfiguration base R) :
+    baseSheafifiedRepresentability R a =
+      (rawSystem.localConfigurationRepresentability base R a).comp
+        baseSheafifiedPresentation.comparison.toAlgHom :=
+  AffineChart.AffineAATChart.sheafifiedChartRepresentability_apply
+    baseSheafifiedPresentation R a
+
+/-- The finite base representability equivalence is natural in the target algebra. -/
+theorem baseSheafifiedRepresentability_natural
+    {R : Type w} {T : Type x}
+    [CommRing R] [Algebra Int R] [CommRing T] [Algebra Int T]
+    (g : R →ₐ[Int] T) (a : rawSystem.LocalConfiguration base R) :
+    baseSheafifiedRepresentability T (a.map g) =
+      g.comp (baseSheafifiedRepresentability R a) :=
+  AffineChart.AffineAATChart.sheafifiedChartRepresentability_natural
+    baseSheafifiedPresentation g a
+
+/-- The selected coefficient ring is nontrivial. -/
+theorem coefficient_nontrivial : Nontrivial Int :=
+  coefficientNontrivial
+
+/-- The selected coordinate in the sheafified section ring of the base context. -/
+noncomputable def baseCoordinateSection :
+    SheafifiedSectionRing rawSystem base :=
+  StandardSchemeReading.baseCoordinateSection
+
+/-- The selected coordinate in the sheafified section ring of the left context. -/
+noncomputable def leftCoordinateSection :
+    SheafifiedSectionRing rawSystem RawPresheaf.left :=
+  StandardSchemeReading.leftCoordinateSection
+
+/-- The finite canonical unit on the left context is injective. -/
+theorem canonical_left_injective :
+    Function.Injective
+      (rawSystem.toRingedSite.canonical.app (op RawPresheaf.left)).right :=
+  canonicalLeftInjective
+
+/-- The actual sheafified left-to-base restriction negates the selected coordinate. -/
+theorem sheafified_leftToBase_coordinate :
+    sheafifiedRestriction rawSystem RawPresheaf.leftToBase
+        baseCoordinateSection =
+      -leftCoordinateSection := by
+  have hn := rawSystem.toRingedSite.canonical.naturality RawPresheaf.leftToBase.op
+  have ha := congrArg
+    (fun q => q.right
+      ((rawSystem.relationFamily base).quotientMap (MvPolynomial.X ()))) hn
+  calc
+    sheafifiedRestriction rawSystem RawPresheaf.leftToBase baseCoordinateSection =
+        (rawSystem.toRingedSite.canonical.app (op RawPresheaf.left)).right
+          ((rawSystem.restrictionStable RawPresheaf.leftToBase).quotientDesc
+            ((rawSystem.relationFamily base).quotientMap
+              (MvPolynomial.X ()))) := by
+          simpa only [CommRingCat.comp_apply,
+            RawAmbientRestrictionSystem.toRingedSite_raw,
+            baseCoordinateSection, StandardSchemeReading.baseCoordinateSection,
+            sheafifiedRestriction] using ha.symm
+    _ = (rawSystem.toRingedSite.canonical.app (op RawPresheaf.left)).right
+          ((rawSystem.relationFamily RawPresheaf.left).quotientMap
+            (-(MvPolynomial.X ()))) := by
+          congr 1
+          exact RawPresheaf.leftToBase_quotientDesc_X
+    _ = -leftCoordinateSection := by
+          simp only [map_neg, leftCoordinateSection,
+            StandardSchemeReading.leftCoordinateSection]
+
+/-- The actual sheafified left-to-base restriction changes the selected coordinate. -/
+theorem sheafified_leftToBase_changes_coordinate :
+    sheafifiedRestriction rawSystem RawPresheaf.leftToBase
+        baseCoordinateSection ≠
+      leftCoordinateSection := by
+  simpa only [baseCoordinateSection, leftCoordinateSection] using
+    sheafifiedLeftToBaseCoordinate_ne
+
+/-- The actual Spec transition changes the selected coordinate on global sections. -/
+theorem left_transition_changes_coordinate :
+    ((AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem base)).inv ≫
+        (architectureChartRestriction rawSystem
+          RawPresheaf.leftToBase).appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem RawPresheaf.left)).hom)
+        baseCoordinateSection ≠
+      leftCoordinateSection := by
+  intro h
+  apply sheafified_leftToBase_changes_coordinate
+  have hm :
+      (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem base)).inv ≫
+        (architectureChartRestriction rawSystem
+          RawPresheaf.leftToBase).appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem RawPresheaf.left)).hom =
+      sheafifiedRestriction rawSystem RawPresheaf.leftToBase := by
+    rw [architectureChartRestriction_appTop]
+    exact (AlgebraicGeometry.Scheme.ΓSpecIso
+      (SheafifiedSectionRing rawSystem base)).inv_hom_id_assoc _
+  have heval := congrArg (fun q => q baseCoordinateSection) hm
+  exact heval.symm.trans h
 
 /-!
 ### Finite invalid-chart witness
