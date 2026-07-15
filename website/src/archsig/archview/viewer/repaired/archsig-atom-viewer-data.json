@@ -8472,7 +8472,7 @@
         {
           "assumedBy": null,
           "assumption": "finite site",
-          "checkedBy": "archmap-schema050-validation.contexts-finite",
+          "checkedBy": "archmap-schema052-validation.contexts-finite",
           "status": "checked",
           "theoremRef": "part8/4.2"
         },
