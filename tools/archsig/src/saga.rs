@@ -360,7 +360,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
         "detectorCount": nonzero_charts.len()
     });
     let mut assumptions = vec![AgAssumptionLedgerEntryV1 {
-        theorem_ref: "part10/11.3".to_string(),
+        theorem_ref: "part3/11.3".to_string(),
         assumption: "displayedRequiredLawsHold is operationalized only by the declared holdsCriterion raw-value check".to_string(),
         status: "checked".to_string(),
         checked_by: Some(ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS.to_string()),

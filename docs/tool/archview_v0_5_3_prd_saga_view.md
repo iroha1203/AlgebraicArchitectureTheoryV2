@@ -26,10 +26,10 @@
 
 ## 背景と現状診断
 
-- v0.5.1(LawPolicy Stage 2)+ vprevious SAGA wave(SAGA 完全対応)の完了と是正全消化
+- v0.5.1(LawPolicy Stage 2)+ previous SAGA wave(SAGA 完全対応)の完了と是正全消化
   (2026-07-15 検証)により、SAGA 計測が完備した。M→V gating
   (計測が先、可視化が従)の「M」が揃い、SAGA の可視化が解禁された状態である。
-- 一方、viewer 側の SAGA 区画はゼロである。`archsig-atom-viewer-data/vprevious SAGA wave` の
+- 一方、viewer 側の SAGA 区画はゼロである。previous viewer-data contract の
   emitter(`tools/archsig/src/ag_measurement.rs`)にも viewer
   (`tools/archview/archview.html`)にも saga 系フィールドは存在しない。
   packet には実測済みの SAGA 区画(下記)が在るのに、viewer は全面沈黙している。
@@ -44,7 +44,7 @@
     incidenceBridgeKind / h1ComparisonDataKind / normalizedComplexFingerprint /
     classPrerequisite / targetClassComputed / contractChecked、status、
     conclusionCode、silence reason、whatNext)
-  - gate 段: gate report(`archsig-gate-report/vprevious SAGA wave`)の decision と
+  - gate 段: previous gate-report contract の decision と
     ruleOutcomes の appliedMapping(action = pass / pass_with_boundary / block、
     boundaryOverrideApplied)
 - Three.js の unpkg CDN 参照(`archview.html` の import map、バージョン pin 済み)は
@@ -106,7 +106,7 @@ Three.js vendoring(オフライン対応)は本波から取り下げた。理由
   contract テスト・docs・website の同期を含む。
 - **同期対象リストに CLAUDE.md / AGENTS.md の検証コマンド例を明示的に含める。**
   fixture 改名で記載コマンドが実行不能になる漏れが2回連続で起きている
-  (v0.5.1 → Issue #3328 項目3、vprevious SAGA wave → Issue #3418)。本波では
+  (v0.5.1 → Issue #3328 項目3、previous SAGA wave → Issue #3418)。本波では
   「rg で旧版数文字列ゼロ + 記載コマンドの verbatim 実行」を AC5 として固定する。
 
 ### R4 — SAGA ビュー(1シーン)
@@ -139,7 +139,7 @@ cli.rs の契約テストで固定する。
 - (d) faithfulness none(計測段以降が silence_by_design)
 
 (a) の Lean witness 帰属(3辺形 = Lean proved / 2頂点形 = 本文仕様)は
-既存の帰属注記(vprevious SAGA wave R13 で固定済み)を参照し、本波で重複記述しない。
+既存の帰属注記(previous SAGA wave R13 で固定済み)を参照し、本波で重複記述しない。
 
 ### R7 — 忠実性契約の正本更新
 
@@ -192,8 +192,9 @@ PR-1(R1 vendoring)は取り下げにより欠番とする(番号は実装 Issue 
 - **AC3**: gate report 供給時に最終段が decision と per-row action を表示し、
   未供給時は沈黙。schema 不一致は fail-closed。
 - **AC4**: 取り下げ(R1 の取り下げに伴い欠番。番号は詰めない)。
-- **AC5**: 全 schema 文字列が v0.5.3 で、旧 vprevious SAGA wave 文字列が rg でゼロ。
+- **AC5**: 全 schema 文字列が v0.5.3 で、旧世代の schema 文字列が rg でゼロ。
   CLAUDE.md / AGENTS.md の記載コマンドが verbatim で実行可能。
+  版数移行前の履歴PRD・供給台帳は履歴sourceとして保持し、現行surfaceの監査対象から除外する。
 - **AC6**: sagaDescent 区画の全 leaf が packet フィールドへの対応表を持ち、
   対応の無い leaf が契約テストで検出される(捏造ゼロの機械検査)。
 - **AC7**: 既存シーン・既存 fixture の回帰ゼロ(既存 cli テスト green)。

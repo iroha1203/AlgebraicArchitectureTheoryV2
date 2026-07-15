@@ -11676,6 +11676,12 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
     let grounded = invariant_by_id(&packet, "saga-generated-end-to-end-packet");
     assert_eq!(grounded["kind"], "saga-grounded-conclusions");
     assert_eq!(grounded["schema"], "archsig-saga-conclusions/v0.5.3");
+    assert_eq!(
+        grounded["detectorCount"].as_u64(),
+        grounded["detectorFindings"]
+            .as_array()
+            .map(|findings| findings.len() as u64)
+    );
     assert_eq!(grounded["lawDependent"]["premise"]["status"], "holds");
     assert_eq!(
         grounded["lawDependent"]["conclusions"]
@@ -11718,6 +11724,18 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
         validate_measurement_packet_value_v1(&malformed_packet)
             .iter()
             .any(|check| check.result == "fail")
+    );
+    let mut mismatched_detector_count = packet.clone();
+    invariant_by_id_mut(&mut mismatched_detector_count, "saga-generated-end-to-end-packet")["detectorCount"] = json!(99);
+    assert!(
+        validate_measurement_packet_value_v1(&mismatched_detector_count)
+            .iter()
+            .any(|check| {
+                check.result == "fail"
+                    && check.examples.iter().any(|example| {
+                        example.source.as_deref().is_some_and(|source| source.contains("detectorCount"))
+                    })
+            })
     );
     assert_eq!(
         grounded["lawIndependent"]["note"],
@@ -11767,13 +11785,13 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
     for mapping in mappings {
         let viewer_path = mapping["viewerPath"].as_str().expect("viewer path");
         let packet_path = mapping["packetPath"].as_str().expect("packet path");
-        assert!(
-            value_at_viewer_path(saga_descent_value, viewer_path).is_some(),
-            "viewer mapping must resolve: {viewer_path}"
-        );
-        assert!(
-            value_at_json_pointer(&packet, packet_path).is_some(),
-            "packet mapping must resolve: {packet_path}"
+        let viewer_value = value_at_viewer_path(saga_descent_value, viewer_path)
+            .unwrap_or_else(|| panic!("viewer mapping must resolve: {viewer_path}"));
+        let packet_value = value_at_json_pointer(&packet, packet_path)
+            .unwrap_or_else(|| panic!("packet mapping must resolve: {packet_path}"));
+        assert_eq!(
+            viewer_value, packet_value,
+            "viewer mapping must preserve the packet value: {viewer_path} <- {packet_path}"
         );
     }
     for stage in saga_descent["stages"].as_array().expect("stages") {

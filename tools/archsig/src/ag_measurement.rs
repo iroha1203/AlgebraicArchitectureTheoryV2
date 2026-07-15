@@ -12281,7 +12281,6 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             _ => continue,
         };
         let row_value = json!({
-            "rowRef": format!("structuralVerdict/{index}"),
             "evaluator": row.evaluator,
             "law": row.law,
             "verdict": row.verdict,
@@ -12304,7 +12303,6 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             format!("stages[1].rows[{row_index}]")
         };
         for field in [
-            "rowRef",
             "evaluator",
             "law",
             "verdict",
@@ -12316,9 +12314,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             "reason",
             "dependsOnAssumptions",
         ] {
-            let packet_path = if field == "rowRef" {
-                    format!("/structuralVerdict/{index}")
-                } else if field == "inScope" || field == "zero" || field == "nonZero" || field == "methodStatus" || field == "certRef" {
+            let packet_path = if field == "inScope" || field == "zero" || field == "nonZero" || field == "methodStatus" || field == "certRef" {
                     format!("/structuralVerdict/{index}/verdictData/{field}")
                 } else {
                     format!("/structuralVerdict/{index}/{field}")
@@ -12561,6 +12557,14 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         silence_rows.push(row);
     }
 
+    let grounding_status = projected_stage_status(&[&grounding_rows]);
+    let descent_status = projected_stage_status(&[
+        &descent_rows,
+        &measurement_rows,
+        &harmonic_rows,
+    ]);
+    let comparison_status = projected_stage_status(&[&comparison_rows]);
+
     json!({
         "projectionBoundary": "Every displayed value is selected from the measurement packet or its boundary statements; no viewer verdict is synthesized.",
         "sourcePacketRef": "archsig-measurement-packet.json",
@@ -12568,7 +12572,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             {
                 "stageId": "grounding",
                 "order": 0,
-                "status": if grounding_rows.is_empty() { "silence_by_design" } else { "measured" },
+                "status": grounding_status,
                 "rows": grounding_rows,
                 "measurements": [],
                 "visualRole": "grounding"
@@ -12576,7 +12580,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             {
                 "stageId": "descent",
                 "order": 1,
-                "status": if descent_rows.is_empty() && measurement_rows.is_empty() && harmonic_rows.is_empty() { "silence_by_design" } else { "measured" },
+                "status": descent_status,
                 "rows": descent_rows,
                 "measurements": measurement_rows,
                 "harmonicDebt": harmonic_rows,
@@ -12585,7 +12589,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             {
                 "stageId": "comparison",
                 "order": 2,
-                "status": comparison_rows.first().and_then(|row| row["status"].as_str()).unwrap_or("silence_by_design"),
+                "status": comparison_status,
                 "rows": comparison_rows,
                 "visualRole": "transfer-comparison"
             },
@@ -12604,6 +12608,30 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             "A missing packet field remains absent; silence_by_design remains visible as a silence row."
         ]
     })
+}
+
+fn projected_stage_status(groups: &[&[Value]]) -> &'static str {
+    let values = groups.iter().flat_map(|group| group.iter()).collect::<Vec<_>>();
+    if values.is_empty() {
+        return "silence_by_design";
+    }
+    let statuses = values
+        .iter()
+        .filter_map(|value| value["status"].as_str().or_else(|| value["verdict"].as_str()))
+        .collect::<Vec<_>>();
+    if statuses.is_empty() {
+        return "measured";
+    }
+    if statuses.iter().all(|status| *status == "silence_by_design") {
+        return "silence_by_design";
+    }
+    if statuses
+        .iter()
+        .all(|status| *status == "not_computed" || *status == "silence_by_design")
+    {
+        return "not_computed";
+    }
+    "measured"
 }
 
 fn append_leaf_field_mappings(
@@ -13162,6 +13190,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "degreeZeroLawContribution",
         "generatedQuotient",
         "detectorFindings",
+        "detectorCount",
         "detectorCount",
         "harmonicDebtNorm",
         "essentialRepairLowerBound",
@@ -14079,6 +14108,21 @@ fn validate_saga_grounded_packet_shape(
             &format!("{label}.schema"),
             invariant["schema"].as_str().unwrap_or("missing"),
             "saga-grounded packet schema must be archsig-saga-conclusions/v0.5.3",
+        ));
+    }
+    let detector_findings = invariant["detectorFindings"].as_array();
+    let detector_count = invariant["detectorCount"].as_u64();
+    if detector_count.is_none() {
+        examples.push(generic_validation_example(
+            &format!("{label}.detectorCount"),
+            "missing-or-non-integer",
+            "saga-grounded detectorCount must be a non-negative integer",
+        ));
+    } else if detector_findings.is_some_and(|findings| detector_count != Some(findings.len() as u64)) {
+        examples.push(generic_validation_example(
+            &format!("{label}.detectorCount"),
+            &detector_count.unwrap_or_default().to_string(),
+            "saga-grounded detectorCount must equal detectorFindings length",
         ));
     }
     for (section, expected) in [
