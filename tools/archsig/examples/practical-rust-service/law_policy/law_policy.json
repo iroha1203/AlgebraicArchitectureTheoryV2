@@ -1,5 +1,5 @@
 {
-  "schema": "law-policy/v0.5.2",
+  "schema": "law-policy/v0.5.3",
   "id": "practical-rust-commerce-fulfillment-policy",
   "lawSurfaceRef": "law-surface:practical-rust-v052",
   "measurementProfileRef": "profile:commerce-fulfillment@1",

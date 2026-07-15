@@ -43,7 +43,7 @@ Do not translate evidence into witness rules, signature axes, coverage
 requirements, exactness assumptions, or distance profiles. Those are law-equation-surface
 and evaluator registry responsibilities in the current surface. For AG, put selected cover, coefficient,
 resolution selector, predicates, certificate selector, and
-verdict discipline in the separate `measurement-profile/v0.5.2` artifact.
+verdict discipline in the separate `measurement-profile/v0.5.3` artifact.
 
 ## Survey Output
 

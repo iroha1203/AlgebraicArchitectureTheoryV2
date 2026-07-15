@@ -67,7 +67,7 @@ pub fn static_signature_trajectory_report() -> SignatureTrajectoryReportV0 {
     let archsig_measurement_ref = artifact_ref(
         "archsig-measurement-packet",
         "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
-        Some("archsig-measurement-packet/v0.5.2"),
+        Some("archsig-measurement-packet/v0.5.3"),
         Some("archsig-measurement-fixture"),
     );
     let drift_ref = artifact_ref(

@@ -41,7 +41,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
     let manifest = read_json(&root.join("archsig_viewer_gluing_geometry_golden_ux.json"));
     assert_eq!(
         manifest["schema"],
-        "archsig-viewer-gluing-geometry-golden-ux/v0.5.2"
+        "archsig-viewer-gluing-geometry-golden-ux/v0.5.3"
     );
     assert_eq!(manifest["cases"].as_array().map(Vec::len), Some(5));
 
@@ -140,7 +140,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
         let report = read_json(&out_dir.join("archsig-insight-report.json"));
         let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
         let gluing = &report["gluingGeometry"];
-        assert_eq!(gluing["schema"], "archsig-viewer-gluing-geometry/v0.5.2");
+        assert_eq!(gluing["schema"], "archsig-viewer-gluing-geometry/v0.5.3");
         assert_eq!(viewer["aatGeometryOverlays"]["gluingGeometry"], *gluing);
         assert!(viewer["aatGeometryOverlays"]["omittedGeometryCounts"].is_object());
 

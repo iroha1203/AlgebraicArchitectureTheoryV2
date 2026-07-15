@@ -1,5 +1,5 @@
 {
-  "schema": "archmap-source-inventory/v0.5.2",
+  "schema": "archmap-source-inventory/v0.5.3",
   "inventoryId": "practical-rust-commerce-fulfillment-source-inventory",
   "sources": [
     {
@@ -104,6 +104,6 @@
   ],
   "nonConclusions": [
     "Inventory lists the bounded source universe used by this demo ArchMap; it is not a repository-wide source extraction proof.",
-    "Atom kinds are limited to the AAT atom vocabulary accepted by archmap/v0.5.2 validation."
+    "Atom kinds are limited to the AAT atom vocabulary accepted by archmap/v0.5.3 validation."
   ]
 }

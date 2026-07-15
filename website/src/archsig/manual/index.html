@@ -71,7 +71,7 @@
             </section>
             <section id="packet" class="article-section">
               <h2>The measurement packet</h2>
-              <p><code>archsig-measurement-packet.json</code> (<code>archsig-measurement-packet/v0.5.2</code>) is the artifact everything else summarizes, and the handoff FieldSig reads. Its load-bearing sections include <code>componentFingerprints</code>, which records the exact LawPolicy, law surface, and MeasurementProfile selected by the bundle.</p>
+              <p><code>archsig-measurement-packet.json</code> (<code>archsig-measurement-packet/v0.5.3</code>) is the artifact everything else summarizes, and the handoff FieldSig reads. Its load-bearing sections include <code>componentFingerprints</code>, which records the exact LawPolicy, law surface, and MeasurementProfile selected by the bundle.</p>
               <ul class="status-list">
                 <li><strong><code>structuralVerdict[]</code></strong><span>One row per selected evaluator: the five-valued verdict, the certificate ref behind it, the law it checked, and <code>dependsOnAssumptions</code> — which assumption-ledger entries this row's validity rides on.</span></li>
                 <li><strong><code>computedInvariants[]</code></strong><span>The concrete mathematical objects: ranks, class supports, spectra, forbidden supports, hitting sets. This is where a nonzero verdict names its evidence.</span></li>

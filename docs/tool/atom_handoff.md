@@ -20,7 +20,7 @@ source artifacts
 - LawPolicy selects evaluator ids, basis refs, scope, and severity.
 - MeasurementProfile selects coefficient, cover, resolution selector, and verdict
   discipline. Witness variables are supplied by the referenced law-equation-surface.
-- ArchSig validates inputs and emits `archsig-measurement-packet/v0.5.2`,
+- ArchSig validates inputs and emits `archsig-measurement-packet/v0.5.3`,
   summary, viewer data, and run manifest.
 
 ## Lean AAT Surface

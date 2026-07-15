@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-example-runtime-trace/v0.5.2",
+  "schema": "archsig-example-runtime-trace/v0.5.3",
   "traceId": "runtime-trace:reservation-exhaustion",
   "scenario": "a second reservation for the same SKU observes stock consumed by the first and is rejected",
   "sourceRefs": [

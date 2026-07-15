@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-gate-policy/v0.5.2",
+  "schema": "archsig-gate-policy/v0.5.3",
   "policyId": "gate-policy:commerce-fulfillment-ci@1",
   "rules": [
     {

@@ -79,7 +79,7 @@ pub fn build_repair_plan_validation_report_v1(
     let failed_check_count = checks.iter().filter(|check| check.result == "fail").count();
     let warning_check_count = checks.iter().filter(|check| check.result == "warn").count();
     serde_json::json!({
-        "schema": "archsig-repair-plan-validation-report/v0.5.2",
+        "schema": "archsig-repair-plan-validation-report/v0.5.3",
         "input": {
             "schema": plan.schema,
             "path": input_path,
@@ -274,7 +274,7 @@ mod tests {
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
         "repair-plan-schema052-schema",
-        "RepairPlan uses the v0.5.2 schema discriminator",
+        "RepairPlan uses the v0.5.3 schema discriminator",
         if plan.schema == ARCHSIG_REPAIR_PLAN_V1_SCHEMA {
             "pass"
         } else {
@@ -649,7 +649,7 @@ fn check_supplied_slots(
                             match kind {
                                 Some("identity") => {
                                     h1.get("schema").and_then(Value::as_str)
-                                        == Some("h1-comparison-data/v0.5.2")
+                                        == Some("h1-comparison-data/v0.5.3")
                                         && fingerprints_ok
                                         && target_fingerprint.as_deref()
                                             == Some(source_complex_fingerprint.as_str())
@@ -659,7 +659,7 @@ fn check_supplied_slots(
                                 }
                                 Some("explicit") => {
                                     h1.get("schema").and_then(Value::as_str)
-                                        == Some("h1-comparison-data/v0.5.2")
+                                        == Some("h1-comparison-data/v0.5.3")
                                         && fingerprints_ok
                                         && h1.get("cochainMapRef").and_then(Value::as_str)
                                             == Some(COMPARISON_COCHAIN_MAP_REF)

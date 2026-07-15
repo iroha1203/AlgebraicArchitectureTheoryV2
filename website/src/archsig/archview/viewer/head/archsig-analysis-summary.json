@@ -42,7 +42,7 @@
     "insightReport": "archsig-insight-report.json",
     "viewerData": "archsig-atom-viewer-data.json"
   },
-  "measurementPacketSchema": "archsig-measurement-packet/v0.5.2",
+  "measurementPacketSchema": "archsig-measurement-packet/v0.5.3",
   "nonConclusions": [
     "Summary conclusion is relative to MeasurementProfile and assumption ledger.",
     "Schema foundation rows do not claim completed AG invariant computation."
@@ -57,7 +57,7 @@
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
   "runId": "run:02000103301e",
-  "schema": "archsig-analysis-summary/v0.5.2",
+  "schema": "archsig-analysis-summary/v0.5.3",
   "structuralVerdictSummary": {
     "measuredNonzeroCount": 1,
     "nonTerminalCount": 0,

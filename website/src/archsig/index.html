@@ -2,7 +2,7 @@
 {
   "layout": "base.njk",
   "title": "ArchSig — Measured Architecture Analysis",
-  "description": "ArchSig v0.5.2 measures whether locally correct modules still glue into a consistent whole. Run it through LLM Skills or the CLI, block bad PRs in CI, and see the result in ArchView.",
+  "description": "ArchSig v0.5.3 measures whether locally correct modules still glue into a consistent whole. Run it through LLM Skills or the CLI, block bad PRs in CI, and see the result in ArchView.",
   "order": 36,
   "llmsLabel": "ArchSig overview",
   "navSection": "archsig"
@@ -12,7 +12,7 @@
       <section class="article-hero section-band">
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Home</a><span>ArchSig</span></nav>
-          <p class="hero-version-badge">ArchSig v0.5.2</p>
+          <p class="hero-version-badge">ArchSig v0.5.3</p>
           <p class="eyebrow">Architecture measurement for fast-moving code</p>
           <h1>Every module is correct. The system still overcharges by one cent.</h1>
           <p class="lede">ArchSig measures the one thing file-by-file review cannot see: whether a set of individually correct modules still glues into a consistent whole. It reads declared evidence, computes a bounded verdict, and blocks the PR in CI with the exact modules that carry the mismatch.</p>
@@ -52,11 +52,11 @@
               <h2>Five Skills: the agent operates, you supervise</h2>
               <p>ArchSig is Skill-first: the primary operator is an LLM agent, and the release bundle ships the Skill documents the agent follows. You do not need to learn the input schemas — you ask for an analysis, approve the scope, and read the returned findings.</p>
               <ul class="status-list">
-                <li><strong><code>archmap-creater</code></strong><span>Surveys your repository in two independent passes and builds a source-grounded <code>archmap/v0.5.2</code> evidence file, with a scope manifest you approve first.</span></li>
-                <li><strong><code>law-policy-creater</code></strong><span>Selects evaluators from the registry, authors <code>law-policy/v0.5.2</code>, <code>law-equation-surface/v0.5.2</code>, and <code>measurement-profile/v0.5.2</code>, then fixes them with an <code>archsig-policy-bundle/v0.5.2</code>. If evidence does not justify a selector, it asks instead of guessing.</span></li>
+                <li><strong><code>archmap-creater</code></strong><span>Surveys your repository in two independent passes and builds a source-grounded <code>archmap/v0.5.3</code> evidence file, with a scope manifest you approve first.</span></li>
+                <li><strong><code>law-policy-creater</code></strong><span>Selects evaluators from the registry, authors <code>law-policy/v0.5.3</code>, <code>law-equation-surface/v0.5.3</code>, and <code>measurement-profile/v0.5.3</code>, then fixes them with an <code>archsig-policy-bundle/v0.5.3</code>. If evidence does not justify a selector, it asks instead of guessing.</span></li>
                 <li><strong><code>archsig-reader</code></strong><span>Runs <code>analyze</code>, reads every output artifact, checks the cited source, and returns bounded review findings.</span></li>
                 <li><strong><code>archsig-pr-reviewer</code></strong><span>Runs base/head measurement, <code>compare</code>, and <code>gate</code>, then turns the result into source-first review questions for the PR.</span></li>
-                <li><strong><code>repair-plan-creater</code></strong><span>Authors <code>archsig-repair-plan/v0.5.2</code> artifacts for SAGA descent runs — the measured path from "blocked" to "repaired".</span></li>
+                <li><strong><code>repair-plan-creater</code></strong><span>Authors <code>archsig-repair-plan/v0.5.3</code> artifacts for SAGA descent runs — the measured path from "blocked" to "repaired".</span></li>
               </ul>
               <figure class="code-panel">
                 <figcaption>Skill request shape</figcaption>
@@ -81,7 +81,7 @@ Return findings with code refs and repair candidates.</code></pre>
               <h2>Install</h2>
               <p>Download the release bundle for your platform, or build from source. The bundle ships the CLI, the five Skills, the command docs, and ArchView.</p>
               <figure class="code-panel">
-                <figcaption>Release bundle layout (archsig-v0.5.2-&lt;platform&gt;.tar.gz)</figcaption>
+                <figcaption>Release bundle layout (archsig-v0.5.3-&lt;platform&gt;.tar.gz)</figcaption>
                 <pre><code>bin/archsig          # the CLI
 skills/              # the five Skill documents your agent follows
 docs/                # commands.md, artifacts-and-boundaries.md

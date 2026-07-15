@@ -1,5 +1,5 @@
 {
-  "schema": "ag-circle-nerve-fixture/v0.5.2",
+  "schema": "ag-circle-nerve-fixture/v0.5.3",
   "id": "ag-measurement-circle-nerve-two-vertex-body",
   "provenance": {
     "kind": "body-worked-example",

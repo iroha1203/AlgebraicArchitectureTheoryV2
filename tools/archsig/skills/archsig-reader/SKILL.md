@@ -27,5 +27,5 @@ Use this skill to read current `archsig analyze` output.
 
 - Read `lawDependent` conclusions from the holdsCriterion raw-value premise; read `lawIndependent` conclusions as separate outputs without turning them into law evidence.
 - Read `harmonicDebtNorm` as an analytic measurement; read `essentialRepairLowerBound` only when the cost model is supplied.
-- Read `VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR` only with the validated `refactor-morphism/v0.5.2` artifact; no morphism artifact means no transport reading.
+- Read `VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR` only with the validated `refactor-morphism/v0.5.3` artifact; no morphism artifact means no transport reading.
 - Read `TWO_PROFILES_REPORTED_SEPARATELY` as a comparison record; do not turn separate profiles into a shared class claim.

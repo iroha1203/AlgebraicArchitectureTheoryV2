@@ -1,5 +1,5 @@
 {
-  "schema": "aat-atom-vocabulary-binding/v0.5.2",
+  "schema": "aat-atom-vocabulary-binding/v0.5.3",
   "id": "aat-atom-vocabulary-binding",
   "axes": ["cech", "square-free", "section-factorization", "laplacian", "period", "transfer"],
   "predicates": ["support", "cooccurrence", "sectionValue", "cellularCochain", "periodIntegral", "transferPairing"],
