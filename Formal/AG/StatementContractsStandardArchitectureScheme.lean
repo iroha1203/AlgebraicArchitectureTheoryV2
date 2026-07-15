@@ -1,14 +1,15 @@
+import Formal.AG.LawAlgebra.AffineChart
 import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 
 /-!
 Executable statement contracts for the standard architecture scheme core.
 
-This file directly checks the fixed SD0--SD6 signatures and the SD8 finite
+This file directly checks the fixed SD0--SD7 signatures and the SD8 finite
 positive and negative witnesses from
 `aat_lean_02_standard_architecture_scheme_prd.md` against their implementation
 declarations.  It contains elaboration examples only and introduces no new
 mathematical declarations.  Later PRD slices extend the same contract surface
-with the remaining fixed SD7--SD8 signatures.
+with the remaining fixed SD8 signatures.
 -/
 
 noncomputable section
@@ -1043,6 +1044,149 @@ example (W : S.category)
     (StandardArchitectureScheme.singleAffine raw W).overlaps
     (StandardArchitectureScheme.singleAffine raw W).overlapsValid
     i j l
+
+/-! SD7 contracts for generic and canonical sheafified representability. -/
+
+variable {Wctx : Site.ArchitectureContext A} {F : CoordinateFamily Wctx}
+
+example (relations : StructuralRelationFamily F k)
+    (R : Type w) [CommRing R] [Algebra k R] : Type _ :=
+  relations.Configuration R
+
+example {relations : StructuralRelationFamily F k}
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (a : relations.Configuration R) (g : R →ₐ[k] T) :
+    relations.Configuration T :=
+  StructuralRelationFamily.Configuration.map a g
+
+example (relations : StructuralRelationFamily F k)
+    (R : Type w) [CommRing R] [Algebra k R] :
+    relations.Configuration R ≃
+      (relations.RawAmbientLawAlgebra →ₐ[k] R) :=
+  relations.configurationRepresentability R
+
+example {relations : StructuralRelationFamily F k}
+    {R : Type w} [CommRing R] [Algebra k R]
+    (a : relations.Configuration R) :
+    a.map (AlgHom.id k R) = a :=
+  StructuralRelationFamily.Configuration.map_id a
+
+example {relations : StructuralRelationFamily F k}
+    {R : Type w} {T : Type x} {Q : Type*}
+    [CommRing R] [Algebra k R] [CommRing T] [Algebra k T]
+    [CommRing Q] [Algebra k Q]
+    (a : relations.Configuration R)
+    (g : R →ₐ[k] T) (h : T →ₐ[k] Q) :
+    (a.map g).map h = a.map (h.comp g) :=
+  StructuralRelationFamily.Configuration.map_comp a g h
+
+example (relations : StructuralRelationFamily F k)
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (g : R →ₐ[k] T) (a : relations.Configuration R) :
+    relations.configurationRepresentability T (a.map g) =
+      g.comp (relations.configurationRepresentability R a) :=
+  relations.configurationRepresentability_natural g a
+
+example (W : S.category) (R : Type w) [CommRing R] [Algebra k R] : Type _ :=
+  raw.LocalConfiguration W R
+
+example {W : S.category}
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (a : raw.LocalConfiguration W R) (g : R →ₐ[k] T) :
+    raw.LocalConfiguration W T :=
+  RawAmbientRestrictionSystem.LocalConfiguration.map a g
+
+example (W : S.category) (R : Type w) [CommRing R] [Algebra k R] :
+    raw.LocalConfiguration W R ≃ (raw.rawAlgebra W →ₐ[k] R) :=
+  raw.localConfigurationRepresentability W R
+
+example {W : S.category} {R : Type w} [CommRing R] [Algebra k R]
+    (a : raw.LocalConfiguration W R) :
+    a.map (AlgHom.id k R) = a :=
+  RawAmbientRestrictionSystem.LocalConfiguration.map_id a
+
+example {W : S.category}
+    {R : Type w} {T : Type x} {Q : Type*}
+    [CommRing R] [Algebra k R] [CommRing T] [Algebra k T]
+    [CommRing Q] [Algebra k Q]
+    (a : raw.LocalConfiguration W R)
+    (g : R →ₐ[k] T) (h : T →ₐ[k] Q) :
+    (a.map g).map h = a.map (h.comp g) :=
+  RawAmbientRestrictionSystem.LocalConfiguration.map_comp a g h
+
+example (W : S.category)
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (g : R →ₐ[k] T) (a : raw.LocalConfiguration W R) :
+    raw.localConfigurationRepresentability W T (a.map g) =
+      g.comp (raw.localConfigurationRepresentability W R a) :=
+  raw.localConfigurationRepresentability_natural W g a
+
+variable {C : AffineChart.AffineAATChart k}
+variable (P : AffineChart.AffineAATChart.RawAffinePresentation k F C)
+
+example (R : Type w) [CommRing R] [Algebra k R] : Type _ :=
+  P.hWUConfiguration R
+
+example (R : Type w) [CommRing R] [Algebra k R] :
+    P.hWUConfiguration R ≃
+      (P.relations.RawAmbientLawAlgebra →ₐ[k] R) :=
+  P.rawQuotientRepresentability R
+
+example (R : Type w) [CommRing R] [Algebra k R] :
+    P.rawQuotientRepresentability R =
+      P.relations.configurationRepresentability R :=
+  P.rawQuotientRepresentability_eq_generic R
+
+example (W : S.category) : Prop :=
+  AffineChart.AffineAATChart.SheafifiedChartPresentation raw W
+
+example {W : S.category}
+    (P : AffineChart.AffineAATChart.SheafifiedChartPresentation raw W) :
+    SheafifiedSectionRing raw W ≃ₐ[k] raw.rawAlgebra W :=
+  P.comparison
+
+example {W : S.category}
+    (P : AffineChart.AffineAATChart.SheafifiedChartPresentation raw W) :
+    P.comparison.symm.toAlgHom = sheafificationUnitAlgHom raw W :=
+  P.comparison_symm_toAlgHom
+
+example {W : S.category}
+    (P : AffineChart.AffineAATChart.SheafifiedChartPresentation raw W)
+    (R : Type w) [CommRing R] [Algebra k R] :
+    raw.LocalConfiguration W R ≃
+      (SheafifiedSectionRing raw W →ₐ[k] R) :=
+  AffineChart.AffineAATChart.sheafifiedChartRepresentability P R
+
+example {W : S.category}
+    (P : AffineChart.AffineAATChart.SheafifiedChartPresentation raw W)
+    (R : Type w) [CommRing R] [Algebra k R]
+    (a : raw.LocalConfiguration W R) :
+    AffineChart.AffineAATChart.sheafifiedChartRepresentability P R a =
+      (raw.localConfigurationRepresentability W R a).comp
+        P.comparison.toAlgHom :=
+  AffineChart.AffineAATChart.sheafifiedChartRepresentability_apply P R a
+
+example {W : S.category}
+    (P : AffineChart.AffineAATChart.SheafifiedChartPresentation raw W)
+    (R : Type w) [CommRing R] [Algebra k R]
+    (f : SheafifiedSectionRing raw W →ₐ[k] R) :
+    (AffineChart.AffineAATChart.sheafifiedChartRepresentability P R).symm f =
+      (raw.localConfigurationRepresentability W R).symm
+        (f.comp P.comparison.symm.toAlgHom) :=
+  AffineChart.AffineAATChart.sheafifiedChartRepresentability_symm_apply P R f
+
+example {W : S.category}
+    (P : AffineChart.AffineAATChart.SheafifiedChartPresentation raw W)
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (g : R →ₐ[k] T) (a : raw.LocalConfiguration W R) :
+    AffineChart.AffineAATChart.sheafifiedChartRepresentability P T (a.map g) =
+      g.comp (AffineChart.AffineAATChart.sheafifiedChartRepresentability P R a) :=
+  AffineChart.AffineAATChart.sheafifiedChartRepresentability_natural P g a
 
 namespace FiniteExamples.StandardArchitectureScheme
 

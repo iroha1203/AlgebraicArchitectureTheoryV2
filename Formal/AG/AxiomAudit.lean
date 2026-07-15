@@ -3,6 +3,7 @@ import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.Examples.SingularityMonodromyStackPart6
+import Formal.AG.LawAlgebra.AffineChart
 import Formal.AG.LawAlgebra.FiniteExamples
 import Formal.AG.LawAlgebra.RawPresheafFiniteExample
 import Formal.AG.LawAlgebra.RingedSiteFiniteExample
@@ -2731,6 +2732,96 @@ def standardSchemeCoreSingleAffineIndexEq :=
 /-- Audit alias for normalization of the single-affine chart map. -/
 def standardSchemeCoreSingleAffineChartMap :=
   @LawAlgebra.StandardArchitectureScheme.singleAffine_chart_map
+
+/-! SD7 generic and canonical sheafified representability. -/
+
+/-- Audit alias for generic structural configurations. -/
+noncomputable def standardSchemeR8Configuration :=
+  @LawAlgebra.StructuralRelationFamily.Configuration
+
+/-- Audit alias for mapping generic configurations. -/
+noncomputable def standardSchemeR8ConfigurationMap :=
+  @LawAlgebra.StructuralRelationFamily.Configuration.map
+
+/-- Audit alias for the unique generic raw-quotient representability proof. -/
+noncomputable def standardSchemeR8ConfigurationRepresentability :=
+  @LawAlgebra.StructuralRelationFamily.configurationRepresentability
+
+/-- Audit alias for the identity law of configuration mapping. -/
+noncomputable def standardSchemeR8ConfigurationMapId :=
+  @LawAlgebra.StructuralRelationFamily.Configuration.map_id
+
+/-- Audit alias for the composition law of configuration mapping. -/
+noncomputable def standardSchemeR8ConfigurationMapComp :=
+  @LawAlgebra.StructuralRelationFamily.Configuration.map_comp
+
+/-- Audit alias for naturality of generic representability. -/
+noncomputable def standardSchemeR8ConfigurationRepresentabilityNatural :=
+  @LawAlgebra.StructuralRelationFamily.configurationRepresentability_natural
+
+/-- Audit alias for objectwise local configurations. -/
+noncomputable def standardSchemeR8LocalConfiguration :=
+  @LawAlgebra.RawAmbientRestrictionSystem.LocalConfiguration
+
+/-- Audit alias for mapping objectwise local configurations. -/
+noncomputable def standardSchemeR8LocalConfigurationMap :=
+  @LawAlgebra.RawAmbientRestrictionSystem.LocalConfiguration.map
+
+/-- Audit alias for objectwise local representability. -/
+noncomputable def standardSchemeR8LocalConfigurationRepresentability :=
+  @LawAlgebra.RawAmbientRestrictionSystem.localConfigurationRepresentability
+
+/-- Audit alias for the identity law of local configuration mapping. -/
+noncomputable def standardSchemeR8LocalConfigurationMapId :=
+  @LawAlgebra.RawAmbientRestrictionSystem.LocalConfiguration.map_id
+
+/-- Audit alias for the composition law of local configuration mapping. -/
+noncomputable def standardSchemeR8LocalConfigurationMapComp :=
+  @LawAlgebra.RawAmbientRestrictionSystem.LocalConfiguration.map_comp
+
+/-- Audit alias for naturality of local representability. -/
+noncomputable def standardSchemeR8LocalConfigurationRepresentabilityNatural :=
+  @LawAlgebra.RawAmbientRestrictionSystem.localConfigurationRepresentability_natural
+
+/-- Audit alias for the legacy raw configuration type delegated to the generic core. -/
+noncomputable def standardSchemeR8RawPresentationConfiguration :=
+  @LawAlgebra.AffineChart.AffineAATChart.RawAffinePresentation.hWUConfiguration
+
+/-- Audit alias for legacy raw representability delegated to the generic core. -/
+noncomputable def standardSchemeR8RawQuotientRepresentability :=
+  @LawAlgebra.AffineChart.AffineAATChart.RawAffinePresentation.rawQuotientRepresentability
+
+/-- Audit alias identifying legacy raw representability with the generic core. -/
+noncomputable def standardSchemeR8RawQuotientRepresentabilityEqGeneric :=
+  @LawAlgebra.AffineChart.AffineAATChart.RawAffinePresentation.rawQuotientRepresentability_eq_generic
+
+/-- Audit alias for canonical sheafification-unit presentations. -/
+noncomputable def standardSchemeR8SheafifiedChartPresentation :=
+  @LawAlgebra.AffineChart.AffineAATChart.SheafifiedChartPresentation
+
+/-- Audit alias for the canonical-unit-derived comparison. -/
+noncomputable def standardSchemeR8SheafifiedComparison :=
+  @LawAlgebra.AffineChart.AffineAATChart.SheafifiedChartPresentation.comparison
+
+/-- Audit alias fixing the inverse comparison to the canonical unit. -/
+noncomputable def standardSchemeR8SheafifiedComparisonSymm :=
+  @LawAlgebra.AffineChart.AffineAATChart.SheafifiedChartPresentation.comparison_symm_toAlgHom
+
+/-- Audit alias for sheafified chart representability. -/
+noncomputable def standardSchemeR8SheafifiedChartRepresentability :=
+  @LawAlgebra.AffineChart.AffineAATChart.sheafifiedChartRepresentability
+
+/-- Audit alias for forward sheafified representability. -/
+noncomputable def standardSchemeR8SheafifiedChartRepresentabilityApply :=
+  @LawAlgebra.AffineChart.AffineAATChart.sheafifiedChartRepresentability_apply
+
+/-- Audit alias for inverse sheafified representability. -/
+noncomputable def standardSchemeR8SheafifiedChartRepresentabilitySymmApply :=
+  @LawAlgebra.AffineChart.AffineAATChart.sheafifiedChartRepresentability_symm_apply
+
+/-- Audit alias for naturality of sheafified representability. -/
+noncomputable def standardSchemeR8SheafifiedChartRepresentabilityNatural :=
+  @LawAlgebra.AffineChart.AffineAATChart.sheafifiedChartRepresentability_natural
 
 /-! Finite negative instance for reading preservation. -/
 

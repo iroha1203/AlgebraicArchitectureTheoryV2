@@ -9,7 +9,7 @@ import Mathlib.CategoryTheory.Sites.Whiskering
 namespace AAT.AG
 namespace LawAlgebra
 
-universe u v
+universe u v w x
 
 noncomputable section
 
@@ -93,6 +93,79 @@ abbrev rawAlgebra {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (B : RawAmbientRestrictionSystem S k) (W : S.category) :
     Type (max u v) :=
   (B.relationFamily W).RawAmbientLawAlgebra
+
+/-! ### SD7 objectwise configuration representability -/
+
+/--
+SD7 / Definition 8.2: configurations on a selected site object.
+
+This is the direct objectwise specialization of `StructuralRelationFamily.Configuration`; it does
+not reconstruct a site object from a legacy presentation or introduce a second quotient proof.
+-/
+def LocalConfiguration {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k) (W : S.category)
+    (R : Type w) [CommRing R] [Algebra k R] :=
+  (raw.relationFamily W).Configuration R
+
+namespace LocalConfiguration
+
+/-- SD7 objectwise action of a target algebra morphism. -/
+def map {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k} {W : S.category}
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (a : raw.LocalConfiguration W R) (g : R →ₐ[k] T) :
+    raw.LocalConfiguration W T :=
+  StructuralRelationFamily.Configuration.map a g
+
+/-- SD7 objectwise configuration mapping preserves identity. -/
+@[simp] theorem map_id {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k} {W : S.category}
+    {R : Type w} [CommRing R] [Algebra k R]
+    (a : raw.LocalConfiguration W R) :
+    a.map (AlgHom.id k R) = a :=
+  StructuralRelationFamily.Configuration.map_id a
+
+/-- SD7 objectwise configuration maps compose covariantly. -/
+@[simp] theorem map_comp {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k} {W : S.category}
+    {R : Type w} {T : Type x} {Q : Type*}
+    [CommRing R] [Algebra k R] [CommRing T] [Algebra k T]
+    [CommRing Q] [Algebra k Q]
+    (a : raw.LocalConfiguration W R)
+    (g : R →ₐ[k] T) (h : T →ₐ[k] Q) :
+    (a.map g).map h = a.map (h.comp g) :=
+  StructuralRelationFamily.Configuration.map_comp a g h
+
+end LocalConfiguration
+
+/--
+SD7 / Theorem 8.3: objectwise representability, obtained by applying the unique generic core to
+`raw.relationFamily W`.
+-/
+def localConfigurationRepresentability
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k) (W : S.category)
+    (R : Type w) [CommRing R] [Algebra k R] :
+    raw.LocalConfiguration W R ≃ (raw.rawAlgebra W →ₐ[k] R) :=
+  (raw.relationFamily W).configurationRepresentability R
+
+/-- SD7 objectwise naturality, delegated to the generic relation-family theorem. -/
+theorem localConfigurationRepresentability_natural
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k) (W : S.category)
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (g : R →ₐ[k] T) (a : raw.LocalConfiguration W R) :
+    raw.localConfigurationRepresentability W T (a.map g) =
+      g.comp (raw.localConfigurationRepresentability W R a) :=
+  (raw.relationFamily W).configurationRepresentability_natural g a
 
 end RawAmbientRestrictionSystem
 
