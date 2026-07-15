@@ -250,6 +250,8 @@
       <button class="bare" id="reset-cam">Reset view</button>
       <a class="filelabel"><button class="bare" id="open-file">Open data…</button></a>
       <input id="file" type="file" accept="application/json,.json" />
+      <a class="filelabel"><button class="bare" id="open-gate-file">Open gate report…</button></a>
+      <input id="gate-file" type="file" accept="application/json,.json" />
       <button class="bare" id="how-to-read-toggle">How to read</button>
       <button class="bare" id="report-toggle">Report</button>
     </div>
@@ -588,7 +590,7 @@ const pickables = []; // {mesh, info}
 const EXPECTED_VIEWER_SCHEMA = "archsig-atom-viewer-data/v0.5.3";
 let MODEL = null;     // parsed model
 let DATA = null;      // raw viewer data
-let COMPANIONS = { summary: null, manifest: null };
+let COMPANIONS = { summary: null, manifest: null, gate: null, gateError: null };
 
 /* ---- label sprites ------------------------------------------------------- */
 function makeLabel(text, { color = "#cdd9ec", scale = 1, bg = "rgba(8,12,20,0.55)" } = {}) {
@@ -784,6 +786,7 @@ function buildModel(data) {
     boundary: (ov.projectionBoundary || ""),
     insights, anchorByAtom, toursByInsight, emittedScenes, copyBlocks: data.copyBlocks || {},
     saga: data.sagaDescent || null,
+    gate: COMPANIONS.gate || null,
   };
 }
 function firstOverlay(arr) { return Array.isArray(arr) && arr.length ? arr[0] : null; }
@@ -1183,8 +1186,29 @@ function sagaWhatNext(stage, saga = null) {
   }
   return candidates.find((text) => typeof text === "string" && text.trim()) || "";
 }
+function gateActions(gate) {
+  return (gate?.ruleOutcomes || []).flatMap((outcome) => outcome?.appliedMapping || [])
+    .map((row) => ({
+      rowRef: row.rowRef || row.rowKey || "unknown-row",
+      action: row.action,
+      boundaryOverrideApplied: row.boundaryOverrideApplied === true,
+    }));
+}
+function publishGateState() {
+  const actions = MODEL?.gate ? gateActions(MODEL.gate) : [];
+  window.__archviewGateState = {
+    supplied: Boolean(MODEL?.gate),
+    decision: MODEL?.gate?.decision || null,
+    actions,
+    label: MODEL?.gate
+      ? `gate: ${MODEL.gate.decision} · ${actions.map((row) => `${row.action}${row.boundaryOverrideApplied ? "*" : ""}`).join(", ") || "no per-row actions"}`
+      : null,
+    error: COMPANIONS.gateError || null,
+  };
+}
 function buildSagaDescent() {
   const saga = MODEL.saga;
+  publishGateState();
   const expected = [
     ["grounding", "grounding"],
     ["descent", "descent-measurement"],
@@ -1239,6 +1263,18 @@ function buildSagaDescent() {
       nextLabel.position.set(center.x, center.y - 10, center.z);
       stageGroup.add(nextLabel);
     }
+    if (index === 3 && MODEL.gate) {
+      const actions = gateActions(MODEL.gate);
+      const actionText = actions.length
+        ? actions.map((row) => `${row.action}${row.boundaryOverrideApplied ? "*" : ""}`).join(", ")
+        : "no per-row actions";
+      const gateLabel = makeLabel(
+        `gate: ${MODEL.gate.decision} · ${actionText}`,
+        { color: MODEL.gate.decision === "BLOCKED_BY_GATE_POLICY" ? hex(COL.nonzero) : hex(COL.zero), scale: 0.34, bg: "rgba(8,12,20,0.78)" },
+      );
+      gateLabel.position.set(center.x, center.y - 14, center.z);
+      stageGroup.add(gateLabel);
+    }
     stageGroup.userData.stageId = stage.stageId;
     stageGroup.userData.degree = layout.degree;
     G.saga.add(stageGroup);
@@ -1258,6 +1294,9 @@ function buildSagaDescent() {
     stageStatuses: stages.map((stage) => stage.status || "not_computed"),
     renderedStageCount: G.saga.children.filter((child) => child.userData.stageId).length,
   };
+  if (COMPANIONS.gateError) {
+    document.getElementById("st-boundary").textContent = `Gate report rejected: ${COMPANIONS.gateError}`;
+  }
 }
 
 // base-space patches: a context is an open set of the measured cover, drawn as
@@ -2117,7 +2156,9 @@ function noteSilence(id) {
     { silent = true; msg = "No section values were declared in this ArchMap — nothing to lift. (silence, not an empty-sheaf verdict)"; }
   if (id === "sagaDescent" && !(MODEL && MODEL.saga && Array.isArray(MODEL.saga.stages)))
     { silent = true; msg = "No sagaDescent projection was supplied by this packet — the SAGA scene stays silent."; }
-  document.getElementById("st-boundary").textContent = silent ? msg : (MODEL ? MODEL.boundary : "");
+  const sceneStatus = silent ? msg : (MODEL ? MODEL.boundary : "");
+  document.getElementById("st-boundary").textContent = COMPANIONS.gateError
+    ? `Gate report rejected: ${COMPANIONS.gateError}` : sceneStatus;
 }
 
 function frameScene(id) {
@@ -2219,7 +2260,9 @@ function navigateToInsight(ins) {
   highlightRefs(atomRefs, ctxRefs);
   frameToRefs(atomRefs, ctxRefs);
   // the insight deliberately brought us here — speak in its measured voice, not the scene's silence note
-  document.getElementById("st-boundary").textContent = ins.oneLine || MODEL.boundary || "";
+  const insightStatus = ins.oneLine || MODEL.boundary || "";
+  document.getElementById("st-boundary").textContent = COMPANIONS.gateError
+    ? `Gate report rejected: ${COMPANIONS.gateError}` : insightStatus;
   showInsightDetail(ins);
   renderInsightRail();
 }
@@ -2623,11 +2666,39 @@ async function fetchJsonIfAvailable(url) {
   catch { return null; }
 }
 async function loadCompanions(base = ".") {
-  const [summary, manifest] = await Promise.all([
+  const [summary, manifest, gate] = await Promise.all([
     fetchJsonIfAvailable(`${base}/archsig-analysis-summary.json`),
     fetchJsonIfAvailable(`${base}/archsig-run-manifest.json`),
+    fetchJsonIfAvailable(`${base}/archsig-gate-report.json`),
   ]);
-  return { summary, manifest };
+  return { summary, manifest, gate, gateError: null };
+}
+function validateGateReport(report, viewerData) {
+  if (report == null) return null;
+  if (report.schema !== "archsig-gate-report/v0.5.3") throw new Error("gate report schema mismatch");
+  if (!["PASS_WITHIN_GATE_POLICY", "BLOCKED_BY_GATE_POLICY", "NOT_EVALUABLE"].includes(report.decision)) {
+    throw new Error("gate report decision vocabulary mismatch");
+  }
+  const expectedDigest = viewerData?.inputDigests?.measurementPacket?.sha256;
+  const actualDigest = report.inputDigests?.measurementPacket?.sha256;
+  if (!expectedDigest || actualDigest !== expectedDigest) throw new Error("gate report measurement packet digest mismatch");
+  const actions = gateActions(report);
+  if (!Array.isArray(report.ruleOutcomes) || report.ruleOutcomes.some((outcome) =>
+    outcome.status !== "not_applicable" && !Array.isArray(outcome.appliedMapping))) {
+    throw new Error("gate report rule outcome shape mismatch");
+  }
+  if (actions.some((row) => !["pass", "pass_with_boundary", "block"].includes(row.action))) {
+    throw new Error("gate report action vocabulary mismatch");
+  }
+  return report;
+}
+async function loadCompanionsForData(viewerData, base = ".") {
+  const companions = await loadCompanions(base);
+  if (companions.gate) {
+    try { companions.gate = validateGateReport(companions.gate, viewerData); }
+    catch (error) { companions.gate = null; companions.gateError = error.message; }
+  }
+  return companions;
 }
 function resetDetail() {
   document.getElementById("detail").classList.add("hidden");
@@ -2647,7 +2718,7 @@ function renderData(data, source, companions, opts = {}) {
     setStatus(`Could not load ${source}: expected ${EXPECTED_VIEWER_SCHEMA}`);
     return;
   }
-  DATA = data; COMPANIONS = companions || { summary: null, manifest: null };
+  DATA = data; COMPANIONS = companions || { summary: null, manifest: null, gate: null, gateError: null };
   MODEL = buildModel(data);
   document.getElementById("brand-sub").textContent =
     `${source} · ${MODEL.coverId || "no cover"}`;
@@ -2661,7 +2732,7 @@ function renderData(data, source, companions, opts = {}) {
   // (sequence mode: showFrame controls scene/camera/detail for stable frame comparison)
   renderInsightRail();
   renderReport();
-  setStatus(`Loaded ${source}`);
+  setStatus(COMPANIONS.gateError ? `Gate report rejected: ${COMPANIONS.gateError}` : `Loaded ${source}`);
 }
 function emptyShell() {
   MODEL = null; DATA = null;
@@ -2677,16 +2748,37 @@ async function loadDefault() {
   if (seq && (seq.frames || []).length) { await loadSequence(seq); return; }
   const primary = await fetchJsonIfAvailable("./archsig-atom-viewer-data.json");
   if (!primary) { emptyShell(); return; }
-  renderData(primary, "archsig-atom-viewer-data.json", await loadCompanions());
+  renderData(primary, "archsig-atom-viewer-data.json", await loadCompanionsForData(primary));
 }
 async function loadUserData(file) {
   try {
     exitSequence();
     const data = JSON.parse(await file.text());
-    renderData(data, file.name, await loadCompanions());
+    renderData(data, file.name, await loadCompanionsForData(data));
   } catch (e) { setStatus(`Could not load ${file.name}: ${e.message}`); }
 }
-function setStatus(msg) { if (msg) document.getElementById("st-boundary").textContent = msg; }
+async function loadGateUserData(file) {
+  if (!DATA) { setStatus("Gate report rejected: load viewer data first"); return; }
+  try {
+    const gate = validateGateReport(JSON.parse(await file.text()), DATA);
+    COMPANIONS = { ...COMPANIONS, gate, gateError: null };
+    MODEL = buildModel(DATA);
+    buildAll(); applyScene(currentScene); renderInsightRail(); renderReport();
+    setStatus(`Loaded gate report ${file.name}`);
+  } catch (error) {
+    COMPANIONS = { ...COMPANIONS, gate: null, gateError: error.message };
+    MODEL = buildModel(DATA);
+    buildAll(); applyScene(currentScene); renderInsightRail(); renderReport();
+    setStatus(`Gate report rejected: ${error.message}`);
+  }
+}
+function setStatus(msg) {
+  if (!msg) return;
+  const gateStatus = COMPANIONS.gateError && !String(msg).startsWith("Gate report rejected")
+    ? `Gate report rejected: ${COMPANIONS.gateError}`
+    : msg;
+  document.getElementById("st-boundary").textContent = gateStatus;
+}
 
 /* ============================================================================
  * Measured sequence — play emitted packets and compare adjacent measured
@@ -2782,6 +2874,10 @@ function togglePlay() {
 document.getElementById("open-file").addEventListener("click", () => document.getElementById("file").click());
 document.getElementById("file").addEventListener("change", (e) => {
   const f = e.target.files && e.target.files[0]; if (f) loadUserData(f);
+});
+document.getElementById("open-gate-file").addEventListener("click", () => document.getElementById("gate-file").click());
+document.getElementById("gate-file").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0]; if (f) loadGateUserData(f);
 });
 /* drag-drop */
 const drop = document.getElementById("drop");

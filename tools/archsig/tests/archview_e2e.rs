@@ -324,6 +324,9 @@ fn archview_saga_projection_e2e_is_packet_grounded() {
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
     assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.3");
+    let viewer_packet_digest = viewer["inputDigests"]["measurementPacket"]["sha256"]
+        .as_str()
+        .expect("viewer packet digest");
     assert_eq!(
         viewer["sagaDescent"]["sourcePacketRef"],
         "archsig-measurement-packet.json"
@@ -350,4 +353,55 @@ fn archview_saga_projection_e2e_is_packet_grounded() {
             .as_array()
             .is_some_and(|rows| { rows.iter().any(|row| row["kind"] == "silence_by_design") })
     );
+
+    let gate_path = out_dir.join("archsig-gate-report.json");
+    let packet_path = out_dir.join("archsig-measurement-packet.json");
+    let gate_policy_path = root.join("gate_policy_conservative.json");
+    let gate_output = Command::new(env!("CARGO_BIN_EXE_archsig"))
+        .args([
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("packet path"),
+            "--policy",
+            gate_policy_path.to_str().expect("gate policy path"),
+            "--out",
+            gate_path.to_str().expect("gate output path"),
+        ])
+        .output()
+        .expect("archsig gate runs");
+    assert!(
+        matches!(gate_output.status.code(), Some(0 | 1)),
+        "gate command failed unexpectedly\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&gate_output.stdout),
+        String::from_utf8_lossy(&gate_output.stderr)
+    );
+    let gate = read_json(&gate_path);
+    assert_eq!(gate["schema"], "archsig-gate-report/v0.5.3");
+    assert_eq!(
+        gate["inputDigests"]["measurementPacket"]["sha256"],
+        viewer_packet_digest
+    );
+    assert!(gate["ruleOutcomes"].as_array().is_some_and(|outcomes| {
+        !outcomes.is_empty()
+            && outcomes.iter().all(|outcome| {
+                if outcome["status"] == "not_applicable" {
+                    true
+                } else {
+                    outcome["appliedMapping"].as_array().is_some_and(|rows| {
+                        rows.iter().all(|row| {
+                            let action_valid = matches!(
+                                row["action"].as_str(),
+                                Some("pass") | Some("pass_with_boundary") | Some("block")
+                            );
+                            let ref_valid = if row["rowRef"].is_string() {
+                                row["boundaryOverrideApplied"].is_boolean()
+                            } else {
+                                row["rowKey"].is_string()
+                            };
+                            action_valid && ref_valid
+                        })
+                    })
+                }
+            })
+    }));
 }

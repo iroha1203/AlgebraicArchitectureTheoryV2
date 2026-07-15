@@ -8,6 +8,7 @@ const { spawn } = require("child_process");
 const WebSocket = require("../../website/node_modules/ws");
 
 const root = path.resolve(process.argv[2] || ".tmp/archview-preview");
+const mode = process.argv[3] || "saga";
 const chromeCandidates = [
   process.env.CHROME_BIN,
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -60,7 +61,16 @@ function cdp(endpoint) {
 }
 
 async function main() {
-  const server = await serve(root);
+  let serveRoot = root;
+  if (mode === "mismatch") {
+    serveRoot = fs.mkdtempSync(path.join(os.tmpdir(), "archview-saga-mismatch-"));
+    fs.cpSync(root, serveRoot, { recursive: true });
+    const gatePath = path.join(serveRoot, "archsig-gate-report.json");
+    const gate = JSON.parse(fs.readFileSync(gatePath, "utf8"));
+    gate.inputDigests.measurementPacket.sha256 = "0".repeat(64);
+    fs.writeFileSync(gatePath, JSON.stringify(gate, null, 2));
+  }
+  const server = await serve(serveRoot);
   const port = server.address().port;
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), "archview-saga-"));
   const browser = spawn(chrome, [
@@ -85,18 +95,22 @@ async function main() {
   await page.send("Page.enable");
   await page.send("Runtime.enable");
   await page.send("Page.navigate", { url: "http://127.0.0.1:" + port + "/archview.html" });
-  await new Promise((resolve) => setTimeout(resolve, 8000));
-  const result = await page.send("Runtime.evaluate", {
-    returnByValue: true,
-    expression: "(() => {" +
-      "[...document.querySelectorAll('#scene-buttons .scene-btn')].find((button) => button.textContent.includes('SAGA diagnostic staircase'))?.click();" +
-      "return {saga: window.__archviewSagaState," +
-      "hud: document.querySelector('#saga-degree-hud')?.textContent || ''," +
-      "whatNext: document.querySelector('#saga-what-next')?.textContent || ''," +
-      "question: document.querySelector('#q-title')?.textContent || ''," +
-      "buttons: [...document.querySelectorAll('#scene-buttons .scene-btn')].map((button) => button.textContent)};" +
-      "})()",
-  });
+  const expression = "(() => {" +
+    "[...document.querySelectorAll('#scene-buttons .scene-btn')].find((button) => button.textContent.includes('SAGA diagnostic staircase'))?.click();" +
+    "return {saga: window.__archviewSagaState,gate: window.__archviewGateState," +
+    "hud: document.querySelector('#saga-degree-hud')?.textContent || ''," +
+    "whatNext: document.querySelector('#saga-what-next')?.textContent || ''," +
+    "status: document.querySelector('#st-boundary')?.textContent || ''," +
+    "question: document.querySelector('#q-title')?.textContent || ''," +
+    "buttons: [...document.querySelectorAll('#scene-buttons .scene-btn')].map((button) => button.textContent)};" +
+    "})()";
+  let result;
+  const pageDeadline = Date.now() + 20000;
+  do {
+    result = await page.send("Runtime.evaluate", { returnByValue: true, expression });
+    if (result.result.value?.saga) break;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  } while (Date.now() < pageDeadline);
   const value = result.result.value;
   if (!value.saga?.valid || value.saga.stageCount !== 4 || value.saga.renderedStageCount !== 4) {
     throw new Error("SAGA scene did not render four stages: " + JSON.stringify(value));
@@ -104,8 +118,21 @@ async function main() {
   if (value.hud !== "SAGA height: H⁰ → H¹ → H² · this scene only") {
     throw new Error("SAGA HUD mismatch: " + value.hud);
   }
-  if (!value.whatNext || !value.question.includes("SAGA diagnostic staircase")) {
+  if ((mode === "saga" && !value.whatNext) || !value.question.includes("SAGA diagnostic staircase")) {
     throw new Error("SAGA silence/scene labels missing: " + JSON.stringify(value));
+  }
+  if (mode === "absent" && (value.gate?.supplied || value.gate?.error)) {
+    throw new Error("gate absence is not silent: " + JSON.stringify(value));
+  }
+  const firstGateAction = value.gate?.actions?.[0];
+  const expectedActionLabel = firstGateAction
+    ? firstGateAction.action + (firstGateAction.boundaryOverrideApplied ? "*" : "") : "";
+  if (mode === "supplied" && (!value.gate?.supplied || !value.gate.decision || !firstGateAction ||
+    !value.gate.label.includes(value.gate.decision) || !value.gate.label.includes(expectedActionLabel))) {
+    throw new Error("gate report was not rendered: " + JSON.stringify(value));
+  }
+  if (mode === "mismatch" && (!value.gate?.error || value.gate.supplied || !value.status.includes("Gate report rejected"))) {
+    throw new Error("gate mismatch was not rejected: " + JSON.stringify(value));
   }
   console.log(JSON.stringify(value));
   page.close(); browser.kill(); server.close();

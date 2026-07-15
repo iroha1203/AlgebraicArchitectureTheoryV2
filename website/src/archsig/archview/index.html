@@ -27,7 +27,7 @@
           <div class="article-main">
             <section id="demo" class="article-section">
               <h2>Live demo: the one-cent drift, three frames</h2>
-              <p>The viewer below is loaded with three real, committed <code>archsig analyze</code> runs of the <a href="../getting-started/">shipped demo</a> — base, head, repaired — as a measured sequence. Use the timeline at the bottom to step between frames; the camera holds still so the change you see is the change that was measured.</p>
+              <p>The viewer below is loaded with three real, committed <code>archsig analyze</code> runs of the <a href="../getting-started/">shipped demo</a> — base, head, repaired — as a measured sequence. Use the timeline at the bottom to step between frames; the camera holds still so the change you see is the change that was measured. A gate report can be supplied separately to the final SAGA stage.</p>
               <ul class="chapter-list">
                 <li><a href="viewer/archview.html" target="_blank" rel="noopener noreferrer">Open the live demo</a><span>Opens in a new tab. Loads Three.js from a CDN; needs network access.</span></li>
               </ul>
@@ -58,7 +58,7 @@
                     <tr><td>Period / cycles</td><td>How do classes wrap around measured cycles? (analytic reading)</td></tr>
                     <tr><td>Forbidden support</td><td>Which atom co-occurrences are forbidden, and where could sections be repaired?</td></tr>
                     <tr><td>Projection boundary</td><td>What did the selected profile observe, and what is silence?</td></tr>
-                    <tr><td>SAGA diagnostic staircase</td><td>How do measured premise, residual class, transfer/comparison, and silence progress through H⁰ → H¹ → H²? The scene shows packet-derived stages and keeps <code>whatNext</code> visible for silence.</td></tr>
+                    <tr><td>SAGA diagnostic staircase</td><td>How do measured premise, residual class, transfer/comparison, and silence progress through H⁰ → H¹ → H²? The scene shows packet-derived stages and keeps <code>whatNext</code> visible for silence. When supplied, the final stage also shows the gate decision and each row's <code>pass</code>, <code>pass_with_boundary</code>, or <code>block</code> action.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -73,14 +73,14 @@
             </section>
             <section id="own-output" class="article-section">
               <h2>On your own output</h2>
-              <p>ArchView is one HTML file that reads <code>archsig-atom-viewer-data.json</code> (plus the summary and manifest, when present) from its own directory. After any <code>analyze</code> run:</p>
+              <p>ArchView is one HTML file that reads <code>archsig-atom-viewer-data.json</code> (plus the summary, manifest, and optional <code>archsig-gate-report.json</code>) from its own directory. After any <code>analyze</code> run:</p>
               <figure class="code-panel">
                 <figcaption>Serve a run directory</figcaption>
                 <pre><code>cp archview/archview.html &lt;out-dir&gt;/        # from the release bundle
 python3 -m http.server 8000 --directory &lt;out-dir&gt;
 # open http://localhost:8000/archview.html</code></pre>
               </figure>
-              <p>You can also drag any viewer-data JSON onto an open viewer. If an <code>archview-sequence.json</code> manifest sits beside the viewer — as in the demo above — it plays the declared frames as a measured sequence, keeping every declared slot visible even when a frame fails to load. The viewer uses ES modules and loads Three.js from a CDN, so it must be served over HTTP (not opened as a bare file) and needs network access.</p>
+              <p>You can also drag any viewer-data JSON onto an open viewer, then choose <em>Open gate report…</em> for the second input. The report is shown only when its schema, action vocabulary, and measurement-packet digest match the loaded viewer-data; otherwise the status line explains the rejection. If an <code>archview-sequence.json</code> manifest sits beside the viewer — as in the demo above — it plays the declared frames as a measured sequence, keeping every declared slot visible even when a frame fails to load. The viewer uses ES modules and loads Three.js from a CDN, so it must be served over HTTP (not opened as a bare file) and needs network access.</p>
             </section>
             <section id="boundary" class="article-section">
               <h2>Boundary</h2>

@@ -64,8 +64,10 @@ ArchView は自分と同じディレクトリから以下を fetch する（`arc
 | `archsig-atom-viewer-data.json` | ✅ | `archsig-atom-viewer-data/v0.5.3` 投影本体（nerve / cocycleRibbon / sagaDescent / atomGlyphs / overlays / finitePosetSite / reportPane …） |
 | `archsig-analysis-summary.json` | 任意 | verdict / assumption ledger / structural verdict summary（report pane にマージ） |
 | `archsig-run-manifest.json` | 任意 | artifact パス一覧（report pane にマージ） |
+| `archsig-gate-report.json` | 任意 | `archsig-gate-report/v0.5.3` の decision / per-row action（SAGA 最終段に投影） |
 
 primary が無ければ空シェル表示。**file `<input>` と drag-drop でも読める**ので、任意の `archsig-atom-viewer-data.json` を投げ込めばよい。
+gate reportは同じディレクトリに置くか、toolbarの **Open gate report…** から第二入力として指定する。packet digestが不一致の報告は反映せず、理由をstatusに表示する。
 
 ## シーン（1 シーン = 1 つの問い）
 
@@ -108,6 +110,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap_head.json \
   --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
   --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
+  --law-surface tools/archsig/examples/practical-rust-service/law_policy/law_surface.json \
   --out-dir .tmp/archview-demo
 
 # ② ArchView をその成果物の隣に置いて配信（sibling fetch が成立する）
@@ -115,8 +118,17 @@ cp tools/archview/archview.html .tmp/archview-demo/
 python3 -m http.server 8000 --directory .tmp/archview-demo
 # → http://localhost:8000/archview.html
 
-# ③ Chrome headless smoke test: SAGA stage ⇔ Three.js scene, HUD, and whatNext
-node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo
+# ③ Chrome headless smoke test: SAGA stage ⇔ Three.js scene, HUD, and gate absence
+node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo absent
+
+# ④ gate reportを生成し、SAGA最終段への供給・表示を確認
+cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
+  --packet .tmp/archview-demo/archsig-measurement-packet.json \
+  --policy tools/archsig/examples/practical-rust-service/law_policy/gate_policy.json \
+  --out .tmp/archview-demo/archsig-gate-report.json
+node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo supplied
+# gate reportのschemaまたはpacket digestを壊したディレクトリでは mismatch を指定する
+node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo mismatch
 ```
 
 リポジトリ全体を配信して `archview.html` を開き、`archsig-atom-viewer-data.json` をドラッグしてもよい。

@@ -74,6 +74,10 @@ analytic reading. Refinement compare uses the dedicated
 fine-zero. Both nonzero and zero/nonzero pairs remain `not_computed` with a
 boundary statement; they do not establish class transport.
 
+ArchViewがgate reportを表示する場合も、compare reportからdecisionを再計算しない。
+`archsig-gate-report/v0.5.3`はArchSigの`gate`が生成した第二入力として、対応するmeasurement
+packet digestとともに供給する。
+
 ## Non-claims
 
 - compare does not transport nonzero cohomology classes or obstruction identity across runs; its dedicated refinement reading is limited to the checked class-zero predicate.
