@@ -1103,7 +1103,7 @@ private theorem brokenOverlapPresentations_ne :
   simpa only [fstBrokenOverlapPresentation, sndBrokenOverlapPresentation,
     leftIndex, Iso.trans_hom, Category.id_comp] using hc
 
-/-- The inverse-twisted comparison fails its selected second-projection equation. -/
+/-- The selected-pair twist fails its second-projection equation. -/
 theorem sndBrokenOverlapPresentation_equation_ne :
     (sndBrokenOverlapPresentation.comparison
           leftIndex rightIndex).hom ≫
