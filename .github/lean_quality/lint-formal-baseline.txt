@@ -1055,9 +1055,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.LawAlgebra.AffineChart.AffineAATChart.spec /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.AffineChart.AffineAATChart.RawAffinePresentation.relations /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.AffineChart.AffineAATChart.RawAffinePresentation.rawComparison /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.AffineChart.AffineAATChart.SheafifiedChartPresentation.comparison /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.AffineChart.AffineAATChart.SheafifiedChartPresentation.preservesDecoration /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.AffineChart.AffineAATChart.SheafifiedChartPresentation.preservesObstructionIdeal /- definition missing documentation string -/
 
 -- Formal.AG.LawAlgebra.Coordinate
 #check @AAT.AG.LawAlgebra.ArchitectureCoordinate.label /- definition missing documentation string -/
@@ -2971,8 +2968,6 @@ UNUSED ARGUMENTS. -/
 #check AAT.AG.LawAlgebra.AffineChart.SpecAAT.pointSpace /- argument 6 _X : AAT.AG.LawAlgebra.AffineChart.SpecAAT k A -/
 #check @AAT.AG.LawAlgebra.AffineChart.AffineAATChart.RawAffinePresentation.CoordinateAssignment /- argument 8 _P : AAT.AG.LawAlgebra.AffineChart.AffineAATChart.RawAffinePresentation
   k F C, argument 11 inst✝ : Algebra k R -/
-#check AAT.AG.LawAlgebra.AffineChart.AffineAATChart.sheafifiedChartRepresentability /- argument 5 _P : AAT.AG.LawAlgebra.AffineChart.AffineAATChart.SheafifiedChartPresentation
-  k raw sheafified -/
 
 -- Formal.AG.LawAlgebra.FiniteExamples
 #check AAT.AG.LawAlgebra.FiniteExamples.NSdepthExample.unitCertificateDegree /- argument 1 _c : AAT.AG.LawAlgebra.FiniteExamples.NSdepthExample.UnitCertificate -/
