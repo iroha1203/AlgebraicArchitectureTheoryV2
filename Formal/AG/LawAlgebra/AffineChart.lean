@@ -1,14 +1,16 @@
 import Formal.AG.LawAlgebra.Nullstellensatz
+import Formal.AG.LawAlgebra.StandardScheme
 import Formal.AG.LawAlgebra.StructuralRelation
+import Mathlib.CategoryTheory.ConcreteCategory.EpiMono
 
 noncomputable section
 
 namespace AAT.AG
 namespace LawAlgebra
 
-universe u v w
+universe u v w x
 
-open MvPolynomial
+open CategoryTheory MvPolynomial Opposite
 
 namespace AffineChart
 
@@ -124,7 +126,7 @@ relations.
 -/
 def hWUConfiguration (P : RawAffinePresentation k F C)
     (R : Type w) [CommRing R] [Algebra k R] :=
-  { a : P.CoordinateAssignment R // P.SatisfiesStructuralRelations a }
+  P.relations.Configuration R
 
 /-- III.定理8.3: relation satisfaction kills the whole structural ideal. -/
 theorem assignmentAlgHom_eq_zero_of_mem_JStruct (P : RawAffinePresentation k F C)
@@ -132,14 +134,7 @@ theorem assignmentAlgHom_eq_zero_of_mem_JStruct (P : RawAffinePresentation k F C
     {a : P.CoordinateAssignment R} (ha : P.SatisfiesStructuralRelations a)
     {p : FreeTypedCommAlg F k} (hp : p ∈ P.relations.JStruct) :
     P.assignmentAlgHom a p = 0 := by
-  refine Submodule.span_induction ?hset ?hzero ?hadd ?hsmul hp
-  · rintro p ⟨r, rfl⟩
-    exact ha r
-  · simp
-  · intro p q _ _ hp hq
-    simp [map_add, hp, hq]
-  · intro c p _ hp
-    simp [hp]
+  exact P.relations.configurationAlgHom_eq_zero_of_mem_JStruct ⟨a, ha⟩ hp
 
 /--
 III.定理8.3: a structural-relation-satisfying assignment descends to the raw
@@ -149,8 +144,7 @@ def quotientAlgHomOfConfiguration (P : RawAffinePresentation k F C)
     {R : Type w} [CommRing R] [Algebra k R]
     (a : P.hWUConfiguration R) :
     P.relations.RawAmbientLawAlgebra →ₐ[k] R :=
-  Ideal.Quotient.liftₐ P.relations.JStruct (P.assignmentAlgHom a.1)
-    (fun _p hp => P.assignmentAlgHom_eq_zero_of_mem_JStruct a.2 hp)
+  P.relations.quotientAlgHomOfConfiguration a
 
 /-- III.定理8.3: the descended quotient hom agrees with polynomial evaluation. -/
 theorem quotientAlgHomOfConfiguration_mk (P : RawAffinePresentation k F C)
@@ -158,26 +152,14 @@ theorem quotientAlgHomOfConfiguration_mk (P : RawAffinePresentation k F C)
     (a : P.hWUConfiguration R) (p : FreeTypedCommAlg F k) :
     P.quotientAlgHomOfConfiguration a (P.relations.quotientMap p) =
       P.assignmentAlgHom a.1 p := by
-  rfl
+  exact P.relations.quotientAlgHomOfConfiguration_mk a p
 
 /-- III.定理8.3: recover a coordinate assignment from a raw quotient hom. -/
 def configurationOfQuotientAlgHom (P : RawAffinePresentation k F C)
     {R : Type w} [CommRing R] [Algebra k R]
     (f : P.relations.RawAmbientLawAlgebra →ₐ[k] R) :
-    P.hWUConfiguration R where
-  val c := f (P.relations.quotientMap (MvPolynomial.X c))
-  property r := by
-    have h :
-        P.assignmentAlgHom
-            (fun c => f (P.relations.quotientMap (MvPolynomial.X c))) =
-          f.comp (Ideal.Quotient.mkₐ k P.relations.JStruct) := by
-      apply MvPolynomial.algHom_ext
-      intro c
-      simp [assignmentAlgHom, StructuralRelationFamily.quotientMap]
-    rw [AlgHom.congr_fun h (P.relations.polynomial r)]
-    change f (P.relations.quotientMap (P.relations.polynomial r)) = 0
-    rw [StructuralRelationFamily.quotientMap_polynomial_eq_zero]
-    simp
+    P.hWUConfiguration R :=
+  P.relations.configurationOfQuotientAlgHom f
 
 /--
 III.定理8.3: raw quotient representability.
@@ -187,32 +169,15 @@ Typed coordinate assignments satisfying structural relations are equivalent to
 -/
 def rawQuotientRepresentability (P : RawAffinePresentation k F C)
     (R : Type w) [CommRing R] [Algebra k R] :
-    P.hWUConfiguration R ≃ (P.relations.RawAmbientLawAlgebra →ₐ[k] R) where
-  toFun := P.quotientAlgHomOfConfiguration
-  invFun := P.configurationOfQuotientAlgHom
-  left_inv a := by
-    apply Subtype.ext
-    funext c
-    change P.quotientAlgHomOfConfiguration a (P.relations.quotientMap (MvPolynomial.X c)) =
-      a.1 c
-    rw [P.quotientAlgHomOfConfiguration_mk a (MvPolynomial.X c)]
-    simp [assignmentAlgHom]
-  right_inv f := by
-    apply AlgHom.ext
-    intro q
-    refine Quotient.inductionOn' q ?_
-    intro p
-    have h :
-        P.assignmentAlgHom (P.configurationOfQuotientAlgHom f).1 =
-          f.comp (Ideal.Quotient.mkₐ k P.relations.JStruct) := by
-      apply MvPolynomial.algHom_ext
-      intro c
-      simp [configurationOfQuotientAlgHom, assignmentAlgHom,
-        StructuralRelationFamily.quotientMap]
-    change P.quotientAlgHomOfConfiguration (P.configurationOfQuotientAlgHom f)
-        (P.relations.quotientMap p) = f (P.relations.quotientMap p)
-    rw [P.quotientAlgHomOfConfiguration_mk (P.configurationOfQuotientAlgHom f) p]
-    exact AlgHom.congr_fun h p
+    P.hWUConfiguration R ≃ (P.relations.RawAmbientLawAlgebra →ₐ[k] R) :=
+  P.relations.configurationRepresentability R
+
+/-- SD7 contract: the legacy raw quotient API is definitionally the generic core. -/
+theorem rawQuotientRepresentability_eq_generic (P : RawAffinePresentation k F C)
+    (R : Type w) [CommRing R] [Algebra k R] :
+    P.rawQuotientRepresentability R =
+      P.relations.configurationRepresentability R :=
+  rfl
 
 /--
 III.定理8.3: comparison with the older selected chart hom surface.
@@ -239,21 +204,119 @@ def hWUConfigurationRepresentability (P : RawAffinePresentation k F C)
 
 end RawAffinePresentation
 
-/-- III.仮定8.4: selected presentation for a sheafified affine chart. -/
-structure SheafifiedChartPresentation (raw sheafified : AffineAATChart k) where
-  comparison : sheafified.AlgebraCarrier ≃ₐ[k] raw.AlgebraCarrier
-  preservesDecoration : Prop
-  preservesObstructionIdeal : Prop
+/-! ### SD7 canonical sheafification-unit representability -/
 
 /--
-III.定理8.3 / 仮定8.4: representability for the sheafified chart under the
-selected presentation package.
+SD7 / Assumption 8.4: the strong case in which the canonical sheafification unit at `W` is an
+isomorphism. This proposition contains no independently selected algebra comparison or free
+decoration / obstruction condition.
 -/
-def sheafifiedChartRepresentability {raw sheafified : AffineAATChart k}
-    (_P : SheafifiedChartPresentation k raw sheafified)
+structure SheafifiedChartPresentation
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) : Prop where
+  canonical_isIso :
+    CategoryTheory.IsIso (raw.toRingedSite.canonical.app (op W))
+
+/--
+SD7 canonical comparison from sheafified sections back to the raw quotient. It is obtained by
+turning the canonical unit itself into an algebra equivalence and taking its inverse.
+-/
+noncomputable def SheafifiedChartPresentation.comparison
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {W : S.category} (P : SheafifiedChartPresentation raw W) :
+    SheafifiedSectionRing raw W ≃ₐ[k] raw.rawAlgebra W := by
+  let unit := raw.toRingedSite.canonical.app (op W)
+  letI : CategoryTheory.IsIso unit := P.canonical_isIso
+  exact (AlgEquiv.ofBijective (sheafificationUnitAlgHom raw W) (by
+    change Function.Bijective unit.right
+    exact CategoryTheory.ConcreteCategory.bijective_of_isIso unit.right)).symm
+
+/-- SD7 provenance equation: the inverse comparison is exactly the canonical unit. -/
+@[simp] theorem SheafifiedChartPresentation.comparison_symm_toAlgHom
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {W : S.category} (P : SheafifiedChartPresentation raw W) :
+    P.comparison.symm.toAlgHom = sheafificationUnitAlgHom raw W := by
+  simp [SheafifiedChartPresentation.comparison]
+
+/--
+SD7 / Theorem 8.3 under Assumption 8.4: representability by the actual sheafified section ring.
+The construction composes the generic local equivalence with the canonical-unit comparison.
+-/
+noncomputable def sheafifiedChartRepresentability
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {W : S.category} (P : SheafifiedChartPresentation raw W)
     (R : Type w) [CommRing R] [Algebra k R] :
-    hWU k sheafified R ≃ (sheafified.AlgebraCarrier →ₐ[k] R) :=
-  Equiv.refl _
+    raw.LocalConfiguration W R ≃
+      (SheafifiedSectionRing raw W →ₐ[k] R) :=
+  (raw.localConfigurationRepresentability W R).trans {
+    toFun := fun f => f.comp P.comparison.toAlgHom
+    invFun := fun f => f.comp P.comparison.symm.toAlgHom
+    left_inv := by
+      intro f
+      apply AlgHom.ext
+      intro x
+      simp
+    right_inv := by
+      intro f
+      apply AlgHom.ext
+      intro x
+      simp }
+
+/-- SD7 forward computation rule for sheafified chart representability. -/
+@[simp] theorem sheafifiedChartRepresentability_apply
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {W : S.category} (P : SheafifiedChartPresentation raw W)
+    (R : Type w) [CommRing R] [Algebra k R]
+    (a : raw.LocalConfiguration W R) :
+    sheafifiedChartRepresentability P R a =
+      (raw.localConfigurationRepresentability W R a).comp
+        P.comparison.toAlgHom :=
+  rfl
+
+/-- SD7 inverse computation rule for sheafified chart representability. -/
+@[simp] theorem sheafifiedChartRepresentability_symm_apply
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {W : S.category} (P : SheafifiedChartPresentation raw W)
+    (R : Type w) [CommRing R] [Algebra k R]
+    (f : SheafifiedSectionRing raw W →ₐ[k] R) :
+    (sheafifiedChartRepresentability P R).symm f =
+      (raw.localConfigurationRepresentability W R).symm
+        (f.comp P.comparison.symm.toAlgHom) :=
+  rfl
+
+/-- SD7 naturality of sheafified chart representability in the target algebra. -/
+theorem sheafifiedChartRepresentability_natural
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {W : S.category} (P : SheafifiedChartPresentation raw W)
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (g : R →ₐ[k] T) (a : raw.LocalConfiguration W R) :
+    sheafifiedChartRepresentability P T (a.map g) =
+      g.comp (sheafifiedChartRepresentability P R a) := by
+  rw [sheafifiedChartRepresentability_apply,
+    RawAmbientRestrictionSystem.localConfigurationRepresentability_natural,
+    sheafifiedChartRepresentability_apply, AlgHom.comp_assoc]
 
 end AffineAATChart
 

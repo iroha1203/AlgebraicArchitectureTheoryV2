@@ -6,7 +6,7 @@ import Mathlib.RingTheory.Ideal.Quotient.Operations
 namespace AAT.AG
 namespace LawAlgebra
 
-universe u v
+universe u v w x
 
 noncomputable section
 
@@ -80,6 +80,193 @@ theorem quotientMap_polynomial_eq_zero {U : AtomCarrier.{u}}
   change Ideal.Quotient.mk R.JStruct (R.polynomial r) = 0
   rw [Ideal.Quotient.eq_zero_iff_mem]
   exact R.polynomial_mem_JStruct r
+
+/-! ### SD7 generic configuration representability -/
+
+/--
+SD7 / Definition 8.2: configurations valued in a target `k`-algebra.
+
+This generic core depends only on the selected coordinate family and structural relation family;
+site and sheafification data enter only through later adapters.
+-/
+def Configuration {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} (relations : StructuralRelationFamily F k)
+    (R : Type w) [CommRing R] [Algebra k R] :=
+  { a : F.CoordX → R //
+    ∀ r : relations.Relation,
+      MvPolynomial.aeval a (relations.polynomial r) = 0 }
+
+namespace Configuration
+
+/-- SD7 functorial action of a target algebra morphism on configurations. -/
+def map {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} {relations : StructuralRelationFamily F k}
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (a : relations.Configuration R) (g : R →ₐ[k] T) :
+    relations.Configuration T where
+  val c := g (a.1 c)
+  property r := by
+    rw [← MvPolynomial.comp_aeval_apply (f := a.1) g (relations.polynomial r),
+      a.2 r, map_zero]
+
+/-- SD7 target functoriality: mapping a configuration by the identity is identity. -/
+@[simp] theorem map_id {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} {relations : StructuralRelationFamily F k}
+    {R : Type w} [CommRing R] [Algebra k R]
+    (a : relations.Configuration R) :
+    a.map (AlgHom.id k R) = a := by
+  apply Subtype.ext
+  rfl
+
+/-- SD7 target functoriality: configuration maps compose covariantly. -/
+@[simp] theorem map_comp {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} {relations : StructuralRelationFamily F k}
+    {R : Type w} {T : Type x} {Q : Type*}
+    [CommRing R] [Algebra k R] [CommRing T] [Algebra k T]
+    [CommRing Q] [Algebra k Q]
+    (a : relations.Configuration R)
+    (g : R →ₐ[k] T) (h : T →ₐ[k] Q) :
+    (a.map g).map h = a.map (h.comp g) := by
+  apply Subtype.ext
+  rfl
+
+end Configuration
+
+/-- Evaluation hom associated to a structural configuration. -/
+def configurationAlgHom {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} (relations : StructuralRelationFamily F k)
+    {R : Type w} [CommRing R] [Algebra k R]
+    (a : relations.Configuration R) : FreeTypedCommAlg F k →ₐ[k] R :=
+  MvPolynomial.aeval a.1
+
+/-- A configuration kills every element of the generated structural ideal. -/
+theorem configurationAlgHom_eq_zero_of_mem_JStruct
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} (relations : StructuralRelationFamily F k)
+    {R : Type w} [CommRing R] [Algebra k R]
+    (a : relations.Configuration R) {p : FreeTypedCommAlg F k}
+    (hp : p ∈ relations.JStruct) :
+    relations.configurationAlgHom a p = 0 := by
+  refine Submodule.span_induction ?hset ?hzero ?hadd ?hsmul hp
+  · rintro p ⟨r, rfl⟩
+    exact a.2 r
+  · simp
+  · intro p q _ _ hp hq
+    simp [map_add, hp, hq]
+  · intro c p _ hp
+    simp [hp]
+
+/-- The quotient hom represented by a structural configuration. -/
+def quotientAlgHomOfConfiguration
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} (relations : StructuralRelationFamily F k)
+    {R : Type w} [CommRing R] [Algebra k R]
+    (a : relations.Configuration R) :
+    relations.RawAmbientLawAlgebra →ₐ[k] R :=
+  Ideal.Quotient.liftₐ relations.JStruct (relations.configurationAlgHom a)
+    (fun _p hp => relations.configurationAlgHom_eq_zero_of_mem_JStruct a hp)
+
+/-- The represented quotient hom agrees with evaluation before quotienting. -/
+theorem quotientAlgHomOfConfiguration_mk
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} (relations : StructuralRelationFamily F k)
+    {R : Type w} [CommRing R] [Algebra k R]
+    (a : relations.Configuration R) (p : FreeTypedCommAlg F k) :
+    relations.quotientAlgHomOfConfiguration a (relations.quotientMap p) =
+      relations.configurationAlgHom a p :=
+  rfl
+
+/-- Recover a structural configuration from a hom out of the raw quotient. -/
+def configurationOfQuotientAlgHom
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} (relations : StructuralRelationFamily F k)
+    {R : Type w} [CommRing R] [Algebra k R]
+    (f : relations.RawAmbientLawAlgebra →ₐ[k] R) :
+    relations.Configuration R where
+  val c := f (relations.quotientMap (MvPolynomial.X c))
+  property r := by
+    have h :
+        MvPolynomial.aeval
+            (fun c => f (relations.quotientMap (MvPolynomial.X c))) =
+          f.comp (Ideal.Quotient.mkₐ k relations.JStruct) := by
+      apply MvPolynomial.algHom_ext
+      intro c
+      simp [StructuralRelationFamily.quotientMap]
+    rw [AlgHom.congr_fun h (relations.polynomial r)]
+    change f (relations.quotientMap (relations.polynomial r)) = 0
+    rw [relations.quotientMap_polynomial_eq_zero]
+    simp
+
+/--
+SD7 / Theorem 8.3: the unique generic universal-property proof for raw structural quotients.
+All site-specific and legacy presentation APIs below this layer are direct applications of this
+equivalence rather than independent quotient proofs.
+-/
+def configurationRepresentability
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} (relations : StructuralRelationFamily F k)
+    (R : Type w) [CommRing R] [Algebra k R] :
+    relations.Configuration R ≃ (relations.RawAmbientLawAlgebra →ₐ[k] R) where
+  toFun := relations.quotientAlgHomOfConfiguration
+  invFun := relations.configurationOfQuotientAlgHom
+  left_inv a := by
+    apply Subtype.ext
+    funext c
+    change relations.quotientAlgHomOfConfiguration a
+        (relations.quotientMap (MvPolynomial.X c)) = a.1 c
+    rw [relations.quotientAlgHomOfConfiguration_mk a (MvPolynomial.X c)]
+    simp [configurationAlgHom]
+  right_inv f := by
+    apply AlgHom.ext
+    intro q
+    refine Quotient.inductionOn' q ?_
+    intro p
+    have h :
+        relations.configurationAlgHom
+            (relations.configurationOfQuotientAlgHom f) =
+          f.comp (Ideal.Quotient.mkₐ k relations.JStruct) := by
+      apply MvPolynomial.algHom_ext
+      intro c
+      simp [configurationOfQuotientAlgHom, configurationAlgHom,
+        StructuralRelationFamily.quotientMap]
+    change relations.quotientAlgHomOfConfiguration
+        (relations.configurationOfQuotientAlgHom f)
+        (relations.quotientMap p) = f (relations.quotientMap p)
+    rw [relations.quotientAlgHomOfConfiguration_mk
+      (relations.configurationOfQuotientAlgHom f) p]
+    exact AlgHom.congr_fun h p
+
+/-- SD7 naturality of generic representability in the target algebra. -/
+theorem configurationRepresentability_natural
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A} {k : Type v} [CommRing k]
+    {F : CoordinateFamily W} (relations : StructuralRelationFamily F k)
+    {R : Type w} {T : Type x} [CommRing R] [Algebra k R]
+    [CommRing T] [Algebra k T]
+    (g : R →ₐ[k] T) (a : relations.Configuration R) :
+    relations.configurationRepresentability T (a.map g) =
+      g.comp (relations.configurationRepresentability R a) := by
+  apply AlgHom.ext
+  intro q
+  refine Quotient.inductionOn' q ?_
+  intro p
+  change relations.quotientAlgHomOfConfiguration (a.map g)
+      (relations.quotientMap p) =
+    g (relations.quotientAlgHomOfConfiguration a (relations.quotientMap p))
+  rw [quotientAlgHomOfConfiguration_mk]
+  rw [quotientAlgHomOfConfiguration_mk]
+  exact (MvPolynomial.comp_aeval_apply (f := a.1) g p).symm
 
 end StructuralRelationFamily
 
