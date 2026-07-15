@@ -3031,6 +3031,48 @@ def standardSchemeFiniteInterpretationBrokenChartEquationNe :=
 def standardSchemeFiniteInterpretationBrokenChartNotValid :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.interpretationBrokenChart_not_valid
 
+/-! Finite negative overlap and decoration witnesses. -/
+
+/-- Audit alias for the first-projection-twisted overlap presentation. -/
+noncomputable def standardSchemeFiniteFstBrokenOverlapPresentation :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.fstBrokenOverlapPresentation
+
+/-- Audit alias for failure of the twisted first projection. -/
+def standardSchemeFiniteFstBrokenOverlapPresentationEquationNe :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.fstBrokenOverlapPresentation_equation_ne
+
+/-- Audit alias for invalidity of the first-projection-twisted presentation. -/
+def standardSchemeFiniteFstBrokenOverlapPresentationNotValid :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.fstBrokenOverlapPresentation_not_valid
+
+/-- Audit alias for the selected-pair-twisted overlap presentation. -/
+noncomputable def standardSchemeFiniteSndBrokenOverlapPresentation :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.sndBrokenOverlapPresentation
+
+/-- Audit alias for failure of the selected-pair-twisted second projection. -/
+def standardSchemeFiniteSndBrokenOverlapPresentationEquationNe :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.sndBrokenOverlapPresentation_equation_ne
+
+/-- Audit alias for invalidity of the second-projection-twisted presentation. -/
+def standardSchemeFiniteSndBrokenOverlapPresentationNotValid :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.sndBrokenOverlapPresentation_not_valid
+
+/-- Audit alias for the finite non-preserving source decoration. -/
+noncomputable def standardSchemeFiniteNonPreservingSourceDecoration :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.nonPreservingSourceDecoration
+
+/-- Audit alias for the selected source context of the non-preserving decoration. -/
+def standardSchemeFiniteNonPreservingSourceDecorationContext :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.nonPreservingSourceDecoration_context
+
+/-- Audit alias for the concrete coordinate disagreement. -/
+def standardSchemeFiniteNonPreservingSourceDecorationCoordinateNe :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.nonPreservingSourceDecoration_coordinate_ne
+
+/-- Audit alias for failure of actual decoration preservation. -/
+def standardSchemeFiniteNonPreservingDecorationExample :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.nonPreservingDecoration_example
+
 /-! Finite positive and negative instances for actual affine-atlas validity. -/
 
 /-- Audit alias for nontriviality of the finite base raw algebra. -/
