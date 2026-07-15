@@ -47,9 +47,12 @@
   - gate 段: gate report(`archsig-gate-report/v0.5.2`)の decision と
     ruleOutcomes の appliedMapping(action = pass / pass_with_boundary / block、
     boundaryOverrideApplied)
-- Three.js が unpkg CDN 参照のまま(`archview.html` の import map)であり、
-  ネットワーク遮断環境や外部リポジトリでのドッグフーディングで viewer が
-  空表示になる。旧 V-A の随伴残件。
+- Three.js の unpkg CDN 参照(`archview.html` の import map、バージョン pin 済み)は
+  **本波では維持する**(2026-07-15 裁定)。website の archview live demo が CDN 参照の
+  まま本番稼働している実績があり、オフライン要件は実需の証拠がない。
+  ドッグフーディングで CDN ブロック環境に実際に当たった場合は、
+  fetch スクリプト + sha256 pin 式(vendor/ は .gitignore、release zip にのみ同梱)で
+  再起動する。設計記録は Issue #3424(closed)。
 - 旧設計の実装 wave 定義(V-A〜V-C)は
   `docs/archive/2026-07-archsig-v0.5.0-completed/design/design_archview.md` に
   退避済みで現行 source of truth ではない。本 PRD が V-C 相当の設計判断を
@@ -73,15 +76,11 @@
 
 ## 改修
 
-### R1 — Three.js vendoring(ドッグフーディング前提整備)
+### R1 — 取り下げ(2026-07-15 裁定)
 
-- Three.js(現行 0.164.1)を `tools/archview/vendor/` へ vendoring し、
-  `archview.html` の import map を相対参照へ切り替える。
-- 閲覧手順の正は「`archview.html` + `vendor/` の同時コピー」とし、
-  `tools/archview/README.md` と `examples/seam-ignition/build-sequence.sh` を同型へ更新する。
-- release packaging(`.github/workflows/archsig-release.yml`)と
-  cli.rs の packaging 契約テストを vendor 同梱へ同期する。
-- 受け入れ条件: ネットワーク遮断環境で viewer が全シーンを描画できる。
+Three.js vendoring(オフライン対応)は本波から取り下げた。理由と再起動条件は
+背景節の裁定記録と Issue #3424(closed)を正とする。CDN 参照(バージョン pin 済み)を
+維持し、本波は R2 以降のみを実装対象とする。
 
 ### R2 — viewer-data への sagaDescent 区画投影
 
@@ -175,10 +174,12 @@ cli.rs の契約テストで固定する。
 
 | PR | 内容 | 依存 |
 | --- | --- | --- |
-| PR-1 | R1 vendoring + packaging 同期 | 独立(先行可) |
-| PR-2 | R2 sagaDescent 投影 + R3 版数一斉更新(v0.5.3) | PR-1 と独立 |
+| PR-2 | R2 sagaDescent 投影 + R3 版数一斉更新(v0.5.3) | なし(先頭) |
 | PR-3 | R4 SAGA ビュー + R6 golden fixture 固定 | PR-2 |
 | PR-4 | R5 gate 段入力 + R7 契約正本更新 + R8 docs / website 同期 | PR-3 |
+
+PR-1(R1 vendoring)は取り下げにより欠番とする(番号は実装 Issue #3425〜#3427 との
+対応を保つため詰めない)。
 
 各 PR は 1 実装 Issue に対応し、敵対レビュー(tool-review)を通す。
 
@@ -190,7 +191,7 @@ cli.rs の契約テストで固定する。
   whatNext が viewer 上で読める。
 - **AC3**: gate report 供給時に最終段が decision と per-row action を表示し、
   未供給時は沈黙。schema 不一致は fail-closed。
-- **AC4**: ネットワーク遮断環境で viewer が全シーンを描画できる(R1)。
+- **AC4**: 取り下げ(R1 の取り下げに伴い欠番。番号は詰めない)。
 - **AC5**: 全 schema 文字列が v0.5.3 で、旧 v0.5.2 文字列が rg でゼロ。
   CLAUDE.md / AGENTS.md の記載コマンドが verbatim で実行可能。
 - **AC6**: sagaDescent 区画の全 leaf が packet フィールドへの対応表を持ち、
