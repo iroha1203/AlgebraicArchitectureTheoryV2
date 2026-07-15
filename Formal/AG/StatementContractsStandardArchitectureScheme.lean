@@ -1271,6 +1271,127 @@ example :
       leftCoordinateSection :=
   left_transition_changes_coordinate
 
+example : StandardArchitectureScheme rawSystem :=
+  twoChartReferenceModel
+
+example : twoChartReferenceModel.atlas.Index :=
+  leftIndex
+
+example : twoChartReferenceModel.atlas.Index :=
+  rightIndex
+
+example : leftIndex ≠ rightIndex :=
+  leftIndex_ne_rightIndex
+
+example (i : twoChartReferenceModel.atlas.Index) :
+    i = leftIndex ∨ i = rightIndex :=
+  index_cases i
+
+example :
+    twoChartReferenceModel.underlying =
+      architectureChartSpec rawSystem base :=
+  twoChart_underlying
+
+example :
+    (twoChartReferenceModel.atlas.chart leftIndex).context =
+      RawPresheaf.left :=
+  left_chart_context
+
+example :
+    (twoChartReferenceModel.atlas.chart rightIndex).context =
+      rightContext :=
+  right_chart_context
+
+example :
+    (twoChartReferenceModel.atlas.chart leftIndex).map =
+      architectureChartRestriction rawSystem RawPresheaf.leftToBase :=
+  left_chart_map
+
+example :
+    (twoChartReferenceModel.atlas.chart rightIndex).map =
+      architectureChartRestriction rawSystem rightToBase :=
+  right_chart_map
+
+example :
+    (twoChartReferenceModel.atlas.chart leftIndex).context ≠
+      (twoChartReferenceModel.atlas.chart rightIndex).context :=
+  chart_contexts_ne
+
+example :
+    ⨆ i, ((twoChartReferenceModel.affineOpenCover rawSystem).f i).opensRange = ⊤ :=
+  twoChart_jointlyCovers
+
+example :
+    AlgebraicGeometry.IsOpenImmersion
+      (twoChartReferenceModel.atlas.chart leftIndex).map :=
+  left_chart_isOpenImmersion
+
+example :
+    AlgebraicGeometry.IsOpenImmersion
+      (twoChartReferenceModel.atlas.chart rightIndex).map :=
+  right_chart_isOpenImmersion
+
+example :
+    Nonempty
+      (twoChartReferenceModel.atlas.actualOverlap
+        rawSystem leftIndex rightIndex) :=
+  twoChart_overlap_nonempty
+
+example :
+    (twoChartReferenceModel.overlaps.comparison leftIndex rightIndex).hom ≫
+        pullback.fst
+          (twoChartReferenceModel.atlas.chart leftIndex).map
+          (twoChartReferenceModel.atlas.chart rightIndex).map =
+      architectureChartRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToLeft rawSystem leftIndex rightIndex) :=
+  overlap_comparison_fst
+
+example :
+    (twoChartReferenceModel.overlaps.comparison leftIndex rightIndex).hom ≫
+        pullback.snd
+          (twoChartReferenceModel.atlas.chart leftIndex).map
+          (twoChartReferenceModel.atlas.chart rightIndex).map =
+      architectureChartRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToRight rawSystem leftIndex rightIndex) :=
+  overlap_comparison_snd
+
+example :
+    sheafifiedRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToLeft rawSystem leftIndex rightIndex ≫
+          (twoChartReferenceModel.atlas.chart leftIndex).contextHom) =
+      sheafifiedRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToRight rawSystem leftIndex rightIndex ≫
+          (twoChartReferenceModel.atlas.chart rightIndex).contextHom) :=
+  decoration_overlap_fires
+
+example :
+    ∀ i j l : twoChartReferenceModel.atlas.Index,
+      twoChartReferenceModel.atlas.actualTripleToLeft rawSystem i j l ≫
+          (twoChartReferenceModel.atlas.chart i).map =
+        twoChartReferenceModel.atlas.actualTripleToMiddle rawSystem i j l ≫
+          (twoChartReferenceModel.atlas.chart j).map ∧
+      twoChartReferenceModel.atlas.actualTripleToMiddle rawSystem i j l ≫
+          (twoChartReferenceModel.atlas.chart j).map =
+        twoChartReferenceModel.atlas.actualTripleToRight rawSystem i j l ≫
+          (twoChartReferenceModel.atlas.chart l).map :=
+  actual_triple_cocycle_fires
+
+example :
+    ∀ i j l : twoChartReferenceModel.atlas.Index,
+      architectureChartRestriction rawSystem
+            (twoChartReferenceModel.atlas.tripleToLeft rawSystem i j l) ≫
+          (twoChartReferenceModel.atlas.chart i).map =
+        architectureChartRestriction rawSystem
+            (twoChartReferenceModel.atlas.tripleToMiddle rawSystem i j l) ≫
+          (twoChartReferenceModel.atlas.chart j).map ∧
+      architectureChartRestriction rawSystem
+            (twoChartReferenceModel.atlas.tripleToMiddle rawSystem i j l) ≫
+          (twoChartReferenceModel.atlas.chart j).map =
+        architectureChartRestriction rawSystem
+            (twoChartReferenceModel.atlas.tripleToRight rawSystem i j l) ≫
+          (twoChartReferenceModel.atlas.chart l).map :=
+  context_triple_cocycle_fires
+
 example :
     ArchitectureAffineChart rawSystem
       (architectureChartSpec rawSystem base)
