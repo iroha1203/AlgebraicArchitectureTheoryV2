@@ -7,7 +7,7 @@
 - 数学的正典:
   - `docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md` — 原則10.6 `Change of Core Reading`
   - `docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md` — `5.3 Refinement`、`5.4 Base Change`、定義7.1〜7.2
-  - `docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md` — standard architecture scheme、ideal restriction、closed subscheme
+  - `docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md` — 定義7.1 `Lawful Locus`、定義9.3 `Architecture Scheme`、定義10.2 `Ideal Restriction`
   - `docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md` — 定義2.2、原則2.3、原則2.5、定義3.1〜4.1
   - `docs/aat/algebraic_geometric_theory/part_8_measurement_theory.md` — 定義9.1、定理候補9.2 `Flat Base Change Stability for LawConflict`のaffine Tor-object formula
   - `docs/aat/algebraic_geometric_theory/appendix.md` — A.2〜A.2.1
@@ -2920,7 +2920,7 @@ end ReadingFunctorialityFinite
 | Appendix A.2.1 law inclusion | SD2 | 同一standard geometry内のselected closed-law strengtheningについて`ClosedEquationalGeometry`のactual ideal / closed geometry mapを直接再利用 |
 | 第II部 `5.3 Refinement`、定義7.1〜7.2、Appendix A.2.1 coverage | SD3〜SD5 | generated topologyのactual cover membership、topology refinement、selected adequate cover refinement、Čech map、actual `Sheaf.H'` / `Sheaf.H`を別々に構成 |
 | 第II部 `5.4 Base Change` | merged `S.topology` dependency、`CategoryTheory.GrothendieckTopology.pullback_stable`（new targetなし、AC `N/A`、開始条件5のfocused check） | context morphismに沿うcover pullback stabilityは既存Grothendieck topology APIから直接使用する。new targetは同一base上のselected cover refinementであり、context-change cover pullbackを再実装しない |
-| 第III部 ideal restriction / closed subscheme | SD6〜SD7 | canonical raw / standard scheme changeからideal comapとlawful geometry mapを構成 |
+| 第III部 定義7.1 `Lawful Locus`、定義9.3 `Architecture Scheme`、定義10.2 `Ideal Restriction` | SD6〜SD7 | canonical raw / standard scheme changeからideal comapとlawful geometry mapを構成 |
 | 第IV部 定義2.2、原則2.3、原則2.5 | SD5、SD8 | abelian-group / module-valued coefficientを明示し、selected coefficient sheafとそのbase changeに相対化したactual cohomologyを構成 |
 | 第IV部 定義3.1〜4.1 | SD3〜SD5、SD8 | actual cover、all-degree cochains、alternating differential、cover-relative quotient、actual sheaf cohomologyを区別して接続 |
 | Appendix A.2.1 coefficient | SD6〜SD8 | coordinate、ideal、Tor、linear Čech classをflat scalar extensionへ送り、canonical base-changed coefficientとLeray comparisonを介してactual `Sheaf.H` class mapを構成する |
