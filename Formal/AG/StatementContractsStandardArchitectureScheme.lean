@@ -4,13 +4,13 @@ import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 /-!
 Executable proof-obligation ledger for the standard architecture scheme core.
 
-This file directly checks all 222 fixed SD0--SD8 named signatures from
-`aat_lean_02_standard_architecture_scheme_prd.md` against their implementation
-declarations, including all 52 finite positive and negative SD8 targets.  It
-contains elaboration examples only and introduces no new mathematical
-declarations.  The completion object recorded here is the reading-decorated
-core; the law-generated ideal and lawful closed geometry belong to the later
-full law-equational geometry surface.
+This file directly checks all 222 fixed SD0--SD8 named signatures for the
+standard architecture scheme core against their implementation declarations,
+including all 52 finite positive and negative SD8 targets.  It contains
+elaboration examples only and introduces no new mathematical declarations.
+The completion object recorded here is the reading-decorated core; the
+law-generated ideal and lawful closed geometry belong to the later full
+law-equational geometry surface.
 -/
 
 noncomputable section
