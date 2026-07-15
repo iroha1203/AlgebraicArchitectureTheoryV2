@@ -13191,7 +13191,6 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "generatedQuotient",
         "detectorFindings",
         "detectorCount",
-        "detectorCount",
         "harmonicDebtNorm",
         "essentialRepairLowerBound",
         "lowerBoundStatus",
