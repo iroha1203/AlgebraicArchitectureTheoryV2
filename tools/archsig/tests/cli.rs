@@ -1912,6 +1912,7 @@ fn cli_analyze_saga_descent_without_repair_plan_is_silence_by_design() {
         "missing repair-plan must be modeled as silence_by_design, not validation failure"
     );
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_contract(&viewer, &packet);
     assert!(
         viewer["sagaDescent"]["silenceRows"]
             .as_array()
@@ -2209,6 +2210,8 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
     });
     let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-class", plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_contract(&viewer, &packet);
     let class = saga_row(&packet, "saga.residual-class");
     assert_eq!(class["verdict"], "measured_nonzero");
     assert_eq!(
@@ -2391,6 +2394,8 @@ fn cli_analyze_saga_descent_uncovered_residual_blocks_global_coherence() {
     ]);
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_contract(&viewer, &packet);
     assert_eq!(
         saga_row(&packet, "saga.residual-boundary-membership")["verdict"],
         "measured_zero"
@@ -11774,6 +11779,7 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
         "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS"
     );
     let grounded_viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_contract(&grounded_viewer, &packet);
     let saga_descent = grounded_viewer["sagaDescent"]
         .as_object()
         .expect("viewer must expose sagaDescent projection");
@@ -15675,6 +15681,44 @@ fn saga_row<'a>(packet: &'a Value, law: &str) -> &'a Value {
         .iter()
         .find(|row| row["evaluator"] == "ag.saga-descent" && row["law"] == law)
         .unwrap_or_else(|| panic!("missing saga row {law}"))
+}
+
+fn assert_saga_viewer_contract(viewer: &Value, packet: &Value) {
+    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.3");
+    let saga = viewer["sagaDescent"]
+        .as_object()
+        .expect("sagaDescent viewer section");
+    assert_eq!(saga["sourcePacketRef"], "archsig-measurement-packet.json");
+    let stages = saga["stages"].as_array().expect("four SAGA stages");
+    assert_eq!(stages.len(), 4);
+    for (order, expected_id) in ["grounding", "descent", "comparison", "silence"]
+        .iter()
+        .enumerate()
+    {
+        assert_eq!(stages[order]["order"], order);
+        assert_eq!(stages[order]["stageId"], *expected_id);
+        assert!(stages[order]["visualRole"].as_str().is_some());
+    }
+    let mappings = saga["leafFieldMap"].as_array().expect("SAGA leafFieldMap");
+    assert!(
+        !mappings.is_empty(),
+        "SAGA golden fixture must expose mappings"
+    );
+    let saga_value = Value::Object(saga.clone());
+    for mapping in mappings {
+        let viewer_path = mapping["viewerPath"].as_str().expect("viewer mapping path");
+        let packet_path = mapping["packetPath"].as_str().expect("packet JSON pointer");
+        assert!(viewer_path.starts_with("stages") || viewer_path.starts_with("silenceRows"));
+        let viewer_value = value_at_viewer_path(&saga_value, viewer_path)
+            .unwrap_or_else(|| panic!("viewer path must resolve: {viewer_path}"));
+        let packet_value = value_at_json_pointer(packet, packet_path)
+            .unwrap_or_else(|| panic!("packet pointer must resolve: {packet_path}"));
+        assert_eq!(
+            viewer_value, packet_value,
+            "viewer mapping changed packet evidence"
+        );
+    }
+    assert!(saga["nonClaims"].as_array().is_some());
 }
 
 fn assert_saga_summary_has_no_class_vocabulary(summary: &Value) {
