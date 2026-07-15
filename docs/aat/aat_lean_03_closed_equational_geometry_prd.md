@@ -147,7 +147,7 @@ structure GeometricLawReading where
 
 @[ext] theorem GeometricLawReading.ext
     (R Q : GeometricLawReading raw X)
-    (h : R.HoldsOn = Q.HoldsOn) : R = Q
+    (h : @R.HoldsOn = @Q.HoldsOn) : R = Q
 
 /-- `HoldsOn`がtest Schemeのbase changeで保存されること。 -/
 def IsGeometricLawReading (R : GeometricLawReading raw X) : Prop :=
@@ -1126,7 +1126,7 @@ required/closed/context selection preservation、coordinate equality、semantic 
 structure ClosedEquationalLawInclusion
     (R Q : ClosedEquationalLawReading raw X) where
   lawMap : S.lawUniverse.Index → S.lawUniverse.Index
-  atomMap : ∀ i, U.Atom → U.Atom
+  atomMap : ∀ i : S.lawUniverse.Index, U.Atom → U.Atom
 
 @[ext] theorem ClosedEquationalLawInclusion.ext
     {R Q : ClosedEquationalLawReading raw X}
