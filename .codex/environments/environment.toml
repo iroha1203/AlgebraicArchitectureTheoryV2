@@ -8,7 +8,11 @@ script = '''
 set -euo pipefail
 
 resolve_warm_lake() {
-  if [ -n "${AAT_LAKE_WARM_CACHE:-}" ] && [ -d "${AAT_LAKE_WARM_CACHE:-}" ]; then
+  if [ -n "${AAT_LAKE_WARM_CACHE:-}" ]; then
+    if [ ! -d "$AAT_LAKE_WARM_CACHE" ]; then
+      echo "AAT_LAKE_WARM_CACHE does not name an existing directory" >&2
+      return 2
+    fi
     printf '%s\n' "$AAT_LAKE_WARM_CACHE"
     return 0
   fi
@@ -28,8 +32,63 @@ resolve_warm_lake() {
   return 1
 }
 
-if [ ! -d ".lake" ] && WARM="$(resolve_warm_lake)"; then
-  echo "APFS clone-copying warm .lake cache from $WARM"
-  /bin/cp -cR "$WARM" ".lake"
+die() {
+  echo "Lake cache setup failed: $*" >&2
+  exit 1
+}
+
+if [ -d ".lake" ]; then
+  [ -d ".lake/packages" ] || die "existing .lake is missing packages"
+  [ -d ".lake/build" ] || die "existing .lake is missing build"
+  exit 0
 fi
+
+if WARM="$(resolve_warm_lake)"; then
+  :
+else
+  status=$?
+  if [ "$status" -eq 2 ]; then
+    die "explicit warm cache selection is invalid"
+  fi
+  echo "No warm .lake cache found; continuing with cold Lake setup."
+  exit 0
+fi
+
+WARM="$(cd "$WARM" && pwd -P)" || die "cannot resolve warm cache path"
+CURRENT="$(pwd -P)"
+[ "$WARM" != "$CURRENT/.lake" ] || die "warm cache must not be the current worktree"
+
+WARM_ROOT="$(cd "$WARM/.." && pwd -P)" || die "cannot resolve warm cache root"
+for required in packages build; do
+  [ -d "$WARM/$required" ] || die "warm cache is missing .lake/$required"
+done
+for input in lake-manifest.json lean-toolchain; do
+  [ -f "$CURRENT/$input" ] || die "current worktree is missing $input"
+  [ -f "$WARM_ROOT/$input" ] || die "warm cache root is missing $input"
+  cmp -s "$CURRENT/$input" "$WARM_ROOT/$input" || \
+    die "$input differs from the warm cache root"
+done
+
+STAGE="$(mktemp -d ".lake.setup.XXXXXX")" || die "cannot create staging directory"
+cleanup() {
+  status=$?
+  if [ "$status" -ne 0 ] && [ -n "${STAGE:-}" ] && [ -d "$STAGE" ]; then
+    /bin/rm -rf "$STAGE"
+  fi
+  exit "$status"
+}
+trap cleanup EXIT
+
+echo "Sharing validated warm .lake/packages from $WARM"
+/bin/ln -s "$WARM/packages" "$STAGE/packages" || die "cannot share .lake/packages"
+echo "APFS clone-copying worktree-local .lake/build from $WARM"
+/bin/cp -cR "$WARM/build" "$STAGE/build" || die "cannot clone-copy .lake/build"
+
+[ -L "$STAGE/packages" ] || die "staged .lake/packages is not a symlink"
+[ -d "$STAGE/packages" ] || die "staged .lake/packages target is unavailable"
+[ -d "$STAGE/build" ] || die "staged .lake/build is unavailable"
+[ ! -e ".lake" ] || die ".lake appeared during setup"
+/bin/mv "$STAGE" ".lake" || die "cannot install staged .lake"
+STAGE=""
+trap - EXIT
 '''
