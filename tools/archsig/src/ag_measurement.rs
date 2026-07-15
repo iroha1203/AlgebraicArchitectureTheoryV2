@@ -12343,6 +12343,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         };
         if invariant_id == "saga-generated-end-to-end-packet" {
             let detector_findings = invariant["detectorFindings"].clone();
+            let row_index = grounding_rows.len();
             let mut row = serde_json::Map::new();
             for (output_field, source_path) in [
                 ("invariantId", "invariantId"),
@@ -12359,7 +12360,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
                 if !value.is_null() {
                     row.insert(output_field.to_string(), value);
                     field_map.push(json!({
-                        "viewerPath": format!("stages[0].rows[0].{output_field}"),
+                        "viewerPath": format!("stages[0].rows[{row_index}].{output_field}"),
                         "packetPath": if source_path == "lawDependent.premise" {
                             format!("/computedInvariants/{index}/lawDependent/premise")
                         } else {
@@ -12373,7 +12374,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
                 json!(detector_findings.as_array().map_or(0, Vec::len)),
             );
             field_map.push(json!({
-                "viewerPath": "stages[0].rows[0].detectorCount",
+                "viewerPath": format!("stages[0].rows[{row_index}].detectorCount"),
                 "packetPath": format!("/computedInvariants/{index}/detectorFindings")
             }));
             grounding_rows.push(Value::Object(row));
