@@ -2935,6 +2935,88 @@ def standardSchemeFiniteLeftToBaseChangesCoordinate :=
 def standardSchemeFiniteLeftTransitionChangesCoordinate :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.left_transition_changes_coordinate
 
+/-! Finite positive two-chart reference model. -/
+
+/-- Audit alias for the generated finite two-chart standard scheme. -/
+noncomputable def standardSchemeFiniteTwoChartReferenceModel :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.twoChartReferenceModel
+
+/-- Audit alias for the generated left chart index. -/
+def standardSchemeFiniteLeftIndex :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.leftIndex
+
+/-- Audit alias for the generated right chart index. -/
+def standardSchemeFiniteRightIndex :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.rightIndex
+
+/-- Audit alias for distinctness of the two generated chart indices. -/
+def standardSchemeFiniteLeftIndexNeRightIndex :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.leftIndex_ne_rightIndex
+
+/-- Audit alias for exhaustive classification of generated chart indices. -/
+def standardSchemeFiniteIndexCases :=
+  @LawAlgebra.FiniteExamples.StandardArchitectureScheme.index_cases
+
+/-- Audit alias for the underlying Scheme of the finite two-chart model. -/
+def standardSchemeFiniteTwoChartUnderlying :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.twoChart_underlying
+
+/-- Audit alias for the generated left chart context. -/
+def standardSchemeFiniteLeftChartContext :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.left_chart_context
+
+/-- Audit alias for the generated right chart context. -/
+def standardSchemeFiniteRightChartContext :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.right_chart_context
+
+/-- Audit alias for the actual generated left chart map. -/
+def standardSchemeFiniteLeftChartMap :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.left_chart_map
+
+/-- Audit alias for the actual generated right chart map. -/
+def standardSchemeFiniteRightChartMap :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.right_chart_map
+
+/-- Audit alias for distinctness of the generated chart contexts. -/
+def standardSchemeFiniteChartContextsNe :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.chart_contexts_ne
+
+/-- Audit alias for actual joint coverage by the two finite charts. -/
+def standardSchemeFiniteTwoChartJointlyCovers :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.twoChart_jointlyCovers
+
+/-- Audit alias for the actual left chart open immersion. -/
+def standardSchemeFiniteLeftChartIsOpenImmersion :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.left_chart_isOpenImmersion
+
+/-- Audit alias for the actual right chart open immersion. -/
+def standardSchemeFiniteRightChartIsOpenImmersion :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.right_chart_isOpenImmersion
+
+/-- Audit alias for nonemptiness of the actual two-chart pullback overlap. -/
+def standardSchemeFiniteTwoChartOverlapNonempty :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.twoChart_overlap_nonempty
+
+/-- Audit alias for the generated overlap comparison's first projection. -/
+def standardSchemeFiniteOverlapComparisonFst :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.overlap_comparison_fst
+
+/-- Audit alias for the generated overlap comparison's second projection. -/
+def standardSchemeFiniteOverlapComparisonSnd :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.overlap_comparison_snd
+
+/-- Audit alias for the finite decoration overlap equation. -/
+def standardSchemeFiniteDecorationOverlapFires :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.decoration_overlap_fires
+
+/-- Audit alias for actual triple coherence in the finite two-chart model. -/
+def standardSchemeFiniteActualTripleCocycleFires :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.actual_triple_cocycle_fires
+
+/-- Audit alias for selected-context triple coherence in the finite two-chart model. -/
+def standardSchemeFiniteContextTripleCocycleFires :=
+  LawAlgebra.FiniteExamples.StandardArchitectureScheme.context_triple_cocycle_fires
+
 /-! Finite negative instance for actual affine-chart validity. -/
 
 /-- Audit alias for the finite interpretation-broken chart. -/

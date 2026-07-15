@@ -377,6 +377,364 @@ theorem left_transition_changes_coordinate :
   exact heval.symm.trans h
 
 /-!
+### Positive finite two-chart model
+
+Every finite raw restriction is a sign automorphism: applying the same gauge product twice is
+the identity.  The canonical-unit naturality square transports this raw isomorphism to the
+sheafified restriction and then to its actual Spec transition.  These generated isomorphisms
+produce both valid charts, pointwise coverage, and every pair pullback comparison.
+-/
+
+private theorem coordinateRestriction_comp_self
+    {X Y : site.category} (f : X ⟶ Y) :
+    (RawPresheaf.coordinateRestriction f).polynomialMap.comp
+        (RawPresheaf.coordinateRestriction f).polynomialMap =
+      RingHom.id _ := by
+  have hsign :
+      (RawPresheaf.gauge X * RawPresheaf.gauge Y) *
+          (RawPresheaf.gauge X * RawPresheaf.gauge Y) = 1 := by
+    calc
+      (RawPresheaf.gauge X * RawPresheaf.gauge Y) *
+          (RawPresheaf.gauge X * RawPresheaf.gauge Y) =
+          (RawPresheaf.gauge X * RawPresheaf.gauge X) *
+            (RawPresheaf.gauge Y * RawPresheaf.gauge Y) := by ring
+      _ = 1 := by
+        rw [RawPresheaf.gauge_sq, RawPresheaf.gauge_sq, one_mul]
+  apply MvPolynomial.ringHom_ext
+  · intro a
+    simp [TypedCoordinateRestriction.polynomialMap]
+  · intro i
+    cases i
+    change
+      (RawPresheaf.coordinateRestriction f).polynomialMap
+          ((RawPresheaf.coordinateRestriction f).polynomialMap
+            (MvPolynomial.X ())) =
+        MvPolynomial.X ()
+    rw [RawPresheaf.coordinateRestriction_polynomialMap_X, map_mul]
+    erw [TypedCoordinateRestriction.polynomialMap_C]
+    rw [RawPresheaf.coordinateRestriction_polynomialMap_X]
+    rw [← mul_assoc]
+    erw [← MvPolynomial.C.map_mul]
+    rw [hsign, map_one, one_mul]
+
+private theorem rawRestriction_comp_self
+    {X Y : site.category} (f : X ⟶ Y) :
+    (rawSystem.restrictionStable f).quotientDesc.comp
+        (rawSystem.restrictionStable f).quotientDesc =
+      RingHom.id _ := by
+  apply Ideal.Quotient.ringHom_ext
+  apply RingHom.ext
+  intro p
+  simp only [RingHom.comp_apply]
+  have h := congrArg (fun q => q p) (coordinateRestriction_comp_self f)
+  simpa only [RawPresheaf.system_restriction, RingHom.comp_apply,
+    RingHom.id_apply] using congrArg
+      (rawSystem.relationFamily X).quotientMap h
+
+private theorem rawRestriction_bijective
+    {X Y : site.category} (f : X ⟶ Y) :
+    Function.Bijective
+      (rawSystem.restrictionStable f).quotientDesc := by
+  apply Function.bijective_iff_has_inverse.mpr
+  refine ⟨(rawSystem.restrictionStable f).quotientDesc, ?_, ?_⟩
+  · intro q
+    have h := congrArg (fun g => g q) (rawRestriction_comp_self f)
+    simpa only [RingHom.comp_apply, RingHom.id_apply] using h
+  · intro q
+    have h := congrArg (fun g => g q) (rawRestriction_comp_self f)
+    simpa only [RingHom.comp_apply, RingHom.id_apply] using h
+
+private theorem rawRestrictionCommRing_isIso
+    {X Y : site.category} (f : X ⟶ Y) :
+    IsIso (CommRingCat.ofHom
+      (rawSystem.restrictionStable f).quotientDesc) := by
+  rw [CategoryTheory.ConcreteCategory.isIso_iff_bijective]
+  exact rawRestriction_bijective f
+
+private instance rawRestriction_isIso
+    {X Y : site.category} (f : X ⟶ Y) :
+    IsIso (rawSystem.toRingedSite.raw.map f.op) := by
+  letI : IsIso ((Under.forget _).map
+      (rawSystem.toRingedSite.raw.map f.op)) := by
+    change IsIso (CommRingCat.ofHom
+      (rawSystem.restrictionStable f).quotientDesc)
+    exact rawRestrictionCommRing_isIso f
+  exact isIso_of_reflects_iso _ (Under.forget _)
+
+private instance sheafifiedRestrictionObject_isIso
+    {X Y : site.category} (f : X ⟶ Y) :
+    IsIso (rawSystem.toRingedSite.structureSheaf.val.map f.op) := by
+  letI := canonical_component_isIso X
+  letI := canonical_component_isIso Y
+  haveI : IsIso
+      (rawSystem.toRingedSite.raw.map f.op ≫
+        rawSystem.toRingedSite.canonical.app (op X)) := inferInstance
+  have hn := rawSystem.toRingedSite.canonical.naturality f.op
+  haveI : IsIso
+      (rawSystem.toRingedSite.canonical.app (op Y) ≫
+        rawSystem.toRingedSite.structureSheaf.val.map f.op) := by
+    rw [← hn]
+    infer_instance
+  exact CategoryTheory.IsIso.of_isIso_comp_left
+    (rawSystem.toRingedSite.canonical.app (op Y))
+    (rawSystem.toRingedSite.structureSheaf.val.map f.op)
+
+private instance sheafifiedRestriction_isIso
+    {X Y : site.category} (f : X ⟶ Y) :
+    IsIso (sheafifiedRestriction rawSystem f) := by
+  letI := sheafifiedRestrictionObject_isIso f
+  change IsIso (rawSystem.toRingedSite.structureSheaf.val.map f.op).right
+  infer_instance
+
+private instance architectureChartRestriction_isIso
+    {X Y : site.category} (f : X ⟶ Y) :
+    IsIso (architectureChartRestriction rawSystem f) := by
+  change IsIso (AlgebraicGeometry.Scheme.Spec.map
+    (sheafifiedRestriction rawSystem f).op)
+  infer_instance
+
+private noncomputable def restrictionChart
+    {W : site.category} (f : W ⟶ base) :
+    ArchitectureAffineChart rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) where
+  context := W
+  contextHom := f
+  map := architectureChartRestriction rawSystem f
+
+private theorem restrictionChart_valid
+    {W : site.category} (f : W ⟶ base) :
+    IsArchitectureAffineChart rawSystem (restrictionChart f) := by
+  constructor
+  · letI := architectureChartRestriction_isIso f
+    change AlgebraicGeometry.IsOpenImmersion
+      (architectureChartRestriction rawSystem f)
+    infer_instance
+  · change sheafifiedRestriction rawSystem f =
+      (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem base)).inv ≫
+        (architectureChartRestriction rawSystem f).appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem W)).hom
+    symm
+    rw [architectureChartRestriction_appTop]
+    exact (AlgebraicGeometry.Scheme.ΓSpecIso
+      (SheafifiedSectionRing rawSystem base)).inv_hom_id_assoc _
+
+private noncomputable def twoChartAtlas :
+    ArchitectureAffineAtlas rawSystem
+      (architectureChartSpec rawSystem base)
+      (AATReadingDecoration.ofContext rawSystem base) where
+  Index := Bool
+  chart
+    | false => restrictionChart RawPresheaf.leftToBase
+    | true => restrictionChart rightToBase
+
+private theorem twoChartAtlas_chart_map_eq (i : twoChartAtlas.Index) :
+    (twoChartAtlas.chart i).map =
+      architectureChartRestriction rawSystem
+        (twoChartAtlas.chart i).contextHom := by
+  cases i <;> rfl
+
+private theorem twoChartAtlas_chart_isIso (i : twoChartAtlas.Index) :
+    IsIso (twoChartAtlas.chart i).map := by
+  rw [twoChartAtlas_chart_map_eq]
+  infer_instance
+
+private theorem twoChartAtlas_valid :
+    IsArchitectureAffineAtlas rawSystem twoChartAtlas := by
+  constructor
+  · intro i
+    cases i
+    · exact restrictionChart_valid RawPresheaf.leftToBase
+    · exact restrictionChart_valid rightToBase
+  · intro x
+    letI := architectureChartRestriction_isIso RawPresheaf.leftToBase
+    refine ⟨false,
+      (asIso (architectureChartRestriction rawSystem
+        RawPresheaf.leftToBase)).inv x,
+      ?_⟩
+    exact AlgebraicGeometry.Scheme.inv_hom_apply
+      (asIso (architectureChartRestriction rawSystem
+        RawPresheaf.leftToBase)) x
+
+private theorem twoChartPair_isPullback
+    (i j : twoChartAtlas.Index) :
+    IsPullback
+      (architectureChartRestriction rawSystem
+        (twoChartAtlas.pairToLeft rawSystem i j))
+      (architectureChartRestriction rawSystem
+        (twoChartAtlas.pairToRight rawSystem i j))
+      (twoChartAtlas.chart i).map
+      (twoChartAtlas.chart j).map := by
+  letI := architectureChartRestriction_isIso
+    (twoChartAtlas.pairToLeft rawSystem i j)
+  letI := twoChartAtlas_chart_isIso j
+  apply IsPullback.of_horiz_isIso
+  constructor
+  rw [twoChartAtlas_chart_map_eq, twoChartAtlas_chart_map_eq,
+    ← architectureChartRestriction_comp,
+    ← architectureChartRestriction_comp]
+  exact congrArg (architectureChartRestriction rawSystem)
+    (Subsingleton.elim _ _)
+
+private noncomputable def twoChartOverlapPresentation :
+    ArchitectureOverlapPresentation rawSystem twoChartAtlas where
+  comparison i j := (twoChartPair_isPullback i j).isoPullback
+
+private theorem twoChartOverlapPresentation_valid :
+    IsArchitectureOverlapPresentation rawSystem
+      twoChartOverlapPresentation := by
+  constructor
+  · intro i j
+    exact IsPullback.isoPullback_hom_fst (twoChartPair_isPullback i j)
+  · intro i j
+    exact IsPullback.isoPullback_hom_snd (twoChartPair_isPullback i j)
+
+/-- The finite model with exactly the selected left and right actual restriction charts. -/
+noncomputable def twoChartReferenceModel :
+    StandardArchitectureScheme rawSystem :=
+  StandardArchitectureScheme.ofPresentation rawSystem
+    (architectureChartSpec rawSystem base)
+    (AATReadingDecoration.ofContext rawSystem base)
+    twoChartAtlas twoChartAtlas_valid
+    twoChartOverlapPresentation twoChartOverlapPresentation_valid
+
+/-- The left chart index of the finite two-chart model. -/
+def leftIndex : twoChartReferenceModel.atlas.Index :=
+  false
+
+/-- The right chart index of the finite two-chart model. -/
+def rightIndex : twoChartReferenceModel.atlas.Index :=
+  true
+
+/-- The two selected chart indices are distinct. -/
+theorem leftIndex_ne_rightIndex : leftIndex ≠ rightIndex := by
+  change (false : Bool) ≠ true
+  decide
+
+/-- Every index of the generated finite atlas is one of its two selected indices. -/
+theorem index_cases (i : twoChartReferenceModel.atlas.Index) :
+    i = leftIndex ∨ i = rightIndex := by
+  cases i <;> simp [leftIndex, rightIndex]
+
+/-- The finite two-chart model is carried by the base section-ring Spec. -/
+@[simp] theorem twoChart_underlying :
+    twoChartReferenceModel.underlying =
+      architectureChartSpec rawSystem base :=
+  rfl
+
+/-- The left chart retains the selected left context. -/
+@[simp] theorem left_chart_context :
+    (twoChartReferenceModel.atlas.chart leftIndex).context =
+      RawPresheaf.left :=
+  rfl
+
+/-- The right chart retains the selected right context. -/
+@[simp] theorem right_chart_context :
+    (twoChartReferenceModel.atlas.chart rightIndex).context =
+      rightContext :=
+  rfl
+
+/-- The left chart map is the actual canonical restriction transition. -/
+@[simp] theorem left_chart_map :
+    (twoChartReferenceModel.atlas.chart leftIndex).map =
+      architectureChartRestriction rawSystem RawPresheaf.leftToBase :=
+  rfl
+
+/-- The right chart map is the actual canonical restriction transition. -/
+@[simp] theorem right_chart_map :
+    (twoChartReferenceModel.atlas.chart rightIndex).map =
+      architectureChartRestriction rawSystem rightToBase :=
+  rfl
+
+/-- The two chart contexts of the generated model are distinct. -/
+theorem chart_contexts_ne :
+    (twoChartReferenceModel.atlas.chart leftIndex).context ≠
+      (twoChartReferenceModel.atlas.chart rightIndex).context := by
+  simpa using leftContext_ne_rightContext
+
+/-- The actual affine chart images jointly cover the base Scheme. -/
+theorem twoChart_jointlyCovers :
+    ⨆ i, ((twoChartReferenceModel.affineOpenCover rawSystem).f i).opensRange = ⊤ :=
+  twoChartReferenceModel.chart_jointlyCovers rawSystem
+
+/-- The generated left chart is an actual open immersion. -/
+theorem left_chart_isOpenImmersion :
+    AlgebraicGeometry.IsOpenImmersion
+      (twoChartReferenceModel.atlas.chart leftIndex).map :=
+  twoChartReferenceModel.chart_isOpenImmersion rawSystem leftIndex
+
+/-- The generated right chart is an actual open immersion. -/
+theorem right_chart_isOpenImmersion :
+    AlgebraicGeometry.IsOpenImmersion
+      (twoChartReferenceModel.atlas.chart rightIndex).map :=
+  twoChartReferenceModel.chart_isOpenImmersion rawSystem rightIndex
+
+/-- The generated comparison has the selected actual left projection. -/
+theorem overlap_comparison_fst :
+    (twoChartReferenceModel.overlaps.comparison leftIndex rightIndex).hom ≫
+        pullback.fst
+          (twoChartReferenceModel.atlas.chart leftIndex).map
+          (twoChartReferenceModel.atlas.chart rightIndex).map =
+      architectureChartRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToLeft rawSystem leftIndex rightIndex) :=
+  twoChartReferenceModel.overlapsValid.comparison_fst _ _
+
+/-- The generated comparison has the selected actual right projection. -/
+theorem overlap_comparison_snd :
+    (twoChartReferenceModel.overlaps.comparison leftIndex rightIndex).hom ≫
+        pullback.snd
+          (twoChartReferenceModel.atlas.chart leftIndex).map
+          (twoChartReferenceModel.atlas.chart rightIndex).map =
+      architectureChartRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToRight rawSystem leftIndex rightIndex) :=
+  twoChartReferenceModel.overlapsValid.comparison_snd _ _
+
+/-- The selected decoration restrictions agree on the actual two-chart overlap context. -/
+theorem decoration_overlap_fires :
+    sheafifiedRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToLeft rawSystem leftIndex rightIndex ≫
+          (twoChartReferenceModel.atlas.chart leftIndex).contextHom) =
+      sheafifiedRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToRight rawSystem leftIndex rightIndex ≫
+          (twoChartReferenceModel.atlas.chart rightIndex).contextHom) :=
+  twoChartReferenceModel.atlas.decoration_overlap rawSystem _ _
+
+/-- Actual iterated pullbacks satisfy both triple-overlap equations for all chart indices. -/
+theorem actual_triple_cocycle_fires :
+    ∀ i j l : twoChartReferenceModel.atlas.Index,
+      twoChartReferenceModel.atlas.actualTripleToLeft rawSystem i j l ≫
+          (twoChartReferenceModel.atlas.chart i).map =
+        twoChartReferenceModel.atlas.actualTripleToMiddle rawSystem i j l ≫
+          (twoChartReferenceModel.atlas.chart j).map ∧
+      twoChartReferenceModel.atlas.actualTripleToMiddle rawSystem i j l ≫
+          (twoChartReferenceModel.atlas.chart j).map =
+        twoChartReferenceModel.atlas.actualTripleToRight rawSystem i j l ≫
+          (twoChartReferenceModel.atlas.chart l).map := by
+  intro i j l
+  exact twoChartReferenceModel.atlas.actualTriple_cocycle rawSystem i j l
+
+/-- Selected triple-context restrictions satisfy both equations for all chart indices. -/
+theorem context_triple_cocycle_fires :
+    ∀ i j l : twoChartReferenceModel.atlas.Index,
+      architectureChartRestriction rawSystem
+            (twoChartReferenceModel.atlas.tripleToLeft rawSystem i j l) ≫
+          (twoChartReferenceModel.atlas.chart i).map =
+        architectureChartRestriction rawSystem
+            (twoChartReferenceModel.atlas.tripleToMiddle rawSystem i j l) ≫
+          (twoChartReferenceModel.atlas.chart j).map ∧
+      architectureChartRestriction rawSystem
+            (twoChartReferenceModel.atlas.tripleToMiddle rawSystem i j l) ≫
+          (twoChartReferenceModel.atlas.chart j).map =
+        architectureChartRestriction rawSystem
+            (twoChartReferenceModel.atlas.tripleToRight rawSystem i j l) ≫
+          (twoChartReferenceModel.atlas.chart l).map := by
+  intro i j l
+  exact twoChartReferenceModel.atlas.contextTriple_cocycle rawSystem
+    twoChartReferenceModel.overlaps twoChartReferenceModel.overlapsValid i j l
+
+/-!
 ### Finite invalid-chart witness
 
 The selected chart context uses the actual sign-changing context restriction, while its Scheme
@@ -490,6 +848,20 @@ theorem baseSpec_nonempty :
   change Nonempty (AlgebraicGeometry.Spec
     (SheafifiedSectionRing rawSystem base))
   infer_instance
+
+/-- The actual pullback overlap of the two selected charts has a point. -/
+theorem twoChart_overlap_nonempty :
+    Nonempty
+      (twoChartReferenceModel.atlas.actualOverlap
+        rawSystem leftIndex rightIndex) := by
+  let f := architectureChartRestriction rawSystem
+    (twoChartReferenceModel.atlas.pairToBase
+      rawSystem leftIndex rightIndex)
+  letI : IsIso f := architectureChartRestriction_isIso _
+  let x := Classical.choice baseSpec_nonempty
+  exact ⟨
+    (twoChartReferenceModel.overlaps.comparison
+      leftIndex rightIndex).hom ((asIso f).inv x)⟩
 
 /-- A one-chart finite atlas carried by the identity chart. -/
 noncomputable def identityAtlas :
