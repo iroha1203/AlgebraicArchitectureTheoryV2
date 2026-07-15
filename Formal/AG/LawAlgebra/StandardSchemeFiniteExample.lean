@@ -1040,15 +1040,6 @@ private theorem pairSignTwist_hom_ne
   have h' := congrArg (fun q => inv p ≫ q ≫ p) h
   simpa [pairSignTwist, p, Category.assoc] using h'
 
-private theorem pairSignTwist_symm_hom_ne
-    (i j : twoChartReferenceModel.atlas.Index) :
-    (pairSignTwist i j).symm.hom ≠ 𝟙 _ := by
-  intro h
-  apply pairSignTwist_hom_ne i j
-  have h' := congrArg
-    (fun q => (pairSignTwist i j).hom ≫ q) h
-  simpa using h'.symm
-
 /-- The actual overlap comparison twisted by the finite sign action. -/
 noncomputable def fstBrokenOverlapPresentation :
     ArchitectureOverlapPresentation rawSystem
@@ -1085,13 +1076,32 @@ theorem fstBrokenOverlapPresentation_not_valid :
   exact fstBrokenOverlapPresentation_equation_ne
     (h.comparison_fst leftIndex rightIndex)
 
-/-- The actual overlap comparison twisted by the inverse finite sign action. -/
+/-- The actual overlap comparison twisted only at the selected left-right pair. -/
 noncomputable def sndBrokenOverlapPresentation :
     ArchitectureOverlapPresentation rawSystem
       twoChartReferenceModel.atlas where
-  comparison i j :=
-    (pairSignTwist i j).symm ≪≫
-      twoChartReferenceModel.overlaps.comparison i j
+  comparison
+    | false, true =>
+        pairSignTwist false true ≪≫
+          twoChartReferenceModel.overlaps.comparison false true
+    | false, false =>
+        twoChartReferenceModel.overlaps.comparison false false
+    | true, false =>
+        twoChartReferenceModel.overlaps.comparison true false
+    | true, true =>
+        twoChartReferenceModel.overlaps.comparison true true
+
+private theorem brokenOverlapPresentations_ne :
+    fstBrokenOverlapPresentation ≠ sndBrokenOverlapPresentation := by
+  intro h
+  have hc := congrArg
+    (fun P => (P.comparison leftIndex leftIndex).hom) h
+  apply pairSignTwist_hom_ne leftIndex leftIndex
+  rw [← cancel_mono
+    (twoChartReferenceModel.overlaps.comparison
+      leftIndex leftIndex).hom]
+  simpa only [fstBrokenOverlapPresentation, sndBrokenOverlapPresentation,
+    leftIndex, Iso.trans_hom, Category.id_comp] using hc
 
 /-- The inverse-twisted comparison fails its selected second-projection equation. -/
 theorem sndBrokenOverlapPresentation_equation_ne :
@@ -1103,14 +1113,22 @@ theorem sndBrokenOverlapPresentation_equation_ne :
       architectureChartRestriction rawSystem
         (twoChartReferenceModel.atlas.pairToRight
           rawSystem leftIndex rightIndex) := by
+  have hsnd :
+      (twoChartReferenceModel.overlaps.comparison false true).hom ≫
+          pullback.snd
+            (twoChartReferenceModel.atlas.chart false).map
+            (twoChartReferenceModel.atlas.chart true).map =
+        architectureChartRestriction rawSystem
+          (twoChartReferenceModel.atlas.pairToRight rawSystem false true) := by
+    simpa only [leftIndex, rightIndex] using overlap_comparison_snd
   intro h
-  apply pairSignTwist_symm_hom_ne leftIndex rightIndex
+  apply pairSignTwist_hom_ne leftIndex rightIndex
   rw [← cancel_mono
     (architectureChartRestriction rawSystem
       (twoChartReferenceModel.atlas.pairToRight
         rawSystem leftIndex rightIndex))]
-  simpa only [sndBrokenOverlapPresentation, Iso.trans_hom,
-    Category.assoc, overlap_comparison_snd,
+  simpa only [sndBrokenOverlapPresentation, leftIndex, rightIndex, Iso.trans_hom,
+    Category.assoc, hsnd,
     Category.id_comp] using h
 
 /-- The second-projection-twisted comparison is not a valid overlap presentation. -/
