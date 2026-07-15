@@ -1192,6 +1192,85 @@ namespace FiniteExamples.StandardArchitectureScheme
 
 open RingedSite.FiniteModel
 
+example : site.category :=
+  rightContext
+
+example : rightContext ⟶ base :=
+  rightToBase
+
+example : RawPresheaf.left ≠ rightContext :=
+  leftContext_ne_rightContext
+
+example (W : site.category) :
+    IsIso (rawSystem.toRingedSite.canonical.app (op W)) :=
+  canonical_component_isIso W
+
+example :
+    AffineChart.AffineAATChart.SheafifiedChartPresentation
+      rawSystem base :=
+  baseSheafifiedPresentation
+
+example :
+    baseSheafifiedPresentation.comparison.symm.toAlgHom =
+      sheafificationUnitAlgHom rawSystem base :=
+  basePresentation_comparison_symm_toAlgHom
+
+example (R : Type w) [CommRing R] [Algebra Int R] :
+    rawSystem.LocalConfiguration base R ≃
+      (SheafifiedSectionRing rawSystem base →ₐ[Int] R) :=
+  baseSheafifiedRepresentability R
+
+example (R : Type w) [CommRing R] [Algebra Int R]
+    (a : rawSystem.LocalConfiguration base R) :
+    baseSheafifiedRepresentability R a =
+      (rawSystem.localConfigurationRepresentability base R a).comp
+        baseSheafifiedPresentation.comparison.toAlgHom :=
+  baseSheafifiedRepresentability_apply R a
+
+example {R : Type w} {T : Type x}
+    [CommRing R] [Algebra Int R] [CommRing T] [Algebra Int T]
+    (g : R →ₐ[Int] T) (a : rawSystem.LocalConfiguration base R) :
+    baseSheafifiedRepresentability T (a.map g) =
+      g.comp (baseSheafifiedRepresentability R a) :=
+  baseSheafifiedRepresentability_natural g a
+
+example : Nontrivial Int :=
+  coefficient_nontrivial
+
+example : SheafifiedSectionRing rawSystem base :=
+  baseCoordinateSection
+
+example : SheafifiedSectionRing rawSystem RawPresheaf.left :=
+  leftCoordinateSection
+
+example :
+    Function.Injective
+      (rawSystem.toRingedSite.canonical.app (op RawPresheaf.left)).right :=
+  canonical_left_injective
+
+example :
+    sheafifiedRestriction rawSystem RawPresheaf.leftToBase
+        baseCoordinateSection =
+      -leftCoordinateSection :=
+  sheafified_leftToBase_coordinate
+
+example :
+    sheafifiedRestriction rawSystem RawPresheaf.leftToBase
+        baseCoordinateSection ≠
+      leftCoordinateSection :=
+  sheafified_leftToBase_changes_coordinate
+
+example :
+    ((AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem base)).inv ≫
+        (architectureChartRestriction rawSystem
+          RawPresheaf.leftToBase).appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem RawPresheaf.left)).hom)
+        baseCoordinateSection ≠
+      leftCoordinateSection :=
+  left_transition_changes_coordinate
+
 example :
     ArchitectureAffineChart rawSystem
       (architectureChartSpec rawSystem base)

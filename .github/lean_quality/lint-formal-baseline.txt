@@ -43,6 +43,9 @@ INCORRECT DEF/LEMMA: -/
 -- Formal.AG.LawAlgebra.LawEquation
 #check @AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.restrictionCompatible /- is a def, should be lemma/theorem -/
 
+-- Formal.AG.LawAlgebra.StandardSchemeFiniteExample
+#check AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme.baseSheafifiedPresentation /- is a def, should be lemma/theorem -/
+
 -- Formal.AG.Measurement.Examples
 #check AAT.AG.Measurement.lowDegreeHodgePackage /- is a def, should be lemma/theorem -/
 #check AAT.AG.Measurement.lowDegreeHarmonicDebtPackage /- is a def, should be lemma/theorem -/
