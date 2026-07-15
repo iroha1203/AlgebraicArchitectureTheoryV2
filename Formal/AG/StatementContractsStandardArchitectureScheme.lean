@@ -3,12 +3,12 @@ import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 /-!
 Executable statement contracts for the standard architecture scheme core.
 
-This file directly checks the fixed SD0--SD5 signatures and the SD8 finite
+This file directly checks the fixed SD0--SD6 signatures and the SD8 finite
 positive and negative witnesses from
 `aat_lean_02_standard_architecture_scheme_prd.md` against their implementation
 declarations.  It contains elaboration examples only and introduces no new
 mathematical declarations.  Later PRD slices extend the same contract surface
-with the remaining fixed SD6--SD8 signatures.
+with the remaining fixed SD7--SD8 signatures.
 -/
 
 noncomputable section
