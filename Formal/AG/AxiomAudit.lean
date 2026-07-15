@@ -2682,6 +2682,56 @@ def standardSchemeCoreForgetObj :=
 def standardSchemeCoreForgetMap :=
   @LawAlgebra.StandardArchitectureScheme.forget_map
 
+/-! Presentation and proof-input-free single-affine constructors. -/
+
+/-- Audit alias for packaging a supplied standard-core presentation. -/
+noncomputable def standardSchemeCoreOfPresentation :=
+  @LawAlgebra.StandardArchitectureScheme.ofPresentation
+
+/-- Audit alias for normalization of the packaged Scheme. -/
+def standardSchemeCoreOfPresentationUnderlying :=
+  @LawAlgebra.StandardArchitectureScheme.ofPresentation_underlying
+
+/-- Audit alias for normalization of the packaged decoration. -/
+def standardSchemeCoreOfPresentationDecoration :=
+  @LawAlgebra.StandardArchitectureScheme.ofPresentation_decoration
+
+/-- Audit alias for normalization of the packaged atlas. -/
+def standardSchemeCoreOfPresentationAtlas :=
+  @LawAlgebra.StandardArchitectureScheme.ofPresentation_atlas
+
+/-- Audit alias for normalization of the packaged overlap presentation. -/
+def standardSchemeCoreOfPresentationOverlaps :=
+  @LawAlgebra.StandardArchitectureScheme.ofPresentation_overlaps
+
+/-- Audit alias for the proof-input-free single-affine constructor. -/
+noncomputable def standardSchemeCoreSingleAffine :=
+  @LawAlgebra.StandardArchitectureScheme.singleAffine
+
+/-- Audit alias for the Scheme underlying the single-affine constructor. -/
+def standardSchemeCoreSingleAffineUnderlying :=
+  @LawAlgebra.StandardArchitectureScheme.singleAffine_underlying
+
+/-- Audit alias for the decoration of the single-affine constructor. -/
+def standardSchemeCoreSingleAffineDecoration :=
+  @LawAlgebra.StandardArchitectureScheme.singleAffine_decoration
+
+/-- Audit alias for subsingleton chart indices in the single-affine constructor. -/
+def standardSchemeCoreSingleAffineIndexSubsingleton :=
+  @LawAlgebra.StandardArchitectureScheme.singleAffine_index_subsingleton
+
+/-- Audit alias for the constructed single-affine chart index. -/
+def standardSchemeCoreSingleAffineIndex :=
+  @LawAlgebra.StandardArchitectureScheme.singleAffineIndex
+
+/-- Audit alias for uniqueness of the single-affine chart index. -/
+def standardSchemeCoreSingleAffineIndexEq :=
+  @LawAlgebra.StandardArchitectureScheme.singleAffine_index_eq
+
+/-- Audit alias for normalization of the single-affine chart map. -/
+def standardSchemeCoreSingleAffineChartMap :=
+  @LawAlgebra.StandardArchitectureScheme.singleAffine_chart_map
+
 /-! Finite negative instance for reading preservation. -/
 
 /-- Audit alias for invertibility of finite canonical components. -/

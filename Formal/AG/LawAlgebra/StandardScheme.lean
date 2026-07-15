@@ -2031,6 +2031,260 @@ connection between `forget.map` and the SD5 `base` field.
     (forget raw).map f = f.base :=
   rfl
 
+/-!
+### SD6 presentation and single-affine constructors
+
+`ofPresentation` is the recognition constructor for already supplied SD4 data. It does not
+serve as completion evidence by itself. The `singleAffine` constructor instead produces
+`atlasValid` and `overlapsValid` from the SD2 identity chart, the SD3 self-overlap context
+isomorphism, and Mathlib pullback uniqueness. Its only ambient inputs are the SD9 `raw` and
+`HasSheafify` parameters.
+-/
+
+/--
+SD6 recognition constructor for Definition 9.3. It packages the fixed six SD4 fields without
+adding a premise or a second presentation layer; callers supply the atlas and overlap validity
+used by this generic constructor.
+-/
+noncomputable def ofPresentation
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    StandardArchitectureScheme raw where
+  underlying := X
+  decoration := D
+  atlas := atlas
+  atlasValid := hatlas
+  overlaps := overlaps
+  overlapsValid := hoverlaps
+
+/--
+SD6 normalization API exposing the Definition 9.3 Scheme packaged by `ofPresentation`.
+The SD9 ambient inputs are `raw` and `HasSheafify`; validity remains the supplied recognition data.
+-/
+@[simp] theorem ofPresentation_underlying
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    (ofPresentation raw X D atlas hatlas overlaps hoverlaps).underlying = X :=
+  rfl
+
+/--
+SD6 normalization API exposing the Definition 9.3 reading decoration packaged by
+`ofPresentation`. Its SD9 ambient inputs are `raw` and `HasSheafify`; validity remains supplied.
+-/
+@[simp] theorem ofPresentation_decoration
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    (ofPresentation raw X D atlas hatlas overlaps hoverlaps).decoration = D :=
+  rfl
+
+/--
+SD6 normalization API exposing the Definition 9.3 affine atlas packaged by `ofPresentation`.
+The SD9 ambient inputs are `raw` and `HasSheafify`; `hatlas` is recognition data used by the core.
+-/
+@[simp] theorem ofPresentation_atlas
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    (ofPresentation raw X D atlas hatlas overlaps hoverlaps).atlas = atlas :=
+  rfl
+
+/--
+SD6 normalization API exposing the Definition 9.3 overlap presentation packaged by
+`ofPresentation`. The SD9 ambient inputs are `raw` and `HasSheafify`; `hoverlaps` is recognition data.
+-/
+@[simp] theorem ofPresentation_overlaps
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    (ofPresentation raw X D atlas hatlas overlaps hoverlaps).overlaps = overlaps :=
+  rfl
+
+/--
+SD6 completion constructor for the single-chart case of Definition 9.3 and Appendix A.5.
+It builds the identity chart and pointwise coverage directly. For the self-overlap it sends
+`selfPairContextIso` through `architectureChartIso`, proves the square with two identity
+chart maps is a pullback, and uses `IsPullback.isoPullback` for the comparison and both
+projection equations. No chart-validity, coverage, overlap, or coherence proof is an argument.
+-/
+noncomputable def singleAffine
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) : StandardArchitectureScheme raw := by
+  let atlas :
+      ArchitectureAffineAtlas raw
+        (architectureChartSpec raw W)
+        (AATReadingDecoration.ofContext raw W) := {
+    Index := PUnit
+    chart _ := ArchitectureAffineChart.identity raw W }
+  have hatlas : IsArchitectureAffineAtlas raw atlas := {
+    chart_valid _ :=
+      ArchitectureAffineChart.identity_isArchitectureAffineChart raw W
+    covers x := ⟨PUnit.unit, x, by simp [atlas]⟩ }
+  let overlaps : ArchitectureOverlapPresentation raw atlas := {
+    comparison i j := by
+      cases i
+      cases j
+      let e :=
+        architectureChartIso raw
+          (atlas.selfPairContextIso raw PUnit.unit)
+      letI : IsIso e.hom := Iso.isIso_hom e
+      letI : IsIso (architectureChartRestriction raw
+          (atlas.pairToLeft raw PUnit.unit PUnit.unit)) := by
+        change IsIso e.hom
+        infer_instance
+      letI : IsIso (𝟙 (architectureChartSpec raw W)) := IsIso.id _
+      let h : IsPullback
+          (architectureChartRestriction raw
+            (atlas.pairToLeft raw PUnit.unit PUnit.unit))
+          (architectureChartRestriction raw
+            (atlas.pairToRight raw PUnit.unit PUnit.unit))
+          (𝟙 (architectureChartSpec raw W))
+          (𝟙 (architectureChartSpec raw W)) :=
+        IsPullback.of_horiz_isIso
+          ⟨congrArg (architectureChartRestriction raw)
+            (Subsingleton.elim _ _)⟩
+      exact h.isoPullback }
+  have hoverlaps : IsArchitectureOverlapPresentation raw overlaps := {
+    comparison_fst i j := by
+      cases i
+      cases j
+      apply IsPullback.isoPullback_hom_fst
+    comparison_snd i j := by
+      cases i
+      cases j
+      apply IsPullback.isoPullback_hom_snd }
+  exact ofPresentation raw
+    (architectureChartSpec raw W)
+    (AATReadingDecoration.ofContext raw W)
+    atlas hatlas overlaps hoverlaps
+
+/--
+SD6 normalization API fixing the Definition 9.3 single-affine Scheme to the selected section-ring
+Spec. Its SD9 inputs are `raw`, `HasSheafify`, and `W`; validity is generated by `singleAffine`.
+-/
+@[simp] theorem singleAffine_underlying
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) :
+    (singleAffine raw W).underlying = architectureChartSpec raw W :=
+  rfl
+
+/--
+SD6 normalization API fixing the Definition 9.3 single-affine reading to the canonical decoration
+of the same context and `raw`. Its SD9 inputs are `raw`, `HasSheafify`, and `W`; the decoration is
+generated by `singleAffine`.
+-/
+@[simp] theorem singleAffine_decoration
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) :
+    (singleAffine raw W).decoration =
+      AATReadingDecoration.ofContext raw W :=
+  rfl
+
+/--
+SD6 characterization API for Appendix A.5: the generated `PUnit` atlas has at most one chart
+index. Its SD9 inputs are `raw`, `HasSheafify`, and `W`; no index proof is supplied by the caller.
+-/
+theorem singleAffine_index_subsingleton
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) :
+    Subsingleton (singleAffine raw W).atlas.Index := by
+  change Subsingleton PUnit
+  infer_instance
+
+/--
+SD6 constructor API for Appendix A.5 supplying the generated `PUnit.unit` chart index.
+Its SD9 inputs are `raw`, `HasSheafify`, and `W`; the inhabitant is constructed internally.
+-/
+def singleAffineIndex
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category) :
+    (singleAffine raw W).atlas.Index :=
+  PUnit.unit
+
+/--
+SD6 characterization API for Appendix A.5: every chart index equals the generated canonical
+index. Its SD9 inputs are `raw`, `HasSheafify`, and `W`; uniqueness comes from `PUnit`.
+-/
+@[simp] theorem singleAffine_index_eq
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category)
+    (i : (singleAffine raw W).atlas.Index) :
+    i = singleAffineIndex raw W := by
+  letI := singleAffine_index_subsingleton raw W
+  exact Subsingleton.elim _ _
+
+/--
+SD6 normalization API for Definition 9.3 and Appendix A.5 connecting the generated chart to
+`ArchitectureAffineChart.identity_map`; the actual Scheme map is the identity. Its SD9 inputs are
+`raw`, `HasSheafify`, and `W`, and chart validity is generated by `singleAffine`.
+-/
+theorem singleAffine_chart_map
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (W : S.category)
+    (i : (singleAffine raw W).atlas.Index) :
+    ((singleAffine raw W).atlas.chart i).map =
+      𝟙 (architectureChartSpec raw W) := by
+  change (ArchitectureAffineChart.identity raw W).map = _
+  exact ArchitectureAffineChart.identity_map raw W
+
 end StandardArchitectureScheme
 
 end
