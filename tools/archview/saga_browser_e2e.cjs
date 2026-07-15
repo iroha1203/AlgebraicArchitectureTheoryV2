@@ -69,6 +69,18 @@ async function main() {
     const gate = JSON.parse(fs.readFileSync(gatePath, "utf8"));
     gate.inputDigests.measurementPacket.sha256 = "0".repeat(64);
     fs.writeFileSync(gatePath, JSON.stringify(gate, null, 2));
+  } else if (mode === "malformed" || mode === "missing-boundary") {
+    serveRoot = fs.mkdtempSync(path.join(os.tmpdir(), `archview-saga-${mode}-`));
+    fs.cpSync(root, serveRoot, { recursive: true });
+    const gatePath = path.join(serveRoot, "archsig-gate-report.json");
+    if (mode === "malformed") {
+      fs.writeFileSync(gatePath, "{ malformed gate report");
+    } else {
+      const gate = JSON.parse(fs.readFileSync(gatePath, "utf8"));
+      const row = gate.ruleOutcomes.find((outcome) => outcome.appliedMapping?.length)?.appliedMapping[0];
+      delete row.boundaryOverrideApplied;
+      fs.writeFileSync(gatePath, JSON.stringify(gate, null, 2));
+    }
   }
   const server = await serve(serveRoot);
   const port = server.address().port;
@@ -128,11 +140,20 @@ async function main() {
   const expectedActionLabel = firstGateAction
     ? firstGateAction.action + (firstGateAction.boundaryOverrideApplied ? "*" : "") : "";
   if (mode === "supplied" && (!value.gate?.supplied || !value.gate.decision || !firstGateAction ||
-    !value.gate.label.includes(value.gate.decision) || !value.gate.label.includes(expectedActionLabel))) {
+    !value.gate.label.includes(value.gate.decision) || !value.gate.label.includes(firstGateAction.rowRef) ||
+    !value.gate.label.includes(expectedActionLabel))) {
     throw new Error("gate report was not rendered: " + JSON.stringify(value));
   }
   if (mode === "mismatch" && (!value.gate?.error || value.gate.supplied || !value.status.includes("Gate report rejected"))) {
     throw new Error("gate mismatch was not rejected: " + JSON.stringify(value));
+  }
+  if (mode === "malformed" && (!value.gate?.error?.includes("JSON parse failed") || value.gate.supplied ||
+    !value.status.includes("Gate report rejected"))) {
+    throw new Error("malformed gate report was not rejected: " + JSON.stringify(value));
+  }
+  if (mode === "missing-boundary" && (!value.gate?.error?.includes("boundary override shape mismatch") ||
+    value.gate.supplied || !value.status.includes("Gate report rejected"))) {
+    throw new Error("missing boundary override was not rejected: " + JSON.stringify(value));
   }
   console.log(JSON.stringify(value));
   page.close(); browser.kill(); server.close();

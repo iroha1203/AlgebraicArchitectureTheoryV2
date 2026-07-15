@@ -1189,7 +1189,7 @@ function sagaWhatNext(stage, saga = null) {
 function gateActions(gate) {
   return (gate?.ruleOutcomes || []).flatMap((outcome) => outcome?.appliedMapping || [])
     .map((row) => ({
-      rowRef: row.rowRef || row.rowKey || "unknown-row",
+      rowRef: row.rowRef || row.rowKey || row.baseRowRef || row.headRowRef,
       action: row.action,
       boundaryOverrideApplied: row.boundaryOverrideApplied === true,
     }));
@@ -1201,7 +1201,7 @@ function publishGateState() {
     decision: MODEL?.gate?.decision || null,
     actions,
     label: MODEL?.gate
-      ? `gate: ${MODEL.gate.decision} · ${actions.map((row) => `${row.action}${row.boundaryOverrideApplied ? "*" : ""}`).join(", ") || "no per-row actions"}`
+      ? `gate: ${MODEL.gate.decision} · ${actions.map((row) => `${row.rowRef}=${row.action}${row.boundaryOverrideApplied ? "*" : ""}`).join(", ") || "no per-row actions"}`
       : null,
     error: COMPANIONS.gateError || null,
   };
@@ -1266,7 +1266,7 @@ function buildSagaDescent() {
     if (index === 3 && MODEL.gate) {
       const actions = gateActions(MODEL.gate);
       const actionText = actions.length
-        ? actions.map((row) => `${row.action}${row.boundaryOverrideApplied ? "*" : ""}`).join(", ")
+        ? actions.map((row) => `${row.rowRef}=${row.action}${row.boundaryOverrideApplied ? "*" : ""}`).join(", ")
         : "no per-row actions";
       const gateLabel = makeLabel(
         `gate: ${MODEL.gate.decision} · ${actionText}`,
@@ -2665,13 +2665,22 @@ async function fetchJsonIfAvailable(url) {
   try { const r = await fetch(url); if (!r.ok) return null; return await r.json(); }
   catch { return null; }
 }
+async function fetchGateIfAvailable(url) {
+  try {
+    const response = await fetch(url);
+    if (response.status === 404) return { gate: null, gateError: null };
+    if (!response.ok) return { gate: null, gateError: `gate report HTTP ${response.status}` };
+    try { return { gate: await response.json(), gateError: null }; }
+    catch { return { gate: null, gateError: "gate report JSON parse failed" }; }
+  } catch { return { gate: null, gateError: "gate report could not be loaded" }; }
+}
 async function loadCompanions(base = ".") {
-  const [summary, manifest, gate] = await Promise.all([
+  const [summary, manifest, gateResult] = await Promise.all([
     fetchJsonIfAvailable(`${base}/archsig-analysis-summary.json`),
     fetchJsonIfAvailable(`${base}/archsig-run-manifest.json`),
-    fetchJsonIfAvailable(`${base}/archsig-gate-report.json`),
+    fetchGateIfAvailable(`${base}/archsig-gate-report.json`),
   ]);
-  return { summary, manifest, gate, gateError: null };
+  return { summary, manifest, gate: gateResult.gate, gateError: gateResult.gateError };
 }
 function validateGateReport(report, viewerData) {
   if (report == null) return null;
@@ -2682,11 +2691,26 @@ function validateGateReport(report, viewerData) {
   const expectedDigest = viewerData?.inputDigests?.measurementPacket?.sha256;
   const actualDigest = report.inputDigests?.measurementPacket?.sha256;
   if (!expectedDigest || actualDigest !== expectedDigest) throw new Error("gate report measurement packet digest mismatch");
-  const actions = gateActions(report);
   if (!Array.isArray(report.ruleOutcomes) || report.ruleOutcomes.some((outcome) =>
     outcome.status !== "not_applicable" && !Array.isArray(outcome.appliedMapping))) {
     throw new Error("gate report rule outcome shape mismatch");
   }
+  for (const outcome of report.ruleOutcomes) {
+    for (const row of outcome.appliedMapping || []) {
+      const rowRef = row.rowRef || row.rowKey || row.baseRowRef || row.headRowRef;
+      if (typeof rowRef !== "string" || !rowRef || typeof row.action !== "string") {
+        throw new Error("gate report applied mapping row shape mismatch");
+      }
+      if (Object.prototype.hasOwnProperty.call(row, "rowRef") && typeof row.boundaryOverrideApplied !== "boolean") {
+        throw new Error("gate report boundary override shape mismatch");
+      }
+      if (Object.prototype.hasOwnProperty.call(row, "boundaryOverrideApplied") &&
+        typeof row.boundaryOverrideApplied !== "boolean") {
+        throw new Error("gate report boundary override shape mismatch");
+      }
+    }
+  }
+  const actions = gateActions(report);
   if (actions.some((row) => !["pass", "pass_with_boundary", "block"].includes(row.action))) {
     throw new Error("gate report action vocabulary mismatch");
   }
@@ -2694,7 +2718,7 @@ function validateGateReport(report, viewerData) {
 }
 async function loadCompanionsForData(viewerData, base = ".") {
   const companions = await loadCompanions(base);
-  if (companions.gate) {
+  if (companions.gate && !companions.gateError) {
     try { companions.gate = validateGateReport(companions.gate, viewerData); }
     catch (error) { companions.gate = null; companions.gateError = error.message; }
   }
@@ -2794,7 +2818,7 @@ async function loadSequence(manifest) {
     const data = await fetchJsonIfAvailable(`./${fr.path}/archsig-atom-viewer-data.json`);
     const slot = { ...fr, data: data || null, loaded: !!data };
     if (data) {
-      slot.companions = await loadCompanions(`./${fr.path}`);
+      slot.companions = await loadCompanionsForData(data, `./${fr.path}`);
       slot.conclusion = (data.decisionBar && data.decisionBar.conclusion) || (data.reportPane && data.reportPane.conclusion) || "";
       slot.obstruction = /MEASURED_.*OBSTRUCTION/.test(slot.conclusion) && !/NO_MEASURED/.test(slot.conclusion);
       slot.measuredZero = /NO_MEASURED_.*OBSTRUCTION/.test(slot.conclusion);

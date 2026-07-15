@@ -129,6 +129,9 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
 node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo supplied
 # gate reportのschemaまたはpacket digestを壊したディレクトリでは mismatch を指定する
 node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo mismatch
+# JSON parse error と per-row boundaryOverrideApplied 欠落も明示拒否する
+node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo malformed
+node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo missing-boundary
 ```
 
 リポジトリ全体を配信して `archview.html` を開き、`archsig-atom-viewer-data.json` をドラッグしてもよい。
