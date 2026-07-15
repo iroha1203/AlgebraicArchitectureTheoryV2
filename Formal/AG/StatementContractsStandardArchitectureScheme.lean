@@ -3,12 +3,12 @@ import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 /-!
 Executable statement contracts for the standard architecture scheme core.
 
-This file directly checks the fixed SD0--SD3 signatures and the SD8 finite
+This file directly checks the fixed SD0--SD5 signatures and the SD8 finite
 positive and negative witnesses from
 `aat_lean_02_standard_architecture_scheme_prd.md` against their implementation
 declarations.  It contains elaboration examples only and introduces no new
 mathematical declarations.  Later PRD slices extend the same contract surface
-with the remaining fixed SD3--SD8 signatures.
+with the remaining fixed SD6--SD8 signatures.
 -/
 
 noncomputable section
@@ -759,6 +759,130 @@ example {X : AlgebraicGeometry.Scheme}
       architectureChartRestriction raw
           (atlas.tripleToRight raw i j l) ≫ (atlas.chart l).map :=
   atlas.contextTriple_cocycle raw P hP i j l
+
+/-! SD4 contracts for the reading-decorated standard architecture scheme core. -/
+
+example :
+    (underlying : AlgebraicGeometry.Scheme) →
+    (decoration : AATReadingDecoration raw underlying) →
+    (atlas : ArchitectureAffineAtlas raw underlying decoration) →
+    IsArchitectureAffineAtlas raw atlas →
+    (overlaps : ArchitectureOverlapPresentation raw atlas) →
+    IsArchitectureOverlapPresentation raw overlaps →
+    StandardArchitectureScheme raw :=
+  @StandardArchitectureScheme.mk U A S k _ raw _
+
+example (X : StandardArchitectureScheme raw) :
+    AlgebraicGeometry.Scheme :=
+  X.underlying
+
+example (X : StandardArchitectureScheme raw) :
+    AATReadingDecoration raw X.underlying :=
+  X.decoration
+
+example (X : StandardArchitectureScheme raw) :
+    ArchitectureAffineAtlas raw X.underlying X.decoration :=
+  X.atlas
+
+example (X : StandardArchitectureScheme raw) :
+    IsArchitectureAffineAtlas raw X.atlas :=
+  X.atlasValid
+
+example (X : StandardArchitectureScheme raw) :
+    ArchitectureOverlapPresentation raw X.atlas :=
+  X.overlaps
+
+example (X : StandardArchitectureScheme raw) :
+    IsArchitectureOverlapPresentation raw X.overlaps :=
+  X.overlapsValid
+
+example (X : StandardArchitectureScheme raw) : X.underlying.AffineOpenCover :=
+  X.affineOpenCover raw
+
+example (X : StandardArchitectureScheme raw) (i : X.atlas.Index) :
+    AlgebraicGeometry.IsOpenImmersion (X.atlas.chart i).map :=
+  X.chart_isOpenImmersion raw i
+
+example (X : StandardArchitectureScheme raw) :
+    ⨆ i, ((X.affineOpenCover raw).f i).opensRange = ⊤ :=
+  X.chart_jointlyCovers raw
+
+example (X : StandardArchitectureScheme raw) (i : X.atlas.Index) :
+    (X.affineOpenCover raw).X i =
+      SheafifiedSectionRing raw (X.atlas.chart i).context :=
+  X.chart_sectionRing raw i
+
+example (X : StandardArchitectureScheme raw) (i j : X.atlas.Index) :
+    architectureChartSpec raw (X.atlas.pairContext raw i j) ≅
+      pullback (X.atlas.chart i).map (X.atlas.chart j).map :=
+  X.overlap_is_actual_pullback raw i j
+
+example (X Y : StandardArchitectureScheme raw)
+    (hunderlying : X.underlying = Y.underlying)
+    (hdecoration : HEq X.decoration Y.decoration)
+    (hatlas : HEq X.atlas Y.atlas)
+    (hoverlaps : HEq X.overlaps Y.overlaps) : X = Y :=
+  StandardArchitectureScheme.ext raw X Y hunderlying hdecoration hatlas hoverlaps
+
+/-! SD5 contracts for decorated morphisms and the faithful forgetful functor. -/
+
+example (X Y : StandardArchitectureScheme raw) :
+    (base : X.underlying ⟶ Y.underlying) →
+    X.decoration.Preserves raw base Y.decoration →
+    StandardArchitectureScheme.Hom X Y :=
+  @StandardArchitectureScheme.Hom.mk U A S k _ raw _ X Y
+
+example {X Y : StandardArchitectureScheme raw}
+    (f : StandardArchitectureScheme.Hom X Y) :
+    X.underlying ⟶ Y.underlying :=
+  f.base
+
+example {X Y : StandardArchitectureScheme raw}
+    (f : StandardArchitectureScheme.Hom X Y) :
+    X.decoration.Preserves raw f.base Y.decoration :=
+  f.preserves
+
+example (X : StandardArchitectureScheme raw) :
+    StandardArchitectureScheme.Hom X X :=
+  StandardArchitectureScheme.Hom.id X
+
+example {X Y Z : StandardArchitectureScheme raw}
+    (f : StandardArchitectureScheme.Hom X Y)
+    (g : StandardArchitectureScheme.Hom Y Z) :
+    StandardArchitectureScheme.Hom X Z :=
+  StandardArchitectureScheme.Hom.comp f g
+
+example (X : StandardArchitectureScheme raw) :
+    (StandardArchitectureScheme.Hom.id X).base = 𝟙 X.underlying :=
+  StandardArchitectureScheme.Hom.id_base X
+
+example {X Y Z : StandardArchitectureScheme raw}
+    (f : StandardArchitectureScheme.Hom X Y)
+    (g : StandardArchitectureScheme.Hom Y Z) :
+    (StandardArchitectureScheme.Hom.comp f g).base = f.base ≫ g.base :=
+  StandardArchitectureScheme.Hom.comp_base f g
+
+example {X Y : StandardArchitectureScheme raw}
+    (f g : StandardArchitectureScheme.Hom X Y)
+    (hbase : f.base = g.base) : f = g :=
+  StandardArchitectureScheme.Hom.ext f g hbase
+
+example : Category (StandardArchitectureScheme raw) :=
+  StandardArchitectureScheme.category raw
+
+example : StandardArchitectureScheme raw ⥤ AlgebraicGeometry.Scheme :=
+  StandardArchitectureScheme.forget raw
+
+example : (StandardArchitectureScheme.forget raw).Faithful :=
+  StandardArchitectureScheme.forget_faithful raw
+
+example (X : StandardArchitectureScheme raw) :
+    (StandardArchitectureScheme.forget raw).obj X = X.underlying :=
+  StandardArchitectureScheme.forget_obj raw X
+
+example {X Y : StandardArchitectureScheme raw} (f : X ⟶ Y) :
+    (StandardArchitectureScheme.forget raw).map f = f.base :=
+  StandardArchitectureScheme.forget_map raw f
 
 namespace FiniteExamples.StandardArchitectureScheme
 

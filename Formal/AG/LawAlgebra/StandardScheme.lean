@@ -1734,6 +1734,305 @@ theorem contextTriple_cocycle
 
 end ArchitectureAffineAtlas
 
+/-!
+### The reading-decorated standard architecture scheme core
+
+Implementation notes: SD4 realizes Definition 9.3 as an actual Mathlib `Scheme` with
+its selected reading decoration, canonical affine-atlas presentation, and overlap comparison
+data.  The SD9 ambient inputs are `raw` and `HasSheafify`; `atlasValid` and
+`overlapsValid` are generic recognition inputs that later constructors and finite models
+produce from primitive data.  SD5 realizes Appendix A.4--A.5: morphisms retain only the
+underlying Scheme map and the existing `AATReadingDecoration.Preserves` proof.  Category laws
+and the faithful forgetful functor are derived from equality of underlying maps and proof
+irrelevance.
+-/
+
+/--
+SD4's main recognition type for Definition 9.3.  It stores the actual Scheme, reading
+decoration, atlas and overlap presentations, with the SD9 recognition inputs
+`atlasValid` and `overlapsValid`; `raw` and `HasSheafify` are the ambient SD9 inputs.
+-/
+structure StandardArchitectureScheme
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] where
+  /-- The actual Mathlib Scheme. -/
+  underlying : AlgebraicGeometry.Scheme
+  /-- The selected reading decoration on the Scheme. -/
+  decoration : AATReadingDecoration raw underlying
+  /-- The selected canonical affine atlas. -/
+  atlas : ArchitectureAffineAtlas raw underlying decoration
+  /-- Validity and pointwise coverage of the selected atlas. -/
+  atlasValid : IsArchitectureAffineAtlas raw atlas
+  /-- Comparison data between context overlaps and actual pullbacks. -/
+  overlaps : ArchitectureOverlapPresentation raw atlas
+  /-- Compatibility of each comparison with the actual pullback projections. -/
+  overlapsValid : IsArchitectureOverlapPresentation raw overlaps
+
+namespace StandardArchitectureScheme
+
+/--
+SD4 derived accessor for Definition 9.3.  It turns the selected atlas and its
+`atlasValid` recognition input into Mathlib's affine cover through
+`ArchitectureAffineAtlas.toAffineOpenCover`.
+-/
+noncomputable def affineOpenCover
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) : X.underlying.AffineOpenCover :=
+  X.atlas.toAffineOpenCover raw X.atlasValid
+
+/--
+SD4 API lemma for the affine-chart clause of Definition 9.3.  The conclusion is discharged
+from the `atlasValid.chart_valid` recognition proof supplied by SD9.
+-/
+theorem chart_isOpenImmersion
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) (i : X.atlas.Index) :
+    AlgebraicGeometry.IsOpenImmersion (X.atlas.chart i).map :=
+  (X.atlasValid.chart_valid i).isOpenImmersion
+
+/--
+SD4 API lemma for the covering clause of Definition 9.3.  It uses
+`ArchitectureAffineAtlas.jointlyCovers` and the stored `atlasValid` recognition input.
+-/
+theorem chart_jointlyCovers
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) :
+    ⨆ i, ((X.affineOpenCover raw).f i).opensRange = ⊤ :=
+  X.atlas.jointlyCovers raw X.atlasValid
+
+/--
+SD4 normalization lemma connecting Definition 9.3's affine cover to the selected `raw`
+section ring.  It is inherited from `ArchitectureAffineAtlas.toAffineOpenCover_X`.
+-/
+theorem chart_sectionRing
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) (i : X.atlas.Index) :
+    (X.affineOpenCover raw).X i =
+      SheafifiedSectionRing raw (X.atlas.chart i).context :=
+  X.atlas.toAffineOpenCover_X raw X.atlasValid i
+
+/--
+SD4 overlap accessor for Definition 9.3.  The SD3
+`ArchitectureOverlapPresentation.comparison` data identifies the selected context Spec with
+the actual Mathlib pullback; its projection equations remain in `overlapsValid`.
+-/
+noncomputable def overlap_is_actual_pullback
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) (i j : X.atlas.Index) :
+    architectureChartSpec raw (X.atlas.pairContext raw i j) ≅
+      pullback (X.atlas.chart i).map (X.atlas.chart j).map :=
+  X.overlaps.comparison i j
+
+/--
+SD4 extensionality API for the recognition type.  It compares the four data-bearing fields
+and uses proof irrelevance only for the SD9 validity inputs `atlasValid` and
+`overlapsValid`.
+-/
+@[ext] theorem ext
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X Y : StandardArchitectureScheme raw)
+    (hunderlying : X.underlying = Y.underlying)
+    (hdecoration : HEq X.decoration Y.decoration)
+    (hatlas : HEq X.atlas Y.atlas)
+    (hoverlaps : HEq X.overlaps Y.overlaps) : X = Y := by
+  cases X
+  cases Y
+  cases hunderlying
+  cases hdecoration
+  cases hatlas
+  cases hoverlaps
+  rfl
+
+/--
+SD5's main morphism type for Appendix A.4--A.5.  It stores exactly the underlying Scheme map
+and the existing `AATReadingDecoration.Preserves` condition; `raw` and `HasSheafify` are
+the ambient SD9 inputs.
+-/
+structure Hom
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X Y : StandardArchitectureScheme raw) where
+  /-- The underlying morphism of Mathlib Schemes. -/
+  base : X.underlying ⟶ Y.underlying
+  /-- Preservation of the actual reading equation along the underlying morphism. -/
+  preserves : X.decoration.Preserves raw base Y.decoration
+
+namespace Hom
+
+/--
+SD5 identity constructor for Appendix A.5.  The required preservation proof is produced by
+`AATReadingDecoration.preserves_id` rather than stored as an additional law.
+-/
+def id
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) : Hom X X where
+  base := 𝟙 X.underlying
+  preserves := X.decoration.preserves_id raw
+
+/--
+SD5 composition constructor for Appendix A.5.  It composes underlying Scheme maps and obtains
+the preservation proof from `AATReadingDecoration.preserves_comp`.
+-/
+def comp
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X Y Z : StandardArchitectureScheme raw}
+    (f : Hom X Y) (g : Hom Y Z) : Hom X Z where
+  base := f.base ≫ g.base
+  preserves := AATReadingDecoration.preserves_comp raw f.preserves g.preserves
+
+/--
+SD5 normalization API for the identity constructor.  It exposes that `Hom.id` uses the
+underlying Scheme identity definitionally.
+-/
+@[simp] theorem id_base
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) :
+    (id X).base = 𝟙 X.underlying :=
+  rfl
+
+/--
+SD5 normalization API for composition.  It exposes that `Hom.comp` uses composition of the
+underlying Scheme maps definitionally.
+-/
+@[simp] theorem comp_base
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X Y Z : StandardArchitectureScheme raw}
+    (f : Hom X Y) (g : Hom Y Z) :
+    (comp f g).base = f.base ≫ g.base :=
+  rfl
+
+/--
+SD5 extensionality API for Appendix A.5.  Equality of `base` determines a morphism because
+`AATReadingDecoration.Preserves` is a proposition and its proofs are irrelevant.
+-/
+@[ext] theorem ext
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X Y : StandardArchitectureScheme raw}
+    (f g : Hom X Y) (hbase : f.base = g.base) : f = g := by
+  cases f
+  cases g
+  cases hbase
+  rfl
+
+end Hom
+
+/--
+SD5 derived category instance for Appendix A.5.  It uses `Hom.id`, `Hom.comp`, and
+`Hom.ext`, reducing every category law to the corresponding law for underlying Scheme maps.
+-/
+instance category
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    Category (StandardArchitectureScheme raw) where
+  Hom := Hom
+  id := Hom.id
+  comp := Hom.comp
+  id_comp f := by
+    apply Hom.ext
+    simp
+  comp_id f := by
+    apply Hom.ext
+    simp
+  assoc f g h := by
+    apply Hom.ext
+    simp
+
+/--
+SD5 derived forgetful functor for Appendix A.5.  It sends the SD4 core to `underlying` and
+the SD5 morphism to `base`, using the category instance above.
+-/
+def forget
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    StandardArchitectureScheme raw ⥤ AlgebraicGeometry.Scheme where
+  obj X := X.underlying
+  map f := f.base
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/--
+SD5 faithful-instance target for Appendix A.5.  It connects Mathlib's
+`Functor.Faithful.map_injective` to `Hom.ext`, so equality after forgetting determines the
+decorated morphism.
+-/
+instance forget_faithful
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)] :
+    (forget raw).Faithful where
+  map_injective h := Hom.ext _ _ h
+
+/--
+SD5 object-normalization API for the forgetful functor.  It records the definitional
+connection between `forget.obj` and the SD4 `underlying` field.
+-/
+@[simp] theorem forget_obj
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw) :
+    (forget raw).obj X = X.underlying :=
+  rfl
+
+/--
+SD5 morphism-normalization API for the forgetful functor.  It records the definitional
+connection between `forget.map` and the SD5 `base` field.
+-/
+@[simp] theorem forget_map
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X Y : StandardArchitectureScheme raw}
+    (f : X ⟶ Y) :
+    (forget raw).map f = f.base :=
+  rfl
+
+end StandardArchitectureScheme
+
 end
 end LawAlgebra
 end AAT.AG
