@@ -12280,7 +12280,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             "ag.saga-descent" => "descent",
             _ => continue,
         };
-        let row_value = json!({
+        let mut row_value = json!({
             "evaluator": row.evaluator,
             "law": row.law,
             "verdict": row.verdict,
@@ -12288,10 +12288,12 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             "zero": row.verdict_data.zero,
             "nonZero": row.verdict_data.non_zero,
             "methodStatus": row.verdict_data.method_status,
-            "certRef": row.verdict_data.cert_ref,
             "reason": row.reason,
             "dependsOnAssumptions": row.depends_on_assumptions
         });
+        if let Some(cert_ref) = row.verdict_data.cert_ref.as_ref() {
+            row_value["certRef"] = json!(cert_ref);
+        }
         let row_index = if stage == "grounding" {
             grounding_rows.len()
         } else {
@@ -12658,6 +12660,22 @@ fn projected_stage_status(groups: &[&[Value]]) -> &'static str {
         .all(|status| *status == "not_computed" || *status == "silence_by_design")
     {
         return "not_computed";
+    }
+    if statuses.iter().any(|status| {
+        matches!(
+            *status,
+            "measured_nonzero" | "obstruction" | "blocked" | "residual_not_in_b1"
+        )
+    }) {
+        return "measured_nonzero";
+    }
+    if statuses.iter().all(|status| {
+        matches!(
+            *status,
+            "measured_zero" | "zero" | "established" | "complete_support_global_coherent"
+        )
+    }) {
+        return "measured_zero";
     }
     "measured"
 }

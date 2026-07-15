@@ -1912,6 +1912,7 @@ fn cli_analyze_saga_descent_without_repair_plan_is_silence_by_design() {
         "missing repair-plan must be modeled as silence_by_design, not validation failure"
     );
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_contract(&viewer, &packet);
     assert!(
         viewer["sagaDescent"]["silenceRows"]
             .as_array()
@@ -2131,6 +2132,8 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         plan["primitives"][index]["resR"] = json!([]);
         plan["primitives"][index]["support"]["variables"] = json!([]);
     }
+    plan["primitives"][3]["resL"] = json!(["repair:cycle"]);
+    plan["primitives"][3]["support"]["variables"] = json!(["repair:cycle"]);
     plan["faithfulness"] = json!({
         "mode": "supplied",
         "supplied": {
@@ -2207,8 +2210,16 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
             "cochainMap": saga_cochain_map
         }
     });
+    assert_eq!(typed_plan.complex.charts.len(), 3);
     let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-class", plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_golden_fixture(&viewer, &packet, "faithfulness-supplied");
+    assert_saga_viewer_golden_fixture(&viewer, &packet, "circle-nerve-residual-class");
+    assert_eq!(
+        viewer["sagaDescent"]["stages"][1]["status"],
+        "measured_nonzero"
+    );
     let class = saga_row(&packet, "saga.residual-class");
     assert_eq!(class["verdict"], "measured_nonzero");
     assert_eq!(
@@ -2391,6 +2402,8 @@ fn cli_analyze_saga_descent_uncovered_residual_blocks_global_coherence() {
     ]);
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_contract(&viewer, &packet);
     assert_eq!(
         saga_row(&packet, "saga.residual-boundary-membership")["verdict"],
         "measured_zero"
@@ -2584,6 +2597,17 @@ fn cli_analyze_saga_descent_mode_none_keeps_global_coherence_silent() {
                     && statement["reason"] == "complete_support_not_declared"
             })
     );
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_golden_fixture(&viewer, &packet, "faithfulness-none");
+    assert_eq!(
+        viewer["sagaDescent"]["stages"][2]["status"],
+        "silence_by_design"
+    );
+    assert!(
+        viewer["sagaDescent"]["stages"][3]["rows"]
+            .as_array()
+            .is_some_and(|rows| rows.iter().any(|row| row["whatNext"].as_str().is_some()))
+    );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_saga_summary_has_no_class_vocabulary(&summary);
     assert_ne!(
@@ -2605,6 +2629,12 @@ fn cli_analyze_saga_descent_mode_none_with_nonboundary_residual_stays_silent() {
     }
     let out_dir = run_saga_fixture_lock("ag-saga-descent-mode-none-nonboundary", repair_plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_contract(&viewer, &packet);
+    assert_eq!(
+        viewer["sagaDescent"]["stages"][2]["status"],
+        "silence_by_design"
+    );
     assert_eq!(
         saga_row(&packet, "saga.residual-boundary-membership")["verdict"],
         "measured_nonzero"
@@ -11774,6 +11804,7 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
         "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS"
     );
     let grounded_viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_saga_viewer_golden_fixture(&grounded_viewer, &packet, "lawful-firing");
     let saga_descent = grounded_viewer["sagaDescent"]
         .as_object()
         .expect("viewer must expose sagaDescent projection");
@@ -15675,6 +15706,110 @@ fn saga_row<'a>(packet: &'a Value, law: &str) -> &'a Value {
         .iter()
         .find(|row| row["evaluator"] == "ag.saga-descent" && row["law"] == law)
         .unwrap_or_else(|| panic!("missing saga row {law}"))
+}
+
+fn assert_saga_viewer_contract(viewer: &Value, packet: &Value) {
+    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.3");
+    let saga = viewer["sagaDescent"]
+        .as_object()
+        .expect("sagaDescent viewer section");
+    assert_eq!(saga["sourcePacketRef"], "archsig-measurement-packet.json");
+    let stages = saga["stages"].as_array().expect("four SAGA stages");
+    assert_eq!(stages.len(), 4);
+    for (order, (expected_id, expected_role)) in [
+        ("grounding", "grounding"),
+        ("descent", "descent-measurement"),
+        ("comparison", "transfer-comparison"),
+        ("silence", "silence"),
+    ]
+    .iter()
+    .enumerate()
+    {
+        assert_eq!(stages[order]["order"], order);
+        assert_eq!(stages[order]["stageId"], *expected_id);
+        assert_eq!(stages[order]["visualRole"], *expected_role);
+    }
+    let mappings = saga["leafFieldMap"].as_array().expect("SAGA leafFieldMap");
+    assert!(
+        !mappings.is_empty(),
+        "SAGA golden fixture must expose mappings"
+    );
+    let saga_value = Value::Object(saga.clone());
+    let mut viewer_leaves = Vec::new();
+    for (index, stage) in stages.iter().enumerate() {
+        for field in ["rows", "measurements", "harmonicDebt"] {
+            if let Some(value) = stage.get(field) {
+                collect_leaf_paths(
+                    value,
+                    &format!("stages[{index}].{field}"),
+                    &mut viewer_leaves,
+                );
+            }
+        }
+    }
+    collect_leaf_paths(&saga["silenceRows"], "silenceRows", &mut viewer_leaves);
+    let mapped_viewer_paths = mappings
+        .iter()
+        .map(|mapping| mapping["viewerPath"].as_str().expect("viewer mapping path"))
+        .collect::<BTreeSet<_>>();
+    for mapping in mappings {
+        let viewer_path = mapping["viewerPath"].as_str().expect("viewer mapping path");
+        let packet_path = mapping["packetPath"].as_str().expect("packet JSON pointer");
+        assert!(viewer_path.starts_with("stages") || viewer_path.starts_with("silenceRows"));
+        let viewer_value = value_at_viewer_path(&saga_value, viewer_path)
+            .unwrap_or_else(|| panic!("viewer path must resolve: {viewer_path}"));
+        let packet_value = value_at_json_pointer(packet, packet_path)
+            .unwrap_or_else(|| panic!("packet pointer must resolve: {packet_path}"));
+        assert_eq!(
+            viewer_value, packet_value,
+            "viewer mapping changed packet evidence"
+        );
+    }
+    for viewer_path in viewer_leaves {
+        assert!(
+            mapped_viewer_paths.contains(viewer_path.as_str()),
+            "every displayed SAGA leaf must have a packet mapping: {viewer_path}"
+        );
+    }
+    assert!(saga["nonClaims"].as_array().is_some());
+}
+
+fn assert_saga_viewer_golden_fixture(viewer: &Value, packet: &Value, fixture_id: &str) {
+    assert_saga_viewer_contract(viewer, packet);
+    let manifest = read_json(&ag_measurement_root().join("saga_viewer_golden_contract_v053.json"));
+    assert_eq!(
+        manifest["schema"],
+        "archsig-saga-viewer-golden-contract/v0.5.3"
+    );
+    let expected_stages = manifest["stages"].as_array().expect("golden stages");
+    let stages = viewer["sagaDescent"]["stages"]
+        .as_array()
+        .expect("viewer stages");
+    assert_eq!(expected_stages.len(), stages.len());
+    for (expected, actual) in expected_stages.iter().zip(stages) {
+        assert_eq!(actual["order"], expected["order"]);
+        assert_eq!(actual["stageId"], expected["stageId"]);
+        assert_eq!(actual["visualRole"], expected["visualRole"]);
+    }
+    let fixture = manifest["fixtures"]
+        .get(fixture_id)
+        .unwrap_or_else(|| panic!("missing SAGA golden fixture {fixture_id}"));
+    if let Some(chart_count) = fixture.get("chartCount").and_then(Value::as_u64) {
+        assert_eq!(chart_count, 3, "circle-nerve fixture must use three charts");
+    }
+    for (stage_id, expected_status) in fixture["stageStatus"]
+        .as_object()
+        .expect("golden stage statuses")
+    {
+        let stage = stages
+            .iter()
+            .find(|stage| stage["stageId"] == *stage_id)
+            .unwrap_or_else(|| panic!("golden stage is missing {stage_id}"));
+        assert_eq!(
+            stage["status"], *expected_status,
+            "golden status for {stage_id}"
+        );
+    }
 }
 
 fn assert_saga_summary_has_no_class_vocabulary(summary: &Value) {

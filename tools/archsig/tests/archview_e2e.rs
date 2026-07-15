@@ -260,3 +260,94 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
         }
     }
 }
+
+#[test]
+fn archview_saga_projection_e2e_is_packet_grounded() {
+    let root = fixture_root();
+    let out_dir = temp_dir("saga-projection");
+    let mut law_policy = read_json(&root.join("law_policy_ag.json"));
+    law_policy["policies"] = serde_json::json!([{
+        "law": "ag.saga-descent",
+        "evaluator": "ag.saga-descent",
+        "basis": ["policy-basis:layering"],
+        "scope": ["src/"],
+        "severity": "high"
+    }]);
+    let law_policy_path = out_dir.join("law_policy_saga_descent.json");
+    fs::write(
+        &law_policy_path,
+        serde_json::to_vec_pretty(&law_policy).expect("law policy serializes"),
+    )
+    .expect("law policy writes");
+    let archmap_path = root.join("archmap_v2.json");
+    let law_surface_path = out_dir.join("law_surface.json");
+    let mut law_surface = read_json(&root.join("law_surface_ag_v052.json"));
+    law_surface["laws"]
+        .as_array_mut()
+        .expect("law surface laws")
+        .push(serde_json::json!({
+            "lawId": "ag.saga-descent",
+            "conditionType": "descent",
+            "evaluatorRef": "ag.saga-descent"
+        }));
+    fs::write(
+        &law_surface_path,
+        serde_json::to_vec_pretty(&law_surface).expect("law surface serializes"),
+    )
+    .expect("law surface writes");
+    let measurement_profile = measurement_profile_for(&root, "law_policy_ag.json");
+    let args = vec![
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("archmap path"),
+        "--law-policy",
+        law_policy_path.to_str().expect("law policy path"),
+        "--measurement-profile",
+        measurement_profile
+            .to_str()
+            .expect("measurement profile path"),
+        "--law-surface",
+        law_surface_path.to_str().expect("law surface path"),
+        "--out-dir",
+        out_dir.to_str().expect("output path"),
+    ];
+    let output = Command::new(env!("CARGO_BIN_EXE_archsig"))
+        .args(args)
+        .output()
+        .expect("archsig analyze runs");
+    assert!(
+        output.status.success(),
+        "SAGA analyze failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.3");
+    assert_eq!(
+        viewer["sagaDescent"]["sourcePacketRef"],
+        "archsig-measurement-packet.json"
+    );
+    let stages = viewer["sagaDescent"]["stages"]
+        .as_array()
+        .expect("SAGA stages");
+    assert_eq!(stages.len(), 4);
+    assert_eq!(
+        stages
+            .iter()
+            .map(|stage| stage["stageId"].as_str().expect("stage id"))
+            .collect::<Vec<_>>(),
+        vec!["grounding", "descent", "comparison", "silence"]
+    );
+    assert_eq!(stages[3]["status"], "silence_by_design");
+    assert!(
+        viewer["sagaDescent"]["leafFieldMap"]
+            .as_array()
+            .is_some_and(|mapping| !mapping.is_empty())
+    );
+    assert!(
+        packet["boundaryStatements"]
+            .as_array()
+            .is_some_and(|rows| { rows.iter().any(|row| row["kind"] == "silence_by_design") })
+    );
+}

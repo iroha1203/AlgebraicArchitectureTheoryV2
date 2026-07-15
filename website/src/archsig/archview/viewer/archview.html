@@ -61,6 +61,10 @@
     overflow: hidden; }
   #question .scene-title { font-size: 12.5px; font-weight: 600; flex: 0 0 auto; white-space: nowrap; }
   #question .scene-q { font-size: 11.5px; color: var(--ink-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #saga-degree-hud, #saga-what-next { display: none; }
+  #question.saga-active { align-items: center; flex-wrap: wrap; }
+  #question.saga-active #saga-degree-hud { display: inline-flex; color: var(--structural-zero); font-size: 10.5px; letter-spacing: 0.35px; }
+  #question.saga-active #saga-what-next { display: inline-flex; color: var(--ink-faint); font-size: 10.5px; min-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* insight rail (left, below the toolbar+question band; top/max-height set by layoutChrome()) */
   #insight-rail { left: 14px; width: 288px; min-height: 120px; overflow: auto; padding: 12px 14px; }
@@ -254,6 +258,8 @@
   <div id="question" class="panel">
     <span class="scene-title" id="q-title">Nerve &amp; Cover</span>
     <span class="scene-q" id="q-question">What finite site and cover did ArchSig measure?</span>
+    <span id="saga-degree-hud">SAGA height: H⁰ → H¹ → H² · this scene only</span>
+    <span id="saga-what-next"></span>
   </div>
 
   <div id="insight-rail" class="panel">
@@ -289,7 +295,7 @@
   <div id="report" class="panel">
     <button class="bare" id="report-close">Close</button>
     <h2>Measurement report</h2>
-    <div class="sub" id="report-sub">bounded projection of ArchMap v2 + policy-bundle components + measurement packet</div>
+    <div class="sub" id="report-sub">bounded projection of ArchMap v2 + LawPolicy + measurement packet</div>
     <div id="report-body"></div>
   </div>
 
@@ -574,7 +580,7 @@ const G = {
   cells: new THREE.Group(), atoms: new THREE.Group(), struts: new THREE.Group(),
   faces: new THREE.Group(), seam: new THREE.Group(), terrain: new THREE.Group(),
   periods: new THREE.Group(), cages: new THREE.Group(), labels: new THREE.Group(),
-  verdict: new THREE.Group(), twist: new THREE.Group(), sections: new THREE.Group(),
+  verdict: new THREE.Group(), twist: new THREE.Group(), sections: new THREE.Group(), saga: new THREE.Group(),
 };
 Object.values(G).forEach((g) => root.add(g));
 
@@ -777,6 +783,7 @@ function buildModel(data) {
     omitted: data.omittedDetailCounts || {}, nonConclusions: data.nonConclusions || [],
     boundary: (ov.projectionBoundary || ""),
     insights, anchorByAtom, toursByInsight, emittedScenes, copyBlocks: data.copyBlocks || {},
+    saga: data.sagaDescent || null,
   };
 }
 function firstOverlay(arr) { return Array.isArray(arr) && arr.length ? arr[0] : null; }
@@ -1135,6 +1142,7 @@ function buildAll() {
   buildPeriods();
   buildCages();
   buildVerdict();
+  buildSagaDescent();
   for (const g of Object.values(G)) mergeDuplicateLabels(g);
   // horizon sized to content
   const box = new THREE.Box3().setFromObject(root);
@@ -1145,6 +1153,111 @@ function buildAll() {
   // size-independent (same relative depth on a 5-atom fixture or a 60-atom service).
   BASE_FOG = Math.min(0.006, Math.max(0.0012, 0.46 / Math.max(sph.radius, 40)));
   scene.fog.density = BASE_FOG;
+}
+
+/* SAGA diagnostic staircase — fixed viewer layout, packet-derived meaning.
+ * The four stages are drawn as one scene. Their vertical coordinates are a
+ * scene-local degree vocabulary (H⁰/H¹/H²), never the measured restriction
+ * poset depth used by the patchwork scenes. */
+const SAGA_STAGE_LAYOUT = [
+  { x: -48, y: 0, degree: "H⁰", role: "premise" },
+  { x: -16, y: 18, degree: "H¹", role: "residual class" },
+  { x: 16, y: 18, degree: "H¹", role: "transfer / comparison" },
+  { x: 48, y: 36, degree: "H²", role: "silence" },
+];
+function sagaStageColor(stage) {
+  const status = String(stage?.status || "");
+  if (status === "silence_by_design" || status === "not_computed" || stage?.stageId === "silence") return COL.silence;
+  if (/nonzero|obstruction|blocked/i.test(status)) return COL.nonzero;
+  if (/zero|established|measured/i.test(status)) return COL.zero;
+  return COL.analytic;
+}
+function sagaStageRows(stage) {
+  return [stage?.rows, stage?.measurements, stage?.harmonicDebt]
+    .filter(Array.isArray).flat();
+}
+function sagaWhatNext(stage, saga = null) {
+  const candidates = [stage?.whatNext, ...sagaStageRows(stage).map((row) => row?.whatNext)];
+  if (stage?.stageId === "silence") {
+    candidates.push(...(saga?.silenceRows || []).map((row) => row?.whatNext));
+  }
+  return candidates.find((text) => typeof text === "string" && text.trim()) || "";
+}
+function buildSagaDescent() {
+  const saga = MODEL.saga;
+  const expected = [
+    ["grounding", "grounding"],
+    ["descent", "descent-measurement"],
+    ["comparison", "transfer-comparison"],
+    ["silence", "silence"],
+  ];
+  if (!saga || !Array.isArray(saga.stages) || saga.stages.length !== expected.length) {
+    window.__archviewSagaState = { valid: false, stageCount: 0, stageIds: [] };
+    return;
+  }
+  if (saga.stages.some((stage, index) =>
+    stage?.order !== index || stage?.stageId !== expected[index][0] || stage?.visualRole !== expected[index][1])) {
+    window.__archviewSagaState = { valid: false, stageCount: saga.stages.length, stageIds: saga.stages.map((stage) => stage?.stageId || null) };
+    return;
+  }
+  const stages = saga.stages;
+  const points = [];
+  for (let index = 0; index < 4; index++) {
+    const layout = SAGA_STAGE_LAYOUT[index];
+    const stage = stages[index] || { stageId: "silence", status: "not_computed" };
+    const color = sagaStageColor(stage);
+    const center = new THREE.Vector3(layout.x, layout.y, 0);
+    points.push(center);
+    const stageGroup = new THREE.Group();
+    const silent = stage.stageId === "silence" || stage.status === "silence_by_design" || stage.status === "not_computed";
+    const mat = new THREE.MeshPhysicalMaterial({
+      color, emissive: color, emissiveIntensity: silent ? 0.02 : 0.16,
+      transparent: true, opacity: silent ? 0.28 : 0.68, roughness: 0.55,
+      metalness: 0.05, side: THREE.DoubleSide,
+    });
+    const plate = new THREE.CylinderGeometry(silent ? 7.2 : 6.4, silent ? 7.2 : 6.4, 1.1, 20);
+    const mesh = new THREE.Mesh(plate, mat);
+    mesh.position.copy(center);
+    mesh.rotation.x = Math.PI / 2;
+    stageGroup.add(mesh);
+    if (silent) {
+      const ringMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.9 });
+      const ring = new THREE.LineLoop(new THREE.CircleGeometry(8.4, 24), ringMat);
+      ring.position.copy(center); ring.rotation.x = Math.PI / 2;
+      stageGroup.add(ring);
+    }
+    const rows = sagaStageRows(stage);
+    const label = makeLabel(`${layout.degree}  ${stage.stageId || "stage"}`, { color: hex(color), scale: 0.62, bg: "rgba(8,12,20,0.82)" });
+    label.position.set(center.x, center.y + 5.5, center.z);
+    stageGroup.add(label);
+    const statusLabel = makeLabel(`${stage.status || "not_computed"} · ${rows.length} rows`, { color: hex(color), scale: 0.42, bg: "rgba(8,12,20,0.75)" });
+    statusLabel.position.set(center.x, center.y - 5.5, center.z);
+    stageGroup.add(statusLabel);
+    const next = sagaWhatNext(stage, saga);
+    if (silent && next) {
+      const nextLabel = makeLabel(`next: ${next.slice(0, 42)}`, { color: "#9aa8bd", scale: 0.32, bg: "rgba(8,12,20,0.72)" });
+      nextLabel.position.set(center.x, center.y - 10, center.z);
+      stageGroup.add(nextLabel);
+    }
+    stageGroup.userData.stageId = stage.stageId;
+    stageGroup.userData.degree = layout.degree;
+    G.saga.add(stageGroup);
+  }
+  for (let index = 0; index < points.length - 1; index++) {
+    const from = points[index].clone(); from.y += 1.5;
+    const to = points[index + 1].clone(); to.y -= 1.5;
+    const connector = tube(from, to, 0.55, new THREE.MeshBasicMaterial({ color: COL.analytic, transparent: true, opacity: 0.72 }));
+    G.saga.add(connector);
+  }
+  const title = makeLabel("SAGA diagnostic staircase · measured projection", { color: "#dbe7f8", scale: 0.58, bg: "rgba(8,12,20,0.84)" });
+  title.position.set(0, 47, 0); G.saga.add(title);
+  window.__archviewSagaState = {
+    valid: true,
+    stageCount: stages.length,
+    stageIds: stages.map((stage) => stage.stageId),
+    stageStatuses: stages.map((stage) => stage.status || "not_computed"),
+    renderedStageCount: G.saga.children.filter((child) => child.userData.stageId).length,
+  };
 }
 
 // base-space patches: a context is an open set of the measured cover, drawn as
@@ -1937,6 +2050,12 @@ const SCENES = {
          eng: "What did this run actually measure — and what does it stay silent about?" },
     show: { cells: 1, atoms: 1, struts: 1, faces: 1, labels: 1, verdict: 1 },
   },
+  sagaDescent: {
+    title: { math: "SAGA diagnostic staircase", eng: "SAGA diagnostic staircase" },
+    q: { math: "H⁰ → H¹ → H² の診断階段を packet の投影として読む",
+         eng: "Follow premise → residual class → comparison → silence from the measured packet" },
+    show: { saga: 1, labels: 1 },
+  },
 };
 let currentScene = "nerve";
 
@@ -1956,6 +2075,7 @@ function applyScene(id, opts = {}) {
 
   // silence note when a scene's measured content is absent
   noteSilence(id);
+  renderSagaHud();
   applyLayerToggles();
   // twist view swaps the seam (and the atom clutter) for the double cover inside
   // the gluing scene; on packet/derivation disagreement it stays silent (packet is
@@ -1964,6 +2084,19 @@ function applyScene(id, opts = {}) {
   if (G.twist.visible) { G.seam.visible = false; G.atoms.visible = false; G.faces.visible = false; }
   if (!opts.keepCamera) frameScene(id);   // sequence playback keeps the camera stable across frames
   updateStatus();
+}
+
+function renderSagaHud() {
+  const question = document.getElementById("question");
+  const degree = document.getElementById("saga-degree-hud");
+  const nextEl = document.getElementById("saga-what-next");
+  const active = currentScene === "sagaDescent";
+  question.classList.toggle("saga-active", active);
+  if (!active) { degree.textContent = ""; nextEl.textContent = ""; return; }
+  degree.textContent = "SAGA height: H⁰ → H¹ → H² · this scene only";
+  const next = (MODEL?.saga?.stages || []).map((stage) => sagaWhatNext(stage, MODEL.saga))
+    .find((text) => text);
+  nextEl.textContent = next ? `whatNext: ${next}` : "";
 }
 
 function noteSilence(id) {
@@ -1982,6 +2115,8 @@ function noteSilence(id) {
     { silent = true; msg = "Twist view is silent: the display derivation disagreed with the packet verdict — the packet is authoritative."; }
   if (id === "sections" && MODEL && !(G.sections.userData.declaredCount > 0))
     { silent = true; msg = "No section values were declared in this ArchMap — nothing to lift. (silence, not an empty-sheaf verdict)"; }
+  if (id === "sagaDescent" && !(MODEL && MODEL.saga && Array.isArray(MODEL.saga.stages)))
+    { silent = true; msg = "No sagaDescent projection was supplied by this packet — the SAGA scene stays silent."; }
   document.getElementById("st-boundary").textContent = silent ? msg : (MODEL ? MODEL.boundary : "");
 }
 
@@ -2020,7 +2155,7 @@ const SCENE_MAP = {
   overview: "nerve", "site-cover": "nerve", "cech-gluing": "gluing", "cech-h1-mismatch": "gluing",
   obstruction: "forbidden", "repair-dual": "forbidden", "law-conflict-tor": "nerve",
   "hodge-debt-field": "curvature", "analytic-overlay": "curvature", "period-stokes": "periods",
-  "boundary-assumption": "boundary", "source-evidence": "boundary",
+  "boundary-assumption": "boundary", "source-evidence": "boundary", "saga-descent": "sagaDescent",
 };
 function insightLane(ins) {
   if (ins.isObstruction) return COL.nonzero;                           // measured NONZERO obstruction → amber
@@ -2843,6 +2978,9 @@ window.__arch = {
       cam: [+camera.position.x.toFixed(1), +camera.position.y.toFixed(1), +camera.position.z.toFixed(1)],
       target: [+controls.target.x.toFixed(1), +controls.target.y.toFixed(1), +controls.target.z.toFixed(1)],
       bloomOk, termMode: TERM_MODE, decor: DECOR,
+      sagaStageCount: G.saga.children.filter((child) => child.userData.stageId).length,
+      sagaStageIds: G.saga.children.filter((child) => child.userData.stageId).map((child) => child.userData.stageId),
+      sagaHud: document.getElementById("saga-degree-hud").textContent,
     };
   },
   setScene: applyScene,
