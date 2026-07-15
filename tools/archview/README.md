@@ -114,6 +114,9 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
 cp tools/archview/archview.html .tmp/archview-demo/
 python3 -m http.server 8000 --directory .tmp/archview-demo
 # → http://localhost:8000/archview.html
+
+# ③ Chrome headless smoke test: SAGA stage ⇔ Three.js scene, HUD, and whatNext
+node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo
 ```
 
 リポジトリ全体を配信して `archview.html` を開き、`archsig-atom-viewer-data.json` をドラッグしてもよい。

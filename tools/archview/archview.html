@@ -1191,9 +1191,15 @@ function buildSagaDescent() {
     ["comparison", "transfer-comparison"],
     ["silence", "silence"],
   ];
-  if (!saga || !Array.isArray(saga.stages) || saga.stages.length !== expected.length) return;
+  if (!saga || !Array.isArray(saga.stages) || saga.stages.length !== expected.length) {
+    window.__archviewSagaState = { valid: false, stageCount: 0, stageIds: [] };
+    return;
+  }
   if (saga.stages.some((stage, index) =>
-    stage?.order !== index || stage?.stageId !== expected[index][0] || stage?.visualRole !== expected[index][1])) return;
+    stage?.order !== index || stage?.stageId !== expected[index][0] || stage?.visualRole !== expected[index][1])) {
+    window.__archviewSagaState = { valid: false, stageCount: saga.stages.length, stageIds: saga.stages.map((stage) => stage?.stageId || null) };
+    return;
+  }
   const stages = saga.stages;
   const points = [];
   for (let index = 0; index < 4; index++) {
@@ -1245,6 +1251,13 @@ function buildSagaDescent() {
   }
   const title = makeLabel("SAGA diagnostic staircase · measured projection", { color: "#dbe7f8", scale: 0.58, bg: "rgba(8,12,20,0.84)" });
   title.position.set(0, 47, 0); G.saga.add(title);
+  window.__archviewSagaState = {
+    valid: true,
+    stageCount: stages.length,
+    stageIds: stages.map((stage) => stage.stageId),
+    stageStatuses: stages.map((stage) => stage.status || "not_computed"),
+    renderedStageCount: G.saga.children.filter((child) => child.userData.stageId).length,
+  };
 }
 
 // base-space patches: a context is an open set of the measured cover, drawn as
