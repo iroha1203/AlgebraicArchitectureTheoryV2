@@ -1,349 +1,2244 @@
 # PRD: AAT Lean Closed-Equational Law Geometry
 
 - 作成: 2026-07-12
-- 対象: `Formal/AG/LawAlgebra`のlaw witness・ideal sheaf・lawful closed geometry・factorization層、examples、aggregate、statement contracts、axiom audit、Lean台帳
-- 数学的正典: `docs/aat/algebraic_geometric_theory/` 第III部 定義5.1〜11.1、Appendix A.6〜A.8
-- 品質基準: `AGENTS.md`、`docs/guideline.md`、`docs/aat/guideline.md`、`docs/aat/lean_quality_standard.md`
+- 改訂: 2026-07-15
+- 対象module:
+  - `Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean`
+  - `Formal/AG/LawAlgebra/ClosedEquationalGeometryFiniteExample.lean`
+  - `Formal/AG/StatementContractsClosedEquationalGeometry.lean`
+  - `Formal/AG/AxiomAudit.lean`
+  - `Formal/AG/LawAlgebra.lean`
+  - `Formal/AG/StatementContracts.lean`
+  - `Formal/AG.lean`
+- 数学的正典:
+  - `docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md`
+    定義5.1、5.2、5.2A、5.2B、6.1、6.2、7.1、7.2、定理11.1、
+    定義11.3、定理11.4
+  - `docs/aat/algebraic_geometric_theory/appendix.md` A.6〜A.8
+- 品質基準: `AGENTS.md`、`docs/guideline.md`、`docs/aat/guideline.md`、
+  `docs/aat/lean_quality_standard.md`
 - tracking Issue: 未作成。Issue作成と依存登録が済むまで実行不可
-- executable contract: `Formal/AG/StatementContractsClosedEquationalGeometry.lean`。実装と同時に作成し、CIでelaborateする
+- statement contract正本: 本PRDの`Statement Design`
+- executable contract: `Formal/AG/StatementContractsClosedEquationalGeometry.lean`
 - 実行単位: GitHub tracking Issue配下の `1 Issue = 1 PR`
 
 ## 実行開始条件
 
-- tracking Issueが作成され、対象main commit、target一覧、material premise表、子Issue依存が登録されている。
-- 同Issueが、actual Mathlib `Scheme`、global AAT decoration、actual affine open cover、
-  ringed AAT site section-ring comparisonを提供するmerged宣言へのdependencyを持つ。
+次をすべて満たした時点で実装を開始する。
+
+1. tracking Issueに対象main commit、担当module、SD0〜SD9のtarget一覧、SD8のmaterial premise表、
+   親子Issue依存が登録されている。
+2. 次のmerged宣言が対象main commit上に存在し、signatureが本PRDのSD0と一致している。
+   - `RawAmbientRestrictionSystem`
+   - `SemanticLawEquationWitnessIdealCore`
+   - `AATReadingDecoration`
+   - `AATReadingDecoration.pullback`
+   - `StandardArchitectureScheme`
+   - `StandardArchitectureScheme.affineOpenCover`
+   - `FiniteExamples.StandardArchitectureScheme.twoChartReferenceModel`
+3. Mathlibの次のAPIをscratch fileで`#check`し、採用するexact nameと引数順をIssueに固定している。
+   - `Scheme.IdealSheafData`
+   - `Scheme.IdealSheafData.ofIdealTop`
+   - `Scheme.IdealSheafData.subscheme`
+   - `Scheme.IdealSheafData.subschemeι`
+   - `Scheme.IdealSheafData.subschemeCover`
+   - `Scheme.IdealSheafData.subschemeObjIso`
+   - `Scheme.IdealSheafData.ker_subschemeι`
+   - `Scheme.IdealSheafData.range_subschemeι`
+   - `Scheme.IdealSheafData.comap`
+   - `Scheme.IdealSheafData.map_gc`
+   - `Scheme.IdealSheafData.map_bot`
+   - `Scheme.IdealSheafData.ideal_iSup`
+   - `Scheme.IdealSheafData.inclusion`
+   - `Scheme.IdealSheafData.inclusion_subschemeι`
+   - `Scheme.IdealSheafData.inclusion_id`
+   - `Scheme.IdealSheafData.inclusion_comp`
+   - `IsClosedImmersion.lift`
+   - `IsClosedImmersion.lift_fac`
+   また、`Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean`は
+   `Formal.AG.LawAlgebra.StandardScheme`、
+   `Mathlib.AlgebraicGeometry.IdealSheaf.Functorial`、
+   `Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme`、
+   `Mathlib.AlgebraicGeometry.Morphisms.Separated`を直接importする。
+   最後のimportは`Scheme.IdealSheafData.inclusion`の`IsClosedImmersion` instanceに必要である。
+4. 実装前statement reviewで、SD0〜SD7の全signatureとSD9のexample signatureが
+   `Approved`になっている。
 
 いずれかが欠ける間、このPRDは実行しない。
 
+### Module import contract
+
+transitive importへの偶然の依存を避けるため、担当moduleのdirect importを次で固定する。
+
+| module | direct imports |
+| --- | --- |
+| `ClosedEquationalGeometry.lean` | `Formal.AG.Atom.LawfulnessZero`、`Formal.AG.LawAlgebra.LawEquation`、`Formal.AG.LawAlgebra.StandardScheme`、`Mathlib.AlgebraicGeometry.IdealSheaf.Functorial`、`Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme`、`Mathlib.AlgebraicGeometry.Morphisms.Separated` |
+| `ClosedEquationalGeometryFiniteExample.lean` | `Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.LawAlgebra.StandardSchemeFiniteExample`、`Formal.AG.LawAlgebra.FiniteExamples` |
+| `StatementContractsClosedEquationalGeometry.lean` | `Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample` |
+
+`AxiomAudit.lean`は`Formal.AG`から到達するだけで済ませず、上記二実装moduleを直接importしてから
+全new public theoremを監査namespaceへ登録する。aggregate側のdirect / transitive接続はR8とAC38で検査する。
+
 ## Statement Design
 
-この節を本PRDのfixed statement designとする。別のMarkdown contractは作成しない。
-target名、入力、量化対象、material premise、結論、主要definition signatureを実装中に変更しない。
-実装後は`Formal/AG/StatementContractsClosedEquationalGeometry.lean`が下記targetを直接参照し、
-実装宣言のLean signatureを回帰検査する。
+この節を本PRDの唯一のfixed statement designとする。別のMarkdown statement contractは作らない。
+実装者はtarget名、namespace、共通parameter、入力、量化対象、主要definitionのshapeを変更しない。
+変更が必要になった場合は実装を止め、該当SD、追加または削除した仮定、数学本文との対応を
+tracking Issueへ報告して再承認を受ける。
 
-### SD1 — law reading、ideal sheaf、closed geometry
+`Formal/AG/StatementContractsClosedEquationalGeometry.lean`は、下記signatureを
+`example : fixed type := implementation`の形で直接検査する。単なる`#check`、名前の存在、
+別名、wrapper、同値な弱いstatementはcontract達成に数えない。
+
+### 共通namespaceとparameter
 
 ```lean
-structure ClosedEquationalLawReading
-    (X : StandardArchitectureScheme k) where
-  LawIndex : Type u
-  selected : Set LawIndex
-  witness : ∀ L, selected L → ClosedEquationalLawWitness X L
+namespace AAT.AG.LawAlgebra
 
-def lawWitnessIdealSheaf (U : ClosedEquationalLawReading X)
-    (L : U.LawIndex) (hL : U.selected L) : X.underlying.IdealSheafData
+open CategoryTheory Opposite
+open AlgebraicGeometry
+open scoped AlgebraicGeometry
 
-def lawGeneratedIdealSheaf (U : ClosedEquationalLawReading X) :
-    X.underlying.IdealSheafData :=
-  ⨆ L, ⨆ hL : U.selected L, lawWitnessIdealSheaf U L hL
+universe u v
 
-def lawfulClosedSubscheme (U : ClosedEquationalLawReading X) :
-    AlgebraicGeometry.Scheme := (lawGeneratedIdealSheaf U).subscheme
-
-def lawfulClosedImmersion (U : ClosedEquationalLawReading X) :
-    lawfulClosedSubscheme U ⟶ X.underlying :=
-  (lawGeneratedIdealSheaf U).subschemeι
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {k : Type v} [CommRing k]
+variable (raw : RawAmbientRestrictionSystem S k)
+variable [HasSheafify S.topology (AATCommAlgCat k)]
+variable (X : StandardArchitectureScheme raw)
 ```
 
-`ClosedEquationalLawReading`はlaw/witness/context/coefficient provenanceだけを持ち、ideal sheaf、
-closed subscheme、closed immersion、lawfulness、factorizationをfieldに持たない。
-`LawfulAlong`はsemantic predicateとして定義し、ideal comap zeroの別名にしない。
+全targetは同じ`raw`、`S`、`k`、`HasSheafify`、`X`を使う。
+law indexは新しい独立型を保存せず、`S.lawUniverse.Index`を使う。
+coordinate、signature、law universeは`X.decoration`から同じsite provenanceを読む。
 
-### SD2 — generationとactual factorization
+### 固定対象 — atom-indexed exact restriction-stable regime
+
+本PRDは、merged `SemanticLawEquationWitnessIdealCore`が与えるlaw/atom-indexed witness familyを、
+canonical sheafified section ringと`X.decoration.interpretation`へ送るregimeを実装する。
+各witnessは同じatom indexでrestrictionされるため、coordinate equalityからbasic-open ideal equalityを導き、
+actual `IdealSheafData`を直接構成する。
+
+このcoreは数学本文の定義11.3・定理11.4をLeanへ蒸留した既存宣言である。本PRDは、
+coreの`lawWitnessIdeal`をbridgeの環準同型で移したidealが、移されたatom-indexed coordinatesのspanと
+一致することを固定し、そのspanをactual Scheme上のideal sheafへ接続する。
+
+contextごとに任意のwitness type `Viol_i(V)`が変化する一般形、restriction inclusionだけからの
+categorical sheaf-image constructionは本PRDのtargetに含めない。本PRDは数学本文の定義6.2が許す
+exact restriction-compatible caseを実装し、一般sheaf-image case全体の実装完了を主張しない。
+この対象の制限はcore bridge、finite firing、Acceptance Criteriaで検査する。
+
+### SD0 — geometric law readingとclosed-equational witness
+
+section-level semantic predicateとequation witness dataを分ける。
+semantic predicateはideal vanishingの別名にせず、witness dataはidealそのものをfieldに持たない。
 
 ```lean
-def WitnessVanishes (U : ClosedEquationalLawReading X)
-    (s : T ⟶ X.underlying) : Prop :=
-  ∀ L, ∀ hL : U.selected L, (lawWitnessIdealSheaf U L hL).comap s = ⊥
+/-- Test Scheme上のsectionに対する、site由来law indexごとのsemantic reading。 -/
+structure GeometricLawReading where
+  HoldsOn : ∀ {T : AlgebraicGeometry.Scheme},
+    (T ⟶ X.underlying) → S.lawUniverse.Index → Prop
+
+@[ext] theorem GeometricLawReading.ext
+    (R Q : GeometricLawReading raw X)
+    (h : R.HoldsOn = Q.HoldsOn) : R = Q
+
+/-- `HoldsOn`がtest Schemeのbase changeで保存されること。 -/
+def IsGeometricLawReading (R : GeometricLawReading raw X) : Prop :=
+  ∀ {T T' : AlgebraicGeometry.Scheme}
+    (s : T ⟶ X.underlying) (f : T' ⟶ T) (i : S.lawUniverse.Index),
+    R.HoldsOn s i → R.HoldsOn (f ≫ s) i
+
+/-- law `i`のatom-indexed violation coordinatesを各affine open上に置くdata。 -/
+structure ClosedEquationalLawWitness (i : S.lawUniverse.Index) where
+  coordinate : ∀ V : X.underlying.affineOpens,
+    U.Atom → Γ(X.underlying, V)
+
+@[ext] theorem ClosedEquationalLawWitness.ext
+    {i : S.lawUniverse.Index}
+    (W Z : ClosedEquationalLawWitness raw X i)
+    (h : W.coordinate = Z.coordinate) : W = Z
+
+/-- witness coordinatesがbasic open restrictionと一致すること。 -/
+def IsClosedEquationalLawWitness
+    {i : S.lawUniverse.Index}
+    (W : ClosedEquationalLawWitness raw X i) : Prop :=
+  ∀ (V : X.underlying.affineOpens) (f : Γ(X.underlying, V)) (a : U.Atom),
+    X.underlying.presheaf.map
+        (homOfLE (X.underlying.basicOpen_le f)).op (W.coordinate V a) =
+      W.coordinate (X.underlying.affineBasicOpen f) a
+
+/-- 一つのlawのlocal witness idealはcoordinate rangeのspanである。 -/
+def localLawWitnessIdeal
+    {i : S.lawUniverse.Index}
+    (W : ClosedEquationalLawWitness raw X i)
+    (V : X.underlying.affineOpens) : Ideal Γ(X.underlying, V) :=
+  Ideal.span (Set.range (W.coordinate V))
+
+/-- coordinate compatibilityから、IdealSheafDataが要求するexact ideal equalityを導く。 -/
+theorem localLawWitnessIdeal_map_basicOpen
+    {i : S.lawUniverse.Index}
+    (W : ClosedEquationalLawWitness raw X i)
+    (hW : IsClosedEquationalLawWitness raw X W)
+    (V : X.underlying.affineOpens) (f : Γ(X.underlying, V)) :
+    Ideal.map
+        (X.underlying.presheaf.map
+          (homOfLE (X.underlying.basicOpen_le f)).op).hom
+        (localLawWitnessIdeal raw X W V) =
+      localLawWitnessIdeal raw X W (X.underlying.affineBasicOpen f)
+
+/-- global equationsを各affine openへ制限するcanonical constructor。 -/
+noncomputable def ClosedEquationalLawWitness.ofGlobalSections
+    (i : S.lawUniverse.Index)
+    (equation : U.Atom → Γ(X.underlying, ⊤)) :
+    ClosedEquationalLawWitness raw X i
+
+theorem ClosedEquationalLawWitness.ofGlobalSections_valid
+    (i : S.lawUniverse.Index)
+    (equation : U.Atom → Γ(X.underlying, ⊤)) :
+    IsClosedEquationalLawWitness raw X
+      (ClosedEquationalLawWitness.ofGlobalSections raw X i equation)
+
+@[simp] theorem ClosedEquationalLawWitness.ofGlobalSections_coordinate
+    (i : S.lawUniverse.Index)
+    (equation : U.Atom → Γ(X.underlying, ⊤))
+    (V : X.underlying.affineOpens) (a : U.Atom) :
+    (ClosedEquationalLawWitness.ofGlobalSections raw X i equation).coordinate V a =
+      X.underlying.presheaf.map (homOfLE le_top).op (equation a)
+
+/-- existing law-equation coreをcanonical sheafified section ringsへ送るprimitive data。 -/
+structure SemanticLawEquationSchemeBridge
+    (G : SemanticLawEquationWitnessIdealCore S) where
+  toSheafifiedSection : ∀ W : S.category,
+    G.Observable W →+* SheafifiedSectionRing raw W
+
+@[ext] theorem SemanticLawEquationSchemeBridge.ext
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B C : SemanticLawEquationSchemeBridge raw G)
+    (h : B.toSheafifiedSection = C.toSheafifiedSection) : B = C
+
+/-- bridgeがraw restrictionとcanonical sheafified restrictionを可換にすること。 -/
+def IsSemanticLawEquationSchemeBridge
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G) : Prop :=
+  ∀ {source target : S.category} (f : source ⟶ target)
+    (x : G.Observable target),
+    B.toSheafifiedSection source (G.restrict f x) =
+      sheafifiedRestriction raw f (B.toSheafifiedSection target x)
+
+/-- core witnessをselected decorationからactual global sectionへ送る。 -/
+noncomputable def semanticCoreGlobalEquation
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (i : S.lawUniverse.Index) (a : U.Atom) : Γ(X.underlying, ⊤) :=
+  X.decoration.interpretation
+    (B.toSheafifiedSection X.decoration.context
+      (G.violationWitness X.decoration.context i a))
+
+/-- global equationsをsectionに沿ってgeneratorごとに評価するpredicate。 -/
+def GlobalEquationsVanishAlong
+    (equation : U.Atom → Γ(X.underlying, ⊤))
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) : Prop :=
+  ∀ a, s.appTop (equation a) = 0
+
+/-- core equation evaluationから作るcanonical geometric reading。 -/
+noncomputable def GeometricLawReading.ofSemanticCore
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G) :
+    GeometricLawReading raw X where
+  HoldsOn s i :=
+    GlobalEquationsVanishAlong raw X
+      (semanticCoreGlobalEquation raw X G B i) s
+
+theorem GeometricLawReading.ofSemanticCore_valid
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G) :
+    IsGeometricLawReading raw X
+      (GeometricLawReading.ofSemanticCore raw X G B)
+
+@[simp] theorem GeometricLawReading.ofSemanticCore_holdsOn
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (i : S.lawUniverse.Index) :
+    (GeometricLawReading.ofSemanticCore raw X G B).HoldsOn s i ↔
+      ∀ a, s.appTop (semanticCoreGlobalEquation raw X G B i a) = 0
+
+/-- presentation-stable bridgeはcore witness restrictionをcanonical section restrictionへ送る。 -/
+theorem semanticCoreWitness_restrict
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (hB : IsSemanticLawEquationSchemeBridge raw G B)
+    {source target : S.category} (f : source ⟶ target)
+    (i : S.lawUniverse.Index) (a : U.Atom) :
+    B.toSheafifiedSection source (G.violationWitness source i a) =
+      sheafifiedRestriction raw f
+        (B.toSheafifiedSection target (G.violationWitness target i a))
+
+/-- core witness idealのbridge像は、移されたatom-indexed coordinatesのspanと一致する。 -/
+theorem semanticCoreLawWitnessIdeal_map
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (W : S.category) (i : S.lawUniverse.Index) :
+    Ideal.map (B.toSheafifiedSection W) (G.lawWitnessIdeal W i) =
+      Ideal.span (Set.range (fun a =>
+        B.toSheafifiedSection W (G.violationWitness W i a)))
+
+/-- actual atlas chartで、global equationのpullbackはcoreのlocal witnessに戻る。 -/
+theorem semanticCoreGlobalEquation_on_chart
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (hB : IsSemanticLawEquationSchemeBridge raw G B)
+    (j : X.atlas.Index) (i : S.lawUniverse.Index) (a : U.Atom) :
+    ((X.atlas.chart j).map.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw (X.atlas.chart j).context)).hom)
+        (semanticCoreGlobalEquation raw X G B i a) =
+      B.toSheafifiedSection (X.atlas.chart j).context
+        (G.violationWitness (X.atlas.chart j).context i a)
+
+/-- existing coreからglobal-section constructorを経由するcanonical witness。 -/
+noncomputable def ClosedEquationalLawWitness.ofSemanticCore
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (i : S.lawUniverse.Index) : ClosedEquationalLawWitness raw X i :=
+  ClosedEquationalLawWitness.ofGlobalSections raw X i
+    (semanticCoreGlobalEquation raw X G B i)
+
+theorem ClosedEquationalLawWitness.ofSemanticCore_valid
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (i : S.lawUniverse.Index) :
+    IsClosedEquationalLawWitness raw X
+      (ClosedEquationalLawWitness.ofSemanticCore raw X G B i)
+```
+
+`IsClosedEquationalLawWitness`はcoordinate-level restriction equalityであり、
+任意のideal familyのcompatibility proofではない。`localLawWitnessIdeal_map_basicOpen`は
+`Ideal.map_span`と同じatom indexから導く。新主経路は`ofSemanticCore`を使い、
+`semanticCoreWitness_restrict`がexisting core、raw restriction、canonical sheafificationの
+provenanceを固定する。`ofGlobalSections`だけから作るreadingは補助constructorであり、
+既存core接続の完了証拠には数えない。
+
+### SD1 — closed law selection、validity、required/allの分離
+
+```lean
+/-- semantic readingとclosed-equational law witnessesを束ねるdata。 -/
+structure ClosedEquationalLawReading where
+  geometric : GeometricLawReading raw X
+  closed : Set S.lawUniverse.Index
+  witness : ∀ i, closed i → ClosedEquationalLawWitness raw X i
+
+@[ext] theorem ClosedEquationalLawReading.ext
+    (R Q : ClosedEquationalLawReading raw X)
+    (hgeometric : R.geometric = Q.geometric)
+    (hclosed : R.closed = Q.closed)
+    (hwitness : HEq R.witness Q.witness) : R = Q
+
+/-- ideal-sheaf constructionに必要なwitness compatibilityだけを表すpredicate。 -/
+def IsClosedEquationalWitnessReading
+    (R : ClosedEquationalLawReading raw X) : Prop :=
+  ∀ i (hi : R.closed i),
+    IsClosedEquationalLawWitness raw X (R.witness i hi)
+
+/-- semantic base-change stabilityも含むfull recognition predicate。 -/
+structure IsClosedEquationalLawReading
+    (R : ClosedEquationalLawReading raw X) : Prop where
+  geometric_stable : IsGeometricLawReading raw X R.geometric
+  witness_compatible : IsClosedEquationalWitnessReading raw X R
+
+/-- 数学本文の`forall required i, ClosedEquational_U(i)`。 -/
+def RequiredClosed (R : ClosedEquationalLawReading raw X) : Prop :=
+  ∀ i, S.lawUniverse.Required i → R.closed i
+
+/-- required lawsだけを読むsection-level semantic lawfulness。 -/
+def SemanticLawfulAlong
+    (R : ClosedEquationalLawReading raw X)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) : Prop :=
+  ∀ i, S.lawUniverse.Required i → R.geometric.HoldsOn s i
+
+/-- selected closed-equational lawsだけを読むsemantic lawfulness。 -/
+def ClosedSemanticLawfulAlong
+    (R : ClosedEquationalLawReading raw X)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) : Prop :=
+  ∀ i, R.closed i → R.geometric.HoldsOn s i
+
+/-- law universeの全indexを読む本文どおりのfull semantic lawfulness。 -/
+def FullySemanticLawfulAlong
+    (R : ClosedEquationalLawReading raw X)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) : Prop :=
+  ∀ i, R.geometric.HoldsOn s i
+
+/-- full theoremで要求する、全selected lawのclosed-equationality。 -/
+def AllSelectedLawsClosed
+    (R : ClosedEquationalLawReading raw X) : Prop :=
+  ∀ i, R.closed i
+
+/-- existing coreとscheme bridgeから作る新主経路のreading。 -/
+noncomputable def ClosedEquationalLawReading.ofSemanticCore
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G) :
+    ClosedEquationalLawReading raw X where
+  geometric := GeometricLawReading.ofSemanticCore raw X G B
+  closed := Set.univ
+  witness i _ := ClosedEquationalLawWitness.ofSemanticCore raw X G B i
+
+@[simp] theorem ClosedEquationalLawReading.ofSemanticCore_witness
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (i : S.lawUniverse.Index)
+    (hi : (ClosedEquationalLawReading.ofSemanticCore raw X G B).closed i) :
+    (ClosedEquationalLawReading.ofSemanticCore raw X G B).witness i hi =
+      ClosedEquationalLawWitness.ofSemanticCore raw X G B i
+
+theorem ClosedEquationalLawReading.ofSemanticCore_witnessCompatible
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G) :
+    IsClosedEquationalWitnessReading raw X
+      (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+
+theorem ClosedEquationalLawReading.ofSemanticCore_valid
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G) :
+    IsClosedEquationalLawReading raw X
+      (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+
+theorem ClosedEquationalLawReading.ofSemanticCore_requiredClosed
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G) :
+    RequiredClosed raw X
+      (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+
+theorem ClosedEquationalLawReading.ofSemanticCore_allSelectedLawsClosed
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G) :
+    AllSelectedLawsClosed raw X
+      (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+```
+
+`RequiredClosed R`は`R.closed = Set.univ`を要求しない。
+required closed-equational lawsと、optional / derivedを含むselected closed-equational laws全体を
+以降のideal、subscheme、factorizationで混同しない。本文のfull semantic theoremには
+`AllSelectedLawsClosed R`を明示し、closed subsetだけを量化するtheoremと区別する。
+
+### SD2 — actual IdealSheafDataとrequired/all obstruction ideals
+
+```lean
+/-- local witness idealsから直接作るactual Mathlib ideal sheaf。 -/
+noncomputable def lawWitnessIdealSheaf
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (i : S.lawUniverse.Index) (hi : R.closed i) :
+    X.underlying.IdealSheafData where
+  ideal := localLawWitnessIdeal raw X (R.witness i hi)
+  map_ideal_basicOpen :=
+    localLawWitnessIdeal_map_basicOpen raw X (R.witness i hi)
+      (hR i hi)
+
+@[simp] theorem lawWitnessIdealSheaf_ideal
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (i : S.lawUniverse.Index) (hi : R.closed i)
+    (V : X.underlying.affineOpens) :
+    (lawWitnessIdealSheaf raw X R hR i hi).ideal V =
+      localLawWitnessIdeal raw X (R.witness i hi) V
+
+/-- global equation constructorはMathlib `ofIdealTop`と一致する。 -/
+theorem lawWitnessIdealSheaf_ofGlobalSections
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (i : S.lawUniverse.Index) (hi : R.closed i)
+    (equation : U.Atom → Γ(X.underlying, ⊤))
+    (hw : R.witness i hi =
+      ClosedEquationalLawWitness.ofGlobalSections raw X i equation) :
+    lawWitnessIdealSheaf raw X R hR i hi =
+      Scheme.IdealSheafData.ofIdealTop (X := X.underlying)
+        (Ideal.span (Set.range equation))
+
+/-- `I_Ob^U`: required closed-equational law ideal sheavesのsupremum。 -/
+noncomputable def lawGeneratedIdealSheaf
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    X.underlying.IdealSheafData :=
+  ⨆ (i : S.lawUniverse.Index)
+    (hi : S.lawUniverse.Required i),
+      lawWitnessIdealSheaf raw X R hR i (hclosed i hi)
+
+/-- `I_Ob^{U,all}`: selected closed-equational law全体のsupremum。 -/
+noncomputable def allLawGeneratedIdealSheaf
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R) :
+    X.underlying.IdealSheafData :=
+  ⨆ (i : S.lawUniverse.Index) (hi : R.closed i),
+    lawWitnessIdealSheaf raw X R hR i hi
+
+@[simp] theorem lawGeneratedIdealSheaf_ideal
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (V : X.underlying.affineOpens) :
+    (lawGeneratedIdealSheaf raw X R hR hclosed).ideal V =
+      ⨆ (i : S.lawUniverse.Index)
+        (hi : S.lawUniverse.Required i),
+          (lawWitnessIdealSheaf raw X R hR i (hclosed i hi)).ideal V
+
+@[simp] theorem allLawGeneratedIdealSheaf_ideal
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (V : X.underlying.affineOpens) :
+    (allLawGeneratedIdealSheaf raw X R hR).ideal V =
+      ⨆ (i : S.lawUniverse.Index) (hi : R.closed i),
+        (lawWitnessIdealSheaf raw X R hR i hi).ideal V
+
+theorem lawGeneratedIdealSheaf_le_all
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    lawGeneratedIdealSheaf raw X R hR hclosed ≤
+      allLawGeneratedIdealSheaf raw X R hR
+```
+
+一般constructorは`IdealSheafData`を`ideal`と`map_ideal_basicOpen`から直接構成する。
+`IdealSheafData.ofIdeals`は任意family以下の最大ideal sheafを返すため、
+objectwise equalityが別途証明されない限り主経路に使わない。
+
+### SD3 — actual closed geometry、quotient cover、pulled decoration
+
+```lean
+noncomputable def lawfulClosedSubscheme
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) : AlgebraicGeometry.Scheme :=
+  (lawGeneratedIdealSheaf raw X R hR hclosed).subscheme
+
+noncomputable def lawfulClosedImmersion
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    lawfulClosedSubscheme raw X R hR hclosed ⟶ X.underlying :=
+  (lawGeneratedIdealSheaf raw X R hR hclosed).subschemeι
+
+noncomputable def allLawfulClosedSubscheme
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R) : AlgebraicGeometry.Scheme :=
+  (allLawGeneratedIdealSheaf raw X R hR).subscheme
+
+noncomputable def allLawfulClosedImmersion
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R) :
+    allLawfulClosedSubscheme raw X R hR ⟶ X.underlying :=
+  (allLawGeneratedIdealSheaf raw X R hR).subschemeι
+
+theorem lawfulClosedImmersion_isClosedImmersion
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    IsClosedImmersion (lawfulClosedImmersion raw X R hR hclosed)
+
+@[simp] theorem lawfulClosedImmersion_ker
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    (lawfulClosedImmersion raw X R hR hclosed).ker =
+      lawGeneratedIdealSheaf raw X R hR hclosed
+
+@[simp] theorem lawfulClosedImmersion_range
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    Set.range (lawfulClosedImmersion raw X R hR hclosed) =
+      (lawGeneratedIdealSheaf raw X R hR hclosed).support
+
+noncomputable def lawfulClosedSubschemeCover
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    (lawfulClosedSubscheme raw X R hR hclosed).AffineOpenCover :=
+  (lawGeneratedIdealSheaf raw X R hR hclosed).subschemeCover
+
+@[simp] theorem lawfulClosedSubschemeCover_X
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (V : X.underlying.affineOpens) :
+    (lawfulClosedSubschemeCover raw X R hR hclosed).X V =
+      CommRingCat.of
+        (Γ(X.underlying, V) ⧸
+          (lawGeneratedIdealSheaf raw X R hR hclosed).ideal V)
+
+noncomputable def lawfulClosedSubschemeObjIso
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (V : X.underlying.affineOpens) :
+    Γ(lawfulClosedSubscheme raw X R hR hclosed,
+        lawfulClosedImmersion raw X R hR hclosed ⁻¹ᵁ V) ≅
+      CommRingCat.of
+        (Γ(X.underlying, V) ⧸
+          (lawGeneratedIdealSheaf raw X R hR hclosed).ideal V) :=
+  (lawGeneratedIdealSheaf raw X R hR hclosed).subschemeObjIso V
+
+noncomputable def lawfulClosedDecoration
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    AATReadingDecoration raw (lawfulClosedSubscheme raw X R hR hclosed) :=
+  AATReadingDecoration.pullback raw
+    (lawfulClosedImmersion raw X R hR hclosed) X.decoration
+
+@[simp] theorem lawfulClosedDecoration_context
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    (lawfulClosedDecoration raw X R hR hclosed).context = X.decoration.context
+
+@[simp] theorem lawfulClosedDecoration_lawUniverse
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    (lawfulClosedDecoration raw X R hR hclosed).lawUniverse raw =
+      X.decoration.lawUniverse raw
+
+@[simp] theorem lawfulClosedDecoration_signature
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    (lawfulClosedDecoration raw X R hR hclosed).signature raw =
+      X.decoration.signature raw
+
+@[simp] theorem lawfulClosedDecoration_coordinateSection
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (c : (X.decoration.coordinateFamily raw).CoordX) :
+    (lawfulClosedDecoration raw X R hR hclosed).coordinateSection raw c =
+      (lawfulClosedImmersion raw X R hR hclosed).appTop
+        (X.decoration.coordinateSection raw c)
+
+noncomputable def fullToRequiredLawfulMap
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    allLawfulClosedSubscheme raw X R hR ⟶
+      lawfulClosedSubscheme raw X R hR hclosed :=
+  Scheme.IdealSheafData.inclusion
+    (lawGeneratedIdealSheaf_le_all raw X R hR hclosed)
+
+theorem fullToRequiredLawfulMap_isClosedImmersion
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    IsClosedImmersion (fullToRequiredLawfulMap raw X R hR hclosed)
+
+@[reassoc] theorem fullToRequiredLawfulMap_immersion
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    fullToRequiredLawfulMap raw X R hR hclosed ≫
+        lawfulClosedImmersion raw X R hR hclosed =
+      allLawfulClosedImmersion raw X R hR
+```
+
+一般の`X.underlying`を単一の`Spec A`と仮定しない。
+affine open `V`ごとのquotient chartはMathlibの`subschemeCover`と`subschemeObjIso`で与える。
+global equation constructorをaffine Schemeへ適用した場合に限り、`ofIdealTop`と
+`equivOfIsAffine`を通して単一quotient spectrumの追加定理を証明してよい。
+
+### SD4 — law-by-law exactness、ideal lawfulness、actual factorization
+
+```lean
+/-- 一つのclosed lawについてsemantic truthがideal vanishingを含意する。 -/
+def LawIdealSound
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (i : S.lawUniverse.Index) (hi : R.closed i) : Prop :=
+  ∀ {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying),
+    R.geometric.HoldsOn s i →
+      (lawWitnessIdealSheaf raw X R hR i hi).comap s = ⊥
+
+/-- 一つのclosed lawについてideal vanishingがsemantic truthを含意する。 -/
+def LawIdealComplete
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (i : S.lawUniverse.Index) (hi : R.closed i) : Prop :=
+  ∀ {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying),
+    (lawWitnessIdealSheaf raw X R hR i hi).comap s = ⊥ →
+      R.geometric.HoldsOn s i
+
+/-- 数学本文のlaw-by-law `LawIdealExact_U(i)`。 -/
+def LawIdealExact
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (i : S.lawUniverse.Index) (hi : R.closed i) : Prop :=
+  ∀ {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying),
+    R.geometric.HoldsOn s i ↔
+      (lawWitnessIdealSheaf raw X R hR i hi).comap s = ⊥
+
+theorem lawIdealExact_iff_sound_and_complete
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (i : S.lawUniverse.Index) (hi : R.closed i) :
+    LawIdealExact raw X R hR i hi ↔
+      LawIdealSound raw X R hR i hi ∧
+        LawIdealComplete raw X R hR i hi
+
+def RequiredLawIdealExact
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) : Prop :=
+  ∀ i (hi : S.lawUniverse.Required i),
+    LawIdealExact raw X R hR i (hclosed i hi)
+
+def SelectedClosedLawIdealExact
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R) : Prop :=
+  ∀ i (hi : R.closed i), LawIdealExact raw X R hR i hi
+
+def AllLawIdealExact
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hall : AllSelectedLawsClosed raw X R) : Prop :=
+  ∀ i, LawIdealExact raw X R hR i (hall i)
+
+def WitnessVanishes
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) : Prop :=
+  ∀ i (hi : S.lawUniverse.Required i),
+    (lawWitnessIdealSheaf raw X R hR i (hclosed i hi)).comap s = ⊥
+
+def IdealLawfulAlong
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) : Prop :=
+  (lawGeneratedIdealSheaf raw X R hR hclosed).comap s = ⊥
+
+def FullIdealLawfulAlong
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) : Prop :=
+  (allLawGeneratedIdealSheaf raw X R hR).comap s = ⊥
 
 def FactorsThroughLawfulClosedSubscheme
-    (U : ClosedEquationalLawReading X) (s : T ⟶ X.underlying) :=
-  {t : T ⟶ lawfulClosedSubscheme U //
-    t ≫ lawfulClosedImmersion U = s}
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :=
+  {t : T ⟶ lawfulClosedSubscheme raw X R hR hclosed //
+    t ≫ lawfulClosedImmersion raw X R hR hclosed = s}
+
+def FactorsThroughAllLawfulClosedSubscheme
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :=
+  {t : T ⟶ allLawfulClosedSubscheme raw X R hR //
+    t ≫ allLawfulClosedImmersion raw X R hR = s}
+
+theorem idealLawfulAlong_iff_le_ker
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    IdealLawfulAlong raw X R hR hclosed s ↔
+      lawGeneratedIdealSheaf raw X R hR hclosed ≤ s.ker
+
+noncomputable def factorizationLift
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (hs : IdealLawfulAlong raw X R hR hclosed s) :
+    T ⟶ lawfulClosedSubscheme raw X R hR hclosed
+
+@[reassoc] theorem factorizationLift_fac
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (hs : IdealLawfulAlong raw X R hR hclosed s) :
+    factorizationLift raw X R hR hclosed s hs ≫
+        lawfulClosedImmersion raw X R hR hclosed = s
+
+theorem factorization_unique
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (a b : FactorsThroughLawfulClosedSubscheme raw X R hR hclosed s) :
+    a.1 = b.1
+
+theorem idealLawfulAlong_iff_nonempty_factorsThrough
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    IdealLawfulAlong raw X R hR hclosed s ↔
+      Nonempty
+        (FactorsThroughLawfulClosedSubscheme raw X R hR hclosed s)
+
+noncomputable def allLawFactorizationLift
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (hs : FullIdealLawfulAlong raw X R hR s) :
+    T ⟶ allLawfulClosedSubscheme raw X R hR
+
+@[reassoc] theorem allLawFactorizationLift_fac
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (hs : FullIdealLawfulAlong raw X R hR s) :
+    allLawFactorizationLift raw X R hR s hs ≫
+        allLawfulClosedImmersion raw X R hR = s
+
+theorem allLawFactorization_unique
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (a b : FactorsThroughAllLawfulClosedSubscheme raw X R hR s) :
+    a.1 = b.1
+
+theorem fullIdealLawfulAlong_iff_nonempty_factorsThrough
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    FullIdealLawfulAlong raw X R hR s ↔
+      Nonempty (FactorsThroughAllLawfulClosedSubscheme raw X R hR s)
 ```
 
-`lawGeneratedIdealSheaf_eq_iSup_witness`、`lawfulClosedImmersion_isClosedImmersion`、
-`lawfulClosedImmersion_ker`、affine chart上の`Spec(A/I)` comparison iso、
-`witnessVanishes_iff_idealComap_eq_bot`、
-`idealComap_eq_bot_iff_nonempty_factorization`、`factorization_unique`を固定targetとする。
-factorizationはactual morphism、triangle equality、uniquenessで表す。
+`idealLawfulAlong_iff_le_ker`は`IdealSheafData.map_gc`と`map_bot`から導き、
+liftは`IsClosedImmersion.lift`、triangleは`lift_fac`、一意性はclosed immersionの`Mono`から導く。
+factorization proof、triangle、一意性をfieldとして外部入力しない。
 
-### SD3 — 定理11.1
-
-canonical target `lawfulnessIdealFactorizationCorrespondence`は、同じ`U`、section morphism `s`、
-architecture object、law universe、signature、obstruction valuation、zero-reflecting aggregation、
-`U`-adequate coverと、本文の七premiseに対応するsoundness、completeness、axis exactness、
-witness coverage、descent、ring restriction compatibilityの具体proofを入力する。
-結論の完全なshapeを次で固定する。
+### SD5 — 定理11.1のrequired core、closed-subset版、full all-law版
 
 ```lean
-(LawfulAlong U s ↔ WitnessVanishes U s) ∧
-(WitnessVanishes U s ↔ (lawGeneratedIdealSheaf U).comap s = ⊥) ∧
-((lawGeneratedIdealSheaf U).comap s = ⊥ ↔
-  Nonempty (FactorsThroughLawfulClosedSubscheme U s)) ∧
-(LawfulAlong U s ↔ omegaU valuation LU aggregation Obj = valuation.domain.zero) ∧
-(LawfulAlong U s ↔ RequiredSignatureAxesZero Obj Sig)
+theorem semanticLawfulAlong_iff_witnessVanishes
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (hexact : RequiredLawIdealExact raw X R hR hclosed)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    SemanticLawfulAlong raw X R s ↔
+      WitnessVanishes raw X R hR hclosed s
+
+theorem witnessVanishes_iff_idealLawfulAlong
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    WitnessVanishes raw X R hR hclosed s ↔
+      IdealLawfulAlong raw X R hR hclosed s
+
+/-- 定理11.1のrequired closed-equational core。 -/
+theorem lawfulnessIdealFactorizationCorrespondence
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (hexact : RequiredLawIdealExact raw X R hR hclosed)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    (SemanticLawfulAlong raw X R s ↔
+      WitnessVanishes raw X R hR hclosed s) ∧
+    (WitnessVanishes raw X R hR hclosed s ↔
+      IdealLawfulAlong raw X R hR hclosed s) ∧
+    (IdealLawfulAlong raw X R hR hclosed s ↔
+      Nonempty
+        (FactorsThroughLawfulClosedSubscheme raw X R hR hclosed s))
+
+theorem closedSemanticLawfulAlong_iff_fullIdealLawfulAlong
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hexact : SelectedClosedLawIdealExact raw X R hR)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    ClosedSemanticLawfulAlong raw X R s ↔
+      FullIdealLawfulAlong raw X R hR s
+
+theorem fullySemanticLawfulAlong_iff_fullIdealLawfulAlong
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hall : AllSelectedLawsClosed raw X R)
+    (hexact : AllLawIdealExact raw X R hR hall)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    FullySemanticLawfulAlong raw X R s ↔
+      FullIdealLawfulAlong raw X R hR s
+
+theorem fullLawfulnessIdealFactorizationCorrespondence
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hall : AllSelectedLawsClosed raw X R)
+    (hexact : AllLawIdealExact raw X R hR hall)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    (FullySemanticLawfulAlong raw X R s ↔
+      FullIdealLawfulAlong raw X R hR s) ∧
+    (FullIdealLawfulAlong raw X R hR s ↔
+      Nonempty (FactorsThroughAllLawfulClosedSubscheme raw X R hR s))
 ```
 
-七premiseはtargetと同じ対象に型付く具体predicateとし、自由な`Prop` fieldや
-`LawfulnessIdealCorrespondenceAssumptions/Package`のfield射影で閉じない。
-各premiseをproof bodyで使い、前半三同値はwitnessからactual closed geometryまでの構成を使う。
+ambient inputとideal-sheaf construction validityを除き、core theoremが新たに要求する
+theorem-specific semantic premisesは`RequiredClosed`とlaw-by-law`RequiredLawIdealExact`である。
+`IsClosedEquationalWitnessReading`はideal-sheaf construction validityであり、
+`lawWitnessIdealSheaf`の`map_ideal_basicOpen`構成にproof-useされる。
+required indexed supremumとのextension-ideal compatibilityは`IdealSheafData.map_gc`が与える
+supremum preservationから証明し、追加入力にしない。factorization criterionもSD4から証明する。
 
-### SD4 — law inclusion
+cover上のlocal vanishingからglobal vanishingを計算する定理は本PRDに含めない。
+その定理を後続で追加する場合にのみ、`U`-adequate cover、witness coverage、
+ideal-sheaf descentを具体的なcover dataへ型付けして固定する。
+
+### SD6 — architecture object、valuation、signature axisへの別定理
+
+object-level law、valuation、signature axisはcore theoremへ混ぜない。
+section-level readingとのcomparisonとPart Iのexactnessを明示した別定理として接続する。
+
+```lean
+def RequiredObjectPointComparison
+    (R : ClosedEquationalLawReading raw X)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U) : Prop :=
+  ∀ i, S.lawUniverse.Required i →
+    (R.geometric.HoldsOn s i ↔ (S.lawUniverse.law i).holds Obj)
+
+theorem semanticLawfulAlong_iff_lawfulness
+    (R : ClosedEquationalLawReading raw X)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U)
+    (hpoint : RequiredObjectPointComparison raw X R s Obj) :
+    SemanticLawfulAlong raw X R s ↔ Lawfulness Obj S.lawUniverse
+
+theorem semanticLawfulAlong_iff_omegaU_zero
+    (R : ClosedEquationalLawReading raw X)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U)
+    {Value : Type u}
+    (valuation : ObstructionValuation U Value)
+    (aggregation : ZeroReflectingAggregation Value valuation.domain
+      S.lawUniverse.RequiredIndex)
+    (hpoint : RequiredObjectPointComparison raw X R s Obj)
+    (hsound : ∀ i : S.lawUniverse.RequiredIndex,
+      ObstructionSound valuation (S.lawUniverse.law i.1))
+    (hcomplete : ∀ i : S.lawUniverse.RequiredIndex,
+      ObstructionComplete valuation (S.lawUniverse.law i.1)) :
+    SemanticLawfulAlong raw X R s ↔
+      omegaU valuation S.lawUniverse aggregation Obj = valuation.domain.zero
+
+theorem semanticLawfulAlong_iff_requiredSignatureAxesZero
+    (R : ClosedEquationalLawReading raw X)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U) (Sig : SignatureAxes U)
+    (hpoint : RequiredObjectPointComparison raw X R s Obj)
+    (haxis : Lawfulness Obj S.lawUniverse ↔
+      RequiredSignatureAxesZero Obj Sig) :
+    SemanticLawfulAlong raw X R s ↔ RequiredSignatureAxesZero Obj Sig
+
+theorem factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (hexact : RequiredLawIdealExact raw X R hR hclosed)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U)
+    {Value : Type u}
+    (valuation : ObstructionValuation U Value)
+    (aggregation : ZeroReflectingAggregation Value valuation.domain
+      S.lawUniverse.RequiredIndex)
+    (hpoint : RequiredObjectPointComparison raw X R s Obj)
+    (hsound : ∀ i : S.lawUniverse.RequiredIndex,
+      ObstructionSound valuation (S.lawUniverse.law i.1))
+    (hcomplete : ∀ i : S.lawUniverse.RequiredIndex,
+      ObstructionComplete valuation (S.lawUniverse.law i.1)) :
+    Nonempty (FactorsThroughLawfulClosedSubscheme raw X R hR hclosed s) ↔
+      omegaU valuation S.lawUniverse aggregation Obj = valuation.domain.zero
+
+theorem factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (hexact : RequiredLawIdealExact raw X R hR hclosed)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U) (Sig : SignatureAxes U)
+    (hpoint : RequiredObjectPointComparison raw X R s Obj)
+    (haxis : Lawfulness Obj S.lawUniverse ↔
+      RequiredSignatureAxesZero Obj Sig) :
+    Nonempty (FactorsThroughLawfulClosedSubscheme raw X R hR hclosed s) ↔
+      RequiredSignatureAxesZero Obj Sig
+```
+
+`RequiredObjectPointComparison`、obstruction soundness/completeness、axis exactnessは
+それぞれ独立したmaterial premiseである。`LawIdealExact`から自動生成しない。
+
+### SD7 — law inclusionとcontravariant closed geometry
+
+inclusion dataはlaw index mapとatom witness mapだけを持つ。
+required/closed preservation、coordinate equality、semantic implicationは別のvalidity predicateで証明する。
 
 ```lean
 structure ClosedEquationalLawInclusion
-    (U V : ClosedEquationalLawReading X) where
-  lawMap : U.LawIndex → V.LawIndex
-  selected_map : ∀ L, U.selected L → V.selected (lawMap L)
-  witness_eq : ∀ L hL,
-    lawWitnessIdealSheaf U L hL =
-      lawWitnessIdealSheaf V (lawMap L) (selected_map L hL)
+    (R Q : ClosedEquationalLawReading raw X) where
+  lawMap : S.lawUniverse.Index → S.lawUniverse.Index
+  atomMap : ∀ i, U.Atom → U.Atom
+
+@[ext] theorem ClosedEquationalLawInclusion.ext
+    {R Q : ClosedEquationalLawReading raw X}
+    (e f : ClosedEquationalLawInclusion raw X R Q)
+    (hlawMap : e.lawMap = f.lawMap)
+    (hatomMap : e.atomMap = f.atomMap) : e = f
+
+structure IsClosedEquationalLawInclusion
+    {R Q : ClosedEquationalLawReading raw X}
+    (e : ClosedEquationalLawInclusion raw X R Q) : Prop where
+  required_map : ∀ i, S.lawUniverse.Required i →
+    S.lawUniverse.Required (e.lawMap i)
+  closed_map : ∀ i, R.closed i → Q.closed (e.lawMap i)
+  coordinate_eq :
+    ∀ i (hi : R.closed i) (V : X.underlying.affineOpens) (a : U.Atom),
+      (R.witness i hi).coordinate V a =
+        (Q.witness (e.lawMap i) (closed_map i hi)).coordinate V (e.atomMap i a)
+  semantic_monotone :
+    ∀ {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) i,
+      Q.geometric.HoldsOn s (e.lawMap i) → R.geometric.HoldsOn s i
+
+def ClosedEquationalLawInclusion.refl
+    (R : ClosedEquationalLawReading raw X) :
+    ClosedEquationalLawInclusion raw X R R
+
+theorem ClosedEquationalLawInclusion.refl_valid
+    (R : ClosedEquationalLawReading raw X) :
+    IsClosedEquationalLawInclusion raw X
+      (ClosedEquationalLawInclusion.refl raw X R)
+
+def ClosedEquationalLawInclusion.comp
+    {R Q P : ClosedEquationalLawReading raw X}
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (f : ClosedEquationalLawInclusion raw X Q P) :
+    ClosedEquationalLawInclusion raw X R P
+
+theorem ClosedEquationalLawInclusion.comp_valid
+    {R Q P : ClosedEquationalLawReading raw X}
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (f : ClosedEquationalLawInclusion raw X Q P)
+    (he : IsClosedEquationalLawInclusion raw X e)
+    (hf : IsClosedEquationalLawInclusion raw X f) :
+    IsClosedEquationalLawInclusion raw X (e.comp raw X f)
+
+theorem lawWitnessIdealSheaf_le
+    {R Q : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e)
+    (i : S.lawUniverse.Index) (hi : R.closed i) :
+    lawWitnessIdealSheaf raw X R hR i hi ≤
+      lawWitnessIdealSheaf raw X Q hQ (e.lawMap i) (he.closed_map i hi)
+
+theorem lawGeneratedIdealSheaf_mono
+    {R Q : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (hRclosed : RequiredClosed raw X R)
+    (hQclosed : RequiredClosed raw X Q)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e) :
+    lawGeneratedIdealSheaf raw X R hR hRclosed ≤
+      lawGeneratedIdealSheaf raw X Q hQ hQclosed
+
+theorem allLawGeneratedIdealSheaf_mono
+    {R Q : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e) :
+    allLawGeneratedIdealSheaf raw X R hR ≤
+      allLawGeneratedIdealSheaf raw X Q hQ
+
+theorem semanticLawfulAlong_mono
+    {R Q : ClosedEquationalLawReading raw X}
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    SemanticLawfulAlong raw X Q s → SemanticLawfulAlong raw X R s
+
+theorem closedSemanticLawfulAlong_mono
+    {R Q : ClosedEquationalLawReading raw X}
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    ClosedSemanticLawfulAlong raw X Q s →
+      ClosedSemanticLawfulAlong raw X R s
+
+theorem fullySemanticLawfulAlong_mono
+    {R Q : ClosedEquationalLawReading raw X}
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) :
+    FullySemanticLawfulAlong raw X Q s →
+      FullySemanticLawfulAlong raw X R s
+
+noncomputable def lawfulClosedSubschemeMap
+    {R Q : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (hRclosed : RequiredClosed raw X R)
+    (hQclosed : RequiredClosed raw X Q)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e) :
+    lawfulClosedSubscheme raw X Q hQ hQclosed ⟶
+      lawfulClosedSubscheme raw X R hR hRclosed :=
+  Scheme.IdealSheafData.inclusion
+    (lawGeneratedIdealSheaf_mono raw X hR hQ hRclosed hQclosed e he)
+
+theorem lawfulClosedSubschemeMap_isClosedImmersion
+    {R Q : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (hRclosed : RequiredClosed raw X R)
+    (hQclosed : RequiredClosed raw X Q)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e) :
+    IsClosedImmersion
+      (lawfulClosedSubschemeMap raw X hR hQ hRclosed hQclosed e he)
+
+@[reassoc] theorem lawfulClosedSubschemeMap_immersion
+    {R Q : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (hRclosed : RequiredClosed raw X R)
+    (hQclosed : RequiredClosed raw X Q)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e) :
+    lawfulClosedSubschemeMap raw X hR hQ hRclosed hQclosed e he ≫
+        lawfulClosedImmersion raw X R hR hRclosed =
+      lawfulClosedImmersion raw X Q hQ hQclosed
+
+@[simp] theorem lawfulClosedSubschemeMap_id
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hclosed : RequiredClosed raw X R) :
+    lawfulClosedSubschemeMap raw X hR hR hclosed hclosed
+        (ClosedEquationalLawInclusion.refl raw X R)
+        (ClosedEquationalLawInclusion.refl_valid raw X R) = 𝟙 _
+
+@[reassoc] theorem lawfulClosedSubschemeMap_comp
+    {R Q P : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (hP : IsClosedEquationalWitnessReading raw X P)
+    (hRclosed : RequiredClosed raw X R)
+    (hQclosed : RequiredClosed raw X Q)
+    (hPclosed : RequiredClosed raw X P)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (f : ClosedEquationalLawInclusion raw X Q P)
+    (he : IsClosedEquationalLawInclusion raw X e)
+    (hf : IsClosedEquationalLawInclusion raw X f) :
+    lawfulClosedSubschemeMap raw X hQ hP hQclosed hPclosed f hf ≫
+        lawfulClosedSubschemeMap raw X hR hQ hRclosed hQclosed e he =
+      lawfulClosedSubschemeMap raw X hR hP hRclosed hPclosed
+        (e.comp raw X f) (ClosedEquationalLawInclusion.comp_valid raw X e f he hf)
+
+noncomputable def allLawfulClosedSubschemeMap
+    {R Q : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e) :
+    allLawfulClosedSubscheme raw X Q hQ ⟶
+      allLawfulClosedSubscheme raw X R hR :=
+  Scheme.IdealSheafData.inclusion
+    (allLawGeneratedIdealSheaf_mono raw X hR hQ e he)
+
+theorem allLawfulClosedSubschemeMap_isClosedImmersion
+    {R Q : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e) :
+    IsClosedImmersion (allLawfulClosedSubschemeMap raw X hR hQ e he)
+
+@[reassoc] theorem allLawfulClosedSubschemeMap_immersion
+    {R Q : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (he : IsClosedEquationalLawInclusion raw X e) :
+    allLawfulClosedSubschemeMap raw X hR hQ e he ≫
+        allLawfulClosedImmersion raw X R hR =
+      allLawfulClosedImmersion raw X Q hQ
+
+@[simp] theorem allLawfulClosedSubschemeMap_id
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalWitnessReading raw X R) :
+    allLawfulClosedSubschemeMap raw X hR hR
+        (ClosedEquationalLawInclusion.refl raw X R)
+        (ClosedEquationalLawInclusion.refl_valid raw X R) = 𝟙 _
+
+@[reassoc] theorem allLawfulClosedSubschemeMap_comp
+    {R Q P : ClosedEquationalLawReading raw X}
+    (hR : IsClosedEquationalWitnessReading raw X R)
+    (hQ : IsClosedEquationalWitnessReading raw X Q)
+    (hP : IsClosedEquationalWitnessReading raw X P)
+    (e : ClosedEquationalLawInclusion raw X R Q)
+    (f : ClosedEquationalLawInclusion raw X Q P)
+    (he : IsClosedEquationalLawInclusion raw X e)
+    (hf : IsClosedEquationalLawInclusion raw X f) :
+    allLawfulClosedSubschemeMap raw X hQ hP f hf ≫
+        allLawfulClosedSubschemeMap raw X hR hQ e he =
+      allLawfulClosedSubschemeMap raw X hR hP
+        (e.comp raw X f) (ClosedEquationalLawInclusion.comp_valid raw X e f he hf)
 ```
 
-`lawGeneratedIdealSheaf_mono`、`lawfulClosedSubschemeMap`、そのclosed immersion、ambient triangle、
-identity、compositionを固定targetとする。point-set inclusionへ弱めない。
+`Q`が`R`より強いlaw dataであるとき、idealは`I_R ≤ I_Q`、closed geometryは
+`V(I_Q) ⟶ V(I_R)`の向きになる。`coordinate_eq`はvalidity proofとしてprimitive mapから証明し、
+inclusion dataのfieldにderived ideal equalityを保存しない。
+
+### SD8 — material premise分類
+
+三分類は次で固定する。`本文由来`はgeneric APIで許可する数学的input、`放電済み`は既存APIまたは
+primitive finite dataから内部導出する事実、`未放電`はfinal targetの引数、typeclass、field、certificateに
+残してはならない項目である。API上の役割名をこの三分類の代用にしない。
+
+| premise / data | 三分類 | generic APIでの役割 | completionでの放電方法 |
+| --- | --- | --- | --- |
+| `U : AtomCarrier` / `A : ArchitectureObject U` / `S : Site.AATSite A` | 本文由来 | 全targetのAtom carrier、architecture object、selected AAT site。 | merged dependencyの同一`U` / `A` / `S`を使い、別siteへのtransportをtarget内で追加しない。 |
+| `k : Type v` / `[CommRing k]` | 本文由来 | 第III部のcoefficient ring。 | field、reduced、Noetherian等の追加typeclassを要求せず、finiteでは`k = Int`で放電する。 |
+| `raw : RawAmbientRestrictionSystem S k` | 本文由来 | coordinate、structural relation、canonical sheafification input。 | merged `raw`のrestriction、structure sheaf、interpretation APIを使い、別のcoefficient systemを選択しない。 |
+| `HasSheafify S.topology (AATCommAlgCat k)` | 本文由来 | ambient typeclass parameter。 | merged `raw`と同じsheafificationを使い、finiteでは名前付きinstance chainを記録する。新しい局所instanceを追加しない。 |
+| `X : StandardArchitectureScheme raw` | 本文由来 | actual ambient Scheme、decoration、atlasのmerged input。 | merged `StandardArchitectureScheme` constructorを使い、finiteでは`twoChartReferenceModel`へ放電する。underlying Schemeやdecorationを別入力で重複させない。 |
+| `{T : Scheme}` / `s : T ⟶ X.underlying` | 本文由来 | semantic predicate、ideal comap、factorizationを検査する任意test section。 | 主定理では全`T` / `s`を量化し、finite firingでは`integerPoint` / `modTwoPoint`を具体化する。 |
+| `G : SemanticLawEquationWitnessIdealCore S` | 本文由来 | 定義11.3・定理11.4のmerged atom-indexed law-equation core。 | existing `violationWitness`、`lawWitnessIdeal`、restriction theoremを直接proof-useし、free witness idealを追加しない。 |
+| `SemanticLawEquationSchemeBridge` / `IsSemanticLawEquationSchemeBridge` | 本文由来 | existing coreをcanonical section ringへ移すdata / validity。 | `Observable W`から`SheafifiedSectionRing raw W`へのmapとrestriction naturalityを具体化し、finite chart comparisonで発火させる。 |
+| core witness idealのbridge像とspanの一致 | 放電済み | 新しい明示premiseを取らないderived theorem。 | `SemanticLawEquationWitnessIdealCore.lawWitnessIdeal`、`Ideal.map_span`、`Set.range`の像計算から`semanticCoreLawWitnessIdeal_map`を証明する。 |
+| `equation : U.Atom → Γ(X.underlying, ⊤)` | 本文由来 | global-equation constructorのselected equation family。 | new main routeでは`semanticCoreGlobalEquation G B i`から生成し、finiteでは`x - 1` / `x + 1`のformulaを証明する。任意idealに置き換えない。 |
+| `GeometricLawReading.HoldsOn` | 本文由来 | section-level semantic predicateのprimitive data。 | concrete generator evaluationとして定義し、ideal vanishingの別名にしない。base change proofを別に構成する。 |
+| `IsGeometricLawReading` | 本文由来 | semantic readingのrecognition premise。 | concrete readingのformulaからbase change保存を証明する。`HoldsOn := ideal vanishing`では放電しない。 |
+| `ClosedEquationalLawWitness.coordinate` | 本文由来 | law / affine-open / atom indexed local equationのprimitive data。 | core global equationのrestrictionから生成し、local idealはcoordinate rangeのspanとして導出する。idealをfieldに持たない。 |
+| `V : X.underlying.affineOpens` / `f : Γ(X.underlying, V)` / `a : U.Atom` | 本文由来 | local ideal、basic-open restriction、generator equalityを検査する量化data。 | `map_ideal_basicOpen`では全`V` / `f` / `a`を量化し、finite chart theoremで具体indexとcoordinateへ発火させる。 |
+| `IsClosedEquationalLawWitness` | 本文由来 | closed equation witnessのrecognition premise。 | atom-indexed coordinate restriction equalityから証明する。global equation constructorではpresheaf functorialityから導く。 |
+| `ClosedEquationalLawReading.geometric` / `closed` / `witness` | 本文由来 | semantic reading、selected closed indices、各selected indexのwitnessというprimitive data。 | finiteではcore constructorから生成する。ideal、subscheme、lawfulness、factorizationをfieldに追加しない。 |
+| `i : S.lawUniverse.Index` / `Required i` / `R.closed i`のproof | 本文由来 | law selectionとwitness typingに必要なindex / membership data。 | required proofは`lawUniverse_required`、closed proofはnamed selection theoremから供給し、proof irrelevance以外の数学を隠さない。 |
+| `IsClosedEquationalWitnessReading` | 本文由来 | ideal-sheaf constructorが受け取るrecognition premise。 | 各closed indexのwitness compatibilityをprimitive coordinatesから証明し、ideal、subscheme、factorization APIでproof-useする。 |
+| `IsClosedEquationalLawReading` | 本文由来 | semantic API全体のrecognition premise。 | base-change stabilityとwitness compatibilityを別々に証明し、finiteのpositive/negative firingで非恒真性を示す。 |
+| `RequiredClosed R` | 本文由来 | 定理11.1 required coreのmaterial premise。 | 各required indexが`R.closed`に入る具体proofを与える。optional / derived lawのclosed性は要求しない。 |
+| `LawIdealSound` / `LawIdealComplete` / `LawIdealExact` | 本文由来 | 定理11.1のlaw-by-law material premise。 | soundness / completenessの両方向をlawごと、全test Schemeと全sectionについてgenerator計算から証明する。 |
+| `RequiredLawIdealExact` | 本文由来 | required core theoremのaggregate semantic premise。 | required indexごとの`LawIdealExact`から束ね、finiteでは`weakReading_requiredLawIdealExact` / `strongReading_requiredLawIdealExact`で放電する。 |
+| `AllSelectedLawsClosed R` | 本文由来 | full theoremだけのmaterial premise。 | 全law indexがclosed-equationalである具体proofを与え、required coreには要求しない。 |
+| `SelectedClosedLawIdealExact` / `AllLawIdealExact` | 本文由来 | closed-subset theorem / full theoremのaggregate material premise。 | 前者は`R.closed`上、後者は全index上のlaw-by-law exactnessをfinite generator計算から証明する。 |
+| required indexed supremumとのextension-ideal compatibility | 放電済み | 新しい明示premiseを取らないderived theorem。 | `IdealSheafData.map_gc`による`comap`のsupremum保存とcomplete latticeから導く。 |
+| factorization through `V(I)` iff ideal comap is zero | 放電済み | 新しい明示premiseを取らないderived theorem。 | `map_gc`、`map_bot`、`ker_subschemeι`、`IsClosedImmersion.lift`、`lift_fac`、`Mono`から導く。 |
+| `U`-adequate cover / witness coverage / ideal-sheaf descent | 未放電 | 本PRDのtarget signatureには置かない。 | cover上のlocal vanishingからglobal vanishingを計算する別statementでのみ具体化する。final ledgerに現れた場合はReject。 |
+| `RequiredObjectPointComparison` | 本文由来 | SD6だけのmaterial premise。 | selected architecture pointとPart I lawの具体comparisonから証明する。 |
+| `Obj : ArchitectureObject U` | 本文由来 | SD6 object comparisonのselected architecture point。 | finiteではcycle exampleの`acyclicObject`をpositive、`cyclicObject`をnegative firingに使う。 |
+| `Value : Type u` / `valuation : ObstructionValuation U Value` / `ZeroReflectingAggregation` | 本文由来 | SD6 valuation theoremのprimitive value type / valuation / aggregation data。 | finiteでは`Nat`、`noCycleValuation`、`singletonRequiredAggregation`を使い、zero-reflectionを名前付きproofで放電する。 |
+| obstruction soundness / completeness | 本文由来 | SD6だけのvaluation material premise。 | existing `ObstructionSound` / `ObstructionComplete`をlaw indexごとに具体valuationから証明する。 |
+| `Sig : SignatureAxes U` | 本文由来 | SD6 axis theoremのselected signature data。 | finiteでは`CycleCorrespondenceExample.signatureAxes`を使い、axis equalityを具体計算する。 |
+| axis exactness | 本文由来 | SD6だけのaxis material premise。 | `Lawfulness Obj LU ↔ RequiredSignatureAxesZero Obj Sig`の具体theoremを与える。 |
+| `ClosedEquationalLawInclusion.lawMap` / `atomMap` | 本文由来 | law strengtheningのprimitive index / atom maps。 | finiteのweak-to-strong mapから具体化し、coordinate equalityやideal inclusionをfieldとして保存しない。 |
+| `IsClosedEquationalLawInclusion` | 本文由来 | inclusion recognition premise。 | index map、atom map、coordinate formula、semantic implicationから証明する。 |
+| finite exampleのstrictness / nonemptiness / nonfactorization | 放電済み | generic APIへのpremiseとして追加しないfinite result。 | `x = 1`評価、`x = -1`評価、mod 2評価、quotient ring homで証明する。命題fieldとして入力しない。 |
+| free `Prop` slot / conclusion-equivalent structure field / certificate field | 未放電 | generic APIにもcompletion theoremにも置かない。 | final declaration inventoryに一件でも現れた場合は`certificate escape`または`structure-field escape`としてRejectする。 |
+
+実装完了時に、final snapshotの全target declarationについて明示引数、typeclass、structure field、
+certificate fieldを独立に列挙し、この表の各行と突合する。各premiseについて「declaration」
+「放電元」「proof bodyで使う箇所」「主結論への寄与」「finite firingまたはMathlib source」を
+tracking Issueのfinal premise discharge packetへ記録する。完了条件は
+`material_premise_ledger_delta = ∅`かつ`new_material_premise = ∅`である。
+
+### SD9 — nondegenerate finite reference model
+
+finite exampleは既存の
+`AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme.twoChartReferenceModel`
+をambient Schemeとして再利用する。base section ringのrelation `x^2 - 1`とactual coordinate transportを
+保ったまま、global equations `x - 1`と`x + 1`からweak / strong readingsを構成する。
+
+```lean
+namespace AAT.AG.LawAlgebra.FiniteExamples.ClosedEquationalGeometry
+
+open CategoryTheory Opposite
+open AlgebraicGeometry
+open scoped AlgebraicGeometry
+open AAT.AG.FiniteModel
+open AAT.AG.LawAlgebra.FiniteExamples.RingedSite.FiniteModel
+open AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme
+
+noncomputable def weakLawEquationCore :
+    SemanticLawEquationWitnessIdealCore
+      AAT.AG.LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site
+
+noncomputable def strongLawEquationCore :
+    SemanticLawEquationWitnessIdealCore
+      AAT.AG.LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site
+
+noncomputable def weakSchemeBridge :
+    SemanticLawEquationSchemeBridge rawSystem weakLawEquationCore
+
+noncomputable def strongSchemeBridge :
+    SemanticLawEquationSchemeBridge rawSystem strongLawEquationCore
+
+theorem weakSchemeBridge_valid :
+    IsSemanticLawEquationSchemeBridge rawSystem
+      weakLawEquationCore weakSchemeBridge
+
+theorem strongSchemeBridge_valid :
+    IsSemanticLawEquationSchemeBridge rawSystem
+      strongLawEquationCore strongSchemeBridge
+
+noncomputable def baseGlobalCoordinate :
+    Γ(twoChartReferenceModel.underlying, ⊤) :=
+  twoChartReferenceModel.decoration.coordinateSection rawSystem ()
+
+theorem weakCore_componentA_equation :
+    semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+        weakLawEquationCore weakSchemeBridge PUnit.unit FiniteAtom.componentA =
+      baseGlobalCoordinate - 1
+
+theorem weakCore_other_equation
+    (a : carrier.Atom) (ha : a ≠ FiniteAtom.componentA) :
+    semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+        weakLawEquationCore weakSchemeBridge PUnit.unit a = 0
+
+theorem strongCore_componentA_equation :
+    semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+        strongLawEquationCore strongSchemeBridge PUnit.unit FiniteAtom.componentA =
+      baseGlobalCoordinate - 1
+
+theorem strongCore_componentB_equation :
+    semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+        strongLawEquationCore strongSchemeBridge PUnit.unit FiniteAtom.componentB =
+      baseGlobalCoordinate + 1
+
+theorem strongCore_other_equation
+    (a : carrier.Atom)
+    (ha : a ≠ FiniteAtom.componentA) (hb : a ≠ FiniteAtom.componentB) :
+    semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+        strongLawEquationCore strongSchemeBridge PUnit.unit a = 0
+
+theorem weakCore_leftChart_provenance_fires
+    (a : carrier.Atom) :
+    ((twoChartReferenceModel.atlas.chart leftIndex).map.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem
+            (twoChartReferenceModel.atlas.chart leftIndex).context)).hom)
+        (semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+          weakLawEquationCore weakSchemeBridge PUnit.unit a) =
+      weakSchemeBridge.toSheafifiedSection
+        (twoChartReferenceModel.atlas.chart leftIndex).context
+        (weakLawEquationCore.violationWitness
+          (twoChartReferenceModel.atlas.chart leftIndex).context PUnit.unit a)
+
+theorem weakCore_leftChart_witnessIdeal_realization_fires :
+    Ideal.map
+        (weakSchemeBridge.toSheafifiedSection
+          (twoChartReferenceModel.atlas.chart leftIndex).context)
+        (weakLawEquationCore.lawWitnessIdeal
+          (twoChartReferenceModel.atlas.chart leftIndex).context PUnit.unit) =
+      Ideal.span (Set.range (fun a =>
+        weakSchemeBridge.toSheafifiedSection
+          (twoChartReferenceModel.atlas.chart leftIndex).context
+          (weakLawEquationCore.violationWitness
+            (twoChartReferenceModel.atlas.chart leftIndex).context
+            PUnit.unit a)))
+
+noncomputable def weakReading :
+    ClosedEquationalLawReading rawSystem twoChartReferenceModel :=
+  ClosedEquationalLawReading.ofSemanticCore rawSystem twoChartReferenceModel
+    weakLawEquationCore weakSchemeBridge
+
+noncomputable def strongReading :
+    ClosedEquationalLawReading rawSystem twoChartReferenceModel :=
+  ClosedEquationalLawReading.ofSemanticCore rawSystem twoChartReferenceModel
+    strongLawEquationCore strongSchemeBridge
+
+@[simp] theorem weakReading_holdsOn_iff
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ twoChartReferenceModel.underlying) (i : lawUniverse.Index) :
+    weakReading.geometric.HoldsOn s i ↔
+      ∀ a, s.appTop
+        (semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+          weakLawEquationCore weakSchemeBridge i a) = 0
+
+@[simp] theorem strongReading_holdsOn_iff
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ twoChartReferenceModel.underlying) (i : lawUniverse.Index) :
+    strongReading.geometric.HoldsOn s i ↔
+      ∀ a, s.appTop
+        (semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+          strongLawEquationCore strongSchemeBridge i a) = 0
+
+@[simp] theorem weakReading_witness_eq_ofSemanticCore
+    (i : lawUniverse.Index) (hi : weakReading.closed i) :
+    weakReading.witness i hi =
+      ClosedEquationalLawWitness.ofSemanticCore rawSystem twoChartReferenceModel
+        weakLawEquationCore weakSchemeBridge i
+
+@[simp] theorem strongReading_witness_eq_ofSemanticCore
+    (i : lawUniverse.Index) (hi : strongReading.closed i) :
+    strongReading.witness i hi =
+      ClosedEquationalLawWitness.ofSemanticCore rawSystem twoChartReferenceModel
+        strongLawEquationCore strongSchemeBridge i
+
+theorem weakGeometricReading_valid :
+    IsGeometricLawReading rawSystem twoChartReferenceModel weakReading.geometric
+
+theorem strongGeometricReading_valid :
+    IsGeometricLawReading rawSystem twoChartReferenceModel strongReading.geometric
+
+theorem weakReading_witnessCompatible :
+    IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel weakReading
+
+theorem strongReading_witnessCompatible :
+    IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel strongReading
+
+theorem weakReading_valid :
+    IsClosedEquationalLawReading rawSystem twoChartReferenceModel weakReading
+
+theorem strongReading_valid :
+    IsClosedEquationalLawReading rawSystem twoChartReferenceModel strongReading
+
+theorem weakReading_closed_unit :
+    weakReading.closed PUnit.unit
+
+theorem weakWitness_valid :
+    IsClosedEquationalLawWitness rawSystem twoChartReferenceModel
+      (weakReading.witness PUnit.unit weakReading_closed_unit)
+
+theorem weakReading_requiredClosed :
+    RequiredClosed rawSystem twoChartReferenceModel weakReading
+
+theorem strongReading_requiredClosed :
+    RequiredClosed rawSystem twoChartReferenceModel strongReading
+
+theorem weakReading_allSelectedLawsClosed :
+    AllSelectedLawsClosed rawSystem twoChartReferenceModel weakReading
+
+theorem strongReading_allSelectedLawsClosed :
+    AllSelectedLawsClosed rawSystem twoChartReferenceModel strongReading
+
+theorem weakReading_requiredLawIdealExact :
+    RequiredLawIdealExact rawSystem twoChartReferenceModel
+      weakReading weakReading_witnessCompatible weakReading_requiredClosed
+
+theorem strongReading_requiredLawIdealExact :
+    RequiredLawIdealExact rawSystem twoChartReferenceModel
+      strongReading strongReading_witnessCompatible strongReading_requiredClosed
+
+theorem weakReading_lawIdealSound :
+    LawIdealSound rawSystem twoChartReferenceModel weakReading
+      weakReading_witnessCompatible PUnit.unit
+      (weakReading_requiredClosed PUnit.unit
+        (lawUniverse_required PUnit.unit))
+
+theorem weakReading_lawIdealComplete :
+    LawIdealComplete rawSystem twoChartReferenceModel weakReading
+      weakReading_witnessCompatible PUnit.unit
+      (weakReading_requiredClosed PUnit.unit
+        (lawUniverse_required PUnit.unit))
+
+theorem weakReading_lawIdealExact :
+    LawIdealExact rawSystem twoChartReferenceModel weakReading
+      weakReading_witnessCompatible PUnit.unit
+      (weakReading_requiredClosed PUnit.unit
+        (lawUniverse_required PUnit.unit))
+
+theorem weakReading_selectedClosedLawIdealExact :
+    SelectedClosedLawIdealExact rawSystem twoChartReferenceModel
+      weakReading weakReading_witnessCompatible
+
+theorem weakReading_allLawIdealExact :
+    AllLawIdealExact rawSystem twoChartReferenceModel weakReading
+      weakReading_witnessCompatible weakReading_allSelectedLawsClosed
+
+theorem strongReading_allLawIdealExact :
+    AllLawIdealExact rawSystem twoChartReferenceModel strongReading
+      strongReading_witnessCompatible strongReading_allSelectedLawsClosed
+
+def weakToStrong :
+    ClosedEquationalLawInclusion rawSystem twoChartReferenceModel
+      weakReading strongReading
+
+theorem weakToStrong_valid :
+    IsClosedEquationalLawInclusion rawSystem twoChartReferenceModel weakToStrong
+
+theorem weak_ideal_lt_strong :
+    lawGeneratedIdealSheaf rawSystem twoChartReferenceModel
+        weakReading weakReading_witnessCompatible weakReading_requiredClosed <
+      lawGeneratedIdealSheaf rawSystem twoChartReferenceModel
+        strongReading strongReading_witnessCompatible strongReading_requiredClosed
+
+theorem weakSubscheme_nonempty :
+    Nonempty (lawfulClosedSubscheme rawSystem twoChartReferenceModel
+      weakReading weakReading_witnessCompatible weakReading_requiredClosed)
+
+theorem strongSubscheme_nonempty :
+    Nonempty (lawfulClosedSubscheme rawSystem twoChartReferenceModel
+      strongReading strongReading_witnessCompatible strongReading_requiredClosed)
+
+theorem weakImmersion_not_isIso :
+    ¬ IsIso (lawfulClosedImmersion rawSystem twoChartReferenceModel
+      weakReading weakReading_witnessCompatible weakReading_requiredClosed)
+
+theorem strongImmersion_not_isIso :
+    ¬ IsIso (lawfulClosedImmersion rawSystem twoChartReferenceModel
+      strongReading strongReading_witnessCompatible strongReading_requiredClosed)
+
+theorem weakToStrongMap_not_isIso :
+    ¬ IsIso (lawfulClosedSubschemeMap rawSystem twoChartReferenceModel
+      weakReading_witnessCompatible strongReading_witnessCompatible
+      weakReading_requiredClosed strongReading_requiredClosed
+      weakToStrong weakToStrong_valid)
+
+theorem weakToStrongAllMap_not_isIso :
+    ¬ IsIso (allLawfulClosedSubschemeMap rawSystem twoChartReferenceModel
+      weakReading_witnessCompatible strongReading_witnessCompatible
+      weakToStrong weakToStrong_valid)
+
+noncomputable def integerPoint :
+    AlgebraicGeometry.Scheme.Spec.obj (op (CommRingCat.of Int)) ⟶
+      twoChartReferenceModel.underlying
+
+noncomputable def modTwoPoint :
+    AlgebraicGeometry.Scheme.Spec.obj (op (CommRingCat.of (ZMod 2))) ⟶
+      twoChartReferenceModel.underlying
+
+theorem integerPoint_objectComparison :
+    RequiredObjectPointComparison rawSystem twoChartReferenceModel
+      weakReading integerPoint
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
+
+theorem integerPoint_objectComparison_fails_for_cyclic :
+    ¬ RequiredObjectPointComparison rawSystem twoChartReferenceModel
+      weakReading integerPoint
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclicObject
+
+theorem integerPoint_omega_fires :
+    SemanticLawfulAlong rawSystem twoChartReferenceModel weakReading integerPoint ↔
+      omegaU noCycleValuation lawUniverse singletonRequiredAggregation
+          AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject =
+        noCycleValuation.domain.zero
+
+theorem integerPoint_axis_fires :
+    SemanticLawfulAlong rawSystem twoChartReferenceModel weakReading integerPoint ↔
+      RequiredSignatureAxesZero
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.signatureAxes
+
+theorem integerPoint_globalEquationsVanish_weak :
+    GlobalEquationsVanishAlong rawSystem twoChartReferenceModel
+      (semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+        weakLawEquationCore weakSchemeBridge PUnit.unit) integerPoint
+
+theorem integerPoint_not_globalEquationsVanish_strong :
+    ¬ GlobalEquationsVanishAlong rawSystem twoChartReferenceModel
+      (semanticCoreGlobalEquation rawSystem twoChartReferenceModel
+        strongLawEquationCore strongSchemeBridge PUnit.unit) integerPoint
+
+theorem integerPoint_semanticLawful_weak :
+    SemanticLawfulAlong rawSystem twoChartReferenceModel weakReading integerPoint
+
+theorem integerPoint_not_semanticLawful_strong :
+    ¬ SemanticLawfulAlong rawSystem twoChartReferenceModel
+      strongReading integerPoint
+
+theorem integerPoint_closedSemanticLawful_weak :
+    ClosedSemanticLawfulAlong rawSystem twoChartReferenceModel
+      weakReading integerPoint
+
+theorem integerPoint_not_closedSemanticLawful_strong :
+    ¬ ClosedSemanticLawfulAlong rawSystem twoChartReferenceModel
+      strongReading integerPoint
+
+theorem integerPoint_fullySemanticLawful_weak :
+    FullySemanticLawfulAlong rawSystem twoChartReferenceModel
+      weakReading integerPoint
+
+theorem integerPoint_not_fullySemanticLawful_strong :
+    ¬ FullySemanticLawfulAlong rawSystem twoChartReferenceModel
+      strongReading integerPoint
+
+theorem integerPoint_witnessVanishes_weak :
+    WitnessVanishes rawSystem twoChartReferenceModel weakReading
+      weakReading_witnessCompatible weakReading_requiredClosed integerPoint
+
+theorem integerPoint_not_witnessVanishes_strong :
+    ¬ WitnessVanishes rawSystem twoChartReferenceModel strongReading
+      strongReading_witnessCompatible strongReading_requiredClosed integerPoint
+
+theorem integerPoint_idealLawful_weak :
+    IdealLawfulAlong rawSystem twoChartReferenceModel weakReading
+      weakReading_witnessCompatible weakReading_requiredClosed integerPoint
+
+theorem integerPoint_not_idealLawful_strong :
+    ¬ IdealLawfulAlong rawSystem twoChartReferenceModel strongReading
+      strongReading_witnessCompatible strongReading_requiredClosed integerPoint
+
+theorem integerPoint_fullIdealLawful_weak :
+    FullIdealLawfulAlong rawSystem twoChartReferenceModel weakReading
+      weakReading_witnessCompatible integerPoint
+
+theorem integerPoint_not_fullIdealLawful_strong :
+    ¬ FullIdealLawfulAlong rawSystem twoChartReferenceModel strongReading
+      strongReading_witnessCompatible integerPoint
+
+theorem integerPoint_factors_weak :
+    Nonempty (FactorsThroughLawfulClosedSubscheme rawSystem
+      twoChartReferenceModel weakReading weakReading_witnessCompatible
+      weakReading_requiredClosed integerPoint)
+
+theorem integerPoint_not_factors_strong :
+    ¬ Nonempty (FactorsThroughLawfulClosedSubscheme rawSystem
+      twoChartReferenceModel strongReading strongReading_witnessCompatible
+      strongReading_requiredClosed integerPoint)
+
+theorem modTwoPoint_factors_weak :
+    Nonempty (FactorsThroughLawfulClosedSubscheme rawSystem
+      twoChartReferenceModel weakReading weakReading_witnessCompatible
+      weakReading_requiredClosed modTwoPoint)
+
+theorem modTwoPoint_factors_strong :
+    Nonempty (FactorsThroughLawfulClosedSubscheme rawSystem
+      twoChartReferenceModel strongReading strongReading_witnessCompatible
+      strongReading_requiredClosed modTwoPoint)
+
+theorem integerPoint_factorsAll_weak :
+    Nonempty (FactorsThroughAllLawfulClosedSubscheme rawSystem
+      twoChartReferenceModel weakReading weakReading_witnessCompatible integerPoint)
+
+theorem integerPoint_not_factorsAll_strong :
+    ¬ Nonempty (FactorsThroughAllLawfulClosedSubscheme rawSystem
+      twoChartReferenceModel strongReading strongReading_witnessCompatible integerPoint)
+
+theorem weak_correspondence_fires
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ twoChartReferenceModel.underlying) :
+    (SemanticLawfulAlong rawSystem twoChartReferenceModel weakReading s ↔
+      WitnessVanishes rawSystem twoChartReferenceModel weakReading
+        weakReading_witnessCompatible weakReading_requiredClosed s) ∧
+    (WitnessVanishes rawSystem twoChartReferenceModel weakReading
+        weakReading_witnessCompatible weakReading_requiredClosed s ↔
+      IdealLawfulAlong rawSystem twoChartReferenceModel weakReading
+        weakReading_witnessCompatible weakReading_requiredClosed s) ∧
+    (IdealLawfulAlong rawSystem twoChartReferenceModel weakReading
+        weakReading_witnessCompatible weakReading_requiredClosed s ↔
+      Nonempty (FactorsThroughLawfulClosedSubscheme rawSystem
+        twoChartReferenceModel weakReading weakReading_witnessCompatible
+        weakReading_requiredClosed s))
+
+theorem weak_full_correspondence_fires
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ twoChartReferenceModel.underlying) :
+    (FullySemanticLawfulAlong rawSystem twoChartReferenceModel weakReading s ↔
+      FullIdealLawfulAlong rawSystem twoChartReferenceModel weakReading
+        weakReading_witnessCompatible s) ∧
+    (FullIdealLawfulAlong rawSystem twoChartReferenceModel weakReading
+        weakReading_witnessCompatible s ↔
+      Nonempty (FactorsThroughAllLawfulClosedSubscheme rawSystem
+        twoChartReferenceModel weakReading weakReading_witnessCompatible s))
+
+noncomputable def restrictionBrokenSchemeBridge :
+    SemanticLawEquationSchemeBridge rawSystem weakLawEquationCore
+
+theorem restrictionBrokenSchemeBridge_not_valid :
+    ¬ IsSemanticLawEquationSchemeBridge rawSystem
+      weakLawEquationCore restrictionBrokenSchemeBridge
+
+noncomputable def baseChangeBrokenGeometricReading :
+    GeometricLawReading rawSystem twoChartReferenceModel
+
+theorem baseChangeBrokenGeometricReading_not_valid :
+    ¬ IsGeometricLawReading rawSystem twoChartReferenceModel
+      baseChangeBrokenGeometricReading
+
+noncomputable def baseChangeBrokenReading :
+    ClosedEquationalLawReading rawSystem twoChartReferenceModel
+
+theorem baseChangeBrokenReading_witnessCompatible :
+    IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel
+      baseChangeBrokenReading
+
+theorem baseChangeBrokenReading_not_valid :
+    ¬ IsClosedEquationalLawReading rawSystem twoChartReferenceModel
+      baseChangeBrokenReading
+
+noncomputable def missingRequiredReading :
+    ClosedEquationalLawReading rawSystem twoChartReferenceModel
+
+theorem missingRequiredReading_valid :
+    IsClosedEquationalLawReading rawSystem twoChartReferenceModel
+      missingRequiredReading
+
+theorem missingRequiredReading_not_requiredClosed :
+    ¬ RequiredClosed rawSystem twoChartReferenceModel missingRequiredReading
+
+theorem missingRequiredReading_not_allSelectedLawsClosed :
+    ¬ AllSelectedLawsClosed rawSystem twoChartReferenceModel
+      missingRequiredReading
+
+noncomputable def semanticMismatchReading :
+    ClosedEquationalLawReading rawSystem twoChartReferenceModel
+
+theorem semanticMismatchReading_valid :
+    IsClosedEquationalLawReading rawSystem twoChartReferenceModel
+      semanticMismatchReading
+
+theorem semanticMismatchReading_witnessCompatible :
+    IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel
+      semanticMismatchReading
+
+theorem semanticMismatchReading_requiredClosed :
+    RequiredClosed rawSystem twoChartReferenceModel semanticMismatchReading
+
+theorem semanticMismatchReading_allSelectedLawsClosed :
+    AllSelectedLawsClosed rawSystem twoChartReferenceModel
+      semanticMismatchReading
+
+theorem semanticMismatchReading_not_exact :
+    ¬ RequiredLawIdealExact rawSystem twoChartReferenceModel
+      semanticMismatchReading semanticMismatchReading_witnessCompatible
+      semanticMismatchReading_requiredClosed
+
+theorem semanticMismatchReading_not_lawIdealExact :
+    ¬ LawIdealExact rawSystem twoChartReferenceModel
+      semanticMismatchReading semanticMismatchReading_witnessCompatible
+      PUnit.unit
+      (semanticMismatchReading_requiredClosed PUnit.unit
+        (lawUniverse_required PUnit.unit))
+
+theorem semanticMismatchReading_not_complete :
+    ¬ LawIdealComplete rawSystem twoChartReferenceModel
+      semanticMismatchReading semanticMismatchReading_witnessCompatible
+      PUnit.unit
+      (semanticMismatchReading_requiredClosed PUnit.unit
+        (lawUniverse_required PUnit.unit))
+
+theorem semanticMismatchReading_not_selectedClosedLawIdealExact :
+    ¬ SelectedClosedLawIdealExact rawSystem twoChartReferenceModel
+      semanticMismatchReading semanticMismatchReading_witnessCompatible
+
+theorem semanticMismatchReading_not_allLawIdealExact :
+    ¬ AllLawIdealExact rawSystem twoChartReferenceModel semanticMismatchReading
+      semanticMismatchReading_witnessCompatible
+      semanticMismatchReading_allSelectedLawsClosed
+
+theorem semanticMismatch_full_correspondence_fails :
+    ¬ (FullySemanticLawfulAlong rawSystem twoChartReferenceModel
+          semanticMismatchReading integerPoint ↔
+        FullIdealLawfulAlong rawSystem twoChartReferenceModel
+          semanticMismatchReading semanticMismatchReading_witnessCompatible
+          integerPoint)
+
+noncomputable def semanticOverclaimReading :
+    ClosedEquationalLawReading rawSystem twoChartReferenceModel
+
+theorem semanticOverclaimReading_valid :
+    IsClosedEquationalLawReading rawSystem twoChartReferenceModel
+      semanticOverclaimReading
+
+theorem semanticOverclaimReading_witnessCompatible :
+    IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel
+      semanticOverclaimReading
+
+theorem semanticOverclaimReading_requiredClosed :
+    RequiredClosed rawSystem twoChartReferenceModel semanticOverclaimReading
+
+theorem semanticOverclaimReading_not_sound :
+    ¬ LawIdealSound rawSystem twoChartReferenceModel semanticOverclaimReading
+      semanticOverclaimReading_witnessCompatible PUnit.unit
+      (semanticOverclaimReading_requiredClosed PUnit.unit
+        (lawUniverse_required PUnit.unit))
+
+noncomputable def restrictionBrokenWitness :
+    ClosedEquationalLawWitness rawSystem twoChartReferenceModel PUnit.unit
+
+theorem restrictionBrokenWitness_not_valid :
+    ¬ IsClosedEquationalLawWitness rawSystem twoChartReferenceModel
+      restrictionBrokenWitness
+
+noncomputable def restrictionBrokenReading :
+    ClosedEquationalLawReading rawSystem twoChartReferenceModel
+
+theorem restrictionBrokenReading_not_witnessCompatible :
+    ¬ IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel
+      restrictionBrokenReading
+
+theorem restrictionBrokenReading_not_valid :
+    ¬ IsClosedEquationalLawReading rawSystem twoChartReferenceModel
+      restrictionBrokenReading
+
+def coordinateBrokenInclusion :
+    ClosedEquationalLawInclusion rawSystem twoChartReferenceModel
+      weakReading strongReading
+
+theorem coordinateBrokenInclusion_not_valid :
+    ¬ IsClosedEquationalLawInclusion rawSystem twoChartReferenceModel
+      coordinateBrokenInclusion
+
+end AAT.AG.LawAlgebra.FiniteExamples.ClosedEquationalGeometry
+```
+
+finite moduleは次のfiring matrixを満たす。positive列とnegative列は、それぞれ独立した
+named declarationを持つ。projection、definition unfold、`by trivial`だけの代用は不可とする。
+
+| new predicate / factorization type | positive firing | negative firing |
+| --- | --- | --- |
+| `IsSemanticLawEquationSchemeBridge` | `weakSchemeBridge_valid` | `restrictionBrokenSchemeBridge_not_valid` |
+| `IsGeometricLawReading` | `weakGeometricReading_valid` | `baseChangeBrokenGeometricReading_not_valid` |
+| `GlobalEquationsVanishAlong` | `integerPoint_globalEquationsVanish_weak` | `integerPoint_not_globalEquationsVanish_strong` |
+| `IsClosedEquationalLawWitness` | `weakWitness_valid` | `restrictionBrokenWitness_not_valid` |
+| `IsClosedEquationalWitnessReading` | `weakReading_witnessCompatible` | `restrictionBrokenReading_not_witnessCompatible` |
+| `IsClosedEquationalLawReading` | `weakReading_valid` | `baseChangeBrokenReading_not_valid`、`restrictionBrokenReading_not_valid` |
+| `RequiredClosed` | `weakReading_requiredClosed` | `missingRequiredReading_not_requiredClosed` |
+| `AllSelectedLawsClosed` | `weakReading_allSelectedLawsClosed` | `missingRequiredReading_not_allSelectedLawsClosed` |
+| `SemanticLawfulAlong` | `integerPoint_semanticLawful_weak` | `integerPoint_not_semanticLawful_strong` |
+| `ClosedSemanticLawfulAlong` | `integerPoint_closedSemanticLawful_weak` | `integerPoint_not_closedSemanticLawful_strong` |
+| `FullySemanticLawfulAlong` | `integerPoint_fullySemanticLawful_weak` | `integerPoint_not_fullySemanticLawful_strong` |
+| `LawIdealSound` | `weakReading_lawIdealSound` | `semanticOverclaimReading_not_sound` |
+| `LawIdealComplete` | `weakReading_lawIdealComplete` | `semanticMismatchReading_not_complete` |
+| `LawIdealExact` | `weakReading_lawIdealExact` | `semanticMismatchReading_not_lawIdealExact` |
+| `RequiredLawIdealExact` | `weakReading_requiredLawIdealExact` | `semanticMismatchReading_not_exact` |
+| `SelectedClosedLawIdealExact` | `weakReading_selectedClosedLawIdealExact` | `semanticMismatchReading_not_selectedClosedLawIdealExact` |
+| `AllLawIdealExact` | `weakReading_allLawIdealExact` | `semanticMismatchReading_not_allLawIdealExact` |
+| `WitnessVanishes` | `integerPoint_witnessVanishes_weak` | `integerPoint_not_witnessVanishes_strong` |
+| `IdealLawfulAlong` | `integerPoint_idealLawful_weak` | `integerPoint_not_idealLawful_strong` |
+| `FullIdealLawfulAlong` | `integerPoint_fullIdealLawful_weak` | `integerPoint_not_fullIdealLawful_strong` |
+| `FactorsThroughLawfulClosedSubscheme`の`Nonempty` | `integerPoint_factors_weak` | `integerPoint_not_factors_strong` |
+| `FactorsThroughAllLawfulClosedSubscheme`の`Nonempty` | `integerPoint_factorsAll_weak` | `integerPoint_not_factorsAll_strong` |
+| `RequiredObjectPointComparison` | `integerPoint_objectComparison` | `integerPoint_objectComparison_fails_for_cyclic` |
+| `IsClosedEquationalLawInclusion` | `weakToStrong_valid` | `coordinateBrokenInclusion_not_valid` |
+
+matrixの全entryをstatement contractと`AxiomAudit.lean`の双方へ登録する。negative firingは単に必要なpremiseを省略するのではなく、
+具体的な式、section、index、atom、morphismのいずれが破れるかをproof bodyで示す。
+`weakGeometricReading_valid` / `strongGeometricReading_valid`と各`witnessCompatible`は具体formulaから
+独立に証明し、`weakReading_valid` / `strongReading_valid`はそのpairから組み立てる。full validityのfield射影を
+component firingの代用にしない。
+
+weak idealは`(x - 1)`、strong idealは`(x - 1, x + 1)`として発火させる。
+両readingの`HoldsOn`は、各global equationを`s.appTop`で評価した値がzeroであるという
+generator-level predicateから定義し、ideal comap zeroをdefinitionに使わない。
+`RequiredLawIdealExact`はspanとring-hom imageの計算から証明する。
+`integerPoint`は`x = 1`でweakにfactorし、`2 ≠ 0`によりstrongにはfactorしない。
+`modTwoPoint`は両方にfactorする。strictness、properness、nonemptinessは同じevaluation mapsから証明し、
+`⊥`、`⊤`、empty Scheme、identity morphismだけを主証拠にしない。
+base-change stability、required closedness、law ideal exactness、witness compatibility、inclusion validityの
+各`Prop`にpositive firingとconcrete negative firingを置く。
+
+### 数学本文との対応
+
+| 数学本文 | Lean target | 対応 |
+| --- | --- | --- |
+| 定義5.1 Violation Witness Familyのatom-indexed specialization | `SemanticLawEquationWitnessIdealCore`、`SemanticLawEquationSchemeBridge`、`ClosedEquationalLawWitness.coordinate` | contextごとに型が変わる一般`Viol_L(W)`全体ではなく、existing coreが固定するatom-indexed witnessをcanonical section ringとactual local sectionへ送る。 |
+| 定義5.2 Law Witness Idealのatom-indexed specialization | `semanticCoreLawWitnessIdeal_map`、`localLawWitnessIdeal` | core idealのbridge像と、移されたatom-indexed coordinatesの`Ideal.span`を一致させる。 |
+| 定義5.2A Geometric Law Reading | `GeometricLawReading`、`IsGeometricLawReading` | section predicateとbase change保存を分離する。 |
+| 定義5.2B ClosedEquational / LawIdealExact | `IsClosedEquationalLawWitness`、`LawIdealSound`、`LawIdealComplete`、`LawIdealExact` | closed equation dataとsemantic exactnessを別条件にする。 |
+| 定義6.1 `I_Ob^U` / `I_Ob^{U,all}` | `lawGeneratedIdealSheaf` / `allLawGeneratedIdealSheaf` | required idealとselected closed ideal全体を別のsupremumとして構成する。 |
+| 定義6.2 Obstruction Ideal Sheafのexact restriction-compatible case | `lawWitnessIdealSheaf`とそのsupremum | actual `Scheme.IdealSheafData`を直接構成する。一般sheaf-image caseは対象外。 |
+| 定義7.1 `Flat_U(X)` / `FullFlat_U(X)` | `lawfulClosedSubscheme` / `allLawfulClosedSubscheme` | Mathlib subschemeとactual closed immersion。 |
+| 定義7.2 Ideal-Lawful Section | `IdealLawfulAlong`、`FactorsThroughLawfulClosedSubscheme` | ideal comap zeroとactual morphism lift。 |
+| 定理11.1 core | `lawfulnessIdealFactorizationCorrespondence` | semantic、law-wise vanishing、required sum vanishing、actual factorizationの同値。 |
+| 定理11.1 valuation / axis extension | SD6の別定理 | object comparisonと各exactnessを明示した場合だけ追加する。 |
+| 定義11.3・定理11.4のexisting Lean core | `SemanticLawEquationWitnessIdealCore`、`semanticCoreWitness_restrict`、`semanticCoreLawWitnessIdeal_map` | merged coreのrestriction-compatible atom coordinatesとgenerated idealをactual Scheme側へ移す。displayed reading全体の再実装は主張しない。 |
+| A.6〜A.7 | SD0〜SD7 | law subfunctorとclosed equationsをactual scheme APIへ接続する。 |
+| A.8のatom-indexed presentation-stable case | `IsSemanticLawEquationSchemeBridge`、`semanticCoreGlobalEquation_on_chart` | existing core restriction、canonical sheafification、actual atlas chartのcomparisonを証明する。 |
 
 ## 問い
 
-selected closed-equational law witnessからactual ideal sheafを生成し、
-standard architecture scheme上のactual closed subschemeとlawful section factorizationまでを
-同じlaw provenanceの下で構成できるか。
+selected closed-equational law witnessesから、actual `Scheme.IdealSheafData`、required/allの
+closed subschemes、actual factorization universal propertyを同じprovenanceの下で構成できるか。
 
 ```text
-selected closed-equational law witnesses
-  -> local witness ideals I_L
-  -> law-generated ideal sheaf I_U
-  -> closed subscheme Flat_U(X)
-  -> closed immersion Flat_U(X) -> X
-  -> Lawful_U(s) iff s factors through Flat_U(X)
+geometric law reading + atom-indexed local equations
+  -> witness ideals I_i(V)
+  -> actual ideal sheaves I_i
+  -> required supremum I_Ob^U / all-law supremum I_Ob^{U,all}
+  -> V(I_Ob^U) / V(I_Ob^{U,all})
+  -> actual closed immersions and quotient affine cover
+  -> semantic lawfulness iff ideal vanishing iff actual factorization
 ```
 
-このPRDの完了対象はset-level zero locusやarbitrary ideal familyではない。
-law witnessからMathlib `Scheme.IdealSheafData`とその`subschemeι`までを構成し、
-後続のconormal、cohomology、deformation形式化がactual closed geometryを入力にできる基盤を作る。
+完了対象はset-level zero locus、任意ideal family、pulled ideal zeroのwrapperではない。
+law witnessからMathlib closed geometryとactual liftまでを構成し、後続のconormal、cohomology、
+deformationが`I_Ob^U`と`V(I_Ob^U)`を直接入力できるAPIを作る。
 
 ## 現状診断
 
-- `WitnessIdeal`層にはwitness coordinateから局所idealを生成する構成がある。
-- `LawEquation`層にはlaw equationとrestriction compatibilityを扱うAPIがある。
-- `SelectedLawWitnessIdealFamily`はlocal obstruction idealをselected idealのspanとして構成するが、
-  `witnessIdeal : LawIndex -> Ideal A`を任意入力として受け取り、law witness provenanceを型に保持しない。
-- `RestrictionCompatible`はlocal obstruction idealのmap inclusionを証明するが、
-  scheme上のideal sheafまたはrestriction sheafとしてはbundleされていない。
-- `SheafImageConstruction`はactual sheaf category imageではなく、`imageIdeal`と
-  `agreesWithLocalSum` equality fieldを保持する。
-- `lawfulLocus`は`PrimeSpectrum.zeroLocus`としての`Set`であり、closed subschemeを構成しない。
-- `FactorsThroughLawfulLocus`はpulled idealがbottomであることの再包装であり、
-  actual scheme morphismのliftやcommutative triangleを持たない。
-- Mathlibには`Scheme.IdealSheafData`、`ofIdeals`、`subscheme`、`subschemeι`、
-  `comap`、`map`、`subschemeMap`、`IsClosedImmersion.lift`が存在するが、現行主経路は未接続である。
+- `SemanticLawEquationWitnessIdealCore`にはlaw/atom-indexed witness coordinates、local span、
+  restrictionによるideal inclusion、generated quotient presheafがある。
+- `SelectedLawWitnessIdealFamily`は`witnessIdeal : LawIndex → Ideal A`を任意入力として受けるため、
+  standard Scheme上のactual sheafを単独では構成しない。
+- `SheafImageConstruction`は`imageIdeal`と`agreesWithLocalSum`を保存するlegacy wrapperであり、
+  actual sheaf imageまたは`IdealSheafData`ではない。
+- `LawfulLocus.lawfulLocus`は`PrimeSpectrum.zeroLocus`の`Set`であり、
+  Mathlib `Scheme`のclosed subschemeを構成しない。
+- `FactorsThroughLawfulLocus`はpulled ideal zeroの再包装であり、
+  actual morphism、triangle、一意性を持たない。
+- `Correspondence.LawfulnessIdealCorrespondenceAssumptions`と`Package`は結論形のfieldを含み、
+  本PRDのcore theoremの完了根拠には使えない。
+- Mathlib `IdealSheafData.ofIdeals`は任意family以下の最大ideal sheafを返す。
+  `ideal V`が入力familyと一致するとは無条件に言えない。
+- Mathlibにはdirect constructor、complete lattice、`ofIdealTop`、`subschemeCover`、
+  `subschemeObjIso`、`ker_subschemeι`、`range_subschemeι`、`map_gc`、`inclusion`、
+  `IsClosedImmersion.lift`がある。
 
-課題は既存local ideal計算を捨てることではない。
-law witnessから生成されたlocal idealsをstandard schemeのideal sheafへ持ち上げ、
-そのclosed subschemeとfactorization universal propertyへ接続することである。
+課題は既存local law-equation計算を置き換えることではない。
+そのprovenanceをactual ideal sheaf、closed subscheme、factorizationへ接続し、
+semantic exactnessをmaterial premiseとして正確に管理することである。
 
 ## アウトカム
 
 完了時に次が成り立つ。
 
-1. closed-equational law witnessが局所witness idealを生成し、そのprovenanceを保持する。
-2. affine openへのrestrictionとring actionに整合するlaw-generated ideal sheafがある。
-3. law universeに選ばれたwitness idealのsupremumまたはsheaf imageとして`I_U`が構成される。
-4. `I_U`がactual Mathlib `Scheme.IdealSheafData`へ接続される。
-5. `I_U.subscheme`と`I_U.subschemeι`がlawful closed geometryとactual closed immersionを与える。
-6. `I_U.subschemeι`のkernelが`I_U`に一致し、そのrangeがlawful closed geometryを与える。
-7. affine chart上で`Spec(A/I_U) -> Spec A`とのcanonical comparisonがある。
-8. lawfulness、ideal pullback zero、actual factorizationが双方向に接続される。
-9. law universe inclusionに対するideal inclusionとlawful closed subschemeの比較射がある。
-10. law dataの違いがclosed geometryを変える非退化finite exampleがある。
-11. conormal constructionが後続タスクで`I_U`から直接開始できるAPIを持つ。
+1. section-level semantic law readingとclosed-equational witness dataが分離される。
+2. existing coreのlaw witness idealのbridge像が、移されたatom-indexed coordinatesのspanと一致する。
+3. 各witness idealがlaw index、atom、affine open、ambient standard Schemeを保持し、
+   coordinate restriction equalityからactual `IdealSheafData`が構成される。
+4. global equations constructorが`IdealSheafData.ofIdealTop`と一致する。
+5. required ideal `I_Ob^U`とall selected closed-law ideal `I_Ob^{U,all}`が別々に構成される。
+6. objectwise idealが対応するindexed supremumに一致する。
+7. `I_Ob^U ≤ I_Ob^{U,all}`がactual ideal-sheaf inclusionとして証明される。
+8. required/allのactual closed subschemesとclosed immersionsが構成される。
+9. required/all comparisonがactual closed immersionとambient triangleを持つ。
+10. 一般Scheme上のclosed geometryがquotient affine coverとsection-ring isoを持つ。
+11. closed immersionのkernelとrangeがMathlib APIへ接続される。
+12. AAT reading decorationがactual closed immersionに沿ってpullbackされる。
+13. semantic lawfulness、law-wise witness vanishing、required sum vanishing、actual factorizationが
+    定理11.1のpremiseの下で同値になる。
+14. factorization lift、triangle、一意性がMathlib universal propertyから導かれる。
+15. 全lawがclosed-equationalである場合のfull semantic/full ideal/actual factorization theoremが別にある。
+16. valuationとaxisはobject comparisonと各exactnessを明示した別定理で接続される。
+17. stronger law dataからrequired/all ideal inclusion、三種のsemantic monotonicity、反変向きの
+    required/all actual closed-geometry mapが構成される。
+18. nondegenerate finite pairがstrict ideal inclusion、proper nonempty geometry、factorization yes/noを示す。
+19. downstream moduleがdefinition unfoldなしでideal、subscheme、immersion、cover、liftを利用できる。
 
 ## 採否規律
 
-- 数学本文はread-onlyとし、`docs/aat/algebraic_geometric_theory/**`を変更しない。
-- 対象は本文のclosed-equational lawであり、open、constructible、descent、temporal、stacky lawをidealへ押し込まない。
-- `I_U`はselected law witnessから生成する。arbitrary ideal familyを入力したpackageだけで完成としない。
-- standard scheme上のidealにはMathlib `Scheme.IdealSheafData`を使用またはcomparison theoremで接続する。
-- lawful locusをset、support、point predicateだけで完了としない。
-- factorizationはactual scheme morphismとcommutative triangleで表す。
-- `FactorsThroughLawfulLocus`のように結論を同じ命題で包み直すrepackageを新主定理にしない。
-- target statementと参照definitionは、このPRDの`Statement Design`節を不変入力とする。
+- `docs/aat/algebraic_geometric_theory/**`はread-onlyとし、本PRDの実装で変更しない。
+- 対象はclosed-equational lawsである。open、constructible、temporal、stacky lawをideal sumへ入れない。
+- witness idealはatom-indexed equationsのspanから生成する。任意idealをprimary inputにしない。
+- ideal sheafはactual `Scheme.IdealSheafData`を使う。
+- `ofIdeals`を使う場合は、入力familyとのobjectwise equalityを先に証明する。
+- required idealとall selected closed-law idealを同一視しない。
+- general Schemeを単一`Spec(A/I)`へ弱めない。quotient affine coverを使う。
+- semantic lawfulnessをideal vanishingとして定義しない。
+- law-by-law exactnessをfree `Prop`、certificate、typeclass、structure fieldの結論射影で代替しない。
+- factorizationはactual Scheme morphism、triangle、一意性で表す。
+- law inclusionはprimitive mapsからideal monotonicityを導く。derived ideal equalityを入力しない。
+- valuation/axisのexactnessをcore exactnessから自動導出しない。
+- target statementと参照definitionはStatement Designを不変入力とする。
 
 ## 改修要求
 
-### R0 — witness route・Mathlib API・fixed statementの確定
+### R0 — dependency、Mathlib API、fixed statementの確定
 
-- tracking Issueに対象main commitを固定する。
-- `WitnessIdeal`、`LawEquation`、`SelectedLawWitnessIdealFamily`、
-  `RestrictionCompatible`、`SheafImageConstruction`、`LawfulLocus`のsignatureと利用箇所を棚卸しする。
-- Mathlib `Scheme.IdealSheafData`、affine-open ideals、restriction、`subscheme`、
-  `subschemeι`、`IsClosedImmersion`、`comap`、`map`、`subschemeMap`、quotient `Spec` APIを確認する。
-- material premiseを本文由来、放電済み、未放電へ分類する。
+- 実行開始条件を満たし、対象main commitをtracking Issueに固定する。
+- current declarationsとMathlib APIのexact signatureをscratch fileで確認する。
+- Module import contractの全direct importを固定し、特に
+  `Mathlib.AlgebraicGeometry.Morphisms.Separated`から`IdealSheafData.inclusion`の
+  closed-immersion instanceを利用可能にする。
+- legacy wrappersの全利用箇所を棚卸しし、新主経路の証明依存に入れない。
+- SD0〜SD9の全targetとmaterial premiseをIssueへ転記する。
+- target signature変更が発生した場合は実装を止める。
 
-### R1 — closed-equational law witness provenance
+### R1 — semantic readingとwitness provenance
 
-- selected law universeのうちclosed-equational witnessを型付きで選ぶAPIを定義する。
-- 各witnessをtyped coordinate、law equation、local sectionへ接続する。
-- local witness idealをwitness equationsの`Ideal.span`または既存`WitnessIdeal` constructorから生成する。
-- arbitrary `Ideal A`をprimary inputとして受け取らず、生成idealへのforgetful APIだけを提供する。
-- law、witness、context、coefficient algebraのprovenanceをconstructor/characterization theoremで追跡できるようにする。
+- `GeometricLawReading`と`IsGeometricLawReading`をdata/validityに分離する。
+- `ClosedEquationalLawWitness`をlaw/atom/affine-open indexed section familyとして定義する。
+- local idealを`Ideal.span (Set.range coordinate)`から定義する。
+- coordinate restriction equalityからbasic-open ideal equalityを証明する。
+- global equations constructorとvalidity theoremを提供する。
+- `SemanticLawEquationSchemeBridge`とrestriction validityを実装し、existing coreのwitness idealのbridge像が
+  移されたatom-indexed coordinatesのspanと一致することを証明する。
+- actual atlas chart上でglobal equationがcore witnessへ戻るcomparison theoremを証明する。
+- constructor、extensionality、projection、characterization theoremを揃える。
 
-### R2 — affine-open ideal system
+### R2 — actual ideal sheavesとrequired/all ideals
 
-- standard schemeの各selected affine openにlaw-generated local idealを割り当てる。
-- open immersionまたはaffine-open inclusionに沿うrestriction mapがwitness idealを保存することを証明する。
-- identity、composition、pair overlapでの一致を証明する。
-- existing `RestrictionCompatible.map_localObstructionIdeal_le`を、law-generated source/targetから得るconstructorまたは補題として再利用する。
-- restriction compatibilityをarbitrary fieldとして入力するだけの主経路を作らない。
+- local ideal familyから`IdealSheafData`を直接構成する。
+- global equations routeと`ofIdealTop`の一致を証明する。
+- required/allを別のindexed supremumとして定義する。
+- objectwise idealとindexed supremumのexact equalityを証明する。
+- required idealからall idealへのinclusionを証明する。
+- arbitrary familyを`ofIdeals`へ渡しただけでobjectwise equalityを主張しない。
 
-### R3 — law-generated ideal sheaf
+### R3 — actual closed geometry
 
-- affine-open ideal systemからMathlib `Scheme.IdealSheafData`を構成する。
-- 利用可能な場合は`Scheme.IdealSheafData.ofIdeals`とそのGalois insertion APIを使う。
-- 各lawのideal sheaf`I_L`を構成し、selected law universeに対するsupremum
-  `I_U = ⨆ L, I_L`をMathlib complete lattice上で定義する。
-- direct sum / coproductからstructure sheafへのmapが利用可能な場合は、
-  categorical imageとsupremum constructionの一致を証明する。
-- objectwise local sumと`I_U.ideal U`の一致条件を具体定理にする。
-- `SheafImageConstruction.imageIdeal`とequality fieldをactual sheaf imageの代用にしない。
+- required/allのsubschemeとimmersionをMathlib constructorから定義する。
+- closed immersion、kernel、range/supportをMathlib theoremへ接続する。
+- `subschemeCover`と`subschemeObjIso`を公開APIとして包む。
+- pulled decorationのcontext、law universe、signature、coordinate sectionの保存を証明する。
+- all locusからrequired locusへのclosed immersionとambient triangleを証明する。
+- affine-specific single quotient spectrum theoremは`IsAffine`を明示した別lemmaに限る。
 
-### R4 — affine lawful closed geometry
+### R4 — law exactnessとactual factorization
 
-- affine chart`Spec A`とlaw-generated ideal`I_U`からquotient ring`A / I_U`を構成する。
-- induced scheme morphism`Spec(A/I_U) ⟶ Spec A`を構成する。
-- actual `IsClosedImmersion` instanceまたはtheoremを得る。
-- Mathlib `IdealSheafData.subscheme`によるclosed subschemeとのcanonical isoを証明する。
-- `subschemeι`のkernelがlaw-generated ideal sheafに一致することをMathlib APIから証明する。
-- closed immersionのrange/supportがlawful closed setと一致することを証明する。
-- underlying point imageが`PrimeSpectrum.zeroLocus I_U`と一致することを証明する。
-- existing set-level `lawfulLocus`をこのunderlying-point theoremへ接続する。
+- soundness、completeness、exactnessをlaw-by-lawに定義する。
+- exactnessがsoundnessとcompletenessのconjunctionであることを証明する。
+- required/all用のaggregate exactness predicateを定義する。
+- witness-wise vanishingとrequired supremum vanishingをcomplete latticeから同値にする。
+- ideal comap zeroをkernel inclusionへ接続する。
+- actual lift、triangle、一意性をMathlib universal propertyから構成する。
+- legacy `FactorsThroughLawfulLocus`をactual factorizationの証拠に使わない。
 
-### R5 — global lawful closed geometry
+### R5 — 定理11.1 coreと別exactness
 
-- standard architecture schemeのunderlying Scheme上でlaw-generated`I_U : X.IdealSheafData`を構成する。
-- lawful closed geometryを`I_U.subscheme`、closed immersionを`I_U.subschemeι`として定義する。
-- chart restrictionがlocal affine lawful closed geometryとcanonical isoで一致することを証明する。
-- pair overlapとtriple compatibilityをideal sheaf restrictionから導く。
-- AAT decorationをclosed subschemeへrestrictionし、underlying closed geometryと同じlaw provenanceを保持する。
+- SD5の三つのiff edgeを個別theoremとして証明する。
+- `lawfulnessIdealFactorizationCorrespondence`をその三edgeから証明する。
+- required indexed sum compatibilityとfactorization criterionを追加入力にしない。
+- closed subset版を`SelectedClosedLawIdealExact`の下で証明し、本文のfull版は
+  `AllSelectedLawsClosed`と`AllLawIdealExact`の下で別に証明する。
+- cover premiseをcore theoremへ持ち込まない。
+- SD6のobject、valuation、axis theoremをcoreと別に実装する。
+- 各material premiseがproof bodyで使われることをstatement contractとreviewで確認する。
 
-### R6 — actual factorization theorem
+### R6 — law inclusion
 
-- architecture sectionまたはtest scheme morphism`s : T ⟶ X`に対し、semantic lawfulnessを
-  selected law universeの各lawが`s`上で成立することとして定義する。
-- witness equationsのvanishingは`WitnessVanishes_U(s)`などの別predicateとし、
-  semantic lawfulnessまたはideal pullback zeroの別名にしない。
-- `I_U ≤ s.ker`、`I_U.comap s = ⊥`または同値なMathlib ideal-sheaf statementへ接続する。
-- lawfulnessから`I_U.subscheme`へのactual liftを`IsClosedImmersion.lift`または同等のuniversal propertyで構成する。
-- liftと`subschemeι`のcompositionが`s`に等しいことを証明する。
-- actual factorizationからideal pullback zeroとlawfulnessを逆向きに証明する。
-- liftの一意性をclosed immersionのmonomorphismまたはMathlib universal propertyから証明する。
-- 数学本文 定理11.1のobstruction soundness、obstruction completeness、axis exactness、
-  witness coverage、U-adequate cover、sheaf descent、ring restriction compatibilityを
-  同じ量化対象で本文由来material premiseとして明示し、proof bodyで実際に使う。
-- 上記premiseの下でsemantic lawfulness、witness vanishing、ideal pullback zero、actual factorization、
-  obstruction valuation zero、required signature axes zeroの本文どおりの同値を証明する。
-- witness vanishingからsemantic lawfulnessへのsoundness/completenessをopaqueなadequacy fieldから射影しない。
-- 結果を次の双方向同値として接続する。
+- inclusion dataをlaw index mapとatom mapだけで定義する。
+- required/closed preservation、coordinate equality、semantic implicationをvalidity predicateに置く。
+- refl、compとそのvalidityを証明する。
+- per-law ideal inclusionとrequired/all supremum inclusionを証明する。
+- stronger required / selected-closed / full semantic lawfulnessから各weaker lawfulnessを証明する。
+- required/all双方のactual subscheme map、closed immersion、ambient triangle、identity、compositionを証明する。
 
-```text
-Lawful_U(s)
-  <-> WitnessVanishes_U(s)
-  <-> s^* I_U = 0
-  <-> Nonempty { t : T -> Flat_U(X) // t ≫ ι_U = s }
-  <-> omega_U(s) = 0
-  <-> required Sig_U axes vanish
-```
+### R7 — nondegenerate finite examples
 
-### R7 — law universe inclusion
+- existing `twoChartReferenceModel`をambient Schemeとして再利用する。
+- `x - 1`と`x + 1`からweak/strong readingsを構成する。
+- global equations constructorでwitness compatibilityを放電する。
+- generator-level semantic predicateからrequired law exactnessを証明し、core correspondenceを発火させる。
+- evaluation mapsでstrict ideal inclusionとpropernessを証明する。
+- required/all comparison mapのnon-isoを具体evaluationから証明する。
+- integer pointとmod-2 pointをactual Scheme morphismとして構成する。
+- weak-only factorizationとboth factorizationをactual liftsで示す。
+- SD9 firing matrixに列挙した全new predicate / factorization typeについて、positiveとnegativeの
+  named theoremを具体式から証明する。
 
-- selected closed-equational law universe inclusionをtyped dataとして定義する。
-- `U ⊆ V`から`I_U ≤ I_V`をsupremumの普遍性で証明する。
-- ideal inclusionからclosed subscheme間のactual morphismを`subschemeMap`または同等のMathlib APIで構成する。
-- comparison morphismがactual closed immersionであることを証明する。
-- morphismと各closed immersionの可換性、identity、compositionを証明する。
-- point-set inclusionだけでfunctoriality完成としない。
+### R8 — API quality、contracts、audit、aggregate
 
-### R8 — 非退化finite examples
+- 全public declarationへ数学的役割、入力provenance、仮定を説明するdocstringを付ける。
+- constructor/destructor/ext/characterization/comparison APIを揃え、downstreamでのunfoldを不要にする。
+- `StatementContractsClosedEquationalGeometry.lean`へSD0〜SD7とSD9のexact signature exampleを置く。
+- `AxiomAudit.lean`へimplementation moduleとfinite example moduleで追加した全public theoremを登録する。
+- `Formal/AG/LawAlgebra.lean`がmain implementation moduleとfinite example moduleを直接importし、
+  `Formal/AG/StatementContracts.lean`がstatement contract moduleを直接importする。
+- `Formal/AG.lean`から両aggregateへのtransitive import pathを確認し、
+  `research/lean/ResearchLean`からreverse importしない。
+- `sorry`、`admit`、新規`axiom`、結論相当certificateを残さない。
 
-- 非自明coefficient ringと`⊥`でも`⊤`でもないlaw-generated idealを持つaffine exampleを構成する。
-- quotient spectrum、closed immersion、underlying zero locus、factorization theoremを同一law inputから発火させる。
-- 同一ambient scheme上でlaw dataだけが異なり、`I_U < I_V`とlawful closed subschemeが異なるpairを構成する。
-- lawful closed subschemeがnonemptyでambient schemeと同一でないことを証明する。
-- lawful sectionとunlawful sectionの双方をactual morphismとして示す。
-- arbitrary idealを直接入力した例、zero idealだけの例、empty locusだけの例を主証拠にしない。
+### R9 — final premise discharge、review、source-of-truth
 
-### R9 — legacy comparison・統合・監査
-
-- `SelectedLawWitnessIdealFamily`からnew law-generated routeへの変換は、
-  witness provenanceとrestriction proofを追加で示せる場合だけ提供する。
-- set-level `lawfulLocus`とnew closed subschemeのunderlying point setの一致を証明する。
-- old `FactorsThroughLawfulLocus`をactual factorization theoremの証拠に使わず、
-  必要ならdeprecationまたはcomparison対象として残す。
-- 新moduleを`Formal/AG.lean`へ接続する。
-- target declarationsとexamplesをstatement contractsとaxiom auditへ追加する。
-- Lean theorem indexとproof-obligation台帳を必要範囲で同期する。
+- final snapshotの全target declarationについて、明示引数、typeclass、structure field、certificate fieldを
+  独立に列挙し、SD8の各行と突合する。
+- 各material premiseについて放電元、proof bodyで使う箇所、主結論への寄与を記録し、
+  `material_premise_ledger_delta = ∅`かつ`new_material_premise = ∅`を確認する。
+- statement diffを取り、Approved signatureとの差分がzeroであることを記録する。
+- protected math sourceの差分がzeroであることを確認する。
+- `math-lean-review`の4本の独立査読を最終snapshotに対して実行する。
+- findingを修正した場合はreview protocolに従って直接対応または正式再実行を行う。
+- CI green、review完了、Issue/PR status同期後にのみ完了と判定する。
+- runtime stateはGitHub Issue / PRに保持し、新しい進捗Markdownを作らない。
 
 ## Acceptance Criteria
 
-- [ ] AC1: executable contractがlaw-generated ideal sheaf、closed immersion、full correspondence、law inclusion、nontrivial exampleの実装signatureを直接参照する。
-- [ ] AC2: 各local witness idealがselected closed-equational law witnessから生成され、law/context/coefficient provenanceを追跡できる。
-- [ ] AC3: local idealsがaffine-open restrictionに整合し、identity/composition/pair-overlap compatibilityが証明される。
-- [ ] AC4: `I_U`がactual Mathlib `Scheme.IdealSheafData`として構成され、selected law ideal sheavesのsupremumまたはactual image provenanceを持つ。
-- [ ] AC5: objectwise local sumとideal sheaf sectionの一致が、明示された条件の下で証明される。
-- [ ] AC6: affine lawful geometryがactual `Spec(A/I_U) ⟶ Spec A`とclosed immersion proofを持つ。
-- [ ] AC7: global lawful geometryが`I_U.subscheme`と`I_U.subschemeι`として構成される。
-- [ ] AC8: `I_U.subschemeι.ker = I_U`とrange/supportのlawful closed set characterizationが証明される。
-- [ ] AC9: chart restrictionがlocal affine lawful closed geometryとcanonical isoで一致し、pair/triple overlap compatibilityとclosed subschemeへのglobal decoration restrictionが証明される。
-- [ ] AC10: semantic lawfulnessをwitness vanishingまたはideal vanishingの別名にせず、本文 定理11.1と同じmaterial premiseの下でsemantic lawfulness、witness vanishing、ideal pullback zero、actual factorization、obstruction valuation zero、required signature axes zeroが同値であり、factor liftのtriangleと一意性が証明される。
-- [ ] AC11: underlying point imageがexisting `PrimeSpectrum.zeroLocus` readingと一致する。
-- [ ] AC12: law universe inclusionからideal inclusionとclosed subscheme間のactual closed immersionが構成され、ambient triangle、identity、compositionが証明される。
-- [ ] AC13: 非退化finite pairが同一ambient scheme上でstrict ideal inclusion、proper nonempty closed geometry、factorization yes/noを示す。
-- [ ] AC14: 新主経路にarbitrary supplied ideal、自由な`Prop` slot、結論相当certificate、未使用material premiseがない。
-- [ ] AC15: 新definitionにconstructor/destructor/ext/characterization/comparison APIがあり、conormal等の後続利用者がdefinition unfoldに依存しない。
-- [ ] AC16: target declarationsとexamplesがstandard axiomsのみを使用し、statement contractsとaxiom auditがgreenである。
-- [ ] AC17: `docs/aat/algebraic_geometric_theory/**`に変更がなく、Lean台帳だけが必要範囲で同期される。
-- [ ] AC18: `math-lean-review`の4本の独立査読がすべて`No major findings`である。
+- [ ] AC1: tracking Issueが対象main commit、SD0〜SD9 target、material premise、依存順を固定している。
+- [ ] AC2: statement contractがimplementationとfinite exampleの全public definition/theoremの完全signatureを`example`で直接参照する。
+- [ ] AC3: `ClosedEquationalLawReading`がsemantic reading、closed selection、witness dataだけを持ち、ideal、subscheme、lawfulness、factorizationをfieldに持たない。
+- [ ] AC4: `IsClosedEquationalLawReading`が別の`Prop` recognition predicateである。
+- [ ] AC5: semantic `HoldsOn`がideal vanishingの別名ではなく、base change保存が具体proofを持つ。
+- [ ] AC6: existing coreの`lawWitnessIdeal`のbridge像が移されたatom-indexed coordinatesのspanと一致し、finite chartで発火する。
+- [ ] AC7: local witness idealがlaw/atom-indexed sectionsのspanから生成され、coordinate restriction equalityから`map_ideal_basicOpen`のexact equalityが導かれる。
+- [ ] AC8: `lawWitnessIdealSheaf`がactual `Scheme.IdealSheafData`であり、任意ideal familyをprimary inputにしない。
+- [ ] AC9: global equations constructorのideal sheafが`IdealSheafData.ofIdealTop`と一致する。
+- [ ] AC10: required `lawGeneratedIdealSheaf`とall `allLawGeneratedIdealSheaf`が別definitionである。
+- [ ] AC11: 両ideal sheafのobjectwise idealがfixed indexed supremumと一致する。
+- [ ] AC12: `lawGeneratedIdealSheaf_le_all`がactual ideal-sheaf inclusionを与える。
+- [ ] AC13: required/all closed geometryがactual Mathlib subschemeと`subschemeι`である。
+- [ ] AC14: required/all comparisonがactual closed immersionとambient triangleを持つ。
+- [ ] AC15: `lawfulClosedImmersion_ker`と`lawfulClosedImmersion_range`がMathlib APIから証明される。
+- [ ] AC16: general Scheme上のlocal quotient geometryが`subschemeCover`と`subschemeObjIso`で公開される。
+- [ ] AC17: general Schemeを単一global `Spec(A/I)`とする未証明claimがない。
+- [ ] AC18: lawful closed decorationがactual immersionに沿う`AATReadingDecoration.pullback`である。
+- [ ] AC19: `LawIdealExact`が全test Schemeと全sectionを量化し、soundness/completenessの両方向を持つ。
+- [ ] AC20: required exactness、closed-subset exactness、全law exactnessが区別され、finite readingがrequired/full exactnessをgenerator計算から放電する。
+- [ ] AC21: witness-wise vanishingとrequired supremum vanishingの同値に追加入力premiseがない。
+- [ ] AC22: ideal comap zeroとkernel inclusionが`map_gc`と`map_bot`から接続される。
+- [ ] AC23: factorizationがactual morphism、triangle equality、一意性を持つ。
+- [ ] AC24: `lawfulnessIdealFactorizationCorrespondence`がsemantic、witness、ideal、actual factorizationの三edgeを返し、finite readingで直接発火する。
+- [ ] AC25: ambient inputとconstruction validityを除き、core theoremが新たに要求するtheorem-specific semantic premisesが`RequiredClosed`と`RequiredLawIdealExact`に限られ、両方がproof-usedである。`HasSheafify`を含むambient inputと`IsClosedEquationalWitnessReading`を含むconstruction validityも全target inventoryとSD8突合の対象にする。
+- [ ] AC26: cover由来のpremiseがcore theoremのunused argumentとして残らない。
+- [ ] AC27: object comparison、valuation exactness、axis exactnessがSD6の別theoremに分離される。
+- [ ] AC28: `ClosedEquationalLawInclusion`がprimitive mapsだけを持ち、validity predicateからideal inclusionを導く。
+- [ ] AC29: law inclusionがrequired / selected-closed / full semantic monotonicityと、required/all双方のactual subscheme map、closed immersion、ambient triangle、identity、compositionを持つ。
+- [ ] AC30: finite weak/strong pairが同一ambient Scheme上でstrict ideal inclusionを示す。
+- [ ] AC31: weak/strong closed subschemesがnonemptyかつambientと同一でない。
+- [ ] AC32: required/all comparison mapがisoでないことを具体evaluationで証明する。
+- [ ] AC33: integer pointがweakだけにfactorし、mod-2 pointがweak/strong双方にfactorする。
+- [ ] AC34: SD9 firing matrixに列挙した全new predicate / factorization typeに、独立したpositive/negative named declarationがある。
+- [ ] AC35: 主証拠が`⊥`、`⊤`、empty Scheme、identity morphismだけに依存しない。
+- [ ] AC36: legacy `SheafImageConstruction`、`FactorsThroughLawfulLocus`、`LawfulnessIdealCorrespondencePackage`が新主定理の証明依存に入らない。
+- [ ] AC37: public APIにdocstring、extensionality、characterization、comparison theoremがあり、downstream testがdefinition unfoldに依存しない。
+- [ ] AC38: `Formal/AG/LawAlgebra.lean`と`Formal/AG/StatementContracts.lean`が担当moduleを直接importし、`Formal/AG.lean`からtransitiveに到達でき、ResearchLeanへのreverse importがない。
+- [ ] AC39: target declarationsとexamplesに`sorry`、`admit`、新規`axiom`がなく、`AxiomAudit.lean`が両moduleの全new public theoremを参照し、standard axiomsのみを報告する。
+- [ ] AC40: protected math sourceのdiffがzeroである。
+- [ ] AC41: final snapshotの全target declarationについて明示引数/typeclass/structure field/certificate fieldを独立監査し、放電元とproof-useを記録したうえで、`material_premise_ledger_delta = ∅`、`new_material_premise = ∅`、statement diff zeroをtracking Issueに記録する。
+- [ ] AC42: `math-lean-review`の4本がすべて合格、またはfinding全解消後の有資格な直接対応が記録される。
+- [ ] AC43: required CIがgreenで、PR merge後にtracking Issueと依存Issueのstatusが同期される。
+- [ ] AC44: diff、staged diff、untracked file、hidden Unicode、`unsafe`、placeholder、internal pathのstatic checksがcleanである。
+- [ ] AC45: 完了後のPRD処理が`docs/guideline.md`のcontent-invariant archive手順を満たす。
 
 ## Failure Contract
 
 次は完了ではなく失敗である。
 
-- arbitrary `Ideal A` familyを受け取り、law-generated idealと呼ぶpackage。
-- `imageIdeal`と`agreesWithLocalSum` equality fieldだけをactual sheaf imageと呼ぶこと。
-- `PrimeSpectrum.zeroLocus`のSetだけでclosed geometry完成とすること。
-- ideal pullback zeroを別structureへ同じ形で包み、actual factorizationと呼ぶこと。
-- semantic lawfulnessをwitness vanishingまたはideal pullback zeroとして定義し、本文 定理11.1のsoundness/completeness等を消すこと。
-- closed immersion、factorization lift、commutative triangleを結論相当fieldから射影すること。
-- open、temporal、descent、stacky lawを根拠なくideal sheafへ押し込むこと。
-- zero ideal、empty locus、all-identity morphismだけで主経路を発火させること。
-- implementation convenienceを理由に数学本文のlawfulness/factorization claimを弱めること。
+- `ClosedEquationalLawReading`へarbitrary `Ideal`、`IdealSheafData`、subscheme、factorization proofを保存する。
+- arbitrary ideal familyを`ofIdeals`へ渡し、objectwise equalityなしに入力familyと同一視する。
+- `imageIdeal`とequality fieldをactual sheaf imageと呼ぶ。
+- required lawsとall selected closed lawsを同じidealへ畳み込む。
+- local witness restrictionがinclusionしか与えないのに、`map_ideal_basicOpen`のequalityを仮定する。
+- atom-indexed specializationだけを実装して、contextごとに変わる一般`Viol_L(W)`または
+  定義6.2の一般sheaf-image construction全体の完了を主張する。
+- general Schemeを単一の`Spec(A/I)`として扱う。
+- `PrimeSpectrum.zeroLocus`の`Set`だけでclosed geometry完成とする。
+- semantic lawfulnessをwitness vanishingまたはideal comap zeroとして定義する。
+- `LawIdealExact`をfree `Prop`、opaque adequacy field、結論相当certificateから射影する。
+- factorizationをideal comap zeroのrepackageにし、actual liftとtriangleを構成しない。
+- lift、triangle、一意性をstructure fieldとして入力する。
+- cover premiseをcore theoremへ追加し、proof bodyで使わない。
+- valuation/axis conclusionをlaw-ideal exactnessだけから導く。
+- law inclusionへ`witness_eq`またはideal equalityをdata fieldとして直接保存する。
+- point-set inclusionだけでlaw inclusionのfunctoriality完成とする。
+- zero ideal、unit ideal、empty Scheme、all-identity morphismだけでfinite firingを済ませる。
+- wrapper、alias、renaming、既存packageのfield射影だけでtarget名を満たす。
+- theorem名の存在、`lake build`、axiom scan、docs整備だけで数学的達成と判定する。
+- `AxiomAudit.lean`へ代表theoremだけを登録し、new public theoremの一部を監査対象から外す。
+- aggregate importまたはfinal premise ledgerの差分を未確認のまま完了とする。
+- implementation convenienceを理由にfixed statementの対象、仮定、結論を変更する。
 
 ## 停止条件
 
-- 数学本文のclosed-equational law geometryにLean実装と独立した反例、型不整合、well-definedness欠陥が見つかった。
-- fixed statementを弱める、material premiseを増やす、参照definitionを結論相当に変更する必要が生じた。
-- Mathlib `IdealSheafData`から本文に必要なclosed subschemeまたはfactorizationを構成できない。
-- law witnessからideal sheafまでのrestriction compatibilityを証明できず、arbitrary ideal familyが必要になる。
-- nontrivial law-sensitive finite pairが構成できず、zero/empty examplesだけが残る。
+次のいずれかが発生したら実装を止める。
 
-停止報告には、該当AC、最小の反例またはAPI blocker、試したMathlib route、未放電仮定、
-本文改訂の要否、代替となるstandard closed geometry設計を記録する。
+- fixed signatureを弱める、material premiseを増やす、結論相当fieldを追加する必要が生じた。
+- law witness coordinatesからbasic-open ideal equalityを証明できない。
+- Mathlib `IdealSheafData`からSD3またはSD4のactual geometryを構成できない。
+- required/allの分離を保ったまま定理11.1 coreを証明できない。
+- nondegenerate weak/strong pairのstrictness、properness、factorization差を証明できない。
+- 数学本文に独立した型不整合、well-definedness欠陥、反例が見つかった。
+
+停止報告には、該当SD / AC、fixed signature、最小のcounterexampleまたはAPI blocker、
+試したMathlib route、未放電仮定、必要な補題または未移植theorem、数学本文改訂の要否を記録する。
+停止中のwrapperや弱いtheoremを完了根拠として残さない。
 
 ## Non-goals
 
-- open、constructible、descent、temporal、stacky lawの一般幾何。
+- cover上のlocal vanishingからglobal vanishingを計算する一般定理。
+- open、constructible、temporal、stacky lawのideal-sheaf encoding。
 - conormal sheaf`I/I^2`、short exact sequence、Čech connecting class、first-order lift。
-- G-07または他のResearch成果の本体蒸留。
 - derived zero locus、cotangent complex、`Ext^1`、higher obstruction。
-- coverage refinement、coefficient base changeを含む一般reading functoriality。
-- 数学本文へのLean status、Issue、PR、declaration名の追加。
+- general coefficient base changeを含むreading functoriality。
+- full two-chart law-variation reference modelの追加。
+- legacy wrapper自体の削除。
+- Research成果の本体蒸留。
+- protected math sourceへの編集。
 
 ## 検証
 
-検証手順と実行主体は`AGENTS.md`の「よく使う検証」「PR前の確認」と
-`docs/aat/guideline.md`を直接適用する。task固有の追加検査は、witness provenance、
-`IdealSheafData`、`subschemeι.ker`、actual factorization一意性、full Lawfulness-Ideal Correspondence、
-strict law inclusion exampleをstatement contractsとaxiom auditが直接参照していることの確認である。
+実装時は`AGENTS.md`、`docs/aat/guideline.md`、`docs/aat/lean_quality_standard.md`を直接適用する。
+通常の実装確認では、統括エージェントが単一の非aggregate fileを対象に次を実行する。
+
+```bash
+lake env lean Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean
+lake env lean Formal/AG/LawAlgebra/ClosedEquationalGeometryFiniteExample.lean
+lake env lean Formal/AG/StatementContractsClosedEquationalGeometry.lean
+```
+
+Lean変更を含むPR前に、統括エージェントが`lake build`を1回だけ実行する。
+サブエージェントは`lake build`、aggregate rootのelaboration、全file loopを実行しない。
+PR作成後のfull buildはCIへ任せる。
+
+task固有のfocused checksは次である。
+
+1. scratch fileでSD0〜SD7のMathlib API exact namesと
+   `Mathlib.AlgebraicGeometry.Morphisms.Separated`由来のinstanceを`#check`する。
+2. statement contractがimplementation moduleとfinite example moduleの全public definition/theoremの
+   fixed signatureを`example`で直接検査する。
+3. `AxiomAudit.lean`が両moduleで追加した全public theoremを一件ずつ参照する。
+4. `#print axioms`がstandard axioms以外を報告しない。
+5. finite exampleでSD9 firing matrixの全positive/negative pair、`weak_ideal_lt_strong`、nonempty、
+   non-iso、factorization yes/noを同時に確認する。
+6. final snapshotの全target declarationについて明示引数、typeclass、structure field、certificate field、
+   放電元、proof-use、主結論への寄与を独立監査し、SD8にないmaterial premiseがないことを確認する。
+7. `Formal/AG/LawAlgebra.lean`と`Formal/AG/StatementContracts.lean`の直接import、
+   `Formal/AG.lean`からのtransitive importを確認する。
+8. protected math sourceのdiffがzeroであることを確認する。
+
+PR前のtextual checksは次である。
+
+```bash
+git diff --check
+git diff --cached --check
+git ls-files --others --exclude-standard
+rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometryFiniteExample.lean \
+  Formal/AG/StatementContractsClosedEquationalGeometry.lean \
+  Formal/AG/AxiomAudit.lean \
+  Formal/AG/LawAlgebra.lean \
+  Formal/AG/StatementContracts.lean \
+  Formal/AG.lean \
+  docs/aat/aat_lean_03_closed_equational_geometry_prd.md
+rg -n "s[o]rry|a[d]mit|^a[x]iom |T[O]DO|F[I]XME|u[n]safe" \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometryFiniteExample.lean \
+  Formal/AG/StatementContractsClosedEquationalGeometry.lean
+rg -n '^import (Formal.AG.Atom.LawfulnessZero|Formal.AG.LawAlgebra.LawEquation|Formal.AG.LawAlgebra.StandardScheme|Mathlib.AlgebraicGeometry.IdealSheaf.Functorial|Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme|Mathlib.AlgebraicGeometry.Morphisms.Separated)$' \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean
+rg -n '^import (Formal.AG.LawAlgebra.ClosedEquationalGeometry|Formal.AG.LawAlgebra.StandardSchemeFiniteExample|Formal.AG.LawAlgebra.FiniteExamples)$' \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometryFiniteExample.lean
+rg -n '^import Formal.AG.LawAlgebra.ClosedEquationalGeometry(FiniteExample)?$' \
+  Formal/AG/StatementContractsClosedEquationalGeometry.lean \
+  Formal/AG/AxiomAudit.lean
+rg -n '^import Formal.AG.LawAlgebra.ClosedEquationalGeometry(FiniteExample)?$' \
+  Formal/AG/LawAlgebra.lean
+rg -n '^import Formal.AG.StatementContractsClosedEquationalGeometry$' \
+  Formal/AG/StatementContracts.lean
+rg -n '^import Formal.AG.(LawAlgebra|StatementContracts)$' Formal/AG.lean
+rg -n "research/lean/ResearchLean|ResearchLean" \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometryFiniteExample.lean \
+  Formal/AG/StatementContractsClosedEquationalGeometry.lean
+rg -n '/U[s]ers/|D[o]cuments/LEAN|\.c[o]dex/worktrees|\.l[a]ke/packages' \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean \
+  Formal/AG/LawAlgebra/ClosedEquationalGeometryFiniteExample.lean \
+  Formal/AG/StatementContractsClosedEquationalGeometry.lean \
+  Formal/AG/AxiomAudit.lean \
+  Formal/AG/LawAlgebra.lean \
+  Formal/AG/StatementContracts.lean \
+  Formal/AG.lean \
+  docs/aat/aat_lean_03_closed_equational_geometry_prd.md
+```
+
+`git ls-files --others --exclude-standard`はPR前snapshotでzero、`rg`のnegative scansはmatch zeroを要求する。
+aggregate import checksは各required importが一件以上matchすることを要求する。
+
+## Completion evidence packet
+
+完了判定には次を一つのGitHub tracking Issue commentへまとめる。
+
+| evidence | 必須内容 |
+| --- | --- |
+| fixed statement diff | Approved SD0〜SD9 signatureと実装signatureの差分zero。 |
+| declaration map | 各ACに対応するdeclaration名、source file、focused check。 |
+| premise discharge | 全target declarationの明示引数/typeclass/structure field/certificate field、SD8分類、放電元、proof-use、主結論への寄与。`material_premise_ledger_delta = ∅`かつ`new_material_premise = ∅`。 |
+| geometry evidence | ideal sheaf、kernel、range、quotient cover、actual lift、triangle、一意性。 |
+| finite evidence | weak/strong strictness、proper nonempty、required/all comparison non-iso、integer/mod-2 factorization。 |
+| firing evidence | SD9 firing matrixの全entryについてpositive/negative declaration、使用した具体式、section、index、atom、morphism。 |
+| negative evidence | semantic mismatch、semantic overclaim、invalid bridge、base-change failure、missing required/all selection、invalid witness、invalid reading、invalid inclusion、legacy wrapper非依存。 |
+| axiom evidence | 全new public theoremを含むstatement contracts、axiom audit、`#print axioms`結果。 |
+| aggregate evidence | 二つの直接import、`Formal/AG.lean`からのtransitive import、ResearchLean reverse import zero。 |
+| static evidence | diff/staged/untracked、hidden Unicode、placeholder、`unsafe`、privacy/internal-path scans。 |
+| review evidence | 4本の独立査読結果とfinding対応。 |
+| CI evidence | required checksのgreen結果とmerge commit。 |
+| source evidence | protected math source diff zero、runtime status同期。 |
+
+PRDの完了、参照除去、archiveは`docs/guideline.md`を正本とする。
+全AC、review、CI、merge、runtime status同期が完了し、repository-wideのlive referenceがzeroになった後、
+contentを変更せず`git mv`でarchiveする。archive後の文書を現行source of truthとして参照しない。
