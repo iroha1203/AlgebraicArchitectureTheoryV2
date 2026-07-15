@@ -1,6 +1,6 @@
 # ArchView gluing geometry contract
 
-この文書は`archsig-viewer-gluing-geometry-golden-ux/v0.5.2`の恒久design contractである。
+この文書は`archsig-viewer-gluing-geometry-golden-ux/v0.5.3`の恒久design contractである。
 ArchViewはArchSig artifactを投影し、新しいstructural verdictを生成しない。
 
 ## Golden cases

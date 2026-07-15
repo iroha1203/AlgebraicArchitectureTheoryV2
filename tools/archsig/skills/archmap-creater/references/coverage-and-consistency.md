@@ -5,7 +5,7 @@ and pass differences auditable without turning them into semantic verdicts.
 
 ## Extraction Consistency
 
-`archmap-extraction-consistency/v0.5.2` is produced by `archsig extraction-diff`.
+`archmap-extraction-consistency/v0.5.3` is produced by `archsig extraction-diff`.
 The command compares candidate packets by atom-match-key and leaves semantic
 adjudication to the integrator. The integrator completes adjudication by
 rereading sources.
@@ -14,7 +14,7 @@ Required shape:
 
 ```json
 {
-  "schema": "archmap-extraction-consistency/v0.5.2",
+  "schema": "archmap-extraction-consistency/v0.5.3",
   "id": "consistency:orders-service",
   "scopeManifestRef": "scope:orders-service",
   "passARefs": ["candidates:pass-a:chunk-01"],
@@ -74,14 +74,14 @@ decides whether to adopt, merge, or reject the cut.
 
 ## Coverage Ledger
 
-`archmap-coverage-ledger/v0.5.2` records the selected-scope survey. Rows must be
+`archmap-coverage-ledger/v0.5.3` records the selected-scope survey. Rows must be
 one-to-one with the scope manifest worklist.
 
 Required shape:
 
 ```json
 {
-  "schema": "archmap-coverage-ledger/v0.5.2",
+  "schema": "archmap-coverage-ledger/v0.5.3",
   "id": "coverage:orders-service",
   "scopeManifestRef": "scope:orders-service",
   "archmapRef": "archmap:orders-service",

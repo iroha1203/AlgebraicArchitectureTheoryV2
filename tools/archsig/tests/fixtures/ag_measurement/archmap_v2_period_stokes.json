@@ -1,5 +1,5 @@
 {
-  "schema": "archmap/v0.5.2",
+  "schema": "archmap/v0.5.3",
   "id": "ag-measurement-period-stokes-fixture",
   "sources": {
     "src:period-alpha": {

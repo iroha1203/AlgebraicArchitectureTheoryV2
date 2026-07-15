@@ -16,7 +16,7 @@ input, emits `archsig-measurement-packet.json`, and writes summary, insight,
 viewer, validation, and manifest artifacts.
 
 For declared refactor transport, add
-`--refactor-morphism <refactor-morphism/v0.5.2>`. The artifact is validated
+`--refactor-morphism <refactor-morphism/v0.5.3>`. The artifact is validated
 before measurement; without it no transport reading is emitted.
 
 When a LawPolicy selects `ag.saga-descent`, `analyze` accepts an optional
@@ -44,7 +44,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
   --out .archsig/archmap-validation.json
 ```
 
-`archmap` validates a supplied `archmap/v0.5.2` observation artifact. With the
+`archmap` validates a supplied `archmap/v0.5.3` observation artifact. With the
 optional `--scope-manifest`, `--candidate-packets`, `--extraction-consistency`,
 and `--coverage-ledger` inputs it also audits authoring survey traceability and
 adjudicated provenance closure.
@@ -85,7 +85,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
   --out .archsig/law-policy-validation.json
 ```
 
-`law-policy` validates a `law-policy/v0.5.2` selector artifact against its
+`law-policy` validates a `law-policy/v0.5.3` selector artifact against its
 selected measurement profile and supplied law-equation surface. A single law
 uses `policies[].law`; `ag.law-conflict-tor` uses an explicit
 `policies[].lawPair` containing exactly two distinct law ids.
@@ -122,7 +122,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- measurement-profile \
   --out .archsig/measurement-profile-validation.json
 ```
 
-`measurement-profile` validates a standalone `measurement-profile/v0.5.2`
+`measurement-profile` validates a standalone `measurement-profile/v0.5.3`
 artifact, including finite bounds against evaluator registry hard caps.
 
 ## Repair Plan
@@ -152,7 +152,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
 
 `compare` reads two current run directories and emits
 `archsig-comparison-report.json` plus `archmap-diff.json`.
-Use `--refinement <refinement-comparison/v0.5.2>` only for a validated
+Use `--refinement <refinement-comparison/v0.5.3>` only for a validated
 coarse-to-fine class-zero preservation reading.
 
 ## Gate
@@ -175,4 +175,4 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- schema-catalog \
   --out .archsig/schema-version-catalog.json
 ```
 
-The catalog lists current ArchSig v0.5.2 artifact contracts.
+The catalog lists current ArchSig v0.5.3 artifact contracts.

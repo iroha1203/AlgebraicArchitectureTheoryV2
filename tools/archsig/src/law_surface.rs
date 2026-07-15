@@ -6,10 +6,10 @@ use serde_json::Value;
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{NormalizedArchMapV2, ValidationCheck, ValidationExample};
 
-pub const LAW_EQUATION_SURFACE_V1_SCHEMA: &str = "law-equation-surface/v0.5.2";
+pub const LAW_EQUATION_SURFACE_V1_SCHEMA: &str = "law-equation-surface/v0.5.3";
 pub const LAW_EQUATION_SURFACE_VALIDATION_REPORT_SCHEMA: &str =
-    "law-equation-surface-validation-report/v0.5.2";
-pub const LAW_SURFACE_BINDING_VOCABULARY_SCHEMA: &str = "aat-atom-vocabulary-binding/v0.5.2";
+    "law-equation-surface-validation-report/v0.5.3";
+pub const LAW_SURFACE_BINDING_VOCABULARY_SCHEMA: &str = "aat-atom-vocabulary-binding/v0.5.3";
 
 const CONDITION_TYPES: [&str; 6] = [
     "closed-equational",
@@ -263,7 +263,7 @@ pub fn validate_law_surface_v1_report(
 fn check_schema(surface: &LawEquationSurfaceV1) -> ValidationCheck {
     let mut check = validation_check(
         "law-equation-surface-v052-schema",
-        "law-equation-surface uses the v0.5.2 schema discriminator",
+        "law-equation-surface uses the v0.5.3 schema discriminator",
         if surface.schema == LAW_EQUATION_SURFACE_V1_SCHEMA {
             "pass"
         } else {
@@ -758,7 +758,7 @@ fn check_stage3_fields(surface: &LawEquationSurfaceV1, raw: &Value) -> Validatio
     }
     check_examples(
         "law-equation-surface-v052-stage3-contract",
-        "Stage 3 law surface fields satisfy the v0.5.2 supplied contract",
+        "Stage 3 law surface fields satisfy the v0.5.3 supplied contract",
         examples,
     )
 }
@@ -914,7 +914,7 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
         examples.push(generic_validation_example(
             "bindingVocabulary.schema",
             &vocabulary.schema,
-            "binding vocabulary must use the v0.5.2 manifest",
+            "binding vocabulary must use the v0.5.3 manifest",
         ));
     }
     if vocabulary.axes.is_empty()

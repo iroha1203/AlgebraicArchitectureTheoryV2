@@ -140,17 +140,17 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a LawPolicy v0.5.2 selector artifact for ArchSig AAT analysis.
+    /// Validate a LawPolicy v0.5.3 selector artifact for ArchSig AAT analysis.
     LawPolicy {
-        /// Input LawPolicy v0.5.2 JSON path.
+        /// Input LawPolicy v0.5.3 JSON path.
         #[arg(long = "law-policy")]
         law_policy: PathBuf,
 
-        /// Input MeasurementProfile v0.5.2 JSON path.
+        /// Input MeasurementProfile v0.5.3 JSON path.
         #[arg(long = "measurement-profile")]
         measurement_profile: PathBuf,
 
-        /// Supplied law-equation-surface/v0.5.2 JSON path.
+        /// Supplied law-equation-surface/v0.5.3 JSON path.
         #[arg(long = "law-surface")]
         law_surface: PathBuf,
 
@@ -159,9 +159,9 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a supplied law-equation-surface/v0.5.2 author declaration.
+    /// Validate a supplied law-equation-surface/v0.5.3 author declaration.
     LawSurface {
-        /// Input law-equation-surface/v0.5.2 JSON path.
+        /// Input law-equation-surface/v0.5.3 JSON path.
         #[arg(long = "law-surface")]
         law_surface: PathBuf,
 
@@ -170,9 +170,9 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a standalone MeasurementProfile v0.5.2 artifact.
+    /// Validate a standalone MeasurementProfile v0.5.3 artifact.
     MeasurementProfile {
-        /// Input MeasurementProfile v0.5.2 JSON path.
+        /// Input MeasurementProfile v0.5.3 JSON path.
         #[arg(long = "measurement-profile")]
         measurement_profile: PathBuf,
 
@@ -181,13 +181,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a standalone RepairPlan v0.5.2 artifact.
+    /// Validate a standalone RepairPlan v0.5.3 artifact.
     RepairPlan {
         /// Input ArchMap observation artifact path used to resolve RepairPlan chart and semantic refs.
         #[arg(long)]
         archmap: PathBuf,
 
-        /// Input RepairPlan v0.5.2 JSON path.
+        /// Input RepairPlan v0.5.3 JSON path.
         #[arg(long = "repair-plan")]
         repair_plan: PathBuf,
 
@@ -214,7 +214,7 @@ enum Command {
         )]
         law_policy: Option<PathBuf>,
 
-        /// Optional law-equation-surface/v0.5.2 artifact supplying evaluator execution plans.
+        /// Optional law-equation-surface/v0.5.3 artifact supplying evaluator execution plans.
         #[arg(long = "law-surface", conflicts_with = "policy_bundle")]
         law_surface: Option<PathBuf>,
 
@@ -238,7 +238,7 @@ enum Command {
         #[arg(long = "residual-packet")]
         residual_packet: Option<PathBuf>,
 
-        /// Optional refactor-morphism/v0.5.2 artifact enabling declared verdict transport.
+        /// Optional refactor-morphism/v0.5.3 artifact enabling declared verdict transport.
         #[arg(long = "refactor-morphism")]
         refactor_morphism: Option<PathBuf>,
 
@@ -253,19 +253,19 @@ enum Command {
 
     /// Apply a gate policy to an ArchSig measurement packet.
     Gate {
-        /// Input archsig-measurement-packet/v0.5.2 JSON path.
+        /// Input archsig-measurement-packet/v0.5.3 JSON path.
         #[arg(long)]
         packet: PathBuf,
 
-        /// Input archsig-gate-policy/v0.5.2 JSON path.
+        /// Input archsig-gate-policy/v0.5.3 JSON path.
         #[arg(long)]
         policy: PathBuf,
 
-        /// Optional archsig-comparison-report/v0.5.2 JSON path for introduced-by-change rules.
+        /// Optional archsig-comparison-report/v0.5.3 JSON path for introduced-by-change rules.
         #[arg(long)]
         comparison: Option<PathBuf>,
 
-        /// Output archsig-gate-report/v0.5.2 JSON path. If omitted, JSON is written to stdout.
+        /// Output archsig-gate-report/v0.5.3 JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -284,7 +284,7 @@ enum Command {
         #[arg(long = "out-dir")]
         out_dir: PathBuf,
 
-        /// Optional refinement-comparison/v0.5.2 artifact enabling fingerprint-bound class-zero transport.
+        /// Optional refinement-comparison/v0.5.3 artifact enabling fingerprint-bound class-zero transport.
         #[arg(long = "refinement")]
         refinement: Option<PathBuf>,
     },
@@ -385,7 +385,7 @@ fn validate_archmap_command_input(
         }
         _ => {
             require_schema(&raw, ARCHMAP_V2_SCHEMA, "--input")?;
-            unreachable!("require_schema returns on success for archmap/v0.5.2")
+            unreachable!("require_schema returns on success for archmap/v0.5.3")
         }
     }
 }
@@ -560,7 +560,7 @@ fn validate_measurement_profile_command_input(
     let failed = failed_check_count > 0;
     Ok((
         serde_json::json!({
-            "schema": "measurement-profile-validation-report/v0.5.2",
+            "schema": "measurement-profile-validation-report/v0.5.3",
             "input": {
                 "schema": profile.schema,
                 "path": stable_input_ref(input),
@@ -1034,7 +1034,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             ]);
             let component_fingerprints = bundle_fingerprints.or(Some(serde_json::json!(
                 build_component_fingerprints(&law_policy, law_surface.as_deref().ok_or(
-                    "analyze requires --law-surface for LawPolicy v0.5.2",
+                    "analyze requires --law-surface for LawPolicy v0.5.3",
                 )?, &measurement_profile)?
             )));
             let run_contract = AnalyzeRunContract::from_inputs(
@@ -1102,7 +1102,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 write_json(
                     Some(run_manifest_path),
                     &serde_json::json!({
-                        "schema": "archsig-run-manifest/v0.5.2",
+                        "schema": "archsig-run-manifest/v0.5.3",
                         "toolVersion": run_contract.tool_version.clone(),
                         "runId": run_contract.run_id.clone(),
                         "inputDigests": run_contract.input_digests.clone(),
@@ -1155,7 +1155,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     out_dir.display()
                 );
                 if law_surface.is_none() {
-                    eprintln!("analyze requires --law-surface for LawPolicy v0.5.2");
+                    eprintln!("analyze requires --law-surface for LawPolicy v0.5.3");
                 }
                 return Ok(ExitCode::from(2));
             }
@@ -1184,8 +1184,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "archsig-run-manifest.json",
                     ]);
                     let analysis_failure = serde_json::json!({
-                        "schema": "archsig-measurement-packet-validation-report/v0.5.2",
-                        "packetSchema": "archsig-measurement-packet/v0.5.2",
+                        "schema": "archsig-measurement-packet-validation-report/v0.5.3",
+                        "packetSchema": "archsig-measurement-packet/v0.5.3",
                         "checks": [{
                             "id": "analysis-execution-plan",
                             "result": "fail",
@@ -1204,7 +1204,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     write_json(
                         Some(run_manifest_path),
                         &serde_json::json!({
-                            "schema": "archsig-run-manifest/v0.5.2",
+                            "schema": "archsig-run-manifest/v0.5.3",
                             "toolVersion": run_contract.tool_version.clone(),
                             "runId": run_contract.run_id.clone(),
                             "inputDigests": run_contract.input_digests.clone(),
@@ -1288,7 +1288,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(
                 Some(analysis_validation_path),
                 &with_run_contract(&serde_json::json!({
-                    "schema": "archsig-measurement-packet-validation-report/v0.5.2",
+                    "schema": "archsig-measurement-packet-validation-report/v0.5.3",
                     "packetSchema": measurement_packet.schema,
                     "checks": packet_validation,
                     "summary": {
@@ -1314,7 +1314,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(
                 Some(run_manifest_path),
                 &serde_json::json!({
-                    "schema": "archsig-run-manifest/v0.5.2",
+                    "schema": "archsig-run-manifest/v0.5.3",
                     "toolVersion": run_contract.tool_version.clone(),
                     "runId": run_contract.run_id.clone(),
                     "inputDigests": run_contract.input_digests.clone(),
@@ -1358,7 +1358,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         )
                     },
                     "nonConclusions": [
-                        "Finite-poset-site run manifest records the v0.5.2 AG measurement foundation artifacts.",
+                        "Finite-poset-site run manifest records the v0.5.3 AG measurement foundation artifacts.",
                         "Foundation packet rows are not completed AG invariant evaluator computation."
                     ]
                 }),
@@ -1426,7 +1426,7 @@ fn build_validation_failure_insight_report(
         .cloned()
         .unwrap_or_else(|| "validation:unknown-failure".to_string());
     serde_json::json!({
-        "schema": "archsig-insight-report/v0.5.2",
+        "schema": "archsig-insight-report/v0.5.3",
         "reportId": "insight:validation-failure",
         "sourcePacketRef": null,
         "generatedAt": "deterministic-run-artifact",
@@ -1562,7 +1562,7 @@ fn build_validation_failure_insight_report(
 
 fn build_validation_failure_viewer_data(insight_report: &Value) -> Value {
     serde_json::json!({
-        "schema": "archsig-atom-viewer-data/v0.5.2",
+        "schema": "archsig-atom-viewer-data/v0.5.3",
         "sourceArtifactRefs": {
             "archmapValidation": "archmap-validation.json",
             "lawPolicyValidation": "law-policy-validation.json",
@@ -1580,6 +1580,19 @@ fn build_validation_failure_viewer_data(insight_report: &Value) -> Value {
         "viewerVisualScenes": insight_report["viewerVisualScenes"],
         "guidedTours": insight_report["guidedTours"],
         "copyBlocks": insight_report["copyBlocks"],
+        "sagaDescent": {
+            "projectionBoundary": "SAGA fields are unavailable because validation stopped before measurement.",
+            "sourcePacketRef": "archsig-measurement-packet.json",
+            "stages": [
+                {"stageId": "grounding", "order": 0, "status": "not_computed", "rows": [], "measurements": [], "visualRole": "grounding"},
+                {"stageId": "descent", "order": 1, "status": "not_computed", "rows": [], "measurements": [], "harmonicDebt": [], "visualRole": "descent-measurement"},
+                {"stageId": "comparison", "order": 2, "status": "not_computed", "rows": [], "visualRole": "transfer-comparison"},
+                {"stageId": "silence", "order": 3, "status": "not_computed", "rows": [], "visualRole": "silence"}
+            ],
+            "silenceRows": [],
+            "leafFieldMap": [],
+            "nonClaims": ["Validation stopped before a measurement packet could supply SAGA fields."]
+        },
         "reportPane": {
             "readThisFirst": insight_report["readThisFirst"],
             "insightQueue": insight_report["insightCards"],

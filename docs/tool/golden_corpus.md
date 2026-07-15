@@ -1,14 +1,14 @@
 # ArchSig Golden Corpus
 
-The current ArchSig golden corpus is the v0.5.2 AG measurement fixture family
+The current ArchSig golden corpus is the v0.5.3 AG measurement fixture family
 under `tools/archsig/tests/fixtures/ag_measurement`.
 
 It fixes these current contracts:
 
-- `archsig-measurement-packet/v0.5.2`
-- `archsig-gate-report/v0.5.2`
-- `archsig-comparison-report/v0.5.2`
-- `archmap-diff/v0.5.2`
+- `archsig-measurement-packet/v0.5.3`
+- `archsig-gate-report/v0.5.3`
+- `archsig-comparison-report/v0.5.3`
+- `archmap-diff/v0.5.3`
 - `archsig-analysis-summary.json`
 - `archsig-insight-report.json`
 - `archsig-atom-viewer-data.json`

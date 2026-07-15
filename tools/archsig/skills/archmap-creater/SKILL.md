@@ -1,11 +1,11 @@
 ---
 name: archmap-creater
-description: Create bounded archmap/v0.5.2 finite-poset-site artifacts from repository evidence.
+description: Create bounded archmap/v0.5.3 finite-poset-site artifacts from repository evidence.
 ---
 
 # ArchMap Creater
 
-Use this skill to create `archmap/v0.5.2` documents and their authoring
+Use this skill to create `archmap/v0.5.3` documents and their authoring
 artifacts from source-grounded repository evidence.
 
 The core discipline is to keep the mechanical layer and the reading layer
@@ -77,7 +77,7 @@ add or remove support atoms to change the law universe.
 3. **Pass A Survey**
    - Split the worklist into deterministic contiguous chunks, default size 20.
    - Each sub-agent reads every source in its chunk and emits one
-     `archmap-candidate-packet/v0.5.2` with a `surveyRows` entry for every worklist
+     `archmap-candidate-packet/v0.5.3` with a `surveyRows` entry for every worklist
      row in the chunk.
    - Survey for components, relations, capabilities, state, effects, authority,
      contracts, semantic use, runtime traces, context boundaries, restriction
@@ -117,7 +117,7 @@ add or remove support atoms to change the law universe.
    - Choose contexts, `restrictsTo`, and covers using `mapping-guide.md`.
 
 7. **Coverage Ledger**
-   - Generate `archmap-coverage-ledger/v0.5.2` from candidate packet survey rows.
+   - Generate `archmap-coverage-ledger/v0.5.3` from candidate packet survey rows.
    - Ledger rows must span the worklist one-to-one. Extra rows and missing rows
      are errors.
    - Use only procedural survey reasons in ledger rows: `private`, `binary`,

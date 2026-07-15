@@ -177,7 +177,7 @@ fn class_transport(
     json!({
         "status": if zero_preserved { "established" } else { "not_computed" },
         "conclusionCode": zero_preserved.then_some(ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT),
-        "schema": "refinement-comparison/v0.5.2",
+        "schema": "refinement-comparison/v0.5.3",
         "direction": refinement["direction"],
         "recordComparability": comparability["level"],
         "comparabilityBasis": "checked_refinement_complex_fingerprints_bind_each_run",
@@ -249,7 +249,7 @@ fn build_archmap_diff(
     Ok(json!({
         "schema": ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA,
         "toolVersion": env!("CARGO_PKG_VERSION"),
-        "basis": "deterministic JSON comparison of normalized-archmap/v0.5.2 sources, atoms, contexts, and covers",
+        "basis": "deterministic JSON comparison of normalized-archmap/v0.5.3 sources, atoms, contexts, and covers",
         "inputDigests": {
             "baseNormalizedArchmap": {
                 "path": artifact_ref(base_run, "normalized-archmap.json"),
@@ -681,7 +681,7 @@ mod tests {
 
     fn manifest(law_surface: &str) -> serde_json::Value {
         json!({
-            "toolVersion": "0.5.2",
+            "toolVersion": "0.5.3",
             "inputDigests": {
                 "archmap": {"sha256": "same-archmap"},
                 "lawPolicy": {"sha256": "same-policy"},

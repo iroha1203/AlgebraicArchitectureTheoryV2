@@ -31,7 +31,7 @@ const OPERATION_SUPPORT_EVIDENCE_BOUNDARY_NON_CONCLUSIONS: [&str; 3] = [
     "unsupported constructs remain forecast boundary items",
 ];
 
-const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 15] = [
+const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 17] = [
     "measurement-invariant",
     "cech-h1-rank",
     "minimal-forbidden-supports",
@@ -47,6 +47,8 @@ const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 15] = [
     "period-stokes-audit",
     "support-transfer-rank",
     "topological-debt-capacity",
+    "saga-grounded-conclusions",
+    "h1-comparison-transfer",
 ];
 
 const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 6] = [
@@ -213,9 +215,9 @@ pub fn build_operation_support_estimate_from_archsig_measurement_packet(
         .or_else(|| packet.get("schema"))
         .and_then(|value| value.as_str())
         .unwrap_or_default();
-    if schema_version != "archsig-measurement-packet/v0.5.2" {
+    if schema_version != "archsig-measurement-packet/v0.5.3" {
         return Err(format!(
-            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.2, got {schema_version}"
+            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.3, got {schema_version}"
         )
         .into());
     }
@@ -291,8 +293,8 @@ pub fn build_operation_support_estimate_from_archsig_measurement_packet(
                 "ArchSig measurement packet statuses are selected finite-measurement evidence, not probability"
                     .to_string(),
             evidence_kinds: vec![
-                "archsig-measurement-packet/v0.5.2".to_string(),
-                "measurement-profile/v0.5.2".to_string(),
+                "archsig-measurement-packet/v0.5.3".to_string(),
+                "measurement-profile/v0.5.3".to_string(),
                 "structural-verdict".to_string(),
                 "computed-invariant".to_string(),
                 "analytic-reading".to_string(),
@@ -331,9 +333,9 @@ fn validate_archsig_measurement_packet_handoff_shape(
         .get("schema")
         .and_then(|value| value.as_str())
         .unwrap_or_default();
-    if schema != "archsig-measurement-packet/v0.5.2" {
+    if schema != "archsig-measurement-packet/v0.5.3" {
         return Err(
-            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.2"
+            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.3"
                 .into(),
         );
     }
@@ -378,10 +380,10 @@ fn validate_archsig_measurement_packet_handoff_shape(
         .get("profile")
         .and_then(|value| value.as_object())
         .ok_or("FieldSig ArchSig measurement handoff requires profile object")?;
-    if profile.get("schema").and_then(|value| value.as_str()) != Some("measurement-profile/v0.5.2")
+    if profile.get("schema").and_then(|value| value.as_str()) != Some("measurement-profile/v0.5.3")
     {
         return Err(
-            "FieldSig ArchSig measurement handoff requires profile schema measurement-profile/v0.5.2"
+            "FieldSig ArchSig measurement handoff requires profile schema measurement-profile/v0.5.3"
                 .into(),
         );
     }

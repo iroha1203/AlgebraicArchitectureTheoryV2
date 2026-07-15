@@ -59,7 +59,7 @@
   "measurementProfileInputPath": "input:measurement_profile.json",
   "mode": "measurement",
   "nonConclusions": [
-    "Finite-poset-site run manifest records the v0.5.2 AG measurement foundation artifacts.",
+    "Finite-poset-site run manifest records the v0.5.3 AG measurement foundation artifacts.",
     "Foundation packet rows are not completed AG invariant evaluator computation."
   ],
   "omittedArtifacts": [],
@@ -67,8 +67,8 @@
   "rawArtifactRetention": "omitted",
   "repairPlanInputPath": null,
   "runId": "run:986155f42857",
-  "schema": "archsig-run-manifest/v0.5.2",
-  "toolVersion": "0.5.2",
+  "schema": "archsig-run-manifest/v0.5.3",
+  "toolVersion": "0.5.3",
   "validationReports": {
     "analysis": "archsig-analysis-validation.json",
     "archmap": "archmap-validation.json",

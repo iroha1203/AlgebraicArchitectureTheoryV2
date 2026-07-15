@@ -42,7 +42,7 @@
     "insightReport": "archsig-insight-report.json",
     "viewerData": "archsig-atom-viewer-data.json"
   },
-  "measurementPacketSchema": "archsig-measurement-packet/v0.5.2",
+  "measurementPacketSchema": "archsig-measurement-packet/v0.5.3",
   "nonConclusions": [
     "Summary conclusion is relative to MeasurementProfile and assumption ledger.",
     "Schema foundation rows do not claim completed AG invariant computation."
@@ -57,14 +57,14 @@
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
   "runId": "run:946877d47467",
-  "schema": "archsig-analysis-summary/v0.5.2",
+  "schema": "archsig-analysis-summary/v0.5.3",
   "structuralVerdictSummary": {
     "measuredNonzeroCount": 0,
     "nonTerminalCount": 0,
     "rowCount": 1,
     "unmeasuredCount": 0
   },
-  "toolVersion": "0.5.2",
+  "toolVersion": "0.5.3",
   "translationRule": {
     "boundary": "Supply a selected nonzero cocycle support or different profile before claiming an H1 obstruction.",
     "conclusionCode": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",

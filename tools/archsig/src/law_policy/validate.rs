@@ -56,7 +56,7 @@ pub fn validate_law_policy_v1_report_with_profiles(
         "pass"
     };
     LawPolicyValidationReportV1 {
-        schema_version: "law-policy-validation-report/v0.5.2".to_string(),
+        schema_version: "law-policy-validation-report/v0.5.3".to_string(),
         input: LawPolicyValidationInputV1 {
             schema: policy.schema.clone(),
             path: input_path.to_string(),
@@ -93,7 +93,7 @@ pub fn validate_measurement_profile_v1_checks(
 fn check_v1_schema(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
         "law-policy-schema052-schema",
-        "LawPolicy v0.5.2 uses the selector schema discriminator",
+        "LawPolicy v0.5.3 uses the selector schema discriminator",
         if policy.schema == LAW_POLICY_V1_SCHEMA {
             "pass"
         } else {
@@ -115,19 +115,19 @@ fn check_v1_identity(policy: &LawPolicyDocumentV1) -> ValidationCheck {
         examples.push(generic_validation_example(
             "id",
             "empty",
-            "LawPolicy v0.5.2 id must be non-empty",
+            "LawPolicy v0.5.3 id must be non-empty",
         ));
     }
     if policy.policies.is_empty() {
         examples.push(generic_validation_example(
             "policies",
             "empty",
-            "LawPolicy v0.5.2 must select at least one policy entry",
+            "LawPolicy v0.5.3 must select at least one policy entry",
         ));
     }
     check_examples(
         "law-policy-schema052-identity",
-        "LawPolicy v0.5.2 identity and selected policies are recorded",
+        "LawPolicy v0.5.3 identity and selected policies are recorded",
         examples,
     )
 }
@@ -336,12 +336,12 @@ fn check_v1_reserved_fields(policy: &LawPolicyDocumentV1) -> ValidationCheck {
         examples.push(generic_validation_example(
             "lawSurfaceRef",
             "missing",
-            "lawSurfaceRef is required by LawPolicy v0.5.2",
+            "lawSurfaceRef is required by LawPolicy v0.5.3",
         ));
     }
     check_examples(
         "law-policy-schema052-reserved-fields",
-        "LawPolicy v0.5.2 declares a law surface reference",
+        "LawPolicy v0.5.3 declares a law surface reference",
         examples,
     )
 }
@@ -355,7 +355,7 @@ fn check_v1_law_surface_resolution(
         examples.push(generic_validation_example(
             "--law-surface",
             "missing",
-            "LawPolicy v0.5.2 requires --law-surface; witness and law declarations are supplied by that artifact",
+            "LawPolicy v0.5.3 requires --law-surface; witness and law declarations are supplied by that artifact",
         ));
         return check_examples(
             "law-policy-schema052-law-surface-resolution",
@@ -496,7 +496,7 @@ fn check_v1_measurement_profile_selector(
     }
     check_examples(
         "law-policy-schema052-measurement-profile-selector",
-        "LawPolicy v0.5.2 selects an external MeasurementProfile artifact for AG evaluators",
+        "LawPolicy v0.5.3 selects an external MeasurementProfile artifact for AG evaluators",
         examples,
     )
 }
@@ -507,7 +507,7 @@ fn measurement_profile_v1_checks(profile: &MeasurementProfileV1) -> Vec<Validati
     vec![
         check_examples(
             "measurement-profile-schema052-shape",
-            "MeasurementProfile v0.5.2 declares site, cover, coefficients, predicates, certificates, verdict discipline, and finite bounds",
+            "MeasurementProfile v0.5.3 declares site, cover, coefficients, predicates, certificates, verdict discipline, and finite bounds",
             examples,
         ),
         check_measurement_profile_reserved_fields(profile),
@@ -555,7 +555,7 @@ fn check_measurement_profile_reserved_fields(profile: &MeasurementProfileV1) -> 
     }
     check_examples(
         "measurement-profile-schema052-diagnostic-ceiling",
-        "MeasurementProfile v0.5.2 accepts only registered diagnostic ceiling stages",
+        "MeasurementProfile v0.5.3 accepts only registered diagnostic ceiling stages",
         examples,
     )
 }
@@ -568,7 +568,7 @@ fn measurement_profile_errors(
         examples.push(generic_validation_example(
             &profile.profile_id,
             &profile.schema,
-            "measurement profile schema must be measurement-profile/v0.5.2",
+            "measurement profile schema must be measurement-profile/v0.5.3",
         ));
     }
     for (field, value) in [
@@ -596,7 +596,7 @@ fn measurement_profile_errors(
         examples.push(generic_validation_example(
             &profile.profile_id,
             &profile.verdict_discipline,
-            "verdict discipline must select the v0.5.2 five-valued structural verdict rule",
+            "verdict discipline must select the v0.5.3 five-valued structural verdict rule",
         ));
     }
 }

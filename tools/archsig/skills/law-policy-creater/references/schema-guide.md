@@ -7,7 +7,7 @@ measurement path also uses LawPolicy to select a first-class MeasurementProfile.
 
 ```json
 {
-  "schema": "law-policy/v0.5.2",
+  "schema": "law-policy/v0.5.3",
   "id": "policy-id",
   "lawSurfaceRef": "law-surface:ag-default-v052",
   "measurementProfileRef": "profile:ag-default@1",
@@ -94,7 +94,7 @@ external `--measurement-profile` artifact's `profileId`.
 
 ```json
 {
-  "schema": "measurement-profile/v0.5.2",
+  "schema": "measurement-profile/v0.5.3",
   "profileId": "profile:ag-default@1",
   "siteRef": "archmap:/contexts",
   "coverRef": "cover:<archmap-cover-id>",

@@ -21,7 +21,7 @@
       "periodPairingOverlays": [],
       "projectionBoundary": "This bundle projects existing packet analytic readings and computed invariants into the viewer; it creates no structural verdict and never promotes analytic values to measured_zero.",
       "rawOverlayCount": 0,
-      "schema": "archsig-analytic-overlay-bundle/v0.5.2",
+      "schema": "archsig-analytic-overlay-bundle/v0.5.3",
       "singularityConcentrationOverlays": [],
       "spectralGapOverlays": [],
       "transferCostOverlays": []
@@ -983,7 +983,7 @@
         "periodPairingOverlays": [],
         "projectionBoundary": "This bundle projects existing packet analytic readings and computed invariants into the viewer; it creates no structural verdict and never promotes analytic values to measured_zero.",
         "rawOverlayCount": 0,
-        "schema": "archsig-analytic-overlay-bundle/v0.5.2",
+        "schema": "archsig-analytic-overlay-bundle/v0.5.3",
         "singularityConcentrationOverlays": [],
         "spectralGapOverlays": [],
         "transferCostOverlays": []
@@ -2079,7 +2079,7 @@
         "sourceRefs": [
           "policy:cover"
         ],
-        "triangleSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.2; not inferred by the viewer",
+        "triangleSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
         "triangles": [
           {
             "coherenceClaim": "not_visualized",
@@ -2270,7 +2270,7 @@
         ],
         "projectionBoundary": "This projection renders M9 Stokes audit values in the viewer; it does not create or modify structural verdict rows.",
         "rawMeterCount": 0,
-        "schema": "archsig-period-stokes-meter/v0.5.2",
+        "schema": "archsig-period-stokes-meter/v0.5.3",
         "sourceAnalyticReadingKind": "strict-period-pairing@1",
         "sourceEvaluator": "ag.period-stokes-audit"
       },
@@ -2288,7 +2288,7 @@
         "spectrumCells": 64
       },
       "repairMorphs": [],
-      "schema": "archsig-viewer-gluing-geometry/v0.5.2",
+      "schema": "archsig-viewer-gluing-geometry/v0.5.3",
       "sourceInsightReportRef": "archsig-insight-report.json",
       "sourcePacketRef": "archsig-measurement-packet.json",
       "spectrumLandscape": {
@@ -2298,7 +2298,7 @@
         "measurementStatus": "not_projected",
         "projectionBoundary": "No M10 graph-laplacian-hodge-proxy reading is present; viewer remains silent and creates no structural verdict.",
         "rawCellCount": 0,
-        "schema": "archsig-spectrum-landscape/v0.5.2",
+        "schema": "archsig-spectrum-landscape/v0.5.3",
         "status": "silent"
       },
       "visualEncodingLegend": [
@@ -2509,7 +2509,7 @@
       "sourceRefs": [
         "policy:cover"
       ],
-      "triangleSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.2; not inferred by the viewer",
+      "triangleSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
       "triangles": [
         {
           "coherenceClaim": "not_visualized",
@@ -2701,13 +2701,13 @@
       ],
       "projectionBoundary": "This projection renders M9 Stokes audit values in the viewer; it does not create or modify structural verdict rows.",
       "rawMeterCount": 0,
-      "schema": "archsig-period-stokes-meter/v0.5.2",
+      "schema": "archsig-period-stokes-meter/v0.5.3",
       "sourceAnalyticReadingKind": "strict-period-pairing@1",
       "sourceEvaluator": "ag.period-stokes-audit"
     },
     "projectionBoundary": "bounded viewer projection of measured ArchSig AG geometry; visual richness is not a new verdict",
     "repairMorphs": [],
-    "schema": "archsig-aat-geometry-overlays/v0.5.2",
+    "schema": "archsig-aat-geometry-overlays/v0.5.3",
     "singularityConcentrationOverlays": [],
     "spectralGapOverlays": [],
     "spectrumLandscape": {
@@ -2717,7 +2717,7 @@
       "measurementStatus": "not_projected",
       "projectionBoundary": "No M10 graph-laplacian-hodge-proxy reading is present; viewer remains silent and creates no structural verdict.",
       "rawCellCount": 0,
-      "schema": "archsig-spectrum-landscape/v0.5.2",
+      "schema": "archsig-spectrum-landscape/v0.5.3",
       "status": "silent"
     },
     "transferCostOverlays": []
@@ -8631,7 +8631,7 @@
         {
           "assumedBy": null,
           "assumption": "finite site",
-          "checkedBy": "archmap-schema050-validation.contexts-finite",
+          "checkedBy": "archmap-schema052-validation.contexts-finite",
           "status": "checked",
           "theoremRef": "part8/4.2"
         },
@@ -9124,7 +9124,20 @@
     }
   },
   "runId": "run:02000103301e",
-  "schema": "archsig-atom-viewer-data/v0.5.2",
+  "schema": "archsig-atom-viewer-data/v0.5.3",
+  "sagaDescent": {
+    "projectionBoundary": "Every displayed measurement value is selected from the measurement packet or its SAGA-scoped boundary statements; stage status is a presentation aggregation of displayed packet rows and no viewer verdict is synthesized.",
+    "sourcePacketRef": "archsig-measurement-packet.json",
+    "stages": [
+      {"stageId": "grounding", "order": 0, "status": "silence_by_design", "rows": [], "measurements": [], "visualRole": "grounding"},
+      {"stageId": "descent", "order": 1, "status": "silence_by_design", "rows": [], "measurements": [], "harmonicDebt": [], "visualRole": "descent-measurement"},
+      {"stageId": "comparison", "order": 2, "status": "silence_by_design", "rows": [], "visualRole": "transfer-comparison"},
+      {"stageId": "silence", "order": 3, "status": "not_computed", "rows": [], "visualRole": "silence"}
+    ],
+    "silenceRows": [],
+    "leafFieldMap": [],
+    "nonClaims": ["The projection does not create structural verdicts, comparison results, or repair decisions.", "A missing packet field remains absent; silence_by_design remains visible as a silence row."]
+  },
   "sourceArtifactRefs": {
     "insightBrief": "archsig-insight-brief.md",
     "insightReport": "archsig-insight-report.json",
@@ -9132,7 +9145,7 @@
     "normalizedArchMap": "normalized-archmap.json",
     "summary": "archsig-analysis-summary.json"
   },
-  "toolVersion": "0.5.2",
+  "toolVersion": "0.5.3",
   "viewerVisualScenes": [
     {
       "axisMapping": {
@@ -9264,7 +9277,7 @@
           "scenario:run_demo"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "overview",
       "sceneStatus": "active",
       "title": "Overview",
@@ -9464,7 +9477,7 @@
           "scenario:run_demo"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "site-cover",
       "sceneStatus": "active",
       "title": "Site / Cover",
@@ -9650,7 +9663,7 @@
           "scenario:run_demo"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "cech-gluing",
       "sceneStatus": "active",
       "title": "Cover & Gluing",
@@ -9838,7 +9851,7 @@
           "scenario:run_demo"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "cech-h1-mismatch",
       "sceneStatus": "active",
       "title": "H1 Mismatch",
@@ -9955,7 +9968,7 @@
         "insightRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "obstruction",
       "sceneStatus": "not_active_for_packet",
       "title": "Obstruction",
@@ -10077,7 +10090,7 @@
         "insightRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "repair-dual",
       "sceneStatus": "not_active_for_packet",
       "title": "Repair",
@@ -10190,7 +10203,7 @@
         "insightRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "law-conflict-tor",
       "sceneStatus": "not_active_for_packet",
       "title": "Law Conflict",
@@ -10311,7 +10324,7 @@
         "insightRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "hodge-debt-field",
       "sceneStatus": "not_active_for_packet",
       "title": "Hodge Debt Field",
@@ -10435,7 +10448,7 @@
         "overlayRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "analytic-overlay",
       "sceneStatus": "not_active_for_packet",
       "title": "Analytic Overlay",
@@ -10557,7 +10570,7 @@
         "sourceRefs": [],
         "structuralVerdictRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "period-stokes",
       "sceneStatus": "not_active_for_packet",
       "title": "Period Stokes Meter",
@@ -11001,7 +11014,7 @@
           "ctx:policy"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "boundary-assumption",
       "sceneStatus": "active",
       "title": "Boundary",
@@ -11237,7 +11250,7 @@
           "scenario:run_demo"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.2 and archsig-insight-report/v0.5.2; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "source-evidence",
       "sceneStatus": "active",
       "title": "Source Evidence",

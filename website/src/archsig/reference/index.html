@@ -2,7 +2,7 @@
 {
   "layout": "base.njk",
   "title": "ArchSig Reference",
-  "description": "All twelve CLI commands, exit codes, the schema catalog, the no-compatibility policy, and troubleshooting for ArchSig v0.5.2.",
+  "description": "All twelve CLI commands, exit codes, the schema catalog, the no-compatibility policy, and troubleshooting for ArchSig v0.5.3.",
   "order": 42,
   "llmsLabel": "ArchSig Reference",
   "navSection": "archsig"
@@ -13,7 +13,7 @@
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Reference</span></nav>
           <p class="eyebrow">Commands, schemas, exit codes</p>
-          <h1>The complete v0.5.2 surface.</h1>
+          <h1>The complete v0.5.3 surface.</h1>
           <p class="lede">Twelve subcommands, four exit codes, one contract version. This page is the lookup surface: what each command takes and emits, how CI should interpret exits, which schemas are current, and what to do when a run refuses your input.</p>
         </div>
       </section>
@@ -44,12 +44,12 @@
                 <table>
                   <thead><tr><th scope="col">Command</th><th scope="col">Validates</th></tr></thead>
                   <tbody>
-                    <tr><td><code>archmap</code></td><td>An <code>archmap/v0.5.2</code> observation artifact; with <code>--scope-manifest</code> / <code>--candidate-packets</code> / <code>--extraction-consistency</code> / <code>--coverage-ledger</code>, also the authoring provenance (see <a href="../contracts/#archmap">Contracts</a>).</td></tr>
-                    <tr><td><code>law-policy</code></td><td>A <code>law-policy/v0.5.2</code> selector against its measurement profile; single laws use <code>policies[].law</code>, while Tor uses an explicit two-item <code>policies[].lawPair</code>.</td></tr>
-                    <tr><td><code>law-surface</code></td><td>A <code>law-equation-surface/v0.5.2</code> declaration of the selected law universe and witness variables.</td></tr>
-                    <tr><td><code>measurement-profile</code></td><td>A standalone <code>measurement-profile/v0.5.2</code> artifact, including finite bounds against registry hard caps.</td></tr>
-                    <tr><td><code>policy-bundle</code></td><td>Creates or validates an <code>archsig-policy-bundle/v0.5.2</code> with canonical component fingerprints.</td></tr>
-                    <tr><td><code>repair-plan</code></td><td>A standalone <code>archsig-repair-plan/v0.5.2</code> against its ArchMap; fails closed on conclusion tokens, unresolved refs, parity or support inconsistencies.</td></tr>
+                    <tr><td><code>archmap</code></td><td>An <code>archmap/v0.5.3</code> observation artifact; with <code>--scope-manifest</code> / <code>--candidate-packets</code> / <code>--extraction-consistency</code> / <code>--coverage-ledger</code>, also the authoring provenance (see <a href="../contracts/#archmap">Contracts</a>).</td></tr>
+                    <tr><td><code>law-policy</code></td><td>A <code>law-policy/v0.5.3</code> selector against its measurement profile; single laws use <code>policies[].law</code>, while Tor uses an explicit two-item <code>policies[].lawPair</code>.</td></tr>
+                    <tr><td><code>law-surface</code></td><td>A <code>law-equation-surface/v0.5.3</code> declaration of the selected law universe and witness variables.</td></tr>
+                    <tr><td><code>measurement-profile</code></td><td>A standalone <code>measurement-profile/v0.5.3</code> artifact, including finite bounds against registry hard caps.</td></tr>
+                    <tr><td><code>policy-bundle</code></td><td>Creates or validates an <code>archsig-policy-bundle/v0.5.3</code> with canonical component fingerprints.</td></tr>
+                    <tr><td><code>repair-plan</code></td><td>A standalone <code>archsig-repair-plan/v0.5.3</code> against its ArchMap; fails closed on conclusion tokens, unresolved refs, parity or support inconsistencies.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -82,7 +82,7 @@
             </section>
             <section id="schemas" class="article-section">
               <h2>Schema catalog</h2>
-              <p>Every artifact carries a <code>schema</code> field with a single contract version. The current input contracts are <code>archmap/v0.5.2</code>, <code>law-policy/v0.5.2</code>, <code>law-equation-surface/v0.5.2</code>, <code>measurement-profile/v0.5.2</code>, <code>archsig-policy-bundle/v0.5.2</code>, <code>archsig-gate-policy/v0.5.2</code>, and <code>archsig-repair-plan/v0.5.2</code>; the output contracts are <code>archsig-measurement-packet/v0.5.2</code>, <code>archsig-comparison-report/v0.5.2</code>, <code>archsig-gate-report/v0.5.2</code>, <code>archsig-atom-viewer-data/v0.5.2</code>, <code>archsig-run-manifest/v0.5.2</code>, <code>normalized-archmap/v0.5.2</code>, and <code>archmap-diff/v0.5.2</code>.</p>
+              <p>Every artifact carries a <code>schema</code> field with a single contract version. The current input contracts are <code>archmap/v0.5.3</code>, <code>law-policy/v0.5.3</code>, <code>law-equation-surface/v0.5.3</code>, <code>measurement-profile/v0.5.3</code>, <code>archsig-policy-bundle/v0.5.3</code>, <code>archsig-gate-policy/v0.5.3</code>, and <code>archsig-repair-plan/v0.5.3</code>; the output contracts are <code>archsig-measurement-packet/v0.5.3</code>, <code>archsig-comparison-report/v0.5.3</code>, <code>archsig-gate-report/v0.5.3</code>, <code>archsig-atom-viewer-data/v0.5.3</code>, <code>archsig-run-manifest/v0.5.3</code>, <code>normalized-archmap/v0.5.3</code>, and <code>archmap-diff/v0.5.3</code>.</p>
               <p>The authoritative, machine-readable list — including each artifact's compatibility boundary and standing non-conclusions — comes from the binary itself:</p>
               <figure class="code-panel">
                 <figcaption>Print the catalog</figcaption>

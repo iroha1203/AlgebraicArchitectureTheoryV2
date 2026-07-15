@@ -194,7 +194,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
 Open `tools/archview/archview.html` and load
 `.tmp/archsig-practical-rust-service/head/archsig-atom-viewer-data.json` to
 see the eight contexts, the settlement cycle, and the mismatch support in
-3D. The viewer data (`archsig-atom-viewer-data/v0.5.2`) is a projection of
+3D. The viewer data (`archsig-atom-viewer-data/v0.5.3`) is a projection of
 the supplied ArchMap, LawPolicy, and measurement packet; it is not a new
 analyzer.
 
