@@ -2127,7 +2127,19 @@ def r6FiniteOperationTransportsIdentification :=
 def r6FiniteReachableNonidentityOperation :=
   LawAlgebra.FiniteExamples.RingedSite.FiniteModel.reachable_nonidentity_operation
 
-/-! Standard Architecture Scheme SD0: canonical section rings and affine Spec charts. -/
+/-!
+### Standard architecture scheme Lean theorem index: SD0--SD8
+
+The aliases from the canonical section-ring route below through the finite
+positive and negative reference models form the machine-elaborated Lean theorem
+index for all 222 fixed SD0--SD8 named targets. Complete signatures are checked
+by `StatementContractsStandardArchitectureScheme`; the namespace-wide
+kernel-dependency assertion below audits every referenced declaration. This
+index records the reading-decorated core. The law-generated ideal and lawful
+closed geometry belong to the later full law-equational geometry surface.
+
+#### SD0: canonical section rings and affine Spec charts
+-/
 
 /-- Audit alias for the raw restriction system's canonical ringed site. -/
 noncomputable def standardSchemeToRingedSite :=
