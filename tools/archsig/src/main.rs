@@ -1268,7 +1268,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .filter(|check| check.result == "warn")
                 .count();
             write_json(
-                Some(measurement_packet_path),
+                Some(measurement_packet_path.clone()),
                 &with_run_contract(&measurement_packet, &run_contract)?,
             )?;
             let measurement_summary = build_measurement_summary_v1(&measurement_packet);
@@ -1285,6 +1285,12 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &measurement_summary,
                 &insight_report,
             );
+            let mut measurement_viewer_data =
+                with_run_contract(&measurement_viewer_data, &run_contract)?;
+            measurement_viewer_data["inputDigests"]["measurementPacket"] = serde_json::json!({
+                "path": "input:archsig-measurement-packet.json",
+                "sha256": canonical_json_file_digest(&measurement_packet_path)?
+            });
             write_json(
                 Some(analysis_validation_path),
                 &with_run_contract(&serde_json::json!({
@@ -1304,7 +1310,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             )?;
             write_json(
                 Some(atom_viewer_data_path),
-                &with_run_contract(&measurement_viewer_data, &run_contract)?,
+                &measurement_viewer_data,
             )?;
             write_json(
                 Some(insight_report_path),

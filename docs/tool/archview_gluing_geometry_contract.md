@@ -64,3 +64,16 @@ ArchViewは各描画要素について、視覚チャネルごとの由来区分
 atom / seam / strut の詳細パネルは、supplied ArchMapの`sources`宣言から解決された
 `path:line`(+symbol)を表示する。解決はArchSig側(`sourceRefSamples`)で行われ、
 ArchViewは位置を発明しない(未解決refはセマンティック文字列のまま表示)。
+
+## SAGA診断階段とgate入力
+
+`sagaDescent`を持つviewer-dataは、`grounding → descent → comparison → silence`の
+4段を`stageId` / `status` / `whatNext` / `leafFieldMap`の対応を保ったまま投影する。
+高さはSAGAシーン内の次数の読み方であり、HUDで`H⁰ → H¹ → H²`を宣言する。
+`silence_by_design`は段を消さず、沈黙表示と`whatNext`を保持する。
+
+`archsig-gate-report/v0.5.3`は同一ディレクトリまたはtoolbarから供給する任意の第二入力である。
+受理時は最終段に`decision`と`ruleOutcomes[].appliedMapping[]`の`rowRef` / `action` /
+`boundaryOverrideApplied`を表示する。`action`は`pass` / `pass_with_boundary` / `block`のみを受理し、
+`boundaryOverrideApplied: true`は表示上の`*`で明示する。gate reportの
+`inputDigests.measurementPacket.sha256`がviewer-dataの同じdigestと一致しない場合、またはschema・語彙・行形状が不正な場合は読み込みを拒否し、statusへ理由を表示する。gate未供給時はエラーにせず、最終段を沈黙として描く。

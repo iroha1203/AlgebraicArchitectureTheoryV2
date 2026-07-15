@@ -32,8 +32,9 @@ Current source-of-truth boundaries:
 - FieldSig reads ArchSig measurement packets as bounded current SFT handoff
   state. Raw ArchMap files and retired raw packets are not current handoff
   inputs.
-- ArchView visualizes emitted viewer data and same-directory summary / manifest
-  files. It projects measured geometry and does not create a new verdict.
+- ArchView visualizes emitted viewer data and same-directory summary / manifest /
+  optional gate report files. It projects measured geometry and gate decisions
+  supplied by ArchSig without creating a new verdict.
 
 Current entry points:
 

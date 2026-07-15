@@ -27,6 +27,11 @@ starter template:
 
 - `tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json`
 
+ArchViewで読む場合は、同じanalyze出力ディレクトリへ`archsig-gate-report.json`を書き出す。
+viewer-dataの`inputDigests.measurementPacket.sha256`とgate reportのdigestが一致するときだけ、
+SAGA最終段にdecisionとper-row actionが表示される。未供給は沈黙として扱い、schema / digest /
+action語彙の不一致はstatusに明示して反映しない。
+
 ## Non-claims
 
 - gate は analytic 値の閾値判定ではない。

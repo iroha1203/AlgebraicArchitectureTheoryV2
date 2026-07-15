@@ -340,7 +340,7 @@ pub(crate) fn attach_run_contract(value: &mut Value, contract: &AnalyzeRunContra
     }
 }
 
-fn canonical_json_file_digest(path: &Path) -> Result<String, Box<dyn Error>> {
+pub(crate) fn canonical_json_file_digest(path: &Path) -> Result<String, Box<dyn Error>> {
     let value: Value = serde_json::from_slice(&std::fs::read(path)?)?;
     Ok(sha256_hex(&canonical_json_bytes(&value)?))
 }

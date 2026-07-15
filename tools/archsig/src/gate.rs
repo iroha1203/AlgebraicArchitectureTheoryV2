@@ -287,6 +287,7 @@ pub fn build_gate_report_v1(
                             "transition": transition["transition"],
                             "mappingKey": key,
                             "action": action,
+                            "boundaryOverrideApplied": false,
                             "deltaRefs": transition["deltaRefs"]
                         })
                     })
