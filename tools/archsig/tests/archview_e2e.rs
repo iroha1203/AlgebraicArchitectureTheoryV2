@@ -260,3 +260,35 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
         }
     }
 }
+
+#[test]
+fn archview_saga_renderer_contract_is_fail_closed_and_packet_driven() {
+    let tool_viewer =
+        fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("../archview/archview.html"))
+            .expect("tool ArchView source can be read");
+    let public_viewer = fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../website/src/archsig/archview/viewer/archview.html"),
+    )
+    .expect("public ArchView source can be read");
+    for source in [&tool_viewer, &public_viewer] {
+        for required in [
+            "buildSagaDescent",
+            "SAGA_STAGE_LAYOUT",
+            "saga-degree-hud",
+            "saga-what-next",
+            "SAGA height: H⁰ → H¹ → H²",
+            "stage?.visualRole !== expected[index][1]",
+            "saga.stages.length !== expected.length",
+            "silence_by_design",
+            "whatNext",
+        ] {
+            assert!(
+                source.contains(required),
+                "SAGA renderer lost required contract: {required}"
+            );
+        }
+        assert!(!source.contains("stages.slice(0, 4)"));
+        assert!(!source.contains("whatNext: no supplied next action"));
+    }
+}

@@ -12661,6 +12661,22 @@ fn projected_stage_status(groups: &[&[Value]]) -> &'static str {
     {
         return "not_computed";
     }
+    if statuses.iter().any(|status| {
+        matches!(
+            *status,
+            "measured_nonzero" | "obstruction" | "blocked" | "residual_not_in_b1"
+        )
+    }) {
+        return "measured_nonzero";
+    }
+    if statuses.iter().all(|status| {
+        matches!(
+            *status,
+            "measured_zero" | "zero" | "established" | "complete_support_global_coherent"
+        )
+    }) {
+        return "measured_zero";
+    }
     "measured"
 }
 

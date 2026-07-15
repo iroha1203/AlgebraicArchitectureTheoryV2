@@ -1177,14 +1177,24 @@ function sagaStageRows(stage) {
     .filter(Array.isArray).flat();
 }
 function sagaWhatNext(stage, saga = null) {
-  const candidates = [stage?.whatNext, ...sagaStageRows(stage).map((row) => row?.whatNext),
-    ...(saga?.silenceRows || []).map((row) => row?.whatNext)];
+  const candidates = [stage?.whatNext, ...sagaStageRows(stage).map((row) => row?.whatNext)];
+  if (stage?.stageId === "silence") {
+    candidates.push(...(saga?.silenceRows || []).map((row) => row?.whatNext));
+  }
   return candidates.find((text) => typeof text === "string" && text.trim()) || "";
 }
 function buildSagaDescent() {
   const saga = MODEL.saga;
-  if (!saga || !Array.isArray(saga.stages)) return;
-  const stages = saga.stages.slice(0, 4);
+  const expected = [
+    ["grounding", "grounding"],
+    ["descent", "descent-measurement"],
+    ["comparison", "transfer-comparison"],
+    ["silence", "silence"],
+  ];
+  if (!saga || !Array.isArray(saga.stages) || saga.stages.length !== expected.length) return;
+  if (saga.stages.some((stage, index) =>
+    stage?.order !== index || stage?.stageId !== expected[index][0] || stage?.visualRole !== expected[index][1])) return;
+  const stages = saga.stages;
   const points = [];
   for (let index = 0; index < 4; index++) {
     const layout = SAGA_STAGE_LAYOUT[index];
@@ -2071,9 +2081,9 @@ function renderSagaHud() {
   question.classList.toggle("saga-active", active);
   if (!active) { degree.textContent = ""; nextEl.textContent = ""; return; }
   degree.textContent = "SAGA height: H⁰ → H¹ → H² · this scene only";
-  const next = (MODEL?.saga?.stages || []).flatMap((stage) => [sagaWhatNext(stage, MODEL.saga)])
+  const next = (MODEL?.saga?.stages || []).map((stage) => sagaWhatNext(stage, MODEL.saga))
     .find((text) => text);
-  nextEl.textContent = next ? `whatNext: ${next}` : "whatNext: no supplied next action";
+  nextEl.textContent = next ? `whatNext: ${next}` : "";
 }
 
 function noteSilence(id) {
