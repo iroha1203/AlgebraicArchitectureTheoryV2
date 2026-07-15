@@ -1911,6 +1911,21 @@ fn cli_analyze_saga_descent_without_repair_plan_is_silence_by_design() {
             }),
         "missing repair-plan must be modeled as silence_by_design, not validation failure"
     );
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert!(
+        viewer["sagaDescent"]["silenceRows"]
+            .as_array()
+            .is_some_and(|rows| rows.iter().any(|row| {
+                row["id"]
+                    .as_str()
+                    .is_some_and(|id| id.contains("saga-descent"))
+            })),
+        "canonical structural SAGA silence must be retained in the viewer"
+    );
+    assert_eq!(
+        viewer["sagaDescent"]["stages"][3]["status"],
+        "silence_by_design"
+    );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_saga_summary_has_no_class_vocabulary(&summary);
 }

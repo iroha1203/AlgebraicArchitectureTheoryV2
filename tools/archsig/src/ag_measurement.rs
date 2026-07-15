@@ -12663,14 +12663,10 @@ fn projected_stage_status(groups: &[&[Value]]) -> &'static str {
 }
 
 fn saga_scope_ref(packet: &ArchSigMeasurementPacketV1, scope_ref: &str) -> bool {
-    if let Some(index) = scope_ref
-        .strip_prefix("structuralVerdict/")
-        .and_then(|index| index.parse::<usize>().ok())
-    {
-        return packet
-            .structural_verdict
-            .get(index)
-            .is_some_and(|row| is_saga_evaluator(&row.evaluator));
+    if scope_ref.starts_with("structuralVerdict/") {
+        return packet.structural_verdict.iter().any(|row| {
+            structural_verdict_ref(row) == scope_ref && is_saga_evaluator(&row.evaluator)
+        });
     }
     if let Some(index) = scope_ref
         .strip_prefix("computedInvariants/")
