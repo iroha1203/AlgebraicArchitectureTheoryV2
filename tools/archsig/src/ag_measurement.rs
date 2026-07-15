@@ -12482,7 +12482,11 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         .boundary_statements
         .iter()
         .enumerate()
-        .filter(|(_, statement)| statement.kind == "silence_by_design")
+        .filter(|(_, statement)| {
+            statement.kind == "silence_by_design"
+                && (statement.id.contains(":saga-")
+                    || statement.id.contains(":harmonic-debt"))
+        })
         .enumerate()
         .map(|(row_index, (packet_index, statement))| {
             let row = json!({
@@ -12519,7 +12523,15 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         .collect::<Vec<_>>();
 
     for (index, invariant) in packet.computed_invariants.iter().enumerate() {
-        if invariant["status"] != "silence_by_design" {
+        if invariant["status"] != "silence_by_design"
+            || !matches!(
+                invariant["evaluator"].as_str(),
+                Some("ag.saga-grounded")
+                    | Some("ag.saga-descent")
+                    | Some("ag.saga-comparison")
+                    | Some("ag.harmonic-debt")
+            )
+        {
             continue;
         }
         let row_index = silence_rows.len();
@@ -12566,7 +12578,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
     let comparison_status = projected_stage_status(&[&comparison_rows]);
 
     json!({
-        "projectionBoundary": "Every displayed value is selected from the measurement packet or its boundary statements; no viewer verdict is synthesized.",
+        "projectionBoundary": "Every displayed measurement value is selected from the measurement packet or its SAGA-scoped boundary statements; stage status is a presentation aggregation of displayed packet rows and no viewer verdict is synthesized.",
         "sourcePacketRef": "archsig-measurement-packet.json",
         "stages": [
             {
@@ -12613,7 +12625,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
 fn projected_stage_status(groups: &[&[Value]]) -> &'static str {
     let values = groups.iter().flat_map(|group| group.iter()).collect::<Vec<_>>();
     if values.is_empty() {
-        return "silence_by_design";
+        return "not_computed";
     }
     let statuses = values
         .iter()

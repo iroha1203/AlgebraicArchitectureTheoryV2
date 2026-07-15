@@ -9126,7 +9126,7 @@
   "runId": "run:02000103301e",
   "schema": "archsig-atom-viewer-data/v0.5.3",
   "sagaDescent": {
-    "projectionBoundary": "Every displayed value is selected from the measurement packet or its boundary statements; no viewer verdict is synthesized.",
+    "projectionBoundary": "Every displayed measurement value is selected from the measurement packet or its SAGA-scoped boundary statements; stage status is a presentation aggregation of displayed packet rows and no viewer verdict is synthesized.",
     "sourcePacketRef": "archsig-measurement-packet.json",
     "stages": [
       {"stageId": "grounding", "order": 0, "status": "silence_by_design", "rows": [], "measurements": [], "visualRole": "grounding"},

@@ -11943,7 +11943,17 @@ fn cli_analyze_v2_viewer_saga_projection_preserves_descent_and_silence_rows() {
     );
     let boundary_silence_count = packet["boundaryStatements"]
         .as_array()
-        .map(|items| items.iter().filter(|item| item["kind"] == "silence_by_design").count())
+        .map(|items| {
+            items
+                .iter()
+                .filter(|item| {
+                    item["kind"] == "silence_by_design"
+                        && item["id"].as_str().is_some_and(|id| {
+                            id.contains(":saga-") || id.contains(":harmonic-debt")
+                        })
+                })
+                .count()
+        })
         .unwrap_or(0);
     assert!(
         saga["silenceRows"]
