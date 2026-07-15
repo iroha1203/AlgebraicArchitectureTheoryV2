@@ -884,6 +884,166 @@ example {X Y : StandardArchitectureScheme raw} (f : X ⟶ Y) :
     (StandardArchitectureScheme.forget raw).map f = f.base :=
   StandardArchitectureScheme.forget_map raw f
 
+/-! SD6 contracts for presentation and proof-input-free single-affine constructors. -/
+
+example (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    StandardArchitectureScheme raw :=
+  StandardArchitectureScheme.ofPresentation raw X D atlas hatlas overlaps hoverlaps
+
+example (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    (StandardArchitectureScheme.ofPresentation raw X D atlas hatlas
+      overlaps hoverlaps).underlying = X :=
+  StandardArchitectureScheme.ofPresentation_underlying
+    raw X D atlas hatlas overlaps hoverlaps
+
+example (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    (StandardArchitectureScheme.ofPresentation raw X D atlas hatlas
+      overlaps hoverlaps).decoration = D :=
+  StandardArchitectureScheme.ofPresentation_decoration
+    raw X D atlas hatlas overlaps hoverlaps
+
+example (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    (StandardArchitectureScheme.ofPresentation raw X D atlas hatlas
+      overlaps hoverlaps).atlas = atlas :=
+  StandardArchitectureScheme.ofPresentation_atlas
+    raw X D atlas hatlas overlaps hoverlaps
+
+example (X : AlgebraicGeometry.Scheme)
+    (D : AATReadingDecoration raw X)
+    (atlas : ArchitectureAffineAtlas raw X D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (overlaps : ArchitectureOverlapPresentation raw atlas)
+    (hoverlaps : IsArchitectureOverlapPresentation raw overlaps) :
+    (StandardArchitectureScheme.ofPresentation raw X D atlas hatlas
+      overlaps hoverlaps).overlaps = overlaps :=
+  StandardArchitectureScheme.ofPresentation_overlaps
+    raw X D atlas hatlas overlaps hoverlaps
+
+example (W : S.category) : StandardArchitectureScheme raw :=
+  StandardArchitectureScheme.singleAffine raw W
+
+example (W : S.category) :
+    (StandardArchitectureScheme.singleAffine raw W).underlying =
+      architectureChartSpec raw W :=
+  StandardArchitectureScheme.singleAffine_underlying raw W
+
+example (W : S.category) :
+    (StandardArchitectureScheme.singleAffine raw W).decoration =
+      AATReadingDecoration.ofContext raw W :=
+  StandardArchitectureScheme.singleAffine_decoration raw W
+
+example (W : S.category) :
+    Subsingleton
+      (StandardArchitectureScheme.singleAffine raw W).atlas.Index :=
+  StandardArchitectureScheme.singleAffine_index_subsingleton raw W
+
+example (W : S.category) :
+    (StandardArchitectureScheme.singleAffine raw W).atlas.Index :=
+  StandardArchitectureScheme.singleAffineIndex raw W
+
+example (W : S.category)
+    (i : (StandardArchitectureScheme.singleAffine raw W).atlas.Index) :
+    i = StandardArchitectureScheme.singleAffineIndex raw W :=
+  StandardArchitectureScheme.singleAffine_index_eq raw W i
+
+example (W : S.category)
+    (i : (StandardArchitectureScheme.singleAffine raw W).atlas.Index) :
+    ((StandardArchitectureScheme.singleAffine raw W).atlas.chart i).map =
+      𝟙 (architectureChartSpec raw W) :=
+  StandardArchitectureScheme.singleAffine_chart_map raw W i
+
+example (W : S.category)
+    (i : (StandardArchitectureScheme.singleAffine raw W).atlas.Index) :
+    AlgebraicGeometry.IsOpenImmersion
+      ((StandardArchitectureScheme.singleAffine raw W).atlas.chart i).map :=
+  (StandardArchitectureScheme.singleAffine raw W).chart_isOpenImmersion raw i
+
+example (W : S.category) :
+    ⨆ i, (((StandardArchitectureScheme.singleAffine raw W).affineOpenCover raw).f i).opensRange =
+      ⊤ :=
+  (StandardArchitectureScheme.singleAffine raw W).chart_jointlyCovers raw
+
+example (W : S.category)
+    (i j : (StandardArchitectureScheme.singleAffine raw W).atlas.Index) :
+    ((StandardArchitectureScheme.singleAffine raw W).overlaps.comparison i j).hom ≫
+        pullback.fst
+          ((StandardArchitectureScheme.singleAffine raw W).atlas.chart i).map
+          ((StandardArchitectureScheme.singleAffine raw W).atlas.chart j).map =
+      architectureChartRestriction raw
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.pairToLeft raw i j) :=
+  (StandardArchitectureScheme.singleAffine raw W).overlapsValid.comparison_fst i j
+
+example (W : S.category)
+    (i j : (StandardArchitectureScheme.singleAffine raw W).atlas.Index) :
+    ((StandardArchitectureScheme.singleAffine raw W).overlaps.comparison i j).hom ≫
+        pullback.snd
+          ((StandardArchitectureScheme.singleAffine raw W).atlas.chart i).map
+          ((StandardArchitectureScheme.singleAffine raw W).atlas.chart j).map =
+      architectureChartRestriction raw
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.pairToRight raw i j) :=
+  (StandardArchitectureScheme.singleAffine raw W).overlapsValid.comparison_snd i j
+
+example (W : S.category)
+    (i j l : (StandardArchitectureScheme.singleAffine raw W).atlas.Index) :
+    (StandardArchitectureScheme.singleAffine raw W).atlas.actualTripleToLeft
+          raw i j l ≫
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.chart i).map =
+      (StandardArchitectureScheme.singleAffine raw W).atlas.actualTripleToMiddle
+          raw i j l ≫
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.chart j).map ∧
+    (StandardArchitectureScheme.singleAffine raw W).atlas.actualTripleToMiddle
+          raw i j l ≫
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.chart j).map =
+      (StandardArchitectureScheme.singleAffine raw W).atlas.actualTripleToRight
+          raw i j l ≫
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.chart l).map :=
+  (StandardArchitectureScheme.singleAffine raw W).atlas.actualTriple_cocycle
+    raw i j l
+
+example (W : S.category)
+    (i j l : (StandardArchitectureScheme.singleAffine raw W).atlas.Index) :
+    architectureChartRestriction raw
+          ((StandardArchitectureScheme.singleAffine raw W).atlas.tripleToLeft
+            raw i j l) ≫
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.chart i).map =
+      architectureChartRestriction raw
+          ((StandardArchitectureScheme.singleAffine raw W).atlas.tripleToMiddle
+            raw i j l) ≫
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.chart j).map ∧
+    architectureChartRestriction raw
+          ((StandardArchitectureScheme.singleAffine raw W).atlas.tripleToMiddle
+            raw i j l) ≫
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.chart j).map =
+      architectureChartRestriction raw
+          ((StandardArchitectureScheme.singleAffine raw W).atlas.tripleToRight
+            raw i j l) ≫
+        ((StandardArchitectureScheme.singleAffine raw W).atlas.chart l).map :=
+  (StandardArchitectureScheme.singleAffine raw W).atlas.contextTriple_cocycle
+    raw
+    (StandardArchitectureScheme.singleAffine raw W).overlaps
+    (StandardArchitectureScheme.singleAffine raw W).overlapsValid
+    i j l
+
 namespace FiniteExamples.StandardArchitectureScheme
 
 open RingedSite.FiniteModel
