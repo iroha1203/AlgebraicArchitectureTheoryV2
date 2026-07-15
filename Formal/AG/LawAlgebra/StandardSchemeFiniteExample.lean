@@ -797,6 +797,75 @@ theorem interpretationBrokenChart_not_valid :
   exact interpretationBrokenChart_equation_ne h.interpretation_compatible
 
 /-!
+### Finite non-preserving decoration witness
+
+The source decoration transports the selected coordinate through the identity raw-quotient
+comparison.  The actual sign-changing Spec transition gives a different global section, so
+the preservation equation fails without accepting an inequality or failure proof as input.
+-/
+
+/-- A source decoration using identity transport instead of the actual sign transition. -/
+noncomputable def nonPreservingSourceDecoration :
+    AATReadingDecoration rawSystem
+      (architectureChartSpec rawSystem RawPresheaf.left) where
+  context := base
+  interpretation := identitySheafifiedMap ≫
+    (AlgebraicGeometry.Scheme.ΓSpecIso
+      (SheafifiedSectionRing rawSystem RawPresheaf.left)).inv
+
+/-- The selected source context is the finite base context. -/
+@[simp] theorem nonPreservingSourceDecoration_context :
+    nonPreservingSourceDecoration.context = base :=
+  rfl
+
+/-- Identity transport and the actual Spec transition disagree on the selected coordinate. -/
+theorem nonPreservingSourceDecoration_coordinate_ne :
+    nonPreservingSourceDecoration.interpretation baseCoordinateSection ≠
+      ((AATReadingDecoration.ofContext rawSystem base).interpretation ≫
+        (architectureChartRestriction rawSystem
+          RawPresheaf.leftToBase).appTop) baseCoordinateSection := by
+  intro h
+  apply left_transition_changes_coordinate
+  have hh := congrArg
+    (AlgebraicGeometry.Scheme.ΓSpecIso
+      (SheafifiedSectionRing rawSystem RawPresheaf.left)).hom h
+  have hsource :
+      (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem RawPresheaf.left)).hom
+          (nonPreservingSourceDecoration.interpretation baseCoordinateSection) =
+        leftCoordinateSection := by
+    change
+      (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing rawSystem RawPresheaf.left)).hom
+          ((AlgebraicGeometry.Scheme.ΓSpecIso
+            (SheafifiedSectionRing rawSystem RawPresheaf.left)).inv
+              (identitySheafifiedMap baseCoordinateSection)) =
+        leftCoordinateSection
+    rw [Iso.inv_hom_id_apply]
+    simpa only [baseCoordinateSection, leftCoordinateSection] using
+      identitySheafifiedMap_coordinate
+  rw [hsource] at hh
+  simpa only [CommRingCat.comp_apply] using hh.symm
+
+/-- The concrete source decoration is not preserved by the actual sign transition. -/
+theorem nonPreservingDecoration_example :
+    ¬ nonPreservingSourceDecoration.Preserves rawSystem
+      (architectureChartRestriction rawSystem RawPresheaf.leftToBase)
+      (AATReadingDecoration.ofContext rawSystem base) := by
+  rintro ⟨h, hh⟩
+  have hctx : h = 𝟙 base := Subsingleton.elim _ _
+  subst h
+  apply nonPreservingSourceDecoration_coordinate_ne
+  have ha := congrArg (fun q => q baseCoordinateSection) hh
+  change
+    nonPreservingSourceDecoration.interpretation
+        (sheafifiedRestriction rawSystem (𝟙 base) baseCoordinateSection) =
+      ((AATReadingDecoration.ofContext rawSystem base).interpretation ≫
+        (architectureChartRestriction rawSystem
+          RawPresheaf.leftToBase).appTop) baseCoordinateSection at ha
+  simpa only [sheafifiedRestriction_id, CommRingCat.id_apply] using ha
+
+/-!
 ### Finite valid and invalid atlas witnesses
 
 The existing sign-separated quotient makes the base raw algebra nontrivial.  Invertibility of
@@ -910,6 +979,147 @@ local instance identitySheafifiedMap_isIso :
     ((inv (rawSystem.toRingedSite.canonical.app (op base))).right ≫
       (rawIdentityToLeft ≫
         (rawSystem.toRingedSite.canonical.app (op RawPresheaf.left)).right)))
+
+private theorem identitySpecMap_ne_leftTransition :
+    AlgebraicGeometry.Spec.map identitySheafifiedMap ≠
+      architectureChartRestriction rawSystem RawPresheaf.leftToBase := by
+  intro h
+  have hring :
+      identitySheafifiedMap =
+        sheafifiedRestriction rawSystem RawPresheaf.leftToBase := by
+    apply AlgebraicGeometry.Spec.map_injective
+    simpa only [architectureChartRestriction_eq_SpecMap] using h
+  apply sheafified_leftToBase_changes_coordinate
+  calc
+    sheafifiedRestriction rawSystem RawPresheaf.leftToBase
+          baseCoordinateSection =
+        identitySheafifiedMap baseCoordinateSection := by
+      exact congrArg (fun q => q baseCoordinateSection) hring.symm
+    _ = leftCoordinateSection := by
+      simpa only [baseCoordinateSection, leftCoordinateSection] using
+        identitySheafifiedMap_coordinate
+
+private noncomputable def baseSignTwist :
+    architectureChartSpec rawSystem base ≅
+      architectureChartSpec rawSystem base := by
+  letI : IsIso identitySheafifiedMap :=
+    identitySheafifiedMap_isIso
+  exact
+    (asIso (architectureChartRestriction rawSystem
+      RawPresheaf.leftToBase)).symm ≪≫
+      asIso (AlgebraicGeometry.Spec.map identitySheafifiedMap)
+
+private theorem baseSignTwist_hom_ne :
+    baseSignTwist.hom ≠ 𝟙 _ := by
+  intro h
+  apply identitySpecMap_ne_leftTransition
+  rw [← cancel_epi
+    (inv (architectureChartRestriction rawSystem
+      RawPresheaf.leftToBase))]
+  simpa [baseSignTwist] using h
+
+private noncomputable def pairSignTwist
+    (i j : twoChartReferenceModel.atlas.Index) :
+    architectureChartSpec rawSystem
+        (twoChartReferenceModel.atlas.pairContext rawSystem i j) ≅
+      architectureChartSpec rawSystem
+        (twoChartReferenceModel.atlas.pairContext rawSystem i j) :=
+  asIso (architectureChartRestriction rawSystem
+      (twoChartReferenceModel.atlas.pairToBase rawSystem i j)) ≪≫
+    baseSignTwist ≪≫
+    (asIso (architectureChartRestriction rawSystem
+      (twoChartReferenceModel.atlas.pairToBase rawSystem i j))).symm
+
+private theorem pairSignTwist_hom_ne
+    (i j : twoChartReferenceModel.atlas.Index) :
+    (pairSignTwist i j).hom ≠ 𝟙 _ := by
+  intro h
+  apply baseSignTwist_hom_ne
+  let p := architectureChartRestriction rawSystem
+    (twoChartReferenceModel.atlas.pairToBase rawSystem i j)
+  have h' := congrArg (fun q => inv p ≫ q ≫ p) h
+  simpa [pairSignTwist, p, Category.assoc] using h'
+
+private theorem pairSignTwist_symm_hom_ne
+    (i j : twoChartReferenceModel.atlas.Index) :
+    (pairSignTwist i j).symm.hom ≠ 𝟙 _ := by
+  intro h
+  apply pairSignTwist_hom_ne i j
+  have h' := congrArg
+    (fun q => (pairSignTwist i j).hom ≫ q) h
+  simpa using h'.symm
+
+/-- The actual overlap comparison twisted by the finite sign action. -/
+noncomputable def fstBrokenOverlapPresentation :
+    ArchitectureOverlapPresentation rawSystem
+      twoChartReferenceModel.atlas where
+  comparison i j :=
+    pairSignTwist i j ≪≫
+      twoChartReferenceModel.overlaps.comparison i j
+
+/-- The twisted comparison fails its selected first-projection equation. -/
+theorem fstBrokenOverlapPresentation_equation_ne :
+    (fstBrokenOverlapPresentation.comparison
+          leftIndex rightIndex).hom ≫
+        pullback.fst
+          (twoChartReferenceModel.atlas.chart leftIndex).map
+          (twoChartReferenceModel.atlas.chart rightIndex).map ≠
+      architectureChartRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToLeft
+          rawSystem leftIndex rightIndex) := by
+  intro h
+  apply pairSignTwist_hom_ne leftIndex rightIndex
+  rw [← cancel_mono
+    (architectureChartRestriction rawSystem
+      (twoChartReferenceModel.atlas.pairToLeft
+        rawSystem leftIndex rightIndex))]
+  simpa only [fstBrokenOverlapPresentation, Iso.trans_hom,
+    Category.assoc, overlap_comparison_fst,
+    Category.id_comp] using h
+
+/-- The first-projection-twisted comparison is not a valid overlap presentation. -/
+theorem fstBrokenOverlapPresentation_not_valid :
+    ¬ IsArchitectureOverlapPresentation rawSystem
+      fstBrokenOverlapPresentation := by
+  intro h
+  exact fstBrokenOverlapPresentation_equation_ne
+    (h.comparison_fst leftIndex rightIndex)
+
+/-- The actual overlap comparison twisted by the inverse finite sign action. -/
+noncomputable def sndBrokenOverlapPresentation :
+    ArchitectureOverlapPresentation rawSystem
+      twoChartReferenceModel.atlas where
+  comparison i j :=
+    (pairSignTwist i j).symm ≪≫
+      twoChartReferenceModel.overlaps.comparison i j
+
+/-- The inverse-twisted comparison fails its selected second-projection equation. -/
+theorem sndBrokenOverlapPresentation_equation_ne :
+    (sndBrokenOverlapPresentation.comparison
+          leftIndex rightIndex).hom ≫
+        pullback.snd
+          (twoChartReferenceModel.atlas.chart leftIndex).map
+          (twoChartReferenceModel.atlas.chart rightIndex).map ≠
+      architectureChartRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToRight
+          rawSystem leftIndex rightIndex) := by
+  intro h
+  apply pairSignTwist_symm_hom_ne leftIndex rightIndex
+  rw [← cancel_mono
+    (architectureChartRestriction rawSystem
+      (twoChartReferenceModel.atlas.pairToRight
+        rawSystem leftIndex rightIndex))]
+  simpa only [sndBrokenOverlapPresentation, Iso.trans_hom,
+    Category.assoc, overlap_comparison_snd,
+    Category.id_comp] using h
+
+/-- The second-projection-twisted comparison is not a valid overlap presentation. -/
+theorem sndBrokenOverlapPresentation_not_valid :
+    ¬ IsArchitectureOverlapPresentation rawSystem
+      sndBrokenOverlapPresentation := by
+  intro h
+  exact sndBrokenOverlapPresentation_equation_ne
+    (h.comparison_snd leftIndex rightIndex)
 
 /-- Comparison of the identity atlas with the pullback of the identity chart map. -/
 noncomputable def identityAtlasPresentation :

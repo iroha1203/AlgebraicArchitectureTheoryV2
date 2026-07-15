@@ -1410,6 +1410,63 @@ example :
 example : ¬ IsArchitectureAffineChart rawSystem interpretationBrokenChart :=
   interpretationBrokenChart_not_valid
 
+example :
+    ArchitectureOverlapPresentation rawSystem twoChartReferenceModel.atlas :=
+  fstBrokenOverlapPresentation
+
+example :
+    (fstBrokenOverlapPresentation.comparison leftIndex rightIndex).hom ≫
+        pullback.fst
+          (twoChartReferenceModel.atlas.chart leftIndex).map
+          (twoChartReferenceModel.atlas.chart rightIndex).map ≠
+      architectureChartRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToLeft rawSystem leftIndex rightIndex) :=
+  fstBrokenOverlapPresentation_equation_ne
+
+example :
+    ¬ IsArchitectureOverlapPresentation rawSystem
+      fstBrokenOverlapPresentation :=
+  fstBrokenOverlapPresentation_not_valid
+
+example :
+    ArchitectureOverlapPresentation rawSystem twoChartReferenceModel.atlas :=
+  sndBrokenOverlapPresentation
+
+example :
+    (sndBrokenOverlapPresentation.comparison leftIndex rightIndex).hom ≫
+        pullback.snd
+          (twoChartReferenceModel.atlas.chart leftIndex).map
+          (twoChartReferenceModel.atlas.chart rightIndex).map ≠
+      architectureChartRestriction rawSystem
+        (twoChartReferenceModel.atlas.pairToRight rawSystem leftIndex rightIndex) :=
+  sndBrokenOverlapPresentation_equation_ne
+
+example :
+    ¬ IsArchitectureOverlapPresentation rawSystem
+      sndBrokenOverlapPresentation :=
+  sndBrokenOverlapPresentation_not_valid
+
+example :
+    AATReadingDecoration rawSystem
+      (architectureChartSpec rawSystem RawPresheaf.left) :=
+  nonPreservingSourceDecoration
+
+example : nonPreservingSourceDecoration.context = base :=
+  nonPreservingSourceDecoration_context
+
+example :
+    nonPreservingSourceDecoration.interpretation baseCoordinateSection ≠
+      ((AATReadingDecoration.ofContext rawSystem base).interpretation ≫
+        (architectureChartRestriction rawSystem
+          RawPresheaf.leftToBase).appTop) baseCoordinateSection :=
+  nonPreservingSourceDecoration_coordinate_ne
+
+example :
+    ¬ nonPreservingSourceDecoration.Preserves rawSystem
+      (architectureChartRestriction rawSystem RawPresheaf.leftToBase)
+      (AATReadingDecoration.ofContext rawSystem base) :=
+  nonPreservingDecoration_example
+
 example : Nontrivial (rawSystem.rawAlgebra base) :=
   rawBaseNontrivial
 
