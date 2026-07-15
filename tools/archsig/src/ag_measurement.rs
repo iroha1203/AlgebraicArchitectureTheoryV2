@@ -12314,11 +12314,16 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             "reason",
             "dependsOnAssumptions",
         ] {
-            let packet_path = if field == "inScope" || field == "zero" || field == "nonZero" || field == "methodStatus" || field == "certRef" {
-                    format!("/structuralVerdict/{index}/verdictData/{field}")
-                } else {
-                    format!("/structuralVerdict/{index}/{field}")
-                };
+            let packet_path = if field == "inScope"
+                || field == "zero"
+                || field == "nonZero"
+                || field == "methodStatus"
+                || field == "certRef"
+            {
+                format!("/structuralVerdict/{index}/verdictData/{field}")
+            } else {
+                format!("/structuralVerdict/{index}/{field}")
+            };
             if let Some(value) = row_value.get(field) {
                 append_leaf_field_mappings(
                     &mut field_map,
@@ -12484,8 +12489,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         .enumerate()
         .filter(|(_, statement)| {
             statement.kind == "silence_by_design"
-                && (statement.id.contains(":saga-")
-                    || statement.id.contains(":harmonic-debt"))
+                && (statement.id.contains(":saga-") || statement.id.contains(":harmonic-debt"))
         })
         .enumerate()
         .map(|(row_index, (packet_index, statement))| {
@@ -12570,11 +12574,8 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
     }
 
     let grounding_status = projected_stage_status(&[&grounding_rows]);
-    let descent_status = projected_stage_status(&[
-        &descent_rows,
-        &measurement_rows,
-        &harmonic_rows,
-    ]);
+    let descent_status =
+        projected_stage_status(&[&descent_rows, &measurement_rows, &harmonic_rows]);
     let comparison_status = projected_stage_status(&[&comparison_rows]);
 
     json!({
@@ -12623,13 +12624,20 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
 }
 
 fn projected_stage_status(groups: &[&[Value]]) -> &'static str {
-    let values = groups.iter().flat_map(|group| group.iter()).collect::<Vec<_>>();
+    let values = groups
+        .iter()
+        .flat_map(|group| group.iter())
+        .collect::<Vec<_>>();
     if values.is_empty() {
         return "not_computed";
     }
     let statuses = values
         .iter()
-        .filter_map(|value| value["status"].as_str().or_else(|| value["verdict"].as_str()))
+        .filter_map(|value| {
+            value["status"]
+                .as_str()
+                .or_else(|| value["verdict"].as_str())
+        })
         .collect::<Vec<_>>();
     if statuses.is_empty() {
         return "measured";
@@ -14129,7 +14137,9 @@ fn validate_saga_grounded_packet_shape(
             "missing-or-non-integer",
             "saga-grounded detectorCount must be a non-negative integer",
         ));
-    } else if detector_findings.is_some_and(|findings| detector_count != Some(findings.len() as u64)) {
+    } else if detector_findings
+        .is_some_and(|findings| detector_count != Some(findings.len() as u64))
+    {
         examples.push(generic_validation_example(
             &format!("{label}.detectorCount"),
             &detector_count.unwrap_or_default().to_string(),

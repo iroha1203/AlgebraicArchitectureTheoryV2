@@ -31,7 +31,7 @@ const OPERATION_SUPPORT_EVIDENCE_BOUNDARY_NON_CONCLUSIONS: [&str; 3] = [
     "unsupported constructs remain forecast boundary items",
 ];
 
-const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 15] = [
+const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 17] = [
     "measurement-invariant",
     "cech-h1-rank",
     "minimal-forbidden-supports",
@@ -47,6 +47,8 @@ const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 15] = [
     "period-stokes-audit",
     "support-transfer-rank",
     "topological-debt-capacity",
+    "saga-grounded-conclusions",
+    "h1-comparison-transfer",
 ];
 
 const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 6] = [

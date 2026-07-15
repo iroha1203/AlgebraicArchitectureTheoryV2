@@ -11726,14 +11726,20 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
             .any(|check| check.result == "fail")
     );
     let mut mismatched_detector_count = packet.clone();
-    invariant_by_id_mut(&mut mismatched_detector_count, "saga-generated-end-to-end-packet")["detectorCount"] = json!(99);
+    invariant_by_id_mut(
+        &mut mismatched_detector_count,
+        "saga-generated-end-to-end-packet",
+    )["detectorCount"] = json!(99);
     assert!(
         validate_measurement_packet_value_v1(&mismatched_detector_count)
             .iter()
             .any(|check| {
                 check.result == "fail"
                     && check.examples.iter().any(|example| {
-                        example.source.as_deref().is_some_and(|source| source.contains("detectorCount"))
+                        example
+                            .source
+                            .as_deref()
+                            .is_some_and(|source| source.contains("detectorCount"))
                     })
             })
     );
@@ -11765,7 +11771,9 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
     assert!(
         saga_descent["stages"][0]["rows"]
             .as_array()
-            .is_some_and(|rows| rows.iter().any(|row| row["evaluator"] == "ag.saga-grounded")),
+            .is_some_and(|rows| rows
+                .iter()
+                .any(|row| row["evaluator"] == "ag.saga-grounded")),
         "grounding stage must project the packet verdict row"
     );
     assert!(
@@ -11938,7 +11946,9 @@ fn cli_analyze_v2_viewer_saga_projection_preserves_descent_and_silence_rows() {
     assert!(
         saga["stages"][2]["rows"]
             .as_array()
-            .is_some_and(|items| items.iter().any(|item| item["status"] == "silence_by_design")),
+            .is_some_and(|items| items
+                .iter()
+                .any(|item| item["status"] == "silence_by_design")),
         "comparison stage must preserve silence_by_design when comparison data is absent"
     );
     let boundary_silence_count = packet["boundaryStatements"]
