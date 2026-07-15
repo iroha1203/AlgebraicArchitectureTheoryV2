@@ -2214,7 +2214,8 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
     let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-class", plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_contract(&viewer, &packet);
+    assert_saga_viewer_golden_fixture(&viewer, &packet, "faithfulness-supplied");
+    assert_saga_viewer_golden_fixture(&viewer, &packet, "circle-nerve-residual-class");
     assert_eq!(
         viewer["sagaDescent"]["stages"][1]["status"],
         "measured_nonzero"
@@ -2597,7 +2598,7 @@ fn cli_analyze_saga_descent_mode_none_keeps_global_coherence_silent() {
             })
     );
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_contract(&viewer, &packet);
+    assert_saga_viewer_golden_fixture(&viewer, &packet, "faithfulness-none");
     assert_eq!(
         viewer["sagaDescent"]["stages"][2]["status"],
         "silence_by_design"
@@ -11803,7 +11804,7 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
         "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS"
     );
     let grounded_viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_contract(&grounded_viewer, &packet);
+    assert_saga_viewer_golden_fixture(&grounded_viewer, &packet, "lawful-firing");
     let saga_descent = grounded_viewer["sagaDescent"]
         .as_object()
         .expect("viewer must expose sagaDescent projection");
@@ -15771,6 +15772,44 @@ fn assert_saga_viewer_contract(viewer: &Value, packet: &Value) {
         );
     }
     assert!(saga["nonClaims"].as_array().is_some());
+}
+
+fn assert_saga_viewer_golden_fixture(viewer: &Value, packet: &Value, fixture_id: &str) {
+    assert_saga_viewer_contract(viewer, packet);
+    let manifest = read_json(&ag_measurement_root().join("saga_viewer_golden_contract_v053.json"));
+    assert_eq!(
+        manifest["schema"],
+        "archsig-saga-viewer-golden-contract/v0.5.3"
+    );
+    let expected_stages = manifest["stages"].as_array().expect("golden stages");
+    let stages = viewer["sagaDescent"]["stages"]
+        .as_array()
+        .expect("viewer stages");
+    assert_eq!(expected_stages.len(), stages.len());
+    for (expected, actual) in expected_stages.iter().zip(stages) {
+        assert_eq!(actual["order"], expected["order"]);
+        assert_eq!(actual["stageId"], expected["stageId"]);
+        assert_eq!(actual["visualRole"], expected["visualRole"]);
+    }
+    let fixture = manifest["fixtures"]
+        .get(fixture_id)
+        .unwrap_or_else(|| panic!("missing SAGA golden fixture {fixture_id}"));
+    if let Some(chart_count) = fixture.get("chartCount").and_then(Value::as_u64) {
+        assert_eq!(chart_count, 3, "circle-nerve fixture must use three charts");
+    }
+    for (stage_id, expected_status) in fixture["stageStatus"]
+        .as_object()
+        .expect("golden stage statuses")
+    {
+        let stage = stages
+            .iter()
+            .find(|stage| stage["stageId"] == *stage_id)
+            .unwrap_or_else(|| panic!("golden stage is missing {stage_id}"));
+        assert_eq!(
+            stage["status"], *expected_status,
+            "golden status for {stage_id}"
+        );
+    }
 }
 
 fn assert_saga_summary_has_no_class_vocabulary(summary: &Value) {
