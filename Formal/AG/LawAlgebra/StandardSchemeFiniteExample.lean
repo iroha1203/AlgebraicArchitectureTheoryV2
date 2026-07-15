@@ -390,18 +390,32 @@ private theorem coordinateRestriction_comp_self
     (RawPresheaf.coordinateRestriction f).polynomialMap.comp
         (RawPresheaf.coordinateRestriction f).polynomialMap =
       RingHom.id _ := by
-  classical
+  have hsign :
+      (RawPresheaf.gauge X * RawPresheaf.gauge Y) *
+          (RawPresheaf.gauge X * RawPresheaf.gauge Y) = 1 := by
+    calc
+      (RawPresheaf.gauge X * RawPresheaf.gauge Y) *
+          (RawPresheaf.gauge X * RawPresheaf.gauge Y) =
+          (RawPresheaf.gauge X * RawPresheaf.gauge X) *
+            (RawPresheaf.gauge Y * RawPresheaf.gauge Y) := by ring
+      _ = 1 := by
+        rw [RawPresheaf.gauge_sq, RawPresheaf.gauge_sq, one_mul]
   apply MvPolynomial.ringHom_ext
   · intro a
     simp [TypedCoordinateRestriction.polynomialMap]
   · intro i
     cases i
-    by_cases hX : X.ctx = RawPresheaf.left.ctx <;>
-      by_cases hY : Y.ctx = RawPresheaf.left.ctx <;>
-        simp [RawPresheaf.coordinateRestriction,
-          TypedCoordinateRestriction.polynomialMap,
-          RawPresheaf.gauge, hX, hY]
-    all_goals rfl
+    change
+      (RawPresheaf.coordinateRestriction f).polynomialMap
+          ((RawPresheaf.coordinateRestriction f).polynomialMap
+            (MvPolynomial.X ())) =
+        MvPolynomial.X ()
+    rw [RawPresheaf.coordinateRestriction_polynomialMap_X, map_mul]
+    erw [TypedCoordinateRestriction.polynomialMap_C]
+    rw [RawPresheaf.coordinateRestriction_polynomialMap_X]
+    rw [← mul_assoc]
+    erw [← MvPolynomial.C.map_mul]
+    rw [hsign, map_one, one_mul]
 
 private theorem rawRestriction_comp_self
     {X Y : site.category} (f : X ⟶ Y) :
