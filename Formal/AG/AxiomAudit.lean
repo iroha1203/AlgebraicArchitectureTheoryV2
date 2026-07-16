@@ -8,6 +8,8 @@ import Formal.AG.LawAlgebra.FiniteExamples
 import Formal.AG.LawAlgebra.RawPresheafFiniteExample
 import Formal.AG.LawAlgebra.RingedSiteFiniteExample
 import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
+import Formal.AG.LawAlgebra.ClosedEquationalGeometry
+import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -3152,6 +3154,804 @@ noncomputable def standardSchemeFiniteUncoveredAtlas :=
 /-- Audit alias for invalidity of the finite empty-index atlas. -/
 def standardSchemeFiniteUncoveredAtlasNotValid :=
   LawAlgebra.FiniteExamples.StandardArchitectureScheme.uncoveredAtlas_not_valid
+
+/-!
+### Closed-equational geometry theorem index: SD0--SD7
+
+The aliases below register every public theorem from the main
+closed-equational geometry module in the namespace-wide kernel axiom audit.
+-/
+
+/-! #### SD0: geometric law reading and closed-equational witnesses -/
+
+/-- Audit alias for geometric-law-reading extensionality. -/
+def closedEquationalGeometryGeometricLawReadingExt :=
+  @LawAlgebra.GeometricLawReading.ext
+
+/-- Audit alias for closed-equational-witness extensionality. -/
+def closedEquationalGeometryWitnessExt :=
+  @LawAlgebra.ClosedEquationalLawWitness.ext
+
+/-- Audit alias for basic-open compatibility of local witness ideals. -/
+def closedEquationalGeometryLocalWitnessIdealMapBasicOpen :=
+  @LawAlgebra.localLawWitnessIdeal_map_basicOpen
+
+/-- Audit alias for validity of the global-section witness constructor. -/
+def closedEquationalGeometryGlobalSectionsValid :=
+  @LawAlgebra.ClosedEquationalLawWitness.ofGlobalSections_valid
+
+/-- Audit alias for the global-section witness coordinate formula. -/
+def closedEquationalGeometryGlobalSectionsCoordinate :=
+  @LawAlgebra.ClosedEquationalLawWitness.ofGlobalSections_coordinate
+
+/-- Audit alias for semantic-law-equation bridge extensionality. -/
+def closedEquationalGeometrySchemeBridgeExt :=
+  @LawAlgebra.SemanticLawEquationSchemeBridge.ext
+
+/-- Audit alias for bijectivity of a valid bridge map. -/
+def closedEquationalGeometryBridgeMapBijective :=
+  @LawAlgebra.SemanticLawEquationSchemeBridge.toSheafifiedSection_bijective
+
+/-- Audit alias for validity of the semantic-core geometric reading. -/
+def closedEquationalGeometrySemanticCoreReadingValid :=
+  @LawAlgebra.GeometricLawReading.ofSemanticCore_valid
+
+/-- Audit alias for the semantic-core HoldsOn characterization. -/
+def closedEquationalGeometrySemanticCoreReadingHoldsOn :=
+  @LawAlgebra.GeometricLawReading.ofSemanticCore_holdsOn
+
+/-- Audit alias for restriction compatibility of semantic-core witnesses. -/
+def closedEquationalGeometrySemanticCoreWitnessRestrict :=
+  @LawAlgebra.semanticCoreWitness_restrict
+
+/-- Audit alias for the mapped semantic-core witness ideal formula. -/
+def closedEquationalGeometrySemanticCoreWitnessIdealMap :=
+  @LawAlgebra.semanticCoreLawWitnessIdeal_map
+
+/-- Audit alias for map-comap reflection of semantic-core witness ideals. -/
+def closedEquationalGeometrySemanticCoreWitnessIdealComapMap :=
+  @LawAlgebra.semanticCoreLawWitnessIdeal_comap_map
+
+/-- Audit alias for the semantic-core global equation chart formula. -/
+def closedEquationalGeometrySemanticCoreGlobalEquationOnChart :=
+  @LawAlgebra.semanticCoreGlobalEquation_on_chart
+
+/-- Audit alias for validity of the semantic-core witness constructor. -/
+def closedEquationalGeometrySemanticCoreWitnessValid :=
+  @LawAlgebra.ClosedEquationalLawWitness.ofSemanticCore_valid
+
+/-! #### SD1: reading validity and required/all selection -/
+
+/-- Audit alias for closed-equational-reading extensionality. -/
+def closedEquationalGeometryReadingExt :=
+  @LawAlgebra.ClosedEquationalLawReading.ext
+
+/-- Audit alias for the semantic-core witness projection. -/
+def closedEquationalGeometrySemanticCoreReadingWitness :=
+  @LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_witness
+
+/-- Audit alias for semantic-core witness compatibility. -/
+def closedEquationalGeometrySemanticCoreWitnessCompatible :=
+  @LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_witnessCompatible
+
+/-- Audit alias for full validity of the semantic-core reading. -/
+def closedEquationalGeometrySemanticCoreReadingValidFull :=
+  @LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_valid
+
+/-- Audit alias for semantic-core required closedness. -/
+def closedEquationalGeometrySemanticCoreRequiredClosed :=
+  @LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_requiredClosed
+
+/-- Audit alias for semantic-core context selection. -/
+def closedEquationalGeometrySemanticCoreSelected :=
+  @LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_selected
+
+/-- Audit alias for semantic-core all-law selection. -/
+def closedEquationalGeometrySemanticCoreAllLawsSelected :=
+  @LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_allLawsSelected
+
+/-! #### SD2: actual ideal sheaves and required/all ideals -/
+
+/-- Audit alias for the local ideal of a law witness ideal sheaf. -/
+def closedEquationalGeometryLawWitnessIdealSheafIdeal :=
+  @LawAlgebra.lawWitnessIdealSheaf_ideal
+
+/-- Audit alias for the global-section ideal sheaf comparison. -/
+def closedEquationalGeometryLawWitnessIdealSheafOfGlobalSections :=
+  @LawAlgebra.lawWitnessIdealSheaf_ofGlobalSections
+
+/-- Audit alias for semantic-core ideal sheaf realization. -/
+def closedEquationalGeometrySemanticCoreIdealSheafRealized :=
+  @LawAlgebra.semanticCoreIdealSheaf_realized
+
+/-- Audit alias for required local ideal restriction compatibility. -/
+def closedEquationalGeometryRequiredLocalIdealMapBasicOpen :=
+  @LawAlgebra.requiredLocalLawIdeal_map_basicOpen
+
+/-- Audit alias for all-selected local ideal restriction compatibility. -/
+def closedEquationalGeometryAllSelectedLocalIdealMapBasicOpen :=
+  @LawAlgebra.allSelectedLocalLawIdeal_map_basicOpen
+
+/-- Audit alias for the required generated ideal sheaf formula. -/
+def closedEquationalGeometryLawGeneratedIdealSheafIdeal :=
+  @LawAlgebra.lawGeneratedIdealSheaf_ideal
+
+/-- Audit alias for the all-law generated ideal sheaf formula. -/
+def closedEquationalGeometryAllLawGeneratedIdealSheafIdeal :=
+  @LawAlgebra.allLawGeneratedIdealSheaf_ideal
+
+/-- Audit alias for inclusion of the required ideal in the all-law ideal. -/
+def closedEquationalGeometryLawGeneratedIdealSheafLeAll :=
+  @LawAlgebra.lawGeneratedIdealSheaf_le_all
+
+/-! #### SD3: actual closed geometry and pulled decoration -/
+
+/-- Audit alias for closedness of the lawful immersion. -/
+def closedEquationalGeometryLawfulImmersionIsClosed :=
+  @LawAlgebra.lawfulClosedImmersion_isClosedImmersion
+
+/-- Audit alias for the kernel of the lawful immersion. -/
+def closedEquationalGeometryLawfulImmersionKer :=
+  @LawAlgebra.lawfulClosedImmersion_ker
+
+/-- Audit alias for the range of the lawful immersion. -/
+def closedEquationalGeometryLawfulImmersionRange :=
+  @LawAlgebra.lawfulClosedImmersion_range
+
+/-- Audit alias for the quotient-ring objects of the lawful cover. -/
+def closedEquationalGeometryLawfulSubschemeCoverX :=
+  @LawAlgebra.lawfulClosedSubschemeCover_X
+
+/-- Audit alias for preservation of the pulled decoration context. -/
+def closedEquationalGeometryLawfulDecorationContext :=
+  @LawAlgebra.lawfulClosedDecoration_context
+
+/-- Audit alias for preservation of the pulled decoration law universe. -/
+def closedEquationalGeometryLawfulDecorationLawUniverse :=
+  @LawAlgebra.lawfulClosedDecoration_lawUniverse
+
+/-- Audit alias for preservation of the pulled decoration signature. -/
+def closedEquationalGeometryLawfulDecorationSignature :=
+  @LawAlgebra.lawfulClosedDecoration_signature
+
+/-- Audit alias for the pulled decoration coordinate-section formula. -/
+def closedEquationalGeometryLawfulDecorationCoordinateSection :=
+  @LawAlgebra.lawfulClosedDecoration_coordinateSection
+
+/-- Audit alias for closedness of the full-to-required comparison. -/
+def closedEquationalGeometryFullToRequiredIsClosed :=
+  @LawAlgebra.fullToRequiredLawfulMap_isClosedImmersion
+
+/-- Audit alias for the full-to-required ambient triangle. -/
+def closedEquationalGeometryFullToRequiredImmersion :=
+  @LawAlgebra.fullToRequiredLawfulMap_immersion
+
+/-! #### SD4: exactness and actual factorization -/
+
+/-- Audit alias for the exactness characterization. -/
+def closedEquationalGeometryExactIffSoundAndComplete :=
+  @LawAlgebra.lawIdealExact_iff_sound_and_complete
+
+/-- Audit alias for the kernel-inclusion characterization. -/
+def closedEquationalGeometryIdealLawfulIffLeKer :=
+  @LawAlgebra.idealLawfulAlong_iff_le_ker
+
+/-- Audit alias for the required factorization triangle. -/
+def closedEquationalGeometryFactorizationLiftFac :=
+  @LawAlgebra.factorizationLift_fac
+
+/-- Audit alias for uniqueness of required factorization. -/
+def closedEquationalGeometryFactorizationUnique :=
+  @LawAlgebra.factorization_unique
+
+/-- Audit alias for existence of required factorization. -/
+def closedEquationalGeometryIdealLawfulIffFactors :=
+  @LawAlgebra.idealLawfulAlong_iff_nonempty_factorsThrough
+
+/-- Audit alias for the all-law factorization triangle. -/
+def closedEquationalGeometryAllLawFactorizationLiftFac :=
+  @LawAlgebra.allLawFactorizationLift_fac
+
+/-- Audit alias for uniqueness of all-law factorization. -/
+def closedEquationalGeometryAllLawFactorizationUnique :=
+  @LawAlgebra.allLawFactorization_unique
+
+/-- Audit alias for existence of all-law factorization. -/
+def closedEquationalGeometryFullIdealLawfulIffFactors :=
+  @LawAlgebra.fullIdealLawfulAlong_iff_nonempty_factorsThrough
+
+/-! #### SD5: required and full lawfulness correspondences -/
+
+/-- Audit alias for semantic lawfulness versus witness vanishing. -/
+def closedEquationalGeometrySemanticIffWitness :=
+  @LawAlgebra.semanticLawfulAlong_iff_witnessVanishes
+
+/-- Audit alias for witness vanishing versus ideal lawfulness. -/
+def closedEquationalGeometryWitnessIffIdeal :=
+  @LawAlgebra.witnessVanishes_iff_idealLawfulAlong
+
+/-- Audit alias for the required lawfulness-factorization correspondence. -/
+def closedEquationalGeometryRequiredCorrespondence :=
+  @LawAlgebra.lawfulnessIdealFactorizationCorrespondence
+
+/-- Audit alias for the semantic-core lawfulness correspondence. -/
+def closedEquationalGeometrySemanticCoreCorrespondence :=
+  @LawAlgebra.semanticCoreLawfulnessIdealFactorizationCorrespondence
+
+/-- Audit alias for full semantic versus full ideal lawfulness. -/
+def closedEquationalGeometryFullySemanticIffFullIdeal :=
+  @LawAlgebra.fullySemanticLawfulAlong_iff_fullIdealLawfulAlong
+
+/-- Audit alias for the full lawfulness-factorization correspondence. -/
+def closedEquationalGeometryFullCorrespondence :=
+  @LawAlgebra.fullLawfulnessIdealFactorizationCorrespondence
+
+/-! #### SD6: object, valuation, and signature-axis comparisons -/
+
+/-- Audit alias for section lawfulness versus object lawfulness. -/
+def closedEquationalGeometrySemanticIffObjectLawfulness :=
+  @LawAlgebra.semanticLawfulAlong_iff_lawfulness
+
+/-- Audit alias for section lawfulness versus omega vanishing. -/
+def closedEquationalGeometrySemanticIffOmegaZero :=
+  @LawAlgebra.semanticLawfulAlong_iff_omegaU_zero
+
+/-- Audit alias for section lawfulness versus signature-axis vanishing. -/
+def closedEquationalGeometrySemanticIffSignatureAxesZero :=
+  @LawAlgebra.semanticLawfulAlong_iff_requiredSignatureAxesZero
+
+/-- Audit alias for factorization versus omega vanishing. -/
+def closedEquationalGeometryFactorsIffOmegaZero :=
+  @LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
+
+/-- Audit alias for factorization versus signature-axis vanishing. -/
+def closedEquationalGeometryFactorsIffSignatureAxesZero :=
+  @LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
+
+/-! #### SD7: law inclusion and contravariant closed geometry -/
+
+/-- Audit alias for law-inclusion extensionality. -/
+def closedEquationalGeometryInclusionExt :=
+  @LawAlgebra.ClosedEquationalLawInclusion.ext
+
+/-- Audit alias for validity of reflexive law inclusion. -/
+def closedEquationalGeometryInclusionReflValid :=
+  @LawAlgebra.ClosedEquationalLawInclusion.refl_valid
+
+/-- Audit alias for validity of composed law inclusion. -/
+def closedEquationalGeometryInclusionCompValid :=
+  @LawAlgebra.ClosedEquationalLawInclusion.comp_valid
+
+/-- Audit alias for per-law witness ideal inclusion. -/
+def closedEquationalGeometryLawWitnessIdealSheafLe :=
+  @LawAlgebra.lawWitnessIdealSheaf_le
+
+/-- Audit alias for required generated ideal monotonicity. -/
+def closedEquationalGeometryLawGeneratedIdealSheafMono :=
+  @LawAlgebra.lawGeneratedIdealSheaf_mono
+
+/-- Audit alias for all-law generated ideal monotonicity. -/
+def closedEquationalGeometryAllLawGeneratedIdealSheafMono :=
+  @LawAlgebra.allLawGeneratedIdealSheaf_mono
+
+/-- Audit alias for required semantic-lawfulness monotonicity. -/
+def closedEquationalGeometrySemanticLawfulMono :=
+  @LawAlgebra.semanticLawfulAlong_mono
+
+/-- Audit alias for full semantic-lawfulness monotonicity. -/
+def closedEquationalGeometryFullySemanticLawfulMono :=
+  @LawAlgebra.fullySemanticLawfulAlong_mono
+
+/-- Audit alias for closedness of the required subscheme map. -/
+def closedEquationalGeometryLawfulMapIsClosed :=
+  @LawAlgebra.lawfulClosedSubschemeMap_isClosedImmersion
+
+/-- Audit alias for the required subscheme-map ambient triangle. -/
+def closedEquationalGeometryLawfulMapImmersion :=
+  @LawAlgebra.lawfulClosedSubschemeMap_immersion
+
+/-- Audit alias for identity of required subscheme maps. -/
+def closedEquationalGeometryLawfulMapId :=
+  @LawAlgebra.lawfulClosedSubschemeMap_id
+
+/-- Audit alias for composition of required subscheme maps. -/
+def closedEquationalGeometryLawfulMapComp :=
+  @LawAlgebra.lawfulClosedSubschemeMap_comp
+
+/-- Audit alias for closedness of the all-law subscheme map. -/
+def closedEquationalGeometryAllLawfulMapIsClosed :=
+  @LawAlgebra.allLawfulClosedSubschemeMap_isClosedImmersion
+
+/-- Audit alias for the all-law subscheme-map ambient triangle. -/
+def closedEquationalGeometryAllLawfulMapImmersion :=
+  @LawAlgebra.allLawfulClosedSubschemeMap_immersion
+
+/-- Audit alias for identity of all-law subscheme maps. -/
+def closedEquationalGeometryAllLawfulMapId :=
+  @LawAlgebra.allLawfulClosedSubschemeMap_id
+
+/-- Audit alias for composition of all-law subscheme maps. -/
+def closedEquationalGeometryAllLawfulMapComp :=
+  @LawAlgebra.allLawfulClosedSubschemeMap_comp
+
+/-!
+### Finite closed-equational geometry theorem index: SD9
+
+These aliases register every public theorem in the finite
+closed-equational geometry module.
+-/
+
+/-- Audit alias for finite `weakSchemeBridge_valid`. -/
+def finiteClosedEquationalGeometry_weakSchemeBridge_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakSchemeBridge_valid
+
+/-- Audit alias for finite `strongSchemeBridge_valid`. -/
+def finiteClosedEquationalGeometry_strongSchemeBridge_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongSchemeBridge_valid
+
+/-- Audit alias for finite `weakSchemeBridge_presentationStable`. -/
+def finiteClosedEquationalGeometry_weakSchemeBridge_presentationStable :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakSchemeBridge_presentationStable
+
+/-- Audit alias for finite `weakSchemeBridge_toSheafifiedSection_bijective`. -/
+def finiteClosedEquationalGeometry_weakSchemeBridge_toSheafifiedSection_bijective :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakSchemeBridge_toSheafifiedSection_bijective
+
+/-- Audit alias for finite `weakCore_witnessIdeal_reflected`. -/
+def finiteClosedEquationalGeometry_weakCore_witnessIdeal_reflected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_witnessIdeal_reflected
+
+/-- Audit alias for finite `weakCore_componentA_equation`. -/
+def finiteClosedEquationalGeometry_weakCore_componentA_equation :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_componentA_equation
+
+/-- Audit alias for finite `weakCore_other_equation`. -/
+def finiteClosedEquationalGeometry_weakCore_other_equation :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_other_equation
+
+/-- Audit alias for finite `strongCore_componentA_equation`. -/
+def finiteClosedEquationalGeometry_strongCore_componentA_equation :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongCore_componentA_equation
+
+/-- Audit alias for finite `strongCore_componentB_equation`. -/
+def finiteClosedEquationalGeometry_strongCore_componentB_equation :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongCore_componentB_equation
+
+/-- Audit alias for finite `strongCore_other_equation`. -/
+def finiteClosedEquationalGeometry_strongCore_other_equation :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongCore_other_equation
+
+/-- Audit alias for finite `weakCore_leftChart_provenance_fires`. -/
+def finiteClosedEquationalGeometry_weakCore_leftChart_provenance_fires :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_leftChart_provenance_fires
+
+/-- Audit alias for finite `weakCore_leftChart_witnessIdeal_realization_fires`. -/
+def finiteClosedEquationalGeometry_weakCore_leftChart_witnessIdeal_realization_fires :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_leftChart_witnessIdeal_realization_fires
+
+/-- Audit alias for finite `weakReading_holdsOn_iff`. -/
+def finiteClosedEquationalGeometry_weakReading_holdsOn_iff :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_holdsOn_iff
+
+/-- Audit alias for finite `strongReading_holdsOn_iff`. -/
+def finiteClosedEquationalGeometry_strongReading_holdsOn_iff :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_holdsOn_iff
+
+/-- Audit alias for finite `weakReading_witness_eq_ofSemanticCore`. -/
+def finiteClosedEquationalGeometry_weakReading_witness_eq_ofSemanticCore :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_witness_eq_ofSemanticCore
+
+/-- Audit alias for finite `strongReading_witness_eq_ofSemanticCore`. -/
+def finiteClosedEquationalGeometry_strongReading_witness_eq_ofSemanticCore :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_witness_eq_ofSemanticCore
+
+/-- Audit alias for finite `weakGeometricReading_valid`. -/
+def finiteClosedEquationalGeometry_weakGeometricReading_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakGeometricReading_valid
+
+/-- Audit alias for finite `strongGeometricReading_valid`. -/
+def finiteClosedEquationalGeometry_strongGeometricReading_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongGeometricReading_valid
+
+/-- Audit alias for finite `weakReading_witnessCompatible`. -/
+def finiteClosedEquationalGeometry_weakReading_witnessCompatible :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_witnessCompatible
+
+/-- Audit alias for finite `strongReading_witnessCompatible`. -/
+def finiteClosedEquationalGeometry_strongReading_witnessCompatible :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_witnessCompatible
+
+/-- Audit alias for finite `weakReading_valid`. -/
+def finiteClosedEquationalGeometry_weakReading_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_valid
+
+/-- Audit alias for finite `strongReading_valid`. -/
+def finiteClosedEquationalGeometry_strongReading_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_valid
+
+/-- Audit alias for finite `weakReading_closed_unit`. -/
+def finiteClosedEquationalGeometry_weakReading_closed_unit :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_closed_unit
+
+/-- Audit alias for finite `weakReading_selected`. -/
+def finiteClosedEquationalGeometry_weakReading_selected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_selected
+
+/-- Audit alias for finite `strongReading_selected`. -/
+def finiteClosedEquationalGeometry_strongReading_selected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_selected
+
+/-- Audit alias for finite `weakCore_leftChart_idealSheaf_realization_fires`. -/
+def finiteClosedEquationalGeometry_weakCore_leftChart_idealSheaf_realization_fires :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_leftChart_idealSheaf_realization_fires
+
+/-- Audit alias for finite `weakWitness_valid`. -/
+def finiteClosedEquationalGeometry_weakWitness_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakWitness_valid
+
+/-- Audit alias for finite `weakReading_requiredClosed`. -/
+def finiteClosedEquationalGeometry_weakReading_requiredClosed :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_requiredClosed
+
+/-- Audit alias for finite `strongReading_requiredClosed`. -/
+def finiteClosedEquationalGeometry_strongReading_requiredClosed :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_requiredClosed
+
+/-- Audit alias for finite `weakReading_allLawsSelected`. -/
+def finiteClosedEquationalGeometry_weakReading_allLawsSelected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_allLawsSelected
+
+/-- Audit alias for finite `strongReading_allLawsSelected`. -/
+def finiteClosedEquationalGeometry_strongReading_allLawsSelected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_allLawsSelected
+
+/-- Audit alias for finite `weakReading_requiredLawIdealExact`. -/
+def finiteClosedEquationalGeometry_weakReading_requiredLawIdealExact :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_requiredLawIdealExact
+
+/-- Audit alias for finite `strongReading_requiredLawIdealExact`. -/
+def finiteClosedEquationalGeometry_strongReading_requiredLawIdealExact :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_requiredLawIdealExact
+
+/-- Audit alias for finite `weakReading_lawIdealSound`. -/
+def finiteClosedEquationalGeometry_weakReading_lawIdealSound :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_lawIdealSound
+
+/-- Audit alias for finite `weakReading_lawIdealComplete`. -/
+def finiteClosedEquationalGeometry_weakReading_lawIdealComplete :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_lawIdealComplete
+
+/-- Audit alias for finite `weakReading_lawIdealExact`. -/
+def finiteClosedEquationalGeometry_weakReading_lawIdealExact :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_lawIdealExact
+
+/-- Audit alias for finite `weakReading_allLawIdealExact`. -/
+def finiteClosedEquationalGeometry_weakReading_allLawIdealExact :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_allLawIdealExact
+
+/-- Audit alias for finite `strongReading_allLawIdealExact`. -/
+def finiteClosedEquationalGeometry_strongReading_allLawIdealExact :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_allLawIdealExact
+
+/-- Audit alias for finite `weakToStrong_valid`. -/
+def finiteClosedEquationalGeometry_weakToStrong_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakToStrong_valid
+
+/-- Audit alias for finite `weak_ideal_lt_strong`. -/
+def finiteClosedEquationalGeometry_weak_ideal_lt_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weak_ideal_lt_strong
+
+/-- Audit alias for finite `weakSubscheme_nonempty`. -/
+def finiteClosedEquationalGeometry_weakSubscheme_nonempty :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakSubscheme_nonempty
+
+/-- Audit alias for finite `strongSubscheme_nonempty`. -/
+def finiteClosedEquationalGeometry_strongSubscheme_nonempty :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongSubscheme_nonempty
+
+/-- Audit alias for finite `weakImmersion_not_isIso`. -/
+def finiteClosedEquationalGeometry_weakImmersion_not_isIso :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakImmersion_not_isIso
+
+/-- Audit alias for finite `strongImmersion_not_isIso`. -/
+def finiteClosedEquationalGeometry_strongImmersion_not_isIso :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongImmersion_not_isIso
+
+/-- Audit alias for finite `weakToStrongMap_not_isIso`. -/
+def finiteClosedEquationalGeometry_weakToStrongMap_not_isIso :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakToStrongMap_not_isIso
+
+/-- Audit alias for finite `weakToStrongAllMap_not_isIso`. -/
+def finiteClosedEquationalGeometry_weakToStrongAllMap_not_isIso :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakToStrongAllMap_not_isIso
+
+/-- Audit alias for finite `requiredAllLawUniverse_required_iff`. -/
+def finiteClosedEquationalGeometry_requiredAllLawUniverse_required_iff :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllLawUniverse_required_iff
+
+/-- Audit alias for finite `requiredAllLawUniverse_optional_strengthening`. -/
+def finiteClosedEquationalGeometry_requiredAllLawUniverse_optional_strengthening :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllLawUniverse_optional_strengthening
+
+/-- Audit alias for finite `requiredAllSite_lawUniverse`. -/
+def finiteClosedEquationalGeometry_requiredAllSite_lawUniverse :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllSite_lawUniverse
+
+/-- Audit alias for finite `requiredAllReferenceModel_underlying`. -/
+def finiteClosedEquationalGeometry_requiredAllReferenceModel_underlying :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReferenceModel_underlying
+
+/-- Audit alias for finite `requiredAllSchemeBridge_valid`. -/
+def finiteClosedEquationalGeometry_requiredAllSchemeBridge_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllSchemeBridge_valid
+
+/-- Audit alias for finite `requiredLaw_componentA_equation`. -/
+def finiteClosedEquationalGeometry_requiredLaw_componentA_equation :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredLaw_componentA_equation
+
+/-- Audit alias for finite `strengtheningLaw_componentB_equation`. -/
+def finiteClosedEquationalGeometry_strengtheningLaw_componentB_equation :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strengtheningLaw_componentB_equation
+
+/-- Audit alias for finite `requiredAllReading_witnessCompatible`. -/
+def finiteClosedEquationalGeometry_requiredAllReading_witnessCompatible :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_witnessCompatible
+
+/-- Audit alias for finite `requiredAllReading_valid`. -/
+def finiteClosedEquationalGeometry_requiredAllReading_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_valid
+
+/-- Audit alias for finite `requiredAllReading_requiredClosed`. -/
+def finiteClosedEquationalGeometry_requiredAllReading_requiredClosed :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_requiredClosed
+
+/-- Audit alias for finite `requiredAllReading_allLawsSelected`. -/
+def finiteClosedEquationalGeometry_requiredAllReading_allLawsSelected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_allLawsSelected
+
+/-- Audit alias for finite `required_indices_ssubset_closed`. -/
+def finiteClosedEquationalGeometry_required_indices_ssubset_closed :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.required_indices_ssubset_closed
+
+/-- Audit alias for finite `requiredAllReading_selected`. -/
+def finiteClosedEquationalGeometry_requiredAllReading_selected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_selected
+
+/-- Audit alias for finite `required_indices_ssubset_selected`. -/
+def finiteClosedEquationalGeometry_required_indices_ssubset_selected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.required_indices_ssubset_selected
+
+/-- Audit alias for finite `required_ideal_lt_all_ideal`. -/
+def finiteClosedEquationalGeometry_required_ideal_lt_all_ideal :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.required_ideal_lt_all_ideal
+
+/-- Audit alias for finite `fullToRequiredLawfulMap_not_isIso`. -/
+def finiteClosedEquationalGeometry_fullToRequiredLawfulMap_not_isIso :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.fullToRequiredLawfulMap_not_isIso
+
+/-- Audit alias for finite `selected_point_factors_required`. -/
+def finiteClosedEquationalGeometry_selected_point_factors_required :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.selected_point_factors_required
+
+/-- Audit alias for finite `selected_point_not_factors_all`. -/
+def finiteClosedEquationalGeometry_selected_point_not_factors_all :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.selected_point_not_factors_all
+
+/-- Audit alias for finite `selected_modTwo_point_factors_all`. -/
+def finiteClosedEquationalGeometry_selected_modTwo_point_factors_all :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.selected_modTwo_point_factors_all
+
+/-- Audit alias for finite `integerPoint_objectComparison`. -/
+def finiteClosedEquationalGeometry_integerPoint_objectComparison :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_objectComparison
+
+/-- Audit alias for finite `integerPoint_objectComparison_fails_for_cyclic`. -/
+def finiteClosedEquationalGeometry_integerPoint_objectComparison_fails_for_cyclic :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_objectComparison_fails_for_cyclic
+
+/-- Audit alias for finite `integerPoint_omega_fires`. -/
+def finiteClosedEquationalGeometry_integerPoint_omega_fires :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_omega_fires
+
+/-- Audit alias for finite `integerPoint_axis_fires`. -/
+def finiteClosedEquationalGeometry_integerPoint_axis_fires :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_axis_fires
+
+/-- Audit alias for finite `integerPoint_globalEquationsVanish_weak`. -/
+def finiteClosedEquationalGeometry_integerPoint_globalEquationsVanish_weak :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_globalEquationsVanish_weak
+
+/-- Audit alias for finite `integerPoint_not_globalEquationsVanish_strong`. -/
+def finiteClosedEquationalGeometry_integerPoint_not_globalEquationsVanish_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_globalEquationsVanish_strong
+
+/-- Audit alias for finite `integerPoint_semanticLawful_weak`. -/
+def finiteClosedEquationalGeometry_integerPoint_semanticLawful_weak :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_semanticLawful_weak
+
+/-- Audit alias for finite `integerPoint_not_semanticLawful_strong`. -/
+def finiteClosedEquationalGeometry_integerPoint_not_semanticLawful_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_semanticLawful_strong
+
+/-- Audit alias for finite `integerPoint_fullySemanticLawful_weak`. -/
+def finiteClosedEquationalGeometry_integerPoint_fullySemanticLawful_weak :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_fullySemanticLawful_weak
+
+/-- Audit alias for finite `integerPoint_not_fullySemanticLawful_strong`. -/
+def finiteClosedEquationalGeometry_integerPoint_not_fullySemanticLawful_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_fullySemanticLawful_strong
+
+/-- Audit alias for finite `integerPoint_witnessVanishes_weak`. -/
+def finiteClosedEquationalGeometry_integerPoint_witnessVanishes_weak :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_witnessVanishes_weak
+
+/-- Audit alias for finite `integerPoint_not_witnessVanishes_strong`. -/
+def finiteClosedEquationalGeometry_integerPoint_not_witnessVanishes_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_witnessVanishes_strong
+
+/-- Audit alias for finite `integerPoint_idealLawful_weak`. -/
+def finiteClosedEquationalGeometry_integerPoint_idealLawful_weak :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_idealLawful_weak
+
+/-- Audit alias for finite `integerPoint_not_idealLawful_strong`. -/
+def finiteClosedEquationalGeometry_integerPoint_not_idealLawful_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_idealLawful_strong
+
+/-- Audit alias for finite `integerPoint_fullIdealLawful_weak`. -/
+def finiteClosedEquationalGeometry_integerPoint_fullIdealLawful_weak :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_fullIdealLawful_weak
+
+/-- Audit alias for finite `integerPoint_not_fullIdealLawful_strong`. -/
+def finiteClosedEquationalGeometry_integerPoint_not_fullIdealLawful_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_fullIdealLawful_strong
+
+/-- Audit alias for finite `integerPoint_factors_weak`. -/
+def finiteClosedEquationalGeometry_integerPoint_factors_weak :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_factors_weak
+
+/-- Audit alias for finite `integerPoint_not_factors_strong`. -/
+def finiteClosedEquationalGeometry_integerPoint_not_factors_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_factors_strong
+
+/-- Audit alias for finite `modTwoPoint_factors_weak`. -/
+def finiteClosedEquationalGeometry_modTwoPoint_factors_weak :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.modTwoPoint_factors_weak
+
+/-- Audit alias for finite `modTwoPoint_factors_strong`. -/
+def finiteClosedEquationalGeometry_modTwoPoint_factors_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.modTwoPoint_factors_strong
+
+/-- Audit alias for finite `integerPoint_factorsAll_weak`. -/
+def finiteClosedEquationalGeometry_integerPoint_factorsAll_weak :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_factorsAll_weak
+
+/-- Audit alias for finite `integerPoint_not_factorsAll_strong`. -/
+def finiteClosedEquationalGeometry_integerPoint_not_factorsAll_strong :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_factorsAll_strong
+
+/-- Audit alias for finite `weak_correspondence_fires`. -/
+def finiteClosedEquationalGeometry_weak_correspondence_fires :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weak_correspondence_fires
+
+/-- Audit alias for finite `weak_semanticCore_correspondence_fires`. -/
+def finiteClosedEquationalGeometry_weak_semanticCore_correspondence_fires :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weak_semanticCore_correspondence_fires
+
+/-- Audit alias for finite `weak_full_correspondence_fires`. -/
+def finiteClosedEquationalGeometry_weak_full_correspondence_fires :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weak_full_correspondence_fires
+
+/-- Audit alias for finite `restrictionBrokenSchemeBridge_not_valid`. -/
+def finiteClosedEquationalGeometry_restrictionBrokenSchemeBridge_not_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenSchemeBridge_not_valid
+
+/-- Audit alias for finite `restrictionBrokenSchemeBridge_not_realized`. -/
+def finiteClosedEquationalGeometry_restrictionBrokenSchemeBridge_not_realized :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenSchemeBridge_not_realized
+
+/-- Audit alias for finite `baseChangeBrokenGeometricReading_not_valid`. -/
+def finiteClosedEquationalGeometry_baseChangeBrokenGeometricReading_not_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.baseChangeBrokenGeometricReading_not_valid
+
+/-- Audit alias for finite `baseChangeBrokenReading_witnessCompatible`. -/
+def finiteClosedEquationalGeometry_baseChangeBrokenReading_witnessCompatible :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.baseChangeBrokenReading_witnessCompatible
+
+/-- Audit alias for finite `baseChangeBrokenReading_not_valid`. -/
+def finiteClosedEquationalGeometry_baseChangeBrokenReading_not_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.baseChangeBrokenReading_not_valid
+
+/-- Audit alias for finite `missingRequiredReading_valid`. -/
+def finiteClosedEquationalGeometry_missingRequiredReading_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredReading_valid
+
+/-- Audit alias for finite `missingRequiredReading_not_requiredClosed`. -/
+def finiteClosedEquationalGeometry_missingRequiredReading_not_requiredClosed :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredReading_not_requiredClosed
+
+/-- Audit alias for finite `missingRequiredReading_not_allLawsSelected`. -/
+def finiteClosedEquationalGeometry_missingRequiredReading_not_allLawsSelected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredReading_not_allLawsSelected
+
+/-- Audit alias for finite `restrictionBrokenSelectionReading_not_valid`. -/
+def finiteClosedEquationalGeometry_restrictionBrokenSelectionReading_not_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenSelectionReading_not_valid
+
+/-- Audit alias for finite `missingRequiredSelectionReading_valid`. -/
+def finiteClosedEquationalGeometry_missingRequiredSelectionReading_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredSelectionReading_valid
+
+/-- Audit alias for finite `missingRequiredSelectionReading_not_requiredClosed`. -/
+def finiteClosedEquationalGeometry_missingRequiredSelectionReading_not_requiredClosed :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredSelectionReading_not_requiredClosed
+
+/-- Audit alias for finite `semanticMismatchReading_valid`. -/
+def finiteClosedEquationalGeometry_semanticMismatchReading_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_valid
+
+/-- Audit alias for finite `semanticMismatchReading_witnessCompatible`. -/
+def finiteClosedEquationalGeometry_semanticMismatchReading_witnessCompatible :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_witnessCompatible
+
+/-- Audit alias for finite `semanticMismatchReading_requiredClosed`. -/
+def finiteClosedEquationalGeometry_semanticMismatchReading_requiredClosed :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_requiredClosed
+
+/-- Audit alias for finite `semanticMismatchReading_allLawsSelected`. -/
+def finiteClosedEquationalGeometry_semanticMismatchReading_allLawsSelected :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_allLawsSelected
+
+/-- Audit alias for finite `semanticMismatchReading_not_exact`. -/
+def finiteClosedEquationalGeometry_semanticMismatchReading_not_exact :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_not_exact
+
+/-- Audit alias for finite `semanticMismatchReading_not_lawIdealExact`. -/
+def finiteClosedEquationalGeometry_semanticMismatchReading_not_lawIdealExact :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_not_lawIdealExact
+
+/-- Audit alias for finite `semanticMismatchReading_not_complete`. -/
+def finiteClosedEquationalGeometry_semanticMismatchReading_not_complete :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_not_complete
+
+/-- Audit alias for finite `semanticMismatchReading_not_allLawIdealExact`. -/
+def finiteClosedEquationalGeometry_semanticMismatchReading_not_allLawIdealExact :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_not_allLawIdealExact
+
+/-- Audit alias for finite `semanticMismatch_full_correspondence_fails`. -/
+def finiteClosedEquationalGeometry_semanticMismatch_full_correspondence_fails :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatch_full_correspondence_fails
+
+/-- Audit alias for finite `semanticOverclaimReading_valid`. -/
+def finiteClosedEquationalGeometry_semanticOverclaimReading_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticOverclaimReading_valid
+
+/-- Audit alias for finite `semanticOverclaimReading_witnessCompatible`. -/
+def finiteClosedEquationalGeometry_semanticOverclaimReading_witnessCompatible :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticOverclaimReading_witnessCompatible
+
+/-- Audit alias for finite `semanticOverclaimReading_requiredClosed`. -/
+def finiteClosedEquationalGeometry_semanticOverclaimReading_requiredClosed :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticOverclaimReading_requiredClosed
+
+/-- Audit alias for finite `semanticOverclaimReading_not_sound`. -/
+def finiteClosedEquationalGeometry_semanticOverclaimReading_not_sound :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticOverclaimReading_not_sound
+
+/-- Audit alias for finite `restrictionBrokenWitness_not_valid`. -/
+def finiteClosedEquationalGeometry_restrictionBrokenWitness_not_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenWitness_not_valid
+
+/-- Audit alias for finite `restrictionBrokenReading_not_witnessCompatible`. -/
+def finiteClosedEquationalGeometry_restrictionBrokenReading_not_witnessCompatible :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenReading_not_witnessCompatible
+
+/-- Audit alias for finite `restrictionBrokenReading_not_valid`. -/
+def finiteClosedEquationalGeometry_restrictionBrokenReading_not_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenReading_not_valid
+
+/-- Audit alias for finite `coordinateBrokenInclusion_not_valid`. -/
+def finiteClosedEquationalGeometry_coordinateBrokenInclusion_not_valid :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.coordinateBrokenInclusion_not_valid
 
 end AAT.AG.AxiomAudit
 

@@ -6,6 +6,7 @@ import Formal.AG.RepresentationAnalysis.Synthesis
 import Formal.AG.Examples.RepresentationAnalysisPart7
 import Formal.AG.StatementContractsAtomToRingedSite
 import Formal.AG.StatementContractsStandardArchitectureScheme
+import Formal.AG.StatementContractsClosedEquationalGeometry
 
 noncomputable section
 
