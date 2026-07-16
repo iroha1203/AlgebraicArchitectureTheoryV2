@@ -4109,6 +4109,10 @@ def readingFunctoriality_canonicalCechComplex_d_comp_d :=
 def readingFunctoriality_additiveCechHn :=
   @AAT.AG.Cohomology.CoverRelativeCechComplex.AdditiveCechHn
 
+/-- Audit alias for the additive group structure in every cohomological degree. -/
+def readingFunctoriality_additiveCechHnAddCommGroup :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.additiveCechHnAddCommGroup
+
 /-- Audit alias for additive cocycle classes. -/
 def readingFunctoriality_additiveCohomologyClass :=
   @AAT.AG.Cohomology.CoverRelativeCechComplex.additiveCohomologyClass
