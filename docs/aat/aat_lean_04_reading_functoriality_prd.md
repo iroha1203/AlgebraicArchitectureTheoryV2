@@ -256,7 +256,7 @@ def AtomConfiguration.transportHom
 
 def Invariant.TransportedAlong
     (I J : Invariant U)
-    {ι : Type u}
+    {ι : Type w}
     (source target : ι → ArchitectureObject U) : Prop :=
   match I, J with
   | .function I, .function J =>
@@ -268,13 +268,13 @@ def Invariant.TransportedAlong
 
 theorem Invariant.function_predicate_not_transportedAlong
     (I : FunctionInvariant U) (J : PredicateInvariant U)
-    {ι : Type u}
+    {ι : Type w}
     (source target : ι → ArchitectureObject U) :
     ¬ Invariant.TransportedAlong (.function I) (.predicate J) source target
 
 theorem Invariant.transportedAlong_refl
     (I : Invariant U)
-    {ι : Type u}
+    {ι : Type w}
     (source : ι → ArchitectureObject U) :
     Invariant.TransportedAlong I I source source
 
