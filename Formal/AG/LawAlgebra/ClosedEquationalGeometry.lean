@@ -41,6 +41,7 @@ variable (X : StandardArchitectureScheme raw)
 
 /-- A semantic reading of each site law on sections of test Schemes. -/
 structure GeometricLawReading where
+  /-- The semantic law predicate on a section of a test Scheme. -/
   HoldsOn : ∀ {T : AlgebraicGeometry.Scheme},
     (T ⟶ X.underlying) → S.lawUniverse.Index → Prop
 
@@ -61,6 +62,7 @@ def IsGeometricLawReading (R : GeometricLawReading raw X) : Prop :=
 
 /-- Atom-indexed violation coordinates for one law on every affine open. -/
 structure ClosedEquationalLawWitness (i : S.lawUniverse.Index) where
+  /-- The violation coordinate of each atom on an affine open. -/
   coordinate : ∀ V : X.underlying.affineOpens,
     U.Atom → Γ(X.underlying, V)
 
@@ -141,6 +143,7 @@ theorem ClosedEquationalLawWitness.ofGlobalSections_valid
 /-- An objectwise raw-presentation identification for an existing semantic equation core. -/
 structure SemanticLawEquationSchemeBridge
     (G : SemanticLawEquationWitnessIdealCore S) where
+  /-- The raw-presentation equivalence for each context. -/
   toRawPresentation : ∀ W : S.category,
     G.Observable W ≃+* raw.rawAlgebra W
 
@@ -154,7 +157,7 @@ noncomputable def SemanticLawEquationSchemeBridge.toSheafifiedSection
     (B.toRawPresentation W).toRingHom
 
 /-- Scheme bridges are determined by their presentation equivalences. -/
-@[ext] theorem SemanticLawEquationSchemeBridge.ext
+@[ext, nolint unusedArguments] theorem SemanticLawEquationSchemeBridge.ext
     (G : SemanticLawEquationWitnessIdealCore S)
     (B C : SemanticLawEquationSchemeBridge raw G)
     (h : B.toRawPresentation = C.toRawPresentation) : B = C := by
@@ -324,9 +327,13 @@ theorem ClosedEquationalLawWitness.ofSemanticCore_valid
 
 /-- A semantic reading together with closed laws, context selection, and their witnesses. -/
 structure ClosedEquationalLawReading where
+  /-- The semantic reading carried by this closed-equational package. -/
   geometric : GeometricLawReading raw X
+  /-- The laws certified as closed equations. -/
   closed : Set S.lawUniverse.Index
+  /-- The closed laws selected on each affine context. -/
   selected : X.underlying.affineOpens → Set S.lawUniverse.Index
+  /-- The atom-indexed equation witness for each closed law. -/
   witness : ∀ i, closed i → ClosedEquationalLawWitness raw X i
 
 /-- Closed-equational readings are determined by their four data components. -/
@@ -1472,7 +1479,9 @@ theorem factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
 /-- Primitive inclusion data consisting of a law-index map and indexed atom maps. -/
 structure ClosedEquationalLawInclusion
     (R Q : ClosedEquationalLawReading raw X) where
+  /-- The map from source laws to target laws. -/
   lawMap : S.lawUniverse.Index → S.lawUniverse.Index
+  /-- The atom map associated to each source law. -/
   atomMap : ∀ i : S.lawUniverse.Index, U.Atom → U.Atom
 
 /-- Primitive law inclusions are determined by their two maps. -/
