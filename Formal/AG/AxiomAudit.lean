@@ -4339,6 +4339,48 @@ noncomputable def readingFunctoriality_obstructionInjectiveResolution :=
 noncomputable def readingFunctoriality_obstructionHPrimeInjectiveEquiv :=
   @AAT.AG.Cohomology.obstructionHPrimeInjectiveEquiv
 
+/-! Part 4 R5c2: actual cochain-complex homology bridge. -/
+
+/-- Audit alias for the actual cover-relative Čech cochain complex. -/
+noncomputable def readingFunctoriality_coverRelativeCech_toCochainComplex :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.toCochainComplex
+
+/-- Audit alias for the degreewise cochain-object characterization. -/
+def readingFunctoriality_coverRelativeCech_toCochainComplex_X :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.toCochainComplex_X
+
+/-- Audit alias for the differential characterization. -/
+def readingFunctoriality_coverRelativeCech_toCochainComplex_d :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.toCochainComplex_d
+
+/-- Audit alias for the actual cochain-complex morphism. -/
+noncomputable def readingFunctoriality_coverRelativeCechHom_toCochainMap :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.toCochainMap
+
+/-- Audit alias for the degreewise cochain-map characterization. -/
+def readingFunctoriality_coverRelativeCechHom_toCochainMap_f :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.toCochainMap_f
+
+/-- Audit alias for the canonical cocycle-to-cycle map. -/
+noncomputable def readingFunctoriality_coverRelativeCech_cocycleToCycles :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.cocycleToCycles
+
+/-- Audit alias for the underlying-cocycle characterization. -/
+def readingFunctoriality_coverRelativeCech_cocycleToCycles_i :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.cocycleToCycles_i
+
+/-- Audit alias for arbitrary-degree actual homology comparison. -/
+noncomputable def readingFunctoriality_additiveCechHnEquivHomology :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.additiveCechHnEquivHomology
+
+/-- Audit alias for the actual homology representative formula. -/
+def readingFunctoriality_additiveCechHnEquivHomology_class :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.additiveCechHnEquivHomology_additiveCohomologyClass
+
+/-- Audit alias for naturality against the actual homology map. -/
+def readingFunctoriality_additiveCechHnEquivHomology_naturality :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.additiveCechHnEquivHomology_naturality
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
