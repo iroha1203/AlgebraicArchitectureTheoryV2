@@ -191,6 +191,8 @@ abbrev signature (p : ReadingCore.{u, v} U) : ArchitectureSignature U :=
     (hcore : p.core = q.core)
     (hgeometry : HEq p.geometry q.geometry)
     (hCoefficient : p.Coefficient = q.Coefficient)
+    (hcoefficientCommRing :
+      HEq p.coefficientCommRing q.coefficientCommRing)
     (hraw : HEq p.raw q.raw) :
     p = q
 
@@ -346,7 +348,9 @@ namespace ObjectAlgebraHom
     (hconfiguration : HEq f.configurationMap g.configurationMap)
     (hlaw : HEq f.lawMap g.lawMap)
     (hcircuit : HEq f.circuitMap g.circuitMap)
-    (hoperation : HEq f.operationMap g.operationMap)
+    (hoperation : HEq
+      (@ObjectAlgebraHom.operationMap U K L f)
+      (@ObjectAlgebraHom.operationMap U K L g))
     (hinvariant : HEq f.invariantMap g.invariantMap)
     (haxis : HEq f.axisMap g.axisMap)
     (hcoordinate : HEq f.coordinateEquiv g.coordinateEquiv) :
@@ -458,7 +462,9 @@ namespace SignedExactCoreReadingHom
     (hobject : f.objectMap = g.objectMap)
     (hlaw : HEq f.lawMap g.lawMap)
     (hquery : HEq f.queryMap g.queryMap)
-    (hoperation : HEq f.operationMap g.operationMap)
+    (hoperation : HEq
+      (@SignedExactCoreReadingHom.operationMap U P Q f)
+      (@SignedExactCoreReadingHom.operationMap U P Q g))
     (hinvariant : HEq f.invariantMap g.invariantMap)
     (haxis : HEq f.axisMap g.axisMap)
     (hcoordinate : HEq f.coordinateEquiv g.coordinateEquiv) :
@@ -573,7 +579,9 @@ namespace PositiveCoreReadingHom
     {f g : PositiveCoreReadingHom P Q}
     (hatom : f.atomMap = g.atomMap)
     (hobject : f.objectMap = g.objectMap)
-    (hoperation : HEq f.operationMap g.operationMap)
+    (hoperation : HEq
+      (@PositiveCoreReadingHom.operationMap U P Q f)
+      (@PositiveCoreReadingHom.operationMap U P Q g))
     (hlaw : HEq f.lawMap g.lawMap)
     (hquery : f.queryMap = g.queryMap) :
     f = g

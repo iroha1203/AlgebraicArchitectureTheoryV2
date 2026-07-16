@@ -3955,6 +3955,56 @@ def finiteClosedEquationalGeometry_restrictionBrokenReading_not_valid :=
 def finiteClosedEquationalGeometry_coordinateBrokenInclusion_not_valid :=
   @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.coordinateBrokenInclusion_not_valid
 
+/-! Part 4 R1: reading-core functoriality. -/
+
+def readingFunctoriality_readingCore_ext :=
+  @AAT.AG.ReadingCore.ext
+
+def readingFunctoriality_readingSelection_ext :=
+  @AAT.AG.ReadingSelection.ext
+
+def readingFunctoriality_atomFamily_listFinite_transport :=
+  @AAT.AG.AtomFamily.ListFinite.transport
+
+def readingFunctoriality_atomConfiguration_transportHom_atomMap :=
+  @AAT.AG.AtomConfiguration.transportHom_atomMap
+
+def readingFunctoriality_invariant_function_predicate_not_transportedAlong :=
+  @AAT.AG.Invariant.function_predicate_not_transportedAlong
+
+def readingFunctoriality_invariant_transportedAlong_refl :=
+  @AAT.AG.Invariant.transportedAlong_refl
+
+def readingFunctoriality_objectAlgebraHom_ext :=
+  @AAT.AG.ObjectAlgebraHom.ext
+
+def readingFunctoriality_objectAlgebraHom_id_objMap :=
+  @AAT.AG.ObjectAlgebraHom.id_objMap
+
+def readingFunctoriality_objectAlgebraHom_comp_objMap :=
+  @AAT.AG.ObjectAlgebraHom.comp_objMap
+
+def readingFunctoriality_signedExactCoreReadingHom_ext :=
+  @AAT.AG.SignedExactCoreReadingHom.ext
+
+def readingFunctoriality_signedExactCoreReadingHom_generatedConfiguration_eq :=
+  @AAT.AG.SignedExactCoreReadingHom.generatedConfiguration_eq
+
+def readingFunctoriality_signedExactCoreReadingHom_base_eq :=
+  @AAT.AG.SignedExactCoreReadingHom.base_eq
+
+def readingFunctoriality_signedExactCoreReadingHom_toObjectAlgebraHom_refl :=
+  @AAT.AG.SignedExactCoreReadingHom.toObjectAlgebraHom_refl
+
+def readingFunctoriality_signedExactCoreReadingHom_toObjectAlgebraHom_comp :=
+  @AAT.AG.SignedExactCoreReadingHom.toObjectAlgebraHom_comp
+
+def readingFunctoriality_positiveCoreReadingHom_ext :=
+  @AAT.AG.PositiveCoreReadingHom.ext
+
+def readingFunctoriality_positiveCoreReadingHom_mapReachable :=
+  @AAT.AG.PositiveCoreReadingHom.mapReachable
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
