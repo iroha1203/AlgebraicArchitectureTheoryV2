@@ -7,6 +7,7 @@ import Formal.AG.Examples.RepresentationAnalysisPart7
 import Formal.AG.StatementContractsAtomToRingedSite
 import Formal.AG.StatementContractsStandardArchitectureScheme
 import Formal.AG.StatementContractsClosedEquationalGeometry
+import Formal.AG.StatementContractsReadingFunctoriality
 
 noncomputable section
 

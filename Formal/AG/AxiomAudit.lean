@@ -10,6 +10,8 @@ import Formal.AG.LawAlgebra.RingedSiteFiniteExample
 import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
+import Formal.AG.ReadingFunctoriality
+import Formal.AG.StatementContractsReadingFunctoriality
 import Formal.Util.AssertStandardAxioms
 
 /-!
