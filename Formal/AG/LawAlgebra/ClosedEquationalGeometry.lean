@@ -14,6 +14,21 @@ open CategoryTheory Opposite
 open AlgebraicGeometry
 open scoped AlgebraicGeometry
 
+/-! ## Implementation notes
+
+The obstruction construction uses actual `Scheme.IdealSheafData` assembled from the
+law-by-law coordinate spans selected on each affine context. It does not accept an arbitrary
+ideal family as primary input. Semantic cores enter the construction through a raw-presentation
+equivalence followed by the canonical sheafification unit, so presentation provenance and
+restriction naturality remain explicit proof obligations.
+
+Required and all-selected laws produce separate ideal sheaves and separate closed subschemes.
+For a general Scheme the public geometry is Mathlib's subscheme together with its quotient affine
+cover; it is not replaced by a single global affine quotient. These choices keep the semantic,
+witness, ideal, and actual-factorization layers independently testable by the characterization
+and comparison theorems below.
+-/
+
 universe u v
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}

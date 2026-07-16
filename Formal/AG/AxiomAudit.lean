@@ -3159,7 +3159,7 @@ def standardSchemeFiniteUncoveredAtlasNotValid :=
 ### Closed-equational geometry theorem index: SD0--SD7
 
 The aliases below register every public theorem from the main
-closed-equational geometry module in the namespace-wide kernel axiom audit.
+closed-equational geometry module in the namespace-wide kernel dependency audit.
 -/
 
 /-! #### SD0: geometric law reading and closed-equational witnesses -/

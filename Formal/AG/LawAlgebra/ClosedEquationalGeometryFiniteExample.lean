@@ -13,6 +13,20 @@ open AAT.AG.FiniteModel
 open AAT.AG.LawAlgebra.FiniteExamples.RingedSite.FiniteModel
 open AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme
 
+/-! ## Implementation notes
+
+The first SD9 fixture keeps the existing two-chart Scheme and compares the concrete equations
+`x - 1` and `x + 1`. The second fixture retargets the same context geometry, raw relation, and
+underlying Scheme to a two-law universe so that the required and all-selected ideals can be
+compared without changing the ambient object.
+
+The positive and negative firing theorems use explicit evaluations, basic opens, and Scheme
+morphisms. Degenerate witnesses based only on the zero or unit ideal, an empty Scheme, or an
+identity morphism were rejected. Local firing proofs unfold the concrete fixture constructors
+only to calculate their generators; downstream use is through the named characterization and
+comparison theorems registered by the statement contract.
+-/
+
 /-! ## Raw quotient coordinates -/
 
 private noncomputable def orientedRawCoordinate
@@ -1508,10 +1522,12 @@ def requiredAllLawUniverse : LawUniverse carrier where
   coverageAssumptions := True
   exactnessAssumptions := True
 
+/-- Characterizes the unique required law in the two-law SD9 universe. -/
 theorem requiredAllLawUniverse_required_iff (i : RequiredAllLawIndex) :
     requiredAllLawUniverse.Required i ↔ i = .base := by
   cases i <;> simp [requiredAllLawUniverse, LawUniverse.Required]
 
+/-- Records that the strengthening law is optional in the required/all fixture. -/
 theorem requiredAllLawUniverse_optional_strengthening :
     requiredAllLawUniverse.Optional .strengthening := by
   rfl
@@ -1537,6 +1553,7 @@ noncomputable def requiredAllSite : Site.AATSite corePackage.object where
   requirements := requiredAllCoverageRequirements
   overlap := RingedSite.FiniteModel.site.overlap
 
+/-- Identifies the retargeted site's law universe with the two-law SD9 universe. -/
 @[simp] theorem requiredAllSite_lawUniverse :
     requiredAllSite.lawUniverse = requiredAllLawUniverse :=
   rfl
@@ -1899,6 +1916,7 @@ noncomputable def requiredAllReferenceModel :
     requiredAllTwoChartOverlapPresentation
     requiredAllTwoChartOverlapPresentation_valid
 
+/-- Identifies the retargeted reference model with the original underlying Scheme. -/
 theorem requiredAllReferenceModel_underlying :
     requiredAllReferenceModel.underlying =
       twoChartReferenceModel.underlying :=
@@ -2013,6 +2031,7 @@ noncomputable def requiredAllSchemeBridge :
       requiredAllLawEquationCore where
   toRawPresentation W := RingEquiv.refl (requiredAllRawSystem.rawAlgebra W)
 
+/-- Verifies restriction naturality and presentation stability for the required/all bridge. -/
 theorem requiredAllSchemeBridge_valid :
     IsSemanticLawEquationSchemeBridge requiredAllRawSystem
       requiredAllLawEquationCore requiredAllSchemeBridge where
@@ -2031,6 +2050,7 @@ theorem requiredAllSchemeBridge_valid :
     canonical_isIso := requiredAllCanonicalComponentIsIso W
   }
 
+/-- The global coordinate whose two law equations generate the required/all comparison. -/
 noncomputable def requiredAllBaseGlobalCoordinate :
     Γ(requiredAllReferenceModel.underlying, ⊤) :=
   requiredAllReferenceModel.decoration.coordinateSection
@@ -2056,6 +2076,7 @@ private theorem strengtheningLaw_componentB_raw_equation :
   rw [requiredAllOrientedRawCoordinate, gauge_base]
   simp
 
+/-- Computes the required law equation as `x - 1` on the component-A atom. -/
 theorem requiredLaw_componentA_equation :
     semanticCoreGlobalEquation requiredAllRawSystem requiredAllReferenceModel
         requiredAllLawEquationCore requiredAllSchemeBridge
@@ -2074,6 +2095,7 @@ theorem requiredLaw_componentA_equation :
     AATReadingDecoration.coordinateSection_apply]
   rfl
 
+/-- Computes the optional strengthening equation as `x + 1` on component B. -/
 theorem strengtheningLaw_componentB_equation :
     semanticCoreGlobalEquation requiredAllRawSystem requiredAllReferenceModel
         requiredAllLawEquationCore requiredAllSchemeBridge
@@ -2092,11 +2114,13 @@ theorem strengtheningLaw_componentB_equation :
     AATReadingDecoration.coordinateSection_apply]
   rfl
 
+/-- The closed-equational reading that selects both laws while marking only the base law required. -/
 noncomputable def requiredAllReading :
     ClosedEquationalLawReading requiredAllRawSystem requiredAllReferenceModel :=
   ClosedEquationalLawReading.ofSemanticCore requiredAllRawSystem
     requiredAllReferenceModel requiredAllLawEquationCore requiredAllSchemeBridge
 
+/-- Verifies witness compatibility for the required/all reading. -/
 theorem requiredAllReading_witnessCompatible :
     IsClosedEquationalWitnessReading requiredAllRawSystem
       requiredAllReferenceModel requiredAllReading :=
@@ -2104,12 +2128,14 @@ theorem requiredAllReading_witnessCompatible :
     requiredAllRawSystem requiredAllReferenceModel requiredAllLawEquationCore
     requiredAllSchemeBridge
 
+/-- Verifies the full closed-equational recognition predicate for the required/all reading. -/
 theorem requiredAllReading_valid :
     IsClosedEquationalLawReading requiredAllRawSystem
       requiredAllReferenceModel requiredAllReading :=
   ClosedEquationalLawReading.ofSemanticCore_valid requiredAllRawSystem
     requiredAllReferenceModel requiredAllLawEquationCore requiredAllSchemeBridge
 
+/-- Constructs required closedness from the canonical semantic core. -/
 theorem requiredAllReading_requiredClosed :
     RequiredClosed requiredAllRawSystem requiredAllReferenceModel
       requiredAllReading :=
@@ -2117,6 +2143,7 @@ theorem requiredAllReading_requiredClosed :
     requiredAllRawSystem requiredAllReferenceModel requiredAllLawEquationCore
     requiredAllSchemeBridge
 
+/-- Shows that every law in the two-law fixture is selected and closed. -/
 theorem requiredAllReading_allLawsSelected :
     AllLawsSelected requiredAllRawSystem requiredAllReferenceModel
       requiredAllReading :=
@@ -2124,6 +2151,7 @@ theorem requiredAllReading_allLawsSelected :
     requiredAllRawSystem requiredAllReferenceModel requiredAllLawEquationCore
     requiredAllSchemeBridge
 
+/-- Shows that required indices form a proper subset of the closed indices. -/
 theorem required_indices_ssubset_closed :
     {i | requiredAllSite.lawUniverse.Required i} ⊂
       requiredAllReading.closed := by
@@ -2142,6 +2170,7 @@ theorem required_indices_ssubset_closed :
       RequiredAllLawIndex.strengthening).mp hrequired'
     exact RequiredAllLawIndex.noConfusion heq
 
+/-- Characterizes selected laws at every named affine context in the two-law fixture. -/
 theorem requiredAllReading_selected
     (V : requiredAllReferenceModel.underlying.affineOpens)
     (i : RequiredAllLawIndex) :
@@ -2149,6 +2178,7 @@ theorem requiredAllReading_selected
   ClosedEquationalLawReading.ofSemanticCore_selected requiredAllRawSystem
     requiredAllReferenceModel requiredAllLawEquationCore requiredAllSchemeBridge V i
 
+/-- Shows that required indices form a proper subset of the context-selected indices. -/
 theorem required_indices_ssubset_selected
     (V : requiredAllReferenceModel.underlying.affineOpens) :
     {i | requiredAllSite.lawUniverse.Required i} ⊂
@@ -2477,6 +2507,7 @@ theorem fullToRequiredLawfulMap_not_isIso :
               requiredAllReading_valid requiredAllReading_requiredClosed
   exact required_ideal_lt_all_ideal.ne heq.symm
 
+/-- The integral point satisfying the required equation in the two-law fixture. -/
 noncomputable def selectedRequiredPoint :
     AlgebraicGeometry.Scheme.Spec.obj (op (CommRingCat.of Int)) ⟶
       requiredAllReferenceModel.underlying :=
@@ -2484,6 +2515,7 @@ noncomputable def selectedRequiredPoint :
       (CommRingCat.ofHom requiredAllSheafifiedEvalOne) ≫
     requiredAllBaseSchemeIso.hom
 
+/-- The mod-two point satisfying both equations in the two-law fixture. -/
 noncomputable def selectedModTwoPoint :
     AlgebraicGeometry.Scheme.Spec.obj (op (CommRingCat.of (ZMod 2))) ⟶
       requiredAllReferenceModel.underlying :=
@@ -2765,16 +2797,19 @@ theorem selected_modTwo_point_factors_all :
   simpa only [Scheme.IdealSheafData.map_bot] using
     all_ideal_le_selectedModTwoPoint_ker
 
+/-- The integral point used to separate the weak and strong law loci. -/
 noncomputable def integerPoint :
     AlgebraicGeometry.Scheme.Spec.obj (op (CommRingCat.of Int)) ⟶
       twoChartReferenceModel.underlying :=
   integerTestPoint
 
+/-- The mod-two point lying on both the weak and strong law loci. -/
 noncomputable def modTwoPoint :
     AlgebraicGeometry.Scheme.Spec.obj (op (CommRingCat.of (ZMod 2))) ⟶
       twoChartReferenceModel.underlying :=
   modTwoTestPoint
 
+/-- The finite object comparison witness for the integral point. -/
 theorem integerPoint_objectComparison :
     RequiredObjectPointComparison rawSystem twoChartReferenceModel
       weakReading integerPoint
@@ -2790,6 +2825,7 @@ theorem integerPoint_objectComparison :
       integerTestPoint_semanticLawful PUnit.unit
         (lawUniverse_required PUnit.unit)
 
+/-- Shows that the same object comparison does not hold for the cyclic object. -/
 theorem integerPoint_objectComparison_fails_for_cyclic :
     ¬ RequiredObjectPointComparison rawSystem twoChartReferenceModel
       weakReading integerPoint
@@ -2805,6 +2841,7 @@ theorem integerPoint_objectComparison_fails_for_cyclic :
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_noCycleLaw_fails
       hcyclic
 
+/-- Computes vanishing of the weak obstruction valuation at the integral point. -/
 theorem integerPoint_omega_fires :
     SemanticLawfulAlong rawSystem twoChartReferenceModel weakReading integerPoint ↔
       omegaU noCycleValuation lawUniverse singletonRequiredAggregation
@@ -2825,6 +2862,7 @@ theorem integerPoint_omega_fires :
           cases index
           exact noCycleComplete)
 
+/-- Computes the required signature-axis vanishing at the integral point. -/
 theorem integerPoint_axis_fires :
     SemanticLawfulAlong rawSystem twoChartReferenceModel weakReading integerPoint ↔
       RequiredSignatureAxesZero
@@ -2838,6 +2876,7 @@ theorem integerPoint_axis_fires :
     (AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.lawfulness_iff_signatureAxesZero
       AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject)
 
+/-- Shows that the weak global equation vanishes at the integral point. -/
 theorem integerPoint_globalEquationsVanish_weak :
     GlobalEquationsVanishAlong rawSystem twoChartReferenceModel
       (semanticCoreGlobalEquation rawSystem twoChartReferenceModel
@@ -2847,6 +2886,7 @@ theorem integerPoint_globalEquationsVanish_weak :
     integerTestPoint_semanticLawful PUnit.unit
       (lawUniverse_required PUnit.unit)
 
+/-- Detects the strong equation at the integral point by concrete evaluation. -/
 theorem integerPoint_not_globalEquationsVanish_strong :
     ¬ GlobalEquationsVanishAlong rawSystem twoChartReferenceModel
       (semanticCoreGlobalEquation rawSystem twoChartReferenceModel
@@ -2858,20 +2898,24 @@ theorem integerPoint_not_globalEquationsVanish_strong :
   rw [strongReading_holdsOn_iff]
   simpa only [integerPoint] using hvanish
 
+/-- Shows semantic lawfulness of the integral point for the weak reading. -/
 theorem integerPoint_semanticLawful_weak :
     SemanticLawfulAlong rawSystem twoChartReferenceModel weakReading integerPoint := by
   simpa only [integerPoint] using integerTestPoint_semanticLawful
 
+/-- Shows semantic non-lawfulness of the integral point for the strong reading. -/
 theorem integerPoint_not_semanticLawful_strong :
     ¬ SemanticLawfulAlong rawSystem twoChartReferenceModel
       strongReading integerPoint := by
   simpa only [integerPoint] using integerTestPoint_not_strong_semanticLawful
 
+/-- Shows full semantic lawfulness of the integral point for the weak reading. -/
 theorem integerPoint_fullySemanticLawful_weak :
     FullySemanticLawfulAlong rawSystem twoChartReferenceModel
       weakReading integerPoint := by
   simpa only [integerPoint] using integerTestPoint_fullyWeakSemanticLawful
 
+/-- Shows failure of full semantic lawfulness for the strong reading. -/
 theorem integerPoint_not_fullySemanticLawful_strong :
     ¬ FullySemanticLawfulAlong rawSystem twoChartReferenceModel
       strongReading integerPoint := by
@@ -2880,6 +2924,7 @@ theorem integerPoint_not_fullySemanticLawful_strong :
   intro i _
   exact hfull i
 
+/-- Shows that every required weak witness vanishes at the integral point. -/
 theorem integerPoint_witnessVanishes_weak :
     WitnessVanishes rawSystem twoChartReferenceModel weakReading
       weakReading_valid weakReading_requiredClosed integerPoint := by
@@ -2888,6 +2933,7 @@ theorem integerPoint_witnessVanishes_weak :
     weakReading_requiredClosed weakReading_requiredLawIdealExact integerPoint).mp
       integerPoint_semanticLawful_weak
 
+/-- Exhibits a strong witness that does not vanish at the integral point. -/
 theorem integerPoint_not_witnessVanishes_strong :
     ¬ WitnessVanishes rawSystem twoChartReferenceModel strongReading
       strongReading_valid strongReading_requiredClosed integerPoint := by
@@ -2898,11 +2944,13 @@ theorem integerPoint_not_witnessVanishes_strong :
     strongReading_requiredClosed strongReading_requiredLawIdealExact integerPoint).mpr
       hwitness
 
+/-- Shows required-ideal lawfulness of the integral point for the weak reading. -/
 theorem integerPoint_idealLawful_weak :
     IdealLawfulAlong rawSystem twoChartReferenceModel weakReading
       weakReading_valid weakReading_requiredClosed integerPoint := by
   simpa only [integerPoint] using integerTestPoint_idealLawful
 
+/-- Shows failure of required-ideal lawfulness for the strong reading. -/
 theorem integerPoint_not_idealLawful_strong :
     ¬ IdealLawfulAlong rawSystem twoChartReferenceModel strongReading
       strongReading_valid strongReading_requiredClosed integerPoint := by
@@ -2912,11 +2960,13 @@ theorem integerPoint_not_idealLawful_strong :
     twoChartReferenceModel strongReading strongReading_valid
     strongReading_requiredClosed integerPoint).mpr hideal
 
+/-- Shows all-law ideal lawfulness of the integral point for the weak reading. -/
 theorem integerPoint_fullIdealLawful_weak :
     FullIdealLawfulAlong rawSystem twoChartReferenceModel weakReading
       weakReading_valid integerPoint := by
   simpa only [integerPoint] using integerTestPoint_fullWeakIdealLawful
 
+/-- Shows failure of all-law ideal lawfulness for the strong reading. -/
 theorem integerPoint_not_fullIdealLawful_strong :
     ¬ FullIdealLawfulAlong rawSystem twoChartReferenceModel strongReading
       strongReading_valid integerPoint := by
@@ -2927,6 +2977,7 @@ theorem integerPoint_not_fullIdealLawful_strong :
     strongReading_allLawsSelected strongReading_allLawIdealExact integerPoint).mpr
       hideal
 
+/-- Constructs the actual factorization of the integral point through the weak subscheme. -/
 theorem integerPoint_factors_weak :
     Nonempty (FactorsThroughLawfulClosedSubscheme rawSystem
       twoChartReferenceModel weakReading weakReading_valid
@@ -2935,12 +2986,14 @@ theorem integerPoint_factors_weak :
     twoChartReferenceModel weakReading weakReading_valid
     weakReading_requiredClosed integerPoint).mp integerPoint_idealLawful_weak
 
+/-- Rules out factorization of the integral point through the strong subscheme. -/
 theorem integerPoint_not_factors_strong :
     ¬ Nonempty (FactorsThroughLawfulClosedSubscheme rawSystem
       twoChartReferenceModel strongReading strongReading_valid
       strongReading_requiredClosed integerPoint) := by
   simpa only [integerPoint] using integerTestPoint_not_strong_factors
 
+/-- Constructs the mod-two point's factorization through the weak subscheme. -/
 theorem modTwoPoint_factors_weak :
     Nonempty (FactorsThroughLawfulClosedSubscheme rawSystem
       twoChartReferenceModel weakReading weakReading_valid
@@ -2965,6 +3018,7 @@ theorem modTwoPoint_factors_weak :
             weakReading_requiredClosed weakReading_requiredLawIdealExact
             modTwoPoint).mp hweak))
 
+/-- Constructs the mod-two point's factorization through the strong subscheme. -/
 theorem modTwoPoint_factors_strong :
     Nonempty (FactorsThroughLawfulClosedSubscheme rawSystem
       twoChartReferenceModel strongReading strongReading_valid
@@ -2974,6 +3028,7 @@ theorem modTwoPoint_factors_strong :
     strongReading_requiredClosed modTwoPoint).mp
   simpa only [modTwoPoint] using modTwoTestPoint_idealLawful
 
+/-- Constructs the integral point's factorization through the weak all-law subscheme. -/
 theorem integerPoint_factorsAll_weak :
     Nonempty (FactorsThroughAllLawfulClosedSubscheme rawSystem
       twoChartReferenceModel weakReading weakReading_valid integerPoint) := by
@@ -2981,11 +3036,13 @@ theorem integerPoint_factorsAll_weak :
     twoChartReferenceModel weakReading weakReading_valid integerPoint).mp
       integerPoint_fullIdealLawful_weak
 
+/-- Rules out its factorization through the strong all-law subscheme. -/
 theorem integerPoint_not_factorsAll_strong :
     ¬ Nonempty (FactorsThroughAllLawfulClosedSubscheme rawSystem
       twoChartReferenceModel strongReading strongReading_valid integerPoint) := by
   simpa only [integerPoint] using integerTestPoint_not_strong_all_factors
 
+/-- Instantiates the generic required semantic–ideal–factorization correspondence. -/
 theorem weak_correspondence_fires
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ twoChartReferenceModel.underlying) :
@@ -3005,6 +3062,7 @@ theorem weak_correspondence_fires
     weakReading weakReading_valid weakReading_requiredClosed
     weakReading_requiredLawIdealExact s
 
+/-- Instantiates the existing-core correspondence using the verified weak bridge. -/
 theorem weak_semanticCore_correspondence_fires
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ twoChartReferenceModel.underlying) :
@@ -3027,6 +3085,7 @@ theorem weak_semanticCore_correspondence_fires
       twoChartReferenceModel weakLawEquationCore weakSchemeBridge
       weakSchemeBridge_valid weakReading_requiredLawIdealExact s
 
+/-- Instantiates the full all-law correspondence for the weak reading. -/
 theorem weak_full_correspondence_fires
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ twoChartReferenceModel.underlying) :
@@ -3192,6 +3251,7 @@ private theorem restrictionBrokenSchemeBridge_left_double_flip :
       simp only [neg_neg]
     _ = leftCoordinateSection := rfl
 
+/-- Shows that the sign-flipped bridge violates restriction naturality. -/
 theorem restrictionBrokenSchemeBridge_not_valid :
     ¬ IsSemanticLawEquationSchemeBridge rawSystem
       weakLawEquationCore restrictionBrokenSchemeBridge := by
@@ -3389,6 +3449,7 @@ private theorem restrictionBroken_left_mappedIdeal_le_evalKer :
     rw [map_sub, quotientOneEval_rawCoordinate, map_one, sub_self]
   all_goals simp [weakLawEquationCore]
 
+/-- Refutes actual chart-ideal realization for the sign-flipped bridge. -/
 theorem restrictionBrokenSchemeBridge_not_realized :
     ¬ SemanticCoreIdealSheafRealized rawSystem twoChartReferenceModel
       weakLawEquationCore restrictionBrokenSchemeBridge := by
@@ -3413,10 +3474,12 @@ theorem restrictionBrokenSchemeBridge_not_realized :
   rw [map_sub, map_neg, quotientOneEval_rawCoordinate, map_one] at hzero
   norm_num at hzero
 
+/-- A geometric reading deliberately chosen to fail base-change stability. -/
 noncomputable def baseChangeBrokenGeometricReading :
     GeometricLawReading rawSystem twoChartReferenceModel where
   HoldsOn s _ := IsIso s
 
+/-- Exhibits the base-change failure of the broken geometric reading. -/
 theorem baseChangeBrokenGeometricReading_not_valid :
     ¬ IsGeometricLawReading rawSystem twoChartReferenceModel
       baseChangeBrokenGeometricReading := by
@@ -3432,15 +3495,18 @@ theorem baseChangeBrokenGeometricReading_not_valid :
     infer_instance
   simpa only [baseChangeBrokenGeometricReading, Category.comp_id] using hchanged
 
+/-- The closed-equational package built from the base-change-broken semantic reading. -/
 noncomputable def baseChangeBrokenReading :
     ClosedEquationalLawReading rawSystem twoChartReferenceModel :=
   { weakReading with geometric := baseChangeBrokenGeometricReading }
 
+/-- Shows that its witnesses remain compatible despite the semantic failure. -/
 theorem baseChangeBrokenReading_witnessCompatible :
     IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel
       baseChangeBrokenReading := by
   simpa only [baseChangeBrokenReading] using weakReading_witnessCompatible
 
+/-- Shows that semantic base-change failure prevents recognition as a valid reading. -/
 theorem baseChangeBrokenReading_not_valid :
     ¬ IsClosedEquationalLawReading rawSystem twoChartReferenceModel
       baseChangeBrokenReading := by
@@ -3448,6 +3514,7 @@ theorem baseChangeBrokenReading_not_valid :
   apply baseChangeBrokenGeometricReading_not_valid
   exact hvalid.geometric_stable
 
+/-- A reading that omits the required law from its closed selection. -/
 noncomputable def missingRequiredReading :
     ClosedEquationalLawReading rawSystem twoChartReferenceModel where
   geometric := weakReading.geometric
@@ -3455,6 +3522,7 @@ noncomputable def missingRequiredReading :
   selected := fun _ => ∅
   witness i hi := False.elim (by simpa using hi)
 
+/-- Verifies the remaining recognition data for the missing-required fixture. -/
 theorem missingRequiredReading_valid :
     IsClosedEquationalLawReading rawSystem twoChartReferenceModel
       missingRequiredReading where
@@ -3469,6 +3537,7 @@ theorem missingRequiredReading_valid :
     intro V f i
     simp [missingRequiredReading]
 
+/-- Shows that the missing-required fixture cannot discharge required closedness. -/
 theorem missingRequiredReading_not_requiredClosed :
     ¬ RequiredClosed rawSystem twoChartReferenceModel missingRequiredReading := by
   intro hrequired
@@ -3476,17 +3545,20 @@ theorem missingRequiredReading_not_requiredClosed :
     (lawUniverse_required PUnit.unit)
   simpa [missingRequiredReading] using hclosed
 
+/-- Shows that the missing-required fixture does not select every law. -/
 theorem missingRequiredReading_not_allLawsSelected :
     ¬ AllLawsSelected rawSystem twoChartReferenceModel
       missingRequiredReading := by
   intro hall
   simpa [missingRequiredReading] using hall.closed PUnit.unit
 
+/-- A reading whose selected set fails basic-open restriction compatibility. -/
 noncomputable def restrictionBrokenSelectionReading :
     ClosedEquationalLawReading rawSystem twoChartReferenceModel :=
   { weakReading with
     selected := fun V => { _i | V.1 = ⊤ } }
 
+/-- Exhibits the selected-set restriction failure at a concrete basic open. -/
 theorem restrictionBrokenSelectionReading_not_valid :
     ¬ IsClosedEquationalLawReading rawSystem twoChartReferenceModel
       restrictionBrokenSelectionReading := by
@@ -3513,10 +3585,12 @@ theorem restrictionBrokenSelectionReading_not_valid :
     exact hxTop
   simp at hxBot
 
+/-- A valid reading whose context selection omits the required law. -/
 noncomputable def missingRequiredSelectionReading :
     ClosedEquationalLawReading rawSystem twoChartReferenceModel :=
   { weakReading with selected := fun _ => ∅ }
 
+/-- Verifies closed-equational recognition for the missing-selection fixture. -/
 theorem missingRequiredSelectionReading_valid :
     IsClosedEquationalLawReading rawSystem twoChartReferenceModel
       missingRequiredSelectionReading where
@@ -3531,6 +3605,7 @@ theorem missingRequiredSelectionReading_valid :
     intro V f i
     simp [missingRequiredSelectionReading]
 
+/-- Shows that its missing context selection prevents required closedness. -/
 theorem missingRequiredSelectionReading_not_requiredClosed :
     ¬ RequiredClosed rawSystem twoChartReferenceModel
       missingRequiredSelectionReading := by
@@ -3539,10 +3614,12 @@ theorem missingRequiredSelectionReading_not_requiredClosed :
     (lawUniverse_required PUnit.unit)
   simpa [missingRequiredSelectionReading] using hselected
 
+/-- A valid reading whose semantic predicate disagrees with equation vanishing. -/
 noncomputable def semanticMismatchReading :
     ClosedEquationalLawReading rawSystem twoChartReferenceModel :=
   { weakReading with geometric := { HoldsOn := fun _ _ => False } }
 
+/-- Verifies closed-equational recognition for the semantic-mismatch fixture. -/
 theorem semanticMismatchReading_valid :
     IsClosedEquationalLawReading rawSystem twoChartReferenceModel
       semanticMismatchReading where
@@ -3556,22 +3633,26 @@ theorem semanticMismatchReading_valid :
   selected_basicOpen := by
     simpa only [semanticMismatchReading] using weakReading_valid.selected_basicOpen
 
+/-- Verifies witness compatibility for the semantic-mismatch fixture. -/
 theorem semanticMismatchReading_witnessCompatible :
     IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel
       semanticMismatchReading :=
   semanticMismatchReading_valid.witness_compatible
 
+/-- Discharges required closedness for the semantic-mismatch fixture. -/
 theorem semanticMismatchReading_requiredClosed :
     RequiredClosed rawSystem twoChartReferenceModel semanticMismatchReading where
   closed i hi := weakReading_requiredClosed.closed i hi
   selected V i hi := weakReading_requiredClosed.selected V i hi
 
+/-- Shows that all laws are selected in the semantic-mismatch fixture. -/
 theorem semanticMismatchReading_allLawsSelected :
     AllLawsSelected rawSystem twoChartReferenceModel
       semanticMismatchReading where
   closed i := weakReading_allLawsSelected.closed i
   selected V i := weakReading_allLawsSelected.selected V i
 
+/-- Shows failure of required law-ideal exactness for the semantic mismatch. -/
 theorem semanticMismatchReading_not_exact :
     ¬ RequiredLawIdealExact rawSystem twoChartReferenceModel
       semanticMismatchReading semanticMismatchReading_valid
@@ -3591,6 +3672,7 @@ theorem semanticMismatchReading_not_exact :
     (hexact PUnit.unit (lawUniverse_required PUnit.unit) integerPoint).mpr hideal
   exact hsemantic
 
+/-- Exhibits a law index at which exactness fails. -/
 theorem semanticMismatchReading_not_lawIdealExact :
     ¬ LawIdealExact rawSystem twoChartReferenceModel
       semanticMismatchReading semanticMismatchReading_witnessCompatible
@@ -3610,6 +3692,7 @@ theorem semanticMismatchReading_not_lawIdealExact :
           (lawUniverse_required PUnit.unit)))
   exact (hexact integerPoint).mpr hideal
 
+/-- Shows that ideal vanishing does not imply the chosen semantic predicate. -/
 theorem semanticMismatchReading_not_complete :
     ¬ LawIdealComplete rawSystem twoChartReferenceModel
       semanticMismatchReading semanticMismatchReading_witnessCompatible
@@ -3629,6 +3712,7 @@ theorem semanticMismatchReading_not_complete :
           (lawUniverse_required PUnit.unit)))
   exact hcomplete integerPoint hideal
 
+/-- Shows failure of all-law exactness for the semantic mismatch. -/
 theorem semanticMismatchReading_not_allLawIdealExact :
     ¬ AllLawIdealExact rawSystem twoChartReferenceModel semanticMismatchReading
       semanticMismatchReading_valid
@@ -3646,6 +3730,7 @@ theorem semanticMismatchReading_not_allLawIdealExact :
           (lawUniverse_required PUnit.unit)))
   exact (hexact PUnit.unit integerPoint).mpr hideal
 
+/-- Shows that the full semantic–ideal correspondence cannot fire under the mismatch. -/
 theorem semanticMismatch_full_correspondence_fails :
     ¬ (FullySemanticLawfulAlong rawSystem twoChartReferenceModel
           semanticMismatchReading integerPoint ↔
@@ -3658,10 +3743,12 @@ theorem semanticMismatch_full_correspondence_fails :
     simpa only [semanticMismatchReading] using integerPoint_fullIdealLawful_weak
   exact (hcorrespondence.mpr hideal) PUnit.unit
 
+/-- A valid reading whose semantic predicate overclaims equation vanishing. -/
 noncomputable def semanticOverclaimReading :
     ClosedEquationalLawReading rawSystem twoChartReferenceModel :=
   { weakReading with geometric := { HoldsOn := fun _ _ => True } }
 
+/-- Verifies closed-equational recognition for the semantic-overclaim fixture. -/
 theorem semanticOverclaimReading_valid :
     IsClosedEquationalLawReading rawSystem twoChartReferenceModel
       semanticOverclaimReading where
@@ -3675,16 +3762,19 @@ theorem semanticOverclaimReading_valid :
   selected_basicOpen := by
     simpa only [semanticOverclaimReading] using weakReading_valid.selected_basicOpen
 
+/-- Verifies witness compatibility for the semantic-overclaim fixture. -/
 theorem semanticOverclaimReading_witnessCompatible :
     IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel
       semanticOverclaimReading :=
   semanticOverclaimReading_valid.witness_compatible
 
+/-- Discharges required closedness for the semantic-overclaim fixture. -/
 theorem semanticOverclaimReading_requiredClosed :
     RequiredClosed rawSystem twoChartReferenceModel semanticOverclaimReading where
   closed i hi := weakReading_requiredClosed.closed i hi
   selected V i hi := weakReading_requiredClosed.selected V i hi
 
+/-- Shows that the semantic overclaim violates law-ideal soundness. -/
 theorem semanticOverclaimReading_not_sound :
     ¬ LawIdealSound rawSystem twoChartReferenceModel semanticOverclaimReading
       semanticOverclaimReading_witnessCompatible PUnit.unit
@@ -3703,12 +3793,14 @@ theorem semanticOverclaimReading_not_sound :
   cases i
   exact (weak_lawIdealExact_calculation negativeOneTestPoint).mpr hweakIdeal
 
+/-- A law witness whose coordinate fails exact basic-open restriction. -/
 noncomputable def restrictionBrokenWitness :
     ClosedEquationalLawWitness rawSystem twoChartReferenceModel PUnit.unit where
   coordinate V _ := by
     classical
     exact if V.1 = ⊤ then 0 else 1
 
+/-- Exhibits the concrete basic-open restriction failure of the broken witness. -/
 theorem restrictionBrokenWitness_not_valid :
     ¬ IsClosedEquationalLawWitness rawSystem twoChartReferenceModel
       restrictionBrokenWitness := by
@@ -3804,6 +3896,7 @@ theorem restrictionBrokenWitness_not_valid :
       twoChartReferenceModel.underlying.affineBasicOpen f)) ≠ 0)
     hrestricted.symm
 
+/-- A closed-equational reading containing the restriction-broken witness. -/
 noncomputable def restrictionBrokenReading :
     ClosedEquationalLawReading rawSystem twoChartReferenceModel where
   geometric := weakReading.geometric
@@ -3813,6 +3906,7 @@ noncomputable def restrictionBrokenReading :
     cases i
     exact restrictionBrokenWitness
 
+/-- Shows that the broken witness prevents witness compatibility. -/
 theorem restrictionBrokenReading_not_witnessCompatible :
     ¬ IsClosedEquationalWitnessReading rawSystem twoChartReferenceModel
       restrictionBrokenReading := by
@@ -3824,6 +3918,7 @@ theorem restrictionBrokenReading_not_witnessCompatible :
   simpa only [restrictionBrokenReading] using
     hcompatible PUnit.unit hunit
 
+/-- Shows that witness incompatibility prevents reading validity. -/
 theorem restrictionBrokenReading_not_valid :
     ¬ IsClosedEquationalLawReading rawSystem twoChartReferenceModel
       restrictionBrokenReading := by
@@ -3831,6 +3926,7 @@ theorem restrictionBrokenReading_not_valid :
   exact restrictionBrokenReading_not_witnessCompatible
     hvalid.witness_compatible
 
+/-- An inclusion whose atom map does not preserve the selected coordinate. -/
 def coordinateBrokenInclusion :
     ClosedEquationalLawInclusion rawSystem twoChartReferenceModel
       weakReading strongReading where
@@ -3840,6 +3936,7 @@ def coordinateBrokenInclusion :
     | FiniteAtom.componentA => FiniteAtom.componentB
     | _ => FiniteAtom.componentC
 
+/-- Exhibits the concrete coordinate-preservation failure of the broken inclusion. -/
 theorem coordinateBrokenInclusion_not_valid :
     ¬ IsClosedEquationalLawInclusion rawSystem twoChartReferenceModel
       coordinateBrokenInclusion := by
