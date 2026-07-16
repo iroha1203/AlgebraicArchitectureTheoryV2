@@ -1,7 +1,7 @@
 # PRD: AAT Lean Closed-Equational Law Geometry
 
 - 作成: 2026-07-12
-- 改訂: 2026-07-15
+- 改訂: 2026-07-16
 - 対象module:
   - `Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean`
   - `Formal/AG/LawAlgebra/ClosedEquationalGeometryFiniteExample.lean`
