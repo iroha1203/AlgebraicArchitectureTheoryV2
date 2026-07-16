@@ -111,7 +111,7 @@
 新規moduleと直接importを次で固定する。循環依存が必要になった場合は停止し、tracking Issueで
 SDとmodule DAGを再承認する。
 
-| module | 直接importする既存module | 責務 |
+| module | 直接importするmodule | 責務 |
 | --- | --- | --- |
 | `Formal.AG.ReadingFunctoriality.Core` | `Formal.AG.Atom.AATCore`、`Formal.AG.Site.Geometry`、`Formal.AG.LawAlgebra.StructureSheaf`、`Mathlib.Logic.Equiv.Defs` | `ReadingCore`、exact / positive core change、`ObjectAlgebraHom` |
 | `Formal.AG.ReadingFunctoriality.ExtFunctoriality` | `Mathlib.Algebra.Homology.DerivedCategory.Ext.Map`、`Mathlib.CategoryTheory.Adjunction.Unique` | exact functorによるExt写像のidentity / composition、exact-functor isoに対するnaturality、left-adjoint uniquenessのcomposition coherence |
