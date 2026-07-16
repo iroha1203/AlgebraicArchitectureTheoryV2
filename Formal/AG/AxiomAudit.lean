@@ -4029,6 +4029,64 @@ def readingFunctoriality_finiteCircuitDatum_positive_singleton :=
 def readingFunctoriality_finiteCircuitDatum_not_positive_singleton_false :=
   @AAT.AG.FiniteCircuitDatum.not_positive_singleton_false
 
+/-! Part 4 R3: coverage and selected-cover refinement. -/
+
+/-- Audit alias for topology order induced by coverage refinement. -/
+def readingFunctoriality_coverageTopologyRefinement_le :=
+  @AAT.AG.CoverageTopologyRefinement.le
+
+/-- Audit alias for generated-sieve inclusion induced by selected-cover refinement. -/
+def readingFunctoriality_coverageFamilyRefinement_presieve_le :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.presieve_le
+
+/-- Audit alias for selected-cover membership in the AAT topology. -/
+def readingFunctoriality_coverageFamily_mem_topology :=
+  @AAT.AG.Site.AATCoverageFamily.mem_topology
+
+/-- Audit alias for the degree-zero canonical tuple overlap. -/
+def readingFunctoriality_canonicalTupleOverlap_zero :=
+  @AAT.AG.Cohomology.canonicalTupleOverlap_zero
+
+/-- Audit alias for the successor canonical tuple overlap. -/
+def readingFunctoriality_canonicalTupleOverlap_succ :=
+  @AAT.AG.Cohomology.canonicalTupleOverlap_succ
+
+/-- Audit alias for canonical tuple face monotonicity. -/
+def readingFunctoriality_canonicalTupleOverlap_face_le :=
+  @AAT.AG.Cohomology.canonicalTupleOverlap_face_le
+
+/-- Audit alias for canonical cover-relative base characterization. -/
+def readingFunctoriality_canonicalCoverRelative_base :=
+  @AAT.AG.Cohomology.canonicalCoverRelative_base
+
+/-- Audit alias for canonical cover-relative simplex characterization. -/
+def readingFunctoriality_canonicalCoverRelative_simplex :=
+  @AAT.AG.Cohomology.canonicalCoverRelative_simplex
+
+/-- Audit alias for canonical cover-relative overlap characterization. -/
+def readingFunctoriality_canonicalCoverRelative_overlap :=
+  @AAT.AG.Cohomology.canonicalCoverRelative_overlap
+
+/-- Audit alias for canonical cover-relative face characterization. -/
+def readingFunctoriality_canonicalCoverRelative_face :=
+  @AAT.AG.Cohomology.canonicalCoverRelative_face
+
+/-- Audit alias for the canonical triangular two-face identity. -/
+def readingFunctoriality_canonicalCoverRelative_twoFace :=
+  @AAT.AG.Cohomology.canonicalCoverRelative_twoFace
+
+/-- Audit alias for the canonical face-restriction two-face identity. -/
+def readingFunctoriality_canonicalCoverRelative_faceRestriction_twoFace :=
+  @AAT.AG.Cohomology.canonicalCoverRelative_faceRestriction_twoFace
+
+/-- Audit alias for refinement overlap-map face naturality. -/
+def readingFunctoriality_refinement_overlapMap_face_naturality :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.overlapMap_face_naturality
+
+/-- Audit alias for the non-bijective finite selected-cover refinement. -/
+def readingFunctoriality_coarseToFineCover_not_bijective :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseToFineCover_not_bijective
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

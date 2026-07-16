@@ -515,4 +515,216 @@ example :
 
 end ClosedEquationalFiniteDirectReuse
 
+namespace CoverageRefinementSD3
+
+open CategoryTheory
+
+variable {C : Type u} [Category.{v} C]
+
+/-- Fixed constructor contract for topology refinement. -/
+example (J J' : GrothendieckTopology C)
+    (refineCover : ∀ (X : C) (R : Sieve X), R ∈ J X →
+      {R' : Sieve X // R' ∈ J' X ∧ R' ≤ R}) :
+    CoverageTopologyRefinement J J' :=
+  ⟨refineCover⟩
+
+/-- Fixed topology-order contract induced by refinement. -/
+example {J J' : GrothendieckTopology C}
+    (r : CoverageTopologyRefinement J J') : J ≤ J' :=
+  CoverageTopologyRefinement.le r
+
+/-- Fixed identity topology-refinement contract. -/
+example (J : GrothendieckTopology C) : CoverageTopologyRefinement J J :=
+  CoverageTopologyRefinement.refl J
+
+/-- Fixed composite topology-refinement contract. -/
+example {J₁ J₂ J₃ : GrothendieckTopology C}
+    (f : CoverageTopologyRefinement J₁ J₂)
+    (g : CoverageTopologyRefinement J₂ J₃) :
+    CoverageTopologyRefinement J₁ J₃ :=
+  CoverageTopologyRefinement.comp f g
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+
+/-- Fixed constructor contract for selected-cover refinement. -/
+example
+    (coarse fine : Site.AATCoverageFamily S.requirements S.overlap base)
+    (indexMap : fine.Index → coarse.Index)
+    (factor : ∀ i, S.contextPreorder.le (fine.patch i) (coarse.patch (indexMap i)))
+    (factor_triangle : ∀ i,
+      S.contextPreorder.trans (factor i) (coarse.inclusion (indexMap i)) =
+        fine.inclusion i) :
+    Site.AATCoverageFamily.Refinement coarse fine :=
+  ⟨indexMap, factor, factor_triangle⟩
+
+/-- Fixed identity selected-cover refinement contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    Site.AATCoverageFamily.Refinement 𝒰 𝒰 :=
+  Site.AATCoverageFamily.Refinement.refl 𝒰
+
+/-- Fixed composite selected-cover refinement contract. -/
+example {𝒰 𝒱 𝒲 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (s : Site.AATCoverageFamily.Refinement 𝒱 𝒲) :
+    Site.AATCoverageFamily.Refinement 𝒰 𝒲 :=
+  r.comp s
+
+/-- Fixed generated-sieve inclusion contract. -/
+example {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Sieve.generate 𝒱.presieve ≤ Sieve.generate 𝒰.presieve :=
+  r.presieve_le
+
+/-- Fixed selected-cover membership contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    Sieve.generate 𝒰.presieve ∈ S.topology base :=
+  𝒰.mem_topology
+
+/-- Fixed canonical tuple-overlap constructor contract. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    ∀ n, Site.FinitePosetCechCanonicalTupleSimplex 𝒰.Index n → S.category :=
+  Cohomology.canonicalTupleOverlap 𝒰
+
+/-- Fixed degree-zero tuple-overlap contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (σ : Fin 1 → 𝒰.Index) :
+    Cohomology.canonicalTupleOverlap 𝒰 0 σ =
+      Site.ContextCategoryObject.of S.contextPreorder (𝒰.patch (σ 0)) :=
+  Cohomology.canonicalTupleOverlap_zero 𝒰 σ
+
+/-- Fixed successor tuple-overlap contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) (σ : Fin (n + 2) → 𝒰.Index) :
+    (Cohomology.canonicalTupleOverlap 𝒰 (n + 1) σ).ctx =
+      S.overlap.overlap base.ctx
+        (Cohomology.canonicalTupleOverlap 𝒰 n (fun i => σ i.castSucc)).ctx
+        (𝒰.patch (σ (Fin.last (n + 1)))) :=
+  Cohomology.canonicalTupleOverlap_succ 𝒰 n σ
+
+/-- Fixed canonical face-order contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) (i : Fin (n + 2)) (σ : Fin (n + 2) → 𝒰.Index) :
+    S.contextPreorder.le
+      (Cohomology.canonicalTupleOverlap 𝒰 (n + 1) σ).ctx
+      (Cohomology.canonicalTupleOverlap 𝒰 n
+        (Site.FinitePosetCechCanonicalTupleSimplex.simplexMap
+          (SimplexCategory.δ i) σ)).ctx :=
+  Cohomology.canonicalTupleOverlap_face_le 𝒰 n i σ
+
+/-- Fixed canonical cover-relative constructor contract. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    Cohomology.CoverRelativeCechCover S :=
+  Cohomology.canonicalCoverRelative 𝒰
+
+/-- Fixed canonical base characterization contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    (Cohomology.canonicalCoverRelative 𝒰).base = base :=
+  Cohomology.canonicalCoverRelative_base 𝒰
+
+/-- Fixed canonical simplex characterization contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) (n : Nat) :
+    (Cohomology.canonicalCoverRelative 𝒰).simplex n =
+      Site.FinitePosetCechCanonicalTupleSimplex 𝒰.Index n :=
+  Cohomology.canonicalCoverRelative_simplex 𝒰 n
+
+/-- Fixed canonical overlap characterization contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) (σ : Fin (n + 1) → 𝒰.Index) :
+    (Cohomology.canonicalCoverRelative 𝒰).overlap n σ =
+      Cohomology.canonicalTupleOverlap 𝒰 n σ :=
+  Cohomology.canonicalCoverRelative_overlap 𝒰 n σ
+
+/-- Fixed canonical face characterization contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) (i : Fin (n + 2)) (σ : Fin (n + 2) → 𝒰.Index) :
+    (Cohomology.canonicalCoverRelative 𝒰).face n i σ =
+      Site.FinitePosetCechCanonicalTupleSimplex.simplexMap
+        (SimplexCategory.δ i) σ :=
+  Cohomology.canonicalCoverRelative_face 𝒰 n i σ
+
+/-- Fixed canonical two-face contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex (n + 2))
+    (i j : Fin (n + 2)) (hij : i ≤ j) :
+    (Cohomology.canonicalCoverRelative 𝒰).face n i
+        ((Cohomology.canonicalCoverRelative 𝒰).face (n + 1) j.succ σ) =
+      (Cohomology.canonicalCoverRelative 𝒰).face n j
+        ((Cohomology.canonicalCoverRelative 𝒰).face (n + 1) i.castSucc σ) :=
+  Cohomology.canonicalCoverRelative_twoFace 𝒰 n σ i j hij
+
+/-- Fixed canonical two-face restriction contract. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex (n + 2))
+    (i j : Fin (n + 2)) (hij : i ≤ j) :
+    (Cohomology.canonicalCoverRelative 𝒰).faceRestriction (n + 1) j.succ σ ≫
+        (Cohomology.canonicalCoverRelative 𝒰).faceRestriction n i
+          ((Cohomology.canonicalCoverRelative 𝒰).face (n + 1) j.succ σ) =
+      (Cohomology.canonicalCoverRelative 𝒰).faceRestriction (n + 1) i.castSucc σ ≫
+        (Cohomology.canonicalCoverRelative 𝒰).faceRestriction n j
+          ((Cohomology.canonicalCoverRelative 𝒰).face (n + 1) i.castSucc σ) ≫
+        eqToHom (congrArg ((Cohomology.canonicalCoverRelative 𝒰).overlap n)
+          (Cohomology.canonicalCoverRelative_twoFace 𝒰 n σ i j hij).symm) :=
+  Cohomology.canonicalCoverRelative_faceRestriction_twoFace 𝒰 n σ i j hij
+
+/-- Fixed refinement-induced simplex map contract. -/
+example {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (n : Nat) :
+    (Cohomology.canonicalCoverRelative 𝒱).simplex n →
+      (Cohomology.canonicalCoverRelative 𝒰).simplex n :=
+  r.simplexMap n
+
+/-- Fixed refinement-induced overlap map contract. -/
+noncomputable example
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (n : Nat)
+    (σ : (Cohomology.canonicalCoverRelative 𝒱).simplex n) :
+    (Cohomology.canonicalCoverRelative 𝒱).overlap n σ ⟶
+      (Cohomology.canonicalCoverRelative 𝒰).overlap n (r.simplexMap n σ) :=
+  r.overlapMap n σ
+
+/-- Fixed refinement face-naturality contract. -/
+example {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (n : Nat) (i : Fin (n + 2))
+    (σ : (Cohomology.canonicalCoverRelative 𝒱).simplex (n + 1)) :
+    (Cohomology.canonicalCoverRelative 𝒱).faceRestriction n i σ ≫
+        r.overlapMap n ((Cohomology.canonicalCoverRelative 𝒱).face n i σ) =
+      r.overlapMap (n + 1) σ ≫
+        (Cohomology.canonicalCoverRelative 𝒰).faceRestriction n i
+          (r.simplexMap (n + 1) σ) :=
+  r.overlapMap_face_naturality n i σ
+
+open ReadingFunctorialityFinite
+
+/-- Fixed finite-site contract for the R3 reference model. -/
+noncomputable example : Site.AATSite FiniteModel.corePackage.object :=
+  finiteSite
+
+/-- Fixed finite-base contract for the R3 reference model. -/
+noncomputable example : finiteSite.category :=
+  finiteBase
+
+/-- Fixed coarse selected-cover contract for the R3 reference model. -/
+noncomputable example :
+    Site.AATCoverageFamily finiteSite.requirements finiteSite.overlap finiteBase :=
+  coarseCover
+
+/-- Fixed fine selected-cover contract for the R3 reference model. -/
+noncomputable example :
+    Site.AATCoverageFamily finiteSite.requirements finiteSite.overlap finiteBase :=
+  fineCover
+
+/-- Fixed actual finite selected-cover refinement contract. -/
+noncomputable example : Site.AATCoverageFamily.Refinement coarseCover fineCover :=
+  coarseToFineCover
+
+/-- Fixed non-bijective finite refinement contract. -/
+example : ¬ Function.Bijective coarseToFineCover.indexMap :=
+  coarseToFineCover_not_bijective
+
+end CoverageRefinementSD3
+
 end AAT.AG.StatementContractsReadingFunctoriality
