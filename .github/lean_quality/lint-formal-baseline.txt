@@ -3003,6 +3003,9 @@ UNUSED ARGUMENTS. -/
 #check AAT.AG.LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.exists_minimalForbidden_subset /- argument 2 inst✝¹ : DecidableEq
   E -/
 
+-- Formal.AG.ReadingFunctoriality.Coverage
+#check @AAT.AG.CoverageTopologyRefinement.fineSheafification /- argument 5 r : AAT.AG.CoverageTopologyRefinement J J' -/
+
 -- Formal.AG.RepresentationAnalysis.AATSch
 #check @AAT.AG.RepresentationAnalysis.AnalyticTargetCategory.AsCategory /- argument 2 _C : AAT.AG.RepresentationAnalysis.AnalyticTargetCategory
   Target -/

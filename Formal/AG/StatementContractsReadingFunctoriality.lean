@@ -11,7 +11,7 @@ namespace AAT.AG.StatementContractsReadingFunctoriality
 
 open AAT.AG
 
-universe u v w
+universe u v w w'
 
 variable {U : AtomCarrier.{u}}
 
@@ -864,5 +864,153 @@ example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (n : Nat)
   Cohomology.obstructionClass_naturality r Ob n c
 
 end CanonicalCechFunctorialitySD4
+
+namespace SheafCohomologyFoundationSD5
+
+open CategoryTheory CategoryTheory.Limits
+
+variable {C : Type u} [Category.{v} C]
+variable {J J' : GrothendieckTopology C}
+
+/-- Fixed standard Ext-universe contract for additive sheaves. -/
+noncomputable example [HasSheafify J AddCommGrpCat.{w}] :
+    HasExt.{max (max u v) (w + 1)}
+      (Sheaf J AddCommGrpCat.{w}) :=
+  Cohomology.standardAddCommGrpSheafHasExt
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+variable (Ob : Cohomology.ObstructionSheaf S)
+
+/-- Fixed actual additive obstruction-sheaf contract. -/
+noncomputable example :
+    Sheaf S.topology AddCommGrpCat.{u + 1} :=
+  Ob.toAddCommGrpSheaf
+
+/-- Fixed AAT sheaf Ext-instance contract. -/
+noncomputable example [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1}) :=
+  Cohomology.aatSheafHasExt
+
+/-- Fixed terminal local-to-global cohomology comparison contract. -/
+noncomputable example
+    (F : Sheaf J AddCommGrpCat.{v})
+    [HasSheafify J AddCommGrpCat.{v}]
+    [HasExt.{w} (Sheaf J AddCommGrpCat.{v})]
+    (X : C) (hX : IsTerminal X) (n : Nat) :
+    F.H' n X ≃+ F.H n :=
+  Cohomology.terminalHComparison F X hX n
+
+variable (P : Cᵒᵖ ⥤ AddCommGrpCat.{w})
+variable (hJ : Presheaf.IsSheaf J P) (hJ' : Presheaf.IsSheaf J' P)
+
+/-- Fixed common-coefficient package contract. -/
+example : CommonCoefficientSheaf J J' :=
+  ⟨P, hJ, hJ'⟩
+
+variable (F : CommonCoefficientSheaf J J')
+
+/-- Fixed coarse coefficient-sheaf contract. -/
+example : Sheaf J AddCommGrpCat.{w} := F.coarse
+
+/-- Fixed fine coefficient-sheaf contract. -/
+example : Sheaf J' AddCommGrpCat.{w} := F.fine
+
+/-- Fixed same-topology coefficient iso contract. -/
+noncomputable example (G : CommonCoefficientSheaf J J) :
+    G.coarse ≅ G.fine :=
+  G.sameTopologyIso
+
+/-- Fixed same-topology cohomology map contract. -/
+noncomputable example
+    (G : CommonCoefficientSheaf J J)
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    (n : Nat) :
+    G.coarse.H n →+ G.fine.H n :=
+  G.sameTopologyHMap n
+
+variable (r : CoverageTopologyRefinement J J')
+
+/-- Fixed fine-sheafification functor contract. -/
+noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
+    Sheaf J AddCommGrpCat.{w} ⥤ Sheaf J' AddCommGrpCat.{w} :=
+  r.fineSheafification
+
+/-- Fixed coarse sheaf-condition transport contract. -/
+example (h : Presheaf.IsSheaf J' P) : Presheaf.IsSheaf J P :=
+  r.isSheaf_coarse P h
+
+/-- Fixed coarse-restriction functor contract. -/
+example : Sheaf J' AddCommGrpCat.{w} ⥤ Sheaf J AddCommGrpCat.{w} :=
+  r.coarseRestriction
+
+/-- Fixed fine-sheafification adjunction contract. -/
+noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
+    r.fineSheafification ⊣ r.coarseRestriction :=
+  r.fineSheafificationAdjunction
+
+/-- Fixed additive fine-sheafification contract. -/
+noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
+    r.fineSheafification.Additive :=
+  CoverageTopologyRefinement.fineSheafification_additive r
+
+/-- Fixed finite-limit preservation contract. -/
+noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
+    PreservesFiniteLimits r.fineSheafification :=
+  CoverageTopologyRefinement.fineSheafification_preservesFiniteLimits r
+
+/-- Fixed finite-colimit preservation contract. -/
+noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
+    PreservesFiniteColimits r.fineSheafification :=
+  CoverageTopologyRefinement.fineSheafification_preservesFiniteColimits r
+
+/-- Fixed constant-sheaf comparison contract. -/
+noncomputable example
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasSheafify J' AddCommGrpCat.{w}] :
+    r.fineSheafification.obj
+        ((constantSheaf J AddCommGrpCat.{w}).obj
+          (AddCommGrpCat.of (ULift ℤ))) ≅
+      (constantSheaf J' AddCommGrpCat.{w}).obj
+        (AddCommGrpCat.of (ULift ℤ)) :=
+  r.constantSheafIso
+
+/-- Fixed common-coefficient comparison contract. -/
+noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
+    r.fineSheafification.obj F.coarse ≅ F.fine :=
+  r.commonCoefficientIso F
+
+/-- Fixed concrete Ext topology-change map contract. -/
+noncomputable example
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasSheafify J' AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J' AddCommGrpCat.{w})]
+    (n : Nat) :
+    F.coarse.H n →+ F.fine.H n :=
+  r.sheafHExtMap F n
+
+/-- Fixed public topology-change map contract. -/
+noncomputable example
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasSheafify J' AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J' AddCommGrpCat.{w})]
+    (n : Nat) :
+    F.coarse.H n →+ F.fine.H n :=
+  r.sheafHMap F n
+
+/-- Fixed identification with the concrete Ext composite. -/
+example
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasSheafify J' AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J' AddCommGrpCat.{w})]
+    (n : Nat) :
+    r.sheafHMap F n = r.sheafHExtMap F n :=
+  r.sheafHMap_eq_ext F n
+
+end SheafCohomologyFoundationSD5
 
 end AAT.AG.StatementContractsReadingFunctoriality
