@@ -512,6 +512,14 @@ def FiniteCircuitDatum.Positive
   ∀ query expected,
     (query, expected) ∈ Qry.queries → expected = true
 
+theorem FiniteCircuitDatum.positive_singleton
+    (query : CircuitQuery U) :
+    (⟨[(query, true)]⟩ : FiniteCircuitDatum U).Positive
+
+theorem FiniteCircuitDatum.not_positive_singleton_false
+    (query : CircuitQuery U) :
+    ¬ (⟨[(query, false)]⟩ : FiniteCircuitDatum U).Positive
+
 def PositiveCircuitDatum
     (P : AATCorePackage U)
     (A : P.algebra.Obj)

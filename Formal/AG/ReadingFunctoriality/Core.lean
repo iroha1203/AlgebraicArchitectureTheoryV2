@@ -14,11 +14,24 @@ namespace AAT.AG
 
 universe u v w
 
+/--
+The typed reading parameter `p = (r, J, k)` from Part 4 SD0, retaining one
+generated core, its selected geometry, and the coefficient-dependent raw system.
+
+Implementation notes: the dependent fields enforce common provenance.  Scheme,
+ideal, class, and comparison data are deliberately left to later layers rather
+than stored in the core package.
+-/
 structure ReadingCore (U : AtomCarrier.{u}) where
+  /-- The generated AAT core that supplies the site object and readings. -/
   core : AATCorePackage U
+  /-- The selected geometry on the generated core. -/
   geometry : Site.SelectedGeometryReading core
+  /-- The coefficient type used by the raw restriction system. -/
   Coefficient : Type v
+  /-- The commutative-ring structure on the chosen coefficients. -/
   coefficientCommRing : CommRing Coefficient
+  /-- The ambient restriction system on the geometry with the chosen coefficients. -/
   raw :
     let _ := coefficientCommRing
     LawAlgebra.RawAmbientRestrictionSystem geometry.toAATSite Coefficient
@@ -27,15 +40,19 @@ attribute [instance] ReadingCore.coefficientCommRing
 
 namespace ReadingCore
 
+/-- The AAT site determined by a reading core. -/
 abbrev site (p : ReadingCore.{u, v} U) : Site.AATSite p.core.object :=
   p.geometry.toAATSite
 
+/-- The law universe carried by the reading core's site. -/
 abbrev lawUniverse (p : ReadingCore.{u, v} U) : LawUniverse U :=
   p.site.lawUniverse
 
+/-- The architecture signature carried by the reading core's site. -/
 abbrev signature (p : ReadingCore.{u, v} U) : ArchitectureSignature U :=
   p.site.signature
 
+/-- Extensionality for the dependent data of a reading core. -/
 @[ext] theorem ext
     {p q : ReadingCore.{u, v} U}
     (hcore : p.core = q.core)
@@ -56,11 +73,19 @@ abbrev signature (p : ReadingCore.{u, v} U) : ArchitectureSignature U :=
 
 end ReadingCore
 
+/--
+Optional witness, circuit, and axis selectors over a reading core (Part 4 SD0).
+Geometric and cohomological comparison data are intentionally not stored here.
+-/
 structure ReadingSelection (p : ReadingCore.{u, v} U) where
+  /-- The selected law witnesses. -/
   selectedWitness : p.lawUniverse.witnessFamily.Witness → Prop
+  /-- The selected finite circuit data. -/
   selectedCircuit : FiniteCircuitDatum U → Prop
+  /-- The selected signature axes. -/
   selectedAxis : p.signature.Axis → Prop
 
+/-- Extensionality for optional reading selections. -/
 @[ext] theorem ReadingSelection.ext
     {p : ReadingCore.{u, v} U}
     {s t : ReadingSelection p}
@@ -75,12 +100,20 @@ structure ReadingSelection (p : ReadingCore.{u, v} U) where
   cases haxis
   rfl
 
+/--
+Direct-image transport of an atom family along an atom map (Part 4 SD1).
+
+Implementation notes: the existential direct image retains every source atom
+and supports composition; replacing it by an arbitrary target family would lose
+the extraction provenance required by exact and positive core changes.
+-/
 def AtomFamily.transport
     (f : U.Atom → U.Atom)
     (F : AtomFamily U) :
     AtomFamily U where
   mem target := ∃ source, F.mem source ∧ f source = target
 
+/-- A finite atom-family listing transports by mapping its listing. -/
 theorem AtomFamily.ListFinite.transport
     {F : AtomFamily U}
     (hF : F.ListFinite)
@@ -92,6 +125,13 @@ theorem AtomFamily.ListFinite.transport
   rcases htarget with ⟨source, hsource, rfl⟩
   exact List.mem_map.mpr ⟨source, hatoms source hsource, rfl⟩
 
+/--
+Direct-image transport of a configuration's family, relations, and identifications.
+
+Implementation notes: relation and identification witnesses retain their source
+atoms.  Merely mapping the family would not construct the configuration hom used
+by the core-change APIs.
+-/
 def AtomConfiguration.transport
     (f : U.Atom → U.Atom)
     (C : AtomConfiguration U) :
@@ -106,6 +146,7 @@ def AtomConfiguration.transport
       C.identification source₁ source₂ ∧
         f source₁ = target₁ ∧ f source₂ = target₂
 
+/-- The canonical configuration hom into the direct-image transport. -/
 def AtomConfiguration.transportHom
     (f : U.Atom → U.Atom)
     (C : AtomConfiguration U) :
@@ -115,12 +156,23 @@ def AtomConfiguration.transportHom
   maps_relation h := ⟨_, _, h, rfl, rfl⟩
   maps_identification h := ⟨_, _, h, rfl, rfl⟩
 
+/--
+The canonical transport hom uses the supplied atom map.
+This is the simplifier normal form for its computational component.
+-/
 @[simp] theorem AtomConfiguration.transportHom_atomMap
     (f : U.Atom → U.Atom)
     (C : AtomConfiguration U) :
     (AtomConfiguration.transportHom f C).atomMap = f :=
   rfl
 
+/--
+Transport compatibility for like-kind function or predicate invariants (Part 4 SD1).
+
+Implementation notes: function invariants use an equivalence of value types and
+predicate invariants use pointwise logical equivalence.  Cross-kind transport is
+rejected rather than encoded by an unrelated certificate.
+-/
 def Invariant.TransportedAlong
     (I J : Invariant U)
     {ι : Type w}
@@ -133,6 +185,7 @@ def Invariant.TransportedAlong
       ∀ A, I.holds (source A) ↔ J.holds (target A)
   | _, _ => False
 
+/-- A function invariant cannot be transported to a predicate invariant. -/
 theorem Invariant.function_predicate_not_transportedAlong
     (I : FunctionInvariant U) (J : PredicateInvariant U)
     {ι : Type w}
@@ -140,6 +193,7 @@ theorem Invariant.function_predicate_not_transportedAlong
     ¬ Invariant.TransportedAlong (.function I) (.predicate J) source target :=
   fun h => h
 
+/-- Every invariant transports along the identity object family. -/
 theorem Invariant.transportedAlong_refl
     (I : Invariant U)
     {ι : Type w}
@@ -184,29 +238,47 @@ private theorem invariantTransportedAlong_precomp
   · exact False.elim h
   · exact fun A => h (e A)
 
+/--
+An actual morphism between generated object algebras (Part 4 SD1).
+
+Its fields transport reachable objects, configurations, laws, signed circuits,
+operations, invariants, and signature coordinates.
+
+Implementation notes: this is the completed output of an exact core change.  It
+is kept separate from `SignedExactCoreReadingHom`, whose primitive data must
+construct this morphism instead of storing it as a conclusion-equivalent field.
+-/
 structure ObjectAlgebraHom
     (K L : ObjectAlgebra U) where
+  /-- Map between the actual reachable object types. -/
   objMap : K.Obj → L.Obj
+  /-- Configuration hom on each actual object. -/
   configurationMap :
     ∀ A, ConfigurationHom (K.object A).configuration
       (L.object (objMap A)).configuration
+  /-- Map between law indices. -/
   lawMap :
     K.lawReading.lawUniverse.Index →
       L.lawReading.lawUniverse.Index
+  /-- Preservation and reflection of required-law status. -/
   required_iff :
     ∀ i,
       K.lawReading.lawUniverse.Required i ↔
         L.lawReading.lawUniverse.Required (lawMap i)
+  /-- Preservation and reflection of law satisfaction. -/
   law_holds_iff :
     ∀ i A,
       (K.lawReading.lawUniverse.law i).holds (K.object A) ↔
         (L.lawReading.lawUniverse.law (lawMap i)).holds
           (L.object (objMap A))
+  /-- Transport of signed circuit certificates. -/
   circuitMap :
     ∀ A i, K.Circuit A i →
       L.Circuit (objMap A) (lawMap i)
+  /-- Transport of operations between actual objects. -/
   operationMap :
     ∀ {A B}, K.Op A B → L.Op (objMap A) (objMap B)
+  /-- Naturality of configuration transport with respect to operations. -/
   operation_naturality :
     ∀ {A B} (op : K.Op A B),
       ConfigurationHom.comp
@@ -215,24 +287,30 @@ structure ObjectAlgebraHom
         ConfigurationHom.comp
           (configurationMap B)
           (K.configurationMap op)
+  /-- Map between invariant indices. -/
   invariantMap :
     K.invariantReading.Index → L.invariantReading.Index
+  /-- Transport compatibility for every indexed invariant. -/
   invariant_transport :
     ∀ i,
       Invariant.TransportedAlong
         (K.invariantReading.invariant i)
         (L.invariantReading.invariant (invariantMap i))
         K.object (fun A => L.object (objMap A))
+  /-- Map between signature axes. -/
   axisMap :
     K.signatureReading.Axis → L.signatureReading.Axis
+  /-- Equivalence of the coordinate types on corresponding axes. -/
   coordinateEquiv :
     ∀ i,
       K.signatureReading.Coordinate i ≃
         L.signatureReading.Coordinate (axisMap i)
+  /-- Preservation and reflection of selected-axis status. -/
   axis_selected_iff :
     ∀ i,
       K.signatureReading.selected i ↔
         L.signatureReading.selected (axisMap i)
+  /-- Compatibility of the coordinate equivalences with object coordinates. -/
   coordinate_eq :
     ∀ A i,
       coordinateEquiv i
@@ -242,6 +320,7 @@ structure ObjectAlgebraHom
 
 namespace ObjectAlgebraHom
 
+/-- Extensionality for the computational data of object-algebra morphisms. -/
 @[ext (iff := false)] theorem ext
     {K L : ObjectAlgebra U}
     {f g : ObjectAlgebraHom K L}
@@ -268,6 +347,7 @@ namespace ObjectAlgebraHom
   cases hcoordinate
   rfl
 
+/-- The identity object-algebra morphism. -/
 def id (K : ObjectAlgebra U) : ObjectAlgebraHom K K where
   objMap := _root_.id
   configurationMap A := ConfigurationHom.id (K.object A).configuration
@@ -287,6 +367,7 @@ def id (K : ObjectAlgebra U) : ObjectAlgebraHom K K where
   axis_selected_iff _ := Iff.rfl
   coordinate_eq _ _ := rfl
 
+/-- Composition of object-algebra morphisms. -/
 def comp
     {K L M : ObjectAlgebra U}
     (f : ObjectAlgebraHom K L)
@@ -326,10 +407,18 @@ def comp
     simpa only [Function.comp_apply] using
       g.coordinate_eq (f.objMap A) (f.axisMap i)
 
+/--
+The object map of the identity morphism reduces to the identity function.
+This is the simplifier normal form for identity object maps.
+-/
 @[simp] theorem id_objMap (K : ObjectAlgebra U) :
     (id K).objMap = _root_.id :=
   rfl
 
+/--
+The object map of a composite reduces to function composition.
+This is the simplifier normal form for composite object maps.
+-/
 @[simp] theorem comp_objMap
     {K L M : ObjectAlgebra U}
     (f : ObjectAlgebraHom K L)
@@ -408,49 +497,75 @@ private theorem AtomConfiguration.transport_comp
       exact ⟨f source₁, f source₂,
         ⟨source₁, source₂, h, rfl, rfl⟩, rfl, rfl⟩
 
+/--
+Primitive data for an exact signed change between generated AAT cores (Part 4 SD1).
+
+The data preserve and reflect laws and signed queries while transporting objects,
+operations, invariants, and signature coordinates.
+
+Implementation notes: the completed `ObjectAlgebraHom` is deliberately absent.
+`toObjectAlgebraHom` constructs its reachable-object and circuit components from
+these primitive maps.  Storing the completed morphism here would bypass the main
+construction required by SD1.
+-/
 structure SignedExactCoreReadingHom
     (P Q : AATCorePackage U) where
+  /-- Map on primitive atoms. -/
   atomMap : U.Atom → U.Atom
+  /-- Exact identification of the target extracted family with the direct image. -/
   extraction_eq :
     Q.family = P.family.transport atomMap
+  /-- Compatibility of generated composition with direct-image transport. -/
   composition_eq :
     ∀ (F : AtomFamily U) (hF : F.ListFinite),
       Q.reading.composition.compose
           (F.transport atomMap) (hF.transport atomMap) =
         (P.reading.composition.compose F hF).transport atomMap
+  /-- Map on architecture objects. -/
   objectMap : ArchitectureObject U → ArchitectureObject U
+  /-- Compatibility of object formation with configuration transport. -/
   object_formation_eq :
     ∀ C,
       objectMap (P.reading.objectReading.object C) =
         Q.reading.objectReading.object (C.transport atomMap)
+  /-- Configuration hom attached to every object. -/
   configurationMap :
     ∀ A, ConfigurationHom A.configuration (objectMap A).configuration
+  /-- Every configuration hom uses the primitive atom map. -/
   configurationMap_atomMap :
     ∀ A, (configurationMap A).atomMap = atomMap
+  /-- Map between generated law indices. -/
   lawMap :
     P.algebra.lawReading.lawUniverse.Index →
       Q.algebra.lawReading.lawUniverse.Index
+  /-- Preservation and reflection of required-law status. -/
   required_iff :
     ∀ i,
       P.algebra.lawReading.lawUniverse.Required i ↔
         Q.algebra.lawReading.lawUniverse.Required (lawMap i)
+  /-- Preservation and reflection of law satisfaction on mapped objects. -/
   law_holds_iff :
     ∀ i A,
       (P.algebra.lawReading.lawUniverse.law i).holds A ↔
         (Q.algebra.lawReading.lawUniverse.law (lawMap i)).holds
           (objectMap A)
+  /-- Map on signed finite circuit queries. -/
   queryMap : FiniteCircuitDatum U → FiniteCircuitDatum U
+  /-- Preservation and reflection of signed query matching. -/
   matches_iff :
     ∀ Qry A, Qry.Matches A ↔ (queryMap Qry).Matches (objectMap A)
+  /-- Preservation and reflection of circuit acceptance. -/
   accepts_iff :
     ∀ i Qry,
       P.algebra.lawReading.circuits.accepts i Qry = true ↔
         Q.algebra.lawReading.circuits.accepts
           (lawMap i) (queryMap Qry) = true
+  /-- Map on operations between architecture objects. -/
   operationMap :
     ∀ {A B},
       P.reading.operationReading.Op A B →
         Q.reading.operationReading.Op (objectMap A) (objectMap B)
+  /-- Naturality of configuration transport with respect to operations. -/
   operation_naturality :
     ∀ {A B} (op : P.reading.operationReading.Op A B),
       ConfigurationHom.comp
@@ -459,26 +574,32 @@ structure SignedExactCoreReadingHom
         ConfigurationHom.comp
           (configurationMap B)
           (P.reading.operationReading.configurationMap op)
+  /-- Map between invariant indices. -/
   invariantMap :
     P.reading.invariantReading.Index →
       Q.reading.invariantReading.Index
+  /-- Compatibility of indexed invariants with the object map. -/
   invariant_transport :
     ∀ i,
       Invariant.TransportedAlong
         (P.reading.invariantReading.invariant i)
         (Q.reading.invariantReading.invariant (invariantMap i))
         _root_.id objectMap
+  /-- Map between signature axes. -/
   axisMap :
     P.reading.signatureReading.Axis →
       Q.reading.signatureReading.Axis
+  /-- Equivalence of coordinate types on corresponding axes. -/
   coordinateEquiv :
     ∀ i,
       P.reading.signatureReading.Coordinate i ≃
         Q.reading.signatureReading.Coordinate (axisMap i)
+  /-- Preservation and reflection of selected-axis status. -/
   axis_selected_iff :
     ∀ i,
       P.reading.signatureReading.selected i ↔
         Q.reading.signatureReading.selected (axisMap i)
+  /-- Compatibility of coordinate equivalences with mapped objects. -/
   coordinate_eq :
     ∀ A i,
       coordinateEquiv i
@@ -496,6 +617,7 @@ private theorem configurationHom_heq
   cases htarget
   exact heq_of_eq (ConfigurationHom.ext hatom)
 
+/-- Extensionality for the computational data of exact core changes. -/
 @[ext (iff := false)] theorem ext
     {P Q : AATCorePackage U}
     {f g : SignedExactCoreReadingHom P Q}
@@ -530,6 +652,7 @@ private theorem configurationHom_heq
   cases hcoordinate
   rfl
 
+/-- The identity exact core change. -/
 def refl (P : AATCorePackage U) :
     SignedExactCoreReadingHom P P where
   atomMap := _root_.id
@@ -558,6 +681,7 @@ def refl (P : AATCorePackage U) :
   axis_selected_iff _ := Iff.rfl
   coordinate_eq _ _ := rfl
 
+/-- Composition of exact core changes. -/
 def comp
     {P Q R : AATCorePackage U}
     (f : SignedExactCoreReadingHom P Q)
@@ -629,6 +753,7 @@ def comp
     simpa only [Function.comp_apply] using
       g.coordinate_eq (f.objectMap A) (f.axisMap i)
 
+/-- An exact change identifies the generated target configuration with the direct image. -/
 theorem generatedConfiguration_eq
     {P Q : AATCorePackage U}
     (f : SignedExactCoreReadingHom P Q) :
@@ -637,6 +762,7 @@ theorem generatedConfiguration_eq
   simpa only [f.extraction_eq] using
     f.composition_eq P.family P.reading.family_listFinite
 
+/-- The exact object map sends the generated source object to the generated target object. -/
 theorem base_eq
     {P Q : AATCorePackage U}
     (f : SignedExactCoreReadingHom P Q) :
@@ -658,6 +784,14 @@ private theorem mapReachable
   | step hA op ih =>
       exact OperationReading.Reachable.step ih (f.operationMap op)
 
+/--
+Construct the actual object-algebra morphism carried by an exact core change.
+
+Implementation notes: reachable target objects are produced by induction on the
+source operation closure, and signed circuits are built using `matches_iff` and
+`accepts_iff`.  No completed morphism or reachable-object map is accepted as an
+input field.
+-/
 noncomputable def toObjectAlgebraHom
     {P Q : AATCorePackage U}
     (f : SignedExactCoreReadingHom P Q) :
@@ -682,6 +816,10 @@ noncomputable def toObjectAlgebraHom
   axis_selected_iff := f.axis_selected_iff
   coordinate_eq A := f.coordinate_eq A.1
 
+/--
+The actual morphism constructed from the identity exact change is the identity.
+This is the simplifier normal form for exact identity changes.
+-/
 @[simp] theorem toObjectAlgebraHom_refl
     (P : AATCorePackage U) :
     (refl P).toObjectAlgebraHom = ObjectAlgebraHom.id P.algebra := by
@@ -691,6 +829,10 @@ noncomputable def toObjectAlgebraHom
     rfl
   all_goals rfl
 
+/--
+Construction of the actual morphism commutes with composition of exact changes.
+This is the simplifier normal form for exact composite changes.
+-/
 @[simp] theorem toObjectAlgebraHom_comp
     {P Q R : AATCorePackage U}
     (f : SignedExactCoreReadingHom P Q)
@@ -705,11 +847,33 @@ noncomputable def toObjectAlgebraHom
 
 end SignedExactCoreReadingHom
 
+/-- A finite circuit datum is positive when every recorded expected polarity is true. -/
 def FiniteCircuitDatum.Positive
     (Qry : FiniteCircuitDatum U) : Prop :=
   ∀ query expected,
     (query, expected) ∈ Qry.queries → expected = true
 
+/-- A singleton query with expected polarity `true` is positive. -/
+theorem FiniteCircuitDatum.positive_singleton
+    (query : CircuitQuery U) :
+    (⟨[(query, true)]⟩ : FiniteCircuitDatum U).Positive := by
+  intro actual expected hmem
+  have hpair : (actual, expected) = (query, true) := by
+    simpa only [List.mem_singleton] using hmem
+  exact congrArg Prod.snd hpair
+
+/-- A singleton query with expected polarity `false` is not positive. -/
+theorem FiniteCircuitDatum.not_positive_singleton_false
+    (query : CircuitQuery U) :
+    ¬ (⟨[(query, false)]⟩ : FiniteCircuitDatum U).Positive := by
+  intro hpositive
+  have := hpositive query false (by simp)
+  simp at this
+
+/--
+A positive circuit certificate on an actual object and law index.
+The concrete nonidentity finite-model firing required by AC9 is supplied in R9.
+-/
 def PositiveCircuitDatum
     (P : AATCorePackage U)
     (A : P.algebra.Obj)
@@ -719,34 +883,55 @@ def PositiveCircuitDatum
       Qry.Matches (P.algebra.object A) ∧
         P.algebra.lawReading.circuits.accepts i Qry = true}
 
+/--
+Primitive data for a positive-only change between generated AAT cores (Part 4 SD1).
+
+The change transports reachable objects and circuit data whose expected polarities
+are all positive.
+
+Implementation notes: matching and acceptance are one-way implications and no
+negative circuit transport or completed `ObjectAlgebraHom` is stored.  Adding
+reflection would strengthen the positive change into the exact signed notion.
+-/
 structure PositiveCoreReadingHom
     (P Q : AATCorePackage U) where
+  /-- Map on primitive atoms. -/
   atomMap : U.Atom → U.Atom
+  /-- The transported source family is contained in the target family. -/
   extraction_mono :
     (P.family.transport atomMap).Subset Q.family
+  /-- Configuration hom from each source composite into its target composite. -/
   compositionMap :
     ∀ (F : AtomFamily U) (hF : F.ListFinite),
       ConfigurationHom
         (P.reading.composition.compose F hF)
         (Q.reading.composition.compose
           (F.transport atomMap) (hF.transport atomMap))
+  /-- Every composition map uses the primitive atom map. -/
   compositionMap_atomMap :
     ∀ F hF, (compositionMap F hF).atomMap = atomMap
+  /-- Map on architecture objects. -/
   objectMap : ArchitectureObject U → ArchitectureObject U
+  /-- Compatibility of object formation with configuration transport. -/
   object_formation_eq :
     ∀ C,
       objectMap (P.reading.objectReading.object C) =
         Q.reading.objectReading.object (C.transport atomMap)
+  /-- Reachability of the mapped generated source object in the target core. -/
   base_reachable :
     Q.reading.operationReading.Reachable Q.object (objectMap P.object)
+  /-- Configuration hom attached to every object. -/
   configurationMap :
     ∀ A, ConfigurationHom A.configuration (objectMap A).configuration
+  /-- Every configuration hom uses the primitive atom map. -/
   configurationMap_atomMap :
     ∀ A, (configurationMap A).atomMap = atomMap
+  /-- Map on operations between architecture objects. -/
   operationMap :
     ∀ {A B},
       P.reading.operationReading.Op A B →
         Q.reading.operationReading.Op (objectMap A) (objectMap B)
+  /-- Naturality of configuration transport with respect to operations. -/
   operation_naturality :
     ∀ {A B} (op : P.reading.operationReading.Op A B),
       ConfigurationHom.comp
@@ -755,15 +940,20 @@ structure PositiveCoreReadingHom
         ConfigurationHom.comp
           (configurationMap B)
           (P.reading.operationReading.configurationMap op)
+  /-- Map between generated law indices. -/
   lawMap :
     P.algebra.lawReading.lawUniverse.Index →
       Q.algebra.lawReading.lawUniverse.Index
+  /-- Map on finite circuit data. -/
   queryMap : FiniteCircuitDatum U → FiniteCircuitDatum U
+  /-- Preservation of positive polarity. -/
   positive_preserved :
     ∀ Qry, Qry.Positive → (queryMap Qry).Positive
+  /-- One-way preservation of matching for positive circuit data. -/
   matches_of_positive :
     ∀ Qry A, Qry.Positive → Qry.Matches A →
       (queryMap Qry).Matches (objectMap A)
+  /-- One-way preservation of acceptance for positive circuit data. -/
   accepts_mono :
     ∀ i Qry, Qry.Positive →
       P.algebra.lawReading.circuits.accepts i Qry = true →
@@ -805,6 +995,7 @@ private theorem mapReachableAux
   | step hA op ih =>
       exact OperationReading.Reachable.step ih (f.operationMap op)
 
+/-- Extensionality for the computational data of positive core changes. -/
 @[ext (iff := false)] theorem ext
     {P Q : AATCorePackage U}
     {f g : PositiveCoreReadingHom P Q}
@@ -847,6 +1038,7 @@ private theorem mapReachableAux
   cases hquery
   rfl
 
+/-- The identity positive core change. -/
 def refl (P : AATCorePackage U) :
     PositiveCoreReadingHom P P where
   atomMap := _root_.id
@@ -874,6 +1066,7 @@ def refl (P : AATCorePackage U) :
   matches_of_positive _ _ _ h := h
   accepts_mono _ _ _ h := h
 
+/-- Composition of positive core changes. -/
 def comp
     {P Q R : AATCorePackage U}
     (f : PositiveCoreReadingHom P Q)
@@ -934,6 +1127,7 @@ def comp
     g.accepts_mono _ _ (f.positive_preserved Qry hpositive)
       (f.accepts_mono i Qry hpositive haccepts)
 
+/-- A positive change maps every source reachable object to a target reachable object. -/
 theorem mapReachable
     {P Q : AATCorePackage U}
     (f : PositiveCoreReadingHom P Q)
@@ -942,12 +1136,14 @@ theorem mapReachable
     Q.reading.operationReading.Reachable Q.object (f.objectMap A) :=
   mapReachableAux f hA
 
+/-- The induced map between actual reachable object types. -/
 def objMap
     {P Q : AATCorePackage U}
     (f : PositiveCoreReadingHom P Q) :
     P.algebra.Obj → Q.algebra.Obj :=
   fun A => ⟨f.objectMap A.1, f.mapReachable A.2⟩
 
+/-- Transport a positive circuit certificate to the mapped object and law. -/
 def mapPositiveCircuit
     {P Q : AATCorePackage U}
     (f : PositiveCoreReadingHom P Q)
@@ -964,14 +1160,17 @@ end PositiveCoreReadingHom
 
 namespace ReadingCore
 
+/-- Exact core changes between two typed reading cores. -/
 abbrev ExactCoreChange
     (p q : ReadingCore.{u, v} U) :=
   SignedExactCoreReadingHom p.core q.core
 
+/-- Positive-only core changes between two typed reading cores. -/
 abbrev PositiveCoreChange
     (p q : ReadingCore.{u, v} U) :=
   PositiveCoreReadingHom p.core q.core
 
+/-- A selected AAT coverage family on a base object of the reading core's site. -/
 abbrev SelectedCover
     (p : ReadingCore.{u, v} U)
     (base : p.site.category) :=
