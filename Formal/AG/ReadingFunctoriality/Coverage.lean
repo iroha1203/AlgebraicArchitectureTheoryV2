@@ -436,7 +436,7 @@ noncomputable def ObstructionSheaf.toAddCommGrpSheaf
       Ob.carrier.presieve_isSheaf
 
 /-- The standard Ext universe for additive-group-valued sheaves. -/
-noncomputable def standardAddCommGrpSheafHasExt
+theorem standardAddCommGrpSheafHasExt
     {C : Type u} [Category.{v} C]
     {J : GrothendieckTopology C}
     [HasSheafify J AddCommGrpCat.{w}] :
@@ -1012,22 +1012,6 @@ theorem obstructionClass_naturality
   | zero => rfl
   | succ n => rfl
 
-/--
-The selected cover is Leray for the obstruction coefficient when all
-positive-degree local cohomology groups on its repeated overlaps vanish.
--/
-def IsLerayFor
-    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
-    (Ob : ObstructionSheaf S)
-    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
-    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})] :
-    Prop :=
-  ∀ q, 0 < q →
-    ∀ p, ∀ σ : (canonicalCoverRelative 𝒰).simplex p,
-      Subsingleton
-        (Ob.toAddCommGrpSheaf.H' q
-          ((canonicalCoverRelative 𝒰).overlap p σ))
-
 end Cohomology
 
 /-! ## Sheaves for a change of coverage topology -/
@@ -1035,6 +1019,12 @@ end Cohomology
 /--
 An additive coefficient presheaf which is a sheaf for both selected
 topologies.
+
+Implementation notes: this structure bundles the coefficient presheaf itself,
+not a certificate about separately supplied data. A presheaf which fails either
+sheaf condition is represented by the absence of a constructor rather than by
+a negative inhabitant. The two proof fields are exactly the data needed to form
+the coarse and fine Mathlib `Sheaf` objects; no comparison map is stored.
 -/
 structure CommonCoefficientSheaf
     {C : Type u} [Category.{v} C]
@@ -1085,7 +1075,15 @@ variable {C : Type u} [Category.{v} C]
 variable {J J' : GrothendieckTopology C}
 
 set_option linter.unusedVariables false in
-/-- Sheafify a coarse sheaf for the finer topology. -/
+/--
+Sheafify a coarse sheaf for the finer topology.
+
+Implementation notes: the left-adjoint functor depends only on `J` and `J'`.
+The receiver `r` intentionally records the selected topology refinement for the
+paired right adjoint and the adjunction below, where `r.le` is proof-used. Keeping
+the receiver here gives those constructions one coherent API; it is not used to
+manufacture a preservation premise or a comparison map.
+-/
 noncomputable def fineSheafification
     (r : CoverageTopologyRefinement J J')
     [HasSheafify J' AddCommGrpCat.{w}] :

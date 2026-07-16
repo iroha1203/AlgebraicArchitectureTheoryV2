@@ -4179,10 +4179,6 @@ noncomputable def readingFunctoriality_obstructionSheaf_toAddCommGrpSheaf :=
 noncomputable def readingFunctoriality_aatSheafHasExt :=
   @AAT.AG.Cohomology.aatSheafHasExt
 
-/-- Audit alias for the selected Leray predicate. -/
-def readingFunctoriality_isLerayFor :=
-  @AAT.AG.Cohomology.IsLerayFor
-
 /-- Audit alias for terminal local-to-global cohomology comparison. -/
 noncomputable def readingFunctoriality_terminalHComparison :=
   @AAT.AG.Cohomology.terminalHComparison

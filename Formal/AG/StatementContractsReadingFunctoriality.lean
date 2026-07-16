@@ -890,15 +890,7 @@ noncomputable example :
 /-- Fixed AAT sheaf Ext-instance contract. -/
 noncomputable example [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
     HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1}) :=
-  inferInstance
-
-/-- Fixed Leray-acyclicity predicate contract. -/
-example
-    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
-    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
-    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})] :
-    Prop :=
-  Cohomology.IsLerayFor 𝒰 Ob
+  Cohomology.aatSheafHasExt
 
 /-- Fixed terminal local-to-global cohomology comparison contract. -/
 noncomputable example
@@ -961,17 +953,17 @@ noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
 /-- Fixed additive fine-sheafification contract. -/
 noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
     r.fineSheafification.Additive :=
-  inferInstance
+  CoverageTopologyRefinement.fineSheafification_additive r
 
 /-- Fixed finite-limit preservation contract. -/
 noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
     PreservesFiniteLimits r.fineSheafification :=
-  inferInstance
+  CoverageTopologyRefinement.fineSheafification_preservesFiniteLimits r
 
 /-- Fixed finite-colimit preservation contract. -/
 noncomputable example [HasSheafify J' AddCommGrpCat.{w}] :
     PreservesFiniteColimits r.fineSheafification :=
-  inferInstance
+  CoverageTopologyRefinement.fineSheafification_preservesFiniteColimits r
 
 /-- Fixed constant-sheaf comparison contract. -/
 noncomputable example
