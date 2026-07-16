@@ -1141,9 +1141,9 @@ theorem cechToSheafHAtBase_refinement_naturality
 noncomputable def terminalHComparison
     {C : Type u} [Category.{v} C]
     {J : GrothendieckTopology C}
-    (F : Sheaf J AddCommGrpCat.{w})
-    [HasSheafify J AddCommGrpCat.{w}]
-    [HasExt.{w} (Sheaf J AddCommGrpCat.{w})]
+    (F : Sheaf J AddCommGrpCat.{v})
+    [HasSheafify J AddCommGrpCat.{v}]
+    [HasExt.{w} (Sheaf J AddCommGrpCat.{v})]
     (X : C) (hX : IsTerminal X) (n : Nat) :
     F.H' n X ≃+ F.H n
 
