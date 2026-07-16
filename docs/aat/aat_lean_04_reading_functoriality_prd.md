@@ -1086,7 +1086,7 @@ noncomputable def ObstructionSheaf.toAddCommGrpSheaf
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A}
     (Ob : ObstructionSheaf S) :
-    Sheaf S.topology AddCommGrpCat.{u}
+    Sheaf S.topology AddCommGrpCat.{u + 1}
 
 def IsLerayFor
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -1094,8 +1094,8 @@ def IsLerayFor
     {base : S.category}
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})] :
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})] :
     Prop :=
   ∀ q, 0 < q →
     ∀ p, ∀ σ : (canonicalCoverRelative 𝒰).simplex p,
@@ -1109,8 +1109,8 @@ noncomputable def cechToSheafHAtBase
     {base : S.category}
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (hLeray : IsLerayFor 𝒰 Ob)
     (n : Nat) :
     (canonicalCechComplex 𝒰 Ob).AdditiveCechHn n →+
@@ -1119,8 +1119,8 @@ noncomputable def cechToSheafHAtBase
 theorem cechToSheafHAtBase_bijective
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (hLeray : IsLerayFor 𝒰 Ob)
     (n : Nat) :
     Function.Bijective (cechToSheafHAtBase 𝒰 Ob hLeray n)
@@ -1129,8 +1129,8 @@ theorem cechToSheafHAtBase_refinement_naturality
     {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
     (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
     (Ob : ObstructionSheaf S)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (h𝒰 : IsLerayFor 𝒰 Ob)
     (h𝒱 : IsLerayFor 𝒱 Ob)
     (n : Nat) :
@@ -1150,8 +1150,8 @@ noncomputable def terminalHComparison
 noncomputable def cechToSheafH
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (hbase : IsTerminal base)
     (hLeray : IsLerayFor 𝒰 Ob)
     (n : Nat) :
@@ -1163,8 +1163,8 @@ noncomputable def cechToSheafH
 theorem cechToSheafH_bijective
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (hbase : IsTerminal base)
     (hLeray : IsLerayFor 𝒰 Ob)
     (n : Nat) :
@@ -1174,8 +1174,8 @@ theorem cechToSheafH_refinement_naturality
     {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
     (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
     (Ob : ObstructionSheaf S)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (hbase : IsTerminal base)
     (h𝒰 : IsLerayFor 𝒰 Ob)
     (h𝒱 : IsLerayFor 𝒱 Ob)
@@ -2537,8 +2537,8 @@ noncomputable def terminalLerayHModule
     {R : Type u} [CommRing R]
     (Ob : LinearObstructionSheaf R S)
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (hbase : IsTerminal base)
     (hLeray : IsLerayFor 𝒰 Ob.toObstructionSheaf)
     (n : Nat) : ModuleCat R
@@ -2547,8 +2547,8 @@ noncomputable def terminalLerayHModule
     {R : Type u} [CommRing R]
     (Ob : LinearObstructionSheaf R S)
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (hbase : IsTerminal base)
     (hLeray : IsLerayFor 𝒰 Ob.toObstructionSheaf)
     (n : Nat) :
@@ -2559,8 +2559,8 @@ noncomputable def baseChangeIdTerminalLerayHModuleIso
     {R : Type u} [CommRing R]
     (Ob : LinearObstructionSheaf R S)
     [HasSheafify S.topology (ModuleCat R)]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hsource : IsLerayFor 𝒰 Ob.toObstructionSheaf)
@@ -2579,8 +2579,8 @@ noncomputable def baseChangeCompTerminalLerayHModuleIso
     (g : FlatCoefficientChange R' R'')
     [HasSheafify S.topology (ModuleCat R')]
     [HasSheafify S.topology (ModuleCat R'')]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hiterated : IsLerayFor 𝒰
@@ -2597,8 +2597,8 @@ noncomputable def cechToSheafHLinearIso
     {R : Type u} [CommRing R]
     (Ob : LinearObstructionSheaf R S)
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (hbase : IsTerminal base)
     (hLeray : IsLerayFor 𝒰 Ob.toObstructionSheaf)
     (n : Nat) :
@@ -2610,8 +2610,8 @@ theorem cechToSheafHLinearIso_hom_apply
     {R : Type u} [CommRing R]
     (Ob : LinearObstructionSheaf R S)
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (hbase : IsTerminal base)
     (hLeray : IsLerayFor 𝒰 Ob.toObstructionSheaf)
     (n : Nat)
@@ -2624,8 +2624,8 @@ noncomputable def sheafHFlatBaseChangeMap
     (Ob : LinearObstructionSheaf R S)
     (f : FlatCoefficientChange R R')
     [HasSheafify S.topology (ModuleCat R')]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hsource : IsLerayFor 𝒰 Ob.toObstructionSheaf)
@@ -2640,8 +2640,8 @@ theorem sheafHFlatBaseChangeMap_formula
     (Ob : LinearObstructionSheaf R S)
     (f : FlatCoefficientChange R R')
     [HasSheafify S.topology (ModuleCat R')]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hsource : IsLerayFor 𝒰 Ob.toObstructionSheaf)
@@ -2659,8 +2659,8 @@ theorem sheafHFlatBaseChangeMap_on_class
     (Ob : LinearObstructionSheaf R S)
     (f : FlatCoefficientChange R R')
     [HasSheafify S.topology (ModuleCat R')]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hsource : IsLerayFor 𝒰 Ob.toObstructionSheaf)
@@ -2682,8 +2682,8 @@ theorem sheafHFlatBaseChangeMap_isIso
     (Ob : LinearObstructionSheaf R S)
     (f : FlatCoefficientChange R R')
     [HasSheafify S.topology (ModuleCat R')]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hcompat : CechCoefficientBaseChangeCompatible Ob f 𝒰)
@@ -2697,8 +2697,8 @@ noncomputable def sheafHFlatBaseChangeIso
     (Ob : LinearObstructionSheaf R S)
     (f : FlatCoefficientChange R R')
     [HasSheafify S.topology (ModuleCat R')]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hcompat : CechCoefficientBaseChangeCompatible Ob f 𝒰)
@@ -2714,8 +2714,8 @@ theorem sheafHFlatBaseChangeIso_hom
     (Ob : LinearObstructionSheaf R S)
     (f : FlatCoefficientChange R R')
     [HasSheafify S.topology (ModuleCat R')]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hcompat : CechCoefficientBaseChangeCompatible Ob f 𝒰)
@@ -2729,8 +2729,8 @@ theorem sheafHFlatBaseChangeIso_hom
     {R : Type u} [CommRing R]
     (Ob : LinearObstructionSheaf R S)
     [HasSheafify S.topology (ModuleCat R)]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hsource : IsLerayFor 𝒰 Ob.toObstructionSheaf)
@@ -2752,8 +2752,8 @@ theorem sheafHFlatBaseChangeMap_comp
     (g : FlatCoefficientChange R' R'')
     [HasSheafify S.topology (ModuleCat R')]
     [HasSheafify S.topology (ModuleCat R'')]
-    [HasSheafify S.topology AddCommGrpCat.{u}]
-    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u})]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (hbase : IsTerminal base)
     (hsource : IsLerayFor 𝒰 Ob.toObstructionSheaf)
