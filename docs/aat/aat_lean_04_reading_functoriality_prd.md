@@ -1129,6 +1129,34 @@ noncomputable instance aatSheafHasExt
     HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1}) :=
   standardAddCommGrpSheafHasExt
 
+theorem standardAddCommGrpSheafEnoughInjectives
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    EnoughInjectives (Sheaf S.topology AddCommGrpCat.{u + 1})
+
+noncomputable def obstructionInjectiveResolution
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    InjectiveResolution Ob.toAddCommGrpSheaf
+
+noncomputable def obstructionHPrimeInjectiveEquiv
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (X : S.category) (n : Nat) :
+    (Ob.toAddCommGrpSheaf).H' n X ≃+
+      CochainComplex.HomComplex.CohomologyClass
+        ((CochainComplex.singleFunctor
+          (Sheaf S.topology AddCommGrpCat.{u + 1}) 0).obj
+            ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+              (yoneda.obj X ⋙ AddCommGrpCat.free)))
+        (obstructionInjectiveResolution Ob).cochainComplex n
+
 def IsLerayFor
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A}

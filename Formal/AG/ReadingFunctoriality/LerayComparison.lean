@@ -66,7 +66,7 @@ theorem standardAddCommGrpSheafEnoughInjectives
   infer_instance
 
 /--
-The canonical injective resolution used to compute obstruction sheaf
+The chosen injective resolution used to compute obstruction sheaf
 cohomology.
 
 Implementation notes: this definition constructs Mathlib's actual

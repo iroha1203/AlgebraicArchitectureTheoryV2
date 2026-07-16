@@ -4331,7 +4331,7 @@ def readingFunctoriality_sheafHMap_comp :=
 noncomputable def readingFunctoriality_standardAddCommGrpSheafEnoughInjectives :=
   @AAT.AG.Cohomology.standardAddCommGrpSheafEnoughInjectives
 
-/-- Audit alias for the canonical obstruction-sheaf injective resolution. -/
+/-- Audit alias for the chosen obstruction-sheaf injective resolution. -/
 noncomputable def readingFunctoriality_obstructionInjectiveResolution :=
   @AAT.AG.Cohomology.obstructionInjectiveResolution
 
