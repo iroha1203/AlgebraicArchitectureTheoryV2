@@ -3955,6 +3955,80 @@ def finiteClosedEquationalGeometry_restrictionBrokenReading_not_valid :=
 def finiteClosedEquationalGeometry_coordinateBrokenInclusion_not_valid :=
   @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.coordinateBrokenInclusion_not_valid
 
+/-! Part 4 R1: reading-core functoriality. -/
+
+/-- Audit alias for `ReadingCore.ext`. -/
+def readingFunctoriality_readingCore_ext :=
+  @AAT.AG.ReadingCore.ext
+
+/-- Audit alias for `ReadingSelection.ext`. -/
+def readingFunctoriality_readingSelection_ext :=
+  @AAT.AG.ReadingSelection.ext
+
+/-- Audit alias for finite atom-family transport. -/
+def readingFunctoriality_atomFamily_listFinite_transport :=
+  @AAT.AG.AtomFamily.ListFinite.transport
+
+/-- Audit alias for the atom map of the canonical configuration transport. -/
+def readingFunctoriality_atomConfiguration_transportHom_atomMap :=
+  @AAT.AG.AtomConfiguration.transportHom_atomMap
+
+/-- Audit alias for the function-to-predicate invariant transport rejection. -/
+def readingFunctoriality_invariant_function_predicate_not_transportedAlong :=
+  @AAT.AG.Invariant.function_predicate_not_transportedAlong
+
+/-- Audit alias for reflexive invariant transport. -/
+def readingFunctoriality_invariant_transportedAlong_refl :=
+  @AAT.AG.Invariant.transportedAlong_refl
+
+/-- Audit alias for `ObjectAlgebraHom.ext`. -/
+def readingFunctoriality_objectAlgebraHom_ext :=
+  @AAT.AG.ObjectAlgebraHom.ext
+
+/-- Audit alias for the identity object map normal form. -/
+def readingFunctoriality_objectAlgebraHom_id_objMap :=
+  @AAT.AG.ObjectAlgebraHom.id_objMap
+
+/-- Audit alias for the composite object map normal form. -/
+def readingFunctoriality_objectAlgebraHom_comp_objMap :=
+  @AAT.AG.ObjectAlgebraHom.comp_objMap
+
+/-- Audit alias for `SignedExactCoreReadingHom.ext`. -/
+def readingFunctoriality_signedExactCoreReadingHom_ext :=
+  @AAT.AG.SignedExactCoreReadingHom.ext
+
+/-- Audit alias for the exact generated-configuration equality. -/
+def readingFunctoriality_signedExactCoreReadingHom_generatedConfiguration_eq :=
+  @AAT.AG.SignedExactCoreReadingHom.generatedConfiguration_eq
+
+/-- Audit alias for the exact base-object equality. -/
+def readingFunctoriality_signedExactCoreReadingHom_base_eq :=
+  @AAT.AG.SignedExactCoreReadingHom.base_eq
+
+/-- Audit alias for exact-change identity coherence. -/
+def readingFunctoriality_signedExactCoreReadingHom_toObjectAlgebraHom_refl :=
+  @AAT.AG.SignedExactCoreReadingHom.toObjectAlgebraHom_refl
+
+/-- Audit alias for exact-change composition coherence. -/
+def readingFunctoriality_signedExactCoreReadingHom_toObjectAlgebraHom_comp :=
+  @AAT.AG.SignedExactCoreReadingHom.toObjectAlgebraHom_comp
+
+/-- Audit alias for `PositiveCoreReadingHom.ext`. -/
+def readingFunctoriality_positiveCoreReadingHom_ext :=
+  @AAT.AG.PositiveCoreReadingHom.ext
+
+/-- Audit alias for positive reachable-object transport. -/
+def readingFunctoriality_positiveCoreReadingHom_mapReachable :=
+  @AAT.AG.PositiveCoreReadingHom.mapReachable
+
+/-- Audit alias for the positive singleton circuit example. -/
+def readingFunctoriality_finiteCircuitDatum_positive_singleton :=
+  @AAT.AG.FiniteCircuitDatum.positive_singleton
+
+/-- Audit alias for the negative singleton circuit counterexample. -/
+def readingFunctoriality_finiteCircuitDatum_not_positive_singleton_false :=
+  @AAT.AG.FiniteCircuitDatum.not_positive_singleton_false
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
