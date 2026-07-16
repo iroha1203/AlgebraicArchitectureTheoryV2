@@ -1,4 +1,5 @@
 import Formal.AG.ReadingFunctoriality.Core
+import Formal.AG.ReadingFunctoriality.ExtFunctoriality
 import Formal.AG.Site.FinitePosetGeometry
 import Formal.AG.Cohomology.CechComplex
 import Mathlib.CategoryTheory.Sites.SheafCohomology.Basic
@@ -1214,6 +1215,333 @@ noncomputable def sheafHMap
     (n : Nat) :
     r.sheafHMap F n = r.sheafHExtMap F n :=
   rfl
+
+/-- Identity topology change agrees with the canonical same-topology map. -/
+@[simp] theorem sheafHMap_refl
+    {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C}
+    (F : CommonCoefficientSheaf J J)
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    (n : Nat) :
+    (CoverageTopologyRefinement.refl J).sheafHMap F n =
+      F.sameTopologyHMap n := by
+  letI := HasDerivedCategory.standard (Sheaf J AddCommGrpCat.{w})
+  let r := CoverageTopologyRefinement.refl J
+  let e : r.fineSheafification ≅
+      Functor.id (Sheaf J AddCommGrpCat.{w}) :=
+    r.fineSheafificationAdjunction.leftAdjointUniq Adjunction.id
+  have hcoeff : e.hom.app F.coarse = (r.commonCoefficientIso F).hom := by
+    rw [show e.hom.app F.coarse =
+        r.fineSheafificationAdjunction.counit.app F.coarse by
+      simpa [e] using
+        (Adjunction.leftAdjointUniq_hom_app_counit
+          r.fineSheafificationAdjunction Adjunction.id F.coarse)]
+    dsimp [r, commonCoefficientIso, fineSheafificationAdjunction]
+    change _ = (sheafificationAdjunction J AddCommGrpCat.{w}).counit.app F.coarse
+    simpa [r, coarseRestriction] using
+      (Adjunction.map_restrictFullyFaithful_counit_app
+        (L := r.fineSheafification) (R := r.coarseRestriction)
+        (sheafificationAdjunction J AddCommGrpCat.{w})
+        (fullyFaithfulSheafToPresheaf J AddCommGrpCat.{w})
+        (Functor.FullyFaithful.id _)
+        (Iso.refl (sheafToPresheaf J AddCommGrpCat.{w} ⋙
+          presheafToSheaf J AddCommGrpCat.{w}))
+        (Iso.refl (Functor.id (Sheaf J AddCommGrpCat.{w}) ⋙
+          sheafToPresheaf J AddCommGrpCat.{w})) F.coarse)
+  have hconst : e.hom.app
+      ((constantSheaf J AddCommGrpCat.{w}).obj
+        (AddCommGrpCat.of (ULift ℤ))) = r.constantSheafIso.hom := by
+    dsimp [e, r, constantSheafIso, fineSheafificationAdjunction]
+    simp [Adjunction.leftAdjointUniq]
+    change _ =
+      (CoverageTopologyRefinement.refl J).fineSheafification.map
+          ((presheafToSheaf J AddCommGrpCat.{w}).map
+            ((sheafificationAdjunction J AddCommGrpCat.{w}).unit.app
+              ((Functor.const Cᵒᵖ).obj
+                (AddCommGrpCat.of (ULift ℤ))))) ≫
+        (CoverageTopologyRefinement.refl J).fineSheafification.map
+            ((sheafificationAdjunction J AddCommGrpCat.{w}).counit.app
+              ((presheafToSheaf J AddCommGrpCat.{w}).obj
+                ((Functor.const Cᵒᵖ).obj
+                  (AddCommGrpCat.of (ULift ℤ))))) ≫ _
+    slice_rhs 1 2 =>
+      rw [← Functor.map_comp,
+        (sheafificationAdjunction J AddCommGrpCat.{w}).left_triangle_components]
+      dsimp
+      rw [CategoryTheory.Functor.map_id]
+    simp
+    rfl
+  ext x
+  dsimp [sheafHMap, sheafHExtMap,
+    CommonCoefficientSheaf.sameTopologyHMap]
+  change
+    ((Abelian.Ext.mk₀
+        (CoverageTopologyRefinement.refl J).constantSheafIso.inv).comp
+      (x.mapExactFunctor
+        (CoverageTopologyRefinement.refl J).fineSheafification)
+      (zero_add n)).comp
+        (Abelian.Ext.mk₀
+          ((CoverageTopologyRefinement.refl J).commonCoefficientIso F).hom)
+        (add_zero n) =
+      x.comp (Abelian.Ext.mk₀ F.sameTopologyIso.hom) (add_zero n)
+  have hnat := CategoryTheory.mapExactFunctor_iso_naturality
+    r.fineSheafification (Functor.id (Sheaf J AddCommGrpCat.{w})) e x
+  have hid : x.mapExactFunctor (Functor.id (Sheaf J AddCommGrpCat.{w})) = x := by
+    exact CategoryTheory.Abelian.Ext.mapExactFunctor_id x
+  dsimp [r] at hcoeff hconst
+  have hconstInv :
+      (CoverageTopologyRefinement.refl J).constantSheafIso.inv =
+        e.inv.app ((constantSheaf J AddCommGrpCat.{w}).obj
+          (AddCommGrpCat.of (ULift ℤ))) := by
+    rw [← cancel_mono (e.hom.app
+      ((constantSheaf J AddCommGrpCat.{w}).obj
+        (AddCommGrpCat.of (ULift ℤ))))]
+    calc
+      _ = (CoverageTopologyRefinement.refl J).constantSheafIso.inv ≫
+          (CoverageTopologyRefinement.refl J).constantSheafIso.hom := by
+            rw [← hconst]
+      _ = 𝟙 _ := by simp
+      _ = e.inv.app ((constantSheaf J AddCommGrpCat.{w}).obj
+            (AddCommGrpCat.of (ULift ℤ))) ≫
+          e.hom.app ((constantSheaf J AddCommGrpCat.{w}).obj
+            (AddCommGrpCat.of (ULift ℤ))) :=
+        (e.inv_hom_id_app _).symm
+  rw [hconstInv, ← hcoeff]
+  rw [Abelian.Ext.comp_assoc_of_third_deg_zero]
+  rw [← hnat]
+  rw [← Abelian.Ext.comp_assoc_of_second_deg_zero]
+  simp [hid, CommonCoefficientSheaf.sameTopologyIso]
+
+private lemma fineSheafificationAdjunction_counit_app_eq
+    {C : Type u} [Category.{v} C]
+    {J J' : GrothendieckTopology C}
+    (r : CoverageTopologyRefinement J J')
+    [HasSheafify J' AddCommGrpCat.{w}]
+    (G : Sheaf J' AddCommGrpCat.{w}) :
+    r.fineSheafificationAdjunction.counit.app G =
+      (sheafificationAdjunction J' AddCommGrpCat.{w}).counit.app G := by
+  simpa [fineSheafificationAdjunction, coarseRestriction] using
+    (Adjunction.map_restrictFullyFaithful_counit_app
+      (L := r.fineSheafification) (R := r.coarseRestriction)
+      (sheafificationAdjunction J' AddCommGrpCat.{w})
+      (fullyFaithfulSheafToPresheaf J AddCommGrpCat.{w})
+      (Functor.FullyFaithful.id _)
+      (Iso.refl (sheafToPresheaf J AddCommGrpCat.{w} ⋙
+        presheafToSheaf J' AddCommGrpCat.{w}))
+      (Iso.refl (Functor.id (Sheaf J' AddCommGrpCat.{w}) ⋙
+        sheafToPresheaf J' AddCommGrpCat.{w})) G)
+
+private lemma commonCoefficientIso_comp_hom
+    {C : Type u} [Category.{v} C]
+    {J₁ J₂ J₃ : GrothendieckTopology C}
+    (r : CoverageTopologyRefinement J₁ J₂)
+    (s : CoverageTopologyRefinement J₂ J₃)
+    (F : Cᵒᵖ ⥤ AddCommGrpCat.{w})
+    (h₁ : Presheaf.IsSheaf J₁ F)
+    (h₂ : Presheaf.IsSheaf J₂ F)
+    (h₃ : Presheaf.IsSheaf J₃ F)
+    [HasSheafify J₂ AddCommGrpCat.{w}]
+    [HasSheafify J₃ AddCommGrpCat.{w}] :
+    let t := r.comp s
+    let F₁₂ : CommonCoefficientSheaf J₁ J₂ := ⟨F, h₁, h₂⟩
+    let F₂₃ : CommonCoefficientSheaf J₂ J₃ := ⟨F, h₂, h₃⟩
+    let F₁₃ : CommonCoefficientSheaf J₁ J₃ := ⟨F, h₁, h₃⟩
+    let e : t.fineSheafification ≅
+        r.fineSheafification ⋙ s.fineSheafification :=
+      t.fineSheafificationAdjunction.leftAdjointUniq
+        (r.fineSheafificationAdjunction.comp
+          s.fineSheafificationAdjunction)
+    (t.commonCoefficientIso F₁₃).hom =
+      e.hom.app F₁₃.coarse ≫
+        s.fineSheafification.map (r.commonCoefficientIso F₁₂).hom ≫
+          (s.commonCoefficientIso F₂₃).hom := by
+  dsimp
+  simpa [CommonCoefficientSheaf.coarse, CommonCoefficientSheaf.fine,
+    commonCoefficientIso, fineSheafificationAdjunction_counit_app_eq] using
+    (Adjunction.leftAdjointUniq_hom_app_counit
+      (r.comp s).fineSheafificationAdjunction
+      (r.fineSheafificationAdjunction.comp s.fineSheafificationAdjunction)
+      (⟨F, h₃⟩ : Sheaf J₃ AddCommGrpCat.{w})).symm
+
+private lemma fineSheafification_comp_middle_hom_app
+    {C : Type u} [Category.{v} C]
+    {J₁ J₂ J₃ : GrothendieckTopology C}
+    (r : CoverageTopologyRefinement J₁ J₂)
+    (s : CoverageTopologyRefinement J₂ J₃)
+    [HasSheafify J₁ AddCommGrpCat.{w}]
+    [HasSheafify J₂ AddCommGrpCat.{w}]
+    [HasSheafify J₃ AddCommGrpCat.{w}] :
+    let a₀ := sheafificationAdjunction J₁ AddCommGrpCat.{w}
+    let a₁ := r.fineSheafificationAdjunction
+    let a₂ := s.fineSheafificationAdjunction
+    let b := sheafificationAdjunction J₂ AddCommGrpCat.{w}
+    let P := (Functor.const Cᵒᵖ).obj (AddCommGrpCat.of (ULift ℤ))
+    ((a₀.comp (a₁.comp a₂)).leftAdjointUniq (b.comp a₂)).hom.app P =
+      s.fineSheafification.map
+        (((a₀.comp a₁).leftAdjointUniq b).hom.app P) := by
+  dsimp
+  apply (((sheafificationAdjunction J₁ AddCommGrpCat.{w}).comp
+    (r.fineSheafificationAdjunction.comp s.fineSheafificationAdjunction)
+    ).homEquiv _ _).injective
+  rw [Adjunction.homEquiv_leftAdjointUniq_hom_app]
+  rw [Adjunction.homEquiv_unit]
+  simp only [Adjunction.comp_unit_app, Functor.comp_obj, Functor.comp_map,
+    Category.assoc]
+  rw [← Functor.map_comp, Category.assoc,
+    ← r.coarseRestriction.map_comp]
+  rw [← Functor.comp_map]
+  rw [← s.fineSheafificationAdjunction.unit.naturality]
+  simp only [Functor.id_map, Functor.map_comp]
+  rw [← Category.assoc, ← Adjunction.comp_unit_app]
+  rw [← Adjunction.comp_unit_app
+    (sheafificationAdjunction J₁ AddCommGrpCat.{w})
+    r.fineSheafificationAdjunction]
+  rw [← Functor.comp_map]
+  have hbase := Adjunction.unit_leftAdjointUniq_hom_app
+    ((sheafificationAdjunction J₁ AddCommGrpCat.{w}).comp
+      r.fineSheafificationAdjunction)
+    (sheafificationAdjunction J₂ AddCommGrpCat.{w})
+    ((Functor.const Cᵒᵖ).obj (AddCommGrpCat.of (ULift ℤ)))
+  rw [← Category.assoc]
+  rw [hbase]
+  rw [Adjunction.comp_unit_app]
+  rfl
+
+private lemma constantSheafIso_comp_hom
+    {C : Type u} [Category.{v} C]
+    {J₁ J₂ J₃ : GrothendieckTopology C}
+    (r : CoverageTopologyRefinement J₁ J₂)
+    (s : CoverageTopologyRefinement J₂ J₃)
+    [HasSheafify J₁ AddCommGrpCat.{w}]
+    [HasSheafify J₂ AddCommGrpCat.{w}]
+    [HasSheafify J₃ AddCommGrpCat.{w}] :
+    let t := r.comp s
+    let e : t.fineSheafification ≅
+        r.fineSheafification ⋙ s.fineSheafification :=
+      t.fineSheafificationAdjunction.leftAdjointUniq
+        (r.fineSheafificationAdjunction.comp
+          s.fineSheafificationAdjunction)
+    t.constantSheafIso.hom =
+      e.hom.app ((constantSheaf J₁ AddCommGrpCat.{w}).obj
+          (AddCommGrpCat.of (ULift ℤ))) ≫
+        s.fineSheafification.map r.constantSheafIso.hom ≫
+          s.constantSheafIso.hom := by
+  dsimp only
+  let P := (Functor.const Cᵒᵖ).obj (AddCommGrpCat.of (ULift ℤ))
+  let a₀ := sheafificationAdjunction J₁ AddCommGrpCat.{w}
+  let aₜ := (r.comp s).fineSheafificationAdjunction
+  let a₁ := r.fineSheafificationAdjunction
+  let a₂ := s.fineSheafificationAdjunction
+  let b := sheafificationAdjunction J₂ AddCommGrpCat.{w}
+  let c := sheafificationAdjunction J₃ AddCommGrpCat.{w}
+  let A := a₀.comp aₜ
+  let B := a₀.comp (a₁.comp a₂)
+  let D := b.comp a₂
+  change (A.leftAdjointUniq c).hom.app P =
+    (aₜ.leftAdjointUniq (a₁.comp a₂)).hom.app
+        ((presheafToSheaf J₁ AddCommGrpCat.{w}).obj P) ≫
+      s.fineSheafification.map
+          (((a₀.comp a₁).leftAdjointUniq b).hom.app P) ≫
+        (D.leftAdjointUniq c).hom.app P
+  rw [← Adjunction.comp_leftAdjointUniq_hom_app a₀ aₜ (a₁.comp a₂) P]
+  rw [← fineSheafification_comp_middle_hom_app r s]
+  rw [← Category.assoc]
+  rw [Adjunction.leftAdjointUniq_trans_app A B D P]
+  exact (Adjunction.leftAdjointUniq_trans_app A D c P).symm
+
+set_option maxRecDepth 2000 in
+/-- Topology-change cohomology maps compose through the actual intermediate sheaf. -/
+theorem sheafHMap_comp
+    {C : Type u} [Category.{v} C]
+    {J₁ J₂ J₃ : GrothendieckTopology C}
+    (r : CoverageTopologyRefinement J₁ J₂)
+    (s : CoverageTopologyRefinement J₂ J₃)
+    (F : Cᵒᵖ ⥤ AddCommGrpCat.{w})
+    (h₁ : Presheaf.IsSheaf J₁ F)
+    (h₂ : Presheaf.IsSheaf J₂ F)
+    (h₃ : Presheaf.IsSheaf J₃ F)
+    [HasSheafify J₁ AddCommGrpCat.{w}]
+    [HasSheafify J₂ AddCommGrpCat.{w}]
+    [HasSheafify J₃ AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J₁ AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J₂ AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J₃ AddCommGrpCat.{w})]
+    (n : Nat) :
+    (r.comp s).sheafHMap ⟨F, h₁, h₃⟩ n =
+      (s.sheafHMap ⟨F, h₂, h₃⟩ n).comp
+        (r.sheafHMap ⟨F, h₁, h₂⟩ n) := by
+  letI := HasDerivedCategory.standard (Sheaf J₁ AddCommGrpCat.{w})
+  letI := HasDerivedCategory.standard (Sheaf J₂ AddCommGrpCat.{w})
+  letI := HasDerivedCategory.standard (Sheaf J₃ AddCommGrpCat.{w})
+  let t := r.comp s
+  let F₁₂ : CommonCoefficientSheaf J₁ J₂ := ⟨F, h₁, h₂⟩
+  let F₂₃ : CommonCoefficientSheaf J₂ J₃ := ⟨F, h₂, h₃⟩
+  let F₁₃ : CommonCoefficientSheaf J₁ J₃ := ⟨F, h₁, h₃⟩
+  let e : t.fineSheafification ≅
+      r.fineSheafification ⋙ s.fineSheafification :=
+    t.fineSheafificationAdjunction.leftAdjointUniq
+      (r.fineSheafificationAdjunction.comp s.fineSheafificationAdjunction)
+  have hcoeff : (t.commonCoefficientIso F₁₃).hom =
+      e.hom.app F₁₃.coarse ≫
+        s.fineSheafification.map (r.commonCoefficientIso F₁₂).hom ≫
+          (s.commonCoefficientIso F₂₃).hom := by
+    exact commonCoefficientIso_comp_hom r s F h₁ h₂ h₃
+  have hconst : t.constantSheafIso.hom =
+      e.hom.app ((constantSheaf J₁ AddCommGrpCat.{w}).obj
+          (AddCommGrpCat.of (ULift ℤ))) ≫
+        s.fineSheafification.map r.constantSheafIso.hom ≫
+          s.constantSheafIso.hom := by
+    exact constantSheafIso_comp_hom r s
+  have hconstInv :
+      s.constantSheafIso.inv ≫
+          s.fineSheafification.map r.constantSheafIso.inv =
+        t.constantSheafIso.inv ≫
+          e.hom.app ((constantSheaf J₁ AddCommGrpCat.{w}).obj
+            (AddCommGrpCat.of (ULift ℤ))) := by
+    rw [← cancel_mono (s.fineSheafification.map r.constantSheafIso.hom ≫
+      s.constantSheafIso.hom)]
+    simp only [Category.assoc]
+    rw [← hconst]
+    simp
+  ext x
+  change
+    ((Abelian.Ext.mk₀ t.constantSheafIso.inv).comp
+      (x.mapExactFunctor t.fineSheafification) (zero_add n)).comp
+        (Abelian.Ext.mk₀ (t.commonCoefficientIso F₁₃).hom) (add_zero n) =
+    ((Abelian.Ext.mk₀ s.constantSheafIso.inv).comp
+      ((((Abelian.Ext.mk₀ r.constantSheafIso.inv).comp
+          (x.mapExactFunctor r.fineSheafification) (zero_add n)).comp
+        (Abelian.Ext.mk₀ (r.commonCoefficientIso F₁₂).hom) (add_zero n)
+      ).mapExactFunctor s.fineSheafification) (zero_add n)).comp
+        (Abelian.Ext.mk₀ (s.commonCoefficientIso F₂₃).hom) (add_zero n)
+  rw [Abelian.Ext.mapExactFunctor_postcomp_mk₀
+    (F := s.fineSheafification)
+    ((Abelian.Ext.mk₀ r.constantSheafIso.inv).comp
+      (x.mapExactFunctor r.fineSheafification) (zero_add n))
+    (r.commonCoefficientIso F₁₂).hom]
+  rw [Abelian.Ext.mapExactFunctor_precomp_mk₀
+    (F := s.fineSheafification) r.constantSheafIso.inv
+    (x.mapExactFunctor r.fineSheafification)]
+  letI := Limits.comp_preservesFiniteLimits
+    r.fineSheafification s.fineSheafification
+  letI := Limits.comp_preservesFiniteColimits
+    r.fineSheafification s.fineSheafification
+  rw [Abelian.Ext.mapExactFunctor_comp
+    (H := r.fineSheafification) (K := s.fineSheafification) x]
+  simp only [Abelian.Ext.comp_assoc_of_third_deg_zero,
+    Abelian.Ext.mk₀_comp_mk₀_assoc, Abelian.Ext.mk₀_comp_mk₀]
+  rw [hconstInv]
+  conv_rhs =>
+    rw [← Abelian.Ext.mk₀_comp_mk₀_assoc]
+    rw [← Abelian.Ext.comp_assoc_of_third_deg_zero]
+  rw [CategoryTheory.mapExactFunctor_iso_naturality
+    t.fineSheafification
+    (r.fineSheafification ⋙ s.fineSheafification) e x]
+  simp only [Abelian.Ext.comp_assoc_of_third_deg_zero,
+    Abelian.Ext.mk₀_comp_mk₀]
+  rw [← hcoeff]
+
 
 end CoverageTopologyRefinement
 end AAT.AG

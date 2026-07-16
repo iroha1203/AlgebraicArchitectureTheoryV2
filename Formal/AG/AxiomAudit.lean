@@ -4251,6 +4251,16 @@ noncomputable def readingFunctoriality_sheafHMap :=
 def readingFunctoriality_sheafHMap_eq_ext :=
   @AAT.AG.CoverageTopologyRefinement.sheafHMap_eq_ext
 
+/-! Part 4 R5b: identity and composition for topology-change Ext maps. -/
+
+/-- Audit alias for identity topology change. -/
+def readingFunctoriality_sheafHMap_refl :=
+  @AAT.AG.CoverageTopologyRefinement.sheafHMap_refl
+
+/-- Audit alias for composite topology change. -/
+def readingFunctoriality_sheafHMap_comp :=
+  @AAT.AG.CoverageTopologyRefinement.sheafHMap_comp
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
