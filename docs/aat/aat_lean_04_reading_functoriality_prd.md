@@ -137,7 +137,7 @@ SDとmodule DAGを再承認する。
 `open CategoryTheory Opposite`、
 `open AlgebraicGeometry`、
 `open scoped AlgebraicGeometry`、
-`universe u v w x`の下で読む。
+`universe u v w w' x`の下で読む。
 既存APIを拡張するblockは`Cohomology`、`LawAlgebra`、`Derived.Intersection`など
 既存の完全namespaceをこの位置から再開する。新しい入れ子namespaceへ同名APIを複製しない。
 
