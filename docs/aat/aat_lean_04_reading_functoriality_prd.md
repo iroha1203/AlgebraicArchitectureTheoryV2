@@ -2171,41 +2171,41 @@ namespace Derived.Intersection
 open scoped ChangeOfRings
 
 noncomputable def moduleScalarExtension
-    {R R' : Type v}
+    {R R' : Type u}
     [CommRing R] [CommRing R']
     (f : FlatCoefficientChange R R')
-    (M : ModuleCat.{v} R) :
-    ModuleCat.{v} R' :=
+    (M : ModuleCat.{max u v} R) :
+    ModuleCat.{max u v} R' :=
   (ModuleCat.extendScalars f.hom).obj M
 
 noncomputable def moduleScalarExtensionUnit
-    {R R' : Type v}
+    {R R' : Type u}
     [CommRing R] [CommRing R']
     (f : FlatCoefficientChange R R')
-    (M : ModuleCat.{v} R) :
+    (M : ModuleCat.{max u v} R) :
     M ⟶ (ModuleCat.restrictScalars f.hom).obj
       (moduleScalarExtension f M) :=
   (ModuleCat.extendRestrictScalarsAdj f.hom).unit.app M
 
 @[simp] theorem moduleScalarExtensionUnit_apply
-    {R R' : Type v}
+    {R R' : Type u}
     [CommRing R] [CommRing R']
     (f : FlatCoefficientChange R R')
-    (M : ModuleCat.{v} R) (m : M) :
+    (M : ModuleCat.{max u v} R) (m : M) :
     moduleScalarExtensionUnit f M m =
       (1 : R') ⊗ₜ[R, f.hom] m
 
 noncomputable def moduleScalarExtensionIdIso
-    {R : Type v} [CommRing R]
-    (M : ModuleCat.{v} R) :
+    {R : Type u} [CommRing R]
+    (M : ModuleCat.{max u v} R) :
     moduleScalarExtension (FlatCoefficientChange.refl R) M ≅ M
 
 noncomputable def moduleScalarExtensionCompIso
-    {R R' R'' : Type v}
+    {R R' R'' : Type u}
     [CommRing R] [CommRing R'] [CommRing R'']
     (f : FlatCoefficientChange R R')
     (g : FlatCoefficientChange R' R'')
-    (M : ModuleCat.{v} R) :
+    (M : ModuleCat.{max u v} R) :
     moduleScalarExtension g (moduleScalarExtension f M) ≅
       moduleScalarExtension (f.comp g) M
 
@@ -2650,7 +2650,7 @@ noncomputable def sheafHFlatBaseChangeMap
     (hsource : IsLerayFor 𝒰 Ob.toObstructionSheaf)
     (htarget : IsLerayFor 𝒰 (Ob.baseChange f).toObstructionSheaf)
     (n : Nat) :
-    Derived.Intersection.moduleScalarExtension f
+    Derived.Intersection.moduleScalarExtension.{u, u + 2} f
         (Ob.terminalLerayHModule 𝒰 hbase hsource n) ⟶
       (Ob.baseChange f).terminalLerayHModule 𝒰 hbase htarget n
 
@@ -2690,7 +2690,7 @@ theorem sheafHFlatBaseChangeMap_on_class
     (n : Nat)
     (c : (Ob.canonicalLinearCech 𝒰).complex.CechCocycle n) :
     sheafHFlatBaseChangeMap Ob f 𝒰 hbase hsource htarget n
-        (Derived.Intersection.moduleScalarExtensionUnit f
+        (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 2} f
           (Ob.terminalLerayHModule 𝒰 hbase hsource n)
           (cechToSheafH 𝒰 Ob.toObstructionSheaf hbase hsource n
             ((Ob.canonicalLinearCech 𝒰).complex.additiveCohomologyClass n c))) =
@@ -2727,7 +2727,7 @@ noncomputable def sheafHFlatBaseChangeIso
     (hsource : IsLerayFor 𝒰 Ob.toObstructionSheaf)
     (htarget : IsLerayFor 𝒰 (Ob.baseChange f).toObstructionSheaf)
     (n : Nat) :
-    Derived.Intersection.moduleScalarExtension f
+    Derived.Intersection.moduleScalarExtension.{u, u + 2} f
         (Ob.terminalLerayHModule 𝒰 hbase hsource n) ≅
       (Ob.baseChange f).terminalLerayHModule 𝒰 hbase htarget n
 
@@ -2763,7 +2763,7 @@ theorem sheafHFlatBaseChangeIso_hom
           𝒰 hbase hsource htarget n ≫
         (Ob.baseChangeIdTerminalLerayHModuleIso
           𝒰 hbase hsource htarget n).hom =
-      (Derived.Intersection.moduleScalarExtensionIdIso
+      (Derived.Intersection.moduleScalarExtensionIdIso.{u, u + 2}
         (Ob.terminalLerayHModule 𝒰 hbase hsource n)).hom
 
 theorem sheafHFlatBaseChangeMap_comp
@@ -2792,7 +2792,7 @@ theorem sheafHFlatBaseChangeMap_comp
           𝒰 hbase hmiddle hiterated n ≫
         (Ob.baseChangeCompTerminalLerayHModuleIso f g
           𝒰 hbase hiterated hcomposite n).hom =
-      (Derived.Intersection.moduleScalarExtensionCompIso f g
+      (Derived.Intersection.moduleScalarExtensionCompIso.{u, u + 2} f g
           (Ob.terminalLerayHModule 𝒰 hbase hsource n)).hom ≫
         sheafHFlatBaseChangeMap Ob (f.comp g)
           𝒰 hbase hsource hcomposite n
@@ -2803,6 +2803,8 @@ end Cohomology
 `moduleScalarExtension`はMathlibの`ModuleCat.extendScalars`を直接使い、canonical unitは
 `extendRestrictScalarsAdj`のunitで固定する。`scalarExtensionCochain`はこのunitと
 `scalarExtensionObjIso`の逆射から構成し、caller-supplied mapにしない。
+環のuniverse `u`とmodule carrierのuniverse `max u v`は独立にし、actual `Sheaf.H`の
+carrierへ適用する箇所では`.{u, u + 2}`を明示する。
 `scalarExtensionObjIso`と`scalarExtension_d_apply`がcochain objectとdifferentialの
 scalar-extension formulaを検査する。`scalarExtensionCocycle`からactual homology classを作り、
 `classBaseChange`を任意関数として選ばない。
@@ -3271,7 +3273,7 @@ noncomputable def finiteActualSourceClass :
       finiteDegree finiteCocycle)
 
 noncomputable def finiteSheafHBaseChangeMap :
-    Derived.Intersection.moduleScalarExtension intPolynomialFlatChange
+    Derived.Intersection.moduleScalarExtension.{0, 2} intPolynomialFlatChange
         (finiteLinearObstructionSheaf.terminalLerayHModule
           coarseCover finiteBaseIsTerminal finiteLerayCover finiteDegree) ⟶
       finiteBaseChangedLinearObstructionSheaf.terminalLerayHModule
@@ -3281,7 +3283,7 @@ noncomputable def finiteSheafHBaseChangeMap :
     finiteBaseIsTerminal finiteLerayCover finiteTargetLerayCover finiteDegree
 
 noncomputable def finiteSheafHBaseChangeIso :
-    Derived.Intersection.moduleScalarExtension intPolynomialFlatChange
+    Derived.Intersection.moduleScalarExtension.{0, 2} intPolynomialFlatChange
         (finiteLinearObstructionSheaf.terminalLerayHModule
           coarseCover finiteBaseIsTerminal finiteLerayCover finiteDegree) ≅
       finiteBaseChangedLinearObstructionSheaf.terminalLerayHModule
@@ -3304,7 +3306,7 @@ theorem finiteClass_baseChange_nonzero :
 
 theorem finiteSheafHClass_baseChange_nonzero :
     finiteSheafHBaseChangeMap
-        (Derived.Intersection.moduleScalarExtensionUnit
+        (Derived.Intersection.moduleScalarExtensionUnit.{0, 2}
           intPolynomialFlatChange
           (finiteLinearObstructionSheaf.terminalLerayHModule
             coarseCover finiteBaseIsTerminal finiteLerayCover finiteDegree)
