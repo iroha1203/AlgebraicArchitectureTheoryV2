@@ -1044,4 +1044,40 @@ example
 
 end SheafCohomologyFoundationSD5
 
+namespace LerayComparisonFoundationSD5
+
+open CategoryTheory
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A}
+variable (Ob : Cohomology.ObstructionSheaf S)
+
+/-- Fixed derived enough-injectives contract for additive AAT sheaves. -/
+noncomputable example
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    EnoughInjectives (Sheaf S.topology AddCommGrpCat.{u + 1}) :=
+  Cohomology.standardAddCommGrpSheafEnoughInjectives
+
+/-- Fixed obstruction-sheaf injective-resolution contract. -/
+noncomputable example
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    InjectiveResolution Ob.toAddCommGrpSheaf :=
+  Cohomology.obstructionInjectiveResolution Ob
+
+/-- Fixed `H'` computation by the obstruction injective resolution. -/
+noncomputable example
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (X : S.category) (n : Nat) :
+    (Ob.toAddCommGrpSheaf).H' n X ≃+
+      CochainComplex.HomComplex.CohomologyClass
+        ((CochainComplex.singleFunctor
+          (Sheaf S.topology AddCommGrpCat.{u + 1}) 0).obj
+            ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+              (yoneda.obj X ⋙ AddCommGrpCat.free)))
+        (Cohomology.obstructionInjectiveResolution Ob).cochainComplex n :=
+  Cohomology.obstructionHPrimeInjectiveEquiv Ob X n
+
+end LerayComparisonFoundationSD5
+
 end AAT.AG.StatementContractsReadingFunctoriality
