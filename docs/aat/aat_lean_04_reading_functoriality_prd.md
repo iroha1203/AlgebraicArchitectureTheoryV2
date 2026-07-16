@@ -116,7 +116,7 @@ SDとmodule DAGを再承認する。
 | `Formal.AG.ReadingFunctoriality.Core` | `Formal.AG.Atom.AATCore`、`Formal.AG.Site.Geometry`、`Formal.AG.LawAlgebra.StructureSheaf`、`Mathlib.Logic.Equiv.Defs` | `ReadingCore`、exact / positive core change、`ObjectAlgebraHom` |
 | `Formal.AG.ReadingFunctoriality.ExtFunctoriality` | `Mathlib.Algebra.Homology.DerivedCategory.Ext.Map`、`Mathlib.CategoryTheory.Adjunction.Unique` | exact functorによるExt写像のidentity / composition、exact-functor isoに対するnaturality、left-adjoint uniquenessのcomposition coherence |
 | `Formal.AG.ReadingFunctoriality.Coverage` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.ExtFunctoriality`、`Formal.AG.Site.FinitePosetGeometry`、`Formal.AG.Cohomology.CechComplex`、`Mathlib.AlgebraicTopology.AlternatingFaceMapComplex`、`Mathlib.CategoryTheory.Sites.SheafCohomology.Basic`、`Mathlib.CategoryTheory.Sites.Limits`、`Mathlib.CategoryTheory.Sites.LeftExact`、`Mathlib.CategoryTheory.Sites.Abelian`、`Mathlib.CategoryTheory.Sites.Equivalence`、`Mathlib.CategoryTheory.Adjunction.Restrict`、`Mathlib.CategoryTheory.Adjunction.Limits`、`Mathlib.Algebra.Category.Grp.FilteredColimits`、`Mathlib.Algebra.Homology.DerivedCategory.Ext.Map` | topology refinement、canonical tuple cover、selected cover refinement、one-way cochain hom、terminal `Sheaf.H'` / `Sheaf.H` comparison、topology-change `Sheaf.H` map |
-| `Formal.AG.ReadingFunctoriality.LerayComparison` | `Formal.AG.ReadingFunctoriality.Coverage`、`Mathlib.Algebra.Category.ModuleCat.AB`、`Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf`、`Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives`、`Mathlib.CategoryTheory.Abelian.Injective.Ext`、`Mathlib.CategoryTheory.Abelian.Injective.Resolution` | sheaf categoryのinjective-resolution計算、selected Čech–`Sheaf.H'` Leray comparison、bijectivity、refinement naturality |
+| `Formal.AG.ReadingFunctoriality.LerayComparison` | `Formal.AG.ReadingFunctoriality.Coverage`、`Mathlib.Algebra.Category.ModuleCat.AB`、`Mathlib.Algebra.Homology.ShortComplex.Ab`、`Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex`、`Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf`、`Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives`、`Mathlib.CategoryTheory.Abelian.Injective.Ext`、`Mathlib.CategoryTheory.Abelian.Injective.Resolution` | cover-relative Čech complexとMathlib cochain-complex homologyの同一化、sheaf categoryのinjective-resolution計算、selected Čech–`Sheaf.H'` Leray comparison、bijectivity、refinement naturality |
 | `Formal.AG.ReadingFunctoriality.Coefficient` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.Derived.Intersection`、`Mathlib.Algebra.Category.ModuleCat.ChangeOfRings`、`Mathlib.Algebra.Category.ModuleCat.Descent`、`Mathlib.Algebra.Category.ModuleCat.Sheaf`、`Mathlib.Algebra.Category.Ring.Under.Basic`、`Mathlib.Algebra.Category.Ring.Under.Limits`、`Mathlib.Algebra.Module.TransferInstance`、`Mathlib.CategoryTheory.Sites.Adjunction`、`Mathlib.CategoryTheory.Sites.PreservesSheafification`、`Mathlib.CategoryTheory.Sites.Whiskering`、`Mathlib.AlgebraicGeometry.Pullbacks`、`Mathlib.AlgebraicGeometry.IdealSheaf.Functorial`、`Mathlib.RingTheory.RingHom.Flat` | closed-equational geometry宣言のdirect reuse、raw quotient / sheafification scalar-extension comparison、scheme / ideal / Tor / linear Čech scalar extension / actual sheaf H coefficient change |
 | `Formal.AG.ReadingFunctoriality.FiniteExamples` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.Examples.FiniteModel`、`Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample` | SD9のpositive / negative firing |
 | `Formal.AG.ReadingFunctoriality` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.ReadingFunctoriality.LerayComparison`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.ReadingFunctoriality.FiniteExamples` | public aggregate |
@@ -1104,6 +1104,10 @@ Mathlib `Sheaf.H' n base`へ比較し、global `Sheaf.H`へ進むときだけter
 `Sheaf.H'` vanishingで固定し、comparison mapやisoをfieldに持たない。
 AAT siteのobject / hom universeに合わせて係数を`u + 1`とし、Ext結果は
 `HasExt.standard`のnamed instance chainが与える`u + 2`で固定する。
+custom quotientとして定義済みの`AdditiveCechHn`は、Leray比較を構成する前に
+同じdifferentialから作るMathlib `CochainComplex`のactual homologyへ同一化する。
+この同一化はdegree 0を含む任意次数で固定し、class formulaとcochain-map naturalityにより
+任意の群同値への差し替えを排除する。
 
 ~~~lean
 namespace Cohomology
@@ -1156,6 +1160,74 @@ noncomputable def obstructionHPrimeInjectiveEquiv
             ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
               (yoneda.obj X ⋙ AddCommGrpCat.free)))
         (obstructionInjectiveResolution Ob).cochainComplex n
+
+namespace CoverRelativeCechComplex
+
+variable {𝒰 𝒱 : CoverRelativeCechCover S}
+variable {Ob : ObstructionSheaf S}
+
+noncomputable def toCochainComplex
+    (K : CoverRelativeCechComplex 𝒰 Ob) :
+    CochainComplex AddCommGrpCat.{u} ℕ
+
+@[simp] theorem toCochainComplex_X
+    (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ) :
+    (K.toCochainComplex.X n : Type u) = K.AdditiveCochain n
+
+@[simp] theorem toCochainComplex_d
+    (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ) :
+    letI := K.cochainAddCommGroup n
+    letI := K.cochainAddCommGroup (n + 1)
+    K.toCochainComplex.d n (n + 1) = AddCommGrpCat.ofHom (K.d n)
+
+namespace Hom
+
+noncomputable def toCochainMap
+    {K : CoverRelativeCechComplex 𝒰 Ob}
+    {L : CoverRelativeCechComplex 𝒱 Ob}
+    (f : Hom K L) : K.toCochainComplex ⟶ L.toCochainComplex
+
+@[simp] theorem toCochainMap_f
+    {K : CoverRelativeCechComplex 𝒰 Ob}
+    {L : CoverRelativeCechComplex 𝒱 Ob}
+    (f : Hom K L) (n : ℕ) :
+    (f.toCochainMap.f n).hom = f.app n
+
+end Hom
+
+noncomputable def cocycleToCycles
+    (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ) :
+    AddCommGrpCat.of (K.CechCocycleSubgroup n) ⟶
+      K.toCochainComplex.cycles n
+
+@[simp] theorem cocycleToCycles_i
+    (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ)
+    (z : K.CechCocycleSubgroup n) :
+    (K.toCochainComplex.iCycles n).hom ((K.cocycleToCycles n).hom z) = z.1
+
+noncomputable def additiveCechHnEquivHomology
+    (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ) :
+    K.AdditiveCechHn n ≃+ K.toCochainComplex.homology n
+
+theorem additiveCechHnEquivHomology_additiveCohomologyClass
+    (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ)
+    (c : K.CechCocycle n) :
+    K.additiveCechHnEquivHomology n (K.additiveCohomologyClass n c) =
+      (K.toCochainComplex.homologyπ n).hom
+        ((K.cocycleToCycles n).hom ⟨c.1, c.2⟩)
+
+namespace Hom
+
+theorem additiveCechHnEquivHomology_naturality
+    {K : CoverRelativeCechComplex 𝒰 Ob}
+    {L : CoverRelativeCechComplex 𝒱 Ob}
+    (f : Hom K L) (n : ℕ) (x : K.AdditiveCechHn n) :
+    (HomologicalComplex.homologyMap f.toCochainMap n).hom
+        (K.additiveCechHnEquivHomology n x) =
+      L.additiveCechHnEquivHomology n (f.mapAdditiveCechHn n x)
+
+end Hom
+end CoverRelativeCechComplex
 
 def IsLerayFor
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
