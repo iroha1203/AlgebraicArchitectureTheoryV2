@@ -1428,6 +1428,8 @@ flatnessは係数拡大functorの有限極限保存を与えるが、一般cover
 無限積の保存を自動では与えないため、両者を同一視しない。
 Implementation notes: `coefficientExtension`とscheme-level APIは`k k' : Type v`を使い、
 同じ`CommRingCat` universe内のMathlib `Under.pushout`へ直接接続する。
+scheme-level coefficient affineは`AATCommAlgCat.{u, v}`の左対象と同じ
+`Spec (ULift.{max u v, v} k)`を使い、係数写像には`f.liftedHom`を使う。
 cross-universe coefficient changeには追加のcategory universe equivalenceが必要だが、
 本PRDはそのrepackageを導入せず、係数環の数学的内容を変えないcommon-universe statementを固定する。
 
@@ -1630,8 +1632,9 @@ noncomputable def sheafifiedSectionSpecBaseChangeIso
     architectureChartSpec (raw.baseChange f.hom) W ≅
       pullback
         (AlgebraicGeometry.Scheme.Spec.map
-          (CommRingCat.ofHom (sheafifiedSectionAlgebraMap raw W)).op)
-        (AlgebraicGeometry.Scheme.Spec.map (CommRingCat.ofHom f.hom).op)
+          (raw.toRingedSite.structureSheaf.val.obj (op W)).hom.op)
+        (AlgebraicGeometry.Scheme.Spec.map
+          (CommRingCat.ofHom f.liftedHom).op)
 
 noncomputable def sheafifiedSectionBaseChangeMap
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -1674,7 +1677,7 @@ noncomputable def coefficientStructureMap
     (X : StandardArchitectureScheme raw) :
     X.underlying ⟶
       AlgebraicGeometry.Scheme.Spec.obj
-        (op (CommRingCat.of k))
+        (op (CommRingCat.of (ULift.{max u v, v} k)))
 
 noncomputable def baseChange
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -1707,7 +1710,8 @@ noncomputable def baseChangeUnderlyingIso
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
     (X.baseChange raw f).underlying ≅
       pullback (X.coefficientStructureMap raw)
-        (AlgebraicGeometry.Scheme.Spec.map (CommRingCat.ofHom f.hom).op)
+        (AlgebraicGeometry.Scheme.Spec.map
+          (CommRingCat.ofHom f.liftedHom).op)
 
 theorem baseChangeMap_eq_pullback_fst
     (X : StandardArchitectureScheme raw)
@@ -1719,7 +1723,8 @@ theorem baseChangeMap_eq_pullback_fst
       (X.baseChangeUnderlyingIso raw f).hom ≫
         pullback.fst
           (X.coefficientStructureMap raw)
-          (AlgebraicGeometry.Scheme.Spec.map (CommRingCat.ofHom f.hom).op)
+          (AlgebraicGeometry.Scheme.Spec.map
+            (CommRingCat.ofHom f.liftedHom).op)
 
 noncomputable def baseChangedDecoration
     (X : StandardArchitectureScheme raw)
@@ -3110,11 +3115,10 @@ noncomputable def coefficientSectionSpecBaseChangeIso_fires :
         (coefficientRaw.baseChange intPolynomialFlatChange.hom) finiteBase ≅
       pullback
         (AlgebraicGeometry.Scheme.Spec.map
-          (CommRingCat.ofHom
-            (LawAlgebra.sheafifiedSectionAlgebraMap
-              coefficientRaw finiteBase)).op)
+          (coefficientRaw.toRingedSite.structureSheaf.val.obj
+            (op finiteBase)).hom.op)
         (AlgebraicGeometry.Scheme.Spec.map
-          (CommRingCat.ofHom intPolynomialFlatChange.hom).op) :=
+          (CommRingCat.ofHom intPolynomialFlatChange.liftedHom).op) :=
   LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso
     coefficientRaw intPolynomialFlatChange finiteBase
 
