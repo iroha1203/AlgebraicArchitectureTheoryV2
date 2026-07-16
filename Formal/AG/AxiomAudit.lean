@@ -4087,6 +4087,80 @@ def readingFunctoriality_refinement_overlapMap_face_naturality :=
 def readingFunctoriality_coarseToFineCover_not_bijective :=
   @AAT.AG.ReadingFunctorialityFinite.coarseToFineCover_not_bijective
 
+/-! Part 4 R4: canonical Čech refinement functoriality. -/
+
+/-- Audit alias for additive obstruction-sheaf restriction. -/
+def readingFunctoriality_obstructionSheaf_mapAddMonoidHom :=
+  @AAT.AG.Cohomology.ObstructionSheaf.mapAddMonoidHom
+
+/-- Audit alias for the canonical Čech complex. -/
+noncomputable def readingFunctoriality_canonicalCechComplex :=
+  @AAT.AG.Cohomology.canonicalCechComplex
+
+/-- Audit alias for the explicit canonical differential formula. -/
+def readingFunctoriality_canonicalCechComplex_d_apply :=
+  @AAT.AG.Cohomology.canonicalCechComplex_d_apply
+
+/-- Audit alias for the derived square-zero theorem. -/
+def readingFunctoriality_canonicalCechComplex_d_comp_d :=
+  @AAT.AG.Cohomology.canonicalCechComplex_d_comp_d
+
+/-- Audit alias for arbitrary-degree additive Čech cohomology. -/
+def readingFunctoriality_additiveCechHn :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.AdditiveCechHn
+
+/-- Audit alias for additive cocycle classes. -/
+def readingFunctoriality_additiveCohomologyClass :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.additiveCohomologyClass
+
+/-- Audit alias for cochain-map extensionality. -/
+def readingFunctoriality_coverRelativeCechComplexHom_ext :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.ext
+
+/-- Audit alias for the induced cocycle map. -/
+def readingFunctoriality_coverRelativeCechComplexHom_mapCocycle :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.mapCocycle
+
+/-- Audit alias for identity cochain maps. -/
+def readingFunctoriality_coverRelativeCechComplexHom_id :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.id
+
+/-- Audit alias for composite cochain maps. -/
+def readingFunctoriality_coverRelativeCechComplexHom_comp :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.comp
+
+/-- Audit alias for arbitrary-degree induced cohomology maps. -/
+def readingFunctoriality_coverRelativeCechComplexHom_mapAdditiveCechHn :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.mapAdditiveCechHn
+
+/-- Audit alias for the identity law on induced cohomology maps. -/
+def readingFunctoriality_coverRelativeCechComplexHom_mapAdditiveCechHn_id :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.mapAdditiveCechHn_id
+
+/-- Audit alias for composition of induced cohomology maps. -/
+def readingFunctoriality_coverRelativeCechComplexHom_mapAdditiveCechHn_comp :=
+  @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.mapAdditiveCechHn_comp
+
+/-- Audit alias for canonical refinement cochain maps. -/
+noncomputable def readingFunctoriality_refinement_canonicalCechHom :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.canonicalCechHom
+
+/-- Audit alias for the pointwise canonical refinement-map formula. -/
+def readingFunctoriality_refinement_canonicalCechHom_app_apply :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.canonicalCechHom_app_apply
+
+/-- Audit alias for the identity canonical refinement map. -/
+def readingFunctoriality_refinement_canonicalCechHom_refl :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.canonicalCechHom_refl
+
+/-- Audit alias for composite canonical refinement maps. -/
+def readingFunctoriality_refinement_canonicalCechHom_comp :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.canonicalCechHom_comp
+
+/-- Audit alias for obstruction-class naturality. -/
+def readingFunctoriality_obstructionClass_naturality :=
+  @AAT.AG.Cohomology.obstructionClass_naturality
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

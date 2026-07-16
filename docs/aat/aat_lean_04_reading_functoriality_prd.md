@@ -969,7 +969,8 @@ theorem canonicalCechComplex_d_comp_d
     (n : Nat)
     (c : (canonicalCechComplex 𝒰 Ob).AdditiveCochain n) :
     (canonicalCechComplex 𝒰 Ob).d (n + 1)
-        ((canonicalCechComplex 𝒰 Ob).d n c) = 0
+        ((canonicalCechComplex 𝒰 Ob).d n c) =
+      (0 : (canonicalCechComplex 𝒰 Ob).AdditiveCochain (n + 2))
 
 namespace CoverRelativeCechComplex
 
