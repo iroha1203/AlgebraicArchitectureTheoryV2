@@ -4165,6 +4165,96 @@ def readingFunctoriality_refinement_canonicalCechHom_comp :=
 def readingFunctoriality_obstructionClass_naturality :=
   @AAT.AG.Cohomology.obstructionClass_naturality
 
+/-! Part 4 R5a: actual sheaf-cohomology foundations. -/
+
+/-- Audit alias for the standard Ext universe on additive sheaves. -/
+noncomputable def readingFunctoriality_standardAddCommGrpSheafHasExt :=
+  @AAT.AG.Cohomology.standardAddCommGrpSheafHasExt
+
+/-- Audit alias for the actual additive obstruction sheaf. -/
+noncomputable def readingFunctoriality_obstructionSheaf_toAddCommGrpSheaf :=
+  @AAT.AG.Cohomology.ObstructionSheaf.toAddCommGrpSheaf
+
+/-- Audit alias for the standard AAT sheaf Ext instance. -/
+noncomputable def readingFunctoriality_aatSheafHasExt :=
+  @AAT.AG.Cohomology.aatSheafHasExt
+
+/-- Audit alias for the selected Leray predicate. -/
+def readingFunctoriality_isLerayFor :=
+  @AAT.AG.Cohomology.IsLerayFor
+
+/-- Audit alias for terminal local-to-global cohomology comparison. -/
+noncomputable def readingFunctoriality_terminalHComparison :=
+  @AAT.AG.Cohomology.terminalHComparison
+
+/-- Audit alias for common coefficient sheaves. -/
+def readingFunctoriality_commonCoefficientSheaf :=
+  @AAT.AG.CommonCoefficientSheaf
+
+/-- Audit alias for the coarse common coefficient sheaf. -/
+def readingFunctoriality_commonCoefficientSheaf_coarse :=
+  @AAT.AG.CommonCoefficientSheaf.coarse
+
+/-- Audit alias for the fine common coefficient sheaf. -/
+def readingFunctoriality_commonCoefficientSheaf_fine :=
+  @AAT.AG.CommonCoefficientSheaf.fine
+
+/-- Audit alias for the same-topology coefficient iso. -/
+noncomputable def readingFunctoriality_sameTopologyIso :=
+  @AAT.AG.CommonCoefficientSheaf.sameTopologyIso
+
+/-- Audit alias for the same-topology cohomology map. -/
+noncomputable def readingFunctoriality_sameTopologyHMap :=
+  @AAT.AG.CommonCoefficientSheaf.sameTopologyHMap
+
+/-- Audit alias for fine sheafification. -/
+noncomputable def readingFunctoriality_fineSheafification :=
+  @AAT.AG.CoverageTopologyRefinement.fineSheafification
+
+/-- Audit alias for coarse sheaf-condition transport. -/
+def readingFunctoriality_topology_isSheaf_coarse :=
+  @AAT.AG.CoverageTopologyRefinement.isSheaf_coarse
+
+/-- Audit alias for coarse restriction. -/
+def readingFunctoriality_coarseRestriction :=
+  @AAT.AG.CoverageTopologyRefinement.coarseRestriction
+
+/-- Audit alias for the fine-sheafification adjunction. -/
+noncomputable def readingFunctoriality_fineSheafificationAdjunction :=
+  @AAT.AG.CoverageTopologyRefinement.fineSheafificationAdjunction
+
+/-- Audit alias for additivity of fine sheafification. -/
+noncomputable def readingFunctoriality_fineSheafification_additive :=
+  @AAT.AG.CoverageTopologyRefinement.fineSheafification_additive
+
+/-- Audit alias for finite-limit preservation by fine sheafification. -/
+noncomputable def readingFunctoriality_fineSheafification_preservesFiniteLimits :=
+  @AAT.AG.CoverageTopologyRefinement.fineSheafification_preservesFiniteLimits
+
+/-- Audit alias for finite-colimit preservation by fine sheafification. -/
+noncomputable def readingFunctoriality_fineSheafification_preservesFiniteColimits :=
+  @AAT.AG.CoverageTopologyRefinement.fineSheafification_preservesFiniteColimits
+
+/-- Audit alias for the constant-sheaf topology comparison. -/
+noncomputable def readingFunctoriality_constantSheafIso :=
+  @AAT.AG.CoverageTopologyRefinement.constantSheafIso
+
+/-- Audit alias for the common-coefficient topology comparison. -/
+noncomputable def readingFunctoriality_commonCoefficientIso :=
+  @AAT.AG.CoverageTopologyRefinement.commonCoefficientIso
+
+/-- Audit alias for the concrete Ext topology-change map. -/
+noncomputable def readingFunctoriality_sheafHExtMap :=
+  @AAT.AG.CoverageTopologyRefinement.sheafHExtMap
+
+/-- Audit alias for the public topology-change map. -/
+noncomputable def readingFunctoriality_sheafHMap :=
+  @AAT.AG.CoverageTopologyRefinement.sheafHMap
+
+/-- Audit alias for the concrete Ext-map identification. -/
+def readingFunctoriality_sheafHMap_eq_ext :=
+  @AAT.AG.CoverageTopologyRefinement.sheafHMap_eq_ext
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

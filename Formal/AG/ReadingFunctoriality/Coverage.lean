@@ -24,9 +24,9 @@ noncomputable section
 
 namespace AAT.AG
 
-universe u v
+universe u v w w'
 
-open CategoryTheory
+open CategoryTheory CategoryTheory.Limits
 
 /-! ## Coverage refinement -/
 
@@ -384,6 +384,181 @@ def ObstructionSheaf.mapAddMonoidHom
   toFun := Ob.carrier.toPresheaf.map f.op
   map_zero' := Ob.map_zero f
   map_add' := Ob.map_add f
+
+/-- The obstruction coefficient bundled as a small additive presheaf. -/
+private def obstructionSmallAddCommGrpPresheaf
+    (Ob : ObstructionSheaf S) :
+    S.categoryᵒᵖ ⥤ AddCommGrpCat.{u} where
+  obj X := by
+    letI := Ob.addCommGroup X.unop
+    exact AddCommGrpCat.of
+      (Ob.carrier.toPresheaf.obj X)
+  map {X Y} f := by
+    letI := Ob.addCommGroup X.unop
+    letI := Ob.addCommGroup Y.unop
+    exact AddCommGrpCat.ofHom
+      (Ob.mapAddMonoidHom f.unop)
+  map_id X := by
+    apply ConcreteCategory.hom_ext
+    intro x
+    exact FunctorToTypes.map_id_apply
+      (F := Ob.carrier.toPresheaf) x
+  map_comp {X Y Z} f g := by
+    apply ConcreteCategory.hom_ext
+    intro x
+    exact FunctorToTypes.map_comp_apply
+      (F := Ob.carrier.toPresheaf) f g x
+
+/--
+The obstruction coefficient presheaf in the universe required by Mathlib's
+local sheaf-cohomology API.
+-/
+private noncomputable def obstructionAddCommGrpPresheaf
+    (Ob : ObstructionSheaf S) :
+    S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1} :=
+  obstructionSmallAddCommGrpPresheaf Ob ⋙
+    AddCommGrpCat.uliftFunctor.{u + 1, u}
+
+/-- Bundle an obstruction coefficient as an actual additive-group-valued sheaf. -/
+noncomputable def ObstructionSheaf.toAddCommGrpSheaf
+    (Ob : ObstructionSheaf S) :
+    Sheaf S.topology AddCommGrpCat.{u + 1} where
+  val := obstructionAddCommGrpPresheaf Ob
+  cond := by
+    refine (Presheaf.isSheaf_iff_isSheaf_forget
+      (J := S.topology)
+      (P' := obstructionAddCommGrpPresheaf Ob)
+      (forget AddCommGrpCat.{u + 1})).2 ?_
+    refine (isSheaf_iff_isSheaf_of_type S.topology
+      (obstructionAddCommGrpPresheaf Ob ⋙
+        forget AddCommGrpCat.{u + 1})).2 ?_
+    exact Presieve.isSheaf_comp_uliftFunctor S.topology
+      Ob.carrier.presieve_isSheaf
+
+/-- The standard Ext universe for additive-group-valued sheaves. -/
+noncomputable def standardAddCommGrpSheafHasExt
+    {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C}
+    [HasSheafify J AddCommGrpCat.{w}] :
+    HasExt.{max (max u v) (w + 1)}
+      (Sheaf J AddCommGrpCat.{w}) :=
+  HasExt.standard _
+
+/-- The standard Ext instance for additive coefficients on an AAT site. -/
+noncomputable instance aatSheafHasExt
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1}) :=
+  standardAddCommGrpSheafHasExt
+
+/-- Sum the coefficients of a free abelian group indexed by maps to a terminal object. -/
+private def terminalFreeForward
+    {C : Type u} [Category.{v} C]
+    {X : C} (Y : C) :
+    FreeAbelianGroup (Y ⟶ X) →+ ULift.{v} ℤ :=
+  FreeAbelianGroup.lift (fun _ => ULift.up 1)
+
+/-- Send an integer to the corresponding multiple of the unique terminal map. -/
+private def terminalFreeInverse
+    {C : Type u} [Category.{v} C]
+    {X : C} (hX : IsTerminal X) (Y : C) :
+    ULift.{v} ℤ →+ FreeAbelianGroup (Y ⟶ X) where
+  toFun z := z.down • FreeAbelianGroup.of (hX.from Y)
+  map_zero' := by simp
+  map_add' x y := by
+    change (x.down + y.down) • FreeAbelianGroup.of (hX.from Y) = _
+    rw [add_smul]
+
+/-- A free abelian group on maps to a terminal object is canonically `ULift ℤ`. -/
+private noncomputable def terminalFreeAddEquiv
+    {C : Type u} [Category.{v} C]
+    {X : C} (hX : IsTerminal X) (Y : C) :
+    FreeAbelianGroup (Y ⟶ X) ≃+ ULift.{v} ℤ where
+  toFun := terminalFreeForward Y
+  invFun := terminalFreeInverse hX Y
+  map_add' := (terminalFreeForward Y).map_add
+  right_inv z := by
+    rcases z with ⟨z⟩
+    apply ULift.ext
+    simp [terminalFreeForward, terminalFreeInverse]
+  left_inv z := by
+    let lhs : FreeAbelianGroup (Y ⟶ X) →+ FreeAbelianGroup (Y ⟶ X) :=
+      (terminalFreeInverse hX Y).comp (terminalFreeForward Y)
+    have hlhs : lhs = AddMonoidHom.id _ := by
+      apply FreeAbelianGroup.lift_ext
+      intro f
+      change FreeAbelianGroup.of (hX.from Y) = FreeAbelianGroup.of f
+      congr
+      exact hX.hom_ext _ _
+    exact DFunLike.congr_fun hlhs z
+
+/-- The terminal free-representable presheaf is the constant integer presheaf. -/
+private noncomputable def terminalFreePresheafIso
+    {C : Type u} [Category.{v} C]
+    {X : C} (hX : IsTerminal X) :
+    yoneda.obj X ⋙ AddCommGrpCat.free ≅
+      (Functor.const Cᵒᵖ).obj
+        (AddCommGrpCat.of (ULift.{v} ℤ)) :=
+  NatIso.ofComponents
+    (fun Y => (terminalFreeAddEquiv hX Y.unop).toAddCommGrpIso)
+    (fun {Y Z} f => by
+      apply AddCommGrpCat.hom_ext
+      apply FreeAbelianGroup.lift_ext
+      intro g
+      change terminalFreeForward Z.unop
+          (FreeAbelianGroup.map (fun k => f.unop ≫ k)
+            (FreeAbelianGroup.of g)) =
+        terminalFreeForward Y.unop (FreeAbelianGroup.of g)
+      rw [FreeAbelianGroup.map_of_apply]
+      simp [terminalFreeForward])
+
+/--
+The source object defining local cohomology at a terminal object is the
+constant integer sheaf defining global cohomology.
+-/
+private noncomputable def terminalCohomologySourceIso
+    {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C}
+    [HasSheafify J AddCommGrpCat.{v}]
+    (X : C) (hX : IsTerminal X) :
+    (presheafToSheaf J AddCommGrpCat.{v}).obj
+        (yoneda.obj X ⋙ AddCommGrpCat.free) ≅
+      (constantSheaf J AddCommGrpCat.{v}).obj
+        (AddCommGrpCat.of (ULift ℤ)) :=
+  (presheafToSheaf J AddCommGrpCat.{v}).mapIso
+    (terminalFreePresheafIso hX)
+
+/-- Local cohomology at a terminal object is canonically global cohomology. -/
+noncomputable def terminalHComparison
+    {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C}
+    (F : Sheaf J AddCommGrpCat.{v})
+    [HasSheafify J AddCommGrpCat.{v}]
+    [HasExt.{w} (Sheaf J AddCommGrpCat.{v})]
+    (X : C) (hX : IsTerminal X) (n : Nat) :
+    F.H' n X ≃+ F.H n := by
+  let e := terminalCohomologySourceIso (J := J) X hX
+  exact AddEquiv.ofBijective
+    ((Abelian.Ext.mk₀ e.inv).precomp F (zero_add n))
+    ⟨by
+      intro a b hab
+      have h := congrArg
+        ((Abelian.Ext.mk₀ e.hom).precomp F (zero_add n)) hab
+      change
+        (Abelian.Ext.mk₀ e.hom).comp
+            ((Abelian.Ext.mk₀ e.inv).comp a (zero_add n)) (zero_add n) =
+          (Abelian.Ext.mk₀ e.hom).comp
+            ((Abelian.Ext.mk₀ e.inv).comp b (zero_add n)) (zero_add n)
+        at h
+      simpa only [Abelian.Ext.mk₀_comp_mk₀_assoc, e.hom_inv_id,
+        Abelian.Ext.mk₀_id_comp] using h,
+     by
+      intro y
+      refine ⟨(Abelian.Ext.mk₀ e.hom).precomp F (zero_add n) y, ?_⟩
+      change
+        (Abelian.Ext.mk₀ e.inv).comp
+            ((Abelian.Ext.mk₀ e.hom).comp y (zero_add n)) (zero_add n) = y
+      rw [Abelian.Ext.mk₀_comp_mk₀_assoc, e.inv_hom_id,
+        Abelian.Ext.mk₀_id_comp]⟩
 
 /-- The cosimplicial additive group of canonical cover-relative Čech cochains. -/
 private noncomputable def canonicalCechCosimplicialObject
@@ -837,5 +1012,210 @@ theorem obstructionClass_naturality
   | zero => rfl
   | succ n => rfl
 
+/--
+The selected cover is Leray for the obstruction coefficient when all
+positive-degree local cohomology groups on its repeated overlaps vanish.
+-/
+def IsLerayFor
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})] :
+    Prop :=
+  ∀ q, 0 < q →
+    ∀ p, ∀ σ : (canonicalCoverRelative 𝒰).simplex p,
+      Subsingleton
+        (Ob.toAddCommGrpSheaf.H' q
+          ((canonicalCoverRelative 𝒰).overlap p σ))
+
 end Cohomology
+
+/-! ## Sheaves for a change of coverage topology -/
+
+/--
+An additive coefficient presheaf which is a sheaf for both selected
+topologies.
+-/
+structure CommonCoefficientSheaf
+    {C : Type u} [Category.{v} C]
+    (J J' : GrothendieckTopology C) where
+  /-- The common underlying additive presheaf. -/
+  presheaf : Cᵒᵖ ⥤ AddCommGrpCat.{w}
+  /-- The sheaf condition for the coarse topology. -/
+  isSheaf_coarse : Presheaf.IsSheaf J presheaf
+  /-- The sheaf condition for the fine topology. -/
+  isSheaf_fine : Presheaf.IsSheaf J' presheaf
+
+namespace CommonCoefficientSheaf
+
+variable {C : Type u} [Category.{v} C]
+variable {J J' : GrothendieckTopology C}
+
+/-- The common coefficient regarded as a sheaf for the coarse topology. -/
+def coarse (F : CommonCoefficientSheaf J J') :
+    Sheaf J AddCommGrpCat.{w} :=
+  ⟨F.presheaf, F.isSheaf_coarse⟩
+
+/-- The common coefficient regarded as a sheaf for the fine topology. -/
+def fine (F : CommonCoefficientSheaf J J') :
+    Sheaf J' AddCommGrpCat.{w} :=
+  ⟨F.presheaf, F.isSheaf_fine⟩
+
+/-- With the same topology, the two bundled sheaves are canonically isomorphic. -/
+noncomputable def sameTopologyIso (F : CommonCoefficientSheaf J J) :
+    F.coarse ≅ F.fine :=
+  Iso.refl _
+
+/-- The cohomology map induced by the canonical same-topology coefficient iso. -/
+noncomputable def sameTopologyHMap
+    (F : CommonCoefficientSheaf J J)
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    (n : Nat) :
+    F.coarse.H n →+ F.fine.H n :=
+  (Abelian.Ext.mk₀ F.sameTopologyIso.hom).postcomp
+    ((constantSheaf J AddCommGrpCat.{w}).obj
+      (AddCommGrpCat.of (ULift ℤ))) (add_zero n)
+
+end CommonCoefficientSheaf
+
+namespace CoverageTopologyRefinement
+
+variable {C : Type u} [Category.{v} C]
+variable {J J' : GrothendieckTopology C}
+
+set_option linter.unusedVariables false in
+/-- Sheafify a coarse sheaf for the finer topology. -/
+noncomputable def fineSheafification
+    (r : CoverageTopologyRefinement J J')
+    [HasSheafify J' AddCommGrpCat.{w}] :
+    Sheaf J AddCommGrpCat.{w} ⥤ Sheaf J' AddCommGrpCat.{w} :=
+  sheafToPresheaf J AddCommGrpCat.{w} ⋙
+    presheafToSheaf J' AddCommGrpCat.{w}
+
+/-- A fine sheaf is also a sheaf for the coarser topology. -/
+theorem isSheaf_coarse
+    (r : CoverageTopologyRefinement J J')
+    (P : Cᵒᵖ ⥤ AddCommGrpCat.{w})
+    (hP : Presheaf.IsSheaf J' P) :
+    Presheaf.IsSheaf J P :=
+  fun E =>
+    Presieve.isSheaf_of_le
+      (P ⋙ coyoneda.obj (Opposite.op E)) r.le (hP E)
+
+/-- Restrict a fine sheaf to the coarser topology. -/
+def coarseRestriction
+    (r : CoverageTopologyRefinement J J') :
+    Sheaf J' AddCommGrpCat.{w} ⥤ Sheaf J AddCommGrpCat.{w} where
+  obj F := ⟨F.val, r.isSheaf_coarse F.val F.cond⟩
+  map η := ⟨η.val⟩
+
+/-- Fine sheafification is left adjoint to coarse restriction. -/
+noncomputable def fineSheafificationAdjunction
+    (r : CoverageTopologyRefinement J J')
+    [HasSheafify J' AddCommGrpCat.{w}] :
+    r.fineSheafification ⊣ r.coarseRestriction :=
+  (sheafificationAdjunction J' AddCommGrpCat.{w}).restrictFullyFaithful
+    (fullyFaithfulSheafToPresheaf J AddCommGrpCat.{w})
+    (Functor.FullyFaithful.id _) (Iso.refl _) (Iso.refl _)
+
+/-- Fine sheafification is additive. -/
+noncomputable instance fineSheafification_additive
+    (r : CoverageTopologyRefinement J J')
+    [HasSheafify J' AddCommGrpCat.{w}] :
+    r.fineSheafification.Additive := by
+  change (sheafToPresheaf J AddCommGrpCat.{w} ⋙
+    presheafToSheaf J' AddCommGrpCat.{w}).Additive
+  letI : (sheafToPresheaf J AddCommGrpCat.{w}).Additive :=
+    { map_add := by intros; rfl }
+  infer_instance
+
+/-- Fine sheafification preserves finite limits. -/
+noncomputable instance fineSheafification_preservesFiniteLimits
+    (r : CoverageTopologyRefinement J J')
+    [HasSheafify J' AddCommGrpCat.{w}] :
+    Limits.PreservesFiniteLimits r.fineSheafification := by
+  exact Limits.comp_preservesFiniteLimits _ _
+
+/-- Fine sheafification preserves finite colimits. -/
+noncomputable instance fineSheafification_preservesFiniteColimits
+    (r : CoverageTopologyRefinement J J')
+    [HasSheafify J' AddCommGrpCat.{w}] :
+    Limits.PreservesFiniteColimits r.fineSheafification := by
+  constructor
+  intro K _ _
+  exact (Adjunction.leftAdjoint_preservesColimits.{0, 0}
+    r.fineSheafificationAdjunction).preservesColimitsOfShape
+
+/-- Fine sheafification recovers a coefficient already sheafy for both topologies. -/
+noncomputable def commonCoefficientIso
+    (r : CoverageTopologyRefinement J J')
+    (F : CommonCoefficientSheaf J J')
+    [HasSheafify J' AddCommGrpCat.{w}] :
+    r.fineSheafification.obj F.coarse ≅ F.fine :=
+  asIso ((sheafificationAdjunction J' AddCommGrpCat.{w}).counit.app F.fine)
+
+/-- Fine sheafification carries the coarse constant integer sheaf to the fine one. -/
+noncomputable def constantSheafIso
+    (r : CoverageTopologyRefinement J J')
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasSheafify J' AddCommGrpCat.{w}] :
+    r.fineSheafification.obj
+        ((constantSheaf J AddCommGrpCat.{w}).obj
+          (AddCommGrpCat.of (ULift ℤ))) ≅
+      (constantSheaf J' AddCommGrpCat.{w}).obj
+        (AddCommGrpCat.of (ULift ℤ)) := by
+  let adj₁ := (sheafificationAdjunction J AddCommGrpCat.{w}).comp
+    r.fineSheafificationAdjunction
+  let adj₂ := sheafificationAdjunction J' AddCommGrpCat.{w}
+  exact (adj₁.leftAdjointUniq adj₂).app
+    ((Functor.const Cᵒᵖ).obj (AddCommGrpCat.of (ULift ℤ)))
+
+/--
+The topology-change map on sheaf cohomology obtained from exact-functor Ext
+naturality and the two canonical sheafification isomorphisms.
+-/
+noncomputable def sheafHExtMap
+    (r : CoverageTopologyRefinement J J')
+    (F : CommonCoefficientSheaf J J')
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasSheafify J' AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J' AddCommGrpCat.{w})]
+    (n : Nat) :
+    F.coarse.H n →+ F.fine.H n :=
+  ((Abelian.Ext.mk₀ (r.commonCoefficientIso F).hom).postcomp
+      ((constantSheaf J' AddCommGrpCat.{w}).obj
+        (AddCommGrpCat.of (ULift ℤ))) (add_zero n)).comp
+    (((Abelian.Ext.mk₀ r.constantSheafIso.inv).precomp
+        (r.fineSheafification.obj F.coarse) (zero_add n)).comp
+      (r.fineSheafification.mapExtAddHom
+        ((constantSheaf J AddCommGrpCat.{w}).obj
+          (AddCommGrpCat.of (ULift ℤ))) F.coarse n))
+
+/-- The public topology-change map on sheaf cohomology. -/
+noncomputable def sheafHMap
+    (r : CoverageTopologyRefinement J J')
+    (F : CommonCoefficientSheaf J J')
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasSheafify J' AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J' AddCommGrpCat.{w})]
+    (n : Nat) :
+    F.coarse.H n →+ F.fine.H n :=
+  r.sheafHExtMap F n
+
+/-- The public topology-change map is definitionally the concrete Ext composite. -/
+@[simp] theorem sheafHMap_eq_ext
+    (r : CoverageTopologyRefinement J J')
+    (F : CommonCoefficientSheaf J J')
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasSheafify J' AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J' AddCommGrpCat.{w})]
+    (n : Nat) :
+    r.sheafHMap F n = r.sheafHExtMap F n :=
+  rfl
+
+end CoverageTopologyRefinement
 end AAT.AG
