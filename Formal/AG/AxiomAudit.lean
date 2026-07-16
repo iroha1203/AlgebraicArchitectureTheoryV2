@@ -4325,6 +4325,20 @@ def readingFunctoriality_sheafHMap_refl :=
 def readingFunctoriality_sheafHMap_comp :=
   @AAT.AG.CoverageTopologyRefinement.sheafHMap_comp
 
+/-! Part 4 R5c1: injective-resolution foundations for Leray comparison. -/
+
+/-- Audit alias for enough injectives in the additive AAT sheaf category. -/
+noncomputable def readingFunctoriality_standardAddCommGrpSheafEnoughInjectives :=
+  @AAT.AG.Cohomology.standardAddCommGrpSheafEnoughInjectives
+
+/-- Audit alias for the chosen obstruction-sheaf injective resolution. -/
+noncomputable def readingFunctoriality_obstructionInjectiveResolution :=
+  @AAT.AG.Cohomology.obstructionInjectiveResolution
+
+/-- Audit alias for the injective-resolution computation of obstruction `H'`. -/
+noncomputable def readingFunctoriality_obstructionHPrimeInjectiveEquiv :=
+  @AAT.AG.Cohomology.obstructionHPrimeInjectiveEquiv
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

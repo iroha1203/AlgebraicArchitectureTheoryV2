@@ -1,5 +1,6 @@
 import Formal.AG.ReadingFunctoriality.Core
 import Formal.AG.ReadingFunctoriality.Coverage
+import Formal.AG.ReadingFunctoriality.LerayComparison
 import Formal.AG.ReadingFunctoriality.Coefficient
 import Formal.AG.ReadingFunctoriality.FiniteExamples
 
