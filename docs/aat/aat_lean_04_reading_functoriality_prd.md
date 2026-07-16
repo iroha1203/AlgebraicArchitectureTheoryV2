@@ -885,7 +885,10 @@ theorem canonicalCoverRelative_faceRestriction_twoFace
       (canonicalCoverRelative 𝒰).faceRestriction (n + 1) i.castSucc σ ≫
         (canonicalCoverRelative 𝒰).faceRestriction n j
           ((canonicalCoverRelative 𝒰).face (n + 1) i.castSucc σ) ≫
-        eqToHom (canonicalCoverRelative_twoFace 𝒰 n σ i j hij).symm
+        eqToHom (congrArg ((canonicalCoverRelative 𝒰).overlap n)
+          (canonicalCoverRelative_twoFace 𝒰 n σ i j hij).symm)
+
+end Cohomology
 
 namespace Site.AATCoverageFamily.Refinement
 
@@ -893,30 +896,29 @@ def simplexMap
     {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
     (r : Refinement 𝒰 𝒱)
     (n : Nat) :
-    (canonicalCoverRelative 𝒱).simplex n →
-      (canonicalCoverRelative 𝒰).simplex n :=
+    (Cohomology.canonicalCoverRelative 𝒱).simplex n →
+      (Cohomology.canonicalCoverRelative 𝒰).simplex n :=
   fun σ i => r.indexMap (σ i)
 
 noncomputable def overlapMap
     {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
     (r : Refinement 𝒰 𝒱)
-    (n : Nat) (σ : (canonicalCoverRelative 𝒱).simplex n) :
-    (canonicalCoverRelative 𝒱).overlap n σ ⟶
-      (canonicalCoverRelative 𝒰).overlap n (r.simplexMap n σ)
+    (n : Nat) (σ : (Cohomology.canonicalCoverRelative 𝒱).simplex n) :
+    (Cohomology.canonicalCoverRelative 𝒱).overlap n σ ⟶
+      (Cohomology.canonicalCoverRelative 𝒰).overlap n (r.simplexMap n σ)
 
 theorem overlapMap_face_naturality
     {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
     (r : Refinement 𝒰 𝒱)
     (n : Nat) (i : Fin (n + 2))
-    (σ : (canonicalCoverRelative 𝒱).simplex (n + 1)) :
-    (canonicalCoverRelative 𝒱).faceRestriction n i σ ≫
-        r.overlapMap n ((canonicalCoverRelative 𝒱).face n i σ) =
+    (σ : (Cohomology.canonicalCoverRelative 𝒱).simplex (n + 1)) :
+    (Cohomology.canonicalCoverRelative 𝒱).faceRestriction n i σ ≫
+        r.overlapMap n ((Cohomology.canonicalCoverRelative 𝒱).face n i σ) =
       r.overlapMap (n + 1) σ ≫
-        (canonicalCoverRelative 𝒰).faceRestriction n i
+        (Cohomology.canonicalCoverRelative 𝒰).faceRestriction n i
           (r.simplexMap (n + 1) σ)
 
 end Site.AATCoverageFamily.Refinement
-end Cohomology
 ~~~
 
 `canonicalTupleOverlap`は`S.overlap`の反復だけから生成し、
