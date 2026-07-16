@@ -393,4 +393,126 @@ example (p q : ReadingCore.{u, v} U) : Type (u + 1) := p.PositiveCoreChange q
 example (p : ReadingCore.{u, v} U) (base : p.site.category) : Type (u + 1) :=
   p.SelectedCover base
 
+/-! Part 4 R2: direct reuse of closed-equational law comparison. -/
+
+section ClosedEquationalDirectReuse
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {k : Type v} [CommRing k]
+variable (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable (X : LawAlgebra.StandardArchitectureScheme raw)
+
+noncomputable example
+    {R Q : LawAlgebra.ClosedEquationalLawReading raw X}
+    (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
+    (hQ : LawAlgebra.IsClosedEquationalLawReading raw X Q)
+    (hRclosed : LawAlgebra.RequiredClosed raw X R)
+    (hQclosed : LawAlgebra.RequiredClosed raw X Q)
+    (e : LawAlgebra.ClosedEquationalLawInclusion raw X R Q)
+    (he : LawAlgebra.IsClosedEquationalLawInclusion raw X e) :
+    LawAlgebra.lawGeneratedIdealSheaf raw X R hR hRclosed ≤
+      LawAlgebra.lawGeneratedIdealSheaf raw X Q hQ hQclosed :=
+  LawAlgebra.lawGeneratedIdealSheaf_mono
+    raw X hR hQ hRclosed hQclosed e he
+
+noncomputable example
+    {R Q : LawAlgebra.ClosedEquationalLawReading raw X}
+    (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
+    (hQ : LawAlgebra.IsClosedEquationalLawReading raw X Q)
+    (e : LawAlgebra.ClosedEquationalLawInclusion raw X R Q)
+    (he : LawAlgebra.IsClosedEquationalLawInclusion raw X e) :
+    LawAlgebra.allLawGeneratedIdealSheaf raw X R hR ≤
+      LawAlgebra.allLawGeneratedIdealSheaf raw X Q hQ :=
+  LawAlgebra.allLawGeneratedIdealSheaf_mono raw X hR hQ e he
+
+noncomputable example
+    {R Q : LawAlgebra.ClosedEquationalLawReading raw X}
+    (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
+    (hQ : LawAlgebra.IsClosedEquationalLawReading raw X Q)
+    (hRclosed : LawAlgebra.RequiredClosed raw X R)
+    (hQclosed : LawAlgebra.RequiredClosed raw X Q)
+    (e : LawAlgebra.ClosedEquationalLawInclusion raw X R Q)
+    (he : LawAlgebra.IsClosedEquationalLawInclusion raw X e) :
+    LawAlgebra.lawfulClosedSubscheme raw X Q hQ hQclosed ⟶
+      LawAlgebra.lawfulClosedSubscheme raw X R hR hRclosed :=
+  LawAlgebra.lawfulClosedSubschemeMap
+    raw X hR hQ hRclosed hQclosed e he
+
+noncomputable example
+    {R Q : LawAlgebra.ClosedEquationalLawReading raw X}
+    (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
+    (hQ : LawAlgebra.IsClosedEquationalLawReading raw X Q)
+    (e : LawAlgebra.ClosedEquationalLawInclusion raw X R Q)
+    (he : LawAlgebra.IsClosedEquationalLawInclusion raw X e) :
+    LawAlgebra.allLawfulClosedSubscheme raw X Q hQ ⟶
+      LawAlgebra.allLawfulClosedSubscheme raw X R hR :=
+  LawAlgebra.allLawfulClosedSubschemeMap raw X hR hQ e he
+
+example
+    {R Q : LawAlgebra.ClosedEquationalLawReading raw X}
+    (e : LawAlgebra.ClosedEquationalLawInclusion raw X R Q)
+    (he : LawAlgebra.IsClosedEquationalLawInclusion raw X e)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ X.underlying) :
+    LawAlgebra.SemanticLawfulAlong raw X Q s →
+      LawAlgebra.SemanticLawfulAlong raw X R s :=
+  LawAlgebra.semanticLawfulAlong_mono raw X e he s
+
+example
+    {R Q : LawAlgebra.ClosedEquationalLawReading raw X}
+    (e : LawAlgebra.ClosedEquationalLawInclusion raw X R Q)
+    (he : LawAlgebra.IsClosedEquationalLawInclusion raw X e)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ X.underlying) :
+    LawAlgebra.FullySemanticLawfulAlong raw X Q s →
+      LawAlgebra.FullySemanticLawfulAlong raw X R s :=
+  LawAlgebra.fullySemanticLawfulAlong_mono raw X e he s
+
+end ClosedEquationalDirectReuse
+
+namespace ClosedEquationalFiniteDirectReuse
+
+open LawAlgebra.FiniteExamples.ClosedEquationalGeometry
+open LawAlgebra.FiniteExamples.RingedSite.FiniteModel
+open LawAlgebra.FiniteExamples.StandardArchitectureScheme
+
+example :
+    LawAlgebra.ClosedEquationalLawInclusion rawSystem twoChartReferenceModel
+      weakReading strongReading :=
+  weakToStrong
+
+example :
+    LawAlgebra.IsClosedEquationalLawInclusion rawSystem twoChartReferenceModel
+      weakToStrong :=
+  weakToStrong_valid
+
+example :
+    LawAlgebra.lawGeneratedIdealSheaf rawSystem twoChartReferenceModel
+        weakReading weakReading_valid weakReading_requiredClosed <
+      LawAlgebra.lawGeneratedIdealSheaf rawSystem twoChartReferenceModel
+        strongReading strongReading_valid strongReading_requiredClosed :=
+  weak_ideal_lt_strong
+
+example :
+    ¬ CategoryTheory.IsIso (LawAlgebra.lawfulClosedSubschemeMap rawSystem
+      twoChartReferenceModel
+      weakReading_valid strongReading_valid
+      weakReading_requiredClosed strongReading_requiredClosed
+      weakToStrong weakToStrong_valid) :=
+  weakToStrongMap_not_isIso
+
+example :
+    ¬ CategoryTheory.IsIso (LawAlgebra.allLawfulClosedSubschemeMap rawSystem
+      twoChartReferenceModel weakReading_valid strongReading_valid
+      weakToStrong weakToStrong_valid) :=
+  weakToStrongAllMap_not_isIso
+
+example :
+    ¬ LawAlgebra.IsClosedEquationalLawInclusion rawSystem
+      twoChartReferenceModel coordinateBrokenInclusion :=
+  coordinateBrokenInclusion_not_valid
+
+end ClosedEquationalFiniteDirectReuse
+
 end AAT.AG.StatementContractsReadingFunctoriality
