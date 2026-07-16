@@ -41,7 +41,14 @@ variable (F G : C ⥤ D)
 variable [F.Additive] [PreservesFiniteLimits F] [PreservesFiniteColimits F]
 variable [G.Additive] [PreservesFiniteLimits G] [PreservesFiniteColimits G]
 
-/-- The derived-category isomorphism induced by an isomorphism of exact functors. -/
+/--
+The derived-category isomorphism induced by an isomorphism of exact functors.
+
+Implementation notes: this uses `Localization.liftNatIso` with the same
+single-complex presentation as `mapDerivedCategory`.  An arbitrary derived
+natural isomorphism would not expose the single-object compatibility needed by
+the Ext naturality proof below.
+-/
 noncomputable def exactFunctorDerivedIso (e : F ≅ G) :
     F.mapDerivedCategory ≅ G.mapDerivedCategory :=
   Localization.liftNatIso DerivedCategory.Q
@@ -404,7 +411,14 @@ variable [K.Additive] [PreservesFiniteLimits K] [PreservesFiniteColimits K]
 variable [(H ⋙ K).Additive]
   [PreservesFiniteLimits (H ⋙ K)] [PreservesFiniteColimits (H ⋙ K)]
 
-/-- The canonical comparison between direct and iterated derived exact functors. -/
+/--
+The canonical comparison between direct and iterated derived exact functors.
+
+Implementation notes: the factor is assembled from the existing localization
+factors and associators, so its components retain the concrete comparison used
+by the Ext composition proof.  Choosing an opaque lifting isomorphism would
+lose that component formula.
+-/
 noncomputable def exactFunctorCompFactors :
     DerivedCategory.Q ⋙ (H.mapDerivedCategory ⋙ K.mapDerivedCategory) ≅
       (H ⋙ K).mapHomologicalComplex (ComplexShape.up ℤ) ⋙
@@ -422,7 +436,14 @@ noncomputable def exactFunctorCompFactors :
       (K.mapHomologicalComplex (ComplexShape.up ℤ))
       DerivedCategory.Q).symm
 
-/-- Derived-category comparison for a composite of exact functors. -/
+/--
+Derived-category comparison for a composite of exact functors.
+
+Implementation notes: the explicit factor above is installed as the
+localization lifting before applying `Localization.liftNatIso`.  This fixes the
+direct-to-iterated comparison to the same presentation used by
+`mapExactFunctor`, rather than introducing an unrelated derived equivalence.
+-/
 noncomputable def exactFunctorCompDerivedIso :
     (H ⋙ K).mapDerivedCategory ≅
       H.mapDerivedCategory ⋙ K.mapDerivedCategory := by
