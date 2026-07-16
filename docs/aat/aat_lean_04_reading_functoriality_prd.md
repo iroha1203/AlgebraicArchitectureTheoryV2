@@ -1307,7 +1307,6 @@ noncomputable instance CoverageTopologyRefinement.fineSheafification_additive
     {C : Type u} [Category.{v} C]
     {J J' : GrothendieckTopology C}
     (r : CoverageTopologyRefinement J J')
-    [HasSheafify J AddCommGrpCat.{w}]
     [HasSheafify J' AddCommGrpCat.{w}] :
     (r.fineSheafification).Additive
 
@@ -1315,7 +1314,6 @@ noncomputable instance CoverageTopologyRefinement.fineSheafification_preservesFi
     {C : Type u} [Category.{v} C]
     {J J' : GrothendieckTopology C}
     (r : CoverageTopologyRefinement J J')
-    [HasSheafify J AddCommGrpCat.{w}]
     [HasSheafify J' AddCommGrpCat.{w}] :
     PreservesFiniteLimits r.fineSheafification
 
@@ -1323,7 +1321,6 @@ noncomputable instance CoverageTopologyRefinement.fineSheafification_preservesFi
     {C : Type u} [Category.{v} C]
     {J J' : GrothendieckTopology C}
     (r : CoverageTopologyRefinement J J')
-    [HasSheafify J AddCommGrpCat.{w}]
     [HasSheafify J' AddCommGrpCat.{w}] :
     PreservesFiniteColimits r.fineSheafification
 
