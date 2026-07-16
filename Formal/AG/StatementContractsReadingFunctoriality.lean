@@ -727,4 +727,142 @@ example : ¬ Function.Bijective coarseToFineCover.indexMap :=
 
 end CoverageRefinementSD3
 
+namespace CanonicalCechFunctorialitySD4
+
+open CategoryTheory Opposite
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+variable {𝒰 𝒱 𝒲 : Site.AATCoverageFamily S.requirements S.overlap base}
+variable (Ob : Cohomology.ObstructionSheaf S)
+
+/-- Fixed additive restriction-map contract. -/
+example {X Y : S.category} (f : X ⟶ Y) :
+    Ob.carrier.toPresheaf.obj (op Y) →+
+      Ob.carrier.toPresheaf.obj (op X) :=
+  Ob.mapAddMonoidHom f
+
+/-- Fixed canonical Čech complex contract. -/
+noncomputable example :
+    Cohomology.CoverRelativeCechComplex
+      (Cohomology.canonicalCoverRelative 𝒰) Ob :=
+  Cohomology.canonicalCechComplex 𝒰 Ob
+
+/-- Fixed explicit canonical-differential contract. -/
+example (n : Nat)
+    (c : (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCochain n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex (n + 1)) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).d n c σ =
+      ∑ i : Fin (n + 2), ((-1 : ℤ) ^ i.1) •
+        Ob.mapAddMonoidHom
+          ((Cohomology.canonicalCoverRelative 𝒰).faceRestriction n i σ)
+          (c ((Cohomology.canonicalCoverRelative 𝒰).face n i σ)) :=
+  Cohomology.canonicalCechComplex_d_apply 𝒰 Ob n c σ
+
+/-- Fixed derived square-zero contract. -/
+example (n : Nat)
+    (c : (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCochain n) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).d (n + 1)
+        ((Cohomology.canonicalCechComplex 𝒰 Ob).d n c) =
+      (0 : (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCochain (n + 2)) :=
+  Cohomology.canonicalCechComplex_d_comp_d 𝒰 Ob n c
+
+variable {K : Cohomology.CoverRelativeCechComplex
+  (Cohomology.canonicalCoverRelative 𝒰) Ob}
+variable {L : Cohomology.CoverRelativeCechComplex
+  (Cohomology.canonicalCoverRelative 𝒱) Ob}
+variable {M : Cohomology.CoverRelativeCechComplex
+  (Cohomology.canonicalCoverRelative 𝒲) Ob}
+
+/-- Fixed arbitrary-degree additive Čech cohomology contract. -/
+example (n : Nat) : Type u := K.AdditiveCechHn n
+
+/-- Fixed additive-group instance contract in every cohomological degree. -/
+noncomputable example (n : Nat) : AddCommGroup (K.AdditiveCechHn n) :=
+  inferInstance
+
+/-- Fixed cocycle-class contract. -/
+noncomputable example (n : Nat) : K.CechCocycle n → K.AdditiveCechHn n :=
+  K.additiveCohomologyClass n
+
+/-- Fixed cochain-map constructor contract. -/
+example
+    (app : ∀ n, K.AdditiveCochain n →+ L.AdditiveCochain n)
+    (commutes : ∀ n c, app (n + 1) (K.d n c) = L.d n (app n c)) :
+    Cohomology.CoverRelativeCechComplex.Hom K L :=
+  ⟨app, commutes⟩
+
+/-- Fixed cocycle-map contract. -/
+noncomputable example (f : Cohomology.CoverRelativeCechComplex.Hom K L) (n : Nat) :
+    K.CechCocycle n → L.CechCocycle n :=
+  f.mapCocycle n
+
+/-- Fixed identity cochain-map contract. -/
+noncomputable example : Cohomology.CoverRelativeCechComplex.Hom K K :=
+  Cohomology.CoverRelativeCechComplex.Hom.id K
+
+/-- Fixed composite cochain-map contract. -/
+noncomputable example (f : Cohomology.CoverRelativeCechComplex.Hom K L)
+    (g : Cohomology.CoverRelativeCechComplex.Hom L M) :
+    Cohomology.CoverRelativeCechComplex.Hom K M :=
+  f.comp g
+
+/-- Fixed arbitrary-degree induced cohomology-map contract. -/
+noncomputable example (f : Cohomology.CoverRelativeCechComplex.Hom K L) (n : Nat) :
+    K.AdditiveCechHn n →+ L.AdditiveCechHn n :=
+  f.mapAdditiveCechHn n
+
+/-- Fixed identity law for induced cohomology maps. -/
+example (n : Nat) :
+    (Cohomology.CoverRelativeCechComplex.Hom.id K).mapAdditiveCechHn n =
+      AddMonoidHom.id _ :=
+  Cohomology.CoverRelativeCechComplex.Hom.mapAdditiveCechHn_id K n
+
+/-- Fixed composition law for induced cohomology maps. -/
+example (f : Cohomology.CoverRelativeCechComplex.Hom K L)
+    (g : Cohomology.CoverRelativeCechComplex.Hom L M) (n : Nat) :
+    (f.comp g).mapAdditiveCechHn n =
+      (g.mapAdditiveCechHn n).comp (f.mapAdditiveCechHn n) :=
+  Cohomology.CoverRelativeCechComplex.Hom.mapAdditiveCechHn_comp f g n
+
+/-- Fixed refinement-induced canonical cochain-map contract. -/
+noncomputable example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.CoverRelativeCechComplex.Hom
+      (Cohomology.canonicalCechComplex 𝒰 Ob)
+      (Cohomology.canonicalCechComplex 𝒱 Ob) :=
+  r.canonicalCechHom Ob
+
+/-- Fixed pointwise refinement-map formula contract. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (n : Nat)
+    (c : (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCochain n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒱).simplex n) :
+    (r.canonicalCechHom Ob).app n c σ =
+      Ob.mapAddMonoidHom (r.overlapMap n σ) (c (r.simplexMap n σ)) :=
+  r.canonicalCechHom_app_apply Ob n c σ
+
+/-- Fixed identity law for canonical refinement maps. -/
+example :
+    (Site.AATCoverageFamily.Refinement.refl 𝒰).canonicalCechHom Ob =
+      Cohomology.CoverRelativeCechComplex.Hom.id
+        (Cohomology.canonicalCechComplex 𝒰 Ob) :=
+  Site.AATCoverageFamily.Refinement.canonicalCechHom_refl 𝒰 Ob
+
+/-- Fixed composition law for canonical refinement maps. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (s : Site.AATCoverageFamily.Refinement 𝒱 𝒲) :
+    (r.comp s).canonicalCechHom Ob =
+      (r.canonicalCechHom Ob).comp (s.canonicalCechHom Ob) :=
+  r.canonicalCechHom_comp s Ob
+
+/-- Fixed obstruction-class naturality contract. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (n : Nat)
+    (c : (Cohomology.canonicalCechComplex 𝒰 Ob).CechCocycle n) :
+    (r.canonicalCechHom Ob).mapAdditiveCechHn n
+        ((Cohomology.canonicalCechComplex 𝒰 Ob).additiveCohomologyClass n c) =
+      (Cohomology.canonicalCechComplex 𝒱 Ob).additiveCohomologyClass n
+        ((r.canonicalCechHom Ob).mapCocycle n c) :=
+  Cohomology.obstructionClass_naturality r Ob n c
+
+end CanonicalCechFunctorialitySD4
+
 end AAT.AG.StatementContractsReadingFunctoriality
