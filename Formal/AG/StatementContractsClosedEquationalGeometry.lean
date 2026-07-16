@@ -4,10 +4,9 @@ import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 /-!
 Executable statement contracts for closed-equational geometry.
 
-This file checks the fixed signatures from
-`docs/aat/aat_lean_03_closed_equational_geometry_prd.md` directly against the
-implementation declarations.  It contains elaboration examples only and
-introduces no new mathematical declarations.
+This file checks the approved closed-equational geometry signatures directly
+against the implementation declarations. It contains elaboration examples only
+and introduces no new mathematical declarations.
 -/
 
 noncomputable section
