@@ -4251,6 +4251,80 @@ noncomputable def readingFunctoriality_sheafHMap :=
 def readingFunctoriality_sheafHMap_eq_ext :=
   @AAT.AG.CoverageTopologyRefinement.sheafHMap_eq_ext
 
+/-! Part 4 R5b: identity and composition for topology-change Ext maps. -/
+
+/-- Audit alias for left-adjoint uniqueness under composition. -/
+def readingFunctoriality_comp_leftAdjointUniq_hom_app :=
+  @CategoryTheory.Adjunction.comp_leftAdjointUniq_hom_app
+
+/-- Audit alias for single-complex naturality under an exact-functor isomorphism. -/
+def readingFunctoriality_singleMapHomologicalComplex_iso_naturality :=
+  @CategoryTheory.singleMapHomologicalComplex_iso_naturality
+
+/-- Audit alias for the derived exact-functor comparison on single objects. -/
+def readingFunctoriality_exactFunctorDerivedIso_single_hom :=
+  @CategoryTheory.exactFunctorDerivedIso_single_hom
+
+/-- Audit alias for the inverse derived comparison on single objects. -/
+def readingFunctoriality_exactFunctorDerivedIso_single_inv :=
+  @CategoryTheory.exactFunctorDerivedIso_single_inv
+
+/-- Audit alias for reassociated inverse derived comparison. -/
+def readingFunctoriality_exactFunctorDerivedIso_single_inv_assoc :=
+  @CategoryTheory.exactFunctorDerivedIso_single_inv_assoc
+
+/-- Audit alias for shifted-hom naturality under a natural transformation. -/
+def readingFunctoriality_map_natTrans_commShift :=
+  @CategoryTheory.ShiftedHom.map_natTrans_commShift
+
+/-- Audit alias for reassociated shifted-hom naturality. -/
+def readingFunctoriality_map_natTrans_commShift_assoc :=
+  @CategoryTheory.ShiftedHom.map_natTrans_commShift_assoc
+
+/-- Audit alias for Ext naturality under an exact-functor isomorphism. -/
+def readingFunctoriality_mapExactFunctor_iso_naturality :=
+  @CategoryTheory.mapExactFunctor_iso_naturality
+
+/-- Audit alias for the identity exact-functor action on Ext. -/
+def readingFunctoriality_mapExactFunctor_id :=
+  @CategoryTheory.Abelian.Ext.mapExactFunctor_id
+
+/-- Audit alias for degree-zero precomposition compatibility. -/
+def readingFunctoriality_mapExactFunctor_precomp_mk₀ :=
+  @CategoryTheory.Abelian.Ext.mapExactFunctor_precomp_mk₀
+
+/-- Audit alias for degree-zero postcomposition compatibility. -/
+def readingFunctoriality_mapExactFunctor_postcomp_mk₀ :=
+  @CategoryTheory.Abelian.Ext.mapExactFunctor_postcomp_mk₀
+
+/-- Audit alias for the single-complex comparison of composite exact functors. -/
+def readingFunctoriality_singleMapHomologicalComplex_comp_hom :=
+  @CategoryTheory.singleMapHomologicalComplex_comp_hom
+
+/-- Audit alias for the direct-to-iterated derived comparison on single objects. -/
+def readingFunctoriality_exactFunctorCompDerivedIso_single_hom :=
+  @CategoryTheory.exactFunctorCompDerivedIso_single_hom
+
+/-- Audit alias for its inverse single-object compatibility. -/
+def readingFunctoriality_exactFunctorCompDerivedIso_single_inv :=
+  @CategoryTheory.exactFunctorCompDerivedIso_single_inv
+
+/-- Audit alias for reassociated inverse composite compatibility. -/
+def readingFunctoriality_exactFunctorCompDerivedIso_single_inv_assoc :=
+  @CategoryTheory.exactFunctorCompDerivedIso_single_inv_assoc
+
+/-- Audit alias for composition of exact-functor actions on Ext. -/
+def readingFunctoriality_mapExactFunctor_comp :=
+  @CategoryTheory.Abelian.Ext.mapExactFunctor_comp
+
+/-- Audit alias for identity topology change. -/
+def readingFunctoriality_sheafHMap_refl :=
+  @AAT.AG.CoverageTopologyRefinement.sheafHMap_refl
+
+/-- Audit alias for composite topology change. -/
+def readingFunctoriality_sheafHMap_comp :=
+  @AAT.AG.CoverageTopologyRefinement.sheafHMap_comp
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
