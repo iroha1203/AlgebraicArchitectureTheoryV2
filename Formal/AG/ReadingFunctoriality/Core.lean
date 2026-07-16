@@ -239,18 +239,19 @@ private theorem invariantTransportedAlong_precomp
   · exact fun A => h (e A)
 
 /--
-An actual morphism between generated object algebras (Part 4 SD1).
+A morphism between object algebras (Part 4 SD1).
 
-Its fields transport reachable objects, configurations, laws, signed circuits,
+Its fields transport objects, configurations, laws, signed circuits,
 operations, invariants, and signature coordinates.
 
-Implementation notes: this is the completed output of an exact core change.  It
-is kept separate from `SignedExactCoreReadingHom`, whose primitive data must
-construct this morphism instead of storing it as a conclusion-equivalent field.
+Implementation notes: this generic notion is the completed output type used by
+an exact core change.  It is kept separate from `SignedExactCoreReadingHom`,
+whose primitive data must construct this morphism instead of storing it as a
+conclusion-equivalent field.
 -/
 structure ObjectAlgebraHom
     (K L : ObjectAlgebra U) where
-  /-- Map between the actual reachable object types. -/
+  /-- Map between the source and target object types. -/
   objMap : K.Obj → L.Obj
   /-- Configuration hom on each actual object. -/
   configurationMap :
@@ -890,8 +891,10 @@ The change transports reachable objects and circuit data whose expected polariti
 are all positive.
 
 Implementation notes: matching and acceptance are one-way implications and no
-negative circuit transport or completed `ObjectAlgebraHom` is stored.  Adding
-reflection would strengthen the positive change into the exact signed notion.
+negative circuit transport or completed `ObjectAlgebraHom` is stored.  Their
+reflection is only one of the additional conditions required by the exact signed
+notion, which also fixes extraction, composition, law, invariant, and signature
+compatibilities.
 -/
 structure PositiveCoreReadingHom
     (P Q : AATCorePackage U) where
