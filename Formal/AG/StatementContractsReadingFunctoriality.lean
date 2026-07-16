@@ -1011,6 +1011,37 @@ example
     r.sheafHMap F n = r.sheafHExtMap F n :=
   r.sheafHMap_eq_ext F n
 
+/-- Fixed identity law for topology-change sheaf-cohomology maps. -/
+example
+    (G : CommonCoefficientSheaf J J)
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    (n : Nat) :
+    (CoverageTopologyRefinement.refl J).sheafHMap G n =
+      G.sameTopologyHMap n :=
+  CoverageTopologyRefinement.sheafHMap_refl G n
+
+/-- Fixed composition law for topology-change sheaf-cohomology maps. -/
+example
+    {J₁ J₂ J₃ : GrothendieckTopology C}
+    (r₁₂ : CoverageTopologyRefinement J₁ J₂)
+    (r₂₃ : CoverageTopologyRefinement J₂ J₃)
+    (Q : Cᵒᵖ ⥤ AddCommGrpCat.{w})
+    (h₁ : Presheaf.IsSheaf J₁ Q)
+    (h₂ : Presheaf.IsSheaf J₂ Q)
+    (h₃ : Presheaf.IsSheaf J₃ Q)
+    [HasSheafify J₁ AddCommGrpCat.{w}]
+    [HasSheafify J₂ AddCommGrpCat.{w}]
+    [HasSheafify J₃ AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J₁ AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J₂ AddCommGrpCat.{w})]
+    [HasExt.{w'} (Sheaf J₃ AddCommGrpCat.{w})]
+    (n : Nat) :
+    (r₁₂.comp r₂₃).sheafHMap ⟨Q, h₁, h₃⟩ n =
+      (r₂₃.sheafHMap ⟨Q, h₂, h₃⟩ n).comp
+        (r₁₂.sheafHMap ⟨Q, h₁, h₂⟩ n) :=
+  CoverageTopologyRefinement.sheafHMap_comp r₁₂ r₂₃ Q h₁ h₂ h₃ n
+
 end SheafCohomologyFoundationSD5
 
 end AAT.AG.StatementContractsReadingFunctoriality
