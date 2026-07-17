@@ -4557,6 +4557,46 @@ def readingFunctoriality_baseResolutionComplex_X :=
 def readingFunctoriality_baseResolutionComplex_d_apply :=
   @AAT.AG.Cohomology.baseResolutionComplex_d_apply
 
+/-- Audit alias for the additive sheafified-free-Yoneda equivalence. -/
+noncomputable def readingFunctoriality_sheafifiedFreeYonedaHomAddEquiv :=
+  @AAT.AG.Cohomology.sheafifiedFreeYonedaHomAddEquiv
+
+/-- Audit alias for postcomposition under the additive Yoneda equivalence. -/
+def readingFunctoriality_sheafifiedFreeYonedaHomAddEquiv_comp :=
+  @AAT.AG.Cohomology.sheafifiedFreeYonedaHomAddEquiv_comp
+
+/-- Audit alias for the universe-lifted base-resolution complex. -/
+noncomputable def readingFunctoriality_liftedBaseResolutionComplex :=
+  @AAT.AG.Cohomology.liftedBaseResolutionComplex
+
+/-- Audit alias for the morphism represented by a lifted base-resolution cycle. -/
+noncomputable def readingFunctoriality_baseResolutionLiftedCycleMorphism :=
+  @AAT.AG.Cohomology.baseResolutionLiftedCycleMorphism
+
+/-- Audit alias for the lifted cycle's injective-resolution cocycle equation. -/
+def readingFunctoriality_baseResolutionLiftedCycleMorphism_comp_d :=
+  @AAT.AG.Cohomology.baseResolutionLiftedCycleMorphism_comp_d
+
+/-- Audit alias for the lifted cycle map into actual sheaf cohomology. -/
+noncomputable def readingFunctoriality_baseResolutionLiftedCyclesToHPrime :=
+  @AAT.AG.Cohomology.baseResolutionLiftedCyclesToHPrime
+
+/-- Audit alias for the Ext-constructor formula of the lifted cycle map. -/
+def readingFunctoriality_baseResolutionLiftedCyclesToHPrime_apply :=
+  @AAT.AG.Cohomology.baseResolutionLiftedCyclesToHPrime_apply
+
+/-- Audit alias for homology preservation under the universe lift. -/
+noncomputable def readingFunctoriality_liftedBaseResolutionHomologyIso :=
+  @AAT.AG.Cohomology.liftedBaseResolutionHomologyIso
+
+/-- Audit alias for base-resolution homology identified with actual sheaf cohomology. -/
+noncomputable def readingFunctoriality_baseResolutionHomologyEquivHPrime :=
+  @AAT.AG.Cohomology.baseResolutionHomologyEquivHPrime
+
+/-- Audit alias for the representative formula of the base-resolution comparison. -/
+def readingFunctoriality_baseResolutionHomologyEquivHPrime_homologyπ :=
+  @AAT.AG.Cohomology.baseResolutionHomologyEquivHPrime_homologyπ
+
 /-- Audit alias for the base-resolution edge map. -/
 noncomputable def readingFunctoriality_baseResolutionToSelectedCechZero :=
   @AAT.AG.Cohomology.baseResolutionToSelectedCechZero

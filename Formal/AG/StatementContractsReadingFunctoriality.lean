@@ -1526,6 +1526,89 @@ example (q : ℕ)
         q (q + 1)).val.app _ x :=
   Cohomology.baseResolutionComplex_d_apply Ob q x
 
+/-- Fixed additive Yoneda bridge from sheafified free representables to sections. -/
+noncomputable example (X : S.category)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1}) :
+    (((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj X ⋙ AddCommGrpCat.free) ⟶ F) : Type (u + 1)) ≃+
+      (F.val.obj (Opposite.op X) : Type (u + 1)) :=
+  Cohomology.sheafifiedFreeYonedaHomAddEquiv X F
+
+/-- Fixed postcomposition law for the additive Yoneda bridge. -/
+example (X : S.category)
+    {F G : Sheaf S.topology AddCommGrpCat.{u + 1}}
+    (f : ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj X ⋙ AddCommGrpCat.free)) ⟶ F)
+    (g : F ⟶ G) :
+    Cohomology.sheafifiedFreeYonedaHomAddEquiv X G (f ≫ g) =
+      g.val.app (Opposite.op X)
+        (Cohomology.sheafifiedFreeYonedaHomAddEquiv X F f) :=
+  Cohomology.sheafifiedFreeYonedaHomAddEquiv_comp X f g
+
+/-- Fixed universe lift of the base-resolution complex. -/
+noncomputable example : CochainComplex AddCommGrpCat.{u + 2} ℕ :=
+  Cohomology.liftedBaseResolutionComplex (base := base) Ob
+
+/-- Fixed cycle morphism from the free representable into the injective resolution. -/
+noncomputable example (n : ℕ)
+    (z : (Cohomology.liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj base ⋙ AddCommGrpCat.free)) ⟶
+        (Cohomology.obstructionInjectiveResolution Ob).cocomplex.X n :=
+  Cohomology.baseResolutionLiftedCycleMorphism Ob n z
+
+/-- Fixed cocycle equation for the base-resolution cycle morphism. -/
+example (n : ℕ)
+    (z : (Cohomology.liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    Cohomology.baseResolutionLiftedCycleMorphism Ob n z ≫
+        (Cohomology.obstructionInjectiveResolution Ob).cocomplex.d n (n + 1) = 0 :=
+  Cohomology.baseResolutionLiftedCycleMorphism_comp_d Ob n z
+
+section BaseResolutionHPrimeBridge
+
+variable [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+
+/-- Fixed cycle map into actual `Sheaf.H'`. -/
+noncomputable example (n : ℕ) :
+    (Cohomology.liftedBaseResolutionComplex (base := base) Ob).cycles n ⟶
+      (Ob.toAddCommGrpSheaf).H' n base :=
+  Cohomology.baseResolutionLiftedCyclesToHPrime Ob n
+
+/-- Fixed representative formula using Mathlib's Ext cocycle constructor. -/
+example (n : ℕ)
+    (z : (Cohomology.liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    (Cohomology.baseResolutionLiftedCyclesToHPrime Ob n).hom z =
+      (Cohomology.obstructionInjectiveResolution Ob).extMk
+        (Cohomology.baseResolutionLiftedCycleMorphism Ob n z) (n + 1) rfl
+        (Cohomology.baseResolutionLiftedCycleMorphism_comp_d Ob n z) :=
+  Cohomology.baseResolutionLiftedCyclesToHPrime_apply Ob n z
+
+/-- Fixed homology isomorphism for the structural universe lift. -/
+noncomputable example (n : ℕ) :
+    (Cohomology.liftedBaseResolutionComplex (base := base) Ob).homology n ≅
+      AddCommGrpCat.uliftFunctor.{u + 2, u + 1}.obj
+        ((Cohomology.baseResolutionComplex (base := base) Ob).homology n) :=
+  Cohomology.liftedBaseResolutionHomologyIso Ob n
+
+/-- Fixed canonical equivalence from base-resolution homology to actual `Sheaf.H'`. -/
+noncomputable example (n : ℕ) :
+    ((Cohomology.baseResolutionComplex (base := base) Ob).homology n :
+        Type (u + 1)) ≃+
+      ((Ob.toAddCommGrpSheaf).H' n base : Type (u + 2)) :=
+  Cohomology.baseResolutionHomologyEquivHPrime Ob n
+
+/-- Fixed representative formula for the base-resolution homology comparison. -/
+example (n : ℕ)
+    (z : (Cohomology.baseResolutionComplex (base := base) Ob).cycles n) :
+    Cohomology.baseResolutionHomologyEquivHPrime Ob n
+        (((Cohomology.baseResolutionComplex (base := base) Ob).homologyπ n).hom z) =
+      (Cohomology.baseResolutionLiftedCyclesToHPrime Ob n).hom
+        (((((Cohomology.baseResolutionComplex (base := base) Ob).sc n).mapCyclesIso
+          AddCommGrpCat.uliftFunctor.{u + 2, u + 1}).inv).hom (ULift.up z)) :=
+  Cohomology.baseResolutionHomologyEquivHPrime_homologyπ Ob n z
+
+end BaseResolutionHPrimeBridge
+
 /-- Fixed map from the base resolution to the selected degree-zero column. -/
 noncomputable example :
     Cohomology.baseResolutionComplex (base := base) Ob ⟶

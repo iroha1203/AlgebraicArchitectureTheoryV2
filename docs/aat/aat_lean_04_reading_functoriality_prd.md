@@ -1573,6 +1573,95 @@ theorem baseResolutionComplex_d_apply
     ((baseResolutionComplex (base := base) Ob).d q (q + 1)).hom x =
       ((obstructionInjectiveResolution Ob).cocomplex.d q (q + 1)).val.app _ x
 
+noncomputable def sheafifiedFreeYonedaHomAddEquiv
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (X : S.category)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1}) :
+    (((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj X ⋙ AddCommGrpCat.free) ⟶ F) : Type (u + 1)) ≃+
+      (F.val.obj (Opposite.op X) : Type (u + 1))
+
+theorem sheafifiedFreeYonedaHomAddEquiv_comp
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (X : S.category)
+    {F G : Sheaf S.topology AddCommGrpCat.{u + 1}}
+    (f : ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj X ⋙ AddCommGrpCat.free)) ⟶ F)
+    (g : F ⟶ G) :
+    sheafifiedFreeYonedaHomAddEquiv X G (f ≫ g) =
+      g.val.app (Opposite.op X)
+        (sheafifiedFreeYonedaHomAddEquiv X F f)
+
+noncomputable def liftedBaseResolutionComplex
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) :
+    CochainComplex AddCommGrpCat.{u + 2} ℕ
+
+noncomputable def baseResolutionLiftedCycleMorphism
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj base ⋙ AddCommGrpCat.free)) ⟶
+        (obstructionInjectiveResolution Ob).cocomplex.X n
+
+theorem baseResolutionLiftedCycleMorphism_comp_d
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    baseResolutionLiftedCycleMorphism Ob n z ≫
+        (obstructionInjectiveResolution Ob).cocomplex.d n (n + 1) = 0
+
+noncomputable def baseResolutionLiftedCyclesToHPrime
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (liftedBaseResolutionComplex (base := base) Ob).cycles n ⟶
+      (Ob.toAddCommGrpSheaf).H' n base
+
+@[simp] theorem baseResolutionLiftedCyclesToHPrime_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    (baseResolutionLiftedCyclesToHPrime Ob n).hom z =
+      (obstructionInjectiveResolution Ob).extMk
+        (baseResolutionLiftedCycleMorphism Ob n z) (n + 1) rfl
+        (baseResolutionLiftedCycleMorphism_comp_d Ob n z)
+
+noncomputable def liftedBaseResolutionHomologyIso
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (liftedBaseResolutionComplex (base := base) Ob).homology n ≅
+      AddCommGrpCat.uliftFunctor.{u + 2, u + 1}.obj
+        ((baseResolutionComplex (base := base) Ob).homology n)
+
+noncomputable def baseResolutionHomologyEquivHPrime
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    ((baseResolutionComplex (base := base) Ob).homology n : Type (u + 1)) ≃+
+      ((Ob.toAddCommGrpSheaf).H' n base : Type (u + 2))
+
+theorem baseResolutionHomologyEquivHPrime_homologyπ
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (baseResolutionComplex (base := base) Ob).cycles n) :
+    baseResolutionHomologyEquivHPrime Ob n
+        (((baseResolutionComplex (base := base) Ob).homologyπ n).hom z) =
+      (baseResolutionLiftedCyclesToHPrime Ob n).hom
+        (((((baseResolutionComplex (base := base) Ob).sc n).mapCyclesIso
+          AddCommGrpCat.uliftFunctor.{u + 2, u + 1}).inv).hom (ULift.up z))
+
+この一群はR5c5のfixed signatureである。`sheafifiedFreeYonedaHomAddEquiv`は
+sheafification adjunction、free abelian adjunction、Yonedaから構成し、
+`baseResolutionLiftedCyclesToHPrime`はMathlib
+`InjectiveResolution.extMk`から構成する。`u + 1`のbase-resolution homologyと
+`u + 2`のactual `Sheaf.H'`は`AddCommGrpCat.uliftFunctor`のhomology-preservation isoを
+通して接続する。任意のcomplex、homology-level equivalence、comparison map、
+bijectivity premise、collapse premiseを入力に追加してはならない。
+
 noncomputable def baseResolutionToSelectedCechZero
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
