@@ -25,7 +25,7 @@ Design notes:
 - The audit runs in two phases. The success path collects the axioms
   reachable from all targets in a single traversal with a shared visited set
   (per-declaration `collectAxioms` calls would re-walk the shared proof DAG
-  once per target). Only when a non-standard axiom is reachable does the
+  once per target). Only when non-standard axioms are reachable does the
   audit fall back to per-declaration collection to attribute offenders.
 -/
 
@@ -48,16 +48,16 @@ elab "#assert_standard_axioms_only " ns:ident : command => do
     throwError "#assert_standard_axioms_only: no declarations found under {prefixNs}"
   let sorted := targets.qsort fun a b => a.toString < b.toString
   let (_, shared) := ((sorted.forM fun name => CollectAxioms.collect name).run env).run {}
-  if shared.axioms.all standardAxioms.contains then
-    logInfo m!"axiom audit: {sorted.size} declarations under {prefixNs}, standard axioms only"
-    return
   let mut offenders : Nat := 0
-  for name in sorted do
-    let axioms ← liftCoreM <| collectAxioms name
-    let bad := axioms.toList.filter fun a => !standardAxioms.contains a
-    unless bad.isEmpty do
-      offenders := offenders + 1
-      logError m!"{name} depends on non-standard axioms: {bad}"
-  throwError "#assert_standard_axioms_only: {offenders} offending declaration(s)"
+  unless shared.axioms.all standardAxioms.contains do
+    for name in sorted do
+      let axioms ← liftCoreM <| collectAxioms name
+      let bad := axioms.toList.filter fun a => !standardAxioms.contains a
+      unless bad.isEmpty do
+        offenders := offenders + 1
+        logError m!"{name} depends on non-standard axioms: {bad}"
+  if offenders > 0 then
+    throwError "#assert_standard_axioms_only: {offenders} offending declaration(s)"
+  logInfo m!"axiom audit: {sorted.size} declarations under {prefixNs}, standard axioms only"
 
 end AAT.Util
