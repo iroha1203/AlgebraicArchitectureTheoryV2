@@ -4811,38 +4811,6 @@ def readingFunctoriality_selectedCechFreeSheafChain_exactAt_succ :=
 def readingFunctoriality_injectiveSheaf_selectedCech_exactAt :=
   @AAT.AG.Cohomology.injectiveSheaf_selectedCech_exactAt
 
-/-- Audit alias for a total-bidegree projection. -/
-noncomputable def readingFunctoriality_selectedCechResolutionTotalProjection :=
-  @AAT.AG.Cohomology.selectedCechResolutionTotalProjection
-
-/-- Audit alias for a total-diagonal projection. -/
-noncomputable def readingFunctoriality_selectedCechResolutionTotalDiagonalProjection :=
-  @AAT.AG.Cohomology.selectedCechResolutionTotalDiagonalProjection
-
-/-- Audit alias for a total-diagonal inclusion. -/
-noncomputable def readingFunctoriality_selectedCechResolutionTotalDiagonalInclusion :=
-  @AAT.AG.Cohomology.selectedCechResolutionTotalDiagonalInclusion
-
-/-- Audit alias for the total-column support predicate. -/
-def readingFunctoriality_selectedCechResolutionTotalSupportedAtMost :=
-  @AAT.AG.Cohomology.SelectedCechResolutionTotalSupportedAtMost
-
-/-- Audit alias for the finite diagonal decomposition of the total complex. -/
-def readingFunctoriality_selectedCechResolutionTotal_decomposition :=
-  @AAT.AG.Cohomology.selectedCechResolutionTotal_decomposition
-
-/-- Audit alias for the interior two-component total differential formula. -/
-def readingFunctoriality_selectedCechResolutionTotal_d_projection_succ_succ :=
-  @AAT.AG.Cohomology.selectedCechResolutionTotal_d_projection_succ_succ
-
-/-- Audit alias for one-step Leray column elimination in the total complex. -/
-def readingFunctoriality_selectedCechResolutionTotal_eliminateColumn :=
-  @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionTotal_eliminateColumn
-
-/-- Audit alias for normalization of total cycles to resolution degree zero. -/
-def readingFunctoriality_selectedCechResolutionTotal_normalizeColumns :=
-  @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionTotal_normalizeColumns
-
 /-- Audit alias for the actual selected Čech edge quasi-isomorphism. -/
 def readingFunctoriality_selectedCechToResolutionTotal_quasiIso :=
   @AAT.AG.Cohomology.IsLerayFor.selectedCechToResolutionTotal_quasiIso

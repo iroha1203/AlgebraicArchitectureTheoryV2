@@ -1017,6 +1017,7 @@ noncomputable def nonLerayOverlapCoefficientEquiv :
   (nonLerayObstructionSheaf.toAddCommGrpSheafObjAddEquiv
     nonLerayOverlapObject).symm.trans nonLerayOverlapCoefficientAddEquiv
 
+/-- The two-point comparison cover is Leray for the strict-diamond coefficient. -/
 theorem nonLerayComparisonCover_isLeray :
     Cohomology.IsLerayFor
       nonLerayComparisonCover nonLerayObstructionSheaf :=
@@ -1269,6 +1270,7 @@ private theorem nonLerayCechOneClass_ne_zero :
     simpa [K] using hb
   exact nonLerayCechOneCochain_ne_zero this
 
+/-- The explicit degree-one Čech class makes the comparison-cover Čech H¹ nontrivial. -/
 theorem nonLerayCechHOne_nontrivial :
     Nontrivial
       ((Cohomology.canonicalCechComplex
@@ -1278,6 +1280,7 @@ theorem nonLerayCechHOne_nontrivial :
   exact ⟨⟨K.additiveH1Class nonLerayCechOneCocycle, 0,
     nonLerayCechOneClass_ne_zero⟩⟩
 
+/-- Leray comparison sends the explicit Čech class to a nonzero actual local H¹ class. -/
 theorem nonLerayHPrimeOne_nontrivial :
     Nontrivial
       ((nonLerayObstructionSheaf.toAddCommGrpSheaf).H' 1 nonLerayBase) := by
@@ -1342,6 +1345,7 @@ theorem nonLerayCover_containsIdentity :
       nonLerayCover.patch i = nonLerayBase.ctx :=
   ⟨none, rfl⟩
 
+/-- The identity-containing selected cover is not Leray, without a caller-supplied cohomology premise. -/
 theorem nonLerayCover_not_completionEvidence :
     ¬ Cohomology.IsLerayFor nonLerayCover nonLerayObstructionSheaf := by
   let σ : (Cohomology.canonicalCoverRelative nonLerayCover).simplex 0 :=
@@ -1597,6 +1601,7 @@ private theorem finiteSheafifiedFreeYoneda_projective_of_hom_to_right
     exact (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).apply_symm_apply t]
   simpa using ht
 
+/-- The actual finite positive model discharges Leray vanishing for its selected cover. -/
 theorem finiteLerayCover :
     Cohomology.IsLerayFor coarseCover finiteObstructionSheaf := by
   intro q hq p σ
@@ -1624,6 +1629,7 @@ theorem finiteLerayCover :
       exact CategoryTheory.Abelian.Ext.subsingleton_of_projective
         (finiteSheafifiedFreeYoneda X) finiteObstructionSheaf.toAddCommGrpSheaf n
 
+/-- The strict finite cover refinement induces a nonzero Čech cochain map. -/
 theorem coarseToFineCechHom_nonzero :
     ∃ (n : Nat)
       (c : (Cohomology.canonicalCechComplex
@@ -1635,6 +1641,7 @@ theorem coarseToFineCechHom_nonzero :
   change (1 : ZMod 2) ≠ 0
   decide
 
+/-- The finite positive model fires the actual terminal Čech-to-sheaf-cohomology comparison. -/
 theorem finite_cechToSheafH_bijective (n : Nat) :
     Function.Bijective
       (Cohomology.cechToSheafH coarseCover finiteObstructionSheaf
