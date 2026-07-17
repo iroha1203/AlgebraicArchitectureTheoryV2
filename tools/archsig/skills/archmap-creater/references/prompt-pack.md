@@ -89,6 +89,57 @@ The candidate-packet validator treats any false self-review field as not ready.
 - `worklistChunkFullyRead`: every assigned worklist row has a survey row.
 - `aliasPreservingSemantics`: different observed semantic uses remain separate.
 
+## Neutral Phrasing For Outcome Semantics
+
+Ids, predicates, and objects must not contain the diagnostic conclusion tokens
+`failure`, `violation`, `obstruction`, or `mismatch`. This bites most often on
+response-envelope observations (a status/result flag whose values select
+branches). Describe what each observed value *selects*, not a verdict word.
+
+Bad (rejected by the candidate-packet validator):
+
+```json
+{
+  "id": "atom:semantic:common.Response.status:meansInUse:one-success-zero-failure",
+  "object": "status-1-success-status-0-failure"
+}
+```
+
+Good (same observation, branch-descriptive):
+
+```json
+{
+  "id": "atom:semantic:common.Response.status:meansInUse:one-data-branch-zero-message-branch",
+  "object": "status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch"
+}
+```
+
+The same rule applies to survey-row notes: name the branch condition the code
+takes ("the branch taken when a payment already exists"), not "the failure
+branch".
+
+## Default Axis Selection
+
+Independent passes drift most on `axis`, which breaks `atom-match-key@1`
+matching for otherwise identical observations. Unless a specific evidence axis
+(`cech`, `runtime`, and the other AG-consumed axes) applies, default to:
+
+| kind | default axis |
+| --- | --- |
+| `component` | `static` |
+| `relation` | `relation` |
+| `capability` | `capability` |
+| `effect` | `effect` |
+| `authority` | `authority` |
+| `semantic` | `semantic` |
+| `contract` | `specification` |
+| `state` | `state` |
+
+Use `restriction` only for evidence of a context restriction direction, not for
+ordinary `calls` / `dependsOn` / `writesTo` edges. These defaults are a
+convergence point for new authoring passes; they do not retroactively rewrite
+existing ArchMap artifacts.
+
 ## Reader Notes
 
 Unmatched candidates are useful. The integrator will compare passes and reread
