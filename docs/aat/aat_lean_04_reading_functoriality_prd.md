@@ -116,7 +116,7 @@ SDとmodule DAGを再承認する。
 | `Formal.AG.ReadingFunctoriality.Core` | `Formal.AG.Atom.AATCore`、`Formal.AG.Site.Geometry`、`Formal.AG.LawAlgebra.StructureSheaf`、`Mathlib.Logic.Equiv.Defs` | `ReadingCore`、exact / positive core change、`ObjectAlgebraHom` |
 | `Formal.AG.ReadingFunctoriality.ExtFunctoriality` | `Mathlib.Algebra.Homology.DerivedCategory.Ext.Map`、`Mathlib.CategoryTheory.Adjunction.Unique` | exact functorによるExt写像のidentity / composition、exact-functor isoに対するnaturality、left-adjoint uniquenessのcomposition coherence |
 | `Formal.AG.ReadingFunctoriality.Coverage` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.ExtFunctoriality`、`Formal.AG.Site.FinitePosetGeometry`、`Formal.AG.Cohomology.CechComplex`、`Mathlib.AlgebraicTopology.AlternatingFaceMapComplex`、`Mathlib.CategoryTheory.Sites.SheafCohomology.Basic`、`Mathlib.CategoryTheory.Sites.Limits`、`Mathlib.CategoryTheory.Sites.LeftExact`、`Mathlib.CategoryTheory.Sites.Abelian`、`Mathlib.CategoryTheory.Sites.Equivalence`、`Mathlib.CategoryTheory.Adjunction.Restrict`、`Mathlib.CategoryTheory.Adjunction.Limits`、`Mathlib.CategoryTheory.Whiskering`、`Mathlib.Algebra.Category.Grp.FilteredColimits`、`Mathlib.Algebra.Homology.DerivedCategory.Ext.Map` | topology refinement、canonical tuple cover、selected cover refinement、one-way cochain hom、large additive coefficientのselected Čech complex、terminal `Sheaf.H'` / `Sheaf.H` comparison、topology-change `Sheaf.H` map |
-| `Formal.AG.ReadingFunctoriality.LerayComparison` | `Formal.AG.ReadingFunctoriality.Coverage`、`Mathlib.Algebra.Category.ModuleCat.AB`、`Mathlib.Algebra.Category.Grp.Ulift`、`Mathlib.Algebra.Homology.Additive`、`Mathlib.Algebra.Homology.HomologicalBicomplex`、`Mathlib.Algebra.Homology.ShortComplex.Ab`、`Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex`、`Mathlib.Algebra.Homology.ShortComplex.PreservesHomology`、`Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf`、`Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives`、`Mathlib.CategoryTheory.Abelian.Injective.Ext`、`Mathlib.CategoryTheory.Abelian.Injective.Resolution`、`Mathlib.CategoryTheory.Adjunction.Additive`、`Mathlib.CategoryTheory.Adjunction.Whiskering`、`Mathlib.CategoryTheory.Whiskering` | cover-relative Čech complexとMathlib cochain-complex homologyの同一化、universe-lift homology bridge、sheaf categoryのinjective-resolution計算、selected injective-resolution bicomplexとcanonical edge maps、selected Čech–`Sheaf.H'` Leray comparison、bijectivity、refinement naturality |
+| `Formal.AG.ReadingFunctoriality.LerayComparison` | `Formal.AG.ReadingFunctoriality.Coverage`、`Mathlib.Algebra.Category.ModuleCat.AB`、`Mathlib.Algebra.Category.Grp.Colimits`、`Mathlib.Algebra.Category.Grp.Ulift`、`Mathlib.Algebra.Homology.Additive`、`Mathlib.Algebra.Homology.HomologicalBicomplex`、`Mathlib.Algebra.Homology.TotalComplex`、`Mathlib.Algebra.Homology.ShortComplex.Ab`、`Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex`、`Mathlib.Algebra.Homology.ShortComplex.PreservesHomology`、`Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf`、`Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives`、`Mathlib.CategoryTheory.Abelian.Injective.Ext`、`Mathlib.CategoryTheory.Abelian.Injective.Resolution`、`Mathlib.CategoryTheory.Adjunction.Additive`、`Mathlib.CategoryTheory.Adjunction.Whiskering`、`Mathlib.CategoryTheory.Whiskering` | cover-relative Čech complexとMathlib cochain-complex homologyの同一化、universe-lift homology bridge、sheaf categoryのinjective-resolution計算、selected injective-resolution bicomplexとcanonical edge maps、actual total complex、selected Čech–`Sheaf.H'` Leray comparison、bijectivity、refinement naturality |
 | `Formal.AG.ReadingFunctoriality.Coefficient` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.Derived.Intersection`、`Mathlib.Algebra.Category.ModuleCat.ChangeOfRings`、`Mathlib.Algebra.Category.ModuleCat.Descent`、`Mathlib.Algebra.Category.ModuleCat.Sheaf`、`Mathlib.Algebra.Category.Ring.Under.Basic`、`Mathlib.Algebra.Category.Ring.Under.Limits`、`Mathlib.Algebra.Module.TransferInstance`、`Mathlib.CategoryTheory.Sites.Adjunction`、`Mathlib.CategoryTheory.Sites.PreservesSheafification`、`Mathlib.CategoryTheory.Sites.Whiskering`、`Mathlib.AlgebraicGeometry.Pullbacks`、`Mathlib.AlgebraicGeometry.IdealSheaf.Functorial`、`Mathlib.RingTheory.RingHom.Flat` | closed-equational geometry宣言のdirect reuse、raw quotient / sheafification scalar-extension comparison、scheme / ideal / Tor / linear Čech scalar extension / actual sheaf H coefficient change |
 | `Formal.AG.ReadingFunctoriality.FiniteExamples` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.Examples.FiniteModel`、`Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample` | SD9のpositive / negative firing |
 | `Formal.AG.ReadingFunctoriality` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.ReadingFunctoriality.LerayComparison`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.ReadingFunctoriality.FiniteExamples` | public aggregate |
@@ -1780,6 +1780,122 @@ theorem baseResolutionToSelectedCechZero_refinement_naturality
           (ComplexShape.up ℕ) (ComplexShape.up ℕ)).map
             (selectedCechResolutionBicomplexMap r Ob)).f 0 =
       baseResolutionToSelectedCechZero 𝒱 Ob
+
+theorem selectedCechResolutionAugmentation_comp_resolution_d
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p : ℕ) :
+    (selectedCechResolutionAugmentation 𝒰 Ob).f p ≫
+        ((selectedCechResolutionBicomplex 𝒰 Ob).d 0 1).f p = 0
+
+theorem baseResolutionToSelectedCechZero_comp_cech_d
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q : ℕ) :
+    (baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+        ((selectedCechResolutionBicomplex 𝒰 Ob).X q).d 0 1 = 0
+
+noncomputable def selectedCechResolutionTotalComplex
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    CochainComplex AddCommGrpCat.{u + 1} ℕ
+
+noncomputable def selectedCechToResolutionTotal
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    (selectedCechComplexFunctor 𝒰).obj Ob.toAddCommGrpSheaf.val ⟶
+      selectedCechResolutionTotalComplex 𝒰 Ob
+
+theorem selectedCechToResolutionTotal_f
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p : ℕ) :
+    (selectedCechToResolutionTotal 𝒰 Ob).f p =
+      (selectedCechResolutionAugmentation 𝒰 Ob).f p ≫
+        (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) 0 p p (by simp)
+
+noncomputable def baseResolutionToSelectedCechTotal
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    baseResolutionComplex (base := base) Ob ⟶
+      selectedCechResolutionTotalComplex 𝒰 Ob
+
+theorem baseResolutionToSelectedCechTotal_f
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q : ℕ) :
+    (baseResolutionToSelectedCechTotal 𝒰 Ob).f q =
+      (baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+        (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q 0 q (by simp)
+
+noncomputable def selectedCechResolutionTotalMap
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionTotalComplex 𝒰 Ob ⟶
+      selectedCechResolutionTotalComplex 𝒱 Ob
+
+theorem selectedCechResolutionTotalMap_ιTotal
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) (q p n : ℕ) (h : q + p = n) :
+    (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h ≫
+        (selectedCechResolutionTotalMap r Ob).f n =
+      ((selectedCechResolutionBicomplexMap r Ob).f q).f p ≫
+        (selectedCechResolutionBicomplex 𝒱 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h
+
+@[simp] theorem selectedCechResolutionTotalMap_refl
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionTotalMap
+        (Site.AATCoverageFamily.Refinement.refl 𝒰) Ob =
+      𝟙 (selectedCechResolutionTotalComplex 𝒰 Ob)
+
+@[simp] theorem selectedCechResolutionTotalMap_comp
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 𝒲 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (s : Site.AATCoverageFamily.Refinement 𝒱 𝒲)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionTotalMap (r.comp s) Ob =
+      selectedCechResolutionTotalMap r Ob ≫
+        selectedCechResolutionTotalMap s Ob
+
+theorem selectedCechToResolutionTotal_refinement_naturality
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    selectedCechToResolutionTotal 𝒰 Ob ≫
+        selectedCechResolutionTotalMap r Ob =
+      r.selectedCechMap.app Ob.toAddCommGrpSheaf.val ≫
+        selectedCechToResolutionTotal 𝒱 Ob
+
+theorem baseResolutionToSelectedCechTotal_refinement_naturality
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    baseResolutionToSelectedCechTotal 𝒰 Ob ≫
+        selectedCechResolutionTotalMap r Ob =
+      baseResolutionToSelectedCechTotal 𝒱 Ob
+
+この一群はR5c6のfixed signatureである。total complexはMathlib
+`HomologicalComplex₂.total`、refinement mapは`HomologicalComplex₂.total.map`から構成する。
+2本のedgeは`selectedCechResolutionAugmentation`と
+`baseResolutionToSelectedCechZero`を各total summand inclusionへ合成し、chain-map条件を
+resolution unit、actual restriction、face mapから証明する。任意のtotal complex、chain map、
+sign/equality witness、homology equivalence、quasi-isomorphism、collapse premiseを入力に追加してはならない。
 
 def IsLerayFor
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}

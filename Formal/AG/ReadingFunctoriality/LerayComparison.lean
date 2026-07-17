@@ -1,8 +1,10 @@
 import Formal.AG.ReadingFunctoriality.Coverage
 import Mathlib.Algebra.Category.ModuleCat.AB
+import Mathlib.Algebra.Category.Grp.Colimits
 import Mathlib.Algebra.Category.Grp.Ulift
 import Mathlib.Algebra.Homology.Additive
 import Mathlib.Algebra.Homology.HomologicalBicomplex
+import Mathlib.Algebra.Homology.TotalComplex
 import Mathlib.Algebra.Homology.ShortComplex.Ab
 import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
 import Mathlib.Algebra.Homology.ShortComplex.PreservesHomology
@@ -2055,5 +2057,315 @@ theorem baseResolutionToSelectedCechZero_refinement_naturality
         ((canonicalCoverRelative 𝒱).inclusion (σ 0)).op x
   rw [← FunctorToTypes.map_comp_apply]
   congr
+
+/-! ## Total complex and its two canonical edges -/
+
+/-- The resolution augmentation is killed by the first resolution differential. -/
+theorem selectedCechResolutionAugmentation_comp_resolution_d
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p : ℕ) :
+    (selectedCechResolutionAugmentation 𝒰 Ob).f p ≫
+        ((selectedCechResolutionBicomplex 𝒰 Ob).d 0 1).f p = 0 := by
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro c
+  funext σ
+  have h := congrArg
+    (fun f => f.val.app (Opposite.op ((canonicalCoverRelative 𝒰).overlap p σ)))
+    (obstructionInjectiveResolution Ob).ι_f_zero_comp_complex_d
+  have hx := ConcreteCategory.congr_hom h (c σ)
+  simpa only [ConcreteCategory.comp_apply,
+    selectedCechResolutionAugmentation_f_apply,
+    selectedCechResolutionBicomplex_resolution_d_apply, map_zero] using hx
+
+/-- Restricting a base section gives a selected Čech zero-cocycle. -/
+theorem baseResolutionToSelectedCechZero_comp_cech_d
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q : ℕ) :
+    (baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+        ((selectedCechResolutionBicomplex 𝒰 Ob).X q).d 0 1 = 0 := by
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro x
+  funext σ
+  change (((selectedCechResolutionBicomplex 𝒰 Ob).X q).d 0 1).hom
+      (((baseResolutionToSelectedCechZero 𝒰 Ob).f q).hom x) σ = 0
+  rw [selectedCechResolutionBicomplex_cech_d_apply]
+  rw [Fin.sum_univ_two]
+  simp only [Fin.val_zero, pow_zero, one_zsmul,
+    Fin.val_one, pow_one, neg_smul,
+    baseResolutionToSelectedCechZero_f_apply]
+  let F := ((obstructionInjectiveResolution Ob).cocomplex.X q).val ⋙
+    forget AddCommGrpCat.{u + 1}
+  change F.map ((canonicalCoverRelative 𝒰).faceRestriction 0 0 σ).op
+        (F.map ((canonicalCoverRelative 𝒰).inclusion
+          (((canonicalCoverRelative 𝒰).face 0 0 σ) 0)).op x) +
+      -F.map ((canonicalCoverRelative 𝒰).faceRestriction 0 1 σ).op
+        (F.map ((canonicalCoverRelative 𝒰).inclusion
+          (((canonicalCoverRelative 𝒰).face 0 1 σ) 0)).op x) = 0
+  rw [← FunctorToTypes.map_comp_apply, ← FunctorToTypes.map_comp_apply]
+  have hmor :
+      ((canonicalCoverRelative 𝒰).inclusion
+          (((canonicalCoverRelative 𝒰).face 0 0 σ) 0)).op ≫
+          ((canonicalCoverRelative 𝒰).faceRestriction 0 0 σ).op =
+        ((canonicalCoverRelative 𝒰).inclusion
+          (((canonicalCoverRelative 𝒰).face 0 1 σ) 0)).op ≫
+          ((canonicalCoverRelative 𝒰).faceRestriction 0 1 σ).op :=
+    Subsingleton.elim _ _
+  rw [hmor]
+  simp
+
+private instance : ComplexShape.TensorSigns (ComplexShape.up ℕ) where
+  ε' := MonoidHom.mk' (fun (i : ℕ) => (-1 : ℤˣ) ^ i) (pow_add (-1 : ℤˣ))
+  rel_add p q r (hpq : p + 1 = q) := by dsimp; omega
+  add_rel p q r (hpq : p + 1 = q) := by dsimp; omega
+  ε'_succ := by
+    rintro p _ rfl
+    dsimp
+    rw [pow_succ]
+    simp
+
+/--
+The actual total complex of the injective-resolution selected Čech
+bicomplex.  Its degree `n` is the coproduct of bidegrees `(q,p)` with
+`q + p = n`, and its differential is Mathlib's signed total differential.
+-/
+noncomputable def selectedCechResolutionTotalComplex
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  (selectedCechResolutionBicomplex 𝒰 Ob).total (ComplexShape.up ℕ)
+
+/--
+The selected Čech complex maps to the total complex through resolution
+degree zero.  The horizontal term vanishes by the resolution unit law and
+the vertical term is the selected Čech differential.
+-/
+noncomputable def selectedCechToResolutionTotal
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    (selectedCechComplexFunctor 𝒰).obj Ob.toAddCommGrpSheaf.val ⟶
+      selectedCechResolutionTotalComplex 𝒰 Ob where
+  f p := (selectedCechResolutionAugmentation 𝒰 Ob).f p ≫
+    (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+      (ComplexShape.up ℕ) 0 p p (by simp)
+  comm' p p' hp := by
+    change p + 1 = p' at hp
+    have hε1 : ComplexShape.ε₁ (ComplexShape.up ℕ) (ComplexShape.up ℕ)
+        (ComplexShape.up ℕ) (0, p) = 1 := rfl
+    have hε2 : ComplexShape.ε₂ (ComplexShape.up ℕ) (ComplexShape.up ℕ)
+        (ComplexShape.up ℕ) (0, p) = 1 := by
+      change (-1 : ℤˣ) ^ (0 : ℕ) = 1
+      simp
+    change _ ≫ ((selectedCechResolutionBicomplex 𝒰 Ob).total
+      (ComplexShape.up ℕ)).d p p' = _
+    rw [Category.assoc, HomologicalComplex₂.total_d, Preadditive.comp_add,
+      HomologicalComplex₂.ι_D₁, HomologicalComplex₂.ι_D₂]
+    rw [HomologicalComplex₂.d₁_eq
+      (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+      (i₁ := 0) (i₁' := 1) (by simp) p p' (by
+        change 1 + p = p'
+        omega)]
+    rw [HomologicalComplex₂.d₂_eq
+      (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+      0 hp p' (by
+        change 0 + p' = p'
+        omega)]
+    rw [hε1, hε2]
+    simp only [one_smul]
+    rw [Preadditive.comp_add]
+    rw [← Category.assoc]
+    rw [selectedCechResolutionAugmentation_comp_resolution_d]
+    simp only [Limits.zero_comp, zero_add]
+    rw [← Category.assoc]
+    rw [(selectedCechResolutionAugmentation 𝒰 Ob).comm p p']
+    simp
+
+/-- The selected-edge component is the augmentation followed by its summand inclusion. -/
+theorem selectedCechToResolutionTotal_f
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p : ℕ) :
+    (selectedCechToResolutionTotal 𝒰 Ob).f p =
+      (selectedCechResolutionAugmentation 𝒰 Ob).f p ≫
+        (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) 0 p p (by simp) :=
+  rfl
+
+/--
+The base-resolution complex maps to the total complex through selected Čech
+degree zero.  The resolution term is inherited from naturality and the Čech
+term vanishes because restriction from the base is a zero-cocycle.
+-/
+noncomputable def baseResolutionToSelectedCechTotal
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    baseResolutionComplex (base := base) Ob ⟶
+      selectedCechResolutionTotalComplex 𝒰 Ob where
+  f q := (baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+    (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+      (ComplexShape.up ℕ) q 0 q (by simp)
+  comm' q q' hq := by
+    change q + 1 = q' at hq
+    have hε1 : ComplexShape.ε₁ (ComplexShape.up ℕ) (ComplexShape.up ℕ)
+        (ComplexShape.up ℕ) (q, 0) = 1 := rfl
+    have hcomm :
+        (baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+            ((selectedCechResolutionBicomplex 𝒰 Ob).d q q').f 0 =
+          (baseResolutionComplex (base := base) Ob).d q q' ≫
+            (baseResolutionToSelectedCechZero 𝒰 Ob).f q' := by
+      simpa using (baseResolutionToSelectedCechZero 𝒰 Ob).comm q q'
+    change _ ≫ ((selectedCechResolutionBicomplex 𝒰 Ob).total
+      (ComplexShape.up ℕ)).d q q' = _
+    rw [Category.assoc, HomologicalComplex₂.total_d, Preadditive.comp_add,
+      HomologicalComplex₂.ι_D₁, HomologicalComplex₂.ι_D₂]
+    rw [HomologicalComplex₂.d₁_eq
+      (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+      hq 0 q' (by
+        change q' + 0 = q'
+        omega)]
+    rw [HomologicalComplex₂.d₂_eq
+      (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+      q (i₂ := 0) (i₂' := 1) (by simp) q' (by
+        change q + 1 = q'
+        omega)]
+    rw [hε1]
+    simp only [one_smul]
+    rw [Preadditive.comp_add]
+    rw [← Category.assoc]
+    rw [hcomm]
+    rw [Linear.comp_units_smul]
+    rw [← Category.assoc]
+    rw [baseResolutionToSelectedCechZero_comp_cech_d]
+    simp only [Limits.zero_comp, smul_zero, add_zero]
+    simp
+
+/-- The base-edge component is restriction followed by its summand inclusion. -/
+theorem baseResolutionToSelectedCechTotal_f
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q : ℕ) :
+    (baseResolutionToSelectedCechTotal 𝒰 Ob).f q =
+      (baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+        (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q 0 q (by simp) :=
+  rfl
+
+/-- Refinement induces the Mathlib total map of the actual bicomplex map. -/
+noncomputable def selectedCechResolutionTotalMap
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionTotalComplex 𝒰 Ob ⟶
+      selectedCechResolutionTotalComplex 𝒱 Ob :=
+  HomologicalComplex₂.total.map
+    (selectedCechResolutionBicomplexMap r Ob) (ComplexShape.up ℕ)
+
+/-- The total refinement map is the bicomplex refinement map on every summand. -/
+theorem selectedCechResolutionTotalMap_ιTotal
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) (q p n : ℕ) (h : q + p = n) :
+    (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h ≫
+        (selectedCechResolutionTotalMap r Ob).f n =
+      ((selectedCechResolutionBicomplexMap r Ob).f q).f p ≫
+        (selectedCechResolutionBicomplex 𝒱 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h := by
+  exact HomologicalComplex₂.ιTotal_map
+    (selectedCechResolutionBicomplex 𝒰 Ob)
+    (selectedCechResolutionBicomplex 𝒱 Ob)
+    (selectedCechResolutionBicomplexMap r Ob)
+    (ComplexShape.up ℕ) q p n h
+
+/-- Identity refinement induces the identity total map. -/
+@[simp] theorem selectedCechResolutionTotalMap_refl
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionTotalMap
+        (Site.AATCoverageFamily.Refinement.refl 𝒰) Ob =
+      𝟙 (selectedCechResolutionTotalComplex 𝒰 Ob) := by
+  simp [selectedCechResolutionTotalMap, selectedCechResolutionTotalComplex]
+
+/-- Composite refinement induces the composite total map. -/
+@[simp] theorem selectedCechResolutionTotalMap_comp
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 𝒲 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (s : Site.AATCoverageFamily.Refinement 𝒱 𝒲)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionTotalMap (r.comp s) Ob =
+      selectedCechResolutionTotalMap r Ob ≫
+        selectedCechResolutionTotalMap s Ob := by
+  simp [selectedCechResolutionTotalMap, selectedCechResolutionTotalComplex]
+
+/-- The selected Čech edge commutes with refinement on the total complex. -/
+theorem selectedCechToResolutionTotal_refinement_naturality
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    selectedCechToResolutionTotal 𝒰 Ob ≫
+        selectedCechResolutionTotalMap r Ob =
+      r.selectedCechMap.app Ob.toAddCommGrpSheaf.val ≫
+        selectedCechToResolutionTotal 𝒱 Ob := by
+  apply HomologicalComplex.Hom.ext
+  funext p
+  have haug :
+      (selectedCechResolutionAugmentation 𝒰 Ob).f p ≫
+          ((selectedCechResolutionBicomplexMap r Ob).f 0).f p =
+        (r.selectedCechMap.app Ob.toAddCommGrpSheaf.val).f p ≫
+          (selectedCechResolutionAugmentation 𝒱 Ob).f p := by
+    simpa using congrArg (fun f => f.f p)
+      (selectedCechResolutionAugmentation_refinement_naturality r Ob)
+  change
+    (selectedCechResolutionAugmentation 𝒰 Ob).f p ≫
+        (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+            (ComplexShape.up ℕ) 0 p p (by simp) ≫
+          (selectedCechResolutionTotalMap r Ob).f p =
+      (r.selectedCechMap.app Ob.toAddCommGrpSheaf.val).f p ≫
+        (selectedCechResolutionAugmentation 𝒱 Ob).f p ≫
+          (selectedCechResolutionBicomplex 𝒱 Ob).ιTotal
+            (ComplexShape.up ℕ) 0 p p (by simp)
+  rw [selectedCechResolutionTotalMap_ιTotal]
+  rw [← Category.assoc]
+  rw [haug]
+  simp
+
+/-- The base-resolution edge commutes with refinement on the total complex. -/
+theorem baseResolutionToSelectedCechTotal_refinement_naturality
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    baseResolutionToSelectedCechTotal 𝒰 Ob ≫
+        selectedCechResolutionTotalMap r Ob =
+      baseResolutionToSelectedCechTotal 𝒱 Ob := by
+  apply HomologicalComplex.Hom.ext
+  funext q
+  have hzero :
+      (baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+          ((selectedCechResolutionBicomplexMap r Ob).f q).f 0 =
+        (baseResolutionToSelectedCechZero 𝒱 Ob).f q := by
+    simpa using congrArg (fun f => f.f q)
+      (baseResolutionToSelectedCechZero_refinement_naturality r Ob)
+  change
+    (baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+        (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+            (ComplexShape.up ℕ) q 0 q (by simp) ≫
+          (selectedCechResolutionTotalMap r Ob).f q =
+      (baseResolutionToSelectedCechZero 𝒱 Ob).f q ≫
+        (selectedCechResolutionBicomplex 𝒱 Ob).ιTotal
+          (ComplexShape.up ℕ) q 0 q (by simp)
+  rw [selectedCechResolutionTotalMap_ιTotal]
+  rw [← Category.assoc, hzero]
 
 end AAT.AG.Cohomology

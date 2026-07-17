@@ -4645,6 +4645,60 @@ def readingFunctoriality_selectedCechResolutionAugmentation_refinement_naturalit
 def readingFunctoriality_baseResolutionToSelectedCechZero_refinement_naturality :=
   @AAT.AG.Cohomology.baseResolutionToSelectedCechZero_refinement_naturality
 
+/-! Part 4 R5c6: actual total complex and its canonical edge maps. -/
+
+/-- Audit alias for the resolution-unit zero composition. -/
+def readingFunctoriality_selectedCechResolutionAugmentation_comp_resolution_d :=
+  @AAT.AG.Cohomology.selectedCechResolutionAugmentation_comp_resolution_d
+
+/-- Audit alias for the base-restriction zero-cocycle equation. -/
+def readingFunctoriality_baseResolutionToSelectedCechZero_comp_cech_d :=
+  @AAT.AG.Cohomology.baseResolutionToSelectedCechZero_comp_cech_d
+
+/-- Audit alias for the actual selected Čech resolution total complex. -/
+noncomputable def readingFunctoriality_selectedCechResolutionTotalComplex :=
+  @AAT.AG.Cohomology.selectedCechResolutionTotalComplex
+
+/-- Audit alias for the selected Čech edge into the total complex. -/
+noncomputable def readingFunctoriality_selectedCechToResolutionTotal :=
+  @AAT.AG.Cohomology.selectedCechToResolutionTotal
+
+/-- Audit alias for the selected Čech edge component formula. -/
+def readingFunctoriality_selectedCechToResolutionTotal_f :=
+  @AAT.AG.Cohomology.selectedCechToResolutionTotal_f
+
+/-- Audit alias for the base-resolution edge into the total complex. -/
+noncomputable def readingFunctoriality_baseResolutionToSelectedCechTotal :=
+  @AAT.AG.Cohomology.baseResolutionToSelectedCechTotal
+
+/-- Audit alias for the base-resolution edge component formula. -/
+def readingFunctoriality_baseResolutionToSelectedCechTotal_f :=
+  @AAT.AG.Cohomology.baseResolutionToSelectedCechTotal_f
+
+/-- Audit alias for the total refinement map. -/
+noncomputable def readingFunctoriality_selectedCechResolutionTotalMap :=
+  @AAT.AG.Cohomology.selectedCechResolutionTotalMap
+
+/-- Audit alias for the total refinement map summand formula. -/
+def readingFunctoriality_selectedCechResolutionTotalMap_ιTotal :=
+  @AAT.AG.Cohomology.selectedCechResolutionTotalMap_ιTotal
+
+/-- Audit alias for the identity total refinement law. -/
+def readingFunctoriality_selectedCechResolutionTotalMap_refl :=
+  @AAT.AG.Cohomology.selectedCechResolutionTotalMap_refl
+
+/-- Audit alias for the composite total refinement law. -/
+def readingFunctoriality_selectedCechResolutionTotalMap_comp :=
+  @AAT.AG.Cohomology.selectedCechResolutionTotalMap_comp
+
+/-- Audit alias for selected-edge refinement naturality. -/
+def readingFunctoriality_selectedCechToResolutionTotal_refinement_naturality :=
+  @AAT.AG.Cohomology.selectedCechToResolutionTotal_refinement_naturality
+
+/-- Audit alias for base-edge refinement naturality. -/
+def readingFunctoriality_baseResolutionToSelectedCechTotal_refinement_naturality :=
+  @AAT.AG.Cohomology.baseResolutionToSelectedCechTotal_refinement_naturality
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
