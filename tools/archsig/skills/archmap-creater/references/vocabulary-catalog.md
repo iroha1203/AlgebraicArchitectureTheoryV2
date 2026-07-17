@@ -81,7 +81,7 @@ as `square-free` and `section-factorization`.
 | --- | --- |
 | `relation` | `dependsOn`, `calls`, `implements`, `publishesTo`, `readsFrom`, `writesTo` |
 | `capability` | `handlesCommand`, `servesQuery`, `exposesEndpoint` |
-| `authority` | `requiresRole`, `checksPermission`, `scopesToOwner` |
+| `authority` | `requiresRole`, `checksPermission`, `scopesToOwner`, `permitsUnauthenticated`, `allowsCrossOrigin` |
 | `state` | `persistsIn`, `transitionsTo`, `cachedIn` |
 | `effect` | `enqueues`, `publishes`, `mutatesFile`, `callsProvider` |
 | `contract` | `requires`, `ensures`, `shapedAs`, `retriesWith` |
@@ -90,6 +90,13 @@ as `square-free` and `section-factorization`.
 
 Catalog-external predicate use is an integrator adjudication: record why no
 listed predicate fit the observed source use. This is not an axis extension.
+
+`permitsUnauthenticated` records a configured surface that admits requests
+without authentication (object = the matched path or scope, e.g.
+`permit-all-on-/api/v1/notifyservice/**`). `allowsCrossOrigin` records a
+configured cross-origin admission (object = the origin scope). Both are
+positive records of the configured authority surface; they carry no verdict
+about whether that configuration is appropriate.
 
 ## AG Axis Predicate Pairs
 
