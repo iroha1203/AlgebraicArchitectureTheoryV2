@@ -5996,4 +5996,166 @@ noncomputable def baseResolutionToSelectedCechTotalHomologyEquiv
   exact (isoOfQuasiIsoAt
     (baseResolutionToSelectedCechTotal 𝒰 Ob) n).addCommGroupIsoToAddEquiv
 
+noncomputable def cechToSheafHAtBaseEquiv
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (n : Nat) :
+    (canonicalCechComplex 𝒰 Ob).AdditiveCechHn n ≃+
+      (Ob.toAddCommGrpSheaf).H' n base :=
+  (additiveCechHnEquivSelectedHomology 𝒰 Ob n).trans
+    ((selectedCechToResolutionTotalHomologyEquiv 𝒰 Ob hLeray n).trans
+      ((baseResolutionToSelectedCechTotalHomologyEquiv 𝒰 Ob n).symm.trans
+        (baseResolutionHomologyEquivHPrime Ob n)))
+
+noncomputable def cechToSheafHAtBase
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (n : Nat) :
+    (canonicalCechComplex 𝒰 Ob).AdditiveCechHn n →+
+      (Ob.toAddCommGrpSheaf).H' n base :=
+  (cechToSheafHAtBaseEquiv 𝒰 Ob hLeray n).toAddMonoidHom
+
+theorem cechToSheafHAtBase_bijective
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (n : Nat) :
+    Function.Bijective (cechToSheafHAtBase 𝒰 Ob hLeray n) :=
+  (cechToSheafHAtBaseEquiv 𝒰 Ob hLeray n).bijective
+
+theorem selectedCechToResolutionTotalHomologyEquiv_refinement_naturality
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S)
+    (h𝒰 : IsLerayFor 𝒰 Ob) (h𝒱 : IsLerayFor 𝒱 Ob)
+    (n : ℕ)
+    (x : ((selectedCechComplexFunctor 𝒰).obj
+      Ob.toAddCommGrpSheaf.val).homology n) :
+    (HomologicalComplex.homologyMap
+        (selectedCechResolutionTotalMap r Ob) n).hom
+        (selectedCechToResolutionTotalHomologyEquiv 𝒰 Ob h𝒰 n x) =
+      selectedCechToResolutionTotalHomologyEquiv 𝒱 Ob h𝒱 n
+        ((HomologicalComplex.homologyMap
+          (r.selectedCechMap.app Ob.toAddCommGrpSheaf.val) n).hom x) := by
+  have h := congrArg (fun f => HomologicalComplex.homologyMap f n)
+    (selectedCechToResolutionTotal_refinement_naturality r Ob)
+  have hx := ConcreteCategory.congr_hom h x
+  simpa only [HomologicalComplex.homologyMap_comp,
+    ConcreteCategory.comp_apply,
+    selectedCechToResolutionTotalHomologyEquiv,
+    Iso.addCommGroupIsoToAddEquiv_apply, isoOfQuasiIsoAt_hom] using hx
+
+theorem baseResolutionToSelectedCechTotalHomologyEquiv_refinement_naturality
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (x : (baseResolutionComplex (base := base) Ob).homology n) :
+    (HomologicalComplex.homologyMap
+        (selectedCechResolutionTotalMap r Ob) n).hom
+        (baseResolutionToSelectedCechTotalHomologyEquiv 𝒰 Ob n x) =
+      baseResolutionToSelectedCechTotalHomologyEquiv 𝒱 Ob n x := by
+  have h := congrArg (fun f => HomologicalComplex.homologyMap f n)
+    (baseResolutionToSelectedCechTotal_refinement_naturality r Ob)
+  have hx := ConcreteCategory.congr_hom h x
+  simpa only [HomologicalComplex.homologyMap_comp,
+    ConcreteCategory.comp_apply,
+    baseResolutionToSelectedCechTotalHomologyEquiv,
+    Iso.addCommGroupIsoToAddEquiv_apply, isoOfQuasiIsoAt_hom,
+    HomologicalComplex.homologyMap_id, ConcreteCategory.id_apply] using hx
+
+theorem cechToSheafHAtBase_refinement_naturality
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (h𝒰 : IsLerayFor 𝒰 Ob)
+    (h𝒱 : IsLerayFor 𝒱 Ob)
+    (n : Nat) :
+    (cechToSheafHAtBase 𝒱 Ob h𝒱 n).comp
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n) =
+      cechToSheafHAtBase 𝒰 Ob h𝒰 n := by
+  apply AddMonoidHom.ext
+  intro x
+  let b𝒰 := baseResolutionToSelectedCechTotalHomologyEquiv 𝒰 Ob n
+  let b𝒱 := baseResolutionToSelectedCechTotalHomologyEquiv 𝒱 Ob n
+  let t := HomologicalComplex.homologyMap
+    (selectedCechResolutionTotalMap r Ob) n
+  have hbaseInv
+      (y : (selectedCechResolutionTotalComplex 𝒰 Ob).homology n) :
+      b𝒱.symm (t.hom y) = b𝒰.symm y := by
+    apply b𝒱.injective
+    rw [b𝒱.apply_symm_apply]
+    rw [← baseResolutionToSelectedCechTotalHomologyEquiv_refinement_naturality
+      r Ob n (b𝒰.symm y)]
+    rw [b𝒰.apply_symm_apply]
+  change baseResolutionHomologyEquivHPrime Ob n
+      (b𝒱.symm
+        (selectedCechToResolutionTotalHomologyEquiv 𝒱 Ob h𝒱 n
+          (additiveCechHnEquivSelectedHomology 𝒱 Ob n
+            ((r.canonicalCechHom Ob).mapAdditiveCechHn n x)))) =
+    baseResolutionHomologyEquivHPrime Ob n
+      (b𝒰.symm
+        (selectedCechToResolutionTotalHomologyEquiv 𝒰 Ob h𝒰 n
+          (additiveCechHnEquivSelectedHomology 𝒰 Ob n x)))
+  rw [← additiveCechHnEquivSelectedHomology_refinement_naturality r Ob n x]
+  rw [← selectedCechToResolutionTotalHomologyEquiv_refinement_naturality
+    r Ob h𝒰 h𝒱 n]
+  rw [hbaseInv]
+
+noncomputable def cechToSheafH
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hbase : Limits.IsTerminal base)
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (n : Nat) :
+    (canonicalCechComplex 𝒰 Ob).AdditiveCechHn n →+
+      (Ob.toAddCommGrpSheaf).H n :=
+  (terminalHComparison Ob.toAddCommGrpSheaf base hbase n).toAddMonoidHom.comp
+    (cechToSheafHAtBase 𝒰 Ob hLeray n)
+
+theorem cechToSheafH_bijective
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hbase : Limits.IsTerminal base)
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (n : Nat) :
+    Function.Bijective (cechToSheafH 𝒰 Ob hbase hLeray n) :=
+  (terminalHComparison Ob.toAddCommGrpSheaf base hbase n).bijective.comp
+    (cechToSheafHAtBase_bijective 𝒰 Ob hLeray n)
+
+theorem cechToSheafH_refinement_naturality
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hbase : Limits.IsTerminal base)
+    (h𝒰 : IsLerayFor 𝒰 Ob)
+    (h𝒱 : IsLerayFor 𝒱 Ob)
+    (n : Nat) :
+    (cechToSheafH 𝒱 Ob hbase h𝒱 n).comp
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n) =
+      cechToSheafH 𝒰 Ob hbase h𝒰 n := by
+  have h := congrArg
+    (fun f =>
+      (terminalHComparison Ob.toAddCommGrpSheaf base hbase n).toAddMonoidHom.comp f)
+    (cechToSheafHAtBase_refinement_naturality r Ob h𝒰 h𝒱 n)
+  simpa only [cechToSheafH, AddMonoidHom.comp_assoc] using h
+
 end AAT.AG.Cohomology

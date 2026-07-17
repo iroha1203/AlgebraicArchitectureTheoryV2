@@ -4819,6 +4819,42 @@ def readingFunctoriality_selectedCechToResolutionTotal_quasiIso :=
 noncomputable def readingFunctoriality_selectedCechToResolutionTotalHomologyEquiv :=
   @AAT.AG.Cohomology.selectedCechToResolutionTotalHomologyEquiv
 
+/-- Audit alias for the actual base-resolution edge quasi-isomorphism. -/
+def readingFunctoriality_baseResolutionToSelectedCechTotal_quasiIso :=
+  @AAT.AG.Cohomology.baseResolutionToSelectedCechTotal_quasiIso
+
+/-- Audit alias for the base-edge homology equivalence. -/
+noncomputable def readingFunctoriality_baseResolutionToSelectedCechTotalHomologyEquiv :=
+  @AAT.AG.Cohomology.baseResolutionToSelectedCechTotalHomologyEquiv
+
+/-- Audit alias for the canonical selected Čech-to-local-cohomology equivalence. -/
+noncomputable def readingFunctoriality_cechToSheafHAtBaseEquiv :=
+  @AAT.AG.Cohomology.cechToSheafHAtBaseEquiv
+
+/-- Audit alias for the canonical selected Čech-to-local-cohomology map. -/
+noncomputable def readingFunctoriality_cechToSheafHAtBase :=
+  @AAT.AG.Cohomology.cechToSheafHAtBase
+
+/-- Audit alias for bijectivity of the local comparison. -/
+def readingFunctoriality_cechToSheafHAtBase_bijective :=
+  @AAT.AG.Cohomology.cechToSheafHAtBase_bijective
+
+/-- Audit alias for refinement naturality of the local comparison. -/
+def readingFunctoriality_cechToSheafHAtBase_refinement_naturality :=
+  @AAT.AG.Cohomology.cechToSheafHAtBase_refinement_naturality
+
+/-- Audit alias for the canonical terminal-base Čech-to-global-cohomology map. -/
+noncomputable def readingFunctoriality_cechToSheafH :=
+  @AAT.AG.Cohomology.cechToSheafH
+
+/-- Audit alias for bijectivity of the terminal-base comparison. -/
+def readingFunctoriality_cechToSheafH_bijective :=
+  @AAT.AG.Cohomology.cechToSheafH_bijective
+
+/-- Audit alias for refinement naturality of the terminal-base comparison. -/
+def readingFunctoriality_cechToSheafH_refinement_naturality :=
+  @AAT.AG.Cohomology.cechToSheafH_refinement_naturality
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

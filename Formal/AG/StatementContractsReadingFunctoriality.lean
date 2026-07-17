@@ -2036,6 +2036,63 @@ noncomputable example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
         Type (u + 1)) :=
   Cohomology.selectedCechToResolutionTotalHomologyEquiv 𝒰 Ob hLeray n
 
+/-- Fixed base-resolution edge quasi-isomorphism from actual sheaf gluing. -/
+example : QuasiIso (Cohomology.baseResolutionToSelectedCechTotal 𝒰 Ob) :=
+  Cohomology.baseResolutionToSelectedCechTotal_quasiIso 𝒰 Ob
+
+/-- Fixed homology equivalence induced by the actual base-resolution edge. -/
+noncomputable example (n : ℕ) :
+    ((Cohomology.baseResolutionComplex (base := base) Ob).homology n :
+        Type (u + 1)) ≃+
+      ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).homology n :
+        Type (u + 1)) :=
+  Cohomology.baseResolutionToSelectedCechTotalHomologyEquiv 𝒰 Ob n
+
+/-- Fixed canonical selected Čech-to-local-sheaf-cohomology map. -/
+noncomputable example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n →+
+      (Ob.toAddCommGrpSheaf).H' n base :=
+  Cohomology.cechToSheafHAtBase 𝒰 Ob hLeray n
+
+/-- Fixed bijectivity of the canonical local comparison. -/
+example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    Function.Bijective (Cohomology.cechToSheafHAtBase 𝒰 Ob hLeray n) :=
+  Cohomology.cechToSheafHAtBase_bijective 𝒰 Ob hLeray n
+
+/-- Fixed refinement naturality of the canonical local comparison. -/
+example {𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (h𝒰 : Cohomology.IsLerayFor 𝒰 Ob)
+    (h𝒱 : Cohomology.IsLerayFor 𝒱 Ob) (n : ℕ) :
+    (Cohomology.cechToSheafHAtBase 𝒱 Ob h𝒱 n).comp
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n) =
+      Cohomology.cechToSheafHAtBase 𝒰 Ob h𝒰 n :=
+  Cohomology.cechToSheafHAtBase_refinement_naturality r Ob h𝒰 h𝒱 n
+
+/-- Fixed terminal-base Čech-to-global-sheaf-cohomology map. -/
+noncomputable example (hbase : Limits.IsTerminal base)
+    (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n →+
+      (Ob.toAddCommGrpSheaf).H n :=
+  Cohomology.cechToSheafH 𝒰 Ob hbase hLeray n
+
+/-- Fixed bijectivity of the canonical terminal-base comparison. -/
+example (hbase : Limits.IsTerminal base)
+    (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    Function.Bijective (Cohomology.cechToSheafH 𝒰 Ob hbase hLeray n) :=
+  Cohomology.cechToSheafH_bijective 𝒰 Ob hbase hLeray n
+
+/-- Fixed refinement naturality of the terminal-base comparison. -/
+example {𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (hbase : Limits.IsTerminal base)
+    (h𝒰 : Cohomology.IsLerayFor 𝒰 Ob)
+    (h𝒱 : Cohomology.IsLerayFor 𝒱 Ob) (n : ℕ) :
+    (Cohomology.cechToSheafH 𝒱 Ob hbase h𝒱 n).comp
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n) =
+      Cohomology.cechToSheafH 𝒰 Ob hbase h𝒰 n :=
+  Cohomology.cechToSheafH_refinement_naturality r Ob hbase h𝒰 h𝒱 n
+
 end LerayTotalElimination
 
 end SelectedCechResolutionBicomplexSD5
