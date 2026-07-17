@@ -5,8 +5,9 @@ import Mathlib.AlgebraicGeometry.IdealSheaf.Functorial
 /-!
 # Closed-equational geometry under coefficient change
 
-This module implements the fixed declarations of PRD SD7 / AC31 and the per-law chart comparison
-of AC32.  Its input is a source raw system `raw`, a source standard scheme `X`, a semantic equation
+This module implements the fixed declarations of PRD SD7 / AC31, the per-law chart comparison of
+AC32, and the aggregate ideal and lawful closed-geometry transport of AC33.  Its input is a source
+raw system `raw`, a source standard scheme `X`, a semantic equation
 core `G` with its source presentation bridge `B`, and a flat coefficient change `f`.  Source and
 target `HasSheafify` instances type the two standard schemes; the explicit site-dependent
 `HasSheafCompose` instance supplies the coefficient-change compatibility already required by the
@@ -22,7 +23,9 @@ restriction compatibility from the global-section constructor.
 No target raw bridge, caller-supplied target reading, comparison map, or witness certificate is
 accepted.  The six AC31 declarations omit the source bridge validity premise `hB`; the AC32 chart
 comparison first uses it through the source chart-ideal realization and then compares the two
-pullbacks through the actual changed-chart square.
+pullbacks through the actual changed-chart square.  AC33 independently transports the global
+equations, commutes ideal-sheaf pullback with their fixed-index supremum, and constructs the
+required and all-law closed-subscheme maps from those aggregate equalities.
 -/
 
 namespace AAT.AG
@@ -339,6 +342,191 @@ private theorem ofIdealTop_comap_of_isOpenImmersion
     exact congrArg (fun q => q z) h
   rw [top_res, Ideal.map_id]
 
+/-- Proof-internal AC33 descent API: two ideal sheaves are equal when their comaps to every
+chart of a valid architecture affine atlas agree. -/
+private theorem idealSheafData_eq_of_architectureAtlas_comap
+    {Y : AlgebraicGeometry.Scheme}
+    {D : AATReadingDecoration raw Y}
+    (atlas : ArchitectureAffineAtlas raw Y D)
+    (hatlas : IsArchitectureAffineAtlas raw atlas)
+    (I J : Y.IdealSheafData)
+    (h : ∀ j : atlas.Index,
+      I.comap (atlas.chart j).map =
+        J.comap (atlas.chart j).map) :
+    I = J := by
+  let U (j : atlas.Index) : Y.affineOpens :=
+    by
+      letI : IsOpenImmersion (atlas.chart j).map :=
+        (hatlas.chart_valid j).isOpenImmersion
+      letI : IsAffine (atlas.chart j).domain :=
+        (atlas.chart j).domain_isAffine
+      exact ⟨(atlas.chart j).map ''ᵁ
+          (⊤ : (atlas.chart j).domain.Opens),
+        (isAffineOpen_top _).image_of_isOpenImmersion (atlas.chart j).map⟩
+  apply Scheme.IdealSheafData.ext_of_iSup_eq_top U
+  · simpa only [U, Scheme.Hom.image_top_eq_opensRange] using
+      atlas.jointlyCovers raw hatlas
+  intro j
+  letI : IsOpenImmersion (atlas.chart j).map :=
+    (hatlas.chart_valid j).isOpenImmersion
+  letI : IsAffine (atlas.chart j).domain :=
+    (atlas.chart j).domain_isAffine
+  let e := (atlas.chart j).map.appIso ⊤
+  have hj := congrArg
+    (fun K : (atlas.chart j).domain.IdealSheafData =>
+      K.ideal ⟨⊤, isAffineOpen_top _⟩) (h j)
+  change
+    (I.comap (atlas.chart j).map).ideal ⟨⊤, isAffineOpen_top _⟩ =
+      (J.comap (atlas.chart j).map).ideal ⟨⊤, isAffineOpen_top _⟩ at hj
+  rw [Scheme.IdealSheafData.ideal_comap_of_isOpenImmersion,
+    Scheme.IdealSheafData.ideal_comap_of_isOpenImmersion] at hj
+  apply Ideal.comap_injective_of_surjective e.inv.hom
+    e.symm.commRingCatIsoToRingEquiv.surjective
+  simpa only [U, e, Scheme.Hom.image_top_eq_opensRange] using hj
+
+/-- Proof-internal AC33 global-section API: formation of the ideal sheaf generated on the top
+open commutes with the canonical coefficient-change projection. -/
+private theorem ofIdealTop_comap_baseChangeMap
+    (I : Ideal Γ(X.underlying, ⊤))
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    (Scheme.IdealSheafData.ofIdealTop (X := X.underlying) I).comap
+        (X.baseChangeMap raw f) =
+      Scheme.IdealSheafData.ofIdealTop
+        (X := (X.baseChange raw f).underlying)
+        (Ideal.map (X.baseChangeMap raw f).appTop.hom I) := by
+  apply idealSheafData_eq_of_architectureAtlas_comap
+    (raw := raw.baseChange f.hom) (X.baseChangedAtlas raw f)
+    (X.baseChange raw f).atlasValid
+  intro j'
+  let j := cast (X.baseChangedAtlas_Index raw f) j'
+  have hj' : cast (X.baseChangedAtlas_Index raw f).symm j = j' := by
+    simp only [j, cast_eq]
+  rw [← hj']
+  rw [← Scheme.IdealSheafData.comap_comp]
+  rw [(X.baseChangedChart_isPullback raw f j).w]
+  rw [Scheme.IdealSheafData.comap_comp]
+  letI : IsOpenImmersion (X.atlas.chart j).map :=
+    (X.atlasValid.chart_valid j).isOpenImmersion
+  letI : IsAffine (X.atlas.chart j).domain :=
+    (X.atlas.chart j).domain_isAffine
+  let j' := cast (X.baseChangedAtlas_Index raw f).symm j
+  letI : IsOpenImmersion ((X.baseChangedAtlas raw f).chart j').map :=
+    ((X.baseChange raw f).atlasValid.chart_valid j').isOpenImmersion
+  letI : IsAffine ((X.baseChangedAtlas raw f).chart j').domain :=
+    ((X.baseChangedAtlas raw f).chart j').domain_isAffine
+  rw [ofIdealTop_comap_of_isOpenImmersion]
+  rw [ofIdealTop_comap_of_isAffine]
+  rw [ofIdealTop_comap_of_isOpenImmersion]
+  congr 1
+  rw [Ideal.map_map, Ideal.map_map]
+  have hTop := congrArg (fun q => q.appTop)
+    (X.baseChangedChart_isPullback raw f j).w
+  simp only [Scheme.Hom.comp_appTop] at hTop
+  exact congrArg (fun q : Γ(X.underlying, ⊤) →+*
+      Γ(((X.baseChangedAtlas raw f).chart j').domain, ⊤) => Ideal.map q I)
+    (congrArg CommRingCat.Hom.hom hTop.symm)
+
+/-- Proof-internal AC33 per-law API: the source law-witness ideal sheaf pulls back to the
+canonically reconstructed target law-witness ideal sheaf, directly from their global equations. -/
+private theorem lawWitnessIdealSheaf_baseChange_ofSemanticCore
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (i : S.lawUniverse.Index) :
+    let R := ClosedEquationalLawReading.ofSemanticCore raw X G B
+    let hR :=
+      (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B).witness_compatible
+    let R' := ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f
+    let hR' :=
+      (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid
+        raw X G B f).witness_compatible
+    (lawWitnessIdealSheaf raw X R hR i (Set.mem_univ i)).comap
+        (X.baseChangeMap raw f) =
+      lawWitnessIdealSheaf
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        R' hR' i (Set.mem_univ i) := by
+  dsimp only
+  rw [lawWitnessIdealSheaf_ofGlobalSections raw X _ _ i (Set.mem_univ i)
+    (semanticCoreGlobalEquation raw X G B i) rfl]
+  rw [lawWitnessIdealSheaf_ofGlobalSections
+    (raw.baseChange f.hom) (X.baseChange raw f) _ _ i (Set.mem_univ i)
+    (baseChangedSemanticCoreGlobalEquation raw X G B f i) rfl]
+  rw [ofIdealTop_comap_baseChangeMap raw X]
+  congr 1
+  simp only [Ideal.map_span]
+  congr 1
+  ext x
+  constructor
+  · rintro ⟨_, ⟨a, rfl⟩, rfl⟩
+    exact ⟨a, rfl⟩
+  · rintro ⟨a, rfl⟩
+    exact ⟨semanticCoreGlobalEquation raw X G B i a, ⟨a, rfl⟩, rfl⟩
+
+/-- Proof-internal AC33 aggregate API: when every law is selected, the required generated ideal
+sheaf is the fixed-index supremum of the required per-law witness ideal sheaves. -/
+private theorem lawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalLawReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (hall : AllLawsSelected raw X R) :
+    lawGeneratedIdealSheaf raw X R hR hclosed =
+      ⨆ i : {i : S.lawUniverse.Index // S.lawUniverse.Required i},
+        lawWitnessIdealSheaf raw X R hR.witness_compatible
+          i.1 (hclosed.closed i.1 i.2) := by
+  apply Scheme.IdealSheafData.ext
+  funext V
+  rw [lawGeneratedIdealSheaf_ideal, Scheme.IdealSheafData.ideal_iSup, iSup_apply]
+  apply le_antisymm
+  · refine iSup_le fun i => ?_
+    let j : {q : S.lawUniverse.Index // S.lawUniverse.Required q} :=
+      ⟨i.1, i.2.1⟩
+    simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
+      (le_iSup (fun q : {q : S.lawUniverse.Index // S.lawUniverse.Required q} =>
+        (lawWitnessIdealSheaf raw X R hR.witness_compatible q.1
+          (hclosed.closed q.1 q.2)).ideal V) j)
+  · refine iSup_le fun i => ?_
+    let j : {q : S.lawUniverse.Index //
+        S.lawUniverse.Required q ∧ R.selected V q} :=
+      ⟨i.1, i.2, hall.selected V i.1⟩
+    simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
+      (le_iSup (fun q : {q : S.lawUniverse.Index //
+          S.lawUniverse.Required q ∧ R.selected V q} =>
+        localLawWitnessIdeal raw X
+          (R.witness q.1 (hclosed.closed q.1 q.2.1)) V) j)
+
+/-- Proof-internal AC33 aggregate API: when every law is selected, the all-law generated ideal
+sheaf is the fixed-index supremum of all per-law witness ideal sheaves. -/
+private theorem allLawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalLawReading raw X R)
+    (hall : AllLawsSelected raw X R) :
+    allLawGeneratedIdealSheaf raw X R hR =
+      ⨆ i : S.lawUniverse.Index,
+        lawWitnessIdealSheaf raw X R hR.witness_compatible
+          i (hall.closed i) := by
+  apply Scheme.IdealSheafData.ext
+  funext V
+  rw [allLawGeneratedIdealSheaf_ideal, Scheme.IdealSheafData.ideal_iSup, iSup_apply]
+  apply le_antisymm
+  · refine iSup_le fun i => ?_
+    simpa only [lawWitnessIdealSheaf_ideal] using
+      (le_iSup (fun q : S.lawUniverse.Index =>
+        (lawWitnessIdealSheaf raw X R hR.witness_compatible q
+          (hall.closed q)).ideal V) i.1)
+  · refine iSup_le fun i => ?_
+    let j : {q : S.lawUniverse.Index // R.selected V q} :=
+      ⟨i, hall.selected V i⟩
+    simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
+      (le_iSup (fun q : {q : S.lawUniverse.Index // R.selected V q} =>
+        localLawWitnessIdeal raw X
+          (R.witness q.1 (hR.selected_closed V q.1 q.2)) V) j)
+
 /-- The AC32 per-law chart comparison.  The source side uses the Part 3 semantic-core
 realization supplied by `hB`; the target side uses the R6f global-section witness.  The two
 chartwise pullbacks are compared through the actual changed-chart square and functoriality of
@@ -442,6 +630,173 @@ theorem semanticCoreLawWitnessIdeal_baseChangedChart
     simpa only [baseChangedSemanticCoreGlobalEquation,
       CommRingCat.comp_apply, RingHom.comp_apply] using congrArg
         (fun q => q (semanticCoreGlobalEquation raw X G B i a)) hTop.symm
+
+/-- The AC33 required-law aggregate equality.  Both generated ideal sheaves are normalized to a
+fixed supremum of required per-law witnesses, and pullback commutes with that supremum by the
+Mathlib ideal-sheaf Galois connection. -/
+theorem lawGeneratedIdealSheaf_baseChange_ofSemanticCore
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    Scheme.IdealSheafData.comap
+        (lawGeneratedIdealSheaf raw X
+          (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+          (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
+          (ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B))
+        (X.baseChangeMap raw f) =
+      lawGeneratedIdealSheaf
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed raw X G B f) := by
+  rw [lawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected raw X
+    (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+    (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
+    (ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B)
+    (ClosedEquationalLawReading.ofSemanticCore_allLawsSelected raw X G B)]
+  rw [lawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected
+    (raw.baseChange f.hom) (X.baseChange raw f)
+    (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+    (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
+    (ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed raw X G B f)
+    (ClosedEquationalLawReading.baseChangeOfSemanticCore_allLawsSelected raw X G B f)]
+  rw [(Scheme.IdealSheafData.map_gc (X.baseChangeMap raw f)).l_iSup]
+  congr 1
+  funext i
+  exact lawWitnessIdealSheaf_baseChange_ofSemanticCore raw X G B f i.1
+
+/-- The AC33 all-selected aggregate equality, obtained from the same per-law global-equation
+transport after normalizing both sides to the fixed law-index supremum. -/
+theorem allSelectedLawGeneratedIdealSheaf_baseChange_ofSemanticCore
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    Scheme.IdealSheafData.comap
+        (allLawGeneratedIdealSheaf raw X
+          (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+          (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B))
+        (X.baseChangeMap raw f) =
+      allLawGeneratedIdealSheaf
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f) := by
+  rw [allLawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected raw X
+    (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+    (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
+    (ClosedEquationalLawReading.ofSemanticCore_allLawsSelected raw X G B)]
+  rw [allLawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected
+    (raw.baseChange f.hom) (X.baseChange raw f)
+    (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+    (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
+    (ClosedEquationalLawReading.baseChangeOfSemanticCore_allLawsSelected raw X G B f)]
+  rw [(Scheme.IdealSheafData.map_gc (X.baseChangeMap raw f)).l_iSup]
+  congr 1
+  funext i
+  exact lawWitnessIdealSheaf_baseChange_ofSemanticCore raw X G B f i
+
+/-- The AC33 canonical map from the target required-law closed subscheme to the source one. -/
+noncomputable def lawfulClosedSubschemeBaseChangeMap
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    lawfulClosedSubscheme
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed raw X G B f) ⟶
+      lawfulClosedSubscheme raw X
+        (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+        (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
+        (ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B) :=
+  Scheme.IdealSheafData.subschemeMap
+    (lawGeneratedIdealSheaf
+      (raw.baseChange f.hom) (X.baseChange raw f)
+      (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+      (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
+      (ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed raw X G B f))
+    (lawGeneratedIdealSheaf raw X
+      (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+      (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
+      (ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B))
+    (X.baseChangeMap raw f)
+    (Scheme.IdealSheafData.le_map_iff_comap_le.mpr
+      (le_of_eq (lawGeneratedIdealSheaf_baseChange_ofSemanticCore raw X G B f)))
+
+/-- The required-law base-change map lies over the canonical coefficient-change projection. -/
+@[reassoc] theorem lawfulClosedSubschemeBaseChangeMap_immersion
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    lawfulClosedSubschemeBaseChangeMap raw X G B f ≫
+        lawfulClosedImmersion raw X
+          (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+          (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
+          (ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B) =
+      lawfulClosedImmersion
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed raw X G B f) ≫
+          X.baseChangeMap raw f := by
+  exact Scheme.IdealSheafData.subschemeMap_subschemeι _ _ _ _
+
+/-- The AC33 canonical map from the target all-law closed subscheme to the source one. -/
+noncomputable def allLawfulClosedSubschemeBaseChangeMap
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    allLawfulClosedSubscheme
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f) ⟶
+      allLawfulClosedSubscheme raw X
+        (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+        (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B) :=
+  Scheme.IdealSheafData.subschemeMap
+    (allLawGeneratedIdealSheaf
+      (raw.baseChange f.hom) (X.baseChange raw f)
+      (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+      (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f))
+    (allLawGeneratedIdealSheaf raw X
+      (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+      (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B))
+    (X.baseChangeMap raw f)
+    (Scheme.IdealSheafData.le_map_iff_comap_le.mpr
+      (le_of_eq (allSelectedLawGeneratedIdealSheaf_baseChange_ofSemanticCore raw X G B f)))
+
+/-- The all-law base-change map lies over the canonical coefficient-change projection. -/
+@[reassoc] theorem allLawfulClosedSubschemeBaseChangeMap_immersion
+    (G : SemanticLawEquationWitnessIdealCore S)
+    (B : SemanticLawEquationSchemeBridge raw G)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    allLawfulClosedSubschemeBaseChangeMap raw X G B f ≫
+        allLawfulClosedImmersion raw X
+          (ClosedEquationalLawReading.ofSemanticCore raw X G B)
+          (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B) =
+      allLawfulClosedImmersion
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f) ≫
+        X.baseChangeMap raw f := by
+  exact Scheme.IdealSheafData.subschemeMap_subschemeι _ _ _ _
 
 end LawAlgebra
 

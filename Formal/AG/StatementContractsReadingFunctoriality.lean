@@ -2942,6 +2942,84 @@ example
   LawAlgebra.semanticCoreLawWitnessIdeal_baseChangedChart
     raw X G B hB f j i
 
+/-! Fixed AC33 aggregate ideal and lawful closed-geometry contracts. -/
+
+example :
+    Scheme.IdealSheafData.comap
+        (LawAlgebra.lawGeneratedIdealSheaf raw X
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore raw X G B)
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B))
+        (X.baseChangeMap raw f) =
+      LawAlgebra.lawGeneratedIdealSheaf
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed
+          raw X G B f) :=
+  LawAlgebra.lawGeneratedIdealSheaf_baseChange_ofSemanticCore raw X G B f
+
+example :
+    Scheme.IdealSheafData.comap
+        (LawAlgebra.allLawGeneratedIdealSheaf raw X
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore raw X G B)
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_valid raw X G B))
+        (X.baseChangeMap raw f) =
+      LawAlgebra.allLawGeneratedIdealSheaf
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f) :=
+  LawAlgebra.allSelectedLawGeneratedIdealSheaf_baseChange_ofSemanticCore raw X G B f
+
+noncomputable example :
+    LawAlgebra.lawfulClosedSubscheme
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed
+          raw X G B f) ⟶
+      LawAlgebra.lawfulClosedSubscheme raw X
+        (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore raw X G B)
+        (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
+        (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B) :=
+  LawAlgebra.lawfulClosedSubschemeBaseChangeMap raw X G B f
+
+example :
+    LawAlgebra.lawfulClosedSubschemeBaseChangeMap raw X G B f ≫
+        LawAlgebra.lawfulClosedImmersion raw X
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore raw X G B)
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B) =
+      LawAlgebra.lawfulClosedImmersion
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed
+          raw X G B f) ≫ X.baseChangeMap raw f :=
+  LawAlgebra.lawfulClosedSubschemeBaseChangeMap_immersion raw X G B f
+
+noncomputable example :
+    LawAlgebra.allLawfulClosedSubscheme
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f) ⟶
+      LawAlgebra.allLawfulClosedSubscheme raw X
+        (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore raw X G B)
+        (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_valid raw X G B) :=
+  LawAlgebra.allLawfulClosedSubschemeBaseChangeMap raw X G B f
+
+example :
+    LawAlgebra.allLawfulClosedSubschemeBaseChangeMap raw X G B f ≫
+        LawAlgebra.allLawfulClosedImmersion raw X
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore raw X G B)
+          (LawAlgebra.ClosedEquationalLawReading.ofSemanticCore_valid raw X G B) =
+      LawAlgebra.allLawfulClosedImmersion
+        (raw.baseChange f.hom) (X.baseChange raw f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
+        (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f) ≫
+        X.baseChangeMap raw f :=
+  LawAlgebra.allLawfulClosedSubschemeBaseChangeMap_immersion raw X G B f
+
 end SemanticCoreCoefficientGeometry
 
 end CoefficientChangeSD6

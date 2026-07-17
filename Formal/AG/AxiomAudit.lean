@@ -5083,6 +5083,30 @@ def readingFunctoriality_baseChangeOfSemanticCore_allLawsSelected :=
 def readingFunctoriality_semanticCoreLawWitnessIdeal_baseChangedChart :=
   @AAT.AG.LawAlgebra.semanticCoreLawWitnessIdeal_baseChangedChart
 
+/-- Audit alias for required-law aggregate ideal pullback under semantic-core coefficient change. -/
+def readingFunctoriality_lawGeneratedIdealSheaf_baseChange_ofSemanticCore :=
+  @AAT.AG.LawAlgebra.lawGeneratedIdealSheaf_baseChange_ofSemanticCore
+
+/-- Audit alias for all-law aggregate ideal pullback under semantic-core coefficient change. -/
+def readingFunctoriality_allSelectedLawGeneratedIdealSheaf_baseChange_ofSemanticCore :=
+  @AAT.AG.LawAlgebra.allSelectedLawGeneratedIdealSheaf_baseChange_ofSemanticCore
+
+/-- Audit alias for the required-law closed-subscheme coefficient-change map. -/
+noncomputable def readingFunctoriality_lawfulClosedSubschemeBaseChangeMap :=
+  @AAT.AG.LawAlgebra.lawfulClosedSubschemeBaseChangeMap
+
+/-- Audit alias for the required-law closed-subscheme projection triangle. -/
+def readingFunctoriality_lawfulClosedSubschemeBaseChangeMap_immersion :=
+  @AAT.AG.LawAlgebra.lawfulClosedSubschemeBaseChangeMap_immersion
+
+/-- Audit alias for the all-law closed-subscheme coefficient-change map. -/
+noncomputable def readingFunctoriality_allLawfulClosedSubschemeBaseChangeMap :=
+  @AAT.AG.LawAlgebra.allLawfulClosedSubschemeBaseChangeMap
+
+/-- Audit alias for the all-law closed-subscheme projection triangle. -/
+def readingFunctoriality_allLawfulClosedSubschemeBaseChangeMap_immersion :=
+  @AAT.AG.LawAlgebra.allLawfulClosedSubschemeBaseChangeMap_immersion
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/
