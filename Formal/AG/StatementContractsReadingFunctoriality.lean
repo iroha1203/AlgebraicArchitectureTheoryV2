@@ -1825,6 +1825,68 @@ example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
       Cohomology.baseResolutionToSelectedCechTotal 𝒱 Ob :=
   Cohomology.baseResolutionToSelectedCechTotal_refinement_naturality r Ob
 
+/-! Part 4 R5c7: Leray vanishing and actual resolution columns. -/
+
+section LerayColumns
+
+variable [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+
+/-- Fixed Leray condition as positive-degree actual local `Sheaf.H'` vanishing. -/
+example : Prop := Cohomology.IsLerayFor 𝒰 Ob
+
+/-- Fixed actual resolution column at selected Čech degree `p`. -/
+noncomputable example (p : ℕ) : CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  Cohomology.selectedCechResolutionColumn 𝒰 Ob p
+
+/-- Fixed column-object formula. -/
+example (p q : ℕ) :
+    ((Cohomology.selectedCechResolutionColumn 𝒰 Ob p).X q : Type (u + 1)) =
+      Cohomology.SelectedCechCochain 𝒰
+        ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val p :=
+  Cohomology.selectedCechResolutionColumn_X 𝒰 Ob p q
+
+/-- Fixed pointwise column-differential formula. -/
+example (p q : ℕ)
+    (c : Cohomology.SelectedCechCochain 𝒰
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val p)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p) :
+    ((Cohomology.selectedCechResolutionColumn 𝒰 Ob p).d q (q + 1)).hom c σ =
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.d
+        q (q + 1)).val.app _ (c σ) :=
+  Cohomology.selectedCechResolutionColumn_d_apply 𝒰 Ob p q c σ
+
+variable (hLeray : Cohomology.IsLerayFor 𝒰 Ob)
+
+/-- Fixed local-resolution homology vanishing derived from Leray vanishing. -/
+example (q : ℕ) (hq : 0 < q) (p : ℕ)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p) :
+    Subsingleton
+      ((Cohomology.baseResolutionComplex
+        (base := (Cohomology.canonicalCoverRelative 𝒰).overlap p σ) Ob).homology q :
+          Type (u + 1)) :=
+  hLeray.overlapBaseResolutionHomology_subsingleton q hq p σ
+
+/-- Fixed local-resolution exactness derived from Leray vanishing. -/
+example (q : ℕ) (hq : 0 < q) (p : ℕ)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p) :
+    (Cohomology.baseResolutionComplex
+      (base := (Cohomology.canonicalCoverRelative 𝒰).overlap p σ) Ob).ExactAt q :=
+  hLeray.overlapBaseResolution_exactAt q hq p σ
+
+/-- Fixed positive-degree exactness of the actual resolution column. -/
+example (q : ℕ) (hq : 0 < q) (p : ℕ) :
+    (Cohomology.selectedCechResolutionColumn 𝒰 Ob p).ExactAt q :=
+  hLeray.selectedCechResolutionColumn_exactAt q hq p
+
+/-- Fixed positive-degree homology vanishing of the actual resolution column. -/
+example (q : ℕ) (hq : 0 < q) (p : ℕ) :
+    Subsingleton
+      ((Cohomology.selectedCechResolutionColumn 𝒰 Ob p).homology q :
+        Type (u + 1)) :=
+  hLeray.selectedCechResolutionColumn_homology_subsingleton q hq p
+
+end LerayColumns
+
 end SelectedCechResolutionBicomplexSD5
 
 end AAT.AG.StatementContractsReadingFunctoriality

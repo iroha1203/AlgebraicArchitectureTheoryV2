@@ -4703,6 +4703,40 @@ def readingFunctoriality_selectedCechToResolutionTotal_refinement_naturality :=
 def readingFunctoriality_baseResolutionToSelectedCechTotal_refinement_naturality :=
   @AAT.AG.Cohomology.baseResolutionToSelectedCechTotal_refinement_naturality
 
+/-! Part 4 R5c7: Leray vanishing and actual resolution-column exactness. -/
+
+/-- Audit alias for the positive-degree actual local cohomology condition. -/
+def readingFunctoriality_isLerayFor :=
+  @AAT.AG.Cohomology.IsLerayFor
+
+/-- Audit alias for the actual resolution column. -/
+noncomputable def readingFunctoriality_selectedCechResolutionColumn :=
+  @AAT.AG.Cohomology.selectedCechResolutionColumn
+
+/-- Audit alias for the resolution-column object formula. -/
+def readingFunctoriality_selectedCechResolutionColumn_X :=
+  @AAT.AG.Cohomology.selectedCechResolutionColumn_X
+
+/-- Audit alias for the pointwise resolution-column differential formula. -/
+def readingFunctoriality_selectedCechResolutionColumn_d_apply :=
+  @AAT.AG.Cohomology.selectedCechResolutionColumn_d_apply
+
+/-- Audit alias for overlap-resolution homology vanishing. -/
+def readingFunctoriality_overlapBaseResolutionHomology_subsingleton :=
+  @AAT.AG.Cohomology.IsLerayFor.overlapBaseResolutionHomology_subsingleton
+
+/-- Audit alias for overlap-resolution positive-degree exactness. -/
+def readingFunctoriality_overlapBaseResolution_exactAt :=
+  @AAT.AG.Cohomology.IsLerayFor.overlapBaseResolution_exactAt
+
+/-- Audit alias for actual resolution-column positive-degree exactness. -/
+def readingFunctoriality_selectedCechResolutionColumn_exactAt :=
+  @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionColumn_exactAt
+
+/-- Audit alias for actual resolution-column positive-degree homology vanishing. -/
+def readingFunctoriality_selectedCechResolutionColumn_homology_subsingleton :=
+  @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionColumn_homology_subsingleton
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

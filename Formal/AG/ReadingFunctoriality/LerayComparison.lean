@@ -2,6 +2,7 @@ import Formal.AG.ReadingFunctoriality.Coverage
 import Mathlib.Algebra.Category.ModuleCat.AB
 import Mathlib.Algebra.Category.Grp.Colimits
 import Mathlib.Algebra.Category.Grp.Ulift
+import Mathlib.Algebra.Category.Grp.Zero
 import Mathlib.Algebra.Homology.Additive
 import Mathlib.Algebra.Homology.HomologicalBicomplex
 import Mathlib.Algebra.Homology.TotalComplex
@@ -2419,5 +2420,161 @@ theorem baseResolutionToSelectedCechTotal_refinement_naturality
           (ComplexShape.up ℕ) q 0 q (by simp)
   rw [selectedCechResolutionTotalMap_ιTotal]
   rw [← Category.assoc, hzero]
+
+/-! ## Leray vanishing and actual resolution columns -/
+
+/--
+A selected cover is Leray for the obstruction sheaf when actual local
+`Sheaf.H'` vanishes in every positive degree on every selected overlap.
+
+Implementation notes: this is only the mathematical vanishing condition. It
+does not store a comparison map, exactness proof, homology equivalence, or
+collapse conclusion; those are derived below from the actual injective
+resolution.
+-/
+def IsLerayFor
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})] :
+    Prop :=
+  ∀ q, 0 < q →
+    ∀ p, ∀ σ : (canonicalCoverRelative 𝒰).simplex p,
+      Subsingleton
+        ((Ob.toAddCommGrpSheaf).H' q
+          ((canonicalCoverRelative 𝒰).overlap p σ))
+
+/--
+The actual resolution column at a fixed selected Čech degree.
+
+Implementation notes: the column is obtained by Mathlib's
+`HomologicalComplex₂.flipFunctor` from the actual selected Čech-resolution
+bicomplex. A separately supplied column complex is rejected because it would
+disconnect later exactness from that bicomplex.
+-/
+noncomputable def selectedCechResolutionColumn
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p : ℕ) :
+    CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  ((HomologicalComplex₂.flipFunctor AddCommGrpCat.{u + 1}
+    (ComplexShape.up ℕ) (ComplexShape.up ℕ)).obj
+      (selectedCechResolutionBicomplex 𝒰 Ob)).X p
+
+/-- The column object is the product of resolution sections on selected overlaps. -/
+@[simp] theorem selectedCechResolutionColumn_X
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p q : ℕ) :
+    ((selectedCechResolutionColumn 𝒰 Ob p).X q : Type (u + 1)) =
+      SelectedCechCochain 𝒰
+        ((obstructionInjectiveResolution Ob).cocomplex.X q).val p :=
+  rfl
+
+/-- The column differential applies the injective-resolution differential pointwise. -/
+theorem selectedCechResolutionColumn_d_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p q : ℕ)
+    (c : SelectedCechCochain 𝒰
+      ((obstructionInjectiveResolution Ob).cocomplex.X q).val p)
+    (σ : (canonicalCoverRelative 𝒰).simplex p) :
+    ((selectedCechResolutionColumn 𝒰 Ob p).d q (q + 1)).hom c σ =
+      ((obstructionInjectiveResolution Ob).cocomplex.d q (q + 1)).val.app _
+        (c σ) :=
+  rfl
+
+/-- Leray vanishing kills positive-degree resolution homology on each overlap. -/
+theorem IsLerayFor.overlapBaseResolutionHomology_subsingleton
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : ObstructionSheaf S}
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (q : ℕ) (hq : 0 < q) (p : ℕ)
+    (σ : (canonicalCoverRelative 𝒰).simplex p) :
+    Subsingleton
+      ((baseResolutionComplex
+        (base := (canonicalCoverRelative 𝒰).overlap p σ) Ob).homology q :
+          Type (u + 1)) := by
+  let e := baseResolutionHomologyEquivHPrime
+    (base := (canonicalCoverRelative 𝒰).overlap p σ) Ob q
+  letI := hLeray q hq p σ
+  exact e.injective.subsingleton
+
+/-- Leray vanishing makes each overlap-evaluated resolution exact in positive degree. -/
+theorem IsLerayFor.overlapBaseResolution_exactAt
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : ObstructionSheaf S}
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (q : ℕ) (hq : 0 < q) (p : ℕ)
+    (σ : (canonicalCoverRelative 𝒰).simplex p) :
+    (baseResolutionComplex
+      (base := (canonicalCoverRelative 𝒰).overlap p σ) Ob).ExactAt q := by
+  rw [HomologicalComplex.exactAt_iff_isZero_homology]
+  rw [AddCommGrpCat.isZero_iff_subsingleton]
+  exact hLeray.overlapBaseResolutionHomology_subsingleton q hq p σ
+
+/--
+Every actual resolution column is exact in positive degree under the Leray
+condition. Preimages are chosen on each overlap and assembled into the actual
+selected-cochain product.
+-/
+theorem IsLerayFor.selectedCechResolutionColumn_exactAt
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : ObstructionSheaf S}
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (q : ℕ) (hq : 0 < q) (p : ℕ) :
+    (selectedCechResolutionColumn 𝒰 Ob p).ExactAt q := by
+  rcases q with _ | q
+  · omega
+  rw [(selectedCechResolutionColumn 𝒰 Ob p).exactAt_iff'
+    q (q + 1) (q + 2) (CochainComplex.prev_nat_succ q) (by simp)]
+  rw [ShortComplex.ab_exact_iff_ker_le_range]
+  intro x hx
+  change ((selectedCechResolutionColumn 𝒰 Ob p).d (q + 1) (q + 2)).hom x = 0 at hx
+  change ∃ y, ((selectedCechResolutionColumn 𝒰 Ob p).d q (q + 1)).hom y = x
+  have hpreimage : ∀ σ : (canonicalCoverRelative 𝒰).simplex p,
+      ∃ y : ((obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+          (Opposite.op ((canonicalCoverRelative 𝒰).overlap p σ)),
+        ((obstructionInjectiveResolution Ob).cocomplex.d q (q + 1)).val.app _ y =
+          x σ := by
+    intro σ
+    let K := baseResolutionComplex
+      (base := (canonicalCoverRelative 𝒰).overlap p σ) Ob
+    have hlocal := hLeray.overlapBaseResolution_exactAt (q + 1) (by omega) p σ
+    rw [K.exactAt_iff' q (q + 1) (q + 2)
+      (CochainComplex.prev_nat_succ q) (by simp)] at hlocal
+    rw [ShortComplex.ab_exact_iff_ker_le_range] at hlocal
+    have hxσ :
+        ((obstructionInjectiveResolution Ob).cocomplex.d
+          (q + 1) (q + 2)).val.app _ (x σ) = 0 := by
+      exact congrFun hx σ
+    have hrange := hlocal (show x σ ∈
+        ((K.d (q + 1) (q + 2)).hom).ker by
+      exact hxσ)
+    exact hrange
+  choose y hy using hpreimage
+  refine ⟨fun σ => y σ, ?_⟩
+  funext σ
+  exact hy σ
+
+/-- Positive-degree homology of every actual resolution column is trivial. -/
+theorem IsLerayFor.selectedCechResolutionColumn_homology_subsingleton
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : ObstructionSheaf S}
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (q : ℕ) (hq : 0 < q) (p : ℕ) :
+    Subsingleton
+      ((selectedCechResolutionColumn 𝒰 Ob p).homology q : Type (u + 1)) := by
+  rw [← AddCommGrpCat.isZero_iff_subsingleton]
+  rw [← HomologicalComplex.exactAt_iff_isZero_homology]
+  exact hLeray.selectedCechResolutionColumn_exactAt q hq p
 
 end AAT.AG.Cohomology
