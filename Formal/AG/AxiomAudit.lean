@@ -4939,6 +4939,24 @@ def readingFunctoriality_raw_baseChange_comp :=
 noncomputable def readingFunctoriality_raw_baseChangePresheafIso :=
   @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.baseChangePresheafIso
 
+/-! Part 4 SD6 / AC29: sheafified section and affine Spec comparisons. -/
+
+/-- Audit alias for the canonical sheafified section-object comparison. -/
+noncomputable def readingFunctoriality_sheafifiedSectionObjectBaseChangeIso :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionObjectBaseChangeIso
+
+/-- Audit alias for the actual affine Spec pullback comparison. -/
+noncomputable def readingFunctoriality_sheafifiedSectionSpecBaseChangeIso :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso
+
+/-- Audit alias for the canonical map on sheafified sections. -/
+noncomputable def readingFunctoriality_sheafifiedSectionBaseChangeMap :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+
+/-- Audit alias for the canonical sheafified-section map formula. -/
+def readingFunctoriality_sheafifiedSectionBaseChangeMap_eq :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap_eq
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/
