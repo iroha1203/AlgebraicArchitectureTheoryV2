@@ -4855,6 +4855,68 @@ def readingFunctoriality_cechToSheafH_bijective :=
 def readingFunctoriality_cechToSheafH_refinement_naturality :=
   @AAT.AG.Cohomology.cechToSheafH_refinement_naturality
 
+/-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
+
+/-- Audit alias for the actual terminal base of the finite model. -/
+noncomputable def readingFunctoriality_finiteBaseIsTerminal :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteBaseIsTerminal
+
+/-- Audit alias for the named additive sheafification instance. -/
+noncomputable def readingFunctoriality_finiteAddCommGrpHasSheafify :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteAddCommGrpHasSheafify
+
+/-- Audit alias for the nonzero finite obstruction coefficient. -/
+noncomputable def readingFunctoriality_finiteObstructionSheaf :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteObstructionSheaf
+
+/-- Audit alias for the nonzero canonical cover-refinement cochain map. -/
+def readingFunctoriality_coarseToFineCechHom_nonzero :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseToFineCechHom_nonzero
+
+/-- Audit alias for the positive finite Leray firing. -/
+def readingFunctoriality_finiteLerayCover :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteLerayCover
+
+/-- Audit alias for the actual terminal `Sheaf.H` comparison firing. -/
+def readingFunctoriality_finite_cechToSheafH_bijective :=
+  @AAT.AG.ReadingFunctorialityFinite.finite_cechToSheafH_bijective
+
+/-- Audit alias for the independent strict-diamond site. -/
+noncomputable def readingFunctoriality_nonLeraySite :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLeraySite
+
+/-- Audit alias for the strict-diamond base. -/
+noncomputable def readingFunctoriality_nonLerayBase :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayBase
+
+/-- Audit alias for the strict-diamond two-branch comparison cover. -/
+noncomputable def readingFunctoriality_nonLerayComparisonCover :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayComparisonCover
+
+/-- Audit alias for the strict-diamond additive coefficient. -/
+noncomputable def readingFunctoriality_nonLerayObstructionSheaf :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayObstructionSheaf
+
+/-- Audit alias for the positive Leray proof of the two-branch cover. -/
+def readingFunctoriality_nonLerayComparisonCover_isLeray :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayComparisonCover_isLeray
+
+/-- Audit alias for the nontrivial strict-diamond degree-one Čech class. -/
+def readingFunctoriality_nonLerayCechHOne_nontrivial :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayCechHOne_nontrivial
+
+/-- Audit alias for actual local `Sheaf.H'` nontriviality. -/
+def readingFunctoriality_nonLerayHPrimeOne_nontrivial :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayHPrimeOne_nontrivial
+
+/-- Audit alias for the selected cover containing the identity chart. -/
+noncomputable def readingFunctoriality_nonLerayCover :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayCover
+
+/-- Audit alias for the premise-free negative Leray firing. -/
+def readingFunctoriality_nonLerayCover_not_completionEvidence :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayCover_not_completionEvidence
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

@@ -2097,4 +2097,91 @@ end LerayTotalElimination
 
 end SelectedCechResolutionBicomplexSD5
 
+namespace FiniteSheafHFiringSD9
+
+open CategoryTheory ReadingFunctorialityFinite
+
+/-- Fixed terminal base used by the finite actual-`Sheaf.H` firing. -/
+noncomputable example : Limits.IsTerminal finiteBase :=
+  finiteBaseIsTerminal
+
+/-- Fixed named additive sheafification instance for the finite site. -/
+noncomputable example :
+    HasSheafify finiteSite.topology AddCommGrpCat.{1} :=
+  finiteAddCommGrpHasSheafify
+
+/-- Fixed nonzero additive obstruction coefficient on the finite site. -/
+noncomputable example : Cohomology.ObstructionSheaf finiteSite :=
+  finiteObstructionSheaf
+
+/-- Fixed nonzero canonical cochain-map firing for the duplicated cover. -/
+example :
+    ∃ (n : Nat)
+      (c : (Cohomology.canonicalCechComplex
+        coarseCover finiteObstructionSheaf).AdditiveCochain n)
+      (σ : (Cohomology.canonicalCoverRelative fineCover).simplex n),
+      (coarseToFineCover.canonicalCechHom finiteObstructionSheaf).app n c σ ≠ 0 :=
+  coarseToFineCechHom_nonzero
+
+/-- Fixed positive Leray firing for the actual finite coefficient. -/
+example : Cohomology.IsLerayFor coarseCover finiteObstructionSheaf :=
+  finiteLerayCover
+
+/-- Fixed terminal comparison firing in every cohomological degree. -/
+example (n : Nat) :
+    Function.Bijective
+      (Cohomology.cechToSheafH coarseCover finiteObstructionSheaf
+        finiteBaseIsTerminal finiteLerayCover n) :=
+  finite_cechToSheafH_bijective n
+
+/-- Fixed independent strict-diamond AAT site. -/
+noncomputable example : Site.AATSite FiniteModel.corePackage.object :=
+  nonLeraySite
+
+/-- Fixed base of the strict-diamond model. -/
+noncomputable example : nonLeraySite.category :=
+  nonLerayBase
+
+/-- Fixed Leray two-branch comparison cover of the strict-diamond model. -/
+noncomputable example :
+    Site.AATCoverageFamily nonLeraySite.requirements
+      nonLeraySite.overlap nonLerayBase :=
+  nonLerayComparisonCover
+
+/-- Fixed small additive coefficient on the strict-diamond model. -/
+noncomputable example : Cohomology.ObstructionSheaf nonLeraySite :=
+  nonLerayObstructionSheaf
+
+/-- Fixed positive Leray proof for the two-branch comparison cover. -/
+example :
+    Cohomology.IsLerayFor
+      nonLerayComparisonCover nonLerayObstructionSheaf :=
+  nonLerayComparisonCover_isLeray
+
+/-- Fixed nontrivial degree-one Čech class. -/
+example :
+    Nontrivial
+      ((Cohomology.canonicalCechComplex
+        nonLerayComparisonCover nonLerayObstructionSheaf).AdditiveCechHn 1) :=
+  nonLerayCechHOne_nontrivial
+
+/-- Fixed actual local `Sheaf.H'` nontriviality. -/
+example :
+    Nontrivial
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf).H' 1 nonLerayBase) :=
+  nonLerayHPrimeOne_nontrivial
+
+/-- Fixed selected cover containing the identity chart. -/
+noncomputable example :
+    Site.AATCoverageFamily nonLeraySite.requirements
+      nonLeraySite.overlap nonLerayBase :=
+  nonLerayCover
+
+/-- Fixed premise-free negative Leray firing. -/
+example :
+    ¬ Cohomology.IsLerayFor nonLerayCover nonLerayObstructionSheaf :=
+  nonLerayCover_not_completionEvidence
+
+end FiniteSheafHFiringSD9
+
 end AAT.AG.StatementContractsReadingFunctoriality
