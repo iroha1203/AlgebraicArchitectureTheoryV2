@@ -119,6 +119,8 @@ python3 -m http.server 8000 --directory .tmp/archview-demo
 # → http://localhost:8000/archview.html
 
 # ③ Chrome headless smoke test: SAGA stage ⇔ Three.js scene, HUD, and gate absence
+#    前提: Chrome/Chromium（見つからなければ CHROME_BIN で指定）と
+#    website/node_modules の ws（初回は cd website && npm install）
 node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo absent
 
 # ④ gate reportを生成し、SAGA最終段への供給・表示を確認
@@ -132,6 +134,8 @@ node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo mismatch
 # JSON parse error と per-row boundaryOverrideApplied 欠落も明示拒否する
 node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo malformed
 node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo missing-boundary
+# sagaDescent の段形状が契約と食い違う viewer-data は、無言の空シーンにせず明示拒否する
+node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo invalid-saga
 ```
 
 リポジトリ全体を配信して `archview.html` を開き、`archsig-atom-viewer-data.json` をドラッグしてもよい。

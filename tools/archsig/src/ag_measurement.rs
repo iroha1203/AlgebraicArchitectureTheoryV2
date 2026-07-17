@@ -12476,18 +12476,23 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         if reading.evaluator != "ag.harmonic-debt" {
             continue;
         }
-        harmonic_rows.push(json!({
-            "readingId": reading.reading_id,
-            "evaluator": reading.evaluator,
-            "regime": reading.regime,
-            "value": reading.value
-        }));
-        for field in ["readingId", "evaluator", "regime", "value"] {
-            field_map.push(json!({
-                "viewerPath": format!("stages[1].harmonicDebt[{}].{field}", harmonic_rows.len() - 1),
-                "packetPath": format!("/analyticReadings/{index}/{field}")
-            }));
+        let harmonic_index = harmonic_rows.len();
+        let mut row = serde_json::Map::new();
+        row.insert("readingId".to_string(), json!(reading.reading_id));
+        row.insert("evaluator".to_string(), json!(reading.evaluator));
+        if let Some(regime) = reading.regime.as_ref() {
+            row.insert("regime".to_string(), json!(regime));
         }
+        row.insert("value".to_string(), reading.value.clone());
+        for (field, value) in &row {
+            append_leaf_field_mappings(
+                &mut field_map,
+                &format!("stages[1].harmonicDebt[{harmonic_index}].{field}"),
+                &format!("/analyticReadings/{index}/{field}"),
+                value,
+            );
+        }
+        harmonic_rows.push(Value::Object(row));
     }
 
     let mut silence_rows = packet

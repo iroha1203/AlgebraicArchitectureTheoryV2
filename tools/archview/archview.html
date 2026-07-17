@@ -2156,6 +2156,8 @@ function noteSilence(id) {
     { silent = true; msg = "No section values were declared in this ArchMap — nothing to lift. (silence, not an empty-sheaf verdict)"; }
   if (id === "sagaDescent" && !(MODEL && MODEL.saga && Array.isArray(MODEL.saga.stages)))
     { silent = true; msg = "No sagaDescent projection was supplied by this packet — the SAGA scene stays silent."; }
+  else if (id === "sagaDescent" && window.__archviewSagaState && window.__archviewSagaState.valid === false)
+    { silent = true; msg = "sagaDescent projection rejected: stage shape does not match the v0.5.3 contract — the SAGA scene stays silent."; }
   const sceneStatus = silent ? msg : (MODEL ? MODEL.boundary : "");
   document.getElementById("st-boundary").textContent = COMPANIONS.gateError
     ? `Gate report rejected: ${COMPANIONS.gateError}` : sceneStatus;
