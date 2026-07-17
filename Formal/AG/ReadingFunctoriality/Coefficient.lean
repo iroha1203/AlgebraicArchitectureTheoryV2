@@ -21,6 +21,23 @@ import Mathlib.RingTheory.RingHom.Flat
 This module owns direct closed-equational reuse and flat coefficient change
 for raw systems, standard schemes, ideal geometry, Tor, linear Čech
 cohomology, and actual sheaf cohomology fixed by Part 4 SD2 and SD6–SD8.
+
+## Implementation notes (SD6 position)
+
+The declarations in `FlatCoefficientChange` are the coefficient-extension
+foundation required by SD6, AC27, and the coefficient-coherence part of AC30.
+The primitive data are exactly a ring homomorphism and its flatness proof.
+Site-dependent `HasSheafCompose` proofs remain explicit premises of the
+scheme-level route; sheaves, sections, schemes, and comparison isomorphisms
+are not stored in the change data.
+
+The coefficient functor uses the common-universe presentation fixed by SD6:
+`liftedHom` conjugates the coefficient map by `ULift.ringEquiv`, and
+`coefficientExtension` applies Mathlib’s `Under.pushout` directly. A
+cross-universe category equivalence is not introduced because it would add a
+repackaging layer outside the fixed statement. Finite-limit preservation
+comes from the supplied flatness proof, while sheafification preservation
+comes independently from the pushout adjunction.
 -/
 
 namespace AAT.AG
@@ -37,7 +54,9 @@ noncomputable section
 structure FlatCoefficientChange
     (k : Type v) [CommRing k]
     (k' : Type w) [CommRing k'] where
+  /-- The coefficient-ring homomorphism fixed by SD6. -/
   hom : k →+* k'
+  /-- The SD6 flatness premise, consumed by finite-limit preservation. -/
   flat : hom.Flat
 
 namespace FlatCoefficientChange
@@ -67,6 +86,8 @@ noncomputable def liftedHom
   ULift.ringEquiv.symm.toRingHom.comp
     (f.hom.comp ULift.ringEquiv.toRingHom)
 
+/-- Internal bridge transporting the supplied flatness proof across the
+universe-lift equivalences. -/
 private theorem liftedHom_flat
     {k k' : Type v} [CommRing k] [CommRing k']
     (f : FlatCoefficientChange k k') :
