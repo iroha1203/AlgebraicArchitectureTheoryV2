@@ -118,6 +118,20 @@ This section identifies the custom additive Čech quotient with the homology of
 the Mathlib `CochainComplex` built from the same differential. The class
 formula and naturality theorem fix the identification on representatives and
 cochain maps.
+
+Implementation notes: this is the SD5 foundation used before constructing the
+Leray comparison. The square-zero premise comes only from the intrinsic
+`CoverRelativeCechComplex.differential_comp` law. We retain the existing
+custom quotient as the PRD source and compare it with Mathlib homology instead
+of defining a second cohomology theory. The comparison passes through explicit
+short complexes because the `ℕ` cochain shape represents degree zero by
+`C⁰ ⟶ C⁰ ⟶ C¹`, with the incoming morphism equal to zero, while successor
+degrees use `Cⁿ ⟶ Cⁿ⁺¹ ⟶ Cⁿ⁺²`. The proof transports the kernel/image quotient
+through `ShortComplex.abHomologyIso`, then transports homology along the iso
+from the actual short complex to this explicit presentation. We do not accept
+an arbitrary additive equivalence or caller-supplied comparison data: the
+representative formula and cochain-map naturality below determine the bridge
+from the selected differential itself.
 -/
 
 namespace AAT.AG.Cohomology.CoverRelativeCechComplex
@@ -131,7 +145,12 @@ variable {S : Site.AATSite A}
 variable {𝒰 𝒱 : CoverRelativeCechCover S}
 variable {Ob : ObstructionSheaf S}
 
-/-- The Mathlib cochain complex defined by the selected Čech differential. -/
+/--
+The SD5 actual-complex definition. Its objects and differential are the
+selected Čech data, and its complex law is derived from `K.differential_comp`.
+The following API lemmas expose both components without unfolding the
+definition.
+-/
 noncomputable def toCochainComplex
     (K : CoverRelativeCechComplex 𝒰 Ob) :
     CochainComplex AddCommGrpCat.{u} ℕ :=
@@ -142,13 +161,13 @@ noncomputable def toCochainComplex
       ext c
       exact K.differential_comp n c)
 
-/-- The degree-`n` object is the selected additive Čech cochain group. -/
+/-- No-unfold SD5 API: the degree-`n` object is the selected cochain group. -/
 @[simp] theorem toCochainComplex_X
     (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ) :
     (K.toCochainComplex.X n : Type u) = K.AdditiveCochain n :=
   rfl
 
-/-- The Mathlib differential is the selected Čech differential. -/
+/-- No-unfold SD5 API: the actual differential is the selected differential. -/
 @[simp] theorem toCochainComplex_d
     (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ) :
     letI := K.cochainAddCommGroup n
@@ -160,7 +179,11 @@ noncomputable def toCochainComplex
 
 namespace Hom
 
-/-- A selected Čech cochain map as a Mathlib cochain-complex morphism. -/
+/--
+The SD5 morphism bridge. Its only compatibility premise is the intrinsic
+`f.commutes` law; no homology-level map or naturality data is supplied by the
+caller.
+-/
 noncomputable def toCochainMap
     {K : CoverRelativeCechComplex 𝒰 Ob}
     {L : CoverRelativeCechComplex 𝒱 Ob}
@@ -171,7 +194,7 @@ noncomputable def toCochainMap
       ext c
       exact (f.commutes n c).symm)
 
-/-- The degreewise component is the original additive map. -/
+/-- No-unfold API: the actual cochain-map component is `f.app`. -/
 @[simp] theorem toCochainMap_f
     {K : CoverRelativeCechComplex 𝒰 Ob}
     {L : CoverRelativeCechComplex 𝒱 Ob}
@@ -373,7 +396,18 @@ private noncomputable def additiveCechHnEquivExplicitHomology
   (K.additiveCechHnEquivExplicitQuotient n).trans
     ((K.explicitShortComplex n).abHomologyIso.addCommGroupIsoToAddEquiv.symm)
 
-/-- Additive Čech cohomology is the homology of the actual cochain complex. -/
+/--
+The main SD5 equivalence between the fixed custom quotient and actual Mathlib
+homology.
+
+Implementation notes: degree zero is transported from the kernel modulo the
+range of an incoming zero map; successor degrees transport the selected
+kernel/image quotient. `ShortComplex.abHomologyIso` realizes each explicit
+quotient as short-complex homology, and the inverse of the homology iso induced
+by `scIsoExplicit` then lands in `K.toCochainComplex.homology n`. This route
+keeps degree zero actual and avoids an arbitrary or caller-supplied
+`AddEquiv`; the representative and naturality theorems below fix its action.
+-/
 noncomputable def additiveCechHnEquivHomology
     (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ) :
     K.AdditiveCechHn n ≃+ K.toCochainComplex.homology n :=
@@ -397,7 +431,10 @@ private theorem cocycleInclusion_comp_d
   intro z
   exact z.2
 
-/-- A selected Čech cocycle as a cycle in the Mathlib cochain complex. -/
+/--
+Representative-level SD5 API. The cocycle equation supplies the lift to the
+actual cycle object; no cycle witness is accepted separately.
+-/
 noncomputable def cocycleToCycles
     (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ) :
     AddCommGrpCat.of (K.CechCocycleSubgroup n) ⟶
@@ -406,7 +443,7 @@ noncomputable def cocycleToCycles
     (by simp)
     (K.cocycleInclusion_comp_d n)
 
-/-- The actual cycle underlying the canonical lift is the original cocycle. -/
+/-- No-unfold API fixing the underlying cochain of `cocycleToCycles`. -/
 @[simp] theorem cocycleToCycles_i
     (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ)
     (z : K.CechCocycleSubgroup n) :
@@ -539,7 +576,11 @@ private theorem additiveCechHnEquivHomology_additiveClass
   rw [hnat, K.cyclesMap_scIsoExplicit_inv_explicitCycle n z]
   rfl
 
-/-- The comparison sends an additive Čech class to its actual homology class. -/
+/--
+The SD5 representative formula. It pins the main equivalence to the actual
+`homologyπ` class and therefore rules out replacing it by an unrelated
+additive equivalence.
+-/
 theorem additiveCechHnEquivHomology_additiveCohomologyClass
     (K : CoverRelativeCechComplex 𝒰 Ob) (n : ℕ)
     (c : K.CechCocycle n) :
@@ -607,7 +648,11 @@ private theorem cocycleHomologyClass_naturality
   rw [ConcreteCategory.comp_apply, ConcreteCategory.comp_apply] at hnat
   rw [hnat, f.cocycleToCycles_naturality n z]
 
-/-- The quotient-level Čech map agrees with the Mathlib homology map. -/
+/--
+The SD5 naturality theorem. For the existing quotient map induced by any
+selected cochain map, the main equivalence agrees with Mathlib's actual
+homology map; no naturality certificate is an input.
+-/
 theorem additiveCechHnEquivHomology_naturality
     {K : CoverRelativeCechComplex 𝒰 Ob}
     {L : CoverRelativeCechComplex 𝒱 Ob}
