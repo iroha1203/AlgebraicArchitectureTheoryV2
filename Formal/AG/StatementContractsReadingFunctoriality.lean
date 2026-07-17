@@ -1078,6 +1078,68 @@ noncomputable example
         (Cohomology.obstructionInjectiveResolution Ob).cochainComplex n :=
   Cohomology.obstructionHPrimeInjectiveEquiv Ob X n
 
+variable {𝒰 𝒱 : Cohomology.CoverRelativeCechCover S}
+variable {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+variable {L : Cohomology.CoverRelativeCechComplex 𝒱 Ob}
+
+/-- Fixed actual cochain-complex contract for a cover-relative Čech complex. -/
+noncomputable example : CochainComplex AddCommGrpCat.{u} ℕ :=
+  K.toCochainComplex
+
+/-- Fixed degreewise cochain-object characterization. -/
+example (n : ℕ) :
+    (K.toCochainComplex.X n : Type u) = K.AdditiveCochain n :=
+  K.toCochainComplex_X n
+
+/-- Fixed differential characterization. -/
+example (n : ℕ) :
+    letI := K.cochainAddCommGroup n
+    letI := K.cochainAddCommGroup (n + 1)
+    K.toCochainComplex.d n (n + 1) = AddCommGrpCat.ofHom (K.d n) :=
+  K.toCochainComplex_d n
+
+/-- Fixed Mathlib cochain-map contract. -/
+noncomputable example
+    (f : Cohomology.CoverRelativeCechComplex.Hom K L) :
+    K.toCochainComplex ⟶ L.toCochainComplex :=
+  f.toCochainMap
+
+/-- Fixed degreewise cochain-map characterization. -/
+example (f : Cohomology.CoverRelativeCechComplex.Hom K L) (n : ℕ) :
+    (f.toCochainMap.f n).hom = f.app n :=
+  f.toCochainMap_f n
+
+/-- Fixed cocycle-to-cycle map contract. -/
+noncomputable example (n : ℕ) :
+    AddCommGrpCat.of (K.CechCocycleSubgroup n) ⟶
+      K.toCochainComplex.cycles n :=
+  K.cocycleToCycles n
+
+/-- Fixed underlying-cocycle characterization. -/
+example (n : ℕ) (z : K.CechCocycleSubgroup n) :
+    (K.toCochainComplex.iCycles n).hom ((K.cocycleToCycles n).hom z) = z.1 :=
+  K.cocycleToCycles_i n z
+
+/-- Fixed arbitrary-degree comparison with actual Mathlib homology. -/
+noncomputable example (n : ℕ) :
+    K.AdditiveCechHn n ≃+ K.toCochainComplex.homology n :=
+  K.additiveCechHnEquivHomology n
+
+/-- Fixed representative formula for the actual homology class. -/
+example (n : ℕ) (c : K.CechCocycle n) :
+    K.additiveCechHnEquivHomology n (K.additiveCohomologyClass n c) =
+      (K.toCochainComplex.homologyπ n).hom
+        ((K.cocycleToCycles n).hom ⟨c.1, c.2⟩) :=
+  K.additiveCechHnEquivHomology_additiveCohomologyClass n c
+
+/-- Fixed naturality against Mathlib's actual homology map. -/
+example (f : Cohomology.CoverRelativeCechComplex.Hom K L)
+    (n : ℕ) (x : K.AdditiveCechHn n) :
+    (HomologicalComplex.homologyMap f.toCochainMap n).hom
+        (K.additiveCechHnEquivHomology n x) =
+      L.additiveCechHnEquivHomology n (f.mapAdditiveCechHn n x) :=
+  f.additiveCechHnEquivHomology_naturality n x
+
 end LerayComparisonFoundationSD5
 
 end AAT.AG.StatementContractsReadingFunctoriality
