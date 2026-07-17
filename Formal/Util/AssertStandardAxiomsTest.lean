@@ -40,6 +40,22 @@ error: #assert_standard_axioms_only: 2 offending declaration(s)
 #guard_msgs in
 #assert_standard_axioms_only AAT.Util.Test.Offending
 
+namespace AAT.Util.Test.Mixed
+
+theorem cleanOne : 2 + 2 = 4 := rfl
+
+theorem usesAuditProbeAxiom : True := AAT.Util.Test.Offending.auditProbeAxiom
+
+end AAT.Util.Test.Mixed
+
+/--
+error: AAT.Util.Test.Mixed.usesAuditProbeAxiom depends on non-standard axioms: [AAT.Util.Test.Offending.auditProbeAxiom]
+---
+error: #assert_standard_axioms_only: 1 offending declaration(s)
+-/
+#guard_msgs in
+#assert_standard_axioms_only AAT.Util.Test.Mixed
+
 /-- error: #assert_standard_axioms_only: no declarations found under AAT.Util.Test.Nothing -/
 #guard_msgs in
 #assert_standard_axioms_only AAT.Util.Test.Nothing
