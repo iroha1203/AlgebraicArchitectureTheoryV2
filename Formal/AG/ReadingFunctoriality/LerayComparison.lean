@@ -2117,6 +2117,13 @@ theorem baseResolutionToSelectedCechZero_comp_cech_d
   rw [hmor]
   simp
 
+/--
+Implementation notes: the total construction uses the standard cochain sign
+convention `ε₁ = 1` and `ε₂(q,p) = (-1)^q`, matching the resolution-first
+presentation of the selected Čech bicomplex. A caller-supplied sign witness is
+rejected because the sign is part of this canonical presentation, not a
+premise of the comparison.
+-/
 private instance : ComplexShape.TensorSigns (ComplexShape.up ℕ) where
   ε' := MonoidHom.mk' (fun (i : ℕ) => (-1 : ℤˣ) ^ i) (pow_add (-1 : ℤˣ))
   rel_add p q r (hpq : p + 1 = q) := by dsimp; omega
@@ -2131,6 +2138,11 @@ private instance : ComplexShape.TensorSigns (ComplexShape.up ℕ) where
 The actual total complex of the injective-resolution selected Čech
 bicomplex.  Its degree `n` is the coproduct of bidegrees `(q,p)` with
 `q + p = n`, and its differential is Mathlib's signed total differential.
+
+Implementation notes: this is Mathlib's `HomologicalComplex₂.total`, so the
+comparison uses the actual total complex and its coproduct API. A bespoke
+complex carrying preselected differential data is rejected because it would
+replace, rather than construct, the totalization required here.
 -/
 noncomputable def selectedCechResolutionTotalComplex
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
@@ -2163,6 +2175,11 @@ theorem selectedCechResolutionTotalComplex_ι_d
 The selected Čech complex maps to the total complex through resolution
 degree zero.  The horizontal term vanishes by the resolution unit law and
 the vertical term is the selected Čech differential.
+
+Implementation notes: the map is constructed from the actual augmentation
+and the `(0,p)` total-summand inclusion. An arbitrary edge chain map supplied
+as input is rejected because its chain-map law would leave the resolution
+unit compatibility unproved.
 -/
 noncomputable def selectedCechToResolutionTotal
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
@@ -2217,6 +2234,11 @@ theorem selectedCechToResolutionTotal_f
 The base-resolution complex maps to the total complex through selected Čech
 degree zero.  The resolution term is inherited from naturality and the Čech
 term vanishes because restriction from the base is a zero-cocycle.
+
+Implementation notes: the map is constructed from actual restriction to
+selected overlaps and the `(q,0)` total-summand inclusion. An externally
+chosen edge map is rejected because it would bypass the zero-cocycle proof
+from the face maps.
 -/
 noncomputable def baseResolutionToSelectedCechTotal
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
@@ -2270,7 +2292,14 @@ theorem baseResolutionToSelectedCechTotal_f
           (ComplexShape.up ℕ) q 0 q (by simp) :=
   rfl
 
-/-- Refinement induces the Mathlib total map of the actual bicomplex map. -/
+/--
+Refinement induces the Mathlib total map of the actual bicomplex map.
+
+Implementation notes: this uses Mathlib's `HomologicalComplex₂.total.map` on
+the actual bicomplex refinement map, which exposes its action on every
+summand and inherits composition from bicomplex maps. A degreewise hand-built
+chain map is rejected because it would duplicate that functorial structure.
+-/
 noncomputable def selectedCechResolutionTotalMap
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
