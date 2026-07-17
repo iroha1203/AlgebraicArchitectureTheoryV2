@@ -4855,6 +4855,52 @@ def readingFunctoriality_cechToSheafH_bijective :=
 def readingFunctoriality_cechToSheafH_refinement_naturality :=
   @AAT.AG.Cohomology.cechToSheafH_refinement_naturality
 
+/-! Part 4 SD6: flat coefficient extension and coherence. -/
+
+/-- Audit alias for the primitive flat coefficient-change data. -/
+def readingFunctoriality_flatCoefficientChange :=
+  @AAT.AG.FlatCoefficientChange
+
+/-- Audit alias for identity coefficient change. -/
+def readingFunctoriality_flatCoefficientChange_refl :=
+  @AAT.AG.FlatCoefficientChange.refl
+
+/-- Audit alias for composition of coefficient changes. -/
+def readingFunctoriality_flatCoefficientChange_comp :=
+  @AAT.AG.FlatCoefficientChange.comp
+
+/-- Audit alias for the universe-lifted coefficient homomorphism. -/
+noncomputable def readingFunctoriality_flatCoefficientChange_liftedHom :=
+  @AAT.AG.FlatCoefficientChange.liftedHom
+
+/-- Audit alias for the under-category coefficient-extension functor. -/
+noncomputable def readingFunctoriality_coefficientExtension :=
+  @AAT.AG.FlatCoefficientChange.coefficientExtension
+
+/-- Audit alias for finite-limit preservation under flat coefficient extension. -/
+def readingFunctoriality_coefficientExtension_preservesFiniteLimits :=
+  @AAT.AG.FlatCoefficientChange.coefficientExtension_preservesFiniteLimits
+
+/-- Audit alias for sheafification preservation under coefficient extension. -/
+def readingFunctoriality_coefficientExtension_preservesSheafification :=
+  @AAT.AG.FlatCoefficientChange.coefficientExtension_preservesSheafification
+
+/-- Audit alias for identity coherence of coefficient extension. -/
+noncomputable def readingFunctoriality_coefficientExtensionReflIso :=
+  @AAT.AG.FlatCoefficientChange.coefficientExtensionReflIso
+
+/-- Audit alias for composition coherence of coefficient extension. -/
+noncomputable def readingFunctoriality_coefficientExtensionCompIso :=
+  @AAT.AG.FlatCoefficientChange.coefficientExtensionCompIso
+
+/-- Audit alias for identity sheaf-composition preservation. -/
+def readingFunctoriality_coefficientExtension_hasSheafCompose_refl :=
+  @AAT.AG.FlatCoefficientChange.coefficientExtension_hasSheafCompose_refl
+
+/-- Audit alias for composition of sheaf-preserving coefficient extensions. -/
+def readingFunctoriality_coefficientExtension_hasSheafCompose_comp :=
+  @AAT.AG.FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/

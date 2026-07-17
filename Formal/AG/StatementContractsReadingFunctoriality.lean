@@ -1,4 +1,5 @@
 import Formal.AG.ReadingFunctoriality
+import Formal.AG.ReadingFunctoriality.Coefficient
 import Formal.AG.ReadingFunctoriality.FiniteExamples
 
 /-!
@@ -2284,5 +2285,131 @@ example :
   nonLerayCover_not_completionEvidence
 
 end FiniteSheafHFiringSD9
+
+namespace CoefficientChangeSD6
+
+open CategoryTheory CategoryTheory.Limits
+
+universe x
+
+/-- Fixed primitive data for a flat coefficient change. -/
+example
+    {k : Type v} {k' : Type w}
+    [CommRing k] [CommRing k']
+    (hom : k →+* k') (flat : hom.Flat) :
+    FlatCoefficientChange k k' :=
+  ⟨hom, flat⟩
+
+/-- Fixed identity flat coefficient change. -/
+example (k : Type v) [CommRing k] :
+    FlatCoefficientChange k k :=
+  FlatCoefficientChange.refl k
+
+/-- Fixed composition of flat coefficient changes. -/
+example
+    {k : Type v} {k' : Type w} {k'' : Type x}
+    [CommRing k] [CommRing k'] [CommRing k'']
+    (f : FlatCoefficientChange k k')
+    (g : FlatCoefficientChange k' k'') :
+    FlatCoefficientChange k k'' :=
+  f.comp g
+
+/-- Fixed universe-lifted ring homomorphism. -/
+noncomputable example
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (f : FlatCoefficientChange k k') :
+    ULift.{max u v, v} k →+* ULift.{max u v, v} k' :=
+  f.liftedHom
+
+/-- Fixed Mathlib under-category coefficient extension. -/
+noncomputable example
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (f : FlatCoefficientChange k k') :
+    LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+      LawAlgebra.AATCommAlgCat.{u, v} k' :=
+  f.coefficientExtension
+
+/-- Fixed finite-limit preservation from flatness. -/
+noncomputable example
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (f : FlatCoefficientChange k k') :
+    PreservesFiniteLimits
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k') :=
+  FlatCoefficientChange.coefficientExtension_preservesFiniteLimits f
+
+/-- Fixed sheafification preservation from the pushout adjunction. -/
+noncomputable example
+    {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (f : FlatCoefficientChange k k') :
+    S.topology.PreservesSheafification
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k') :=
+  FlatCoefficientChange.coefficientExtension_preservesSheafification S f
+
+/-- Fixed identity coherence for coefficient extension. -/
+noncomputable example
+    (k : Type v) [CommRing k] :
+    ((FlatCoefficientChange.refl k).coefficientExtension :
+      LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+        LawAlgebra.AATCommAlgCat.{u, v} k) ≅ 𝟭 _ :=
+  FlatCoefficientChange.coefficientExtensionReflIso k
+
+/-- Fixed composition coherence for coefficient extension. -/
+noncomputable example
+    {k k' k'' : Type v}
+    [CommRing k] [CommRing k'] [CommRing k'']
+    (f : FlatCoefficientChange k k')
+    (g : FlatCoefficientChange k' k'') :
+    ((f.comp g).coefficientExtension :
+      LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+        LawAlgebra.AATCommAlgCat.{u, v} k'') ≅
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k') ⋙
+      (g.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k' ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k'') :=
+  FlatCoefficientChange.coefficientExtensionCompIso f g
+
+/-- Fixed identity sheaf-composition instance. -/
+noncomputable example
+    {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (k : Type v) [CommRing k] :
+    S.topology.HasSheafCompose
+      ((FlatCoefficientChange.refl k).coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k) :=
+  FlatCoefficientChange.coefficientExtension_hasSheafCompose_refl S k
+
+/-- Fixed composition theorem for sheaf-preserving coefficient changes. -/
+example
+    {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {k k' k'' : Type v}
+    [CommRing k] [CommRing k'] [CommRing k'']
+    (f : FlatCoefficientChange k k')
+    (g : FlatCoefficientChange k' k'')
+    (hf : S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k'))
+    (hg : S.topology.HasSheafCompose
+      (g.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k' ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k'')) :
+    S.topology.HasSheafCompose
+      ((f.comp g).coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k'') :=
+  FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
+    f g hf hg
+
+end CoefficientChangeSD6
 
 end AAT.AG.StatementContractsReadingFunctoriality
