@@ -603,6 +603,62 @@ example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
         (𝒰.patch (σ (Fin.last (n + 1)))) :=
   Cohomology.canonicalTupleOverlap_succ 𝒰 n σ
 
+/-- Fixed projection from a tuple overlap to any selected chart. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : Nat} (σ : Fin (n + 1) → 𝒰.Index) (k : Fin (n + 1)) :
+    Cohomology.canonicalTupleOverlap 𝒰 n σ ⟶
+      Site.ContextCategoryObject.of S.contextPreorder (𝒰.patch (σ k)) :=
+  Cohomology.canonicalTupleOverlapProjection 𝒰 σ k
+
+/-- Fixed universal lift into a tuple overlap. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : Nat} (σ : Fin (n + 1) → 𝒰.Index) {X : S.category}
+    (h : ∀ k, X ⟶
+      Site.ContextCategoryObject.of S.contextPreorder (𝒰.patch (σ k))) :
+    X ⟶ Cohomology.canonicalTupleOverlap 𝒰 n σ :=
+  Cohomology.canonicalTupleOverlapLift 𝒰 σ h
+
+/-- Fixed component equation for the tuple-overlap lift. -/
+example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : Nat} (σ : Fin (n + 1) → 𝒰.Index) {X : S.category}
+    (h : ∀ k, X ⟶
+      Site.ContextCategoryObject.of S.contextPreorder (𝒰.patch (σ k)))
+    (k : Fin (n + 1)) :
+    Cohomology.canonicalTupleOverlapLift 𝒰 σ h ≫
+        Cohomology.canonicalTupleOverlapProjection 𝒰 σ k = h k :=
+  Cohomology.canonicalTupleOverlapLift_comp_chart 𝒰 σ h k
+
+/-- Fixed overlap morphism induced contravariantly by a simplex morphism. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {x y : SimplexCategory} (f : x ⟶ y)
+    (σ : Fin (y.len + 1) → 𝒰.Index) :
+    Cohomology.canonicalTupleOverlap 𝒰 y.len σ ⟶
+      Cohomology.canonicalTupleOverlap 𝒰 x.len
+        (fun i ↦ σ (f.toOrderHom i)) :=
+  Cohomology.canonicalTupleOverlapMap 𝒰 f σ
+
+/-- Fixed identity law for tuple-overlap maps. -/
+example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (x : SimplexCategory) (σ : Fin (x.len + 1) → 𝒰.Index) :
+    Cohomology.canonicalTupleOverlapMap 𝒰 (𝟙 x) σ = 𝟙 _ :=
+  Cohomology.canonicalTupleOverlapMap_id 𝒰 x σ
+
+/-- Fixed composition law for tuple-overlap maps. -/
+example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {x y z : SimplexCategory} (f : x ⟶ y) (g : y ⟶ z)
+    (σ : Fin (z.len + 1) → 𝒰.Index) :
+    Cohomology.canonicalTupleOverlapMap 𝒰 (f ≫ g) σ =
+      Cohomology.canonicalTupleOverlapMap 𝒰 g σ ≫
+        Cohomology.canonicalTupleOverlapMap 𝒰 f
+          (fun i ↦ σ (g.toOrderHom i)) :=
+  Cohomology.canonicalTupleOverlapMap_comp 𝒰 f g σ
+
 /-- Fixed canonical face-order contract. -/
 example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : Nat) (i : Fin (n + 2)) (σ : Fin (n + 2) → 𝒰.Index) :
@@ -1825,6 +1881,408 @@ example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
       Cohomology.baseResolutionToSelectedCechTotal 𝒱 Ob :=
   Cohomology.baseResolutionToSelectedCechTotal_refinement_naturality r Ob
 
+/-! Part 4 R5c7: Leray vanishing and actual resolution columns. -/
+
+section LerayColumns
+
+variable [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+
+/-- Fixed Leray condition as positive-degree actual local `Sheaf.H'` vanishing. -/
+example : Prop := Cohomology.IsLerayFor 𝒰 Ob
+
+/-- Fixed zero obstruction coefficient used by the satisfying Leray instance. -/
+example : Cohomology.ObstructionSheaf S :=
+  Cohomology.zeroObstructionSheaf S
+
+/-- Fixed zero-object property of the actual additive zero coefficient. -/
+example : Limits.IsZero
+    (Cohomology.zeroObstructionSheaf S).toAddCommGrpSheaf :=
+  Cohomology.zeroObstructionSheaf_toAddCommGrpSheaf_isZero
+
+/-- Fixed satisfying `IsLerayFor` instance for the zero coefficient. -/
+example : Cohomology.IsLerayFor 𝒰 (Cohomology.zeroObstructionSheaf S) :=
+  Cohomology.zeroObstructionSheaf_isLerayFor 𝒰
+
+/-- Fixed rejection of Leray vanishing by a nontrivial actual local `Sheaf.H'`. -/
+example {q p : ℕ} (hq : 0 < q)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p)
+    [Nontrivial
+      ((Ob.toAddCommGrpSheaf).H' q
+        ((Cohomology.canonicalCoverRelative 𝒰).overlap p σ))] :
+    ¬ Cohomology.IsLerayFor 𝒰 Ob :=
+  Cohomology.not_isLerayFor_of_nontrivialHPrime hq σ
+
+/-- Fixed actual resolution column at selected Čech degree `p`. -/
+noncomputable example (p : ℕ) : CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  Cohomology.selectedCechResolutionColumn 𝒰 Ob p
+
+/-- Fixed column-object formula. -/
+example (p q : ℕ) :
+    ((Cohomology.selectedCechResolutionColumn 𝒰 Ob p).X q : Type (u + 1)) =
+      Cohomology.SelectedCechCochain 𝒰
+        ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val p :=
+  Cohomology.selectedCechResolutionColumn_X 𝒰 Ob p q
+
+/-- Fixed pointwise column-differential formula. -/
+example (p q : ℕ)
+    (c : Cohomology.SelectedCechCochain 𝒰
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val p)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p) :
+    ((Cohomology.selectedCechResolutionColumn 𝒰 Ob p).d q (q + 1)).hom c σ =
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.d
+        q (q + 1)).val.app _ (c σ) :=
+  Cohomology.selectedCechResolutionColumn_d_apply 𝒰 Ob p q c σ
+
+variable (hLeray : Cohomology.IsLerayFor 𝒰 Ob)
+
+/-- Fixed local-resolution homology vanishing derived from Leray vanishing. -/
+example (q : ℕ) (hq : 0 < q) (p : ℕ)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p) :
+    Subsingleton
+      ((Cohomology.baseResolutionComplex
+        (base := (Cohomology.canonicalCoverRelative 𝒰).overlap p σ) Ob).homology q :
+          Type (u + 1)) :=
+  hLeray.overlapBaseResolutionHomology_subsingleton q hq p σ
+
+/-- Fixed local-resolution exactness derived from Leray vanishing. -/
+example (q : ℕ) (hq : 0 < q) (p : ℕ)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p) :
+    (Cohomology.baseResolutionComplex
+      (base := (Cohomology.canonicalCoverRelative 𝒰).overlap p σ) Ob).ExactAt q :=
+  hLeray.overlapBaseResolution_exactAt q hq p σ
+
+/-- Fixed positive-degree exactness of the actual resolution column. -/
+example (q : ℕ) (hq : 0 < q) (p : ℕ) :
+    (Cohomology.selectedCechResolutionColumn 𝒰 Ob p).ExactAt q :=
+  hLeray.selectedCechResolutionColumn_exactAt q hq p
+
+/-- Fixed positive-degree homology vanishing of the actual resolution column. -/
+example (q : ℕ) (hq : 0 < q) (p : ℕ) :
+    Subsingleton
+      ((Cohomology.selectedCechResolutionColumn 𝒰 Ob p).homology q :
+        Type (u + 1)) :=
+  hLeray.selectedCechResolutionColumn_homology_subsingleton q hq p
+
+end LerayColumns
+
+/-! Part 4 R5c8: augmentation exactness used by the selected total edge. -/
+
+/-- Fixed degree-zero exactness of the actual resolution augmentation. -/
+example (p : ℕ) :
+    Function.Exact
+      ((Cohomology.selectedCechResolutionAugmentation 𝒰 Ob).f p).hom
+      (((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d 0 1).f p).hom :=
+  Cohomology.selectedCechResolutionAugmentation_exactAtZero 𝒰 Ob p
+
+/-- Fixed surjectivity of restriction maps for actual injective sheaves. -/
+example (I : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [Injective I] {X Y : S.category} (f : X ⟶ Y) :
+    Function.Surjective (I.val.map f.op) :=
+  Cohomology.injectiveSheaf_restriction_surjective I f
+
+/-- Fixed degree-zero selected Čech exactness for every actual sheaf. -/
+example (I : Sheaf S.topology AddCommGrpCat.{u + 1}) :
+    Function.Exact
+      ((Cohomology.baseToSelectedCechZero 𝒰).app I.val).hom
+      (((Cohomology.selectedCechComplexFunctor 𝒰).obj I.val).d 0 1).hom :=
+  Cohomology.sheaf_selectedCechAugmentation_exactAtZero 𝒰 I
+
+/-- Fixed free Čech chain built from selected simplices and overlap arrows. -/
+noncomputable example :
+    ChainComplex (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) ℕ :=
+  Cohomology.selectedCechFreeChain 𝒰
+
+/-- Fixed local surjectivity onto positive-degree cycles before sheafification. -/
+example (n : ℕ) :
+    Presheaf.IsLocallySurjective S.topology
+      ((Cohomology.selectedCechFreeChain 𝒰).sc' (n + 2) (n + 1) n).toCycles :=
+  Cohomology.selectedCechFreeBoundaryToCycles_isLocallySurjective 𝒰 n
+
+/-- Fixed sheafified free Čech chain. -/
+noncomputable example :
+    ChainComplex (Sheaf S.topology AddCommGrpCat.{u + 1}) ℕ :=
+  Cohomology.selectedCechFreeSheafChain 𝒰
+
+/-- Fixed positive-degree exactness of the sheafified free Čech chain. -/
+example (n : ℕ) :
+    (Cohomology.selectedCechFreeSheafChain 𝒰).ExactAt (n + 1) :=
+  Cohomology.selectedCechFreeSheafChain_exactAt_succ 𝒰 n
+
+/-- Fixed positive-degree selected Čech exactness for an injective sheaf. -/
+example (I : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [Injective I] (p : ℕ) (hp : 0 < p) :
+    ((Cohomology.selectedCechComplexFunctor 𝒰).obj I.val).ExactAt p :=
+  Cohomology.injectiveSheaf_selectedCech_exactAt 𝒰 I p hp
+
+section LerayTotalElimination
+
+variable [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+
+/-- Fixed selected Čech edge quasi-isomorphism derived from Leray vanishing. -/
+example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) :
+    QuasiIso (Cohomology.selectedCechToResolutionTotal 𝒰 Ob) :=
+  hLeray.selectedCechToResolutionTotal_quasiIso
+
+/-- Fixed homology equivalence induced by the actual selected Čech edge. -/
+noncomputable example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    (((Cohomology.selectedCechComplexFunctor 𝒰).obj
+      Ob.toAddCommGrpSheaf.val).homology n : Type (u + 1)) ≃+
+      ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).homology n :
+        Type (u + 1)) :=
+  Cohomology.selectedCechToResolutionTotalHomologyEquiv 𝒰 Ob hLeray n
+
+/-- Fixed base-resolution edge quasi-isomorphism from actual sheaf gluing. -/
+example : QuasiIso (Cohomology.baseResolutionToSelectedCechTotal 𝒰 Ob) :=
+  Cohomology.baseResolutionToSelectedCechTotal_quasiIso 𝒰 Ob
+
+/-- Fixed homology equivalence induced by the actual base-resolution edge. -/
+noncomputable example (n : ℕ) :
+    ((Cohomology.baseResolutionComplex (base := base) Ob).homology n :
+        Type (u + 1)) ≃+
+      ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).homology n :
+        Type (u + 1)) :=
+  Cohomology.baseResolutionToSelectedCechTotalHomologyEquiv 𝒰 Ob n
+
+/-- Fixed canonical selected Čech-to-local-sheaf-cohomology equivalence. -/
+noncomputable example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n ≃+
+      (Ob.toAddCommGrpSheaf).H' n base :=
+  Cohomology.cechToSheafHAtBaseEquiv 𝒰 Ob hLeray n
+
+/-- Fixed canonical selected Čech-to-local-sheaf-cohomology map. -/
+noncomputable example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n →+
+      (Ob.toAddCommGrpSheaf).H' n base :=
+  Cohomology.cechToSheafHAtBase 𝒰 Ob hLeray n
+
+/-- Fixed bijectivity of the canonical local comparison. -/
+example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    Function.Bijective (Cohomology.cechToSheafHAtBase 𝒰 Ob hLeray n) :=
+  Cohomology.cechToSheafHAtBase_bijective 𝒰 Ob hLeray n
+
+/-- Fixed refinement naturality of the canonical local comparison. -/
+example {𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (h𝒰 : Cohomology.IsLerayFor 𝒰 Ob)
+    (h𝒱 : Cohomology.IsLerayFor 𝒱 Ob) (n : ℕ) :
+    (Cohomology.cechToSheafHAtBase 𝒱 Ob h𝒱 n).comp
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n) =
+      Cohomology.cechToSheafHAtBase 𝒰 Ob h𝒰 n :=
+  Cohomology.cechToSheafHAtBase_refinement_naturality r Ob h𝒰 h𝒱 n
+
+/-- Fixed terminal-base Čech-to-global-sheaf-cohomology map. -/
+noncomputable example (hbase : Limits.IsTerminal base)
+    (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n →+
+      (Ob.toAddCommGrpSheaf).H n :=
+  Cohomology.cechToSheafH 𝒰 Ob hbase hLeray n
+
+/-- Fixed bijectivity of the canonical terminal-base comparison. -/
+example (hbase : Limits.IsTerminal base)
+    (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    Function.Bijective (Cohomology.cechToSheafH 𝒰 Ob hbase hLeray n) :=
+  Cohomology.cechToSheafH_bijective 𝒰 Ob hbase hLeray n
+
+/-- Fixed refinement naturality of the terminal-base comparison. -/
+example {𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (hbase : Limits.IsTerminal base)
+    (h𝒰 : Cohomology.IsLerayFor 𝒰 Ob)
+    (h𝒱 : Cohomology.IsLerayFor 𝒱 Ob) (n : ℕ) :
+    (Cohomology.cechToSheafH 𝒱 Ob hbase h𝒱 n).comp
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n) =
+      Cohomology.cechToSheafH 𝒰 Ob hbase h𝒰 n :=
+  Cohomology.cechToSheafH_refinement_naturality r Ob hbase h𝒰 h𝒱 n
+
+end LerayTotalElimination
+
 end SelectedCechResolutionBicomplexSD5
+
+namespace FiniteSheafHFiringSD9
+
+open CategoryTheory ReadingFunctorialityFinite
+
+/-- Fixed terminal base used by the finite actual-`Sheaf.H` firing. -/
+noncomputable example : Limits.IsTerminal finiteBase :=
+  finiteBaseIsTerminal
+
+/-- Fixed named additive sheafification instance for the finite site. -/
+noncomputable example :
+    HasSheafify finiteSite.topology AddCommGrpCat.{1} :=
+  finiteAddCommGrpHasSheafify
+
+/-- Fixed nonzero additive obstruction coefficient on the finite site. -/
+noncomputable example : Cohomology.ObstructionSheaf finiteSite :=
+  finiteObstructionSheaf
+
+/-- Fixed nonzero canonical cochain-map firing for the duplicated cover. -/
+example :
+    ∃ (n : Nat)
+      (c : (Cohomology.canonicalCechComplex
+        coarseCover finiteObstructionSheaf).AdditiveCochain n)
+      (σ : (Cohomology.canonicalCoverRelative fineCover).simplex n),
+      (coarseToFineCover.canonicalCechHom finiteObstructionSheaf).app n c σ ≠ 0 :=
+  coarseToFineCechHom_nonzero
+
+/-- Fixed positive Leray firing for the actual finite coefficient. -/
+example : Cohomology.IsLerayFor coarseCover finiteObstructionSheaf :=
+  finiteLerayCover
+
+/-- Fixed terminal comparison firing in every cohomological degree. -/
+example (n : Nat) :
+    Function.Bijective
+      (Cohomology.cechToSheafH coarseCover finiteObstructionSheaf
+        finiteBaseIsTerminal finiteLerayCover n) :=
+  finite_cechToSheafH_bijective n
+
+/-- Fixed independent strict-diamond AAT site. -/
+noncomputable example : Site.AATSite FiniteModel.corePackage.object :=
+  nonLeraySite
+
+/-- Fixed base of the strict-diamond model. -/
+noncomputable example : nonLeraySite.category :=
+  nonLerayBase
+
+/-- Fixed left branch of the selected strict-diamond configuration. -/
+example : nonLeraySite.category :=
+  nonLerayLeftObject
+
+/-- Fixed right branch of the selected strict-diamond configuration. -/
+example : nonLeraySite.category :=
+  nonLerayRightObject
+
+/-- Fixed two-branch structure of the comparison cover. -/
+example :
+    ∃ i j : nonLerayComparisonCover.Index,
+      i ≠ j ∧
+        nonLerayComparisonCover.patch i = nonLerayLeftObject.ctx ∧
+        nonLerayComparisonCover.patch j = nonLerayRightObject.ctx :=
+  nonLerayComparisonCover_twoBranches
+
+/-- Fixed bottom object given by the actual pair overlap. -/
+noncomputable example : nonLeraySite.category :=
+  nonLerayOverlapObject
+
+/-- Fixed identification of the selected bottom with the actual pair overlap. -/
+example :
+    nonLeraySite.overlap.overlap nonLerayBase.ctx
+        nonLerayLeftObject.ctx nonLerayRightObject.ctx =
+      nonLerayOverlapObject.ctx :=
+  nonLerayPairOverlap_eq
+
+/-- Fixed strict-diamond order certificate on the four selected objects. -/
+example :
+    nonLeraySite.contextPreorder.le
+        nonLerayOverlapObject.ctx nonLerayLeftObject.ctx ∧
+      nonLeraySite.contextPreorder.le
+        nonLerayOverlapObject.ctx nonLerayRightObject.ctx ∧
+      nonLeraySite.contextPreorder.le nonLerayLeftObject.ctx nonLerayBase.ctx ∧
+      nonLeraySite.contextPreorder.le nonLerayRightObject.ctx nonLerayBase.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayLeftObject.ctx nonLerayRightObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayRightObject.ctx nonLerayLeftObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le nonLerayBase.ctx nonLerayLeftObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le nonLerayBase.ctx nonLerayRightObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayLeftObject.ctx nonLerayOverlapObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayRightObject.ctx nonLerayOverlapObject.ctx :=
+  nonLerayStrictDiamond
+
+/-- Fixed admissible-cover classification on the four selected objects. -/
+example :
+    Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayBase) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayLeftObject) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayRightObject) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayOverlapObject) :=
+  nonLeraySelectedCoverClassification
+
+/-- Fixed Leray two-branch comparison cover of the strict-diamond model. -/
+noncomputable example :
+    Site.AATCoverageFamily nonLeraySite.requirements
+      nonLeraySite.overlap nonLerayBase :=
+  nonLerayComparisonCover
+
+/-- Fixed exact two-point index of the comparison cover. -/
+example : nonLerayComparisonCover.Index ≃ Bool :=
+  nonLerayComparisonCoverIndexEquiv
+
+/-- Fixed small additive coefficient on the strict-diamond model. -/
+noncomputable example : Cohomology.ObstructionSheaf nonLeraySite :=
+  nonLerayObstructionSheaf
+
+/-- Fixed zero value at the strict-diamond base. -/
+example :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (Opposite.op nonLerayBase) : Type 1)) :=
+  nonLerayBaseCoefficient_subsingleton
+
+/-- Fixed zero value at the strict-diamond left branch. -/
+example :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (Opposite.op nonLerayLeftObject) : Type 1)) :=
+  nonLerayLeftCoefficient_subsingleton
+
+/-- Fixed zero value at the strict-diamond right branch. -/
+example :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (Opposite.op nonLerayRightObject) : Type 1)) :=
+  nonLerayRightCoefficient_subsingleton
+
+/-- Fixed `ZMod 2` value at the actual pair overlap. -/
+noncomputable example :
+    ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op nonLerayOverlapObject) : Type 1)) ≃+ ZMod 2 :=
+  nonLerayOverlapCoefficientEquiv
+
+/-- Fixed positive Leray proof for the two-branch comparison cover. -/
+example :
+    Cohomology.IsLerayFor
+      nonLerayComparisonCover nonLerayObstructionSheaf :=
+  nonLerayComparisonCover_isLeray
+
+/-- Fixed nontrivial degree-one Čech class. -/
+example :
+    Nontrivial
+      ((Cohomology.canonicalCechComplex
+        nonLerayComparisonCover nonLerayObstructionSheaf).AdditiveCechHn 1) :=
+  nonLerayCechHOne_nontrivial
+
+/-- Fixed actual local `Sheaf.H'` nontriviality. -/
+example :
+    Nontrivial
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf).H' 1 nonLerayBase) :=
+  nonLerayHPrimeOne_nontrivial
+
+/-- Fixed selected cover containing the identity chart. -/
+noncomputable example :
+    Site.AATCoverageFamily nonLeraySite.requirements
+      nonLeraySite.overlap nonLerayBase :=
+  nonLerayCover
+
+/-- Fixed identity chart contained in the negative selected cover. -/
+example :
+    ∃ i : nonLerayCover.Index,
+      nonLerayCover.patch i = nonLerayBase.ctx :=
+  nonLerayCover_containsIdentity
+
+/-- Fixed premise-free negative Leray firing. -/
+example :
+    ¬ Cohomology.IsLerayFor nonLerayCover nonLerayObstructionSheaf :=
+  nonLerayCover_not_completionEvidence
+
+end FiniteSheafHFiringSD9
 
 end AAT.AG.StatementContractsReadingFunctoriality
