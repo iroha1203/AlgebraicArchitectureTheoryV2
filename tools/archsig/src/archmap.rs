@@ -9,6 +9,23 @@ use crate::{
     canonical_archmap_extraction_doctrine_ref_v2,
 };
 
+/// Splits a `src:<path>:<line>` citation into its file-level source id and
+/// line number. Returns None when the ref has no trailing numeric segment.
+pub fn source_ref_line_base(reference: &str) -> Option<(&str, u32)> {
+    let (base, suffix) = reference.rsplit_once(':')?;
+    if base.is_empty() || suffix.is_empty() {
+        return None;
+    }
+    let line = suffix.parse::<u32>().ok()?;
+    Some((base, line))
+}
+
+pub(crate) fn source_ref_resolves(document: &ArchMapDocumentV2, reference: &str) -> bool {
+    document.sources.contains_key(reference)
+        || source_ref_line_base(reference)
+            .is_some_and(|(base, _)| document.sources.contains_key(base))
+}
+
 pub fn compare_archmap_v2_doctrine(
     left: &ArchMapDocumentV2,
     right: &ArchMapDocumentV2,
@@ -528,7 +545,7 @@ fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck
             ));
         }
         for source_ref in &atom.refs {
-            if !document.sources.contains_key(source_ref) {
+            if !source_ref_resolves(document, source_ref) {
                 examples.push(generic_validation_example(
                     &atom.id,
                     source_ref,
@@ -604,7 +621,7 @@ fn check_archmap_v2_contexts(document: &ArchMapDocumentV2) -> ValidationCheck {
             }
         }
         for source_ref in &context.refs {
-            if !document.sources.contains_key(source_ref) {
+            if !source_ref_resolves(document, source_ref) {
                 examples.push(generic_validation_example(
                     &context.id,
                     source_ref,
@@ -693,7 +710,7 @@ fn check_archmap_v2_covers(document: &ArchMapDocumentV2) -> ValidationCheck {
             }
         }
         for source_ref in &cover.refs {
-            if !document.sources.contains_key(source_ref) {
+            if !source_ref_resolves(document, source_ref) {
                 examples.push(generic_validation_example(
                     &cover.id,
                     source_ref,

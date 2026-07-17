@@ -12977,8 +12977,19 @@ fn projected_covers(normalized: &NormalizedArchMapV2, limit: usize) -> Vec<Norma
 /// bare `ref` form; the viewer must not invent locations.
 fn resolved_source_ref_sample(archmap_document: &ArchMapDocumentV2, reference: &str) -> Value {
     let mut sample = json!({ "ref": reference });
-    let Some(entry) = archmap_document.sources.get(reference) else {
-        return sample;
+    let mut cited_line = None;
+    let entry = match archmap_document.sources.get(reference) {
+        Some(entry) => entry,
+        None => {
+            let Some((base, line)) = crate::archmap::source_ref_line_base(reference) else {
+                return sample;
+            };
+            let Some(entry) = archmap_document.sources.get(base) else {
+                return sample;
+            };
+            cited_line = Some(line);
+            entry
+        }
     };
     sample["sourceKind"] = json!(entry.kind);
     let path = entry.path.clone().or_else(|| {
@@ -12995,6 +13006,10 @@ fn resolved_source_ref_sample(archmap_document: &ArchMapDocumentV2, reference: &
         sample["symbol"] = json!(symbol);
     }
     if let Some(line) = entry.line {
+        sample["line"] = json!(line);
+    }
+    // A cited `:line` suffix is more specific than the source entry's own line.
+    if let Some(line) = cited_line {
         sample["line"] = json!(line);
     }
     if let Some(section) = &entry.section {
