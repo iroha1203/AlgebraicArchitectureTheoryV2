@@ -1,5 +1,4 @@
 import Formal.AG.ReadingFunctoriality
-import Formal.AG.ReadingFunctoriality.LerayComparison
 import Formal.AG.ReadingFunctoriality.FiniteExamples
 
 /-!
