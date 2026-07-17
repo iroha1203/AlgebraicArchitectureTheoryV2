@@ -45,7 +45,7 @@ namespace AAT.AG
 
 open CategoryTheory CategoryTheory.Limits Opposite
 open AlgebraicGeometry
-open scoped AlgebraicGeometry
+open scoped AlgebraicGeometry TensorProduct
 
 universe u v w x
 
@@ -801,6 +801,135 @@ noncomputable def baseChangePresheafIso
       rw [Under.w]
       rw [hY.inr_isoPushout_hom]
       simp [FlatCoefficientChange.coefficientExtension]
+
+/-! ### SD6 / AC29: sheafified sections and affine spectra -/
+
+/-- SD6 / AC29 identifies extension of a sheafified section object with the
+section object of the changed raw system.
+
+The comparison is the composite of the canonical `sheafifyComposeIso` and
+the sheafification of `baseChangePresheafIso`; no section comparison is
+supplied by the caller. -/
+noncomputable def sheafifiedSectionObjectBaseChangeIso
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k k' : Type v}
+    [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (AATCommAlgCat k)]
+    [HasSheafify S.topology (AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    (f.coefficientExtension.obj
+        (raw.toRingedSite.structureSheaf.val.obj (op W)) :
+      AATCommAlgCat.{u, v} k') ≅
+      (raw.baseChange f.hom).toRingedSite.structureSheaf.val.obj (op W) := by
+  let comparison :
+      raw.toRingedSite.structureSheaf.val ⋙ f.coefficientExtension ≅
+        (raw.baseChange f.hom).toRingedSite.structureSheaf.val :=
+    (sheafifyComposeIso S.topology f.coefficientExtension raw.toPresheaf).symm ≪≫
+      ((CategoryTheory.sheafification S.topology
+        (AATCommAlgCat.{u, v} k')).mapIso
+          (baseChangePresheafIso raw f)).symm
+  exact comparison.app (op W)
+
+/-- SD6 / AC29 identifies a changed affine chart with the actual pullback of
+the source chart along the coefficient-ring spectrum map.
+
+The construction passes from the section-object comparison to the
+under-category pushout, uses Mathlib's tensor-product presentation of that
+pushout, and then applies `pullbackSpecIso`. -/
+noncomputable def sheafifiedSectionSpecBaseChangeIso
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k k' : Type v}
+    [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (AATCommAlgCat k)]
+    [HasSheafify S.topology (AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    architectureChartSpec (raw.baseChange f.hom) W ≅
+      pullback
+        (AlgebraicGeometry.Scheme.Spec.map
+          (raw.toRingedSite.structureSheaf.val.obj (op W)).hom.op)
+        (AlgebraicGeometry.Scheme.Spec.map
+          (CommRingCat.ofHom f.liftedHom).op) := by
+  let oldObject := raw.toRingedSite.structureSheaf.val.obj (op W)
+  let sourceRing := ULift.{max u v, v} k
+  let targetRing := ULift.{max u v, v} k'
+  let sectionRing := oldObject.right
+  letI : Algebra sourceRing targetRing := f.liftedHom.toAlgebra
+  letI : Algebra sourceRing sectionRing := oldObject.hom.hom.toAlgebra
+  let sectionObjectIso :
+      (Under.pushout (CommRingCat.ofHom f.liftedHom)).obj oldObject ≅
+        (raw.baseChange f.hom).toRingedSite.structureSheaf.val.obj (op W) := by
+    simpa [FlatCoefficientChange.coefficientExtension] using
+      sheafifiedSectionObjectBaseChangeIso raw f W
+  let changedToPushout :
+      SheafifiedSectionRing (raw.baseChange f.hom) W ≅
+        ((Under.pushout (CommRingCat.ofHom f.liftedHom)).obj oldObject).right :=
+    (Comma.rightIso sectionObjectIso).symm
+  let tensorToPushout :
+      CommRingCat.of
+          (targetRing ⊗[sourceRing]
+            (sectionRing : Type (max u v))) ≅
+        ((Under.pushout (CommRingCat.ofHom f.liftedHom)).obj oldObject).right := by
+    simpa using Comma.rightIso
+      (CommRingCat.tensorProdObjIsoPushoutObj
+        (CommRingCat.of targetRing) oldObject)
+  exact
+    ((Scheme.Spec.mapIso changedToPushout.symm.op ≪≫
+        Scheme.Spec.mapIso tensorToPushout.op) ≪≫
+      (AlgebraicGeometry.pullbackSpecIso
+        sourceRing targetRing sectionRing).symm) ≪≫
+      pullbackSymmetry _ _
+
+/-- SD6 / AC29 is the canonical map from source sheafified sections to
+changed sheafified sections: the pushout inclusion followed by the canonical
+section-object comparison. -/
+noncomputable def sheafifiedSectionBaseChangeMap
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k k' : Type v}
+    [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (AATCommAlgCat k)]
+    [HasSheafify S.topology (AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    SheafifiedSectionRing raw W ⟶
+      SheafifiedSectionRing (raw.baseChange f.hom) W :=
+  Limits.pushout.inl
+      (raw.toRingedSite.structureSheaf.val.obj (op W)).hom
+      (CommRingCat.ofHom f.liftedHom) ≫
+    (sheafifiedSectionObjectBaseChangeIso raw f W).hom.right
+
+/-- SD6 / AC29 characterization of the canonical sheafified-section map. -/
+theorem sheafifiedSectionBaseChangeMap_eq
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k k' : Type v}
+    [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (AATCommAlgCat k)]
+    [HasSheafify S.topology (AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    sheafifiedSectionBaseChangeMap raw f W =
+      Limits.pushout.inl
+          (raw.toRingedSite.structureSheaf.val.obj (op W)).hom
+          (CommRingCat.ofHom f.liftedHom) ≫
+        (sheafifiedSectionObjectBaseChangeIso raw f W).hom.right :=
+  rfl
 
 end RawAmbientRestrictionSystem
 

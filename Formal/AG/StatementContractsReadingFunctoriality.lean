@@ -2506,6 +2506,92 @@ noncomputable example
       raw.toPresheaf ⋙ f.coefficientExtension :=
   LawAlgebra.RawAmbientRestrictionSystem.baseChangePresheafIso raw f
 
+/-! Part 4 SD6 / AC29: sheafified section and affine Spec comparisons. -/
+
+/-- Fixed section-object comparison obtained from sheafification and raw base change. -/
+noncomputable example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    (f.coefficientExtension.obj
+        (raw.toRingedSite.structureSheaf.val.obj (Opposite.op W)) :
+      LawAlgebra.AATCommAlgCat.{u, v} k') ≅
+      (raw.baseChange f.hom).toRingedSite.structureSheaf.val.obj
+        (Opposite.op W) :=
+  LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionObjectBaseChangeIso
+    raw f W
+
+/-- Fixed actual affine pullback comparison for changed section spectra. -/
+noncomputable example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    LawAlgebra.architectureChartSpec (raw.baseChange f.hom) W ≅
+      pullback
+        (AlgebraicGeometry.Scheme.Spec.map
+          (raw.toRingedSite.structureSheaf.val.obj (Opposite.op W)).hom.op)
+        (AlgebraicGeometry.Scheme.Spec.map
+          (CommRingCat.ofHom f.liftedHom).op) :=
+  LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso
+    raw f W
+
+/-- Fixed canonical map on sheafified sections. -/
+noncomputable example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    LawAlgebra.SheafifiedSectionRing raw W ⟶
+      LawAlgebra.SheafifiedSectionRing (raw.baseChange f.hom) W :=
+  LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+    raw f W
+
+/-- Fixed characterization of the canonical sheafified-section map. -/
+example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+        raw f W =
+      Limits.pushout.inl
+          (raw.toRingedSite.structureSheaf.val.obj (Opposite.op W)).hom
+          (CommRingCat.ofHom f.liftedHom) ≫
+        (LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionObjectBaseChangeIso
+          raw f W).hom.right :=
+  LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap_eq
+    raw f W
+
 end CoefficientChangeSD6
 
 end AAT.AG.StatementContractsReadingFunctoriality
