@@ -1073,6 +1073,8 @@ private noncomputable def constructedStandardScheme
   overlaps := constructedOverlaps X f
   overlapsValid := constructedOverlaps_valid X f
 
+/-- The coefficient structure morphism of the constructed changed scheme is the second
+projection of its defining pullback. -/
 private theorem constructedStandardScheme_coefficientStructureMap
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1310,6 +1312,7 @@ theorem baseChange_overlaps
     HEq (baseChange raw X f).overlaps (baseChangedOverlaps raw X f) :=
   HEq.rfl
 
+/-- The coefficient-affine map induced by identity coefficient change is the identity. -/
 private theorem coefficientSpecMap_refl :
     Scheme.Spec.map
         (CommRingCat.ofHom
@@ -1322,6 +1325,8 @@ private theorem coefficientSpecMap_refl :
     rfl]
   exact Scheme.Spec.map_id _
 
+/-- Contravariance of `Spec` identifies successive coefficient-affine maps with the map induced
+by the composite coefficient change. -/
 private theorem coefficientSpecMap_comp
     {k'' : Type v} [CommRing k'']
     (f : FlatCoefficientChange k k')
