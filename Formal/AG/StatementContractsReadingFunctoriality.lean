@@ -1738,6 +1738,17 @@ example (q : ℕ) :
 noncomputable example : CochainComplex AddCommGrpCat.{u + 1} ℕ :=
   Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob
 
+/-- Fixed signed total differential formula on every summand. -/
+example (q p n n' : ℕ) (h : q + p = n) :
+    (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h ≫
+        (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).d n n' =
+      (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d₁
+          (ComplexShape.up ℕ) q p n' +
+        (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d₂
+          (ComplexShape.up ℕ) q p n' :=
+  Cohomology.selectedCechResolutionTotalComplex_ι_d 𝒰 Ob q p n n' h
+
 /-- Fixed selected Čech edge into the total complex. -/
 noncomputable example :
     (Cohomology.selectedCechComplexFunctor 𝒰).obj

@@ -4659,6 +4659,10 @@ def readingFunctoriality_baseResolutionToSelectedCechZero_comp_cech_d :=
 noncomputable def readingFunctoriality_selectedCechResolutionTotalComplex :=
   @AAT.AG.Cohomology.selectedCechResolutionTotalComplex
 
+/-- Audit alias for the signed total differential formula on each summand. -/
+def readingFunctoriality_selectedCechResolutionTotalComplex_ι_d :=
+  @AAT.AG.Cohomology.selectedCechResolutionTotalComplex_ι_d
+
 /-- Audit alias for the selected Čech edge into the total complex. -/
 noncomputable def readingFunctoriality_selectedCechToResolutionTotal :=
   @AAT.AG.Cohomology.selectedCechToResolutionTotal

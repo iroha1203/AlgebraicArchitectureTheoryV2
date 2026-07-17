@@ -2140,6 +2140,26 @@ noncomputable def selectedCechResolutionTotalComplex
   (selectedCechResolutionBicomplex 𝒰 Ob).total (ComplexShape.up ℕ)
 
 /--
+On every total summand, the total differential is the sum of Mathlib's
+signed resolution and selected Čech components.
+-/
+theorem selectedCechResolutionTotalComplex_ι_d
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p n n' : ℕ) (h : q + p = n) :
+    (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h ≫
+        (selectedCechResolutionTotalComplex 𝒰 Ob).d n n' =
+      (selectedCechResolutionBicomplex 𝒰 Ob).d₁
+          (ComplexShape.up ℕ) q p n' +
+        (selectedCechResolutionBicomplex 𝒰 Ob).d₂
+          (ComplexShape.up ℕ) q p n' := by
+  change _ ≫ ((selectedCechResolutionBicomplex 𝒰 Ob).total
+    (ComplexShape.up ℕ)).d n n' = _
+  rw [HomologicalComplex₂.total_d, Preadditive.comp_add,
+    HomologicalComplex₂.ι_D₁, HomologicalComplex₂.ι_D₂]
+
+/--
 The selected Čech complex maps to the total complex through resolution
 degree zero.  The horizontal term vanishes by the resolution unit law and
 the vertical term is the selected Čech differential.
@@ -2161,10 +2181,7 @@ noncomputable def selectedCechToResolutionTotal
         (ComplexShape.up ℕ) (0, p) = 1 := by
       change (-1 : ℤˣ) ^ (0 : ℕ) = 1
       simp
-    change _ ≫ ((selectedCechResolutionBicomplex 𝒰 Ob).total
-      (ComplexShape.up ℕ)).d p p' = _
-    rw [Category.assoc, HomologicalComplex₂.total_d, Preadditive.comp_add,
-      HomologicalComplex₂.ι_D₁, HomologicalComplex₂.ι_D₂]
+    rw [Category.assoc, selectedCechResolutionTotalComplex_ι_d]
     rw [HomologicalComplex₂.d₁_eq
       (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
       (i₁ := 0) (i₁' := 1) (by simp) p p' (by
@@ -2220,10 +2237,7 @@ noncomputable def baseResolutionToSelectedCechTotal
           (baseResolutionComplex (base := base) Ob).d q q' ≫
             (baseResolutionToSelectedCechZero 𝒰 Ob).f q' := by
       simpa using (baseResolutionToSelectedCechZero 𝒰 Ob).comm q q'
-    change _ ≫ ((selectedCechResolutionBicomplex 𝒰 Ob).total
-      (ComplexShape.up ℕ)).d q q' = _
-    rw [Category.assoc, HomologicalComplex₂.total_d, Preadditive.comp_add,
-      HomologicalComplex₂.ι_D₁, HomologicalComplex₂.ι_D₂]
+    rw [Category.assoc, selectedCechResolutionTotalComplex_ι_d]
     rw [HomologicalComplex₂.d₁_eq
       (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
       hq 0 q' (by
@@ -2293,7 +2307,16 @@ theorem selectedCechResolutionTotalMap_ιTotal
     selectedCechResolutionTotalMap
         (Site.AATCoverageFamily.Refinement.refl 𝒰) Ob =
       𝟙 (selectedCechResolutionTotalComplex 𝒰 Ob) := by
-  simp [selectedCechResolutionTotalMap, selectedCechResolutionTotalComplex]
+  apply HomologicalComplex.Hom.ext
+  funext n
+  apply HomologicalComplex₂.total.hom_ext
+  intro q p h
+  rw [selectedCechResolutionTotalMap_ιTotal]
+  rw [selectedCechResolutionBicomplexMap_refl]
+  simp only [HomologicalComplex.id_f, Category.id_comp]
+  exact (Category.comp_id
+    ((selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+      (ComplexShape.up ℕ) q p n h)).symm
 
 /-- Composite refinement induces the composite total map. -/
 @[simp] theorem selectedCechResolutionTotalMap_comp
@@ -2305,7 +2328,7 @@ theorem selectedCechResolutionTotalMap_ιTotal
     selectedCechResolutionTotalMap (r.comp s) Ob =
       selectedCechResolutionTotalMap r Ob ≫
         selectedCechResolutionTotalMap s Ob := by
-  simp [selectedCechResolutionTotalMap, selectedCechResolutionTotalComplex]
+  simp [selectedCechResolutionTotalMap]
 
 /-- The selected Čech edge commutes with refinement on the total complex. -/
 theorem selectedCechToResolutionTotal_refinement_naturality

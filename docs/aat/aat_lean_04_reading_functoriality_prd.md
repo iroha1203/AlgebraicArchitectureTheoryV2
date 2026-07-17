@@ -1801,6 +1801,18 @@ noncomputable def selectedCechResolutionTotalComplex
     (Ob : ObstructionSheaf S) :
     CochainComplex AddCommGrpCat.{u + 1} ℕ
 
+theorem selectedCechResolutionTotalComplex_ι_d
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p n n' : ℕ) (h : q + p = n) :
+    (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h ≫
+        (selectedCechResolutionTotalComplex 𝒰 Ob).d n n' =
+      (selectedCechResolutionBicomplex 𝒰 Ob).d₁
+          (ComplexShape.up ℕ) q p n' +
+        (selectedCechResolutionBicomplex 𝒰 Ob).d₂
+          (ComplexShape.up ℕ) q p n'
+
 noncomputable def selectedCechToResolutionTotal
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
@@ -1892,6 +1904,8 @@ theorem baseResolutionToSelectedCechTotal_refinement_naturality
 
 この一群はR5c6のfixed signatureである。total complexはMathlib
 `HomologicalComplex₂.total`、refinement mapは`HomologicalComplex₂.total.map`から構成する。
+`selectedCechResolutionTotalComplex_ι_d`は各summand上のsigned total differentialを
+公開APIとして固定し、後続証明はtotal complex定義を展開しない。
 2本のedgeは`selectedCechResolutionAugmentation`と
 `baseResolutionToSelectedCechZero`を各total summand inclusionへ合成し、chain-map条件を
 resolution unit、actual restriction、face mapから証明する。任意のtotal complex、chain map、
