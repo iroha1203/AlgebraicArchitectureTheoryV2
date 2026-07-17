@@ -4957,6 +4957,84 @@ noncomputable def readingFunctoriality_sheafifiedSectionBaseChangeMap :=
 def readingFunctoriality_sheafifiedSectionBaseChangeMap_eq :=
   @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap_eq
 
+/-- Audit alias for the source projection of the affine Spec comparison. -/
+def readingFunctoriality_sheafifiedSectionSpecBaseChangeIso_hom_fst :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso_hom_fst
+
+/-- Audit alias for the coefficient projection of the affine Spec comparison. -/
+def readingFunctoriality_sheafifiedSectionSpecBaseChangeIso_hom_snd :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso_hom_snd
+
+/-! Standard-scheme coefficient pullback. -/
+
+/-- Audit alias for the coefficient-affine structure morphism. -/
+noncomputable def readingFunctoriality_coefficientStructureMap :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.coefficientStructureMap
+
+/-- Audit alias for canonical coefficient change of a standard scheme. -/
+noncomputable def readingFunctoriality_standardScheme_baseChange :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChange
+
+/-- Audit alias for the projection from the changed scheme to its source. -/
+noncomputable def readingFunctoriality_standardScheme_baseChangeMap :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeMap
+
+/-- Audit alias for the actual pullback identification of the changed scheme. -/
+noncomputable def readingFunctoriality_baseChangeUnderlyingIso :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeUnderlyingIso
+
+/-- Audit alias for the first-projection formula of the change map. -/
+def readingFunctoriality_baseChangeMap_eq_pullback_fst :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeMap_eq_pullback_fst
+
+/-- Audit alias for the canonically changed reading decoration. -/
+noncomputable def readingFunctoriality_baseChangedDecoration :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedDecoration
+
+/-- Audit alias for preservation of the selected reading context. -/
+def readingFunctoriality_baseChangedDecoration_context :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedDecoration_context
+
+/-- Audit alias for compatibility of the changed interpretation. -/
+def readingFunctoriality_baseChangedDecoration_interpretation :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedDecoration_interpretation
+
+/-- Audit alias identifying the stored changed decoration. -/
+def readingFunctoriality_baseChange_decoration :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChange_decoration
+
+/-- Audit alias for the reconstructed pullback atlas. -/
+noncomputable def readingFunctoriality_baseChangedAtlas :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedAtlas
+
+/-- Audit alias for preservation of the atlas index type. -/
+def readingFunctoriality_baseChangedAtlas_Index :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedAtlas_Index
+
+/-- Audit alias for changed-chart projections. -/
+noncomputable def readingFunctoriality_baseChangedChartMap :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedChartMap
+
+/-- Audit alias for changed-chart pullback squares. -/
+def readingFunctoriality_baseChangedChart_isPullback :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedChart_isPullback
+
+/-- Audit alias identifying the stored changed atlas. -/
+def readingFunctoriality_baseChange_atlas :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChange_atlas
+
+/-- Audit alias for the reconstructed overlap presentation. -/
+noncomputable def readingFunctoriality_baseChangedOverlaps :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedOverlaps
+
+/-- Audit alias for validity of the reconstructed overlaps. -/
+def readingFunctoriality_baseChangedOverlaps_valid :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedOverlaps_valid
+
+/-- Audit alias identifying the stored overlap presentation. -/
+def readingFunctoriality_baseChange_overlaps :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChange_overlaps
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/

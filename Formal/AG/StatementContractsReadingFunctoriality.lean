@@ -2592,6 +2592,187 @@ example
   LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap_eq
     raw f W
 
+/-- Supporting contract for the source projection of the canonical affine
+base-change comparison. -/
+example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    (LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso
+        raw f W).hom ≫
+        pullback.fst
+          (AlgebraicGeometry.Scheme.Spec.map
+            (raw.toRingedSite.structureSheaf.val.obj
+              (Opposite.op W)).hom.op)
+          (AlgebraicGeometry.Scheme.Spec.map
+            (CommRingCat.ofHom f.liftedHom).op) =
+      AlgebraicGeometry.Scheme.Spec.map
+        (LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+          raw f W).op :=
+  LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso_hom_fst
+    raw f W
+
+/-- Supporting contract for the coefficient projection of the canonical
+affine base-change comparison. -/
+example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+          LawAlgebra.AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    (LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso
+        raw f W).hom ≫
+        pullback.snd
+          (AlgebraicGeometry.Scheme.Spec.map
+            (raw.toRingedSite.structureSheaf.val.obj
+              (Opposite.op W)).hom.op)
+          (AlgebraicGeometry.Scheme.Spec.map
+            (CommRingCat.ofHom f.liftedHom).op) =
+      AlgebraicGeometry.Scheme.Spec.map
+        ((raw.baseChange f.hom).toRingedSite.structureSheaf.val.obj
+          (Opposite.op W)).hom.op :=
+  LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso_hom_snd
+    raw f W
+
+/-! Standard-scheme coefficient pullback contracts. -/
+
+section StandardSchemeCoefficientChange
+
+variable {A : ArchitectureObject U} {S : Site.AATSite A}
+variable {k k' : Type v} [CommRing k] [CommRing k']
+variable (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k')]
+variable (X : LawAlgebra.StandardArchitectureScheme raw)
+variable (f : FlatCoefficientChange k k')
+variable [S.topology.HasSheafCompose
+  (f.coefficientExtension :
+    LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+      LawAlgebra.AATCommAlgCat.{u, v} k')]
+
+/-- Fixed coefficient structure morphism obtained from the global reading. -/
+noncomputable example :
+    X.underlying ⟶ AlgebraicGeometry.Scheme.Spec.obj
+      (Opposite.op (CommRingCat.of (ULift.{max u v, v} k))) :=
+  X.coefficientStructureMap raw
+
+/-- Fixed standard-scheme change over the changed raw system. -/
+noncomputable example :
+    LawAlgebra.StandardArchitectureScheme (raw.baseChange f.hom) :=
+  X.baseChange raw f
+
+/-- Fixed projection from the changed scheme to its source. -/
+noncomputable example :
+    (X.baseChange raw f).underlying ⟶ X.underlying :=
+  X.baseChangeMap raw f
+
+/-- Fixed identification of the changed underlying scheme with the actual pullback. -/
+noncomputable example :
+    (X.baseChange raw f).underlying ≅
+      pullback (X.coefficientStructureMap raw)
+        (AlgebraicGeometry.Scheme.Spec.map
+          (CommRingCat.ofHom f.liftedHom).op) :=
+  X.baseChangeUnderlyingIso raw f
+
+/-- Fixed pullback-projection formula for the change map. -/
+example :
+    X.baseChangeMap raw f =
+      (X.baseChangeUnderlyingIso raw f).hom ≫
+        pullback.fst (X.coefficientStructureMap raw)
+          (AlgebraicGeometry.Scheme.Spec.map
+            (CommRingCat.ofHom f.liftedHom).op) :=
+  X.baseChangeMap_eq_pullback_fst raw f
+
+/-- Fixed changed reading decoration. -/
+noncomputable example :
+    LawAlgebra.AATReadingDecoration (raw.baseChange f.hom)
+      (X.baseChange raw f).underlying :=
+  X.baseChangedDecoration raw f
+
+/-- Fixed preservation of the selected reading context. -/
+example :
+    (X.baseChangedDecoration raw f).context = X.decoration.context :=
+  X.baseChangedDecoration_context raw f
+
+/-- Fixed compatibility of changed interpretation with the projection. -/
+example :
+    LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+          raw f X.decoration.context ≫
+        (X.baseChangedDecoration raw f).interpretation =
+      X.decoration.interpretation ≫ (X.baseChangeMap raw f).appTop :=
+  X.baseChangedDecoration_interpretation raw f
+
+/-- Fixed identification of the stored changed decoration. -/
+example :
+    (X.baseChange raw f).decoration = X.baseChangedDecoration raw f :=
+  X.baseChange_decoration raw f
+
+/-- Fixed affine atlas on the changed scheme. -/
+noncomputable example :
+    LawAlgebra.ArchitectureAffineAtlas (raw.baseChange f.hom)
+      (X.baseChange raw f).underlying (X.baseChange raw f).decoration :=
+  X.baseChangedAtlas raw f
+
+/-- Fixed preservation of the atlas index type. -/
+example :
+    (X.baseChangedAtlas raw f).Index = X.atlas.Index :=
+  X.baseChangedAtlas_Index raw f
+
+/-- Fixed map from a changed chart to its source chart. -/
+noncomputable example (i : X.atlas.Index) :
+    ((X.baseChangedAtlas raw f).chart
+      (cast (X.baseChangedAtlas_Index raw f).symm i)).domain ⟶
+      (X.atlas.chart i).domain :=
+  X.baseChangedChartMap raw f i
+
+/-- Fixed pullback square for each changed chart. -/
+example (i : X.atlas.Index) :
+    IsPullback
+      ((X.baseChangedAtlas raw f).chart
+        (cast (X.baseChangedAtlas_Index raw f).symm i)).map
+      (X.baseChangedChartMap raw f i)
+      (X.baseChangeMap raw f)
+      (X.atlas.chart i).map :=
+  X.baseChangedChart_isPullback raw f i
+
+/-- Fixed identification of the stored changed atlas. -/
+example :
+    (X.baseChange raw f).atlas = X.baseChangedAtlas raw f :=
+  X.baseChange_atlas raw f
+
+/-- Fixed overlap presentation for the changed atlas. -/
+noncomputable example :
+    LawAlgebra.ArchitectureOverlapPresentation
+      (raw.baseChange f.hom) (X.baseChangedAtlas raw f) :=
+  X.baseChangedOverlaps raw f
+
+/-- Fixed validity proof for the changed overlap presentation. -/
+example :
+    LawAlgebra.IsArchitectureOverlapPresentation
+      (raw.baseChange f.hom) (X.baseChangedOverlaps raw f) :=
+  X.baseChangedOverlaps_valid raw f
+
+/-- Fixed identification of the stored overlap presentation. -/
+example :
+    HEq (X.baseChange raw f).overlaps (X.baseChangedOverlaps raw f) :=
+  X.baseChange_overlaps raw f
+
+end StandardSchemeCoefficientChange
+
 end CoefficientChangeSD6
 
 end AAT.AG.StatementContractsReadingFunctoriality
