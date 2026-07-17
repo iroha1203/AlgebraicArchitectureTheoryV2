@@ -69,6 +69,13 @@ async function main() {
     const gate = JSON.parse(fs.readFileSync(gatePath, "utf8"));
     gate.inputDigests.measurementPacket.sha256 = "0".repeat(64);
     fs.writeFileSync(gatePath, JSON.stringify(gate, null, 2));
+  } else if (mode === "invalid-saga") {
+    serveRoot = fs.mkdtempSync(path.join(os.tmpdir(), "archview-saga-invalid-"));
+    fs.cpSync(root, serveRoot, { recursive: true });
+    const viewerPath = path.join(serveRoot, "archsig-atom-viewer-data.json");
+    const viewer = JSON.parse(fs.readFileSync(viewerPath, "utf8"));
+    viewer.sagaDescent.stages[0].stageId = "tampered";
+    fs.writeFileSync(viewerPath, JSON.stringify(viewer, null, 2));
   } else if (mode === "malformed" || mode === "missing-boundary") {
     serveRoot = fs.mkdtempSync(path.join(os.tmpdir(), `archview-saga-${mode}-`));
     fs.cpSync(root, serveRoot, { recursive: true });
@@ -124,6 +131,14 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 500));
   } while (Date.now() < pageDeadline);
   const value = result.result.value;
+  if (mode === "invalid-saga") {
+    if (value.saga?.valid || !value.status.includes("sagaDescent projection rejected")) {
+      throw new Error("invalid sagaDescent shape was not rejected visibly: " + JSON.stringify(value));
+    }
+    console.log(JSON.stringify(value));
+    page.close(); browser.kill(); server.close();
+    return;
+  }
   if (!value.saga?.valid || value.saga.stageCount !== 4 || value.saga.renderedStageCount !== 4) {
     throw new Error("SAGA scene did not render four stages: " + JSON.stringify(value));
   }
@@ -159,4 +174,4 @@ async function main() {
   page.close(); browser.kill(); server.close();
 }
 
-main().catch((error) => { console.error(error.stack || error); process.exitCode = 1; });
+main().catch((error) => { console.error(error.stack || error); process.exit(1); });
