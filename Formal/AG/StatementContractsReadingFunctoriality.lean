@@ -1720,6 +1720,111 @@ example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
       Cohomology.baseResolutionToSelectedCechZero 𝒱 Ob :=
   Cohomology.baseResolutionToSelectedCechZero_refinement_naturality r Ob
 
+/-! Part 4 R5c6: actual total complex, canonical edges, and refinement. -/
+
+/-- Fixed vanishing of the augmentation followed by the resolution differential. -/
+example (p : ℕ) :
+    (Cohomology.selectedCechResolutionAugmentation 𝒰 Ob).f p ≫
+        ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d 0 1).f p = 0 :=
+  Cohomology.selectedCechResolutionAugmentation_comp_resolution_d 𝒰 Ob p
+
+/-- Fixed zero-cocycle equation for base restriction. -/
+example (q : ℕ) :
+    (Cohomology.baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+        ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X q).d 0 1 = 0 :=
+  Cohomology.baseResolutionToSelectedCechZero_comp_cech_d 𝒰 Ob q
+
+/-- Fixed actual total complex. -/
+noncomputable example : CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob
+
+/-- Fixed signed total differential formula on every summand. -/
+example (q p n n' : ℕ) (h : q + p = n) :
+    (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h ≫
+        (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).d n n' =
+      (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d₁
+          (ComplexShape.up ℕ) q p n' +
+        (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d₂
+          (ComplexShape.up ℕ) q p n' :=
+  Cohomology.selectedCechResolutionTotalComplex_ι_d 𝒰 Ob q p n n' h
+
+/-- Fixed selected Čech edge into the total complex. -/
+noncomputable example :
+    (Cohomology.selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val ⟶
+      Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob :=
+  Cohomology.selectedCechToResolutionTotal 𝒰 Ob
+
+/-- Fixed component formula for the selected Čech edge. -/
+example (p : ℕ) :
+    (Cohomology.selectedCechToResolutionTotal 𝒰 Ob).f p =
+      (Cohomology.selectedCechResolutionAugmentation 𝒰 Ob).f p ≫
+        (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) 0 p p (by simp) :=
+  Cohomology.selectedCechToResolutionTotal_f 𝒰 Ob p
+
+/-- Fixed base-resolution edge into the total complex. -/
+noncomputable example :
+    Cohomology.baseResolutionComplex (base := base) Ob ⟶
+      Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob :=
+  Cohomology.baseResolutionToSelectedCechTotal 𝒰 Ob
+
+/-- Fixed component formula for the base-resolution edge. -/
+example (q : ℕ) :
+    (Cohomology.baseResolutionToSelectedCechTotal 𝒰 Ob).f q =
+      (Cohomology.baseResolutionToSelectedCechZero 𝒰 Ob).f q ≫
+        (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q 0 q (by simp) :=
+  Cohomology.baseResolutionToSelectedCechTotal_f 𝒰 Ob q
+
+/-- Fixed total map induced by refinement. -/
+noncomputable example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob ⟶
+      Cohomology.selectedCechResolutionTotalComplex 𝒱 Ob :=
+  Cohomology.selectedCechResolutionTotalMap r Ob
+
+/-- Fixed summand formula for the total refinement map. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (q p n : ℕ) (h : q + p = n) :
+    (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h ≫
+        (Cohomology.selectedCechResolutionTotalMap r Ob).f n =
+      ((Cohomology.selectedCechResolutionBicomplexMap r Ob).f q).f p ≫
+        (Cohomology.selectedCechResolutionBicomplex 𝒱 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n h :=
+  Cohomology.selectedCechResolutionTotalMap_ιTotal r Ob q p n h
+
+/-- Fixed identity law for total refinement maps. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    Cohomology.selectedCechResolutionTotalMap
+        (Site.AATCoverageFamily.Refinement.refl 𝒰) Ob =
+      𝟙 (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob) :=
+  Cohomology.selectedCechResolutionTotalMap_refl 𝒰 Ob
+
+/-- Fixed composition law for total refinement maps. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (s : Site.AATCoverageFamily.Refinement 𝒱 𝒲) :
+    Cohomology.selectedCechResolutionTotalMap (r.comp s) Ob =
+      Cohomology.selectedCechResolutionTotalMap r Ob ≫
+        Cohomology.selectedCechResolutionTotalMap s Ob :=
+  Cohomology.selectedCechResolutionTotalMap_comp r s Ob
+
+/-- Fixed refinement naturality for the selected Čech edge. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.selectedCechToResolutionTotal 𝒰 Ob ≫
+        Cohomology.selectedCechResolutionTotalMap r Ob =
+      r.selectedCechMap.app Ob.toAddCommGrpSheaf.val ≫
+        Cohomology.selectedCechToResolutionTotal 𝒱 Ob :=
+  Cohomology.selectedCechToResolutionTotal_refinement_naturality r Ob
+
+/-- Fixed refinement naturality for the base-resolution edge. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.baseResolutionToSelectedCechTotal 𝒰 Ob ≫
+        Cohomology.selectedCechResolutionTotalMap r Ob =
+      Cohomology.baseResolutionToSelectedCechTotal 𝒱 Ob :=
+  Cohomology.baseResolutionToSelectedCechTotal_refinement_naturality r Ob
+
 end SelectedCechResolutionBicomplexSD5
 
 end AAT.AG.StatementContractsReadingFunctoriality
