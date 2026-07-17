@@ -603,6 +603,62 @@ example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
         (𝒰.patch (σ (Fin.last (n + 1)))) :=
   Cohomology.canonicalTupleOverlap_succ 𝒰 n σ
 
+/-- Fixed projection from a tuple overlap to any selected chart. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : Nat} (σ : Fin (n + 1) → 𝒰.Index) (k : Fin (n + 1)) :
+    Cohomology.canonicalTupleOverlap 𝒰 n σ ⟶
+      Site.ContextCategoryObject.of S.contextPreorder (𝒰.patch (σ k)) :=
+  Cohomology.canonicalTupleOverlapProjection 𝒰 σ k
+
+/-- Fixed universal lift into a tuple overlap. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : Nat} (σ : Fin (n + 1) → 𝒰.Index) {X : S.category}
+    (h : ∀ k, X ⟶
+      Site.ContextCategoryObject.of S.contextPreorder (𝒰.patch (σ k))) :
+    X ⟶ Cohomology.canonicalTupleOverlap 𝒰 n σ :=
+  Cohomology.canonicalTupleOverlapLift 𝒰 σ h
+
+/-- Fixed component equation for the tuple-overlap lift. -/
+example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : Nat} (σ : Fin (n + 1) → 𝒰.Index) {X : S.category}
+    (h : ∀ k, X ⟶
+      Site.ContextCategoryObject.of S.contextPreorder (𝒰.patch (σ k)))
+    (k : Fin (n + 1)) :
+    Cohomology.canonicalTupleOverlapLift 𝒰 σ h ≫
+        Cohomology.canonicalTupleOverlapProjection 𝒰 σ k = h k :=
+  Cohomology.canonicalTupleOverlapLift_comp_chart 𝒰 σ h k
+
+/-- Fixed overlap morphism induced contravariantly by a simplex morphism. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {x y : SimplexCategory} (f : x ⟶ y)
+    (σ : Fin (y.len + 1) → 𝒰.Index) :
+    Cohomology.canonicalTupleOverlap 𝒰 y.len σ ⟶
+      Cohomology.canonicalTupleOverlap 𝒰 x.len
+        (fun i ↦ σ (f.toOrderHom i)) :=
+  Cohomology.canonicalTupleOverlapMap 𝒰 f σ
+
+/-- Fixed identity law for tuple-overlap maps. -/
+example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (x : SimplexCategory) (σ : Fin (x.len + 1) → 𝒰.Index) :
+    Cohomology.canonicalTupleOverlapMap 𝒰 (𝟙 x) σ = 𝟙 _ :=
+  Cohomology.canonicalTupleOverlapMap_id 𝒰 x σ
+
+/-- Fixed composition law for tuple-overlap maps. -/
+example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {x y z : SimplexCategory} (f : x ⟶ y) (g : y ⟶ z)
+    (σ : Fin (z.len + 1) → 𝒰.Index) :
+    Cohomology.canonicalTupleOverlapMap 𝒰 (f ≫ g) σ =
+      Cohomology.canonicalTupleOverlapMap 𝒰 g σ ≫
+        Cohomology.canonicalTupleOverlapMap 𝒰 f
+          (fun i ↦ σ (g.toOrderHom i)) :=
+  Cohomology.canonicalTupleOverlapMap_comp 𝒰 f g σ
+
 /-- Fixed canonical face-order contract. -/
 example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : Nat) (i : Fin (n + 2)) (σ : Fin (n + 2) → 𝒰.Index) :
@@ -1964,6 +2020,23 @@ noncomputable example (q p n : ℕ) (h : q + p = n) :
       ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X q).X p :=
   Cohomology.selectedCechResolutionTotalProjection 𝒰 Ob q p n h
 
+/-- Fixed diagonal projection from total degree `n`. -/
+noncomputable example (n : ℕ) (q : Fin (n + 1)) :
+    (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).X n ⟶
+      ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X q).X (n - q) :=
+  Cohomology.selectedCechResolutionTotalDiagonalProjection 𝒰 Ob n q
+
+/-- Fixed diagonal inclusion into total degree `n`. -/
+noncomputable example (n : ℕ) (q : Fin (n + 1)) :
+    ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X q).X (n - q) ⟶
+      (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).X n :=
+  Cohomology.selectedCechResolutionTotalDiagonalInclusion 𝒰 Ob n q
+
+/-- Fixed support predicate used by total-column elimination. -/
+example (n m : ℕ)
+    (x : (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).X n) : Prop :=
+  Cohomology.SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob n m x
+
 /-- Fixed finite diagonal decomposition of every total degree. -/
 example (n : ℕ) :
     ∑ q : Fin (n + 1),
@@ -2047,6 +2120,12 @@ noncomputable example (n : ℕ) :
       ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).homology n :
         Type (u + 1)) :=
   Cohomology.baseResolutionToSelectedCechTotalHomologyEquiv 𝒰 Ob n
+
+/-- Fixed canonical selected Čech-to-local-sheaf-cohomology equivalence. -/
+noncomputable example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n ≃+
+      (Ob.toAddCommGrpSheaf).H' n base :=
+  Cohomology.cechToSheafHAtBaseEquiv 𝒰 Ob hLeray n
 
 /-- Fixed canonical selected Čech-to-local-sheaf-cohomology map. -/
 noncomputable example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
@@ -2142,15 +2221,109 @@ noncomputable example : Site.AATSite FiniteModel.corePackage.object :=
 noncomputable example : nonLeraySite.category :=
   nonLerayBase
 
+/-- Fixed left branch of the selected strict-diamond configuration. -/
+example : nonLeraySite.category :=
+  nonLerayLeftObject
+
+/-- Fixed right branch of the selected strict-diamond configuration. -/
+example : nonLeraySite.category :=
+  nonLerayRightObject
+
+/-- Fixed two-branch structure of the comparison cover. -/
+example :
+    ∃ i j : nonLerayComparisonCover.Index,
+      i ≠ j ∧
+        nonLerayComparisonCover.patch i = nonLerayLeftObject.ctx ∧
+        nonLerayComparisonCover.patch j = nonLerayRightObject.ctx :=
+  nonLerayComparisonCover_twoBranches
+
+/-- Fixed bottom object given by the actual pair overlap. -/
+noncomputable example : nonLeraySite.category :=
+  nonLerayOverlapObject
+
+/-- Fixed identification of the selected bottom with the actual pair overlap. -/
+example :
+    nonLeraySite.overlap.overlap nonLerayBase.ctx
+        nonLerayLeftObject.ctx nonLerayRightObject.ctx =
+      nonLerayOverlapObject.ctx :=
+  nonLerayPairOverlap_eq
+
+/-- Fixed strict-diamond order certificate on the four selected objects. -/
+example :
+    nonLeraySite.contextPreorder.le
+        nonLerayOverlapObject.ctx nonLerayLeftObject.ctx ∧
+      nonLeraySite.contextPreorder.le
+        nonLerayOverlapObject.ctx nonLerayRightObject.ctx ∧
+      nonLeraySite.contextPreorder.le nonLerayLeftObject.ctx nonLerayBase.ctx ∧
+      nonLeraySite.contextPreorder.le nonLerayRightObject.ctx nonLerayBase.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayLeftObject.ctx nonLerayRightObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayRightObject.ctx nonLerayLeftObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le nonLerayBase.ctx nonLerayLeftObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le nonLerayBase.ctx nonLerayRightObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayLeftObject.ctx nonLerayOverlapObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayRightObject.ctx nonLerayOverlapObject.ctx :=
+  nonLerayStrictDiamond
+
+/-- Fixed admissible-cover classification on the four selected objects. -/
+example :
+    Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayBase) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayLeftObject) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayRightObject) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayOverlapObject) :=
+  nonLeraySelectedCoverClassification
+
 /-- Fixed Leray two-branch comparison cover of the strict-diamond model. -/
 noncomputable example :
     Site.AATCoverageFamily nonLeraySite.requirements
       nonLeraySite.overlap nonLerayBase :=
   nonLerayComparisonCover
 
+/-- Fixed exact two-point index of the comparison cover. -/
+example : nonLerayComparisonCover.Index ≃ Bool :=
+  nonLerayComparisonCoverIndexEquiv
+
 /-- Fixed small additive coefficient on the strict-diamond model. -/
 noncomputable example : Cohomology.ObstructionSheaf nonLeraySite :=
   nonLerayObstructionSheaf
+
+/-- Fixed zero value at the strict-diamond base. -/
+example :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (Opposite.op nonLerayBase) : Type 1)) :=
+  nonLerayBaseCoefficient_subsingleton
+
+/-- Fixed zero value at the strict-diamond left branch. -/
+example :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (Opposite.op nonLerayLeftObject) : Type 1)) :=
+  nonLerayLeftCoefficient_subsingleton
+
+/-- Fixed zero value at the strict-diamond right branch. -/
+example :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (Opposite.op nonLerayRightObject) : Type 1)) :=
+  nonLerayRightCoefficient_subsingleton
+
+/-- Fixed `ZMod 2` value at the actual pair overlap. -/
+noncomputable example :
+    ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op nonLerayOverlapObject) : Type 1)) ≃+ ZMod 2 :=
+  nonLerayOverlapCoefficientEquiv
 
 /-- Fixed positive Leray proof for the two-branch comparison cover. -/
 example :
@@ -2176,6 +2349,12 @@ noncomputable example :
     Site.AATCoverageFamily nonLeraySite.requirements
       nonLeraySite.overlap nonLerayBase :=
   nonLerayCover
+
+/-- Fixed identity chart contained in the negative selected cover. -/
+example :
+    ∃ i : nonLerayCover.Index,
+      nonLerayCover.patch i = nonLerayBase.ctx :=
+  nonLerayCover_containsIdentity
 
 /-- Fixed premise-free negative Leray firing. -/
 example :

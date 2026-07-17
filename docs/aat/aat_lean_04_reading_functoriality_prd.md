@@ -118,7 +118,7 @@ SDとmodule DAGを再承認する。
 | `Formal.AG.ReadingFunctoriality.Coverage` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.ExtFunctoriality`、`Formal.AG.Site.FinitePosetGeometry`、`Formal.AG.Cohomology.CechComplex`、`Mathlib.AlgebraicTopology.AlternatingFaceMapComplex`、`Mathlib.CategoryTheory.Sites.SheafCohomology.Basic`、`Mathlib.CategoryTheory.Sites.Limits`、`Mathlib.CategoryTheory.Sites.LeftExact`、`Mathlib.CategoryTheory.Sites.Abelian`、`Mathlib.CategoryTheory.Sites.Equivalence`、`Mathlib.CategoryTheory.Adjunction.Restrict`、`Mathlib.CategoryTheory.Adjunction.Limits`、`Mathlib.CategoryTheory.Whiskering`、`Mathlib.Algebra.Category.Grp.FilteredColimits`、`Mathlib.Algebra.Homology.DerivedCategory.Ext.Map` | topology refinement、canonical tuple cover、selected cover refinement、one-way cochain hom、large additive coefficientのselected Čech complex、terminal `Sheaf.H'` / `Sheaf.H` comparison、topology-change `Sheaf.H` map |
 | `Formal.AG.ReadingFunctoriality.LerayComparison` | `Formal.AG.ReadingFunctoriality.Coverage`、`Mathlib.Algebra.Category.ModuleCat.AB`、`Mathlib.Algebra.Category.Grp.Colimits`、`Mathlib.Algebra.Category.Grp.Ulift`、`Mathlib.Algebra.Category.Grp.Zero`、`Mathlib.Algebra.Homology.AlternatingConst`、`Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughInjectives`、`Mathlib.Algebra.Homology.Additive`、`Mathlib.Algebra.Homology.HomologicalBicomplex`、`Mathlib.Algebra.Homology.QuasiIso`、`Mathlib.Algebra.Homology.TotalComplex`、`Mathlib.Algebra.Homology.ShortComplex.Ab`、`Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex`、`Mathlib.Algebra.Homology.ShortComplex.PreservesHomology`、`Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf`、`Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives`、`Mathlib.CategoryTheory.Abelian.Injective.Ext`、`Mathlib.CategoryTheory.Abelian.Injective.Resolution`、`Mathlib.CategoryTheory.Adjunction.Additive`、`Mathlib.CategoryTheory.Adjunction.Whiskering`、`Mathlib.CategoryTheory.Sites.SheafCohomology.Cech`、`Mathlib.CategoryTheory.Whiskering` | cover-relative Čech complexとMathlib cochain-complex homologyの同一化、universe-lift homology bridge、sheaf categoryのinjective-resolution計算、selected injective-resolution bicomplexとcanonical edge maps、actual total complex、augmented column exactness、sheafified augmented Čech chain resolutionからのinjective-row acyclicity、両edgeのactual quasi-isomorphism、selected Čech–`Sheaf.H'` Leray comparison、bijectivity、refinement naturality |
 | `Formal.AG.ReadingFunctoriality.Coefficient` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.Derived.Intersection`、`Mathlib.Algebra.Category.ModuleCat.ChangeOfRings`、`Mathlib.Algebra.Category.ModuleCat.Descent`、`Mathlib.Algebra.Category.ModuleCat.Sheaf`、`Mathlib.Algebra.Category.Ring.Under.Basic`、`Mathlib.Algebra.Category.Ring.Under.Limits`、`Mathlib.Algebra.Module.TransferInstance`、`Mathlib.CategoryTheory.Sites.Adjunction`、`Mathlib.CategoryTheory.Sites.PreservesSheafification`、`Mathlib.CategoryTheory.Sites.Whiskering`、`Mathlib.AlgebraicGeometry.Pullbacks`、`Mathlib.AlgebraicGeometry.IdealSheaf.Functorial`、`Mathlib.RingTheory.RingHom.Flat` | closed-equational geometry宣言のdirect reuse、raw quotient / sheafification scalar-extension comparison、scheme / ideal / Tor / linear Čech scalar extension / actual sheaf H coefficient change |
-| `Formal.AG.ReadingFunctoriality.FiniteExamples` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.Examples.FiniteModel`、`Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample` | SD9のpositive / negative firing |
+| `Formal.AG.ReadingFunctoriality.FiniteExamples` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.ReadingFunctoriality.LerayComparison`、`Formal.AG.Examples.FiniteModel`、`Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample`、`Mathlib.Algebra.Category.ModuleCat.Adjunctions`、`Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughProjectives`、`Mathlib.CategoryTheory.Sites.EpiMono` | SD9のpositive / negative firing |
 | `Formal.AG.ReadingFunctoriality` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.ReadingFunctoriality.LerayComparison`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.ReadingFunctoriality.FiniteExamples` | public aggregate |
 | `Formal.AG.StatementContractsReadingFunctoriality` | `Formal.AG.ReadingFunctoriality`、`Formal.AG.ReadingFunctoriality.FiniteExamples` | SD0〜SD9のexact signature突合だけ |
 | `Formal.AG` | `Formal.AG.ReadingFunctoriality` | repository AAT aggregate |
@@ -4135,12 +4135,83 @@ noncomputable def nonLeraySite :
 
 noncomputable def nonLerayBase : nonLeraySite.category
 
+def nonLerayLeftObject : nonLeraySite.category
+
+def nonLerayRightObject : nonLeraySite.category
+
+def nonLerayOverlapObject : nonLeraySite.category
+
+theorem nonLerayPairOverlap_eq :
+    nonLeraySite.overlap.overlap nonLerayBase.ctx
+        nonLerayLeftObject.ctx nonLerayRightObject.ctx =
+      nonLerayOverlapObject.ctx
+
+theorem nonLerayStrictDiamond :
+    nonLeraySite.contextPreorder.le
+        nonLerayOverlapObject.ctx nonLerayLeftObject.ctx ∧
+      nonLeraySite.contextPreorder.le
+        nonLerayOverlapObject.ctx nonLerayRightObject.ctx ∧
+      nonLeraySite.contextPreorder.le nonLerayLeftObject.ctx nonLerayBase.ctx ∧
+      nonLeraySite.contextPreorder.le nonLerayRightObject.ctx nonLerayBase.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayLeftObject.ctx nonLerayRightObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayRightObject.ctx nonLerayLeftObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le nonLerayBase.ctx nonLerayLeftObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le nonLerayBase.ctx nonLerayRightObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayLeftObject.ctx nonLerayOverlapObject.ctx ∧
+      ¬ nonLeraySite.contextPreorder.le
+        nonLerayRightObject.ctx nonLerayOverlapObject.ctx
+
+theorem nonLeraySelectedCoverClassification :
+    Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayBase) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayLeftObject) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayRightObject) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayOverlapObject)
+
 noncomputable def nonLerayComparisonCover :
     Site.AATCoverageFamily nonLeraySite.requirements
       nonLeraySite.overlap nonLerayBase
 
+def nonLerayComparisonCoverIndexEquiv :
+    nonLerayComparisonCover.Index ≃ Bool
+
+theorem nonLerayComparisonCover_twoBranches :
+    ∃ i j : nonLerayComparisonCover.Index,
+      i ≠ j ∧
+        nonLerayComparisonCover.patch i = nonLerayLeftObject.ctx ∧
+        nonLerayComparisonCover.patch j = nonLerayRightObject.ctx
+
 noncomputable def nonLerayObstructionSheaf :
     Cohomology.ObstructionSheaf nonLeraySite
+
+theorem nonLerayBaseCoefficient_subsingleton :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (Opposite.op nonLerayBase) : Type 1))
+
+theorem nonLerayLeftCoefficient_subsingleton :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (Opposite.op nonLerayLeftObject) : Type 1))
+
+theorem nonLerayRightCoefficient_subsingleton :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (Opposite.op nonLerayRightObject) : Type 1))
+
+noncomputable def nonLerayOverlapCoefficientEquiv :
+    ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op nonLerayOverlapObject) : Type 1)) ≃+ ZMod 2
 
 theorem nonLerayComparisonCover_isLeray :
     Cohomology.IsLerayFor
@@ -4158,6 +4229,10 @@ theorem nonLerayHPrimeOne_nontrivial :
 noncomputable def nonLerayCover :
     Site.AATCoverageFamily nonLeraySite.requirements
       nonLeraySite.overlap nonLerayBase
+
+theorem nonLerayCover_containsIdentity :
+    ∃ i : nonLerayCover.Index,
+      nonLerayCover.patch i = nonLerayBase.ctx
 
 theorem nonLerayCover_not_completionEvidence :
     ¬ Cohomology.IsLerayFor nonLerayCover nonLerayObstructionSheaf
@@ -4437,10 +4512,18 @@ end ReadingFunctorialityFinite
 
 `nonLeraySite`は既存`finiteSite`または`FiniteModel.twoPatchSite`のaliasにしてはならない。
 既存two-patch contextはactual `contextPreorder`で選択4点の相互射を持つため、
-non-Leray firingの根拠にならない。`nonLeraySite`はbase、left、right、overlapがstrict diamondを成し、
-baseだけに二枝の非自明生成coverを持つfinite AAT siteとして構成する。
+non-Leray firingの根拠にならない。`AATSite.category`は設計上すべての
+`ArchitectureContext`を対象に持つため、site全体の対象型を有限4対象とすることは
+fixed targetとしない。代わりに、独立な`nonLeraySite`内のactual pair overlap、left、
+right、baseの選択4対象がstrict diamondを成すことを`nonLerayStrictDiamond`で証明し、
+actual pair overlapと選択bottomの同一性を`nonLerayPairOverlap_eq`で固定する。
+この選択4対象のうちbaseだけが`AATCoverageFamily`を持ち、comparison coverのindexが
+exactly two pointsであることを`nonLerayComparisonCoverIndexEquiv`、左右のpatchを
+`nonLerayComparisonCover_twoBranches`、cover分類を
+`nonLeraySelectedCoverClassification`で証明する。
 `nonLerayObstructionSheaf`はsmall additive sheafとしてbase / left / rightでzero、overlapで
-`ZMod 2`を持つactual coefficientを使う。left / right / overlapのsheafified free Yonedaがprojectiveで
+`ZMod 2`を持つactual coefficientを使い、それぞれの値をfixed theorem / equivalenceで直接検査する。
+left / right / overlapのsheafified free Yonedaがprojectiveで
 あることから`nonLerayComparisonCover_isLeray`を証明し、degree-one Čech cocycleの非零classを
 `cechToSheafHAtBase_bijective`でactual `H'^1(nonLerayBase)`へ送る。
 `nonLerayCover`はbaseをoverlapに含むidentity selected coverとし、
@@ -4650,7 +4733,7 @@ flat coefficient change
 ### R9 — examples、integration、audit
 
 - SD9 firing matrixの全positive / negative declarationを実装する。
-- strict-diamond `nonLeraySite`、small `ZMod 2` coefficient、Leray二枝cover、非零Čech H¹ classを
+- `nonLeraySite`内の選択strict-diamond 4対象、small `ZMod 2` coefficient、Leray二枝cover、非零Čech H¹ classを
   構成し、actual `H'^1`の非自明性からidentity coverのnon-Leray firingを前提なしで証明する。
 - aggregate、statement contracts、axiom auditへ接続し、executable contractの
   SD0〜SD9全public target直接参照を完了する。
@@ -4685,7 +4768,7 @@ flat coefficient change
   `uliftFunctor` bridge、任意次数homology同値、class formula、refinement naturalityが固定signatureどおり
   証明される。complex iso、homology equivalence、bijectivity witnessをcallerから受け取らない。
 - [ ] AC23: `IsLerayFor`がpositive-degree actual `Sheaf.H'` vanishingであり、comparison mapをfieldに持たない。resolution augmentationを含むcolumn exactness、injective-row Čech acyclicity、両actual edgeの`QuasiIso`がfixed signatureどおり導出され、`QuasiIso`、collapse conclusion、homology equivalenceをcallerから受け取らない。cover indexへ`Fintype`または`Nonempty`を追加しない。
-- [ ] AC24: arbitrary baseでは`cechToSheafHAtBase`がactual `Sheaf.H'`を参照し、terminal baseでのみ`cechToSheafH`がactual `Sheaf.H`を参照する。strict-diamond finite siteのsmall `ZMod 2` sheafについてLeray二枝cover、非零Čech H¹、非自明actual `H'^1`を順に構成し、identity coverの`nonLerayCover_not_completionEvidence`を前提なしで証明する。既存`finiteSite` / `twoPatchSite`のaliasまたは条件付き`Nontrivial H'` premiseだけでnegative firingを閉じない。
+- [ ] AC24: arbitrary baseでは`cechToSheafHAtBase`がactual `Sheaf.H'`を参照し、terminal baseでのみ`cechToSheafH`がactual `Sheaf.H`を参照する。独立な`nonLeraySite`内のactual overlap / left / right / baseがstrict diamondを成し、選択4対象上のcover分類とsmall `ZMod 2` sheafのbase / left / rightでのzero、overlapでの`ZMod 2`をfixed contractで直接検査する。その上でLeray二枝cover、非零Čech H¹、非自明actual `H'^1`を順に構成し、identity coverの`nonLerayCover_not_completionEvidence`を前提なしで証明する。既存`finiteSite` / `twoPatchSite`のaliasまたは条件付き`Nontrivial H'` premiseだけでnegative firingを閉じない。
 - [ ] AC25: topology changeで`r.le`と`Presieve.isSheaf_of_le`から`coarseRestriction`を構成し、`fineSheafificationAdjunction`を証明する。そこから`fineSheafification`の`PreservesFiniteColimits`、left-exact sheafificationから`PreservesFiniteLimits`、pointwise additive forget / `presheafToSheaf_additive`から`Additive`を導く。`sheafHMap_eq_ext`が`mapExtAddHom`、constant-sheaf iso、common-coefficient isoの具体合成を固定し、identity / compositionが証明され、strict finite topology changeで`coarseFineSheafHMap_nonzero`が発火する。
 - [ ] AC26: `ConditionalSpaceCohomology`とselected comparison fieldがAC22〜AC25の主経路にない。
 - [ ] AC27: `FlatCoefficientChange`のprimitive dataがring homと`RingHom.Flat`だけであり、`coefficientExtension_preservesFiniteLimits`がflatnessをproof-useする。sheaf、section、scheme、comparison isoをfieldに追加しない。

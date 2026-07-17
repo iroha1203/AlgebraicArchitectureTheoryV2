@@ -4051,6 +4051,30 @@ def readingFunctoriality_canonicalTupleOverlap_zero :=
 def readingFunctoriality_canonicalTupleOverlap_succ :=
   @AAT.AG.Cohomology.canonicalTupleOverlap_succ
 
+/-- Audit alias for a canonical projection from a tuple overlap. -/
+noncomputable def readingFunctoriality_canonicalTupleOverlapProjection :=
+  @AAT.AG.Cohomology.canonicalTupleOverlapProjection
+
+/-- Audit alias for the universal lift into a tuple overlap. -/
+noncomputable def readingFunctoriality_canonicalTupleOverlapLift :=
+  @AAT.AG.Cohomology.canonicalTupleOverlapLift
+
+/-- Audit alias for the component equation of a tuple-overlap lift. -/
+def readingFunctoriality_canonicalTupleOverlapLift_comp_chart :=
+  @AAT.AG.Cohomology.canonicalTupleOverlapLift_comp_chart
+
+/-- Audit alias for the overlap map induced by a simplex morphism. -/
+noncomputable def readingFunctoriality_canonicalTupleOverlapMap :=
+  @AAT.AG.Cohomology.canonicalTupleOverlapMap
+
+/-- Audit alias for the identity tuple-overlap map. -/
+def readingFunctoriality_canonicalTupleOverlapMap_id :=
+  @AAT.AG.Cohomology.canonicalTupleOverlapMap_id
+
+/-- Audit alias for composition of tuple-overlap maps. -/
+def readingFunctoriality_canonicalTupleOverlapMap_comp :=
+  @AAT.AG.Cohomology.canonicalTupleOverlapMap_comp
+
 /-- Audit alias for canonical tuple face monotonicity. -/
 def readingFunctoriality_canonicalTupleOverlap_face_le :=
   @AAT.AG.Cohomology.canonicalTupleOverlap_face_le
@@ -4791,6 +4815,18 @@ def readingFunctoriality_injectiveSheaf_selectedCech_exactAt :=
 noncomputable def readingFunctoriality_selectedCechResolutionTotalProjection :=
   @AAT.AG.Cohomology.selectedCechResolutionTotalProjection
 
+/-- Audit alias for a total-diagonal projection. -/
+noncomputable def readingFunctoriality_selectedCechResolutionTotalDiagonalProjection :=
+  @AAT.AG.Cohomology.selectedCechResolutionTotalDiagonalProjection
+
+/-- Audit alias for a total-diagonal inclusion. -/
+noncomputable def readingFunctoriality_selectedCechResolutionTotalDiagonalInclusion :=
+  @AAT.AG.Cohomology.selectedCechResolutionTotalDiagonalInclusion
+
+/-- Audit alias for the total-column support predicate. -/
+def readingFunctoriality_selectedCechResolutionTotalSupportedAtMost :=
+  @AAT.AG.Cohomology.SelectedCechResolutionTotalSupportedAtMost
+
 /-- Audit alias for the finite diagonal decomposition of the total complex. -/
 def readingFunctoriality_selectedCechResolutionTotal_decomposition :=
   @AAT.AG.Cohomology.selectedCechResolutionTotal_decomposition
@@ -4806,10 +4842,6 @@ def readingFunctoriality_selectedCechResolutionTotal_eliminateColumn :=
 /-- Audit alias for normalization of total cycles to resolution degree zero. -/
 def readingFunctoriality_selectedCechResolutionTotal_normalizeColumns :=
   @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionTotal_normalizeColumns
-
-/-- Audit alias for primitive normalization with zero-column differential. -/
-def readingFunctoriality_selectedCechResolutionTotal_normalizePreimage :=
-  @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionTotal_normalizePreimage
 
 /-- Audit alias for the actual selected Čech edge quasi-isomorphism. -/
 def readingFunctoriality_selectedCechToResolutionTotal_quasiIso :=
@@ -4889,13 +4921,61 @@ noncomputable def readingFunctoriality_nonLeraySite :=
 noncomputable def readingFunctoriality_nonLerayBase :=
   @AAT.AG.ReadingFunctorialityFinite.nonLerayBase
 
+/-- Audit alias for the selected strict-diamond left branch. -/
+def readingFunctoriality_nonLerayLeftObject :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayLeftObject
+
+/-- Audit alias for the selected strict-diamond right branch. -/
+def readingFunctoriality_nonLerayRightObject :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayRightObject
+
+/-- Audit alias for the two-branch structure of the comparison cover. -/
+def readingFunctoriality_nonLerayComparisonCover_twoBranches :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayComparisonCover_twoBranches
+
+/-- Audit alias for the actual strict-diamond overlap object. -/
+noncomputable def readingFunctoriality_nonLerayOverlapObject :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayOverlapObject
+
+/-- Audit alias for identification of the selected bottom with the actual overlap. -/
+def readingFunctoriality_nonLerayPairOverlap_eq :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayPairOverlap_eq
+
+/-- Audit alias for the strict-diamond order certificate. -/
+def readingFunctoriality_nonLerayStrictDiamond :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayStrictDiamond
+
+/-- Audit alias for the selected admissible-cover classification. -/
+def readingFunctoriality_nonLeraySelectedCoverClassification :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLeraySelectedCoverClassification
+
 /-- Audit alias for the strict-diamond two-branch comparison cover. -/
 noncomputable def readingFunctoriality_nonLerayComparisonCover :=
   @AAT.AG.ReadingFunctorialityFinite.nonLerayComparisonCover
 
+/-- Audit alias for the exact two-point index of the comparison cover. -/
+def readingFunctoriality_nonLerayComparisonCoverIndexEquiv :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayComparisonCoverIndexEquiv
+
 /-- Audit alias for the strict-diamond additive coefficient. -/
 noncomputable def readingFunctoriality_nonLerayObstructionSheaf :=
   @AAT.AG.ReadingFunctorialityFinite.nonLerayObstructionSheaf
+
+/-- Audit alias for the zero coefficient value at the base. -/
+def readingFunctoriality_nonLerayBaseCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayBaseCoefficient_subsingleton
+
+/-- Audit alias for the zero coefficient value at the left branch. -/
+def readingFunctoriality_nonLerayLeftCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayLeftCoefficient_subsingleton
+
+/-- Audit alias for the zero coefficient value at the right branch. -/
+def readingFunctoriality_nonLerayRightCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayRightCoefficient_subsingleton
+
+/-- Audit alias for the `ZMod 2` coefficient value at the actual overlap. -/
+noncomputable def readingFunctoriality_nonLerayOverlapCoefficientEquiv :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayOverlapCoefficientEquiv
 
 /-- Audit alias for the positive Leray proof of the two-branch cover. -/
 def readingFunctoriality_nonLerayComparisonCover_isLeray :=
@@ -4912,6 +4992,10 @@ def readingFunctoriality_nonLerayHPrimeOne_nontrivial :=
 /-- Audit alias for the selected cover containing the identity chart. -/
 noncomputable def readingFunctoriality_nonLerayCover :=
   @AAT.AG.ReadingFunctorialityFinite.nonLerayCover
+
+/-- Audit alias for the identity chart of the negative selected cover. -/
+def readingFunctoriality_nonLerayCover_containsIdentity :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayCover_containsIdentity
 
 /-- Audit alias for the premise-free negative Leray firing. -/
 def readingFunctoriality_nonLerayCover_not_completionEvidence :=

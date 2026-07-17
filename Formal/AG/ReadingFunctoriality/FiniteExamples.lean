@@ -195,16 +195,13 @@ theorem coarseToFineCover_not_bijective :
   exact Bool.false_ne_true (congrArg Prod.snd hp)
 
 private inductive NonLerayContextIndex where
-  | overlap
   | left
   | right
   | base
-  deriving DecidableEq
 
 private def nonLeraySupportReads
     (i : NonLerayContextIndex) (atom : FiniteModel.carrier.Atom) : Prop :=
   match i with
-  | .overlap => False
   | .left => atom = FiniteModel.FiniteAtom.componentA
   | .right => atom = FiniteModel.FiniteAtom.componentB
   | .base => atom = FiniteModel.FiniteAtom.componentA ∨
@@ -220,7 +217,6 @@ private def nonLerayContext (i : NonLerayContextIndex) :
     supportReads_objectFamily := by
       intro support atom h
       cases i with
-      | overlap => exact False.elim h
       | left =>
           rw [h]
           exact FiniteModel.allFamily_mem _ (by simp)
@@ -275,18 +271,6 @@ private theorem nonLerayContextLe_of_support
   ⟨nonLerayContextMorphism i j h,
     nonLerayContextMorphism_isRestriction i j h⟩
 
-private theorem nonLeray_overlap_le_left :
-    nonLerayContextPreorder.le
-      (nonLerayContext .overlap) (nonLerayContext .left) := by
-  apply nonLerayContextLe_of_support
-  simp [nonLeraySupportReads]
-
-private theorem nonLeray_overlap_le_right :
-    nonLerayContextPreorder.le
-      (nonLerayContext .overlap) (nonLerayContext .right) := by
-  apply nonLerayContextLe_of_support
-  simp [nonLeraySupportReads]
-
 private theorem nonLeray_left_le_base :
     nonLerayContextPreorder.le
       (nonLerayContext .left) (nonLerayContext .base) := by
@@ -337,20 +321,6 @@ private theorem nonLeray_base_not_le_right :
   · simp [nonLeraySupportReads]
   · simp [nonLeraySupportReads]
 
-private theorem nonLeray_left_not_le_overlap :
-    ¬ nonLerayContextPreorder.le
-      (nonLerayContext .left) (nonLerayContext .overlap) := by
-  apply nonLeray_not_le_of_atom .left .overlap FiniteModel.FiniteAtom.componentA
-  · simp [nonLeraySupportReads]
-  · simp [nonLeraySupportReads]
-
-private theorem nonLeray_right_not_le_overlap :
-    ¬ nonLerayContextPreorder.le
-      (nonLerayContext .right) (nonLerayContext .overlap) := by
-  apply nonLeray_not_le_of_atom .right .overlap FiniteModel.FiniteAtom.componentB
-  · simp [nonLeraySupportReads]
-  · simp [nonLeraySupportReads]
-
 private noncomputable def nonLerayOverlap :
     Site.ContextOverlapPullback nonLerayContextPreorder :=
   Site.meetOverlapPullback nonLerayContextPreorder Site.productContextFiniteMeet
@@ -375,6 +345,7 @@ private def nonLerayCoverageRequirements :
     W = nonLerayContext .left ∨ W = nonLerayContext .right
   boundaryVisibleOn := fun _ _ => True
 
+/-- Independent AAT site carrying the selected strict-diamond countermodel. -/
 noncomputable def nonLeraySite :
     Site.AATSite FiniteModel.corePackage.object where
   contextPreorder := nonLerayContextPreorder
@@ -383,6 +354,7 @@ noncomputable def nonLeraySite :
   requirements := nonLerayCoverageRequirements
   overlap := nonLerayOverlap
 
+/-- Top object of the selected strict-diamond configuration. -/
 noncomputable def nonLerayBase : nonLeraySite.category :=
   Site.ContextCategoryObject.of nonLerayContextPreorder
     (nonLerayContext .base)
@@ -390,12 +362,12 @@ noncomputable def nonLerayBase : nonLeraySite.category :=
 private inductive NonLerayCoverIndex where
   | left
   | right
-  deriving DecidableEq
 
 private def nonLerayCoverPatch : NonLerayCoverIndex → Site.ArchCtx FiniteModel.object
   | .left => nonLerayContext .left
   | .right => nonLerayContext .right
 
+/-- Two-branch cover used to compare the explicit Čech class with actual local cohomology. -/
 noncomputable def nonLerayComparisonCover :
     Site.AATCoverageFamily nonLeraySite.requirements
       nonLeraySite.overlap nonLerayBase where
@@ -434,13 +406,36 @@ noncomputable def nonLerayComparisonCover :
         · rw [h]; exact FiniteModel.allFamily_mem _ (by simp)
   }
 
-private def nonLerayLeftObject : nonLeraySite.category :=
+/-- The comparison-cover index is exactly a two-point type. -/
+def nonLerayComparisonCoverIndexEquiv :
+    nonLerayComparisonCover.Index ≃ Bool where
+  toFun
+    | .left => false
+    | .right => true
+  invFun
+    | false => .left
+    | true => .right
+  left_inv i := by cases i <;> rfl
+  right_inv b := by cases b <;> rfl
+
+/-- Left middle object of the selected strict-diamond configuration. -/
+def nonLerayLeftObject : nonLeraySite.category :=
   Site.ContextCategoryObject.of nonLerayContextPreorder
     (nonLerayContext .left)
 
-private def nonLerayRightObject : nonLeraySite.category :=
+/-- Right middle object of the selected strict-diamond configuration. -/
+def nonLerayRightObject : nonLeraySite.category :=
   Site.ContextCategoryObject.of nonLerayContextPreorder
     (nonLerayContext .right)
+
+/-- The comparison cover has distinct left and right branches. -/
+theorem nonLerayComparisonCover_twoBranches :
+    ∃ i j : nonLerayComparisonCover.Index,
+      i ≠ j ∧
+        nonLerayComparisonCover.patch i = nonLerayLeftObject.ctx ∧
+        nonLerayComparisonCover.patch j = nonLerayRightObject.ctx := by
+  refine ⟨NonLerayCoverIndex.left, NonLerayCoverIndex.right, ?_, rfl, rfl⟩
+  simp
 
 private theorem nonLeray_admissibleCover_has_left
     {Z : nonLeraySite.category}
@@ -635,9 +630,106 @@ private def nonLeraySelectedOverlapContext : Site.ArchCtx FiniteModel.object :=
   nonLerayOverlap.overlap (nonLerayContext .base)
     (nonLerayContext .left) (nonLerayContext .right)
 
-private def nonLeraySelectedOverlap : nonLeraySite.category :=
+/-- Bottom object obtained from the actual overlap of the two comparison branches. -/
+def nonLerayOverlapObject : nonLeraySite.category :=
   Site.ContextCategoryObject.of nonLerayContextPreorder
     nonLeraySelectedOverlapContext
+
+/-- The selected bottom object is definitionally the actual pair overlap. -/
+theorem nonLerayPairOverlap_eq :
+    nonLeraySite.overlap.overlap nonLerayBase.ctx
+        nonLerayLeftObject.ctx nonLerayRightObject.ctx =
+      nonLerayOverlapObject.ctx :=
+  rfl
+
+private theorem nonLeray_left_not_le_overlapObject :
+    ¬ nonLerayContextPreorder.le
+      nonLerayLeftObject.ctx nonLerayOverlapObject.ctx := by
+  rintro ⟨f, hf⟩
+  have hread := hf.1 (support := PUnit.unit)
+    (atom := FiniteModel.FiniteAtom.componentA)
+    (by
+      change nonLeraySupportReads .left FiniteModel.FiniteAtom.componentA
+      simp [nonLeraySupportReads])
+  change
+    nonLeraySupportReads .left FiniteModel.FiniteAtom.componentA ∧
+      nonLeraySupportReads .right FiniteModel.FiniteAtom.componentA at hread
+  simpa [nonLeraySupportReads] using hread.2
+
+private theorem nonLeray_right_not_le_overlapObject :
+    ¬ nonLerayContextPreorder.le
+      nonLerayRightObject.ctx nonLerayOverlapObject.ctx := by
+  rintro ⟨f, hf⟩
+  have hread := hf.1 (support := PUnit.unit)
+    (atom := FiniteModel.FiniteAtom.componentB)
+    (by
+      change nonLeraySupportReads .right FiniteModel.FiniteAtom.componentB
+      simp [nonLeraySupportReads])
+  change
+    nonLeraySupportReads .left FiniteModel.FiniteAtom.componentB ∧
+      nonLeraySupportReads .right FiniteModel.FiniteAtom.componentB at hread
+  simpa [nonLeraySupportReads] using hread.1
+
+/--
+The actual overlap, the two branch objects, and the base have exactly the
+strict-diamond order relations required by the negative firing.
+-/
+theorem nonLerayStrictDiamond :
+    nonLerayContextPreorder.le
+        nonLerayOverlapObject.ctx nonLerayLeftObject.ctx ∧
+      nonLerayContextPreorder.le
+        nonLerayOverlapObject.ctx nonLerayRightObject.ctx ∧
+      nonLerayContextPreorder.le nonLerayLeftObject.ctx nonLerayBase.ctx ∧
+      nonLerayContextPreorder.le nonLerayRightObject.ctx nonLerayBase.ctx ∧
+      ¬ nonLerayContextPreorder.le nonLerayLeftObject.ctx nonLerayRightObject.ctx ∧
+      ¬ nonLerayContextPreorder.le nonLerayRightObject.ctx nonLerayLeftObject.ctx ∧
+      ¬ nonLerayContextPreorder.le nonLerayBase.ctx nonLerayLeftObject.ctx ∧
+      ¬ nonLerayContextPreorder.le nonLerayBase.ctx nonLerayRightObject.ctx ∧
+      ¬ nonLerayContextPreorder.le
+        nonLerayLeftObject.ctx nonLerayOverlapObject.ctx ∧
+      ¬ nonLerayContextPreorder.le
+        nonLerayRightObject.ctx nonLerayOverlapObject.ctx := by
+  refine ⟨?_, ?_, nonLeray_left_le_base, nonLeray_right_le_base,
+    nonLeray_left_not_le_right, nonLeray_right_not_le_left,
+    nonLeray_base_not_le_left, nonLeray_base_not_le_right,
+    nonLeray_left_not_le_overlapObject,
+    nonLeray_right_not_le_overlapObject⟩
+  · exact Site.productContextFiniteMeet.meet_le_left _ _
+  · exact Site.productContextFiniteMeet.meet_le_right _ _
+
+/--
+Among the four selected strict-diamond objects, only the base admits an
+admissible AAT coverage family; the exhibited family is the two-branch cover.
+-/
+theorem nonLeraySelectedCoverClassification :
+    Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayBase) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayLeftObject) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayRightObject) ∧
+      ¬ Nonempty
+        (Site.AATCoverageFamily nonLeraySite.requirements
+          nonLeraySite.overlap nonLerayOverlapObject) := by
+  refine ⟨⟨nonLerayComparisonCover⟩, ?_, ?_, ?_⟩
+  · rintro ⟨F⟩
+    rcases nonLeray_admissibleCover_has_right F with ⟨i, hi⟩
+    have hinclusion := F.inclusion i
+    rw [hi] at hinclusion
+    exact nonLeray_right_not_le_left hinclusion
+  · rintro ⟨F⟩
+    rcases nonLeray_admissibleCover_has_left F with ⟨i, hi⟩
+    have hinclusion := F.inclusion i
+    rw [hi] at hinclusion
+    exact nonLeray_left_not_le_right hinclusion
+  · rintro ⟨F⟩
+    rcases nonLeray_admissibleCover_has_left F with ⟨i, hi⟩
+    have hinclusion := F.inclusion i
+    rw [hi] at hinclusion
+    exact nonLeray_left_not_le_overlapObject hinclusion
 
 private def NonLerayNoMarkerReads (W : Site.ArchCtx FiniteModel.object) : Prop :=
   (∀ support : W.Support,
@@ -865,12 +957,65 @@ private theorem nonLerayCoefficientPresheaf_isSheaf :
     change other.1 = global.1
     exact hval
 
+/-- Small additive coefficient used by the strict-diamond countermodel. -/
 noncomputable def nonLerayObstructionSheaf :
     Cohomology.ObstructionSheaf nonLeraySite :=
   Cohomology.ObstructionSheaf.ofAddCommGrpValued
     nonLerayCoefficientPresheaf
     ((Site.AATSheafCondition.iff_presieve_isSheaf nonLeraySite _).2
       nonLerayCoefficientPresheaf_isSheaf)
+
+/-- The strict-diamond coefficient is zero at the base. -/
+theorem nonLerayBaseCoefficient_subsingleton :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (op nonLerayBase) : Type 1)) := by
+  letI : Subsingleton
+      (nonLerayObstructionSheaf.carrier.toPresheaf.obj
+        (op nonLerayBase)) := by
+    change Subsingleton
+      (nonLerayCoefficientSubgroup (nonLerayContext .base))
+    rw [nonLerayCoefficientSubgroup_base_eq_bot]
+    infer_instance
+  exact (nonLerayObstructionSheaf.toAddCommGrpSheafObjAddEquiv
+    nonLerayBase).symm.injective.subsingleton
+
+/-- The strict-diamond coefficient is zero at the left branch. -/
+theorem nonLerayLeftCoefficient_subsingleton :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (op nonLerayLeftObject) : Type 1)) := by
+  letI : Subsingleton
+      (nonLerayObstructionSheaf.carrier.toPresheaf.obj
+        (op nonLerayLeftObject)) := by
+    change Subsingleton
+      (nonLerayCoefficientSubgroup (nonLerayContext .left))
+    rw [nonLerayCoefficientSubgroup_left_eq_bot]
+    infer_instance
+  exact (nonLerayObstructionSheaf.toAddCommGrpSheafObjAddEquiv
+    nonLerayLeftObject).symm.injective.subsingleton
+
+/-- The strict-diamond coefficient is zero at the right branch. -/
+theorem nonLerayRightCoefficient_subsingleton :
+    Subsingleton
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+        (op nonLerayRightObject) : Type 1)) := by
+  letI : Subsingleton
+      (nonLerayObstructionSheaf.carrier.toPresheaf.obj
+        (op nonLerayRightObject)) := by
+    change Subsingleton
+      (nonLerayCoefficientSubgroup (nonLerayContext .right))
+    rw [nonLerayCoefficientSubgroup_right_eq_bot]
+    infer_instance
+  exact (nonLerayObstructionSheaf.toAddCommGrpSheafObjAddEquiv
+    nonLerayRightObject).symm.injective.subsingleton
+
+/-- The actual overlap coefficient is additively equivalent to `ZMod 2`. -/
+noncomputable def nonLerayOverlapCoefficientEquiv :
+    ((nonLerayObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (op nonLerayOverlapObject) : Type 1)) ≃+ ZMod 2 :=
+  (nonLerayObstructionSheaf.toAddCommGrpSheafObjAddEquiv
+    nonLerayOverlapObject).symm.trans nonLerayOverlapCoefficientAddEquiv
 
 theorem nonLerayComparisonCover_isLeray :
     Cohomology.IsLerayFor
@@ -1149,6 +1294,7 @@ private def nonLerayIdentityCoverPatch :
   | none => nonLerayContext .base
   | some i => nonLerayCoverPatch i
 
+/-- Identity-containing selected cover used by the premise-free negative firing. -/
 noncomputable def nonLerayCover :
     Site.AATCoverageFamily nonLeraySite.requirements
       nonLeraySite.overlap nonLerayBase where
@@ -1189,6 +1335,12 @@ noncomputable def nonLerayCover :
       | some i =>
           exact nonLerayComparisonCover.admissible.nonGeneration i h
   }
+
+/-- The negative selected cover contains the base as an identity chart. -/
+theorem nonLerayCover_containsIdentity :
+    ∃ i : nonLerayCover.Index,
+      nonLerayCover.patch i = nonLerayBase.ctx :=
+  ⟨none, rfl⟩
 
 theorem nonLerayCover_not_completionEvidence :
     ¬ Cohomology.IsLerayFor nonLerayCover nonLerayObstructionSheaf := by
@@ -1271,6 +1423,7 @@ private theorem finiteCoefficientPresheaf_isSheaf :
   · intro other hother
     simpa [finiteCoefficientPresheaf] using hother q hq
 
+/-- Nonzero constant `ZMod 2` obstruction coefficient on the finite positive model. -/
 noncomputable def finiteObstructionSheaf :
     Cohomology.ObstructionSheaf finiteSite :=
   Cohomology.ObstructionSheaf.ofAddCommGrpValued

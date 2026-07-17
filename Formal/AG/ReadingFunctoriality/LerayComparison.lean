@@ -3,9 +3,11 @@ import Mathlib.Algebra.Category.ModuleCat.AB
 import Mathlib.Algebra.Category.Grp.Colimits
 import Mathlib.Algebra.Category.Grp.Ulift
 import Mathlib.Algebra.Category.Grp.Zero
+import Mathlib.Algebra.Homology.AlternatingConst
 import Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughInjectives
 import Mathlib.Algebra.Homology.Additive
 import Mathlib.Algebra.Homology.HomologicalBicomplex
+import Mathlib.Algebra.Homology.QuasiIso
 import Mathlib.Algebra.Homology.TotalComplex
 import Mathlib.Algebra.Homology.ShortComplex.Ab
 import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
@@ -16,6 +18,7 @@ import Mathlib.CategoryTheory.Abelian.Injective.Ext
 import Mathlib.CategoryTheory.Abelian.Injective.Resolution
 import Mathlib.CategoryTheory.Adjunction.Additive
 import Mathlib.CategoryTheory.Adjunction.Whiskering
+import Mathlib.CategoryTheory.Sites.SheafCohomology.Cech
 import Mathlib.CategoryTheory.Whiskering
 
 /-!
@@ -2940,19 +2943,19 @@ theorem sheaf_selectedCechAugmentation_exactAtZero
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {base : S.category}
 
-abbrev SelectedCechFreeGenerator
+private abbrev SelectedCechFreeGenerator
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) (X : S.category) :=
   Σ σ : (canonicalCoverRelative 𝒰).simplex n,
     X ⟶ (canonicalCoverRelative 𝒰).overlap n σ
 
-def selectedCechFreeGeneratorMap
+private def selectedCechFreeGeneratorMap
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) {X Y : S.categoryᵒᵖ} (f : X ⟶ Y) :
     SelectedCechFreeGenerator 𝒰 n X.unop → SelectedCechFreeGenerator 𝒰 n Y.unop :=
   fun g => ⟨g.1, f.unop ≫ g.2⟩
 
-@[simp] theorem selectedCechFreeGeneratorMap_id
+@[simp] private theorem selectedCechFreeGeneratorMap_id
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) (X : S.categoryᵒᵖ) :
     selectedCechFreeGeneratorMap 𝒰 n (𝟙 X) = id := by
@@ -2960,7 +2963,7 @@ def selectedCechFreeGeneratorMap
   rcases g with ⟨σ, g⟩
   simp [selectedCechFreeGeneratorMap]
 
-theorem selectedCechFreeGeneratorMap_comp
+private theorem selectedCechFreeGeneratorMap_comp
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) {X Y Z : S.categoryᵒᵖ} (f : X ⟶ Y) (g : Y ⟶ Z) :
     selectedCechFreeGeneratorMap 𝒰 n (f ≫ g) =
@@ -2969,7 +2972,7 @@ theorem selectedCechFreeGeneratorMap_comp
   rcases h with ⟨σ, h⟩
   simp [selectedCechFreeGeneratorMap]
 
-noncomputable def selectedCechFreePresheaf
+private noncomputable def selectedCechFreePresheaf
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1} where
   obj X := AddCommGrpCat.of (FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 n X.unop))
@@ -2988,7 +2991,7 @@ noncomputable def selectedCechFreePresheaf
     rw [selectedCechFreeGeneratorMap_comp, FreeAbelianGroup.map_comp]
     rfl
 
-@[simp] theorem selectedCechFreePresheaf_map_of
+@[simp] private theorem selectedCechFreePresheaf_map_of
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) {X Y : S.categoryᵒᵖ} (f : X ⟶ Y)
     (g : SelectedCechFreeGenerator 𝒰 n X.unop) :
@@ -2998,14 +3001,14 @@ noncomputable def selectedCechFreePresheaf
       (FreeAbelianGroup.of g) = _
   exact FreeAbelianGroup.map_of_apply g
 
-def selectedCechFreeFaceGenerator
+private def selectedCechFreeFaceGenerator
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) (i : Fin (n + 2)) {X : S.category}
     (g : SelectedCechFreeGenerator 𝒰 (n + 1) X) : SelectedCechFreeGenerator 𝒰 n X :=
   ⟨(canonicalCoverRelative 𝒰).face n i g.1,
     g.2 ≫ (canonicalCoverRelative 𝒰).faceRestriction n i g.1⟩
 
-def selectedCechFreeBoundaryGenerator
+private def selectedCechFreeBoundaryGenerator
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) {X : S.category} :
     SelectedCechFreeGenerator 𝒰 (n + 1) X → FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 n X) :=
@@ -3013,7 +3016,7 @@ def selectedCechFreeBoundaryGenerator
     ((-1 : ℤ) ^ i.1) • FreeAbelianGroup.of
       (selectedCechFreeFaceGenerator 𝒰 n i g)
 
-noncomputable def selectedCechFreeBoundary
+private noncomputable def selectedCechFreeBoundary
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) : selectedCechFreePresheaf 𝒰 (n + 1) ⟶ selectedCechFreePresheaf 𝒰 n where
   app X := AddCommGrpCat.ofHom (FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 n))
@@ -3035,7 +3038,7 @@ noncomputable def selectedCechFreeBoundary
     intro i _
     congr 2
 
-@[simp] theorem selectedCechFreeBoundary_app_of
+@[simp] private theorem selectedCechFreeBoundary_app_of
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) (X : S.categoryᵒᵖ)
     (g : SelectedCechFreeGenerator 𝒰 (n + 1) X.unop) :
@@ -3043,7 +3046,7 @@ noncomputable def selectedCechFreeBoundary
       selectedCechFreeBoundaryGenerator 𝒰 n g := by
   exact FreeAbelianGroup.lift_apply_of (selectedCechFreeBoundaryGenerator 𝒰 n) g
 
-def selectedCechFreeSimplexGeneratorMap
+private def selectedCechFreeSimplexGeneratorMap
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {x y : SimplexCategory} (f : x ⟶ y) {X : S.category} :
     SelectedCechFreeGenerator 𝒰 y.len X → SelectedCechFreeGenerator 𝒰 x.len X :=
@@ -3051,7 +3054,7 @@ def selectedCechFreeSimplexGeneratorMap
     ⟨fun i => g.1 (f.toOrderHom i),
       g.2 ≫ canonicalTupleOverlapMap 𝒰 f g.1⟩
 
-noncomputable def selectedCechFreeSimplexMap
+private noncomputable def selectedCechFreeSimplexMap
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {x y : SimplexCategory} (f : x ⟶ y) :
     selectedCechFreePresheaf 𝒰 y.len ⟶ selectedCechFreePresheaf 𝒰 x.len where
@@ -3070,7 +3073,7 @@ noncomputable def selectedCechFreeSimplexMap
     simp only [FreeAbelianGroup.map_of_apply]
     congr 2
 
-@[simp] theorem selectedCechFreeSimplexMap_app_of
+@[simp] private theorem selectedCechFreeSimplexMap_app_of
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {x y : SimplexCategory} (f : x ⟶ y) (X : S.categoryᵒᵖ)
     (g : SelectedCechFreeGenerator 𝒰 y.len X.unop) :
@@ -3078,7 +3081,7 @@ noncomputable def selectedCechFreeSimplexMap
       FreeAbelianGroup.of (selectedCechFreeSimplexGeneratorMap 𝒰 f g) := by
   exact FreeAbelianGroup.map_of_apply g
 
-@[simp] theorem selectedCechFreeSimplexMap_id
+@[simp] private theorem selectedCechFreeSimplexMap_id
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (x : SimplexCategory) :
     selectedCechFreeSimplexMap 𝒰 (𝟙 x) = 𝟙 _ := by
@@ -3092,7 +3095,7 @@ noncomputable def selectedCechFreeSimplexMap
   rw [FreeAbelianGroup.map_of_apply]
   congr 2
 
-theorem selectedCechFreeSimplexMap_comp
+private theorem selectedCechFreeSimplexMap_comp
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {x y z : SimplexCategory} (f : x ⟶ y) (g : y ⟶ z) :
     selectedCechFreeSimplexMap 𝒰 (f ≫ g) =
@@ -3115,7 +3118,7 @@ theorem selectedCechFreeSimplexMap_comp
     rfl
   · exact heq_of_eq (Subsingleton.elim _ _)
 
-noncomputable def selectedCechFreeSimplicialObject
+private noncomputable def selectedCechFreeSimplicialObject
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
     SimplicialObject (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) where
   obj x := selectedCechFreePresheaf 𝒰 x.unop.len
@@ -3125,6 +3128,7 @@ noncomputable def selectedCechFreeSimplicialObject
   map_comp f g := by
     exact selectedCechFreeSimplexMap_comp 𝒰 g.unop f.unop
 
+/-- Free chain complex generated by selected simplices and their overlap arrows. -/
 noncomputable def selectedCechFreeChain
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
     ChainComplex (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) ℕ :=
@@ -3132,7 +3136,7 @@ noncomputable def selectedCechFreeChain
     (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) |>.obj
       (selectedCechFreeSimplicialObject 𝒰)
 
-theorem selectedCechFreeSimplicial_delta_app_of
+private theorem selectedCechFreeSimplicial_delta_app_of
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) (i : Fin (n + 2)) (X : S.categoryᵒᵖ)
     (g : SelectedCechFreeGenerator 𝒰 (n + 1) X.unop) :
@@ -3154,7 +3158,7 @@ theorem selectedCechFreeSimplicial_delta_app_of
     FreeAbelianGroup.map_of_apply]
   rfl
 
-theorem selectedCechFreeChain_d_eq_selectedCechFreeBoundary
+private theorem selectedCechFreeChain_d_eq_selectedCechFreeBoundary
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) :
     (selectedCechFreeChain 𝒰).d (n + 1) n = selectedCechFreeBoundary 𝒰 n := by
@@ -3210,14 +3214,14 @@ theorem selectedCechFreeChain_d_eq_selectedCechFreeBoundary
       rw [FreeAbelianGroup.lift_apply_of]
       rfl
 
-def selectedCechPrependSimplex
+private def selectedCechPrependSimplex
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {n : ℕ} (i : 𝒰.Index)
     (σ : (canonicalCoverRelative 𝒰).simplex n) :
     (canonicalCoverRelative 𝒰).simplex (n + 1) :=
   Fin.cases i σ
 
-theorem selectedCechPrependSimplex_face_zero
+private theorem selectedCechPrependSimplex_face_zero
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {n : ℕ} (i : 𝒰.Index)
     (σ : (canonicalCoverRelative 𝒰).simplex n) :
@@ -3225,7 +3229,7 @@ theorem selectedCechPrependSimplex_face_zero
   funext k
   rfl
 
-theorem selectedCechPrependSimplex_face_succ
+private theorem selectedCechPrependSimplex_face_succ
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {n : ℕ} (i : 𝒰.Index)
     (σ : (canonicalCoverRelative 𝒰).simplex (n + 1))
@@ -3240,7 +3244,7 @@ theorem selectedCechPrependSimplex_face_succ
       Site.FinitePosetCechCanonicalTupleSimplex.simplexMap_apply,
       SimplexCategory.δ, selectedCechPrependSimplex]
 
-noncomputable def selectedCechPrependLift
+private noncomputable def selectedCechPrependLift
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {n : ℕ} {Y : S.category} (i : 𝒰.Index)
     (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
@@ -3250,21 +3254,21 @@ noncomputable def selectedCechPrependLift
   canonicalTupleOverlapLift 𝒰 (selectedCechPrependSimplex 𝒰 i g.1)
     (Fin.cases a (fun k => g.2 ≫ canonicalTupleOverlapProjection 𝒰 g.1 k))
 
-noncomputable def selectedCechPrependGenerator
+private noncomputable def selectedCechPrependGenerator
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {n : ℕ} {Y : S.category} (i : 𝒰.Index)
     (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
     (g : SelectedCechFreeGenerator 𝒰 n Y) : SelectedCechFreeGenerator 𝒰 (n + 1) Y :=
   ⟨selectedCechPrependSimplex 𝒰 i g.1, selectedCechPrependLift 𝒰 i a g⟩
 
-def selectedCechContractionGenerator
+private def selectedCechContractionGenerator
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {n : ℕ} {Y : S.category} (i : 𝒰.Index)
     (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i) :
     SelectedCechFreeGenerator 𝒰 n Y → FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 1) Y) :=
   fun g => FreeAbelianGroup.of (selectedCechPrependGenerator 𝒰 i a g)
 
-def selectedCechContraction
+private def selectedCechContraction
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {n : ℕ} {Y : S.category} (i : 𝒰.Index)
     (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i) :
@@ -3272,7 +3276,7 @@ def selectedCechContraction
       FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 1) Y) :=
   FreeAbelianGroup.lift (selectedCechContractionGenerator 𝒰 i a)
 
-theorem selectedCechFreeFaceGenerator_zero_prepend
+private theorem selectedCechFreeFaceGenerator_zero_prepend
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {n : ℕ} {Y : S.category} (i : 𝒰.Index)
     (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
@@ -3284,7 +3288,7 @@ theorem selectedCechFreeFaceGenerator_zero_prepend
     (congrArg ((canonicalCoverRelative 𝒰).overlap n) hface)
   exact Subsingleton.elim _ _
 
-theorem selectedCechFreeFaceGenerator_succ_prepend
+private theorem selectedCechFreeFaceGenerator_succ_prepend
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     {n : ℕ} {Y : S.category} (i : 𝒰.Index)
     (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
@@ -3297,7 +3301,7 @@ theorem selectedCechFreeFaceGenerator_succ_prepend
     (congrArg ((canonicalCoverRelative 𝒰).overlap (n + 1)) hface)
   exact Subsingleton.elim _ _
 
-theorem selectedCechFreeBoundary_contraction_generator
+private theorem selectedCechFreeBoundary_contraction_generator
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) {Y : S.category} (i : 𝒰.Index)
     (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
@@ -3323,7 +3327,7 @@ theorem selectedCechFreeBoundary_contraction_generator
   simp only [neg_zsmul, Finset.sum_neg_distrib]
   abel
 
-theorem selectedCechFreeBoundary_contraction
+private theorem selectedCechFreeBoundary_contraction
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (n : ℕ) {Y : S.category} (i : 𝒰.Index)
     (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
@@ -3425,7 +3429,7 @@ theorem selectedCechFreeBoundaryToCycles_isLocallySurjective
       rw [hcycleY, map_zero, add_zero] at hcontract
       exact hcontract
 
-noncomputable def selectedCechFreePresheafHomOfCochain
+private noncomputable def selectedCechFreePresheafHomOfCochain
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
     (c : SelectedCechCochain 𝒰 F n) : selectedCechFreePresheaf 𝒰 n ⟶ F where
@@ -3446,7 +3450,7 @@ noncomputable def selectedCechFreePresheafHomOfCochain
     rw [← ConcreteCategory.comp_apply, ← F.map_comp]
     rfl
 
-@[simp] theorem selectedCechFreePresheafHomOfCochain_app_of
+@[simp] private theorem selectedCechFreePresheafHomOfCochain_app_of
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
     (c : SelectedCechCochain 𝒰 F n) (X : S.categoryᵒᵖ)
@@ -3455,7 +3459,7 @@ noncomputable def selectedCechFreePresheafHomOfCochain
         (FreeAbelianGroup.of g) = F.map g.2.op (c g.1) :=
   FreeAbelianGroup.lift_apply_of _ _
 
-noncomputable def selectedCechFreePresheafHomAddEquiv
+private noncomputable def selectedCechFreePresheafHomAddEquiv
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ) :
     ((selectedCechFreePresheaf 𝒰 n ⟶ F) : Type (u + 1)) ≃+
@@ -3501,7 +3505,7 @@ noncomputable def selectedCechFreePresheafHomAddEquiv
         funext σ
         rfl }
 
-@[simp] theorem selectedCechFreePresheafHomAddEquiv_apply
+@[simp] private theorem selectedCechFreePresheafHomAddEquiv_apply
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
     (η : selectedCechFreePresheaf 𝒰 n ⟶ F)
@@ -3511,7 +3515,7 @@ noncomputable def selectedCechFreePresheafHomAddEquiv
         (FreeAbelianGroup.of ⟨σ, 𝟙 _⟩) :=
   rfl
 
-theorem selectedCechFreePresheafHomAddEquiv_precomp_boundary
+private theorem selectedCechFreePresheafHomAddEquiv_precomp_boundary
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
     (η : selectedCechFreePresheaf 𝒰 n ⟶ F) :
@@ -3545,6 +3549,7 @@ theorem selectedCechFreePresheafHomAddEquiv_precomp_boundary
     NatTrans.naturality_apply η r.op
       (FreeAbelianGroup.of ⟨τ, 𝟙 _⟩)
 
+/-- Sheafification of the selected free Čech chain complex. -/
 noncomputable def selectedCechFreeSheafChain
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
@@ -3552,7 +3557,7 @@ noncomputable def selectedCechFreeSheafChain
   ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).mapHomologicalComplex
     (ComplexShape.down ℕ)).obj (selectedCechFreeChain 𝒰)
 
-noncomputable def selectedCechFreeSheafHomAddEquiv
+private noncomputable def selectedCechFreeSheafHomAddEquiv
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (I : Sheaf S.topology AddCommGrpCat.{u + 1}) (n : ℕ) :
@@ -3564,7 +3569,7 @@ noncomputable def selectedCechFreeSheafHomAddEquiv
     AddCommGrpCat.{u + 1}).homAddEquiv (selectedCechFreePresheaf 𝒰 n) I).trans
       (selectedCechFreePresheafHomAddEquiv 𝒰 I.val n)
 
-@[simp] theorem selectedCechFreeSheafHomAddEquiv_apply
+@[simp] private theorem selectedCechFreeSheafHomAddEquiv_apply
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (I : Sheaf S.topology AddCommGrpCat.{u + 1}) (n : ℕ)
@@ -3575,7 +3580,7 @@ noncomputable def selectedCechFreeSheafHomAddEquiv
           AddCommGrpCat.{u + 1}).homAddEquiv (selectedCechFreePresheaf 𝒰 n) I f) :=
   rfl
 
-theorem selectedCechFreeSheafHomAddEquiv_precomp_d
+private theorem selectedCechFreeSheafHomAddEquiv_precomp_d
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (I : Sheaf S.topology AddCommGrpCat.{u + 1}) (n : ℕ)
@@ -3685,21 +3690,24 @@ theorem injectiveSheaf_selectedCech_exactAt
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {base : S.category}
 
+/-- Projection from a fixed total degree to a chosen bidegree on that diagonal. -/
 noncomputable def selectedCechResolutionTotalProjection
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
-    (Ob : ObstructionSheaf S) (q p n : ℕ) (_h : q + p = n) :
+    (Ob : ObstructionSheaf S) (q p n : ℕ) (h : q + p = n) :
     (selectedCechResolutionTotalComplex 𝒰 Ob).X n ⟶
       ((selectedCechResolutionBicomplex 𝒰 Ob).X q).X p :=
-  (selectedCechResolutionBicomplex 𝒰 Ob).totalDesc
-    (fun q' p' _ =>
-      if hq : q' = q then
-        if hp : p' = p then
-          ((selectedCechResolutionBicomplex 𝒰 Ob).XXIsoOfEq _ _ _ hq hp).hom
-        else 0
-      else 0)
+  by
+    subst n
+    exact (selectedCechResolutionBicomplex 𝒰 Ob).totalDesc
+      (fun q' p' _ =>
+        if hq : q' = q then
+          if hp : p' = p then
+            ((selectedCechResolutionBicomplex 𝒰 Ob).XXIsoOfEq _ _ _ hq hp).hom
+          else 0
+        else 0)
 
-theorem selectedCechResolutionTotal_ι_projection_general
+private theorem selectedCechResolutionTotal_ι_projection_general
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q p n : ℕ) (h : q + p = n)
@@ -3715,7 +3723,7 @@ theorem selectedCechResolutionTotal_ι_projection_general
   rw [selectedCechResolutionTotalProjection]
   exact (selectedCechResolutionBicomplex 𝒰 Ob).ι_totalDesc _ _ _ _
 
-@[simp] theorem selectedCechResolutionTotal_ι_projection_self
+@[simp] private theorem selectedCechResolutionTotal_ι_projection_self
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q p n : ℕ) (h : q + p = n) :
@@ -3725,6 +3733,7 @@ theorem selectedCechResolutionTotal_ι_projection_general
   rw [selectedCechResolutionTotal_ι_projection_general]
   simp
 
+/-- Projection from total degree `n` to the `q, n - q` diagonal component. -/
 noncomputable def selectedCechResolutionTotalDiagonalProjection
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
@@ -3733,7 +3742,7 @@ noncomputable def selectedCechResolutionTotalDiagonalProjection
       ((selectedCechResolutionBicomplex 𝒰 Ob).X q).X (n - q) :=
   selectedCechResolutionTotalProjection 𝒰 Ob q (n - q) n (by omega)
 
-theorem selectedCechResolutionTotal_ι_projection
+private theorem selectedCechResolutionTotal_ι_projection
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n q' p' : ℕ) (h : q' + p' = n)
@@ -3754,6 +3763,7 @@ theorem selectedCechResolutionTotal_ι_projection
     simp [hp]
   · simp [hq]
 
+/-- Inclusion of the `q, n - q` diagonal component into total degree `n`. -/
 noncomputable def selectedCechResolutionTotalDiagonalInclusion
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
@@ -3765,7 +3775,7 @@ noncomputable def selectedCechResolutionTotalDiagonalInclusion
       change (q : ℕ) + (n - q) = n
       omega)
 
-@[simp] theorem selectedCechResolutionTotal_projection_inclusion
+@[simp] private theorem selectedCechResolutionTotal_projection_inclusion
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) (q : Fin (n + 1)) :
@@ -3775,7 +3785,7 @@ noncomputable def selectedCechResolutionTotalDiagonalInclusion
     selectedCechResolutionTotal_ι_projection]
   simp
 
-theorem selectedCechResolutionTotal_inclusion_projection_ne
+private theorem selectedCechResolutionTotal_inclusion_projection_ne
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) (q r : Fin (n + 1)) (hqr : q ≠ r) :
@@ -3815,7 +3825,7 @@ theorem selectedCechResolutionTotal_decomposition
     simp [hqr]
   · simp
 
-theorem selectedCechResolutionTotal_ι_d_projection_resolution
+private theorem selectedCechResolutionTotal_ι_d_projection_resolution
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q p : ℕ) :
@@ -3845,7 +3855,7 @@ theorem selectedCechResolutionTotal_ι_d_projection_resolution
     selectedCechResolutionTotal_ι_projection_general]
   simp
 
-theorem selectedCechResolutionTotal_ι_d_projection_cech
+private theorem selectedCechResolutionTotal_ι_d_projection_cech
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q p : ℕ) :
@@ -3927,7 +3937,7 @@ theorem selectedCechResolutionTotal_d_projection_succ_succ
       simp
     · simp [haq, haqs]
 
-theorem selectedCechResolutionTotal_d_projection_succ_zero
+private theorem selectedCechResolutionTotal_d_projection_succ_zero
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q : ℕ) :
@@ -3963,7 +3973,7 @@ theorem selectedCechResolutionTotal_d_projection_succ_zero
     simp
   · simp [haq]
 
-theorem selectedCechResolutionTotal_d_projection_zero_succ
+private theorem selectedCechResolutionTotal_d_projection_zero_succ
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (p : ℕ) :
@@ -4001,7 +4011,7 @@ theorem selectedCechResolutionTotal_d_projection_zero_succ
     simp
   · simp [ha0]
 
-theorem selectedCechResolutionTotal_ι_d_projection_zero
+private theorem selectedCechResolutionTotal_ι_d_projection_zero
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q p r s : ℕ)
@@ -4033,7 +4043,7 @@ theorem selectedCechResolutionTotal_ι_d_projection_zero
   rcases hres with hres | hres <;> rcases hcech with hcech | hcech <;>
     simp [hres, hcech]
 
-theorem selectedCechResolutionTotal_ι_d_projection_resolution_explicit
+private theorem selectedCechResolutionTotal_ι_d_projection_resolution_explicit
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q p n n' : ℕ)
@@ -4059,7 +4069,7 @@ theorem selectedCechResolutionTotal_ι_d_projection_resolution_explicit
     selectedCechResolutionTotal_ι_projection_general]
   simp
 
-theorem selectedCechResolutionTotal_ι_d_projection_zero_explicit
+private theorem selectedCechResolutionTotal_ι_d_projection_zero_explicit
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q p n n' r s : ℕ)
@@ -4089,6 +4099,7 @@ theorem selectedCechResolutionTotal_ι_d_projection_zero_explicit
   rcases hres with hres | hres <;> rcases hcech with hcech | hcech <;>
     simp [hres, hcech]
 
+/-- Predicate saying that no resolution component above `m` occurs in total degree `n`. -/
 def SelectedCechResolutionTotalSupportedAtMost
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
@@ -4097,7 +4108,7 @@ def SelectedCechResolutionTotalSupportedAtMost
   ∀ q p : ℕ, ∀ h : q + p = n, m < q →
     (selectedCechResolutionTotalProjection 𝒰 Ob q p n h).hom x = 0
 
-theorem selectedCechResolutionTotal_supportedAtMost_top
+private theorem selectedCechResolutionTotal_supportedAtMost_top
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ)
@@ -4264,7 +4275,7 @@ theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumn
     rw [HomologicalComplex.d_comp_d]
     simp
 
-noncomputable def selectedCechResolutionTotalDegreeAddEquiv
+private noncomputable def selectedCechResolutionTotalDegreeAddEquiv
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) {n n' : ℕ} (h : n = n') :
@@ -4273,7 +4284,7 @@ noncomputable def selectedCechResolutionTotalDegreeAddEquiv
   subst h
   exact AddEquiv.refl _
 
-@[simp] theorem selectedCechResolutionTotalDegreeAddEquiv_rfl
+@[simp] private theorem selectedCechResolutionTotalDegreeAddEquiv_rfl
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) :
@@ -4281,7 +4292,7 @@ noncomputable def selectedCechResolutionTotalDegreeAddEquiv
       AddEquiv.refl _ :=
   rfl
 
-theorem selectedCechResolutionTotal_d_transport_source
+private theorem selectedCechResolutionTotal_d_transport_source
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) {n n' k : ℕ} (h : n = n')
@@ -4292,7 +4303,7 @@ theorem selectedCechResolutionTotal_d_transport_source
   subst h
   rfl
 
-theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnAt
+private theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnAt
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
@@ -4327,7 +4338,7 @@ theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnAt
   rw [← hd]
   exact ⟨hsupp', hcycle'⟩
 
-theorem IsLerayFor.selectedCechResolutionTotal_normalizeColumnsAux
+private theorem IsLerayFor.selectedCechResolutionTotal_normalizeColumnsAux
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
@@ -4397,7 +4408,7 @@ theorem IsLerayFor.selectedCechResolutionTotal_normalizeColumns
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {base : S.category}
 
-theorem selectedCechResolutionAugmentation_f_injective
+private theorem selectedCechResolutionAugmentation_f_injective
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (p : ℕ) :
@@ -4411,7 +4422,7 @@ theorem selectedCechResolutionAugmentation_f_injective
     (Opposite.op ((canonicalCoverRelative 𝒰).overlap p σ))
   exact (AddCommGrpCat.mono_iff_injective f).mp inferInstance hσ
 
-theorem selectedCechResolutionTotal_eq_zeroColumn_of_supportedAtMost
+private theorem selectedCechResolutionTotal_eq_zeroColumn_of_supportedAtMost
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ)
@@ -4460,7 +4471,7 @@ theorem selectedCechResolutionTotal_eq_zeroColumn_of_supportedAtMost
     selectedCechResolutionTotalDiagonalProjection, Nat.cast_zero,
     Nat.zero_add, Nat.sub_zero] using hdec.symm.trans hsum
 
-theorem cochainHomologyπ_eq_zero_iff_boundary
+private theorem cochainHomologyπ_eq_zero_iff_boundary
     (K : CochainComplex AddCommGrpCat.{u + 1} ℕ) (n : ℕ)
     (z : K.cycles n) :
     (K.homologyπ n).hom z = 0 ↔
@@ -4488,7 +4499,7 @@ theorem cochainHomologyπ_eq_zero_iff_boundary
     rw [ConcreteCategory.comp_apply] at hcomp
     exact hcomp.trans hy
 
-theorem selectedCechResolutionTotal_ι_d_projection_cech_explicit
+private theorem selectedCechResolutionTotal_ι_d_projection_cech_explicit
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q p n n' : ℕ)
@@ -4516,7 +4527,7 @@ theorem selectedCechResolutionTotal_ι_d_projection_cech_explicit
     selectedCechResolutionTotal_ι_projection_general]
   simp
 
-theorem IsLerayFor.selectedCechToResolutionTotal_homologyMap_surjective
+private theorem IsLerayFor.selectedCechToResolutionTotal_homologyMap_surjective
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
@@ -4633,7 +4644,7 @@ theorem IsLerayFor.selectedCechToResolutionTotal_homologyMap_surjective
   rw [ConcreteCategory.comp_apply, ConcreteCategory.comp_apply] at hnat
   rw [hnat, hcycles, hclasses]
 
-theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnOfDifferentialSupported
+private theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnOfDifferentialSupported
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
@@ -4787,7 +4798,7 @@ theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnOfDifferentialSupp
     rw [HomologicalComplex.d_comp_d]
     simp
 
-theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnOfDifferentialSupportedAt
+private theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnOfDifferentialSupportedAt
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
@@ -4826,7 +4837,7 @@ theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnOfDifferentialSupp
   rw [← hd]
   exact ⟨hsupp', hdiff'⟩
 
-theorem IsLerayFor.selectedCechResolutionTotal_normalizePreimageAux
+private theorem IsLerayFor.selectedCechResolutionTotal_normalizePreimageAux
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
@@ -4883,7 +4894,7 @@ theorem IsLerayFor.selectedCechResolutionTotal_normalizePreimageAux
       rw [hx]
       exact ⟨hsupp₂, hdiff₂.trans hdiff₁⟩
 
-theorem IsLerayFor.selectedCechResolutionTotal_normalizePreimage
+private theorem IsLerayFor.selectedCechResolutionTotal_normalizePreimage
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
@@ -4902,7 +4913,7 @@ theorem IsLerayFor.selectedCechResolutionTotal_normalizePreimage
   hLeray.selectedCechResolutionTotal_normalizePreimageAux n n (by rfl) x
     (selectedCechResolutionTotal_supportedAtMost_top 𝒰 Ob n x) hdiff
 
-theorem selectedCechToResolutionTotal_f_supportedAtMost_zero
+private theorem selectedCechToResolutionTotal_f_supportedAtMost_zero
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ)
@@ -4920,7 +4931,7 @@ theorem selectedCechToResolutionTotal_f_supportedAtMost_zero
   have h0q : (0 : ℕ) ≠ q := by omega
   simpa only [dif_neg h0q, map_zero] using hformula
 
-theorem selectedCechToResolutionTotal_f_injective
+private theorem selectedCechToResolutionTotal_f_injective
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) :
@@ -4939,7 +4950,7 @@ theorem selectedCechToResolutionTotal_f_injective
   rw [ConcreteCategory.comp_apply, ConcreteCategory.id_apply] at hselfa hselfb
   exact hselfa.symm.trans (hp.trans hselfb)
 
-theorem selectedCechToResolutionTotal_f_projection_zero
+private theorem selectedCechToResolutionTotal_f_projection_zero
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ)
@@ -4955,7 +4966,7 @@ theorem selectedCechToResolutionTotal_f_projection_zero
   rw [ConcreteCategory.comp_apply, ConcreteCategory.id_apply] at h
   exact h
 
-theorem IsLerayFor.selectedCechToResolutionTotal_homologyMap_injective
+private theorem IsLerayFor.selectedCechToResolutionTotal_homologyMap_injective
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
@@ -5116,6 +5127,7 @@ theorem IsLerayFor.selectedCechToResolutionTotal_quasiIso
   exact ⟨hLeray.selectedCechToResolutionTotal_homologyMap_injective n,
     hLeray.selectedCechToResolutionTotal_homologyMap_surjective n⟩
 
+/-- Homology equivalence induced by the selected Čech edge quasi-isomorphism. -/
 noncomputable def selectedCechToResolutionTotalHomologyEquiv
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
@@ -5130,7 +5142,7 @@ noncomputable def selectedCechToResolutionTotalHomologyEquiv
   exact (isoOfQuasiIsoAt
     (selectedCechToResolutionTotal 𝒰 Ob) n).addCommGroupIsoToAddEquiv
 
-theorem baseToSelectedCechZero_app_injective
+private theorem baseToSelectedCechZero_app_injective
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (I : Sheaf S.topology AddCommGrpCat.{u + 1}) :
     Function.Injective ((baseToSelectedCechZero 𝒰).app I.val).hom := by
@@ -5168,7 +5180,7 @@ theorem baseToSelectedCechZero_app_injective
     simpa only [baseToSelectedCechZero_app_apply] using hi.symm)
   exact hx.trans hy.symm
 
-def SelectedCechResolutionTotalCechSupportedAtMost
+private def SelectedCechResolutionTotalCechSupportedAtMost
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n m : ℕ)
@@ -5176,7 +5188,7 @@ def SelectedCechResolutionTotalCechSupportedAtMost
   ∀ q p : ℕ, ∀ h : q + p = n, m < p →
     (selectedCechResolutionTotalProjection 𝒰 Ob q p n h).hom x = 0
 
-theorem selectedCechResolutionTotal_cechSupportedAtMost_top
+private theorem selectedCechResolutionTotal_cechSupportedAtMost_top
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ)
@@ -5185,7 +5197,7 @@ theorem selectedCechResolutionTotal_cechSupportedAtMost_top
   intro q p hqp hp
   omega
 
-noncomputable def selectedCechResolutionTotalCechDiagonalProjection
+private noncomputable def selectedCechResolutionTotalCechDiagonalProjection
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) (p : Fin (n + 1)) :
@@ -5193,7 +5205,7 @@ noncomputable def selectedCechResolutionTotalCechDiagonalProjection
       ((selectedCechResolutionBicomplex 𝒰 Ob).X (n - p)).X p :=
   selectedCechResolutionTotalProjection 𝒰 Ob (n - p) p n (by omega)
 
-noncomputable def selectedCechResolutionTotalCechDiagonalInclusion
+private noncomputable def selectedCechResolutionTotalCechDiagonalInclusion
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) (p : Fin (n + 1)) :
@@ -5204,7 +5216,7 @@ noncomputable def selectedCechResolutionTotalCechDiagonalInclusion
       change (n - (p : ℕ)) + (p : ℕ) = n
       omega)
 
-theorem selectedCechResolutionTotal_cechDecomposition
+private theorem selectedCechResolutionTotal_cechDecomposition
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) :
@@ -5242,7 +5254,7 @@ theorem selectedCechResolutionTotal_cechDecomposition
     · simp [hq]
   · simp
 
-theorem selectedCechResolutionTotal_eq_cechZero_of_supportedAtMost
+private theorem selectedCechResolutionTotal_eq_cechZero_of_supportedAtMost
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ)
@@ -5289,7 +5301,7 @@ theorem selectedCechResolutionTotal_eq_cechZero_of_supportedAtMost
     selectedCechResolutionTotalCechDiagonalProjection, Nat.cast_zero,
     Nat.sub_zero] using hdec.symm.trans hsum
 
-theorem selectedCechResolutionTotal_d_projection_succ_succ_commuted
+private theorem selectedCechResolutionTotal_d_projection_succ_succ_commuted
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (q p : ℕ) :
@@ -5339,7 +5351,7 @@ theorem selectedCechResolutionTotal_d_projection_succ_succ_commuted
       simp
     · simp [haq, haqs]
 
-theorem selectedCechResolutionTotal_eliminateCechOfDifferentialSupported
+private theorem selectedCechResolutionTotal_eliminateCechOfDifferentialSupported
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
     {Ob : ObstructionSheaf S}
@@ -5511,7 +5523,7 @@ theorem selectedCechResolutionTotal_eliminateCechOfDifferentialSupported
     rw [HomologicalComplex.d_comp_d]
     simp
 
-theorem selectedCechResolutionTotal_eliminateCechOfDifferentialSupportedAt
+private theorem selectedCechResolutionTotal_eliminateCechOfDifferentialSupportedAt
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
     {Ob : ObstructionSheaf S}
@@ -5550,7 +5562,7 @@ theorem selectedCechResolutionTotal_eliminateCechOfDifferentialSupportedAt
   rw [← hd]
   exact ⟨hsupp', hdiff'⟩
 
-theorem selectedCechResolutionTotal_normalizeCechPreimageAux
+private theorem selectedCechResolutionTotal_normalizeCechPreimageAux
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
     {Ob : ObstructionSheaf S}
@@ -5607,7 +5619,7 @@ theorem selectedCechResolutionTotal_normalizeCechPreimageAux
       rw [hx]
       exact ⟨hsupp₂, hdiff₂.trans hdiff₁⟩
 
-theorem selectedCechResolutionTotal_normalizeCechPreimage
+private theorem selectedCechResolutionTotal_normalizeCechPreimage
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
     {Ob : ObstructionSheaf S}
@@ -5624,7 +5636,7 @@ theorem selectedCechResolutionTotal_normalizeCechPreimage
   selectedCechResolutionTotal_normalizeCechPreimageAux n n (by rfl) x
     (selectedCechResolutionTotal_cechSupportedAtMost_top 𝒰 Ob n x) hdiff
 
-theorem selectedCechResolutionTotal_normalizeCechCycle
+private theorem selectedCechResolutionTotal_normalizeCechCycle
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
     {Ob : ObstructionSheaf S}
@@ -5646,7 +5658,7 @@ theorem selectedCechResolutionTotal_normalizeCechCycle
   refine ⟨y, hsupp, ?_⟩
   exact hdiffEq.trans hcycle
 
-theorem baseResolutionToSelectedCechTotal_f_cechSupportedAtMost_zero
+private theorem baseResolutionToSelectedCechTotal_f_cechSupportedAtMost_zero
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ)
@@ -5665,7 +5677,7 @@ theorem baseResolutionToSelectedCechTotal_f_cechSupportedAtMost_zero
   · simpa only [dif_pos hnq, dif_neg h0p, map_zero] using hformula
   · simpa only [dif_neg hnq, map_zero] using hformula
 
-theorem baseResolutionToSelectedCechTotal_f_injective
+private theorem baseResolutionToSelectedCechTotal_f_injective
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) :
@@ -5685,7 +5697,7 @@ theorem baseResolutionToSelectedCechTotal_f_injective
   rw [ConcreteCategory.comp_apply, ConcreteCategory.id_apply] at hselfa hselfb
   exact hselfa.symm.trans (hp.trans hselfb)
 
-theorem baseResolutionToSelectedCechTotal_f_projection_zero
+private theorem baseResolutionToSelectedCechTotal_f_projection_zero
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ)
@@ -5700,7 +5712,7 @@ theorem baseResolutionToSelectedCechTotal_f_projection_zero
   rw [ConcreteCategory.comp_apply, ConcreteCategory.id_apply] at h
   exact h
 
-theorem baseResolutionToSelectedCechTotal_homologyMap_surjective
+private theorem baseResolutionToSelectedCechTotal_homologyMap_surjective
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) :
@@ -5823,7 +5835,7 @@ theorem baseResolutionToSelectedCechTotal_homologyMap_surjective
   rw [ConcreteCategory.comp_apply, ConcreteCategory.comp_apply] at hnat
   rw [hnat, hcycles, hclasses]
 
-theorem baseResolutionToSelectedCechTotal_homologyMap_injective
+private theorem baseResolutionToSelectedCechTotal_homologyMap_injective
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S) (n : ℕ) :
@@ -5985,6 +5997,7 @@ theorem baseResolutionToSelectedCechTotal_quasiIso
   exact ⟨baseResolutionToSelectedCechTotal_homologyMap_injective 𝒰 Ob n,
     baseResolutionToSelectedCechTotal_homologyMap_surjective 𝒰 Ob n⟩
 
+/-- Homology equivalence induced by the base-resolution edge quasi-isomorphism. -/
 noncomputable def baseResolutionToSelectedCechTotalHomologyEquiv
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
@@ -5996,6 +6009,7 @@ noncomputable def baseResolutionToSelectedCechTotalHomologyEquiv
   exact (isoOfQuasiIsoAt
     (baseResolutionToSelectedCechTotal 𝒰 Ob) n).addCommGroupIsoToAddEquiv
 
+/-- Canonical equivalence from selected Čech homology to actual local sheaf cohomology. -/
 noncomputable def cechToSheafHAtBaseEquiv
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S)
@@ -6010,6 +6024,7 @@ noncomputable def cechToSheafHAtBaseEquiv
       ((baseResolutionToSelectedCechTotalHomologyEquiv 𝒰 Ob n).symm.trans
         (baseResolutionHomologyEquivHPrime Ob n)))
 
+/-- Canonical selected Čech map into actual local sheaf cohomology. -/
 noncomputable def cechToSheafHAtBase
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S)
@@ -6031,7 +6046,7 @@ theorem cechToSheafHAtBase_bijective
     Function.Bijective (cechToSheafHAtBase 𝒰 Ob hLeray n) :=
   (cechToSheafHAtBaseEquiv 𝒰 Ob hLeray n).bijective
 
-theorem selectedCechToResolutionTotalHomologyEquiv_refinement_naturality
+private theorem selectedCechToResolutionTotalHomologyEquiv_refinement_naturality
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
@@ -6055,7 +6070,7 @@ theorem selectedCechToResolutionTotalHomologyEquiv_refinement_naturality
     selectedCechToResolutionTotalHomologyEquiv,
     Iso.addCommGroupIsoToAddEquiv_apply, isoOfQuasiIsoAt_hom] using hx
 
-theorem baseResolutionToSelectedCechTotalHomologyEquiv_refinement_naturality
+private theorem baseResolutionToSelectedCechTotalHomologyEquiv_refinement_naturality
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
     (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
@@ -6114,6 +6129,7 @@ theorem cechToSheafHAtBase_refinement_naturality
     r Ob h𝒰 h𝒱 n]
   rw [hbaseInv]
 
+/-- Canonical selected Čech map into actual global sheaf cohomology at a terminal base. -/
 noncomputable def cechToSheafH
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
     (Ob : ObstructionSheaf S)
