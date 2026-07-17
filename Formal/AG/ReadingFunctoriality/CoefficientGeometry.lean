@@ -165,6 +165,9 @@ theorem ClosedEquationalLawReading.baseChangeOfSemanticCore_allLawsSelected
   closed := fun i => Set.mem_univ i
   selected := fun _ i => Set.mem_univ i
 
+/-- Proof-internal AC32 algebra API: the kernel of scalar extension to a quotient is the
+extended quotient ideal.  It is derived from Mathlib's canonical quotient-tensor equivalence and
+introduces no flatness or comparison premise. -/
 private theorem ker_tensor_quotient_algebraMap
     {R T : Type*} [CommRing R] [CommRing T] [Algebra R T]
     (I : Ideal R) :
@@ -179,6 +182,8 @@ private theorem ker_tensor_quotient_algebraMap
     exact e.commutes t]
   rw [RingHom.ker_equiv_comp, Ideal.mk_ker]
 
+/-- Proof-internal AC32 algebra API reducing a surjective scalar map to its quotient by the kernel.
+This supplies the tensor-product kernel calculation used by the affine ideal-sheaf pullback. -/
 private theorem ker_tensor_algebraMap_of_surjective
     {R T Q : Type*} [CommRing R] [CommRing T] [CommRing Q]
     [Algebra R T] [Algebra R Q]
@@ -199,6 +204,8 @@ private theorem ker_tensor_algebraMap_of_surjective
     exact e.commutes t]
   exact ker_tensor_quotient_algebraMap (RingHom.ker (algebraMap R Q))
 
+/-- Proof-internal AC32 categorical API transporting the surjective tensor-product kernel formula
+to Mathlib's `CommRingCat` pushout presentation. -/
 private theorem ker_pushout_inl_of_surjective
     {R T Q : CommRingCat} (f : R ⟶ T) (q : R ⟶ Q)
     (hq : Function.Surjective q.hom) :
@@ -215,6 +222,9 @@ private theorem ker_pushout_inl_of_surjective
   dsimp only [CommRingCat.pushoutCocone_inl, PushoutCocone.ι_app_left]
   exact ker_tensor_algebraMap_of_surjective hq
 
+/-- Proof-internal AC32 ideal-sheaf API: between affine schemes, comap of a global-section ideal
+is induced by the actual `appTop` ring map.  The result is derived through Mathlib's closed
+subscheme pullback and pushout APIs. -/
 private theorem ofIdealTop_comap_of_isAffine
     {Y Z : Scheme} [IsAffine Y] [IsAffine Z]
     (I : Ideal Γ(Z, ⊤)) (g : Y ⟶ Z) :
@@ -278,6 +288,8 @@ private theorem ofIdealTop_comap_of_isAffine
     simpa using hk
   rw [hk']
 
+/-- Proof-internal AC32 restriction API: along an open immersion with affine source, comap of a
+global-section ideal is induced by the actual `appTop` restriction map. -/
 private theorem ofIdealTop_comap_of_isOpenImmersion
     {Y Z : Scheme} [IsAffine Y]
     (I : Ideal Γ(Z, ⊤)) (g : Y ⟶ Z) [IsOpenImmersion g] :
