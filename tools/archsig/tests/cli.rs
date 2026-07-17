@@ -2082,9 +2082,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
     );
 }
 
-#[test]
-fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() {
-    let root = ag_measurement_root();
+fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
     plan["trueSheafCertificate"] = json!({
         "kind": "true-sheaf-certificate",
@@ -2132,15 +2130,25 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         plan["primitives"][index]["resR"] = json!([]);
         plan["primitives"][index]["support"]["variables"] = json!([]);
     }
-    plan["primitives"][3]["resL"] = json!(["repair:cycle"]);
-    plan["primitives"][3]["support"]["variables"] = json!(["repair:cycle"]);
+    if nonzero_class {
+        plan["primitives"][3]["resL"] = json!(["repair:cycle"]);
+        plan["primitives"][3]["support"]["variables"] = json!(["repair:cycle"]);
+    } else {
+        plan["primitives"][3]["resL"] = json!([]);
+        plan["primitives"][3]["support"]["variables"] = json!([]);
+    }
+    let support_variables = if nonzero_class {
+        json!(["repair:cycle"])
+    } else {
+        json!([])
+    };
     plan["faithfulness"] = json!({
         "mode": "supplied",
         "supplied": {
             "zeroPrimitiveRef": "primitive:inventory-shared",
             "residualSupportPredicate": {
                 "kind": "finite-support",
-                "supportVariables": ["repair:cycle"],
+                "supportVariables": support_variables,
                 "zeroOnZeroPrimitive": true
             },
             "faithfulnessLaw": "Q is faithful on the supplied residual support"
@@ -2211,10 +2219,16 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         }
     });
     assert_eq!(typed_plan.complex.charts.len(), 3);
+    plan
+}
+
+#[test]
+fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() {
+    let root = ag_measurement_root();
+    let plan = supplied_triple_saga_plan(&root, true);
     let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-class", plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_golden_fixture(&viewer, &packet, "faithfulness-supplied");
     assert_saga_viewer_golden_fixture(&viewer, &packet, "circle-nerve-residual-class");
     assert_eq!(
         viewer["sagaDescent"]["stages"][1]["status"],
@@ -2310,6 +2324,25 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
             .as_str()
             .is_some_and(|text| text.contains("Z1/B1"))
     );
+}
+
+#[test]
+fn cli_analyze_saga_descent_supplied_zero_class_locks_viewer_golden() {
+    let root = ag_measurement_root();
+    let plan = supplied_triple_saga_plan(&root, false);
+    let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-zero-class", plan);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    let class = saga_row(&packet, "saga.residual-class");
+    assert_eq!(class["verdict"], "measured_zero");
+    let closure = packet["computedInvariants"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["invariantId"] == "saga-descent:closure-diagnostics")
+        .expect("closure diagnostics invariant");
+    assert_eq!(closure["faithfulnessBasis"]["basis"], "supplied-data");
+    assert_saga_viewer_golden_fixture(&viewer, &packet, "faithfulness-supplied");
 }
 
 #[test]
@@ -9609,6 +9642,19 @@ fn cli_analyze_v2_harmonic_debt_requires_cost_model_for_lower_bound() {
             .all(|row| row["evaluator"] != "ag.harmonic-debt"),
         "harmonic debt must stay out of structural verdicts"
     );
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert!(
+        viewer["sagaDescent"]["stages"][1]["harmonicDebt"]
+            .as_array()
+            .is_some_and(|rows| rows.iter().any(|row| {
+                row["readingId"]
+                    .as_str()
+                    .is_some_and(|id| id.starts_with("analytic:harmonic-debt:"))
+                    && row["value"].is_object()
+            })),
+        "harmonic-debt analytic reading must reach the SAGA viewer with its object value"
+    );
+    assert_saga_viewer_contract(&viewer, &packet);
     let invariant = invariant_by_id(&packet, "harmonic-debt:profile:ag-harmonic-debt@1");
     assert_eq!(invariant["harmonicDebtNorm"], json!(0.707107));
     assert_eq!(invariant["essentialRepairLowerBound"], json!(0.353553));

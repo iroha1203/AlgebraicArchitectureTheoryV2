@@ -17,8 +17,8 @@
       "stageStatus": {"grounding": "measured_zero"}
     },
     "faithfulness-supplied": {
-      "test": "cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class",
-      "stageStatus": {"descent": "measured_nonzero"}
+      "test": "cli_analyze_saga_descent_supplied_zero_class_locks_viewer_golden",
+      "stageStatus": {"descent": "measured_zero"}
     },
     "faithfulness-none": {
       "test": "cli_analyze_saga_descent_mode_none_keeps_global_coherence_silent",
