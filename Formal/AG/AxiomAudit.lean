@@ -4381,6 +4381,128 @@ def readingFunctoriality_additiveCechHnEquivHomology_class :=
 def readingFunctoriality_additiveCechHnEquivHomology_naturality :=
   @AAT.AG.Cohomology.CoverRelativeCechComplex.Hom.additiveCechHnEquivHomology_naturality
 
+/-! Part 4 R5c3: actual large selected Čech homology bridge. -/
+
+/-- Audit alias for the actual large selected-cochain carrier. -/
+def readingFunctoriality_selectedCechCochain :=
+  @AAT.AG.Cohomology.SelectedCechCochain
+
+/-- Audit alias for the actual large selected Čech-complex functor. -/
+noncomputable def readingFunctoriality_selectedCechComplexFunctor :=
+  @AAT.AG.Cohomology.selectedCechComplexFunctor
+
+/-- Audit alias for the selected-cochain object formula. -/
+def readingFunctoriality_selectedCechComplexFunctor_obj_X :=
+  @AAT.AG.Cohomology.selectedCechComplexFunctor_obj_X
+
+/-- Audit alias for the alternating-restriction differential formula. -/
+def readingFunctoriality_selectedCechComplexFunctor_obj_d_apply :=
+  @AAT.AG.Cohomology.selectedCechComplexFunctor_obj_d_apply
+
+/-- Audit alias for the coefficient-map formula. -/
+def readingFunctoriality_selectedCechComplexFunctor_map_f_apply :=
+  @AAT.AG.Cohomology.selectedCechComplexFunctor_map_f_apply
+
+/-- Audit alias for the actual large selected refinement map. -/
+noncomputable def readingFunctoriality_selectedCechMap :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.selectedCechMap
+
+/-- Audit alias for the pointwise large selected refinement formula. -/
+def readingFunctoriality_selectedCechMap_app_f_apply :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.selectedCechMap_app_f_apply
+
+/-- Audit alias for coefficient naturality of large selected refinement. -/
+def readingFunctoriality_selectedCechMap_coefficient_naturality :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.selectedCechMap_coefficient_naturality
+
+/-- Audit alias for identity of large selected refinement. -/
+def readingFunctoriality_selectedCechMap_refl :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.selectedCechMap_refl
+
+/-- Audit alias for composition of large selected refinement. -/
+def readingFunctoriality_selectedCechMap_comp :=
+  @AAT.AG.Site.AATCoverageFamily.Refinement.selectedCechMap_comp
+
+/-- Audit alias for the objectwise obstruction-section universe lift. -/
+noncomputable def readingFunctoriality_toAddCommGrpSheafObjAddEquiv :=
+  @AAT.AG.Cohomology.ObstructionSheaf.toAddCommGrpSheafObjAddEquiv
+
+/-- Audit alias for restriction naturality of the section universe lift. -/
+def readingFunctoriality_toAddCommGrpSheafObjAddEquiv_naturality :=
+  @AAT.AG.Cohomology.ObstructionSheaf.toAddCommGrpSheafObjAddEquiv_naturality
+
+/-- Audit alias for the lifted R5c2 complex. -/
+noncomputable def readingFunctoriality_liftedCanonicalCechComplex :=
+  @AAT.AG.Cohomology.liftedCanonicalCechComplex
+
+/-- Audit alias for the complex isomorphism to actual selected coefficients. -/
+noncomputable def readingFunctoriality_obstructionSelectedCechComplexIso :=
+  @AAT.AG.Cohomology.obstructionSelectedCechComplexIso
+
+/-- Audit alias for the degreewise universe-lift formula. -/
+def readingFunctoriality_obstructionSelectedCechComplexIso_hom_f_apply :=
+  @AAT.AG.Cohomology.obstructionSelectedCechComplexIso_hom_f_apply
+
+/-- Audit alias for the lifted refinement cochain map. -/
+noncomputable def readingFunctoriality_liftedCanonicalCechMap :=
+  @AAT.AG.Cohomology.liftedCanonicalCechMap
+
+/-- Audit alias for refinement naturality of the complex isomorphism. -/
+def readingFunctoriality_obstructionSelectedCechComplexIso_refinement_naturality :=
+  @AAT.AG.Cohomology.obstructionSelectedCechComplexIso_refinement_naturality
+
+/-- Audit alias for homology preservation under the universe lift. -/
+noncomputable def readingFunctoriality_liftedCanonicalCechHomologyIso :=
+  @AAT.AG.Cohomology.liftedCanonicalCechHomologyIso
+
+/-- Audit alias for refinement naturality of lifted homology. -/
+def readingFunctoriality_liftedCanonicalCechHomologyIso_inv_refinement_naturality :=
+  @AAT.AG.Cohomology.liftedCanonicalCechHomologyIso_inv_refinement_naturality
+
+/-- Audit alias for the lifted cocycle map into actual selected cycles. -/
+noncomputable def readingFunctoriality_obstructionCocycleToSelectedCycles :=
+  @AAT.AG.Cohomology.obstructionCocycleToSelectedCycles
+
+/-- Audit alias for the actual selected cycle's underlying-cochain formula. -/
+def readingFunctoriality_obstructionCocycleToSelectedCycles_i_apply :=
+  @AAT.AG.Cohomology.obstructionCocycleToSelectedCycles_i_apply
+
+/-- Audit alias for `homologyπ` compatibility under the universe lift. -/
+def readingFunctoriality_liftedCanonicalCechHomologyIso_inv_homologyπ :=
+  @AAT.AG.Cohomology.liftedCanonicalCechHomologyIso_inv_homologyπ
+
+/-- Audit alias for custom quotient equivalence with actual selected homology. -/
+noncomputable def readingFunctoriality_additiveCechHnEquivSelectedHomology :=
+  @AAT.AG.Cohomology.additiveCechHnEquivSelectedHomology
+
+/-- Audit alias for the canonical additive map to actual selected homology. -/
+noncomputable def readingFunctoriality_additiveCechHnToSelectedHomology :=
+  @AAT.AG.Cohomology.additiveCechHnToSelectedHomology
+
+/-- Audit alias for arbitrary-degree bijectivity of the canonical map. -/
+def readingFunctoriality_additiveCechHnToSelectedHomology_bijective :=
+  @AAT.AG.Cohomology.additiveCechHnToSelectedHomology_bijective
+
+/-- Audit alias for the actual selected-homology representative formula. -/
+def readingFunctoriality_additiveCechHnEquivSelectedHomology_class :=
+  @AAT.AG.Cohomology.additiveCechHnEquivSelectedHomology_additiveCohomologyClass
+
+/-- Audit alias for the canonical-map representative formula. -/
+def readingFunctoriality_additiveCechHnToSelectedHomology_class :=
+  @AAT.AG.Cohomology.additiveCechHnToSelectedHomology_additiveCohomologyClass
+
+/-- Audit alias for the direct actual-`homologyπ` representative formula. -/
+def readingFunctoriality_additiveCechHnToSelectedHomology_class_eq_homologyπ :=
+  @AAT.AG.Cohomology.additiveCechHnToSelectedHomology_additiveCohomologyClass_eq_homologyπ
+
+/-- Audit alias for actual selected-homology refinement naturality. -/
+def readingFunctoriality_additiveCechHnEquivSelectedHomology_refinement_naturality :=
+  @AAT.AG.Cohomology.additiveCechHnEquivSelectedHomology_refinement_naturality
+
+/-- Audit alias for canonical-map refinement naturality. -/
+def readingFunctoriality_additiveCechHnToSelectedHomology_refinement_naturality :=
+  @AAT.AG.Cohomology.additiveCechHnToSelectedHomology_refinement_naturality
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

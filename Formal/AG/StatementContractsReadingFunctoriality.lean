@@ -1142,4 +1142,273 @@ example (f : Cohomology.CoverRelativeCechComplex.Hom K L)
 
 end LerayComparisonFoundationSD5
 
+namespace ActualSelectedCechBridgeSD5
+
+open CategoryTheory
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+variable (Ob : Cohomology.ObstructionSheaf S)
+variable (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+
+/-- Fixed actual large selected-cochain carrier. -/
+example (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ) :
+    Type (u + 1) :=
+  Cohomology.SelectedCechCochain 𝒰 F n
+
+/-- Fixed actual large selected Čech-complex functor. -/
+noncomputable example :
+    (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) ⥤
+      CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  Cohomology.selectedCechComplexFunctor 𝒰
+
+/-- Fixed selected-cochain object formula. -/
+example (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ) :
+    (((Cohomology.selectedCechComplexFunctor 𝒰).obj F).X n : Type (u + 1)) =
+      Cohomology.SelectedCechCochain 𝒰 F n :=
+  Cohomology.selectedCechComplexFunctor_obj_X 𝒰 F n
+
+/-- Fixed alternating-restriction differential formula. -/
+example (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
+    (c : Cohomology.SelectedCechCochain 𝒰 F n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex (n + 1)) :
+    (((Cohomology.selectedCechComplexFunctor 𝒰).obj F).d n (n + 1)).hom c σ =
+      ∑ i : Fin (n + 2), ((-1 : ℤ) ^ i.1) •
+        F.map ((Cohomology.canonicalCoverRelative 𝒰).faceRestriction n i σ).op
+          (c ((Cohomology.canonicalCoverRelative 𝒰).face n i σ)) :=
+  Cohomology.selectedCechComplexFunctor_obj_d_apply 𝒰 F n c σ
+
+/-- Fixed coefficient-map formula. -/
+example {F G : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}} (η : F ⟶ G)
+    (n : ℕ) (c : Cohomology.SelectedCechCochain 𝒰 F n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex n) :
+    (((Cohomology.selectedCechComplexFunctor 𝒰).map η).f n).hom c σ =
+      η.app _ (c σ) :=
+  Cohomology.selectedCechComplexFunctor_map_f_apply 𝒰 η n c σ
+
+variable {𝒰}
+variable {𝒱 𝒲 : Site.AATCoverageFamily S.requirements S.overlap base}
+
+/-- Fixed large selected refinement cochain map. -/
+noncomputable example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.selectedCechComplexFunctor 𝒰 ⟶
+      Cohomology.selectedCechComplexFunctor 𝒱 :=
+  r.selectedCechMap
+
+/-- Fixed pointwise large selected refinement formula. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1})
+    (n : ℕ) (c : Cohomology.SelectedCechCochain 𝒰 F n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒱).simplex n) :
+    (((r.selectedCechMap).app F).f n).hom c σ =
+      F.map (r.overlapMap n σ).op (c (r.simplexMap n σ)) :=
+  r.selectedCechMap_app_f_apply F n c σ
+
+/-- Fixed coefficient naturality of the large selected refinement map. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    {F G : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}} (η : F ⟶ G) :
+    (Cohomology.selectedCechComplexFunctor 𝒰).map η ≫
+        r.selectedCechMap.app G =
+      r.selectedCechMap.app F ≫
+        (Cohomology.selectedCechComplexFunctor 𝒱).map η :=
+  r.selectedCechMap_coefficient_naturality η
+
+/-- Fixed identity law for large selected refinement. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    (Site.AATCoverageFamily.Refinement.refl 𝒰).selectedCechMap = 𝟙 _ :=
+  Site.AATCoverageFamily.Refinement.selectedCechMap_refl 𝒰
+
+/-- Fixed composition law for large selected refinement. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (s : Site.AATCoverageFamily.Refinement 𝒱 𝒲) :
+    (r.comp s).selectedCechMap = r.selectedCechMap ≫ s.selectedCechMap :=
+  r.selectedCechMap_comp s
+
+/-- Fixed objectwise universe lift into the actual additive sheaf. -/
+noncomputable example (X : S.category) :
+    Ob.carrier.toPresheaf.obj (Opposite.op X) ≃+
+      Ob.toAddCommGrpSheaf.val.obj (Opposite.op X) :=
+  Ob.toAddCommGrpSheafObjAddEquiv X
+
+/-- Fixed restriction naturality of the objectwise universe lift. -/
+example {X Y : S.category} (f : X ⟶ Y)
+    (x : Ob.carrier.toPresheaf.obj (Opposite.op Y)) :
+    Ob.toAddCommGrpSheafObjAddEquiv X (Ob.mapAddMonoidHom f x) =
+      Ob.toAddCommGrpSheaf.val.map f.op
+        (Ob.toAddCommGrpSheafObjAddEquiv Y x) :=
+  Ob.toAddCommGrpSheafObjAddEquiv_naturality f x
+
+/-- Fixed lifted R5c2 complex. -/
+noncomputable example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  Cohomology.liftedCanonicalCechComplex 𝒰 Ob
+
+/-- Fixed complex isomorphism to the actual selected complex. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    Cohomology.liftedCanonicalCechComplex 𝒰 Ob ≅
+      (Cohomology.selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val :=
+  Cohomology.obstructionSelectedCechComplexIso 𝒰 Ob
+
+/-- Fixed degreewise formula for the complex isomorphism. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (c : (Cohomology.liftedCanonicalCechComplex 𝒰 Ob).X n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex n) :
+    ((Cohomology.obstructionSelectedCechComplexIso 𝒰 Ob).hom.f n).hom c σ =
+      Ob.toAddCommGrpSheafObjAddEquiv _ (c.down σ) :=
+  Cohomology.obstructionSelectedCechComplexIso_hom_f_apply 𝒰 Ob n c σ
+
+/-- Fixed lifted refinement cochain map. -/
+noncomputable example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.liftedCanonicalCechComplex 𝒰 Ob ⟶
+      Cohomology.liftedCanonicalCechComplex 𝒱 Ob :=
+  Cohomology.liftedCanonicalCechMap r Ob
+
+/-- Fixed refinement naturality of the complex isomorphism. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.liftedCanonicalCechMap r Ob ≫
+        (Cohomology.obstructionSelectedCechComplexIso 𝒱 Ob).hom =
+      (Cohomology.obstructionSelectedCechComplexIso 𝒰 Ob).hom ≫
+        r.selectedCechMap.app Ob.toAddCommGrpSheaf.val :=
+  Cohomology.obstructionSelectedCechComplexIso_refinement_naturality r Ob
+
+/-- Fixed homology preservation under the universe lift. -/
+noncomputable example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) :
+    (Cohomology.liftedCanonicalCechComplex 𝒰 Ob).homology n ≅
+      AddCommGrpCat.uliftFunctor.{u + 1, u}.obj
+        ((Cohomology.canonicalCechComplex 𝒰 Ob).toCochainComplex.homology n) :=
+  Cohomology.liftedCanonicalCechHomologyIso 𝒰 Ob n
+
+/-- Fixed refinement naturality of lifted homology. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (n : ℕ) :
+    AddCommGrpCat.uliftFunctor.{u + 1, u}.map
+          (HomologicalComplex.homologyMap
+            (r.canonicalCechHom Ob).toCochainMap n) ≫
+        (Cohomology.liftedCanonicalCechHomologyIso 𝒱 Ob n).inv =
+      (Cohomology.liftedCanonicalCechHomologyIso 𝒰 Ob n).inv ≫
+        HomologicalComplex.homologyMap
+          (Cohomology.liftedCanonicalCechMap r Ob) n :=
+  Cohomology.liftedCanonicalCechHomologyIso_inv_refinement_naturality r Ob n
+
+/-- Fixed lifted-cocycle map into actual selected cycles. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) (n : ℕ) :
+    AddCommGrpCat.uliftFunctor.{u + 1, u}.obj
+        (AddCommGrpCat.of
+          ((Cohomology.canonicalCechComplex 𝒰 Ob).CechCocycleSubgroup n)) ⟶
+      ((Cohomology.selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val).cycles n :=
+  Cohomology.obstructionCocycleToSelectedCycles 𝒰 Ob n
+
+/-- Fixed underlying-cochain formula for the actual selected cycle. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (z : (Cohomology.canonicalCechComplex 𝒰 Ob).CechCocycleSubgroup n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex n) :
+    (((Cohomology.selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val).iCycles n).hom
+        ((Cohomology.obstructionCocycleToSelectedCycles 𝒰 Ob n).hom
+          (ULift.up z)) σ =
+      Ob.toAddCommGrpSheafObjAddEquiv _ (z.1 σ) :=
+  Cohomology.obstructionCocycleToSelectedCycles_i_apply 𝒰 Ob n z σ
+
+/-- Fixed compatibility of the lifted homology isomorphism with `homologyπ`. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) (n : ℕ) :
+    AddCommGrpCat.uliftFunctor.{u + 1, u}.map
+          ((Cohomology.canonicalCechComplex 𝒰 Ob).toCochainComplex.homologyπ n) ≫
+        (Cohomology.liftedCanonicalCechHomologyIso 𝒰 Ob n).inv =
+      (((Cohomology.canonicalCechComplex 𝒰 Ob).toCochainComplex.sc n).mapCyclesIso
+          AddCommGrpCat.uliftFunctor.{u + 1, u}).inv ≫
+        (Cohomology.liftedCanonicalCechComplex 𝒰 Ob).homologyπ n :=
+  Cohomology.liftedCanonicalCechHomologyIso_inv_homologyπ 𝒰 Ob n
+
+/-- Fixed equivalence from the custom quotient to actual selected homology. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) (n : ℕ) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n ≃+
+      ((Cohomology.selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val).homology n :=
+  Cohomology.additiveCechHnEquivSelectedHomology 𝒰 Ob n
+
+/-- Fixed canonical additive map to actual selected homology. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) (n : ℕ) :
+    (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n →+
+      ((Cohomology.selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val).homology n :=
+  Cohomology.additiveCechHnToSelectedHomology 𝒰 Ob n
+
+/-- Fixed arbitrary-degree bijectivity of the canonical additive map. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) (n : ℕ) :
+    Function.Bijective
+      (Cohomology.additiveCechHnToSelectedHomology 𝒰 Ob n) :=
+  Cohomology.additiveCechHnToSelectedHomology_bijective 𝒰 Ob n
+
+/-- Fixed representative formula in actual selected homology. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (c : (Cohomology.canonicalCechComplex 𝒰 Ob).CechCocycle n) :
+    Cohomology.additiveCechHnEquivSelectedHomology 𝒰 Ob n
+        ((Cohomology.canonicalCechComplex 𝒰 Ob).additiveCohomologyClass n c) =
+      (HomologicalComplex.homologyMapIso
+          (Cohomology.obstructionSelectedCechComplexIso 𝒰 Ob) n).hom.hom
+        ((Cohomology.liftedCanonicalCechHomologyIso 𝒰 Ob n).inv.hom
+          (ULift.up
+            (((Cohomology.canonicalCechComplex 𝒰 Ob).toCochainComplex.homologyπ n).hom
+              (((Cohomology.canonicalCechComplex 𝒰 Ob).cocycleToCycles n).hom
+                ⟨c.1, c.2⟩)))) :=
+  Cohomology.additiveCechHnEquivSelectedHomology_additiveCohomologyClass
+    𝒰 Ob n c
+
+/-- Fixed representative formula for the canonical additive map. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (c : (Cohomology.canonicalCechComplex 𝒰 Ob).CechCocycle n) :
+    Cohomology.additiveCechHnToSelectedHomology 𝒰 Ob n
+        ((Cohomology.canonicalCechComplex 𝒰 Ob).additiveCohomologyClass n c) =
+      (HomologicalComplex.homologyMapIso
+          (Cohomology.obstructionSelectedCechComplexIso 𝒰 Ob) n).hom.hom
+        ((Cohomology.liftedCanonicalCechHomologyIso 𝒰 Ob n).inv.hom
+          (ULift.up
+            (((Cohomology.canonicalCechComplex 𝒰 Ob).toCochainComplex.homologyπ n).hom
+              (((Cohomology.canonicalCechComplex 𝒰 Ob).cocycleToCycles n).hom
+                ⟨c.1, c.2⟩)))) :=
+  Cohomology.additiveCechHnToSelectedHomology_additiveCohomologyClass
+    𝒰 Ob n c
+
+/-- Fixed direct `homologyπ` representative formula in the actual selected complex. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (c : (Cohomology.canonicalCechComplex 𝒰 Ob).CechCocycle n) :
+    Cohomology.additiveCechHnToSelectedHomology 𝒰 Ob n
+        ((Cohomology.canonicalCechComplex 𝒰 Ob).additiveCohomologyClass n c) =
+      (((Cohomology.selectedCechComplexFunctor 𝒰).obj
+          Ob.toAddCommGrpSheaf.val).homologyπ n).hom
+        ((Cohomology.obstructionCocycleToSelectedCycles 𝒰 Ob n).hom
+          (ULift.up ⟨c.1, c.2⟩)) :=
+  Cohomology.additiveCechHnToSelectedHomology_additiveCohomologyClass_eq_homologyπ
+    𝒰 Ob n c
+
+/-- Fixed refinement naturality in actual selected homology. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (n : ℕ)
+    (x : (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n) :
+    (HomologicalComplex.homologyMap
+        (r.selectedCechMap.app Ob.toAddCommGrpSheaf.val) n).hom
+        (Cohomology.additiveCechHnEquivSelectedHomology 𝒰 Ob n x) =
+      Cohomology.additiveCechHnEquivSelectedHomology 𝒱 Ob n
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n x) :=
+  Cohomology.additiveCechHnEquivSelectedHomology_refinement_naturality
+    r Ob n x
+
+/-- Fixed refinement naturality of the canonical additive map. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (n : ℕ)
+    (x : (Cohomology.canonicalCechComplex 𝒰 Ob).AdditiveCechHn n) :
+    (HomologicalComplex.homologyMap
+        (r.selectedCechMap.app Ob.toAddCommGrpSheaf.val) n).hom
+        (Cohomology.additiveCechHnToSelectedHomology 𝒰 Ob n x) =
+      Cohomology.additiveCechHnToSelectedHomology 𝒱 Ob n
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n x) :=
+  Cohomology.additiveCechHnToSelectedHomology_refinement_naturality
+    r Ob n x
+
+end ActualSelectedCechBridgeSD5
+
 end AAT.AG.StatementContractsReadingFunctoriality
