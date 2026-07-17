@@ -9,7 +9,7 @@ gate report, summary, insight report, viewer data, and run manifest.
 | ArchMap | `archmap/v0.5.3` | Source-grounded Atom observations, contexts, covers, declared sources, and fixed extraction doctrine. It does not select laws or assert global correctness. |
 | LawPolicy | `law-policy/v0.5.3` | Selects evaluator manifests, laws, measurement profiles, policies, basis refs, and non-conclusions. |
 | Normalized ArchMap | `normalized-archmap/v0.5.3` | Canonical finite-poset-site normalization for current analysis runs. |
-| Measurement packet | `archsig-measurement-packet/v0.5.3` | Current AG measurement handoff. It carries structural verdicts, computed invariants, analytic readings, assumptions, and non-conclusions as bounded evidence. |
+| Measurement packet | `archsig-measurement-packet/v0.5.3` | Current AG measurement handoff. It carries structural verdicts, computed invariants, analytic readings, assumptions, and non-conclusions as bounded evidence. The Cech H1 cochain is restricted to edges with recorded section observations; selected edges without sectionValue / cocycleValue observations stay out of the measured class and are reported as `silence_by_design` (with `unobservedEdgeRefs` on the invariant), and a run with no observed edge yields `not_computed` (`sections_not_observed`), never a measured zero. |
 | Summary | `archsig-analysis-summary.json` | Conclusion-first compact reading surface for LLM and human review. |
 | Insight report / brief | `archsig-insight-report.json`, `archsig-insight-brief.md` | Prioritized inspection queue and boundary digest derived from the measurement run. |
 | Viewer data | `archsig-atom-viewer-data/v0.5.3` | Bounded ArchView projection. It adds no new structural verdict. |

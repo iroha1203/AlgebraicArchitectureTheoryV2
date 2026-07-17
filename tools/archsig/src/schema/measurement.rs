@@ -378,7 +378,8 @@ fn structural_verdict_target(row: &AgStructuralVerdictV1) -> Value {
         "coefficient": "F2",
         "scopeSize": {
             "contexts": if matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero") { 1 } else { 0 },
-            "edges": if row.evaluator == "ag.cech-obstruction" { 1 } else { 0 },
+            "edges": if row.evaluator == "ag.cech-obstruction"
+                && matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero") { 1 } else { 0 },
             "triangles": 0
         },
         "classRef": row

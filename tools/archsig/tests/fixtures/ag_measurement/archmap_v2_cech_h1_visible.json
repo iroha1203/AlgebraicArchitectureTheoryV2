@@ -116,13 +116,38 @@
         "ctx:bottom",
         "src:cover"
       ]
+    },
+    {
+      "id": "atom:top-cech-section-value",
+      "kind": "semantic",
+      "subject": "ctx:top",
+      "object": "section=left-local",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
+        "ctx:top",
+        "src:cover"
+      ]
+    },
+    {
+      "id": "atom:right-cech-section-value",
+      "kind": "semantic",
+      "subject": "ctx:right",
+      "object": "section=right-local",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
+        "ctx:right",
+        "src:cover"
+      ]
     }
   ],
   "contexts": [
     {
       "id": "ctx:top",
       "atoms": [
-        "atom:top"
+        "atom:top",
+        "atom:top-cech-section-value"
       ],
       "restrictsTo": [
         "ctx:left",
@@ -148,7 +173,8 @@
     {
       "id": "ctx:right",
       "atoms": [
-        "atom:right"
+        "atom:right",
+        "atom:right-cech-section-value"
       ],
       "restrictsTo": [
         "ctx:bottom"

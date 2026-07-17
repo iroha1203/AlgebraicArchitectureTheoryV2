@@ -5,31 +5,37 @@
     "violatedCount": 0
   },
   "componentFingerprints": {
-    "lawPolicy": "sha256:8ea157edec4b604e89d65bd38bd2e1da615fb4b5c7f69e5ee7da1b3ca3ebd125",
-    "lawSurface": "sha256:f7131846b456c621bb32992b659a9b7dea480b1d619bb132dde4abc87a59739b",
-    "measurementProfile": "sha256:5409ebe4d9fec65c100fc22395168a801d87f9d542be47189d3f6ccb5fe6c42f"
+    "lawPolicy": "sha256:db369504d12e07d047d92a76cd44b28a4ba276e7506f432a482a46fbd602f87d",
+    "lawSurface": "sha256:7714a01230e75b1ed71ceb1d3c08bd24aa800417f6dd17c24baa5188d93aa7a5",
+    "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
   },
   "conclusion": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
   "inputDigests": {
     "archmap": {
       "path": "input:archmap.json",
-      "sha256": "ae4ff70181f17ad5f5cf1942815dbcdda752e7fb7d841587c5cf1afd48cf2e1e"
+      "sha256": "a15b66bc2ad1a73a1999e98daff923b8f7512e7bb7e0df69e325ade5726718f2"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "8ea157edec4b604e89d65bd38bd2e1da615fb4b5c7f69e5ee7da1b3ca3ebd125"
+      "sha256": "db369504d12e07d047d92a76cd44b28a4ba276e7506f432a482a46fbd602f87d"
     },
     "lawSurface": {
       "path": "input:law_surface_practical_base_v052.json",
-      "sha256": "f7131846b456c621bb32992b659a9b7dea480b1d619bb132dde4abc87a59739b"
+      "sha256": "7714a01230e75b1ed71ceb1d3c08bd24aa800417f6dd17c24baa5188d93aa7a5"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
-      "sha256": "5409ebe4d9fec65c100fc22395168a801d87f9d542be47189d3f6ccb5fe6c42f"
+      "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
     },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement_profile.json",
+        "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      }
+    ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "5f429f9b294efdec80715872d3c3715ee2082abae4cf4dd4f71be79a5a013ccb"
+      "sha256": "2b39ae3af896d3a1db749cd9ec3a9609e3dada5f096d7859b479249b86e12b07"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -56,7 +62,7 @@
     "whatItMeans": "No selected H1 glue mismatch was measured under the profile.",
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
-  "runId": "run:946877d47467",
+  "runId": "run:8a21e519dc8c",
   "schema": "archsig-analysis-summary/v0.5.3",
   "structuralVerdictSummary": {
     "measuredNonzeroCount": 0,

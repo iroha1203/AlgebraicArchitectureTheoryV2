@@ -1708,6 +1708,7 @@
           {
             "edgeId": "ctx:application->ctx:domain",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:application",
             "supportAtomRefs": [],
@@ -1717,6 +1718,7 @@
           {
             "edgeId": "ctx:application->ctx:ports",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:application",
             "supportAtomRefs": [],
@@ -1726,6 +1728,7 @@
           {
             "edgeId": "ctx:application->ctx:shared",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:application",
             "supportAtomRefs": [],
@@ -1735,6 +1738,7 @@
           {
             "edgeId": "ctx:domain->ctx:shared",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:domain",
             "supportAtomRefs": [],
@@ -1744,6 +1748,7 @@
           {
             "edgeId": "ctx:infrastructure->ctx:ports",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:infrastructure",
             "supportAtomRefs": [],
@@ -1753,6 +1758,7 @@
           {
             "edgeId": "ctx:infrastructure->ctx:shared",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:infrastructure",
             "supportAtomRefs": [],
@@ -1762,6 +1768,7 @@
           {
             "edgeId": "ctx:policy->ctx:shared",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:policy",
             "supportAtomRefs": [],
@@ -1771,6 +1778,7 @@
           {
             "edgeId": "ctx:ports->ctx:shared",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:ports",
             "supportAtomRefs": [],
@@ -1780,6 +1788,7 @@
           {
             "edgeId": "ctx:runtime->ctx:application",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:runtime",
             "supportAtomRefs": [],
@@ -1789,6 +1798,7 @@
           {
             "edgeId": "ctx:runtime->ctx:infrastructure",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:runtime",
             "supportAtomRefs": [],
@@ -1798,6 +1808,7 @@
           {
             "edgeId": "ctx:runtime->ctx:shared",
             "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
             "source": "selected cover restriction edge",
             "sourceContextRef": "ctx:runtime",
             "supportAtomRefs": [],
@@ -2088,6 +2099,7 @@
         {
           "edgeId": "ctx:application->ctx:domain",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:application",
           "supportAtomRefs": [],
@@ -2097,6 +2109,7 @@
         {
           "edgeId": "ctx:application->ctx:ports",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:application",
           "supportAtomRefs": [],
@@ -2106,6 +2119,7 @@
         {
           "edgeId": "ctx:application->ctx:shared",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:application",
           "supportAtomRefs": [],
@@ -2115,6 +2129,7 @@
         {
           "edgeId": "ctx:domain->ctx:shared",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:domain",
           "supportAtomRefs": [],
@@ -2124,6 +2139,7 @@
         {
           "edgeId": "ctx:infrastructure->ctx:ports",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:infrastructure",
           "supportAtomRefs": [],
@@ -2133,6 +2149,7 @@
         {
           "edgeId": "ctx:infrastructure->ctx:shared",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:infrastructure",
           "supportAtomRefs": [],
@@ -2142,6 +2159,7 @@
         {
           "edgeId": "ctx:policy->ctx:shared",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:policy",
           "supportAtomRefs": [],
@@ -2151,6 +2169,7 @@
         {
           "edgeId": "ctx:ports->ctx:shared",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:ports",
           "supportAtomRefs": [],
@@ -2160,6 +2179,7 @@
         {
           "edgeId": "ctx:runtime->ctx:application",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:runtime",
           "supportAtomRefs": [],
@@ -2169,6 +2189,7 @@
         {
           "edgeId": "ctx:runtime->ctx:infrastructure",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:runtime",
           "supportAtomRefs": [],
@@ -2178,6 +2199,7 @@
         {
           "edgeId": "ctx:runtime->ctx:shared",
           "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
           "source": "selected cover restriction edge",
           "sourceContextRef": "ctx:runtime",
           "supportAtomRefs": [],
@@ -5513,9 +5535,9 @@
     }
   ],
   "componentFingerprints": {
-    "lawPolicy": "sha256:8ea157edec4b604e89d65bd38bd2e1da615fb4b5c7f69e5ee7da1b3ca3ebd125",
-    "lawSurface": "sha256:f7131846b456c621bb32992b659a9b7dea480b1d619bb132dde4abc87a59739b",
-    "measurementProfile": "sha256:5409ebe4d9fec65c100fc22395168a801d87f9d542be47189d3f6ccb5fe6c42f"
+    "lawPolicy": "sha256:db369504d12e07d047d92a76cd44b28a4ba276e7506f432a482a46fbd602f87d",
+    "lawSurface": "sha256:7714a01230e75b1ed71ceb1d3c08bd24aa800417f6dd17c24baa5188d93aa7a5",
+    "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
   },
   "copyBlocks": {
     "llmHandoff": {
@@ -7172,23 +7194,33 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap.json",
-      "sha256": "ae4ff70181f17ad5f5cf1942815dbcdda752e7fb7d841587c5cf1afd48cf2e1e"
+      "sha256": "a15b66bc2ad1a73a1999e98daff923b8f7512e7bb7e0df69e325ade5726718f2"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "8ea157edec4b604e89d65bd38bd2e1da615fb4b5c7f69e5ee7da1b3ca3ebd125"
+      "sha256": "db369504d12e07d047d92a76cd44b28a4ba276e7506f432a482a46fbd602f87d"
     },
     "lawSurface": {
       "path": "input:law_surface_practical_base_v052.json",
-      "sha256": "f7131846b456c621bb32992b659a9b7dea480b1d619bb132dde4abc87a59739b"
+      "sha256": "7714a01230e75b1ed71ceb1d3c08bd24aa800417f6dd17c24baa5188d93aa7a5"
+    },
+    "measurementPacket": {
+      "path": "input:archsig-measurement-packet.json",
+      "sha256": "8b1e8521660340e58dd69d73ab9c87780360e5a1be8f3508b12ba03596127c01"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
-      "sha256": "5409ebe4d9fec65c100fc22395168a801d87f9d542be47189d3f6ccb5fe6c42f"
+      "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
     },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement_profile.json",
+        "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      }
+    ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "5f429f9b294efdec80715872d3c3715ee2082abae4cf4dd4f71be79a5a013ccb"
+      "sha256": "2b39ae3af896d3a1db749cd9ec3a9609e3dada5f096d7859b479249b86e12b07"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -8442,21 +8474,51 @@
       "unmeasuredCount": 0
     }
   },
-  "runId": "run:946877d47467",
-  "schema": "archsig-atom-viewer-data/v0.5.3",
+  "runId": "run:8a21e519dc8c",
   "sagaDescent": {
+    "leafFieldMap": [],
+    "nonClaims": [
+      "The projection does not create structural verdicts, comparison results, or repair decisions.",
+      "A missing packet field remains absent; silence_by_design remains visible as a silence row."
+    ],
     "projectionBoundary": "Every displayed measurement value is selected from the measurement packet or its SAGA-scoped boundary statements; stage status is a presentation aggregation of displayed packet rows and no viewer verdict is synthesized.",
+    "silenceRows": [],
     "sourcePacketRef": "archsig-measurement-packet.json",
     "stages": [
-      {"stageId": "grounding", "order": 0, "status": "silence_by_design", "rows": [], "measurements": [], "visualRole": "grounding"},
-      {"stageId": "descent", "order": 1, "status": "silence_by_design", "rows": [], "measurements": [], "harmonicDebt": [], "visualRole": "descent-measurement"},
-      {"stageId": "comparison", "order": 2, "status": "silence_by_design", "rows": [], "visualRole": "transfer-comparison"},
-      {"stageId": "silence", "order": 3, "status": "not_computed", "rows": [], "visualRole": "silence"}
-    ],
-    "silenceRows": [],
-    "leafFieldMap": [],
-    "nonClaims": ["The projection does not create structural verdicts, comparison results, or repair decisions.", "A missing packet field remains absent; silence_by_design remains visible as a silence row."]
+      {
+        "measurements": [],
+        "order": 0,
+        "rows": [],
+        "stageId": "grounding",
+        "status": "not_computed",
+        "visualRole": "grounding"
+      },
+      {
+        "harmonicDebt": [],
+        "measurements": [],
+        "order": 1,
+        "rows": [],
+        "stageId": "descent",
+        "status": "not_computed",
+        "visualRole": "descent-measurement"
+      },
+      {
+        "order": 2,
+        "rows": [],
+        "stageId": "comparison",
+        "status": "not_computed",
+        "visualRole": "transfer-comparison"
+      },
+      {
+        "order": 3,
+        "rows": [],
+        "stageId": "silence",
+        "status": "not_computed",
+        "visualRole": "silence"
+      }
+    ]
   },
+  "schema": "archsig-atom-viewer-data/v0.5.3",
   "sourceArtifactRefs": {
     "insightBrief": "archsig-insight-brief.md",
     "insightReport": "archsig-insight-report.json",
