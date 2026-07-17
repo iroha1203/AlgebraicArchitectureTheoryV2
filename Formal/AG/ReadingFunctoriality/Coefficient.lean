@@ -19,9 +19,10 @@ import Mathlib.RingTheory.RingHom.Flat
 /-!
 # Coefficient-change functoriality
 
-This module owns direct closed-equational reuse and flat coefficient change
-for raw systems, standard schemes, ideal geometry, Tor, linear Čech
-cohomology, and actual sheaf cohomology fixed by Part 4 SD2 and SD6–SD8.
+This module owns direct closed-equational reuse and the flat coefficient-change
+foundation for raw systems, ideal geometry, Tor, linear Čech cohomology, and
+actual sheaf cohomology fixed by Part 4 SD2 and SD6–SD8.  The standard-scheme
+pullback built from this foundation lives in `StandardSchemeCoefficient`.
 
 ## Implementation notes (SD6 position)
 
@@ -930,6 +931,148 @@ theorem sheafifiedSectionBaseChangeMap_eq
           (CommRingCat.ofHom f.liftedHom) ≫
         (sheafifiedSectionObjectBaseChangeIso raw f W).hom.right :=
   rfl
+
+/-- The first projection of the canonical affine base-change comparison is
+the spectrum of the canonical section-ring base-change map. -/
+@[reassoc]
+theorem sheafifiedSectionSpecBaseChangeIso_hom_fst
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k k' : Type v}
+    [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (AATCommAlgCat k)]
+    [HasSheafify S.topology (AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    (sheafifiedSectionSpecBaseChangeIso raw f W).hom ≫
+        pullback.fst
+          (AlgebraicGeometry.Scheme.Spec.map
+            (raw.toRingedSite.structureSheaf.val.obj (op W)).hom.op)
+          (AlgebraicGeometry.Scheme.Spec.map
+            (CommRingCat.ofHom f.liftedHom).op) =
+      AlgebraicGeometry.Scheme.Spec.map
+        (sheafifiedSectionBaseChangeMap raw f W).op := by
+  letI : Algebra (ULift.{max u v, v} k) (ULift.{max u v, v} k') :=
+    f.liftedHom.toAlgebra
+  letI : Algebra (ULift.{max u v, v} k)
+      (raw.toRingedSite.structureSheaf.val.obj (op W)).right :=
+    (raw.toRingedSite.structureSheaf.val.obj (op W)).hom.hom.toAlgebra
+  simp [sheafifiedSectionSpecBaseChangeIso,
+    sheafifiedSectionBaseChangeMap, FlatCoefficientChange.coefficientExtension,
+    Category.assoc]
+  erw [pullbackSymmetry_hom_comp_fst]
+  rw [AlgebraicGeometry.pullbackSpecIso_inv_snd]
+  let tensorIso := CommRingCat.tensorProdObjIsoPushoutObj
+    (CommRingCat.of (ULift.{max u v, v} k'))
+    (raw.toRingedSite.structureSheaf.val.obj (op W))
+  have hTensorLeg :
+      AlgebraicGeometry.Scheme.Spec.map tensorIso.hom.right.op ≫
+          AlgebraicGeometry.Scheme.Spec.map
+            (CommRingCat.ofHom
+              (Algebra.TensorProduct.includeRight.toRingHom)).op =
+        AlgebraicGeometry.Scheme.Spec.map
+          (pushout.inl
+            (raw.toRingedSite.structureSheaf.val.obj (op W)).hom
+            (CommRingCat.ofHom f.liftedHom)).op := by
+    rw [← AlgebraicGeometry.Scheme.Spec.map_comp]
+    congr 1
+    apply Quiver.Hom.unop_inj
+    rw [← cancel_mono tensorIso.inv.right]
+    simpa [tensorIso] using
+      (CommRingCat.pushout_inl_tensorProdObjIsoPushoutObj_inv_right
+        (R := CommRingCat.of (ULift.{max u v, v} k))
+        (S := CommRingCat.of (ULift.{max u v, v} k'))
+        (raw.toRingedSite.structureSheaf.val.obj (op W))).symm
+  simpa only [tensorIso, Category.assoc] using congrArg
+    (fun q =>
+      AlgebraicGeometry.Scheme.Spec.map
+          (sheafifiedSectionObjectBaseChangeIso raw f W).hom.right.op ≫ q)
+    hTensorLeg
+
+/-- The second projection of the canonical affine base-change comparison is
+the coefficient structure morphism of the changed section object. -/
+@[reassoc]
+theorem sheafifiedSectionSpecBaseChangeIso_hom_snd
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k k' : Type v}
+    [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    [HasSheafify S.topology (AATCommAlgCat k)]
+    [HasSheafify S.topology (AATCommAlgCat k')]
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    (sheafifiedSectionSpecBaseChangeIso raw f W).hom ≫
+        pullback.snd
+          (AlgebraicGeometry.Scheme.Spec.map
+            (raw.toRingedSite.structureSheaf.val.obj (op W)).hom.op)
+          (AlgebraicGeometry.Scheme.Spec.map
+            (CommRingCat.ofHom f.liftedHom).op) =
+      AlgebraicGeometry.Scheme.Spec.map
+        ((raw.baseChange f.hom).toRingedSite.structureSheaf.val.obj
+          (op W)).hom.op := by
+  letI : Algebra (ULift.{max u v, v} k) (ULift.{max u v, v} k') :=
+    f.liftedHom.toAlgebra
+  letI : Algebra (ULift.{max u v, v} k)
+      (raw.toRingedSite.structureSheaf.val.obj (op W)).right :=
+    (raw.toRingedSite.structureSheaf.val.obj (op W)).hom.hom.toAlgebra
+  simp [sheafifiedSectionSpecBaseChangeIso, Category.assoc]
+  erw [pullbackSymmetry_hom_comp_snd]
+  rw [AlgebraicGeometry.pullbackSpecIso_inv_fst]
+  let tensorIso := CommRingCat.tensorProdObjIsoPushoutObj
+    (CommRingCat.of (ULift.{max u v, v} k'))
+    (raw.toRingedSite.structureSheaf.val.obj (op W))
+  have hTensorLeg :
+      AlgebraicGeometry.Scheme.Spec.map tensorIso.hom.right.op ≫
+          AlgebraicGeometry.Scheme.Spec.map
+            (CommRingCat.ofHom
+              Algebra.TensorProduct.includeLeftRingHom).op =
+        AlgebraicGeometry.Scheme.Spec.map
+          (pushout.inr
+            (raw.toRingedSite.structureSheaf.val.obj (op W)).hom
+            (CommRingCat.ofHom f.liftedHom)).op := by
+    rw [← AlgebraicGeometry.Scheme.Spec.map_comp]
+    congr 1
+    apply Quiver.Hom.unop_inj
+    rw [← cancel_mono tensorIso.inv.right]
+    simpa [tensorIso] using
+      (CommRingCat.pushout_inr_tensorProdObjIsoPushoutObj_inv_right
+        (R := CommRingCat.of (ULift.{max u v, v} k))
+        (S := CommRingCat.of (ULift.{max u v, v} k'))
+        (raw.toRingedSite.structureSheaf.val.obj (op W))).symm
+  have hSectionLeg :
+      AlgebraicGeometry.Scheme.Spec.map
+          (sheafifiedSectionObjectBaseChangeIso raw f W).hom.right.op ≫
+        AlgebraicGeometry.Scheme.Spec.map
+          (pushout.inr
+            (raw.toRingedSite.structureSheaf.val.obj (op W)).hom
+            (CommRingCat.ofHom f.liftedHom)).op =
+      AlgebraicGeometry.Scheme.Spec.map
+        ((raw.baseChange f.hom).toRingedSite.structureSheaf.val.obj
+          (op W)).hom.op := by
+    rw [← AlgebraicGeometry.Scheme.Spec.map_comp]
+    congr 1
+    apply Quiver.Hom.unop_inj
+    simpa [FlatCoefficientChange.coefficientExtension] using
+      (sheafifiedSectionObjectBaseChangeIso raw f W).hom.w.symm
+  calc
+    _ = AlgebraicGeometry.Scheme.Spec.map
+          (sheafifiedSectionObjectBaseChangeIso raw f W).hom.right.op ≫
+        AlgebraicGeometry.Scheme.Spec.map
+          (pushout.inr
+            (raw.toRingedSite.structureSheaf.val.obj (op W)).hom
+            (CommRingCat.ofHom f.liftedHom)).op := by
+      simpa only [tensorIso, Category.assoc] using congrArg
+        (fun q =>
+          AlgebraicGeometry.Scheme.Spec.map
+              (sheafifiedSectionObjectBaseChangeIso raw f W).hom.right.op ≫ q)
+        hTensorLeg
+    _ = _ := hSectionLeg
 
 end RawAmbientRestrictionSystem
 

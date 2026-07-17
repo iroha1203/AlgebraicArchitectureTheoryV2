@@ -4957,6 +4957,67 @@ noncomputable def readingFunctoriality_sheafifiedSectionBaseChangeMap :=
 def readingFunctoriality_sheafifiedSectionBaseChangeMap_eq :=
   @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap_eq
 
+/-- Audit alias for the source projection of the affine Spec comparison. -/
+def readingFunctoriality_sheafifiedSectionSpecBaseChangeIso_hom_fst :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso_hom_fst
+
+/-- Audit alias for the coefficient projection of the affine Spec comparison. -/
+def readingFunctoriality_sheafifiedSectionSpecBaseChangeIso_hom_snd :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso_hom_snd
+
+/-! Part 4 SD6 / AC29: standard-scheme coefficient pullback. -/
+
+noncomputable def readingFunctoriality_coefficientStructureMap :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.coefficientStructureMap
+
+noncomputable def readingFunctoriality_standardScheme_baseChange :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChange
+
+noncomputable def readingFunctoriality_standardScheme_baseChangeMap :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeMap
+
+noncomputable def readingFunctoriality_baseChangeUnderlyingIso :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeUnderlyingIso
+
+def readingFunctoriality_baseChangeMap_eq_pullback_fst :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeMap_eq_pullback_fst
+
+noncomputable def readingFunctoriality_baseChangedDecoration :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedDecoration
+
+def readingFunctoriality_baseChangedDecoration_context :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedDecoration_context
+
+def readingFunctoriality_baseChangedDecoration_interpretation :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedDecoration_interpretation
+
+def readingFunctoriality_baseChange_decoration :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChange_decoration
+
+noncomputable def readingFunctoriality_baseChangedAtlas :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedAtlas
+
+def readingFunctoriality_baseChangedAtlas_Index :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedAtlas_Index
+
+noncomputable def readingFunctoriality_baseChangedChartMap :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedChartMap
+
+def readingFunctoriality_baseChangedChart_isPullback :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedChart_isPullback
+
+def readingFunctoriality_baseChange_atlas :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChange_atlas
+
+noncomputable def readingFunctoriality_baseChangedOverlaps :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedOverlaps
+
+def readingFunctoriality_baseChangedOverlaps_valid :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangedOverlaps_valid
+
+def readingFunctoriality_baseChange_overlaps :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChange_overlaps
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/
