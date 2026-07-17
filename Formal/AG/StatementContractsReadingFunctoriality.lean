@@ -1958,6 +1958,59 @@ example (I : Sheaf S.topology AddCommGrpCat.{u + 1})
     ((Cohomology.selectedCechComplexFunctor 𝒰).obj I.val).ExactAt p :=
   Cohomology.injectiveSheaf_selectedCech_exactAt 𝒰 I p hp
 
+/-- Fixed projection from the total complex to a chosen bidegree. -/
+noncomputable example (q p n : ℕ) (h : q + p = n) :
+    (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).X n ⟶
+      ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X q).X p :=
+  Cohomology.selectedCechResolutionTotalProjection 𝒰 Ob q p n h
+
+/-- Fixed finite diagonal decomposition of every total degree. -/
+example (n : ℕ) :
+    ∑ q : Fin (n + 1),
+        Cohomology.selectedCechResolutionTotalDiagonalProjection 𝒰 Ob n q ≫
+          Cohomology.selectedCechResolutionTotalDiagonalInclusion 𝒰 Ob n q =
+      𝟙 _ :=
+  Cohomology.selectedCechResolutionTotal_decomposition 𝒰 Ob n
+
+/-- Fixed two-component total differential formula in an interior bidegree. -/
+example (q p : ℕ) :
+    (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (q + p + 1) (q + p + 2) ≫
+        Cohomology.selectedCechResolutionTotalProjection 𝒰 Ob (q + 1) (p + 1)
+          (q + p + 2) (by omega) =
+      Cohomology.selectedCechResolutionTotalProjection 𝒰 Ob q (p + 1)
+          (q + p + 1) (by omega) ≫
+          ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d q (q + 1)).f (p + 1) +
+        Cohomology.selectedCechResolutionTotalProjection 𝒰 Ob (q + 1) p
+          (q + p + 1) (by omega) ≫
+          (ComplexShape.ε₂ (ComplexShape.up ℕ) (ComplexShape.up ℕ)
+              (ComplexShape.up ℕ) (q + 1, p) •
+            ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X (q + 1)).d p (p + 1)) :=
+  Cohomology.selectedCechResolutionTotal_d_projection_succ_succ 𝒰 Ob q p
+
+section LerayTotalElimination
+
+variable [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+
+/-- Fixed single-step elimination of the maximal positive resolution component. -/
+example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (m p : ℕ)
+    (x : (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).X (m + 1 + p))
+    (hcycle : ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).d
+      (m + 1 + p) (m + 1 + p + 1)).hom x = 0)
+    (hsupp : Cohomology.SelectedCechResolutionTotalSupportedAtMost
+      𝒰 Ob (m + 1 + p) (m + 1) x) :
+    ∃ y : (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).X (m + p),
+      let x' := x -
+        ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (m + p) (m + 1 + p)).hom y
+      Cohomology.SelectedCechResolutionTotalSupportedAtMost
+          𝒰 Ob (m + 1 + p) m x' ∧
+        ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (m + 1 + p) (m + 1 + p + 1)).hom x' = 0 :=
+  hLeray.selectedCechResolutionTotal_eliminateColumn m p x hcycle hsupp
+
+end LerayTotalElimination
+
 end SelectedCechResolutionBicomplexSD5
 
 end AAT.AG.StatementContractsReadingFunctoriality

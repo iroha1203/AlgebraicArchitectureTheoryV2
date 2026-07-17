@@ -3681,4 +3681,586 @@ theorem injectiveSheaf_selectedCech_exactAt
   rw [hT.comp_descToInjective]
   exact (selectedCechFreeSheafHomAddEquiv 𝒰 I (n + 1)).apply_symm_apply c
 
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+
+noncomputable def selectedCechResolutionTotalProjection
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p n : ℕ) (_h : q + p = n) :
+    (selectedCechResolutionTotalComplex 𝒰 Ob).X n ⟶
+      ((selectedCechResolutionBicomplex 𝒰 Ob).X q).X p :=
+  (selectedCechResolutionBicomplex 𝒰 Ob).totalDesc
+    (fun q' p' _ =>
+      if hq : q' = q then
+        if hp : p' = p then
+          ((selectedCechResolutionBicomplex 𝒰 Ob).XXIsoOfEq _ _ _ hq hp).hom
+        else 0
+      else 0)
+
+theorem selectedCechResolutionTotal_ι_projection_general
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p n : ℕ) (h : q + p = n)
+    (q' p' : ℕ) (h' : q' + p' = n) :
+    (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+        (ComplexShape.up ℕ) q' p' n h' ≫
+      selectedCechResolutionTotalProjection 𝒰 Ob q p n h =
+        if hq : q' = q then
+          if hp : p' = p then
+            ((selectedCechResolutionBicomplex 𝒰 Ob).XXIsoOfEq _ _ _ hq hp).hom
+          else 0
+        else 0 := by
+  rw [selectedCechResolutionTotalProjection]
+  exact (selectedCechResolutionBicomplex 𝒰 Ob).ι_totalDesc _ _ _ _
+
+@[simp] theorem selectedCechResolutionTotal_ι_projection_self
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p n : ℕ) (h : q + p = n) :
+    (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+        (ComplexShape.up ℕ) q p n h ≫
+      selectedCechResolutionTotalProjection 𝒰 Ob q p n h = 𝟙 _ := by
+  rw [selectedCechResolutionTotal_ι_projection_general]
+  simp
+
+noncomputable def selectedCechResolutionTotalDiagonalProjection
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) (q : Fin (n + 1)) :
+    (selectedCechResolutionTotalComplex 𝒰 Ob).X n ⟶
+      ((selectedCechResolutionBicomplex 𝒰 Ob).X q).X (n - q) :=
+  selectedCechResolutionTotalProjection 𝒰 Ob q (n - q) n (by omega)
+
+theorem selectedCechResolutionTotal_ι_projection
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n q' p' : ℕ) (h : q' + p' = n)
+    (q : Fin (n + 1)) :
+    (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+        (ComplexShape.up ℕ) q' p' n h ≫
+      selectedCechResolutionTotalDiagonalProjection 𝒰 Ob n q =
+        if hq : q' = q then
+          ((selectedCechResolutionBicomplex 𝒰 Ob).XXIsoOfEq _ _ _ hq (by
+            subst hq
+            omega)).hom
+        else 0 := by
+  rw [selectedCechResolutionTotalDiagonalProjection,
+    selectedCechResolutionTotal_ι_projection_general]
+  by_cases hq : q' = q
+  · subst hq
+    have hp : p' = n - q := by omega
+    simp [hp]
+  · simp [hq]
+
+noncomputable def selectedCechResolutionTotalDiagonalInclusion
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) (q : Fin (n + 1)) :
+    ((selectedCechResolutionBicomplex 𝒰 Ob).X q).X (n - q) ⟶
+      (selectedCechResolutionTotalComplex 𝒰 Ob).X n :=
+  (selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+    (ComplexShape.up ℕ) q (n - q) n (by
+      change (q : ℕ) + (n - q) = n
+      omega)
+
+@[simp] theorem selectedCechResolutionTotal_projection_inclusion
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) (q : Fin (n + 1)) :
+    selectedCechResolutionTotalDiagonalInclusion 𝒰 Ob n q ≫
+      selectedCechResolutionTotalDiagonalProjection 𝒰 Ob n q = 𝟙 _ := by
+  rw [selectedCechResolutionTotalDiagonalInclusion,
+    selectedCechResolutionTotal_ι_projection]
+  simp
+
+theorem selectedCechResolutionTotal_inclusion_projection_ne
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) (q r : Fin (n + 1)) (hqr : q ≠ r) :
+    selectedCechResolutionTotalDiagonalInclusion 𝒰 Ob n q ≫
+      selectedCechResolutionTotalDiagonalProjection 𝒰 Ob n r = 0 := by
+  have hval : (q : ℕ) ≠ (r : ℕ) := by
+    intro h
+    exact hqr (Fin.ext h)
+  rw [selectedCechResolutionTotalDiagonalInclusion,
+    selectedCechResolutionTotal_ι_projection]
+  simp [hval]
+
+theorem selectedCechResolutionTotal_decomposition
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    ∑ q : Fin (n + 1),
+        selectedCechResolutionTotalDiagonalProjection 𝒰 Ob n q ≫
+          selectedCechResolutionTotalDiagonalInclusion 𝒰 Ob n q =
+      𝟙 _ := by
+  apply HomologicalComplex₂.total.hom_ext
+  intro q' p' h
+  change q' + p' = n at h
+  let q : Fin (n + 1) := ⟨q', by omega⟩
+  rw [Preadditive.comp_sum]
+  rw [Finset.sum_eq_single q]
+  · rw [← Category.assoc, selectedCechResolutionTotal_ι_projection]
+    simp [q, selectedCechResolutionTotalDiagonalInclusion]
+    exact (Category.comp_id _).symm
+  · intro r _ hr
+    rw [← Category.assoc, selectedCechResolutionTotal_ι_projection]
+    have hqr : q' ≠ r := by
+      intro eq
+      apply hr
+      apply Fin.ext
+      exact eq.symm
+    simp [hqr]
+  · simp
+
+theorem selectedCechResolutionTotal_ι_d_projection_resolution
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p : ℕ) :
+    ((selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p (q + p) (by
+            change q + p = q + p
+            rfl) ≫
+        (selectedCechResolutionTotalComplex 𝒰 Ob).d (q + p) (q + p + 1)) ≫
+      selectedCechResolutionTotalProjection 𝒰 Ob (q + 1) p
+        (q + p + 1) (by omega) =
+      ((selectedCechResolutionBicomplex 𝒰 Ob).d q (q + 1)).f p := by
+  rw [selectedCechResolutionTotalComplex_ι_d,
+    Preadditive.add_comp]
+  rw [HomologicalComplex₂.d₁_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    (i₁ := q) (i₁' := q + 1) (by simp) p (q + p + 1) (by
+      change q + 1 + p = q + p + 1
+      omega)]
+  rw [HomologicalComplex₂.d₂_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    q (i₂ := p) (i₂' := p + 1) (by simp) (q + p + 1) (by
+      change q + (p + 1) = q + p + 1
+      omega)]
+  rw [Linear.units_smul_comp, Linear.units_smul_comp,
+    Category.assoc, Category.assoc,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general]
+  simp
+
+theorem selectedCechResolutionTotal_ι_d_projection_cech
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p : ℕ) :
+    ((selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p (q + p) (by
+            change q + p = q + p
+            rfl) ≫
+        (selectedCechResolutionTotalComplex 𝒰 Ob).d (q + p) (q + p + 1)) ≫
+      selectedCechResolutionTotalProjection 𝒰 Ob q (p + 1)
+        (q + p + 1) (by omega) =
+      ComplexShape.ε₂ (ComplexShape.up ℕ) (ComplexShape.up ℕ)
+          (ComplexShape.up ℕ) (q, p) •
+        ((selectedCechResolutionBicomplex 𝒰 Ob).X q).d p (p + 1) := by
+  rw [selectedCechResolutionTotalComplex_ι_d,
+    Preadditive.add_comp]
+  rw [HomologicalComplex₂.d₁_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    (i₁ := q) (i₁' := q + 1) (by simp) p (q + p + 1) (by
+      change q + 1 + p = q + p + 1
+      omega)]
+  rw [HomologicalComplex₂.d₂_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    q (i₂ := p) (i₂' := p + 1) (by simp) (q + p + 1) (by
+      change q + (p + 1) = q + p + 1
+      omega)]
+  rw [Linear.units_smul_comp, Linear.units_smul_comp,
+    Category.assoc, Category.assoc,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general]
+  simp
+
+theorem selectedCechResolutionTotal_d_projection_succ_succ
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p : ℕ) :
+    (selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (q + p + 1) (q + p + 2) ≫
+        selectedCechResolutionTotalProjection 𝒰 Ob (q + 1) (p + 1)
+          (q + p + 2) (by omega) =
+      selectedCechResolutionTotalProjection 𝒰 Ob q (p + 1)
+          (q + p + 1) (by omega) ≫
+          ((selectedCechResolutionBicomplex 𝒰 Ob).d q (q + 1)).f (p + 1) +
+        selectedCechResolutionTotalProjection 𝒰 Ob (q + 1) p
+          (q + p + 1) (by omega) ≫
+          (ComplexShape.ε₂ (ComplexShape.up ℕ) (ComplexShape.up ℕ)
+              (ComplexShape.up ℕ) (q + 1, p) •
+            ((selectedCechResolutionBicomplex 𝒰 Ob).X (q + 1)).d p (p + 1)) := by
+  apply HomologicalComplex₂.total.hom_ext
+  intro a b h
+  change a + b = q + p + 1 at h
+  simp only [← Category.assoc, Preadditive.comp_add]
+  rw [selectedCechResolutionTotalComplex_ι_d,
+    Preadditive.add_comp]
+  rw [HomologicalComplex₂.d₁_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    (i₁ := a) (i₁' := a + 1) (by simp) b (q + p + 2) (by
+      change a + 1 + b = q + p + 2
+      omega)]
+  rw [HomologicalComplex₂.d₂_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    a (i₂ := b) (i₂' := b + 1) (by simp) (q + p + 2) (by
+      change a + (b + 1) = q + p + 2
+      omega)]
+  rw [Linear.units_smul_comp, Linear.units_smul_comp,
+    Category.assoc, Category.assoc,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general]
+  by_cases haq : a = q
+  · have hb : b = p + 1 := by omega
+    subst a
+    subst b
+    simp
+  · by_cases haqs : a = q + 1
+    · have hb : b = p := by omega
+      subst a
+      subst b
+      simp
+    · simp [haq, haqs]
+
+theorem selectedCechResolutionTotal_d_projection_succ_zero
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q : ℕ) :
+    (selectedCechResolutionTotalComplex 𝒰 Ob).d q (q + 1) ≫
+        selectedCechResolutionTotalProjection 𝒰 Ob (q + 1) 0 (q + 1) (by omega) =
+      selectedCechResolutionTotalProjection 𝒰 Ob q 0 q (by omega) ≫
+        ((selectedCechResolutionBicomplex 𝒰 Ob).d q (q + 1)).f 0 := by
+  apply HomologicalComplex₂.total.hom_ext
+  intro a b h
+  change a + b = q at h
+  simp only [← Category.assoc]
+  rw [selectedCechResolutionTotalComplex_ι_d,
+    Preadditive.add_comp]
+  rw [HomologicalComplex₂.d₁_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    (i₁ := a) (i₁' := a + 1) (by simp) b (q + 1) (by
+      change a + 1 + b = q + 1
+      omega)]
+  rw [HomologicalComplex₂.d₂_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    a (i₂ := b) (i₂' := b + 1) (by simp) (q + 1) (by
+      change a + (b + 1) = q + 1
+      omega)]
+  rw [Linear.units_smul_comp, Linear.units_smul_comp,
+    Category.assoc, Category.assoc,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general]
+  by_cases haq : a = q
+  · have hb : b = 0 := by omega
+    subst a
+    subst b
+    simp
+  · simp [haq]
+
+theorem selectedCechResolutionTotal_d_projection_zero_succ
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p : ℕ) :
+    (selectedCechResolutionTotalComplex 𝒰 Ob).d p (p + 1) ≫
+        selectedCechResolutionTotalProjection 𝒰 Ob 0 (p + 1) (p + 1) (by omega) =
+      selectedCechResolutionTotalProjection 𝒰 Ob 0 p p (by omega) ≫
+        (ComplexShape.ε₂ (ComplexShape.up ℕ) (ComplexShape.up ℕ)
+            (ComplexShape.up ℕ) (0, p) •
+          ((selectedCechResolutionBicomplex 𝒰 Ob).X 0).d p (p + 1)) := by
+  apply HomologicalComplex₂.total.hom_ext
+  intro a b h
+  change a + b = p at h
+  simp only [← Category.assoc]
+  rw [selectedCechResolutionTotalComplex_ι_d,
+    Preadditive.add_comp]
+  rw [HomologicalComplex₂.d₁_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    (i₁ := a) (i₁' := a + 1) (by simp) b (p + 1) (by
+      change a + 1 + b = p + 1
+      omega)]
+  rw [HomologicalComplex₂.d₂_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    a (i₂ := b) (i₂' := b + 1) (by simp) (p + 1) (by
+      change a + (b + 1) = p + 1
+      omega)]
+  rw [Linear.units_smul_comp, Linear.units_smul_comp,
+    Category.assoc, Category.assoc,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general]
+  by_cases ha0 : a = 0
+  · have hb : b = p := by omega
+    subst a
+    subst b
+    simp
+  · simp [ha0]
+
+theorem selectedCechResolutionTotal_ι_d_projection_zero
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p r s : ℕ)
+    (htotal : r + s = q + p + 1)
+    (hres : q + 1 ≠ r ∨ p ≠ s)
+    (hcech : q ≠ r ∨ p + 1 ≠ s) :
+    ((selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p (q + p) (by
+            change q + p = q + p
+            rfl) ≫
+        (selectedCechResolutionTotalComplex 𝒰 Ob).d (q + p) (q + p + 1)) ≫
+      selectedCechResolutionTotalProjection 𝒰 Ob r s (q + p + 1) htotal = 0 := by
+  rw [selectedCechResolutionTotalComplex_ι_d,
+    Preadditive.add_comp]
+  rw [HomologicalComplex₂.d₁_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    (i₁ := q) (i₁' := q + 1) (by simp) p (q + p + 1) (by
+      change q + 1 + p = q + p + 1
+      omega)]
+  rw [HomologicalComplex₂.d₂_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    q (i₂ := p) (i₂' := p + 1) (by simp) (q + p + 1) (by
+      change q + (p + 1) = q + p + 1
+      omega)]
+  rw [Linear.units_smul_comp, Linear.units_smul_comp,
+    Category.assoc, Category.assoc,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general]
+  rcases hres with hres | hres <;> rcases hcech with hcech | hcech <;>
+    simp [hres, hcech]
+
+theorem selectedCechResolutionTotal_ι_d_projection_resolution_explicit
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p n n' : ℕ)
+    (hn : q + p = n) (hn' : q + 1 + p = n') :
+    ((selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n hn ≫
+        (selectedCechResolutionTotalComplex 𝒰 Ob).d n n') ≫
+      selectedCechResolutionTotalProjection 𝒰 Ob (q + 1) p n' hn' =
+      ((selectedCechResolutionBicomplex 𝒰 Ob).d q (q + 1)).f p := by
+  rw [selectedCechResolutionTotalComplex_ι_d,
+    Preadditive.add_comp]
+  rw [HomologicalComplex₂.d₁_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    (i₁ := q) (i₁' := q + 1) (by simp) p n' hn']
+  rw [HomologicalComplex₂.d₂_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    q (i₂ := p) (i₂' := p + 1) (by simp) n' (by
+      change q + (p + 1) = n'
+      omega)]
+  rw [Linear.units_smul_comp, Linear.units_smul_comp,
+    Category.assoc, Category.assoc,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general]
+  simp
+
+theorem selectedCechResolutionTotal_ι_d_projection_zero_explicit
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p n n' r s : ℕ)
+    (hn : q + p = n) (hn' : q + p + 1 = n') (htarget : r + s = n')
+    (hres : q + 1 ≠ r ∨ p ≠ s)
+    (hcech : q ≠ r ∨ p + 1 ≠ s) :
+    ((selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+          (ComplexShape.up ℕ) q p n hn ≫
+        (selectedCechResolutionTotalComplex 𝒰 Ob).d n n') ≫
+      selectedCechResolutionTotalProjection 𝒰 Ob r s n' htarget = 0 := by
+  rw [selectedCechResolutionTotalComplex_ι_d,
+    Preadditive.add_comp]
+  rw [HomologicalComplex₂.d₁_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    (i₁ := q) (i₁' := q + 1) (by simp) p n' (by
+      change q + 1 + p = n'
+      omega)]
+  rw [HomologicalComplex₂.d₂_eq
+    (selectedCechResolutionBicomplex 𝒰 Ob) (ComplexShape.up ℕ)
+    q (i₂ := p) (i₂' := p + 1) (by simp) n' (by
+      change q + (p + 1) = n'
+      omega)]
+  rw [Linear.units_smul_comp, Linear.units_smul_comp,
+    Category.assoc, Category.assoc,
+    selectedCechResolutionTotal_ι_projection_general,
+    selectedCechResolutionTotal_ι_projection_general]
+  rcases hres with hres | hres <;> rcases hcech with hcech | hcech <;>
+    simp [hres, hcech]
+
+def SelectedCechResolutionTotalSupportedAtMost
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n m : ℕ)
+    (x : (selectedCechResolutionTotalComplex 𝒰 Ob).X n) : Prop :=
+  ∀ q p : ℕ, ∀ h : q + p = n, m < q →
+    (selectedCechResolutionTotalProjection 𝒰 Ob q p n h).hom x = 0
+
+theorem selectedCechResolutionTotal_supportedAtMost_top
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (x : (selectedCechResolutionTotalComplex 𝒰 Ob).X n) :
+    SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob n n x := by
+  intro q p hqp hq
+  omega
+
+theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumn
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : ObstructionSheaf S}
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (m p : ℕ)
+    (x : (selectedCechResolutionTotalComplex 𝒰 Ob).X (m + 1 + p))
+    (hcycle : ((selectedCechResolutionTotalComplex 𝒰 Ob).d
+      (m + 1 + p) (m + 1 + p + 1)).hom x = 0)
+    (hsupp : SelectedCechResolutionTotalSupportedAtMost
+      𝒰 Ob (m + 1 + p) (m + 1) x) :
+    ∃ y : (selectedCechResolutionTotalComplex 𝒰 Ob).X (m + p),
+      let x' := x -
+        ((selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (m + p) (m + 1 + p)).hom y
+      SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob (m + 1 + p) m x' ∧
+        ((selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (m + 1 + p) (m + 1 + p + 1)).hom x' = 0 := by
+  let xcomp : ((selectedCechResolutionBicomplex 𝒰 Ob).X (m + 1)).X p :=
+    (selectedCechResolutionTotalProjection 𝒰 Ob (m + 1) p
+      (m + 1 + p) (by omega)).hom x
+  have hxcycle :
+      (((selectedCechResolutionBicomplex 𝒰 Ob).d (m + 1) (m + 2)).f p).hom
+        xcomp = 0 := by
+    rcases p with _ | p
+    · calc
+        _ = (selectedCechResolutionTotalProjection 𝒰 Ob (m + 1) 0
+              (m + 1) (by omega) ≫
+            ((selectedCechResolutionBicomplex 𝒰 Ob).d (m + 1) (m + 2)).f 0).hom x := by
+              rfl
+        _ = (((selectedCechResolutionTotalComplex 𝒰 Ob).d (m + 1) (m + 2) ≫
+              selectedCechResolutionTotalProjection 𝒰 Ob (m + 2) 0
+                (m + 2) (by omega)).hom x) := by
+              rw [selectedCechResolutionTotal_d_projection_succ_zero]
+        _ = 0 := by
+              change (selectedCechResolutionTotalProjection 𝒰 Ob (m + 2) 0
+                (m + 2) (by omega)).hom
+                  (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+                    (m + 1) (m + 2)).hom x) = 0
+              rw [hcycle, map_zero]
+    · have hrzero :
+          (selectedCechResolutionTotalProjection 𝒰 Ob (m + 2) p
+            (m + 1 + (p + 1)) (by omega)).hom x = 0 :=
+        hsupp (m + 2) p (by omega) (by omega)
+      have hleft :
+          (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+              (m + 1 + (p + 1)) (m + 1 + (p + 1) + 1) ≫
+            selectedCechResolutionTotalProjection 𝒰 Ob (m + 2) (p + 1)
+              (m + 1 + (p + 1) + 1) (by omega)).hom x) = 0 := by
+        change (selectedCechResolutionTotalProjection 𝒰 Ob (m + 2) (p + 1)
+          (m + 1 + (p + 1) + 1) (by omega)).hom
+            (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+              (m + 1 + (p + 1)) (m + 1 + (p + 1) + 1)).hom x) = 0
+        rw [hcycle, map_zero]
+      have hformula := ConcreteCategory.congr_hom
+        (selectedCechResolutionTotal_d_projection_succ_succ 𝒰 Ob (m + 1) p) x
+      have hformula' :
+          (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+              (m + 1 + (p + 1)) (m + 1 + (p + 1) + 1) ≫
+            selectedCechResolutionTotalProjection 𝒰 Ob (m + 2) (p + 1)
+              (m + 1 + (p + 1) + 1) (by omega)).hom x) =
+            (((selectedCechResolutionBicomplex 𝒰 Ob).d (m + 1) (m + 2)).f
+                (p + 1)).hom xcomp +
+              (ComplexShape.ε₂ (ComplexShape.up ℕ) (ComplexShape.up ℕ)
+                  (ComplexShape.up ℕ) (m + 2, p) •
+                ((selectedCechResolutionBicomplex 𝒰 Ob).X (m + 2)).d
+                  p (p + 1)).hom
+                ((selectedCechResolutionTotalProjection 𝒰 Ob (m + 2) p
+                  (m + 1 + (p + 1)) (by omega)).hom x) := by
+        simpa only [Nat.add_assoc] using hformula
+      have hsum :
+          (((selectedCechResolutionBicomplex 𝒰 Ob).d (m + 1) (m + 2)).f
+              (p + 1)).hom xcomp +
+            (ComplexShape.ε₂ (ComplexShape.up ℕ) (ComplexShape.up ℕ)
+                (ComplexShape.up ℕ) (m + 2, p) •
+              ((selectedCechResolutionBicomplex 𝒰 Ob).X (m + 2)).d
+                p (p + 1)).hom
+              ((selectedCechResolutionTotalProjection 𝒰 Ob (m + 2) p
+                (m + 1 + (p + 1)) (by omega)).hom x) = 0 := by
+        calc
+          _ = (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+                (m + 1 + (p + 1)) (m + 1 + (p + 1) + 1) ≫
+              selectedCechResolutionTotalProjection 𝒰 Ob (m + 2) (p + 1)
+                (m + 1 + (p + 1) + 1) (by omega)).hom x) := hformula'.symm
+          _ = 0 := hleft
+      rw [hrzero, map_zero, add_zero] at hsum
+      exact hsum
+  let C := selectedCechResolutionColumn 𝒰 Ob p
+  have hexact : C.ExactAt (m + 1) :=
+    hLeray.selectedCechResolutionColumn_exactAt (m + 1) (by omega) p
+  rw [C.exactAt_iff' m (m + 1) (m + 2) (by simp) (by simp)] at hexact
+  rw [ShortComplex.ab_exact_iff_ker_le_range] at hexact
+  have hxmem : xcomp ∈ ((C.d (m + 1) (m + 2)).hom).ker := by
+    change ((C.d (m + 1) (m + 2)).hom xcomp = 0)
+    exact hxcycle
+  rcases hexact hxmem with ⟨ycomp, hycomp⟩
+  change (C.d m (m + 1)).hom ycomp = xcomp at hycomp
+  let y : (selectedCechResolutionTotalComplex 𝒰 Ob).X (m + p) :=
+    ((selectedCechResolutionBicomplex 𝒰 Ob).ιTotal
+      (ComplexShape.up ℕ) m p (m + p) (by
+        change m + p = m + p
+        rfl)).hom ycomp
+  refine ⟨y, ?_, ?_⟩
+  · intro r s hrs hmr
+    change (selectedCechResolutionTotalProjection 𝒰 Ob r s
+      (m + 1 + p) hrs).hom
+      (x - ((selectedCechResolutionTotalComplex 𝒰 Ob).d
+        (m + p) (m + 1 + p)).hom y) = 0
+    rw [map_sub]
+    by_cases hr : r = m + 1
+    · subst r
+      have hs : s = p := by omega
+      subst s
+      have hboundary := ConcreteCategory.congr_hom
+        (selectedCechResolutionTotal_ι_d_projection_resolution_explicit
+          𝒰 Ob m p (m + p) (m + 1 + p) (by rfl) (by rfl)) ycomp
+      have hboundary' :
+          (selectedCechResolutionTotalProjection 𝒰 Ob (m + 1) p
+            (m + 1 + p) (by omega)).hom
+            (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+              (m + p) (m + 1 + p)).hom y) =
+            (C.d m (m + 1)).hom ycomp := by
+        simpa only [y, Nat.add_assoc] using hboundary
+      change xcomp -
+        (selectedCechResolutionTotalProjection 𝒰 Ob (m + 1) p
+          (m + 1 + p) (by omega)).hom
+          (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+            (m + p) (m + 1 + p)).hom y) = 0
+      rw [hboundary', hycomp]
+      simp
+    · have hxzero := hsupp r s hrs (by omega)
+      rw [hxzero, zero_sub]
+      have hzero := ConcreteCategory.congr_hom
+        (selectedCechResolutionTotal_ι_d_projection_zero_explicit
+          𝒰 Ob m p (m + p) (m + 1 + p) r s
+          (by rfl) (by omega) hrs
+          (Or.inl (by omega)) (Or.inl (by omega))) ycomp
+      have hzero' :
+          (selectedCechResolutionTotalProjection 𝒰 Ob r s
+            (m + 1 + p) hrs).hom
+            (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+              (m + p) (m + 1 + p)).hom y) = 0 := by
+        simpa only [y, Nat.add_assoc, map_zero] using hzero
+      change -(selectedCechResolutionTotalProjection 𝒰 Ob r s
+        (m + 1 + p) hrs).hom
+          (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+            (m + p) (m + 1 + p)).hom y) = 0
+      rw [hzero']
+      simp
+  · rw [map_sub, hcycle]
+    change 0 -
+      (((selectedCechResolutionTotalComplex 𝒰 Ob).d (m + p) (m + 1 + p) ≫
+        (selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (m + 1 + p) (m + 1 + p + 1)).hom y) = 0
+    rw [HomologicalComplex.d_comp_d]
+    simp
+
 end AAT.AG.Cohomology
