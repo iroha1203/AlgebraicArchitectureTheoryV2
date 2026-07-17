@@ -10,6 +10,8 @@ import Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf
 import Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives
 import Mathlib.CategoryTheory.Abelian.Injective.Ext
 import Mathlib.CategoryTheory.Abelian.Injective.Resolution
+import Mathlib.CategoryTheory.Adjunction.Additive
+import Mathlib.CategoryTheory.Adjunction.Whiskering
 import Mathlib.CategoryTheory.Whiskering
 
 /-!
@@ -1311,6 +1313,575 @@ theorem baseResolutionComplex_d_apply
     ((baseResolutionComplex (base := base) Ob).d q (q + 1)).hom x =
       ((obstructionInjectiveResolution Ob).cocomplex.d q (q + 1)).val.app _ x :=
   rfl
+
+/--
+Morphisms from the sheafified free representable are canonically sections.
+
+Implementation notes: this is the composite of the sheafification adjunction,
+the free-abelian-group adjunction in the presheaf category, and Yoneda.  The
+additive structure is therefore derived from the standard constructions rather
+than supplied as comparison data.
+-/
+noncomputable def sheafifiedFreeYonedaHomAddEquiv
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (X : S.category)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1}) :
+    (((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj X ⋙ AddCommGrpCat.free) ⟶ F) : Type (u + 1)) ≃+
+      (F.val.obj (Opposite.op X) : Type (u + 1)) := by
+  let e₁ := (sheafificationAdjunction S.topology
+    AddCommGrpCat.{u + 1}).homAddEquiv
+      (yoneda.obj X ⋙ AddCommGrpCat.free) F
+  let e₂ := (AddCommGrpCat.adj.whiskerRight S.categoryᵒᵖ).homEquiv
+      (yoneda.obj X) F.val
+  let e₃ : (yoneda.obj X ⟶ F.val ⋙ forget AddCommGrpCat) ≃
+      (F.val ⋙ forget AddCommGrpCat).obj (Opposite.op X) :=
+    yonedaEquiv
+  exact
+    { toFun := fun f ↦ e₃ (e₂ (e₁ f))
+      invFun := fun x ↦ e₁.symm (e₂.symm (e₃.symm x))
+      left_inv := by
+        intro f
+        change e₁.symm (e₂.symm (e₃.symm (e₃ (e₂ (e₁ f))))) = f
+        rw [e₃.symm_apply_apply, e₂.symm_apply_apply, e₁.symm_apply_apply]
+      right_inv := by
+        intro x
+        change e₃ (e₂ (e₁ (e₁.symm (e₂.symm (e₃.symm x))))) = x
+        rw [e₁.apply_symm_apply, e₂.apply_symm_apply, e₃.apply_symm_apply]
+      map_add' := by
+        intro f g
+        change e₃ (e₂ (e₁ (f + g))) =
+          e₃ (e₂ (e₁ f)) + e₃ (e₂ (e₁ g))
+        simp only [map_add]
+        rfl }
+
+/-- Postcomposition of free-representable morphisms is evaluation on sections. -/
+theorem sheafifiedFreeYonedaHomAddEquiv_comp
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (X : S.category)
+    {F G : Sheaf S.topology AddCommGrpCat.{u + 1}}
+    (f : ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj X ⋙ AddCommGrpCat.free)) ⟶ F)
+    (g : F ⟶ G) :
+    sheafifiedFreeYonedaHomAddEquiv X G (f ≫ g) =
+      g.val.app (Opposite.op X)
+        (sheafifiedFreeYonedaHomAddEquiv X F f) := by
+  rfl
+
+/--
+Precomposition by a map of sheafified free representables is restriction of
+sections.  The normal form is the section map `F.val.map a.op`, so downstream
+proofs do not unfold the three adjunctions used by
+`sheafifiedFreeYonedaHomAddEquiv`.
+-/
+theorem sheafifiedFreeYonedaHomAddEquiv_precomp
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {X Y : S.category}
+    (a : X ⟶ Y)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1})
+    (f : ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj Y ⋙ AddCommGrpCat.free)) ⟶ F) :
+    sheafifiedFreeYonedaHomAddEquiv X F
+        ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+          (Functor.whiskerRight (yoneda.map a) AddCommGrpCat.free) ≫ f) =
+      F.val.map a.op (sheafifiedFreeYonedaHomAddEquiv Y F f) := by
+  change yonedaEquiv
+      (((AddCommGrpCat.adj.whiskerRight S.categoryᵒᵖ).homEquiv
+        (yoneda.obj X) F.val)
+        (((sheafificationAdjunction S.topology AddCommGrpCat.{u + 1}).homEquiv
+          (yoneda.obj X ⋙ AddCommGrpCat.free) F)
+          ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+            (Functor.whiskerRight (yoneda.map a) AddCommGrpCat.free) ≫ f))) = _
+  rw [(sheafificationAdjunction S.topology
+    AddCommGrpCat.{u + 1}).homEquiv_naturality_left]
+  change yonedaEquiv
+      (((AddCommGrpCat.adj.whiskerRight S.categoryᵒᵖ).homEquiv
+        (yoneda.obj X) F.val)
+        (((Functor.whiskeringRight S.categoryᵒᵖ _ _).obj
+          AddCommGrpCat.free).map (yoneda.map a) ≫
+            ((sheafificationAdjunction S.topology AddCommGrpCat.{u + 1}).homEquiv
+              (yoneda.obj Y ⋙ AddCommGrpCat.free) F) f)) = _
+  rw [(AddCommGrpCat.adj.whiskerRight
+    S.categoryᵒᵖ).homEquiv_naturality_left]
+  exact (yonedaEquiv_naturality _ a).symm
+
+/--
+The base-resolution complex in the universe of Mathlib's `H'` value.
+
+This universe lift is structural: it permits the homology object and the Ext
+group to live in the same `AddCommGrpCat` while retaining
+`baseResolutionComplex` as the small source complex.
+-/
+noncomputable def liftedBaseResolutionComplex
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) :
+    CochainComplex AddCommGrpCat.{u + 2} ℕ :=
+  (AddCommGrpCat.uliftFunctor.{u + 2, u + 1}.mapHomologicalComplex
+    (ComplexShape.up ℕ)).obj (baseResolutionComplex (base := base) Ob)
+
+/-- The lifted complex has the universe lift of the actual section group in each degree. -/
+@[simp] theorem liftedBaseResolutionComplex_X
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (q : ℕ) :
+    ((liftedBaseResolutionComplex (base := base) Ob).X q : Type (u + 2)) =
+      ULift.{u + 2, u + 1}
+        (((obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+          (Opposite.op base)) :=
+  rfl
+
+/--
+The lifted differential is the universe lift of the evaluated injective-resolution
+differential.  This is the no-unfold computation rule for the lifted complex.
+-/
+theorem liftedBaseResolutionComplex_d_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (q : ℕ)
+    (x : ULift.{u + 2, u + 1}
+      (((obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+        (Opposite.op base))) :
+    ((liftedBaseResolutionComplex (base := base) Ob).d q (q + 1)).hom x =
+      ULift.up
+        (((obstructionInjectiveResolution Ob).cocomplex.d q (q + 1)).val.app _ x.down) :=
+  rfl
+
+/-- A lifted base-resolution cycle determines a morphism from the free representable. -/
+noncomputable def baseResolutionLiftedCycleMorphism
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj base ⋙ AddCommGrpCat.free)) ⟶
+        (obstructionInjectiveResolution Ob).cocomplex.X n :=
+  (sheafifiedFreeYonedaHomAddEquiv base
+    ((obstructionInjectiveResolution Ob).cocomplex.X n)).symm
+      (((liftedBaseResolutionComplex (base := base) Ob).iCycles n).hom z).down
+
+/--
+The section represented by `baseResolutionLiftedCycleMorphism` is the original
+lifted cycle.  The right-hand side is the normal form used by later proofs.
+-/
+@[simp] theorem baseResolutionLiftedCycleMorphism_section
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    sheafifiedFreeYonedaHomAddEquiv base
+        ((obstructionInjectiveResolution Ob).cocomplex.X n)
+        (baseResolutionLiftedCycleMorphism (base := base) Ob n z) =
+      (((liftedBaseResolutionComplex (base := base) Ob).iCycles n).hom z).down :=
+  (sheafifiedFreeYonedaHomAddEquiv base
+    ((obstructionInjectiveResolution Ob).cocomplex.X n)).apply_symm_apply _
+
+/-- The morphism represented by a lifted cycle is a cocycle in the injective resolution. -/
+theorem baseResolutionLiftedCycleMorphism_comp_d
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    baseResolutionLiftedCycleMorphism (base := base) Ob n z ≫
+        (obstructionInjectiveResolution Ob).cocomplex.d n (n + 1) = 0 := by
+  apply (sheafifiedFreeYonedaHomAddEquiv base
+    ((obstructionInjectiveResolution Ob).cocomplex.X (n + 1))).injective
+  rw [sheafifiedFreeYonedaHomAddEquiv_comp]
+  rw [baseResolutionLiftedCycleMorphism_section]
+  rw [map_zero]
+  have h := ConcreteCategory.congr_hom
+    ((liftedBaseResolutionComplex (base := base) Ob).iCycles_d n (n + 1)) z
+  have hd := congrArg ULift.down h
+  simpa only [liftedBaseResolutionComplex_d_apply, ConcreteCategory.comp_apply,
+    map_zero] using hd
+
+/--
+The canonical cycle map from the lifted base resolution to actual `Sheaf.H'`.
+
+The value is Mathlib's `InjectiveResolution.extMk`; neither an Ext class nor a
+comparison map is accepted from the caller.
+-/
+noncomputable def baseResolutionLiftedCyclesToHPrime
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (liftedBaseResolutionComplex (base := base) Ob).cycles n ⟶
+      (Ob.toAddCommGrpSheaf).H' n base :=
+  AddCommGrpCat.ofHom
+    { toFun := fun z ↦
+        (obstructionInjectiveResolution Ob).extMk
+          (baseResolutionLiftedCycleMorphism (base := base) Ob n z) (n + 1) rfl
+          (baseResolutionLiftedCycleMorphism_comp_d (base := base) Ob n z)
+      map_zero' := by
+        have hf0 : baseResolutionLiftedCycleMorphism (base := base) Ob n 0 = 0 := by
+          apply (sheafifiedFreeYonedaHomAddEquiv base
+            ((obstructionInjectiveResolution Ob).cocomplex.X n)).injective
+          simp only [baseResolutionLiftedCycleMorphism_section, map_zero]
+          rfl
+        simpa only [hf0] using
+          (obstructionInjectiveResolution Ob).extMk_zero
+            (X := (presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+              (yoneda.obj base ⋙ AddCommGrpCat.free)) (n + 1) rfl
+      map_add' := by
+        intro x y
+        have hxy : baseResolutionLiftedCycleMorphism (base := base) Ob n (x + y) =
+            baseResolutionLiftedCycleMorphism (base := base) Ob n x +
+              baseResolutionLiftedCycleMorphism (base := base) Ob n y := by
+          apply (sheafifiedFreeYonedaHomAddEquiv base
+            ((obstructionInjectiveResolution Ob).cocomplex.X n)).injective
+          simp only [baseResolutionLiftedCycleMorphism_section, map_add]
+          rfl
+        simpa only [hxy] using ((obstructionInjectiveResolution Ob).add_extMk
+          (baseResolutionLiftedCycleMorphism (base := base) Ob n x)
+          (baseResolutionLiftedCycleMorphism (base := base) Ob n y)
+          (n + 1) rfl (baseResolutionLiftedCycleMorphism_comp_d (base := base) Ob n x)
+          (baseResolutionLiftedCycleMorphism_comp_d (base := base) Ob n y)).symm }
+
+/-- No-unfold API: the lifted cycle map is the standard Ext cocycle constructor. -/
+@[simp] theorem baseResolutionLiftedCyclesToHPrime_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    (baseResolutionLiftedCyclesToHPrime (base := base) Ob n).hom z =
+      (obstructionInjectiveResolution Ob).extMk
+        (baseResolutionLiftedCycleMorphism (base := base) Ob n z) (n + 1) rfl
+        (baseResolutionLiftedCycleMorphism_comp_d (base := base) Ob n z) :=
+  rfl
+
+private theorem liftedBaseResolutionToCycles_comp_cyclesToHPrime
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (liftedBaseResolutionComplex (base := base) Ob).toCycles
+          ((ComplexShape.up ℕ).prev n) n ≫
+        baseResolutionLiftedCyclesToHPrime Ob n = 0 := by
+  cases n with
+  | zero =>
+      rw [(liftedBaseResolutionComplex (base := base) Ob).toCycles_eq_zero
+        (i := (ComplexShape.up ℕ).prev 0) (j := 0) (by simp)]
+      simp
+  | succ n =>
+      rw [CochainComplex.prev_nat_succ]
+      apply AddCommGrpCat.hom_ext
+      apply AddMonoidHom.ext
+      intro x
+      let z := ((liftedBaseResolutionComplex (base := base) Ob).toCycles
+        n (n + 1)).hom x
+      let hz := baseResolutionLiftedCycleMorphism_comp_d
+        (base := base) Ob (n + 1) z
+      change (obstructionInjectiveResolution Ob).extMk
+          (baseResolutionLiftedCycleMorphism (base := base) Ob (n + 1) z)
+          (n + 2) rfl hz = 0
+      rw [(obstructionInjectiveResolution Ob).extMk_eq_zero_iff
+        (baseResolutionLiftedCycleMorphism (base := base) Ob (n + 1) z)
+        (n + 2) rfl hz n rfl]
+      let g := (sheafifiedFreeYonedaHomAddEquiv base
+        ((obstructionInjectiveResolution Ob).cocomplex.X n)).symm x.down
+      refine ⟨g, ?_⟩
+      apply (sheafifiedFreeYonedaHomAddEquiv base
+        ((obstructionInjectiveResolution Ob).cocomplex.X (n + 1))).injective
+      rw [sheafifiedFreeYonedaHomAddEquiv_comp]
+      rw [show sheafifiedFreeYonedaHomAddEquiv base
+          ((obstructionInjectiveResolution Ob).cocomplex.X n) g = x.down by
+        exact (sheafifiedFreeYonedaHomAddEquiv base
+          ((obstructionInjectiveResolution Ob).cocomplex.X n)).apply_symm_apply _]
+      rw [baseResolutionLiftedCycleMorphism_section]
+      change
+        ((obstructionInjectiveResolution Ob).cocomplex.d n (n + 1)).val.app _ x.down =
+          (((liftedBaseResolutionComplex (base := base) Ob).iCycles (n + 1)).hom z).down
+      have h := ConcreteCategory.congr_hom
+        ((liftedBaseResolutionComplex (base := base) Ob).toCycles_i n (n + 1)) x
+      have hd := congrArg ULift.down h
+      simpa only [z, liftedBaseResolutionComplex_d_apply,
+        ConcreteCategory.comp_apply] using hd.symm
+
+private noncomputable def liftedBaseResolutionHomologyToHPrime
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (liftedBaseResolutionComplex (base := base) Ob).homology n ⟶
+      (Ob.toAddCommGrpSheaf).H' n base :=
+  ((liftedBaseResolutionComplex (base := base) Ob).sc n).descHomology
+    (baseResolutionLiftedCyclesToHPrime Ob n) (by
+      change (liftedBaseResolutionComplex (base := base) Ob).toCycles
+          ((ComplexShape.up ℕ).prev n) n ≫
+        baseResolutionLiftedCyclesToHPrime Ob n = 0
+      exact liftedBaseResolutionToCycles_comp_cyclesToHPrime Ob n)
+
+private theorem liftedBaseResolutionHomologyToHPrime_homologyπ
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (liftedBaseResolutionComplex (base := base) Ob).homologyπ n ≫
+        liftedBaseResolutionHomologyToHPrime Ob n =
+      baseResolutionLiftedCyclesToHPrime Ob n := by
+  exact ((liftedBaseResolutionComplex (base := base) Ob).sc n).π_descHomology
+    (baseResolutionLiftedCyclesToHPrime Ob n) _
+
+private theorem liftedBaseResolutionHomologyToHPrime_surjective
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    Function.Surjective
+      (liftedBaseResolutionHomologyToHPrime (base := base) Ob n) := by
+  intro α
+  obtain ⟨f, hf, hα⟩ :=
+    (obstructionInjectiveResolution Ob).extMk_surjective α (n + 1) rfl
+  let s := sheafifiedFreeYonedaHomAddEquiv base
+    ((obstructionInjectiveResolution Ob).cocomplex.X n) f
+  have hs :
+      ((obstructionInjectiveResolution Ob).cocomplex.d n (n + 1)).val.app _ s = 0 := by
+    have h := congrArg
+      (sheafifiedFreeYonedaHomAddEquiv base
+        ((obstructionInjectiveResolution Ob).cocomplex.X (n + 1))) hf
+    simpa only [sheafifiedFreeYonedaHomAddEquiv_comp, map_zero] using h
+  let x : (liftedBaseResolutionComplex (base := base) Ob).X n := ULift.up s
+  have hx :
+      (((liftedBaseResolutionComplex (base := base) Ob).sc n).g).hom x = 0 := by
+    change ((liftedBaseResolutionComplex (base := base) Ob).d n
+      ((ComplexShape.up ℕ).next n)).hom x = 0
+    rw [show (ComplexShape.up ℕ).next n = n + 1 by simp]
+    simpa only [x, liftedBaseResolutionComplex_d_apply] using congrArg ULift.up hs
+  let z : (liftedBaseResolutionComplex (base := base) Ob).cycles n :=
+    (((liftedBaseResolutionComplex (base := base) Ob).sc n).abCyclesIso.inv).hom
+      ⟨x, hx⟩
+  have hz : baseResolutionLiftedCycleMorphism (base := base) Ob n z = f := by
+    apply (sheafifiedFreeYonedaHomAddEquiv base
+      ((obstructionInjectiveResolution Ob).cocomplex.X n)).injective
+    rw [baseResolutionLiftedCycleMorphism_section]
+    change (((liftedBaseResolutionComplex (base := base) Ob).iCycles n).hom z).down = s
+    have hi := ((liftedBaseResolutionComplex (base := base) Ob).sc n).abCyclesIso_inv_apply_iCycles
+      ⟨x, hx⟩
+    have hid := congrArg (fun y ↦ ULift.down y) hi
+    simpa only [z, x] using hid
+  refine ⟨((liftedBaseResolutionComplex (base := base) Ob).homologyπ n).hom z, ?_⟩
+  have hmap := ConcreteCategory.congr_hom
+    (liftedBaseResolutionHomologyToHPrime_homologyπ (base := base) Ob n) z
+  rw [ConcreteCategory.comp_apply] at hmap
+  rw [hmap]
+  change (obstructionInjectiveResolution Ob).extMk
+      (baseResolutionLiftedCycleMorphism (base := base) Ob n z) (n + 1) rfl
+        (baseResolutionLiftedCycleMorphism_comp_d (base := base) Ob n z) = α
+  simpa only [hz] using hα
+
+private theorem baseResolutionExtMk_zero_eq_zero_iff
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S)
+    (f : ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj base ⋙ AddCommGrpCat.free)) ⟶
+        (obstructionInjectiveResolution Ob).cocomplex.X 0)
+    (hf : f ≫ (obstructionInjectiveResolution Ob).cocomplex.d 0 1 = 0) :
+    (obstructionInjectiveResolution Ob).extMk f 1 rfl hf = 0 ↔ f = 0 := by
+  let R := obstructionInjectiveResolution Ob
+  change R.extMk f 1 rfl hf = 0 ↔ f = 0
+  simp only [← R.extEquivCohomologyClass.apply_eq_iff_eq,
+    R.extEquivCohomologyClass_extMk, R.extEquivCohomologyClass_zero,
+    CochainComplex.HomComplex.CohomologyClass.mk_eq_zero_iff]
+  rw [CochainComplex.HomComplex.Cocycle.fromSingleMk_mem_coboundaries_iff
+    _ _ _ _ _ (-1) (by lia)]
+  constructor
+  · rintro ⟨g, hg⟩
+    have hg0 : g = 0 :=
+      (CochainComplex.isZero_of_isStrictlyGE R.cochainComplex 0 (-1) (by lia)).eq_of_tgt _ _
+    rw [hg0] at hg
+    simp only [Limits.zero_comp] at hg
+    apply (cancel_mono (R.cochainComplexXIso 0 0 rfl).inv).1
+    simpa only [Limits.zero_comp] using hg.symm
+  · rintro rfl
+    refine ⟨0, ?_⟩
+    simp
+
+private theorem liftedBaseResolutionHomologyToHPrime_injective
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    Function.Injective
+      (liftedBaseResolutionHomologyToHPrime (base := base) Ob n) := by
+  intro a b hab
+  have hab0 :
+      (liftedBaseResolutionHomologyToHPrime (base := base) Ob n).hom (a - b) = 0 := by
+    rw [map_sub, hab, sub_self]
+  obtain ⟨z, hz⟩ := ((AddCommGrpCat.epi_iff_surjective
+    ((liftedBaseResolutionComplex (base := base) Ob).homologyπ n)).mp
+      inferInstance) (a - b)
+  have hcycle : (baseResolutionLiftedCyclesToHPrime Ob n).hom z = 0 := by
+    have hmap := ConcreteCategory.congr_hom
+      (liftedBaseResolutionHomologyToHPrime_homologyπ (base := base) Ob n) z
+    rw [ConcreteCategory.comp_apply] at hmap
+    rw [← hmap, hz, hab0]
+  have hzclass :
+      ((liftedBaseResolutionComplex (base := base) Ob).homologyπ n).hom z = 0 := by
+    cases n with
+    | zero =>
+        have hf : baseResolutionLiftedCycleMorphism (base := base) Ob 0 z = 0 := by
+          apply (baseResolutionExtMk_zero_eq_zero_iff (base := base) Ob
+            (baseResolutionLiftedCycleMorphism (base := base) Ob 0 z)
+            (baseResolutionLiftedCycleMorphism_comp_d (base := base) Ob 0 z)).mp
+          exact hcycle
+        have hi0 :
+            ((liftedBaseResolutionComplex (base := base) Ob).iCycles 0).hom z = 0 := by
+          apply ULift.down_injective
+          have h := congrArg
+            (sheafifiedFreeYonedaHomAddEquiv base
+              ((obstructionInjectiveResolution Ob).cocomplex.X 0)) hf
+          simpa only [baseResolutionLiftedCycleMorphism_section, map_zero] using h
+        have hz0 : z = 0 :=
+          (AddCommGrpCat.mono_iff_injective
+            ((liftedBaseResolutionComplex (base := base) Ob).iCycles 0)).1
+              inferInstance (by simpa only [map_zero] using hi0)
+        rw [hz0]
+        exact map_zero _
+    | succ p =>
+        let f := baseResolutionLiftedCycleMorphism (base := base) Ob (p + 1) z
+        let hf := baseResolutionLiftedCycleMorphism_comp_d
+          (base := base) Ob (p + 1) z
+        have hext : (obstructionInjectiveResolution Ob).extMk f (p + 2) rfl hf = 0 := by
+          exact hcycle
+        obtain ⟨g, hg⟩ := ((obstructionInjectiveResolution Ob).extMk_eq_zero_iff
+          f (p + 2) rfl hf p rfl).mp hext
+        let x : (liftedBaseResolutionComplex (base := base) Ob).X p :=
+          ULift.up (sheafifiedFreeYonedaHomAddEquiv base
+            ((obstructionInjectiveResolution Ob).cocomplex.X p) g)
+        let z' := ((liftedBaseResolutionComplex (base := base) Ob).toCycles
+          p (p + 1)).hom x
+        have hzz' : z = z' := by
+          apply (AddCommGrpCat.mono_iff_injective
+            ((liftedBaseResolutionComplex (base := base) Ob).iCycles (p + 1))).1
+              inferInstance
+          apply ULift.down_injective
+          have hz_under :
+              (((liftedBaseResolutionComplex (base := base) Ob).iCycles (p + 1)).hom z).down =
+                sheafifiedFreeYonedaHomAddEquiv base
+                  ((obstructionInjectiveResolution Ob).cocomplex.X (p + 1)) f := by
+            simpa only [f] using
+              (baseResolutionLiftedCycleMorphism_section
+                (base := base) Ob (p + 1) z).symm
+          have hboundary := ConcreteCategory.congr_hom
+            ((liftedBaseResolutionComplex (base := base) Ob).toCycles_i p (p + 1)) x
+          have hboundary_down := congrArg ULift.down hboundary
+          rw [hz_under]
+          rw [← hg, sheafifiedFreeYonedaHomAddEquiv_comp]
+          simpa only [z', x, liftedBaseResolutionComplex_d_apply,
+            ConcreteCategory.comp_apply] using hboundary_down.symm
+        rw [hzz']
+        have hzero := ConcreteCategory.congr_hom
+          ((liftedBaseResolutionComplex (base := base) Ob).toCycles_comp_homologyπ
+            p (p + 1)) x
+        simpa only [z', ConcreteCategory.comp_apply, map_zero] using hzero
+  have hab_eq : a - b = 0 := by
+    rw [← hz]
+    exact hzclass
+  exact sub_eq_zero.mp hab_eq
+
+private noncomputable def liftedBaseResolutionHomologyEquivHPrime
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    ((liftedBaseResolutionComplex (base := base) Ob).homology n : Type (u + 2)) ≃+
+      ((Ob.toAddCommGrpSheaf).H' n base : Type (u + 2)) :=
+  AddEquiv.ofBijective
+    (liftedBaseResolutionHomologyToHPrime (base := base) Ob n).hom
+    ⟨liftedBaseResolutionHomologyToHPrime_injective Ob n,
+      liftedBaseResolutionHomologyToHPrime_surjective Ob n⟩
+
+/-- Homology commutes with the structural universe lift of the base resolution. -/
+noncomputable def liftedBaseResolutionHomologyIso
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (liftedBaseResolutionComplex (base := base) Ob).homology n ≅
+      AddCommGrpCat.uliftFunctor.{u + 2, u + 1}.obj
+        ((baseResolutionComplex (base := base) Ob).homology n) :=
+  ((baseResolutionComplex (base := base) Ob).sc n).mapHomologyIso
+    AddCommGrpCat.uliftFunctor.{u + 2, u + 1}
+
+/--
+Canonical identification of base-resolution homology with actual
+`Sheaf.H'`.
+
+It is assembled from the universe-lift homology isomorphism and the Ext
+cocycle construction above.  No arbitrary complex, equivalence, comparison
+map, or bijectivity premise is accepted.
+-/
+noncomputable def baseResolutionHomologyEquivHPrime
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    ((baseResolutionComplex (base := base) Ob).homology n : Type (u + 1)) ≃+
+      ((Ob.toAddCommGrpSheaf).H' n base : Type (u + 2)) :=
+  AddEquiv.ulift.{u + 1, u + 2}.symm |>.trans
+    ((liftedBaseResolutionHomologyIso (base := base) Ob n).symm.addCommGroupIsoToAddEquiv.trans
+      (liftedBaseResolutionHomologyEquivHPrime (base := base) Ob n))
+
+private theorem liftedBaseResolutionHomologyEquivHPrime_homologyπ
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    liftedBaseResolutionHomologyEquivHPrime Ob n
+        (((liftedBaseResolutionComplex (base := base) Ob).homologyπ n).hom z) =
+      (baseResolutionLiftedCyclesToHPrime Ob n).hom z := by
+  change (liftedBaseResolutionHomologyToHPrime (base := base) Ob n).hom
+      (((liftedBaseResolutionComplex (base := base) Ob).homologyπ n).hom z) = _
+  have h := ConcreteCategory.congr_hom
+    (liftedBaseResolutionHomologyToHPrime_homologyπ (base := base) Ob n) z
+  simpa only [ConcreteCategory.comp_apply] using h
+
+private theorem liftedBaseResolutionHomologyIso_inv_homologyπ
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    AddCommGrpCat.uliftFunctor.{u + 2, u + 1}.map
+          ((baseResolutionComplex (base := base) Ob).homologyπ n) ≫
+        (liftedBaseResolutionHomologyIso (base := base) Ob n).inv =
+      (((baseResolutionComplex (base := base) Ob).sc n).mapCyclesIso
+          AddCommGrpCat.uliftFunctor.{u + 2, u + 1}).inv ≫
+        (liftedBaseResolutionComplex (base := base) Ob).homologyπ n := by
+  let K := baseResolutionComplex (base := base) Ob
+  let F := AddCommGrpCat.uliftFunctor.{u + 2, u + 1}
+  let h := (K.sc n).leftHomologyData
+  change F.map (K.homologyπ n) ≫ ((K.sc n).mapHomologyIso F).inv =
+    ((K.sc n).mapCyclesIso F).inv ≫
+      ((F.mapHomologicalComplex (ComplexShape.up ℕ)).obj K).homologyπ n
+  rw [h.mapHomologyIso_eq F, h.mapCyclesIso_eq F]
+  dsimp only [HomologicalComplex.homologyπ, Iso.trans_inv,
+    Functor.mapIso, Iso.symm_inv]
+  simp only [Category.assoc]
+  rw [← Category.assoc, ← F.map_comp,
+    h.homologyπ_comp_homologyIso_hom, F.map_comp]
+  change F.map h.cyclesIso.hom ≫ (h.map F).π ≫
+    (h.map F).homologyIso.inv = _
+  rw [(h.map F).π_comp_homologyIso_inv]
+  rfl
+
+/--
+Representative formula for the base-resolution comparison.
+
+A small homology class represented by `z` is first transported through the
+canonical universe-lift cycle isomorphism and then sent by the actual Ext
+cocycle constructor fixed above.
+-/
+theorem baseResolutionHomologyEquivHPrime_homologyπ
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (baseResolutionComplex (base := base) Ob).cycles n) :
+    baseResolutionHomologyEquivHPrime Ob n
+        (((baseResolutionComplex (base := base) Ob).homologyπ n).hom z) =
+      (baseResolutionLiftedCyclesToHPrime Ob n).hom
+        (((((baseResolutionComplex (base := base) Ob).sc n).mapCyclesIso
+          AddCommGrpCat.uliftFunctor.{u + 2, u + 1}).inv).hom (ULift.up z)) := by
+  simp only [baseResolutionHomologyEquivHPrime, AddEquiv.trans_apply]
+  have h := ConcreteCategory.congr_hom
+    (liftedBaseResolutionHomologyIso_inv_homologyπ (base := base) Ob n)
+      (ULift.up z)
+  rw [ConcreteCategory.comp_apply, ConcreteCategory.comp_apply] at h
+  have h' :
+      (liftedBaseResolutionHomologyIso (base := base) Ob n).inv.hom
+          (ULift.up (((baseResolutionComplex (base := base) Ob).homologyπ n).hom z)) =
+        ((liftedBaseResolutionComplex (base := base) Ob).homologyπ n).hom
+          (((((baseResolutionComplex (base := base) Ob).sc n).mapCyclesIso
+            AddCommGrpCat.uliftFunctor.{u + 2, u + 1}).inv).hom (ULift.up z)) := by
+    exact h
+  change liftedBaseResolutionHomologyEquivHPrime (base := base) Ob n
+      ((liftedBaseResolutionHomologyIso (base := base) Ob n).inv.hom
+        (ULift.up (((baseResolutionComplex (base := base) Ob).homologyπ n).hom z))) = _
+  rw [h']
+  exact liftedBaseResolutionHomologyEquivHPrime_homologyπ (base := base) Ob n _
 
 /--
 The base-resolution complex maps to the selected degree-zero column.
