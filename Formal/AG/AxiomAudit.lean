@@ -4901,6 +4901,44 @@ def readingFunctoriality_coefficientExtension_hasSheafCompose_refl :=
 def readingFunctoriality_coefficientExtension_hasSheafCompose_comp :=
   @AAT.AG.FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
 
+/-! Part 4 SD6 / AC28: raw structural coefficient change. -/
+
+/-- Audit alias for objectwise structural-relation coefficient change. -/
+noncomputable def readingFunctoriality_structuralRelationFamily_baseChange :=
+  @AAT.AG.LawAlgebra.StructuralRelationFamily.baseChange
+
+/-- Audit alias for transported restriction-stable relations. -/
+noncomputable def readingFunctoriality_restrictionStable_baseChange :=
+  @AAT.AG.LawAlgebra.RestrictionStableStructuralRelations.baseChange
+
+/-- Audit alias for raw restriction-system coefficient change. -/
+noncomputable def readingFunctoriality_raw_baseChange :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.baseChange
+
+/-- Audit alias for preservation of raw coordinate families. -/
+def readingFunctoriality_raw_baseChange_coordFamily :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.baseChange_coordFamily
+
+/-- Audit alias for changed structural relations. -/
+def readingFunctoriality_raw_baseChange_relationFamily :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.baseChange_relationFamily
+
+/-- Audit alias for changed restriction-stability data. -/
+def readingFunctoriality_raw_baseChange_restrictionStable :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.baseChange_restrictionStable
+
+/-- Audit alias for identity coherence of raw coefficient change. -/
+def readingFunctoriality_raw_baseChange_id :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.baseChange_id
+
+/-- Audit alias for composition coherence of raw coefficient change. -/
+def readingFunctoriality_raw_baseChange_comp :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.baseChange_comp
+
+/-- Audit alias for the natural structural-quotient coefficient comparison. -/
+noncomputable def readingFunctoriality_raw_baseChangePresheafIso :=
+  @AAT.AG.LawAlgebra.RawAmbientRestrictionSystem.baseChangePresheafIso
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/
