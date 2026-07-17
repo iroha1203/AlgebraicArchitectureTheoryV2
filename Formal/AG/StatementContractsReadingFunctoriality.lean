@@ -1545,9 +1545,43 @@ example (X : S.category)
         (Cohomology.sheafifiedFreeYonedaHomAddEquiv X F f) :=
   Cohomology.sheafifiedFreeYonedaHomAddEquiv_comp X f g
 
+/-- Fixed source-object naturality law for the additive Yoneda bridge. -/
+example {X Y : S.category}
+    (a : X ⟶ Y)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1})
+    (f : ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj Y ⋙ AddCommGrpCat.free)) ⟶ F) :
+    Cohomology.sheafifiedFreeYonedaHomAddEquiv X F
+        ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+          (Functor.whiskerRight (yoneda.map a) AddCommGrpCat.free) ≫ f) =
+      F.val.map a.op
+        (Cohomology.sheafifiedFreeYonedaHomAddEquiv Y F f) :=
+  Cohomology.sheafifiedFreeYonedaHomAddEquiv_precomp a F f
+
 /-- Fixed universe lift of the base-resolution complex. -/
 noncomputable example : CochainComplex AddCommGrpCat.{u + 2} ℕ :=
   Cohomology.liftedBaseResolutionComplex (base := base) Ob
+
+/-- Fixed object formula for the universe-lifted base-resolution complex. -/
+example (q : ℕ) :
+    ((Cohomology.liftedBaseResolutionComplex (base := base) Ob).X q :
+        Type (u + 2)) =
+      ULift.{u + 2, u + 1}
+        (((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+          (Opposite.op base)) :=
+  Cohomology.liftedBaseResolutionComplex_X Ob q
+
+/-- Fixed differential formula for the universe-lifted base-resolution complex. -/
+example (q : ℕ)
+    (x : ULift.{u + 2, u + 1}
+      (((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+        (Opposite.op base))) :
+    ((Cohomology.liftedBaseResolutionComplex (base := base) Ob).d
+        q (q + 1)).hom x =
+      ULift.up
+        (((Cohomology.obstructionInjectiveResolution Ob).cocomplex.d
+          q (q + 1)).val.app _ x.down) :=
+  Cohomology.liftedBaseResolutionComplex_d_apply Ob q x
 
 /-- Fixed cycle morphism from the free representable into the injective resolution. -/
 noncomputable example (n : ℕ)
@@ -1556,6 +1590,16 @@ noncomputable example (n : ℕ)
       (yoneda.obj base ⋙ AddCommGrpCat.free)) ⟶
         (Cohomology.obstructionInjectiveResolution Ob).cocomplex.X n :=
   Cohomology.baseResolutionLiftedCycleMorphism Ob n z
+
+/-- Fixed section formula for a lifted base-resolution cycle morphism. -/
+example (n : ℕ)
+    (z : (Cohomology.liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    Cohomology.sheafifiedFreeYonedaHomAddEquiv base
+        ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X n)
+        (Cohomology.baseResolutionLiftedCycleMorphism Ob n z) =
+      (((Cohomology.liftedBaseResolutionComplex
+        (base := base) Ob).iCycles n).hom z).down :=
+  Cohomology.baseResolutionLiftedCycleMorphism_section Ob n z
 
 /-- Fixed cocycle equation for the base-resolution cycle morphism. -/
 example (n : ℕ)

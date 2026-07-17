@@ -116,7 +116,7 @@ SDとmodule DAGを再承認する。
 | `Formal.AG.ReadingFunctoriality.Core` | `Formal.AG.Atom.AATCore`、`Formal.AG.Site.Geometry`、`Formal.AG.LawAlgebra.StructureSheaf`、`Mathlib.Logic.Equiv.Defs` | `ReadingCore`、exact / positive core change、`ObjectAlgebraHom` |
 | `Formal.AG.ReadingFunctoriality.ExtFunctoriality` | `Mathlib.Algebra.Homology.DerivedCategory.Ext.Map`、`Mathlib.CategoryTheory.Adjunction.Unique` | exact functorによるExt写像のidentity / composition、exact-functor isoに対するnaturality、left-adjoint uniquenessのcomposition coherence |
 | `Formal.AG.ReadingFunctoriality.Coverage` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.ExtFunctoriality`、`Formal.AG.Site.FinitePosetGeometry`、`Formal.AG.Cohomology.CechComplex`、`Mathlib.AlgebraicTopology.AlternatingFaceMapComplex`、`Mathlib.CategoryTheory.Sites.SheafCohomology.Basic`、`Mathlib.CategoryTheory.Sites.Limits`、`Mathlib.CategoryTheory.Sites.LeftExact`、`Mathlib.CategoryTheory.Sites.Abelian`、`Mathlib.CategoryTheory.Sites.Equivalence`、`Mathlib.CategoryTheory.Adjunction.Restrict`、`Mathlib.CategoryTheory.Adjunction.Limits`、`Mathlib.CategoryTheory.Whiskering`、`Mathlib.Algebra.Category.Grp.FilteredColimits`、`Mathlib.Algebra.Homology.DerivedCategory.Ext.Map` | topology refinement、canonical tuple cover、selected cover refinement、one-way cochain hom、large additive coefficientのselected Čech complex、terminal `Sheaf.H'` / `Sheaf.H` comparison、topology-change `Sheaf.H` map |
-| `Formal.AG.ReadingFunctoriality.LerayComparison` | `Formal.AG.ReadingFunctoriality.Coverage`、`Mathlib.Algebra.Category.ModuleCat.AB`、`Mathlib.Algebra.Category.Grp.Ulift`、`Mathlib.Algebra.Homology.Additive`、`Mathlib.Algebra.Homology.HomologicalBicomplex`、`Mathlib.Algebra.Homology.ShortComplex.Ab`、`Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex`、`Mathlib.Algebra.Homology.ShortComplex.PreservesHomology`、`Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf`、`Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives`、`Mathlib.CategoryTheory.Abelian.Injective.Ext`、`Mathlib.CategoryTheory.Abelian.Injective.Resolution`、`Mathlib.CategoryTheory.Whiskering` | cover-relative Čech complexとMathlib cochain-complex homologyの同一化、universe-lift homology bridge、sheaf categoryのinjective-resolution計算、selected injective-resolution bicomplexとcanonical edge maps、selected Čech–`Sheaf.H'` Leray comparison、bijectivity、refinement naturality |
+| `Formal.AG.ReadingFunctoriality.LerayComparison` | `Formal.AG.ReadingFunctoriality.Coverage`、`Mathlib.Algebra.Category.ModuleCat.AB`、`Mathlib.Algebra.Category.Grp.Ulift`、`Mathlib.Algebra.Homology.Additive`、`Mathlib.Algebra.Homology.HomologicalBicomplex`、`Mathlib.Algebra.Homology.ShortComplex.Ab`、`Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex`、`Mathlib.Algebra.Homology.ShortComplex.PreservesHomology`、`Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf`、`Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives`、`Mathlib.CategoryTheory.Abelian.Injective.Ext`、`Mathlib.CategoryTheory.Abelian.Injective.Resolution`、`Mathlib.CategoryTheory.Adjunction.Additive`、`Mathlib.CategoryTheory.Adjunction.Whiskering`、`Mathlib.CategoryTheory.Whiskering` | cover-relative Čech complexとMathlib cochain-complex homologyの同一化、universe-lift homology bridge、sheaf categoryのinjective-resolution計算、selected injective-resolution bicomplexとcanonical edge maps、selected Čech–`Sheaf.H'` Leray comparison、bijectivity、refinement naturality |
 | `Formal.AG.ReadingFunctoriality.Coefficient` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.Derived.Intersection`、`Mathlib.Algebra.Category.ModuleCat.ChangeOfRings`、`Mathlib.Algebra.Category.ModuleCat.Descent`、`Mathlib.Algebra.Category.ModuleCat.Sheaf`、`Mathlib.Algebra.Category.Ring.Under.Basic`、`Mathlib.Algebra.Category.Ring.Under.Limits`、`Mathlib.Algebra.Module.TransferInstance`、`Mathlib.CategoryTheory.Sites.Adjunction`、`Mathlib.CategoryTheory.Sites.PreservesSheafification`、`Mathlib.CategoryTheory.Sites.Whiskering`、`Mathlib.AlgebraicGeometry.Pullbacks`、`Mathlib.AlgebraicGeometry.IdealSheaf.Functorial`、`Mathlib.RingTheory.RingHom.Flat` | closed-equational geometry宣言のdirect reuse、raw quotient / sheafification scalar-extension comparison、scheme / ideal / Tor / linear Čech scalar extension / actual sheaf H coefficient change |
 | `Formal.AG.ReadingFunctoriality.FiniteExamples` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.Examples.FiniteModel`、`Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample` | SD9のpositive / negative firing |
 | `Formal.AG.ReadingFunctoriality` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.ReadingFunctoriality.LerayComparison`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.ReadingFunctoriality.FiniteExamples` | public aggregate |
@@ -1592,10 +1592,40 @@ theorem sheafifiedFreeYonedaHomAddEquiv_comp
       g.val.app (Opposite.op X)
         (sheafifiedFreeYonedaHomAddEquiv X F f)
 
+theorem sheafifiedFreeYonedaHomAddEquiv_precomp
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {X Y : S.category}
+    (a : X ⟶ Y)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1})
+    (f : ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj Y ⋙ AddCommGrpCat.free)) ⟶ F) :
+    sheafifiedFreeYonedaHomAddEquiv X F
+        ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+          (Functor.whiskerRight (yoneda.map a) AddCommGrpCat.free) ≫ f) =
+      F.val.map a.op (sheafifiedFreeYonedaHomAddEquiv Y F f)
+
 noncomputable def liftedBaseResolutionComplex
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (Ob : ObstructionSheaf S) :
     CochainComplex AddCommGrpCat.{u + 2} ℕ
+
+@[simp] theorem liftedBaseResolutionComplex_X
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (q : ℕ) :
+    ((liftedBaseResolutionComplex (base := base) Ob).X q : Type (u + 2)) =
+      ULift.{u + 2, u + 1}
+        (((obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+          (Opposite.op base))
+
+theorem liftedBaseResolutionComplex_d_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (q : ℕ)
+    (x : ULift.{u + 2, u + 1}
+      (((obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+        (Opposite.op base))) :
+    ((liftedBaseResolutionComplex (base := base) Ob).d q (q + 1)).hom x =
+      ULift.up
+        (((obstructionInjectiveResolution Ob).cocomplex.d q (q + 1)).val.app _ x.down)
 
 noncomputable def baseResolutionLiftedCycleMorphism
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
@@ -1604,6 +1634,15 @@ noncomputable def baseResolutionLiftedCycleMorphism
     ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
       (yoneda.obj base ⋙ AddCommGrpCat.free)) ⟶
         (obstructionInjectiveResolution Ob).cocomplex.X n
+
+@[simp] theorem baseResolutionLiftedCycleMorphism_section
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (liftedBaseResolutionComplex (base := base) Ob).cycles n) :
+    sheafifiedFreeYonedaHomAddEquiv base
+        ((obstructionInjectiveResolution Ob).cocomplex.X n)
+        (baseResolutionLiftedCycleMorphism Ob n z) =
+      (((liftedBaseResolutionComplex (base := base) Ob).iCycles n).hom z).down
 
 theorem baseResolutionLiftedCycleMorphism_comp_d
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
@@ -1656,6 +1695,9 @@ theorem baseResolutionHomologyEquivHPrime_homologyπ
 
 この一群はR5c5のfixed signatureである。`sheafifiedFreeYonedaHomAddEquiv`は
 sheafification adjunction、free abelian adjunction、Yonedaから構成し、
+`sheafifiedFreeYonedaHomAddEquiv_precomp`はsource objectの射に沿うrestrictionを固定する。
+`liftedBaseResolutionComplex_X`、`liftedBaseResolutionComplex_d_apply`、
+`baseResolutionLiftedCycleMorphism_section`は後続証明が定義を展開せず使う計算規則である。
 `baseResolutionLiftedCyclesToHPrime`はMathlib
 `InjectiveResolution.extMk`から構成する。`u + 1`のbase-resolution homologyと
 `u + 2`のactual `Sheaf.H'`は`AddCommGrpCat.uliftFunctor`のhomology-preservation isoを

@@ -4565,13 +4565,29 @@ noncomputable def readingFunctoriality_sheafifiedFreeYonedaHomAddEquiv :=
 def readingFunctoriality_sheafifiedFreeYonedaHomAddEquiv_comp :=
   @AAT.AG.Cohomology.sheafifiedFreeYonedaHomAddEquiv_comp
 
+/-- Audit alias for source-object naturality under the additive Yoneda equivalence. -/
+def readingFunctoriality_sheafifiedFreeYonedaHomAddEquiv_precomp :=
+  @AAT.AG.Cohomology.sheafifiedFreeYonedaHomAddEquiv_precomp
+
 /-- Audit alias for the universe-lifted base-resolution complex. -/
 noncomputable def readingFunctoriality_liftedBaseResolutionComplex :=
   @AAT.AG.Cohomology.liftedBaseResolutionComplex
 
+/-- Audit alias for the lifted base-resolution object formula. -/
+def readingFunctoriality_liftedBaseResolutionComplex_X :=
+  @AAT.AG.Cohomology.liftedBaseResolutionComplex_X
+
+/-- Audit alias for the lifted base-resolution differential formula. -/
+def readingFunctoriality_liftedBaseResolutionComplex_d_apply :=
+  @AAT.AG.Cohomology.liftedBaseResolutionComplex_d_apply
+
 /-- Audit alias for the morphism represented by a lifted base-resolution cycle. -/
 noncomputable def readingFunctoriality_baseResolutionLiftedCycleMorphism :=
   @AAT.AG.Cohomology.baseResolutionLiftedCycleMorphism
+
+/-- Audit alias for the section represented by a lifted cycle morphism. -/
+def readingFunctoriality_baseResolutionLiftedCycleMorphism_section :=
+  @AAT.AG.Cohomology.baseResolutionLiftedCycleMorphism_section
 
 /-- Audit alias for the lifted cycle's injective-resolution cocycle equation. -/
 def readingFunctoriality_baseResolutionLiftedCycleMorphism_comp_d :=
