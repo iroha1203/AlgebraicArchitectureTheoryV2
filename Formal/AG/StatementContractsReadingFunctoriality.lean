@@ -1186,6 +1186,11 @@ example {F G : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}} (η : F ⟶ G)
       η.app _ (c σ) :=
   Cohomology.selectedCechComplexFunctor_map_f_apply 𝒰 η n c σ
 
+/-- Fixed zero-morphism preservation for the selected Čech functor. -/
+example :
+    (Cohomology.selectedCechComplexFunctor 𝒰).PreservesZeroMorphisms :=
+  Cohomology.selectedCechComplexFunctor_preservesZeroMorphisms 𝒰
+
 variable {𝒰}
 variable {𝒱 𝒲 : Site.AATCoverageFamily S.requirements S.overlap base}
 
@@ -1410,5 +1415,184 @@ example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (n : ℕ)
     r Ob n x
 
 end ActualSelectedCechBridgeSD5
+
+namespace SelectedCechResolutionBicomplexSD5
+
+open CategoryTheory
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+variable (Ob : Cohomology.ObstructionSheaf S)
+variable (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+variable [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+
+/-- Fixed first-quadrant selected Čech injective-resolution bicomplex. -/
+noncomputable example :
+    HomologicalComplex₂ AddCommGrpCat.{u + 1}
+      (ComplexShape.up ℕ) (ComplexShape.up ℕ) :=
+  Cohomology.selectedCechResolutionBicomplex 𝒰 Ob
+
+/-- Fixed object formula in each bidegree. -/
+example (q p : ℕ) :
+    (((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X q).X p :
+        Type (u + 1)) =
+      Cohomology.SelectedCechCochain 𝒰
+        ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val p :=
+  Cohomology.selectedCechResolutionBicomplex_obj 𝒰 Ob q p
+
+/-- Fixed selected Čech differential formula. -/
+example (q p : ℕ)
+    (c : Cohomology.SelectedCechCochain 𝒰
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val p)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex (p + 1)) :
+    (((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X q).d
+        p (p + 1)).hom c σ =
+      ∑ i : Fin (p + 2), ((-1 : ℤ) ^ i.1) •
+        ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val.map
+          ((Cohomology.canonicalCoverRelative 𝒰).faceRestriction p i σ).op
+          (c ((Cohomology.canonicalCoverRelative 𝒰).face p i σ)) :=
+  Cohomology.selectedCechResolutionBicomplex_cech_d_apply 𝒰 Ob q p c σ
+
+/-- Fixed resolution differential formula. -/
+example (q p : ℕ)
+    (c : Cohomology.SelectedCechCochain 𝒰
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val p)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p) :
+    (((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d
+        q (q + 1)).f p).hom c σ =
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.d
+        q (q + 1)).val.app _ (c σ) :=
+  Cohomology.selectedCechResolutionBicomplex_resolution_d_apply 𝒰 Ob q p c σ
+
+/-- Fixed commutation of the two bicomplex differentials. -/
+example (q q' p p' : ℕ) :
+    ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d q q').f p ≫
+        ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X q').d p p' =
+      ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X q).d p p' ≫
+        ((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d q q').f p' :=
+  Cohomology.selectedCechResolutionBicomplex_d_comm 𝒰 Ob q q' p p'
+
+/-- Fixed resolution-unit augmentation. -/
+noncomputable example :
+    (Cohomology.selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val ⟶
+      (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).X 0 :=
+  Cohomology.selectedCechResolutionAugmentation 𝒰 Ob
+
+/-- Fixed pointwise resolution-unit formula. -/
+example (p : ℕ)
+    (c : Cohomology.SelectedCechCochain 𝒰 Ob.toAddCommGrpSheaf.val p)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p) :
+    ((Cohomology.selectedCechResolutionAugmentation 𝒰 Ob).f p).hom c σ =
+      ((Cohomology.obstructionInjectiveResolution Ob).ι.f 0).val.app _ (c σ) :=
+  Cohomology.selectedCechResolutionAugmentation_f_apply 𝒰 Ob p c σ
+
+/-- Fixed natural transformation from base sections to selected degree zero. -/
+noncomputable example :
+    (evaluation S.categoryᵒᵖ AddCommGrpCat.{u + 1}).obj
+        (Opposite.op base) ⟶
+      Cohomology.selectedCechComplexFunctor 𝒰 ⋙
+        HomologicalComplex.eval AddCommGrpCat.{u + 1}
+          (ComplexShape.up ℕ) 0 :=
+  Cohomology.baseToSelectedCechZero 𝒰
+
+/-- Fixed chart-restriction formula for selected degree zero. -/
+example (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1})
+    (x : F.obj (Opposite.op base))
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex 0) :
+    ((Cohomology.baseToSelectedCechZero 𝒰).app F).hom x σ =
+      F.map ((Cohomology.canonicalCoverRelative 𝒰).inclusion (σ 0)).op x :=
+  Cohomology.baseToSelectedCechZero_app_apply 𝒰 F x σ
+
+/-- Fixed injective-resolution complex evaluated at the base. -/
+noncomputable example : CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  Cohomology.baseResolutionComplex (base := base) Ob
+
+/-- Fixed object formula for the base-resolution complex. -/
+example (q : ℕ) :
+    ((Cohomology.baseResolutionComplex (base := base) Ob).X q :
+        Type (u + 1)) =
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+        (Opposite.op base) :=
+  Cohomology.baseResolutionComplex_X Ob q
+
+/-- Fixed differential formula for the base-resolution complex. -/
+example (q : ℕ)
+    (x : ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+      (Opposite.op base)) :
+    ((Cohomology.baseResolutionComplex (base := base) Ob).d
+        q (q + 1)).hom x =
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.d
+        q (q + 1)).val.app _ x :=
+  Cohomology.baseResolutionComplex_d_apply Ob q x
+
+/-- Fixed map from the base resolution to the selected degree-zero column. -/
+noncomputable example :
+    Cohomology.baseResolutionComplex (base := base) Ob ⟶
+      (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).flip.X 0 :=
+  Cohomology.baseResolutionToSelectedCechZero 𝒰 Ob
+
+/-- Fixed pointwise base-edge formula. -/
+example (q : ℕ)
+    (x : ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+      (Opposite.op base))
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex 0) :
+    ((Cohomology.baseResolutionToSelectedCechZero 𝒰 Ob).f q).hom x σ =
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val.map
+        ((Cohomology.canonicalCoverRelative 𝒰).inclusion (σ 0)).op x :=
+  Cohomology.baseResolutionToSelectedCechZero_f_apply 𝒰 Ob q x σ
+
+variable {𝒰}
+variable {𝒱 𝒲 : Site.AATCoverageFamily S.requirements S.overlap base}
+
+/-- Fixed bicomplex map induced by selected-cover refinement. -/
+noncomputable example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.selectedCechResolutionBicomplex 𝒰 Ob ⟶
+      Cohomology.selectedCechResolutionBicomplex 𝒱 Ob :=
+  Cohomology.selectedCechResolutionBicomplexMap r Ob
+
+/-- Fixed pointwise formula for the refinement bicomplex map. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) (q p : ℕ)
+    (c : Cohomology.SelectedCechCochain 𝒰
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val p)
+    (σ : (Cohomology.canonicalCoverRelative 𝒱).simplex p) :
+    ((((Cohomology.selectedCechResolutionBicomplexMap r Ob).f q).f p).hom c) σ =
+      ((Cohomology.obstructionInjectiveResolution Ob).cocomplex.X q).val.map
+        (r.overlapMap p σ).op (c (r.simplexMap p σ)) :=
+  Cohomology.selectedCechResolutionBicomplexMap_f_f_apply r Ob q p c σ
+
+/-- Fixed identity law for refinement bicomplex maps. -/
+example (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    Cohomology.selectedCechResolutionBicomplexMap
+        (Site.AATCoverageFamily.Refinement.refl 𝒰) Ob =
+      𝟙 (Cohomology.selectedCechResolutionBicomplex 𝒰 Ob) :=
+  Cohomology.selectedCechResolutionBicomplexMap_refl 𝒰 Ob
+
+/-- Fixed composition law for refinement bicomplex maps. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (s : Site.AATCoverageFamily.Refinement 𝒱 𝒲) :
+    Cohomology.selectedCechResolutionBicomplexMap (r.comp s) Ob =
+      Cohomology.selectedCechResolutionBicomplexMap r Ob ≫
+        Cohomology.selectedCechResolutionBicomplexMap s Ob :=
+  Cohomology.selectedCechResolutionBicomplexMap_comp r s Ob
+
+/-- Fixed refinement naturality of the resolution augmentation. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.selectedCechResolutionAugmentation 𝒰 Ob ≫
+        (Cohomology.selectedCechResolutionBicomplexMap r Ob).f 0 =
+      r.selectedCechMap.app Ob.toAddCommGrpSheaf.val ≫
+        Cohomology.selectedCechResolutionAugmentation 𝒱 Ob :=
+  Cohomology.selectedCechResolutionAugmentation_refinement_naturality r Ob
+
+/-- Fixed refinement naturality of the base-resolution edge. -/
+example (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱) :
+    Cohomology.baseResolutionToSelectedCechZero 𝒰 Ob ≫
+        ((HomologicalComplex₂.flipFunctor AddCommGrpCat.{u + 1}
+          (ComplexShape.up ℕ) (ComplexShape.up ℕ)).map
+            (Cohomology.selectedCechResolutionBicomplexMap r Ob)).f 0 =
+      Cohomology.baseResolutionToSelectedCechZero 𝒱 Ob :=
+  Cohomology.baseResolutionToSelectedCechZero_refinement_naturality r Ob
+
+end SelectedCechResolutionBicomplexSD5
 
 end AAT.AG.StatementContractsReadingFunctoriality

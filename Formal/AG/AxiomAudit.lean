@@ -4403,6 +4403,10 @@ def readingFunctoriality_selectedCechComplexFunctor_obj_d_apply :=
 def readingFunctoriality_selectedCechComplexFunctor_map_f_apply :=
   @AAT.AG.Cohomology.selectedCechComplexFunctor_map_f_apply
 
+/-- Audit alias for zero-morphism preservation of the selected Čech functor. -/
+noncomputable def readingFunctoriality_selectedCechComplexFunctor_preservesZeroMorphisms :=
+  @AAT.AG.Cohomology.selectedCechComplexFunctor_preservesZeroMorphisms
+
 /-- Audit alias for the actual large selected refinement map. -/
 noncomputable def readingFunctoriality_selectedCechMap :=
   @AAT.AG.Site.AATCoverageFamily.Refinement.selectedCechMap
@@ -4502,6 +4506,88 @@ def readingFunctoriality_additiveCechHnEquivSelectedHomology_refinement_naturali
 /-- Audit alias for canonical-map refinement naturality. -/
 def readingFunctoriality_additiveCechHnToSelectedHomology_refinement_naturality :=
   @AAT.AG.Cohomology.additiveCechHnToSelectedHomology_refinement_naturality
+
+/-! Part 4 R5c4: selected Čech injective-resolution bicomplex and edge maps. -/
+
+/-- Audit alias for the actual selected Čech injective-resolution bicomplex. -/
+noncomputable def readingFunctoriality_selectedCechResolutionBicomplex :=
+  @AAT.AG.Cohomology.selectedCechResolutionBicomplex
+
+/-- Audit alias for the bicomplex object formula. -/
+def readingFunctoriality_selectedCechResolutionBicomplex_obj :=
+  @AAT.AG.Cohomology.selectedCechResolutionBicomplex_obj
+
+/-- Audit alias for the selected Čech differential formula. -/
+def readingFunctoriality_selectedCechResolutionBicomplex_cech_d_apply :=
+  @AAT.AG.Cohomology.selectedCechResolutionBicomplex_cech_d_apply
+
+/-- Audit alias for the resolution differential formula. -/
+def readingFunctoriality_selectedCechResolutionBicomplex_resolution_d_apply :=
+  @AAT.AG.Cohomology.selectedCechResolutionBicomplex_resolution_d_apply
+
+/-- Audit alias for commutation of the bicomplex differentials. -/
+def readingFunctoriality_selectedCechResolutionBicomplex_d_comm :=
+  @AAT.AG.Cohomology.selectedCechResolutionBicomplex_d_comm
+
+/-- Audit alias for the injective-resolution unit augmentation. -/
+noncomputable def readingFunctoriality_selectedCechResolutionAugmentation :=
+  @AAT.AG.Cohomology.selectedCechResolutionAugmentation
+
+/-- Audit alias for the pointwise resolution augmentation formula. -/
+def readingFunctoriality_selectedCechResolutionAugmentation_f_apply :=
+  @AAT.AG.Cohomology.selectedCechResolutionAugmentation_f_apply
+
+/-- Audit alias for the base-to-selected-degree-zero natural transformation. -/
+noncomputable def readingFunctoriality_baseToSelectedCechZero :=
+  @AAT.AG.Cohomology.baseToSelectedCechZero
+
+/-- Audit alias for the base-to-selected-degree-zero pointwise formula. -/
+def readingFunctoriality_baseToSelectedCechZero_app_apply :=
+  @AAT.AG.Cohomology.baseToSelectedCechZero_app_apply
+
+/-- Audit alias for the injective resolution evaluated at the base. -/
+noncomputable def readingFunctoriality_baseResolutionComplex :=
+  @AAT.AG.Cohomology.baseResolutionComplex
+
+/-- Audit alias for the base-resolution object formula. -/
+def readingFunctoriality_baseResolutionComplex_X :=
+  @AAT.AG.Cohomology.baseResolutionComplex_X
+
+/-- Audit alias for the base-resolution differential formula. -/
+def readingFunctoriality_baseResolutionComplex_d_apply :=
+  @AAT.AG.Cohomology.baseResolutionComplex_d_apply
+
+/-- Audit alias for the base-resolution edge map. -/
+noncomputable def readingFunctoriality_baseResolutionToSelectedCechZero :=
+  @AAT.AG.Cohomology.baseResolutionToSelectedCechZero
+
+/-- Audit alias for the pointwise base-resolution edge formula. -/
+def readingFunctoriality_baseResolutionToSelectedCechZero_f_apply :=
+  @AAT.AG.Cohomology.baseResolutionToSelectedCechZero_f_apply
+
+/-- Audit alias for the selected-refinement bicomplex map. -/
+noncomputable def readingFunctoriality_selectedCechResolutionBicomplexMap :=
+  @AAT.AG.Cohomology.selectedCechResolutionBicomplexMap
+
+/-- Audit alias for the pointwise selected-refinement bicomplex map formula. -/
+def readingFunctoriality_selectedCechResolutionBicomplexMap_f_f_apply :=
+  @AAT.AG.Cohomology.selectedCechResolutionBicomplexMap_f_f_apply
+
+/-- Audit alias for the identity law of selected-refinement bicomplex maps. -/
+def readingFunctoriality_selectedCechResolutionBicomplexMap_refl :=
+  @AAT.AG.Cohomology.selectedCechResolutionBicomplexMap_refl
+
+/-- Audit alias for composition of selected-refinement bicomplex maps. -/
+def readingFunctoriality_selectedCechResolutionBicomplexMap_comp :=
+  @AAT.AG.Cohomology.selectedCechResolutionBicomplexMap_comp
+
+/-- Audit alias for refinement naturality of the resolution augmentation. -/
+def readingFunctoriality_selectedCechResolutionAugmentation_refinement_naturality :=
+  @AAT.AG.Cohomology.selectedCechResolutionAugmentation_refinement_naturality
+
+/-- Audit alias for refinement naturality of the base-resolution edge. -/
+def readingFunctoriality_baseResolutionToSelectedCechZero_refinement_naturality :=
+  @AAT.AG.Cohomology.baseResolutionToSelectedCechZero_refinement_naturality
 
 end AAT.AG.AxiomAudit
 
