@@ -5079,6 +5079,10 @@ def readingFunctoriality_baseChangeOfSemanticCore_requiredClosed :=
 def readingFunctoriality_baseChangeOfSemanticCore_allLawsSelected :=
   @AAT.AG.LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_allLawsSelected
 
+/-- Audit alias for the per-law semantic-core chart ideal comparison after coefficient change. -/
+def readingFunctoriality_semanticCoreLawWitnessIdeal_baseChangedChart :=
+  @AAT.AG.LawAlgebra.semanticCoreLawWitnessIdeal_baseChangedChart
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/

@@ -2911,6 +2911,37 @@ example :
   LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_allLawsSelected
     raw X G B f
 
+/-! Fixed per-law chart ideal comparison after coefficient change. -/
+
+example
+    (hB : LawAlgebra.IsSemanticLawEquationSchemeBridge raw G B)
+    (j : X.atlas.Index)
+    (i : S.lawUniverse.Index) :
+    let R' := LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore
+      raw X G B f
+    let hR' :=
+      (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_valid
+        raw X G B f).witness_compatible
+    let j' := cast (X.baseChangedAtlas_Index raw f).symm j
+    Scheme.IdealSheafData.comap
+        (Scheme.IdealSheafData.ofIdealTop
+          (X := (X.atlas.chart j).domain)
+          (Ideal.map
+            (AlgebraicGeometry.Scheme.ΓSpecIso
+              (LawAlgebra.SheafifiedSectionRing raw
+                (X.atlas.chart j).context)).inv.hom
+            (Ideal.map
+              (B.toSheafifiedSection (X.atlas.chart j).context)
+              (G.lawWitnessIdeal (X.atlas.chart j).context i))))
+        (X.baseChangedChartMap raw f j) =
+      Scheme.IdealSheafData.comap
+        (LawAlgebra.lawWitnessIdealSheaf
+          (raw.baseChange f.hom) (X.baseChange raw f)
+          R' hR' i (Set.mem_univ i))
+        ((X.baseChangedAtlas raw f).chart j').map :=
+  LawAlgebra.semanticCoreLawWitnessIdeal_baseChangedChart
+    raw X G B hB f j i
+
 end SemanticCoreCoefficientGeometry
 
 end CoefficientChangeSD6
