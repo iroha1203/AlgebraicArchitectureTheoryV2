@@ -2445,6 +2445,7 @@ def IsLerayFor
         ((Ob.toAddCommGrpSheaf).H' q
           ((canonicalCoverRelative 𝒰).overlap p σ))
 
+/-- Internal constant-zero additive presheaf used to construct the Leray instance pair. -/
 private def zeroAddCommGrpPresheaf
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} :

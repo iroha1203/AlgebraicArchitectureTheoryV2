@@ -2050,14 +2050,22 @@ theorem IsLerayFor.selectedCechResolutionColumn_homology_subsingleton
 positive-degree actual `Sheaf.H'` vanishingだけを表す。
 `zeroObstructionSheaf_isLerayFor`はactual zero sheafから成立例を構成し、
 `not_isLerayFor_of_nontrivialHPrime`はactual local `Sheaf.H'`の非自明性から
-不成立を導く。SD9の`nonLerayCover_not_completionEvidence`は後者が要求する
-非自明なlocal cohomologyを具体modelで放電しなければならない。
+不成立を導くAPI補題であり、これ単独を不成立instanceとして数えない。
+SD9の`nonLerayCover_not_completionEvidence`が、後者の要求する非自明なlocal
+cohomologyを具体modelで放電した時点でinstance pairが完了する。
 `selectedCechResolutionColumn`はactual bicomplexをMathlib
 `HomologicalComplex₂.flipFunctor`で反転した各selected Čech次数のresolution columnとする。
 `baseResolutionHomologyEquivHPrime`を通じて各overlap評価resolutionのhomology消滅と
 exactnessを導き、各overlapのpreimageをactual product cochainへ組み立ててcolumn全体の
 positive-degree exactnessを証明する。arbitrary complex、homology equivalence、exactness witness、
 quasi-isomorphism、collapse conclusionをcallerから受け取ってはならない。
+
+`IsLerayFor`は新規Propなので、R5c7だけを独立merge unitにしてはならない。
+R5c7、後続のactual Čech–`Sheaf.H'` comparison、SD9 sheaf-H firingを同じ最終snapshotで
+査読し、`zeroObstructionSheaf_isLerayFor`とpremiseなしの
+`nonLerayCover_not_completionEvidence`が両方elaborateすることをmerge gateとする。
+このatomic groupの途中headでは`IsLerayFor`のinstance pairは未完了であり、
+完了根拠として扱わない。
 
 noncomputable def cechToSheafHAtBase
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
