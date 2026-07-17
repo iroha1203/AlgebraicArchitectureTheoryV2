@@ -1,6 +1,8 @@
 import Formal.AG.ReadingFunctoriality.Coverage
 import Mathlib.Algebra.Category.ModuleCat.AB
 import Mathlib.Algebra.Category.Grp.Ulift
+import Mathlib.Algebra.Homology.Additive
+import Mathlib.Algebra.Homology.HomologicalBicomplex
 import Mathlib.Algebra.Homology.ShortComplex.Ab
 import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
 import Mathlib.Algebra.Homology.ShortComplex.PreservesHomology
@@ -8,6 +10,7 @@ import Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf
 import Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives
 import Mathlib.CategoryTheory.Abelian.Injective.Ext
 import Mathlib.CategoryTheory.Abelian.Injective.Resolution
+import Mathlib.CategoryTheory.Whiskering
 
 /-!
 # Leray comparison foundations
@@ -1126,5 +1129,360 @@ theorem additiveCechHnToSelectedHomology_refinement_naturality
       additiveCechHnToSelectedHomology 𝒱 Ob n
         ((r.canonicalCechHom Ob).mapAdditiveCechHn n x) :=
   additiveCechHnEquivSelectedHomology_refinement_naturality r Ob n x
+
+/-! ## Selected Čech bicomplex of the injective resolution -/
+
+/--
+The first-quadrant bicomplex obtained by applying the actual selected Čech
+complex functor to every object of the chosen injective resolution.
+
+Implementation notes: the outer complex direction is the resolution degree
+and the inner direction is the selected Čech degree. Both differentials and
+their commutation law are supplied by `Functor.mapHomologicalComplex`; no
+bicomplex or commutation certificate is accepted from the caller.
+-/
+noncomputable def selectedCechResolutionBicomplex
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    HomologicalComplex₂ AddCommGrpCat.{u + 1}
+      (ComplexShape.up ℕ) (ComplexShape.up ℕ) :=
+  (((sheafToPresheaf S.topology AddCommGrpCat.{u + 1}) ⋙
+      selectedCechComplexFunctor 𝒰).mapHomologicalComplex
+        (ComplexShape.up ℕ)).obj
+    (obstructionInjectiveResolution Ob).cocomplex
+
+/-- The `(q,p)` object is the product of `I^q`-sections on selected `p`-overlaps. -/
+@[simp] theorem selectedCechResolutionBicomplex_obj
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p : ℕ) :
+    (((selectedCechResolutionBicomplex 𝒰 Ob).X q).X p : Type (u + 1)) =
+      SelectedCechCochain 𝒰
+        ((obstructionInjectiveResolution Ob).cocomplex.X q).val p :=
+  rfl
+
+/-- The selected Čech differential is the alternating sum of face restrictions. -/
+theorem selectedCechResolutionBicomplex_cech_d_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p : ℕ)
+    (c : SelectedCechCochain 𝒰
+      ((obstructionInjectiveResolution Ob).cocomplex.X q).val p)
+    (σ : (canonicalCoverRelative 𝒰).simplex (p + 1)) :
+    (((selectedCechResolutionBicomplex 𝒰 Ob).X q).d p (p + 1)).hom c σ =
+      ∑ i : Fin (p + 2), ((-1 : ℤ) ^ i.1) •
+        ((obstructionInjectiveResolution Ob).cocomplex.X q).val.map
+          ((canonicalCoverRelative 𝒰).faceRestriction p i σ).op
+          (c ((canonicalCoverRelative 𝒰).face p i σ)) :=
+  selectedCechComplexFunctor_obj_d_apply 𝒰 _ p c σ
+
+/-- The resolution differential acts sectionwise in every selected Čech degree. -/
+theorem selectedCechResolutionBicomplex_resolution_d_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q p : ℕ)
+    (c : SelectedCechCochain 𝒰
+      ((obstructionInjectiveResolution Ob).cocomplex.X q).val p)
+    (σ : (canonicalCoverRelative 𝒰).simplex p) :
+    (((selectedCechResolutionBicomplex 𝒰 Ob).d q (q + 1)).f p).hom c σ =
+      ((obstructionInjectiveResolution Ob).cocomplex.d q (q + 1)).val.app _
+        (c σ) :=
+  rfl
+
+/-- The resolution and selected Čech differentials commute. -/
+theorem selectedCechResolutionBicomplex_d_comm
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q q' p p' : ℕ) :
+    ((selectedCechResolutionBicomplex 𝒰 Ob).d q q').f p ≫
+        ((selectedCechResolutionBicomplex 𝒰 Ob).X q').d p p' =
+      ((selectedCechResolutionBicomplex 𝒰 Ob).X q).d p p' ≫
+        ((selectedCechResolutionBicomplex 𝒰 Ob).d q q').f p' :=
+  HomologicalComplex₂.d_comm
+    (selectedCechResolutionBicomplex 𝒰 Ob) q q' p p'
+
+/--
+The injective-resolution unit induces the canonical map from the actual
+selected Čech complex to resolution degree zero.
+
+Implementation notes: this is the selected Čech functor applied to
+`InjectiveResolution.ι`; an edge map is not supplied as external data.
+-/
+noncomputable def selectedCechResolutionAugmentation
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    (selectedCechComplexFunctor 𝒰).obj Ob.toAddCommGrpSheaf.val ⟶
+      (selectedCechResolutionBicomplex 𝒰 Ob).X 0 :=
+  (selectedCechComplexFunctor 𝒰).map
+    ((obstructionInjectiveResolution Ob).ι.f 0).val
+
+/-- The resolution augmentation applies the unit to every selected section. -/
+@[simp] theorem selectedCechResolutionAugmentation_f_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p : ℕ)
+    (c : SelectedCechCochain 𝒰 Ob.toAddCommGrpSheaf.val p)
+    (σ : (canonicalCoverRelative 𝒰).simplex p) :
+    ((selectedCechResolutionAugmentation 𝒰 Ob).f p).hom c σ =
+      ((obstructionInjectiveResolution Ob).ι.f 0).val.app _ (c σ) :=
+  rfl
+
+/--
+Evaluation at the base maps canonically to selected Čech degree zero.
+
+Implementation notes: each component restricts a base section along the
+selected chart inclusion. Naturality is the presheaf naturality square.
+-/
+noncomputable def baseToSelectedCechZero
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    (evaluation S.categoryᵒᵖ AddCommGrpCat.{u + 1}).obj
+        (Opposite.op base) ⟶
+      selectedCechComplexFunctor 𝒰 ⋙
+        HomologicalComplex.eval AddCommGrpCat.{u + 1}
+          (ComplexShape.up ℕ) 0 where
+  app F := AddCommGrpCat.ofHom
+    { toFun := fun x σ ↦
+        F.map ((canonicalCoverRelative 𝒰).inclusion (σ 0)).op x
+      map_zero' := by
+        funext σ
+        exact map_zero _
+      map_add' := by
+        intro x y
+        funext σ
+        exact map_add _ _ _ }
+  naturality F G η := by
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro x
+    funext σ
+    change
+      G.map ((canonicalCoverRelative 𝒰).inclusion (σ 0)).op
+          (η.app _ x) =
+        η.app _
+          (F.map ((canonicalCoverRelative 𝒰).inclusion (σ 0)).op x)
+    exact (ConcreteCategory.congr_hom
+      (η.naturality ((canonicalCoverRelative 𝒰).inclusion (σ 0)).op) x).symm
+
+/-- The degree-zero cover augmentation is restriction along the selected chart. -/
+@[simp] theorem baseToSelectedCechZero_app_apply
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1})
+    (x : F.obj (Opposite.op base))
+    (σ : (canonicalCoverRelative 𝒰).simplex 0) :
+    ((baseToSelectedCechZero 𝒰).app F).hom x σ =
+      F.map ((canonicalCoverRelative 𝒰).inclusion (σ 0)).op x :=
+  rfl
+
+/--
+The chosen injective resolution evaluated on the base object.
+
+Implementation notes: this uses the `ℕ`-indexed `InjectiveResolution.cocomplex`
+needed by the first-quadrant construction, rather than the `ℤ`-indexed
+`cochainComplex` used by the Ext model. Their later comparison must pass
+through the injective resolution's canonical degree isomorphisms.
+-/
+noncomputable def baseResolutionComplex
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) :
+    CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  (((sheafToPresheaf S.topology AddCommGrpCat.{u + 1}) ⋙
+      (evaluation S.categoryᵒᵖ AddCommGrpCat.{u + 1}).obj
+        (Opposite.op base)).mapHomologicalComplex
+          (ComplexShape.up ℕ)).obj
+    (obstructionInjectiveResolution Ob).cocomplex
+
+/-- The degree `q` base-resolution object is `I^q(base)`. -/
+@[simp] theorem baseResolutionComplex_X
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (q : ℕ) :
+    ((baseResolutionComplex (base := base) Ob).X q : Type (u + 1)) =
+      ((obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+        (Opposite.op base) :=
+  rfl
+
+/-- The base-resolution differential is evaluation of the resolution differential. -/
+theorem baseResolutionComplex_d_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (Ob : ObstructionSheaf S) (q : ℕ)
+    (x : ((obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+      (Opposite.op base)) :
+    ((baseResolutionComplex (base := base) Ob).d q (q + 1)).hom x =
+      ((obstructionInjectiveResolution Ob).cocomplex.d q (q + 1)).val.app _ x :=
+  rfl
+
+/--
+The base-resolution complex maps to the selected degree-zero column.
+
+Implementation notes: this is `baseToSelectedCechZero` mapped across the
+chosen injective resolution, so compatibility with the resolution
+differential is inherited from naturality.
+-/
+noncomputable def baseResolutionToSelectedCechZero
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    baseResolutionComplex (base := base) Ob ⟶
+      (selectedCechResolutionBicomplex 𝒰 Ob).flip.X 0 :=
+  (NatTrans.mapHomologicalComplex
+    (Functor.whiskerLeft
+      (sheafToPresheaf S.topology AddCommGrpCat.{u + 1})
+      (baseToSelectedCechZero 𝒰))
+    (ComplexShape.up ℕ)).app
+      (obstructionInjectiveResolution Ob).cocomplex
+
+/-- The vertical edge map restricts each base section to every selected chart. -/
+@[simp] theorem baseResolutionToSelectedCechZero_f_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (q : ℕ)
+    (x : ((obstructionInjectiveResolution Ob).cocomplex.X q).val.obj
+      (Opposite.op base))
+    (σ : (canonicalCoverRelative 𝒰).simplex 0) :
+    ((baseResolutionToSelectedCechZero 𝒰 Ob).f q).hom x σ =
+      ((obstructionInjectiveResolution Ob).cocomplex.X q).val.map
+        ((canonicalCoverRelative 𝒰).inclusion (σ 0)).op x :=
+  rfl
+
+/--
+Selected-cover refinement induces a morphism of injective-resolution
+bicomplexes.
+
+Implementation notes: the existing selected Čech natural transformation is
+mapped across the actual injective resolution. The two differential
+compatibilities are therefore constructed, not accepted as premises.
+-/
+noncomputable def selectedCechResolutionBicomplexMap
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionBicomplex 𝒰 Ob ⟶
+      selectedCechResolutionBicomplex 𝒱 Ob :=
+  (NatTrans.mapHomologicalComplex
+    (Functor.whiskerLeft
+      (sheafToPresheaf S.topology AddCommGrpCat.{u + 1})
+      r.selectedCechMap)
+    (ComplexShape.up ℕ)).app
+      (obstructionInjectiveResolution Ob).cocomplex
+
+/-- Refinement acts by the canonical overlap map in every bidegree. -/
+@[simp] theorem selectedCechResolutionBicomplexMap_f_f_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) (q p : ℕ)
+    (c : SelectedCechCochain 𝒰
+      ((obstructionInjectiveResolution Ob).cocomplex.X q).val p)
+    (σ : (canonicalCoverRelative 𝒱).simplex p) :
+    ((((selectedCechResolutionBicomplexMap r Ob).f q).f p).hom c) σ =
+      ((obstructionInjectiveResolution Ob).cocomplex.X q).val.map
+        (r.overlapMap p σ).op (c (r.simplexMap p σ)) :=
+  rfl
+
+/-- Identity refinement induces the identity bicomplex map. -/
+@[simp] theorem selectedCechResolutionBicomplexMap_refl
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionBicomplexMap
+        (Site.AATCoverageFamily.Refinement.refl 𝒰) Ob =
+      𝟙 (selectedCechResolutionBicomplex 𝒰 Ob) := by
+  apply HomologicalComplex.Hom.ext
+  funext q
+  apply HomologicalComplex.Hom.ext
+  funext p
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro c
+  funext σ
+  change
+    ((obstructionInjectiveResolution Ob).cocomplex.X q).val.map
+      ((Site.AATCoverageFamily.Refinement.refl 𝒰).overlapMap p σ).op
+      (c σ) = c σ
+  have h : (Site.AATCoverageFamily.Refinement.refl 𝒰).overlapMap p σ = 𝟙 _ :=
+    Subsingleton.elim _ _
+  rw [h]
+  exact FunctorToTypes.map_id_apply
+    (F := ((obstructionInjectiveResolution Ob).cocomplex.X q).val ⋙
+      forget AddCommGrpCat.{u + 1}) (c σ)
+
+/-- Composite refinement induces the composite bicomplex map. -/
+@[simp] theorem selectedCechResolutionBicomplexMap_comp
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 𝒲 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (s : Site.AATCoverageFamily.Refinement 𝒱 𝒲)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionBicomplexMap (r.comp s) Ob =
+      selectedCechResolutionBicomplexMap r Ob ≫
+        selectedCechResolutionBicomplexMap s Ob := by
+  apply HomologicalComplex.Hom.ext
+  funext q
+  apply HomologicalComplex.Hom.ext
+  funext p
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro c
+  funext σ
+  change
+    (((obstructionInjectiveResolution Ob).cocomplex.X q).val ⋙
+      forget AddCommGrpCat.{u + 1}).map
+        ((r.comp s).overlapMap p σ).op
+        (c (r.simplexMap p (s.simplexMap p σ))) =
+      (((obstructionInjectiveResolution Ob).cocomplex.X q).val ⋙
+        forget AddCommGrpCat.{u + 1}).map
+        (s.overlapMap p σ).op
+        ((((obstructionInjectiveResolution Ob).cocomplex.X q).val ⋙
+          forget AddCommGrpCat.{u + 1}).map
+          (r.overlapMap p (s.simplexMap p σ)).op
+          (c (r.simplexMap p (s.simplexMap p σ))))
+  rw [← FunctorToTypes.map_comp_apply]
+  congr
+
+/-- The resolution augmentation commutes with selected-cover refinement. -/
+theorem selectedCechResolutionAugmentation_refinement_naturality
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    selectedCechResolutionAugmentation 𝒰 Ob ≫
+        (selectedCechResolutionBicomplexMap r Ob).f 0 =
+      r.selectedCechMap.app Ob.toAddCommGrpSheaf.val ≫
+        selectedCechResolutionAugmentation 𝒱 Ob := by
+  exact r.selectedCechMap_coefficient_naturality
+    ((obstructionInjectiveResolution Ob).ι.f 0).val
+
+/-- The base-resolution edge map is unchanged by selected-cover refinement. -/
+theorem baseResolutionToSelectedCechZero_refinement_naturality
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    baseResolutionToSelectedCechZero 𝒰 Ob ≫
+        ((HomologicalComplex₂.flipFunctor AddCommGrpCat.{u + 1}
+          (ComplexShape.up ℕ) (ComplexShape.up ℕ)).map
+            (selectedCechResolutionBicomplexMap r Ob)).f 0 =
+      baseResolutionToSelectedCechZero 𝒱 Ob := by
+  apply HomologicalComplex.Hom.ext
+  funext q
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro x
+  funext σ
+  change
+    (((obstructionInjectiveResolution Ob).cocomplex.X q).val ⋙
+      forget AddCommGrpCat.{u + 1}).map
+        (r.overlapMap 0 σ).op
+        ((((obstructionInjectiveResolution Ob).cocomplex.X q).val ⋙
+          forget AddCommGrpCat.{u + 1}).map
+          ((canonicalCoverRelative 𝒰).inclusion
+            ((r.simplexMap 0 σ) 0)).op x) =
+      (((obstructionInjectiveResolution Ob).cocomplex.X q).val ⋙
+        forget AddCommGrpCat.{u + 1}).map
+        ((canonicalCoverRelative 𝒱).inclusion (σ 0)).op x
+  rw [← FunctorToTypes.map_comp_apply]
+  congr
 
 end AAT.AG.Cohomology

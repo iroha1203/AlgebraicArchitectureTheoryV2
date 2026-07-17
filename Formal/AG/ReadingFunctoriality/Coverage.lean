@@ -951,6 +951,19 @@ theorem selectedCechComplexFunctor_obj_d_apply
       η.app _ (c σ) :=
   rfl
 
+/-- The selected Čech complex construction sends zero coefficient maps to zero maps. -/
+instance selectedCechComplexFunctor_preservesZeroMorphisms
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    (selectedCechComplexFunctor 𝒰).PreservesZeroMorphisms where
+  map_zero F G := by
+    apply HomologicalComplex.Hom.ext
+    funext n
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro c
+    funext σ
+    rfl
+
 namespace CoverRelativeCechComplex
 
 variable {𝒰 𝒱 𝒲 : CoverRelativeCechCover S}
