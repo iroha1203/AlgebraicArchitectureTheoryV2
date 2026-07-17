@@ -1,7 +1,9 @@
 import Formal.AG.ReadingFunctoriality.Coverage
 import Mathlib.Algebra.Category.ModuleCat.AB
+import Mathlib.Algebra.Category.Grp.Ulift
 import Mathlib.Algebra.Homology.ShortComplex.Ab
 import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
+import Mathlib.Algebra.Homology.ShortComplex.PreservesHomology
 import Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf
 import Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives
 import Mathlib.CategoryTheory.Abelian.Injective.Ext
@@ -686,3 +688,443 @@ theorem additiveCechHnEquivHomology_naturality
 end Hom
 
 end AAT.AG.Cohomology.CoverRelativeCechComplex
+
+noncomputable section
+
+namespace AAT.AG.Cohomology
+
+universe u
+
+open CategoryTheory
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+
+/-- The R5c2 small complex after applying the actual sheaf-coefficient universe lift. -/
+noncomputable def liftedCanonicalCechComplex
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  (AddCommGrpCat.uliftFunctor.{u + 1, u}.mapHomologicalComplex
+    (ComplexShape.up ℕ)).obj (canonicalCechComplex 𝒰 Ob).toCochainComplex
+
+/-- Universe lift commutes with the selected dependent product of sections. -/
+private noncomputable def liftedCochainIso
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (liftedCanonicalCechComplex 𝒰 Ob).X n ≅
+      ((selectedCechComplexFunctor 𝒰).obj Ob.toAddCommGrpSheaf.val).X n :=
+  (show AddCommGrpCat.of
+      (ULift.{u + 1, u} ((canonicalCechComplex 𝒰 Ob).AdditiveCochain n)) ≅
+    AddCommGrpCat.of
+      (SelectedCechCochain 𝒰 Ob.toAddCommGrpSheaf.val n) from
+    { hom := AddCommGrpCat.ofHom
+        { toFun := fun c σ ↦ ULift.up (c.down σ)
+          map_zero' := rfl
+          map_add' := fun _ _ ↦ rfl }
+      inv := AddCommGrpCat.ofHom
+        { toFun := fun c ↦ ULift.up (fun σ ↦ (c σ).down)
+          map_zero' := rfl
+          map_add' := fun _ _ ↦ rfl }
+      hom_inv_id := by
+        ext c
+        cases c
+        rfl
+      inv_hom_id := by
+        ext c σ
+        cases c σ
+        rfl })
+
+/--
+The lifted R5c2 complex is canonically the large selected Čech complex of the
+actual additive obstruction sheaf.
+
+Implementation notes: each component is `ULift (∀ σ, F σ) ≃ (∀ σ, ULift (F σ))`.
+Differential compatibility is proved from the two fixed alternating-restriction
+formulas; no complex equivalence is accepted from the caller.
+-/
+noncomputable def obstructionSelectedCechComplexIso
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) :
+    liftedCanonicalCechComplex 𝒰 Ob ≅
+      (selectedCechComplexFunctor 𝒰).obj Ob.toAddCommGrpSheaf.val :=
+  HomologicalComplex.Hom.isoOfComponents
+    (liftedCochainIso 𝒰 Ob)
+    (fun n m hnm ↦ by
+      obtain rfl := hnm
+      apply AddCommGrpCat.hom_ext
+      apply AddMonoidHom.ext
+      intro c
+      rcases c with ⟨c⟩
+      funext σ
+      simp only [ConcreteCategory.comp_apply]
+      rw [selectedCechComplexFunctor_obj_d_apply]
+      change
+        (∑ i : Fin (n + 2), ((-1 : ℤ) ^ i.1) •
+          ULift.up
+            (Ob.mapAddMonoidHom
+              ((canonicalCoverRelative 𝒰).faceRestriction n i σ)
+              (c ((canonicalCoverRelative 𝒰).face n i σ)))) = _
+      dsimp [liftedCanonicalCechComplex, liftedCochainIso]
+      rw [CoverRelativeCechComplex.toCochainComplex_d]
+      change _ = ULift.up ((canonicalCechComplex 𝒰 Ob).d n c σ)
+      rw [canonicalCechComplex_d_apply]
+      change _ = AddEquiv.ulift.symm
+        (∑ i : Fin (n + 2), ((-1 : ℤ) ^ i.1) •
+          Ob.mapAddMonoidHom
+            ((canonicalCoverRelative 𝒰).faceRestriction n i σ)
+            (c ((canonicalCoverRelative 𝒰).face n i σ)))
+      rw [map_sum]
+      simp only [map_zsmul]
+      apply Finset.sum_congr rfl
+      intro i _hi
+      rfl)
+
+/-- No-unfold API for the degreewise universe-lift component. -/
+@[simp] theorem obstructionSelectedCechComplexIso_hom_f_apply
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (c : (liftedCanonicalCechComplex 𝒰 Ob).X n)
+    (σ : (canonicalCoverRelative 𝒰).simplex n) :
+    ((obstructionSelectedCechComplexIso 𝒰 Ob).hom.f n).hom c σ =
+      Ob.toAddCommGrpSheafObjAddEquiv _ (c.down σ) :=
+  rfl
+
+/-- The R5c2 refinement cochain map after applying the coefficient universe lift. -/
+noncomputable def liftedCanonicalCechMap
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    liftedCanonicalCechComplex 𝒰 Ob ⟶ liftedCanonicalCechComplex 𝒱 Ob :=
+  (AddCommGrpCat.uliftFunctor.{u + 1, u}.mapHomologicalComplex
+    (ComplexShape.up ℕ)).map (r.canonicalCechHom Ob).toCochainMap
+
+/-- The universe-lift bridge commutes with selected-cover refinement. -/
+theorem obstructionSelectedCechComplexIso_refinement_naturality
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) :
+    liftedCanonicalCechMap r Ob ≫
+        (obstructionSelectedCechComplexIso 𝒱 Ob).hom =
+      (obstructionSelectedCechComplexIso 𝒰 Ob).hom ≫
+        r.selectedCechMap.app Ob.toAddCommGrpSheaf.val := by
+  apply HomologicalComplex.Hom.ext
+  funext n
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro c
+  rcases c with ⟨c⟩
+  funext σ
+  rfl
+
+/-- Homology of the lifted R5c2 complex is the lift of its small homology. -/
+noncomputable def liftedCanonicalCechHomologyIso
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (liftedCanonicalCechComplex 𝒰 Ob).homology n ≅
+      AddCommGrpCat.uliftFunctor.{u + 1, u}.obj
+        ((canonicalCechComplex 𝒰 Ob).toCochainComplex.homology n) :=
+  ((canonicalCechComplex 𝒰 Ob).toCochainComplex.sc n).mapHomologyIso
+    AddCommGrpCat.uliftFunctor.{u + 1, u}
+
+/-- The lifted homology isomorphism is natural for selected-cover refinement. -/
+theorem liftedCanonicalCechHomologyIso_inv_refinement_naturality
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    AddCommGrpCat.uliftFunctor.{u + 1, u}.map
+          (HomologicalComplex.homologyMap
+            (r.canonicalCechHom Ob).toCochainMap n) ≫
+        (liftedCanonicalCechHomologyIso 𝒱 Ob n).inv =
+      (liftedCanonicalCechHomologyIso 𝒰 Ob n).inv ≫
+        HomologicalComplex.homologyMap (liftedCanonicalCechMap r Ob) n := by
+  simpa only [liftedCanonicalCechHomologyIso, liftedCanonicalCechMap,
+    HomologicalComplex.homologyMap] using
+    (ShortComplex.mapHomologyIso_inv_naturality
+      ((HomologicalComplex.shortComplexFunctor
+        AddCommGrpCat.{u} (ComplexShape.up ℕ) n).map
+          (r.canonicalCechHom Ob).toCochainMap)
+      AddCommGrpCat.uliftFunctor.{u + 1, u})
+
+/--
+A custom cocycle, lifted into the actual coefficient universe, determines a
+cycle in the actual large selected Čech complex.
+-/
+noncomputable def obstructionCocycleToSelectedCycles
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    AddCommGrpCat.uliftFunctor.{u + 1, u}.obj
+        (AddCommGrpCat.of
+          ((canonicalCechComplex 𝒰 Ob).CechCocycleSubgroup n)) ⟶
+      ((selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val).cycles n :=
+  AddCommGrpCat.uliftFunctor.{u + 1, u}.map
+      ((canonicalCechComplex 𝒰 Ob).cocycleToCycles n) ≫
+    (((canonicalCechComplex 𝒰 Ob).toCochainComplex.sc n).mapCyclesIso
+      AddCommGrpCat.uliftFunctor.{u + 1, u}).inv ≫
+    HomologicalComplex.cyclesMap
+      (obstructionSelectedCechComplexIso 𝒰 Ob).hom n
+
+/-- The selected cycle has the lifted original cocycle as its underlying cochain. -/
+@[simp] theorem obstructionCocycleToSelectedCycles_i_apply
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (z : (canonicalCechComplex 𝒰 Ob).CechCocycleSubgroup n)
+    (σ : (canonicalCoverRelative 𝒰).simplex n) :
+    (((selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val).iCycles n).hom
+        ((obstructionCocycleToSelectedCycles 𝒰 Ob n).hom
+          (ULift.up z)) σ =
+      Ob.toAddCommGrpSheafObjAddEquiv _ (z.1 σ) := by
+  let K := (canonicalCechComplex 𝒰 Ob).toCochainComplex
+  let F := AddCommGrpCat.uliftFunctor.{u + 1, u}
+  let e := (K.sc n).mapCyclesIso F
+  have he : e.inv ≫ (liftedCanonicalCechComplex 𝒰 Ob).iCycles n =
+      F.map (K.iCycles n) := by
+    rw [← cancel_epi e.hom, ← Category.assoc, e.hom_inv_id,
+      Category.id_comp]
+    exact (ShortComplex.mapCyclesIso_hom_iCycles (K.sc n) F).symm
+  have he_assoc :
+      e.inv ≫ (liftedCanonicalCechComplex 𝒰 Ob).iCycles n ≫
+          (obstructionSelectedCechComplexIso 𝒰 Ob).hom.f n =
+        F.map (K.iCycles n) ≫
+          (obstructionSelectedCechComplexIso 𝒰 Ob).hom.f n := by
+    simpa only [Category.assoc] using congrArg
+      (fun q ↦ q ≫ (obstructionSelectedCechComplexIso 𝒰 Ob).hom.f n) he
+  have htotal :
+      obstructionCocycleToSelectedCycles 𝒰 Ob n ≫
+          ((selectedCechComplexFunctor 𝒰).obj
+            Ob.toAddCommGrpSheaf.val).iCycles n =
+        F.map ((canonicalCechComplex 𝒰 Ob).cocycleToCycles n ≫
+            K.iCycles n) ≫
+          (obstructionSelectedCechComplexIso 𝒰 Ob).hom.f n := by
+    change F.map ((canonicalCechComplex 𝒰 Ob).cocycleToCycles n) ≫
+        e.inv ≫ HomologicalComplex.cyclesMap
+          (obstructionSelectedCechComplexIso 𝒰 Ob).hom n ≫
+        ((selectedCechComplexFunctor 𝒰).obj
+          Ob.toAddCommGrpSheaf.val).iCycles n = _
+    simp only [HomologicalComplex.cyclesMap_i]
+    rw [he_assoc, ← Category.assoc, ← F.map_comp]
+  have hz := ConcreteCategory.congr_hom htotal (ULift.up z)
+  have hzσ := congrFun hz σ
+  calc
+    _ = ((obstructionSelectedCechComplexIso 𝒰 Ob).hom.f n).hom
+        (ULift.up
+          ((K.iCycles n).hom
+            (((canonicalCechComplex 𝒰 Ob).cocycleToCycles n).hom z))) σ := by
+      simpa only [ConcreteCategory.comp_apply] using hzσ
+    _ = Ob.toAddCommGrpSheafObjAddEquiv _
+        (((K.iCycles n).hom
+          (((canonicalCechComplex 𝒰 Ob).cocycleToCycles n).hom z)) σ) := by
+      rw [obstructionSelectedCechComplexIso_hom_f_apply]
+    _ = Ob.toAddCommGrpSheafObjAddEquiv _ (z.1 σ) := by
+      rw [CoverRelativeCechComplex.cocycleToCycles_i]
+
+/-- The lifted homology isomorphism carries the actual cycle-class map. -/
+theorem liftedCanonicalCechHomologyIso_inv_homologyπ
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    AddCommGrpCat.uliftFunctor.{u + 1, u}.map
+          ((canonicalCechComplex 𝒰 Ob).toCochainComplex.homologyπ n) ≫
+        (liftedCanonicalCechHomologyIso 𝒰 Ob n).inv =
+      (((canonicalCechComplex 𝒰 Ob).toCochainComplex.sc n).mapCyclesIso
+          AddCommGrpCat.uliftFunctor.{u + 1, u}).inv ≫
+        (liftedCanonicalCechComplex 𝒰 Ob).homologyπ n := by
+  let K := (canonicalCechComplex 𝒰 Ob).toCochainComplex
+  let F := AddCommGrpCat.uliftFunctor.{u + 1, u}
+  let h := (K.sc n).leftHomologyData
+  change F.map (K.homologyπ n) ≫ ((K.sc n).mapHomologyIso F).inv =
+    ((K.sc n).mapCyclesIso F).inv ≫
+      ((F.mapHomologicalComplex (ComplexShape.up ℕ)).obj K).homologyπ n
+  rw [h.mapHomologyIso_eq F, h.mapCyclesIso_eq F]
+  dsimp only [HomologicalComplex.homologyπ, Iso.trans_inv,
+    Functor.mapIso, Iso.symm_inv]
+  simp only [Category.assoc]
+  rw [← Category.assoc, ← F.map_comp,
+    h.homologyπ_comp_homologyIso_hom, F.map_comp]
+  change F.map h.cyclesIso.hom ≫ (h.map F).π ≫
+    (h.map F).homologyIso.inv = _
+  rw [(h.map F).π_comp_homologyIso_inv]
+  rfl
+
+/--
+The custom cover-relative quotient is canonically the homology of the actual
+large selected Čech complex.
+
+Implementation notes: this is the composite of the R5c2 quotient-homology
+equivalence, Mathlib's homology-preservation isomorphism for `uliftFunctor`,
+and homology of `obstructionSelectedCechComplexIso`. No homology-level
+comparison is accepted as input.
+-/
+noncomputable def additiveCechHnEquivSelectedHomology
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (canonicalCechComplex 𝒰 Ob).AdditiveCechHn n ≃+
+      ((selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val).homology n :=
+  ((canonicalCechComplex 𝒰 Ob).additiveCechHnEquivHomology n).trans
+    ((AddEquiv.ulift.{u, u + 1}.symm).trans
+      ((CategoryTheory.Iso.addCommGroupIsoToAddEquiv
+        (liftedCanonicalCechHomologyIso 𝒰 Ob n).symm).trans
+        (CategoryTheory.Iso.addCommGroupIsoToAddEquiv
+          (HomologicalComplex.homologyMapIso
+            (obstructionSelectedCechComplexIso 𝒰 Ob) n))))
+
+/-- The canonical additive map from the custom quotient to actual selected homology. -/
+noncomputable def additiveCechHnToSelectedHomology
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    (canonicalCechComplex 𝒰 Ob).AdditiveCechHn n →+
+      ((selectedCechComplexFunctor 𝒰).obj
+        Ob.toAddCommGrpSheaf.val).homology n :=
+  (additiveCechHnEquivSelectedHomology 𝒰 Ob n).toAddMonoidHom
+
+/-- The canonical map to actual selected homology is bijective in every degree. -/
+theorem additiveCechHnToSelectedHomology_bijective
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    Function.Bijective (additiveCechHnToSelectedHomology 𝒰 Ob n) :=
+  (additiveCechHnEquivSelectedHomology 𝒰 Ob n).bijective
+
+/-- The actual selected-complex equivalence sends a cocycle to its homology class. -/
+theorem additiveCechHnEquivSelectedHomology_additiveCohomologyClass
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (c : (canonicalCechComplex 𝒰 Ob).CechCocycle n) :
+    additiveCechHnEquivSelectedHomology 𝒰 Ob n
+        ((canonicalCechComplex 𝒰 Ob).additiveCohomologyClass n c) =
+      (HomologicalComplex.homologyMapIso
+          (obstructionSelectedCechComplexIso 𝒰 Ob) n).hom.hom
+        ((liftedCanonicalCechHomologyIso 𝒰 Ob n).inv.hom
+          (ULift.up
+            (((canonicalCechComplex 𝒰 Ob).toCochainComplex.homologyπ n).hom
+              (((canonicalCechComplex 𝒰 Ob).cocycleToCycles n).hom
+                ⟨c.1, c.2⟩)))) := by
+  change
+    (HomologicalComplex.homologyMapIso
+        (obstructionSelectedCechComplexIso 𝒰 Ob) n).hom.hom
+      ((liftedCanonicalCechHomologyIso 𝒰 Ob n).inv.hom
+        (ULift.up
+          ((canonicalCechComplex 𝒰 Ob).additiveCechHnEquivHomology n
+            ((canonicalCechComplex 𝒰 Ob).additiveCohomologyClass n c)))) = _
+  rw [CoverRelativeCechComplex.additiveCechHnEquivHomology_additiveCohomologyClass]
+
+/-- Representative formula for the canonical additive map. -/
+theorem additiveCechHnToSelectedHomology_additiveCohomologyClass
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (c : (canonicalCechComplex 𝒰 Ob).CechCocycle n) :
+    additiveCechHnToSelectedHomology 𝒰 Ob n
+        ((canonicalCechComplex 𝒰 Ob).additiveCohomologyClass n c) =
+      (HomologicalComplex.homologyMapIso
+          (obstructionSelectedCechComplexIso 𝒰 Ob) n).hom.hom
+        ((liftedCanonicalCechHomologyIso 𝒰 Ob n).inv.hom
+          (ULift.up
+            (((canonicalCechComplex 𝒰 Ob).toCochainComplex.homologyπ n).hom
+              (((canonicalCechComplex 𝒰 Ob).cocycleToCycles n).hom
+                ⟨c.1, c.2⟩)))) :=
+  additiveCechHnEquivSelectedHomology_additiveCohomologyClass 𝒰 Ob n c
+
+/-- The canonical map is the actual selected complex's `homologyπ` on the lifted cocycle. -/
+theorem additiveCechHnToSelectedHomology_additiveCohomologyClass_eq_homologyπ
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (c : (canonicalCechComplex 𝒰 Ob).CechCocycle n) :
+    additiveCechHnToSelectedHomology 𝒰 Ob n
+        ((canonicalCechComplex 𝒰 Ob).additiveCohomologyClass n c) =
+      (((selectedCechComplexFunctor 𝒰).obj
+          Ob.toAddCommGrpSheaf.val).homologyπ n).hom
+        ((obstructionCocycleToSelectedCycles 𝒰 Ob n).hom
+          (ULift.up ⟨c.1, c.2⟩)) := by
+  let K := (canonicalCechComplex 𝒰 Ob).toCochainComplex
+  let z := ((canonicalCechComplex 𝒰 Ob).cocycleToCycles n).hom
+    ⟨c.1, c.2⟩
+  let zLift :=
+    (((canonicalCechComplex 𝒰 Ob).toCochainComplex.sc n).mapCyclesIso
+      AddCommGrpCat.uliftFunctor.{u + 1, u}).inv.hom (ULift.up z)
+  have hLiftApply := ConcreteCategory.congr_hom
+    (liftedCanonicalCechHomologyIso_inv_homologyπ 𝒰 Ob n)
+    (ULift.up z)
+  have hIsoApply := ConcreteCategory.congr_hom
+    (HomologicalComplex.homologyπ_naturality
+      (obstructionSelectedCechComplexIso 𝒰 Ob).hom n)
+    zLift
+  rw [additiveCechHnToSelectedHomology_additiveCohomologyClass]
+  change
+    (HomologicalComplex.homologyMap
+        (obstructionSelectedCechComplexIso 𝒰 Ob).hom n).hom
+      ((liftedCanonicalCechHomologyIso 𝒰 Ob n).inv.hom
+        (ULift.up ((K.homologyπ n).hom z))) =
+      (((selectedCechComplexFunctor 𝒰).obj
+          Ob.toAddCommGrpSheaf.val).homologyπ n).hom
+        ((HomologicalComplex.cyclesMap
+          (obstructionSelectedCechComplexIso 𝒰 Ob).hom n).hom zLift)
+  exact congrArg
+    (fun y ↦
+      (HomologicalComplex.homologyMap
+        (obstructionSelectedCechComplexIso 𝒰 Ob).hom n).hom y)
+    hLiftApply |>.trans hIsoApply
+
+/-- The actual selected-complex equivalence commutes with refinement homology maps. -/
+theorem additiveCechHnEquivSelectedHomology_refinement_naturality
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (x : (canonicalCechComplex 𝒰 Ob).AdditiveCechHn n) :
+    (HomologicalComplex.homologyMap
+        (r.selectedCechMap.app Ob.toAddCommGrpSheaf.val) n).hom
+        (additiveCechHnEquivSelectedHomology 𝒰 Ob n x) =
+      additiveCechHnEquivSelectedHomology 𝒱 Ob n
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n x) := by
+  let f := (r.canonicalCechHom Ob).toCochainMap
+  let b := (canonicalCechComplex 𝒰 Ob).additiveCechHnEquivHomology n x
+  let a := (liftedCanonicalCechHomologyIso 𝒰 Ob n).inv.hom (ULift.up b)
+  have hComplex :
+      HomologicalComplex.homologyMap (liftedCanonicalCechMap r Ob) n ≫
+          (HomologicalComplex.homologyMapIso
+            (obstructionSelectedCechComplexIso 𝒱 Ob) n).hom =
+        (HomologicalComplex.homologyMapIso
+            (obstructionSelectedCechComplexIso 𝒰 Ob) n).hom ≫
+          HomologicalComplex.homologyMap
+            (r.selectedCechMap.app Ob.toAddCommGrpSheaf.val) n := by
+    have h := congrArg (fun g ↦ HomologicalComplex.homologyMap g n)
+      (obstructionSelectedCechComplexIso_refinement_naturality r Ob)
+    simpa only [HomologicalComplex.homologyMap_comp] using h
+  have hComplexApply := ConcreteCategory.congr_hom hComplex a
+  have hLiftApply := ConcreteCategory.congr_hom
+    (liftedCanonicalCechHomologyIso_inv_refinement_naturality r Ob n)
+    (ULift.up b)
+  change
+    (HomologicalComplex.homologyMap
+        (r.selectedCechMap.app Ob.toAddCommGrpSheaf.val) n).hom
+      ((HomologicalComplex.homologyMapIso
+          (obstructionSelectedCechComplexIso 𝒰 Ob) n).hom.hom a) =
+      (HomologicalComplex.homologyMapIso
+          (obstructionSelectedCechComplexIso 𝒱 Ob) n).hom.hom
+        ((liftedCanonicalCechHomologyIso 𝒱 Ob n).inv.hom
+          (ULift.up
+            ((canonicalCechComplex 𝒱 Ob).additiveCechHnEquivHomology n
+              ((r.canonicalCechHom Ob).mapAdditiveCechHn n x))))
+  rw [← CoverRelativeCechComplex.Hom.additiveCechHnEquivHomology_naturality
+    (r.canonicalCechHom Ob) n x]
+  exact hComplexApply.symm.trans
+    (congrArg
+      (fun y ↦
+        (HomologicalComplex.homologyMapIso
+          (obstructionSelectedCechComplexIso 𝒱 Ob) n).hom.hom y)
+      hLiftApply.symm)
+
+/-- The canonical additive map commutes with refinement homology maps. -/
+theorem additiveCechHnToSelectedHomology_refinement_naturality
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Site.AATCoverageFamily.Refinement 𝒰 𝒱)
+    (Ob : ObstructionSheaf S) (n : ℕ)
+    (x : (canonicalCechComplex 𝒰 Ob).AdditiveCechHn n) :
+    (HomologicalComplex.homologyMap
+        (r.selectedCechMap.app Ob.toAddCommGrpSheaf.val) n).hom
+        (additiveCechHnToSelectedHomology 𝒰 Ob n x) =
+      additiveCechHnToSelectedHomology 𝒱 Ob n
+        ((r.canonicalCechHom Ob).mapAdditiveCechHn n x) :=
+  additiveCechHnEquivSelectedHomology_refinement_naturality r Ob n x
+
+end AAT.AG.Cohomology

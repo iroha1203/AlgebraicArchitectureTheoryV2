@@ -9,6 +9,7 @@ import Mathlib.CategoryTheory.Sites.Abelian
 import Mathlib.CategoryTheory.Sites.Equivalence
 import Mathlib.CategoryTheory.Adjunction.Restrict
 import Mathlib.CategoryTheory.Adjunction.Limits
+import Mathlib.CategoryTheory.Whiskering
 import Mathlib.Algebra.Category.Grp.FilteredColimits
 import Mathlib.Algebra.Homology.DerivedCategory.Ext.Map
 import Mathlib.AlgebraicTopology.AlternatingFaceMapComplex
@@ -436,6 +437,29 @@ noncomputable def ObstructionSheaf.toAddCommGrpSheaf
     exact Presieve.isSheaf_comp_uliftFunctor S.topology
       Ob.carrier.presieve_isSheaf
 
+/--
+The canonical universe lift from the original obstruction sections to the
+sections of the actual additive sheaf.
+
+Implementation notes: this is the object component of the
+`AddCommGrpCat.uliftFunctor` used by `toAddCommGrpSheaf`, not a separately
+chosen equivalence.
+-/
+noncomputable def ObstructionSheaf.toAddCommGrpSheafObjAddEquiv
+    (Ob : ObstructionSheaf S) (X : S.category) :
+    Ob.carrier.toPresheaf.obj (Opposite.op X) ≃+
+      Ob.toAddCommGrpSheaf.val.obj (Opposite.op X) :=
+  AddEquiv.ulift.symm
+
+/-- The section universe lift commutes with every restriction map. -/
+theorem ObstructionSheaf.toAddCommGrpSheafObjAddEquiv_naturality
+    (Ob : ObstructionSheaf S) {X Y : S.category} (f : X ⟶ Y)
+    (x : Ob.carrier.toPresheaf.obj (Opposite.op Y)) :
+    Ob.toAddCommGrpSheafObjAddEquiv X (Ob.mapAddMonoidHom f x) =
+      Ob.toAddCommGrpSheaf.val.map f.op
+        (Ob.toAddCommGrpSheafObjAddEquiv Y x) :=
+  rfl
+
 /-- The standard Ext universe for additive-group-valued sheaves. -/
 theorem standardAddCommGrpSheafHasExt
     {C : Type u} [Category.{v} C]
@@ -734,6 +758,199 @@ theorem canonicalCechComplex_d_comp_d
       (0 : (canonicalCechComplex 𝒰 Ob).AdditiveCochain (n + 2)) :=
   (canonicalCechComplex 𝒰 Ob).differential_comp n c
 
+/-! ## Selected Čech complexes for large additive coefficients -/
+
+/-- Sections of a large additive presheaf on all selected degree-`n` overlaps. -/
+abbrev SelectedCechCochain
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ) :=
+  ∀ σ : (canonicalCoverRelative 𝒰).simplex n,
+    F.obj (Opposite.op ((canonicalCoverRelative 𝒰).overlap n σ))
+
+/--
+The cosimplicial selected-overlap section object for a large additive
+presheaf.
+
+Implementation notes: the construction uses the already selected relative
+overlaps rather than requiring global finite products in the AAT context
+category. The map for an arbitrary simplex morphism is the corresponding
+restriction map on the pulled-back tuple.
+-/
+private noncomputable def selectedCechCosimplicialObject
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) :
+    CosimplicialObject AddCommGrpCat.{u + 1} where
+  obj x := AddCommGrpCat.of (SelectedCechCochain 𝒰 F x.len)
+  map {x y} f := AddCommGrpCat.ofHom
+    { toFun := fun c σ ↦
+        F.map (canonicalTupleOverlapMap 𝒰 f σ).op
+          (c (fun i ↦ σ (f.toOrderHom i)))
+      map_zero' := by
+        funext σ
+        exact map_zero _
+      map_add' := by
+        intro c d
+        funext σ
+        exact map_add _ _ _ }
+  map_id x := by
+    apply AddCommGrpCat.hom_ext
+    ext c σ
+    change F.map (canonicalTupleOverlapMap 𝒰 (𝟙 x) σ).op (c σ) = c σ
+    have hf : canonicalTupleOverlapMap 𝒰 (𝟙 x) σ = 𝟙 _ :=
+      Subsingleton.elim _ _
+    rw [hf]
+    exact FunctorToTypes.map_id_apply
+      (F := F ⋙ forget AddCommGrpCat.{u + 1}) (c σ)
+  map_comp {x y z} f g := by
+    apply AddCommGrpCat.hom_ext
+    ext c σ
+    change
+      F.map (canonicalTupleOverlapMap 𝒰 (f ≫ g) σ).op
+          (c (fun i ↦ σ ((f ≫ g).toOrderHom i))) =
+        F.map (canonicalTupleOverlapMap 𝒰 g σ).op
+          (F.map
+            (canonicalTupleOverlapMap 𝒰 f
+              (fun i ↦ σ (g.toOrderHom i))).op
+            (c (fun i ↦ σ (g.toOrderHom (f.toOrderHom i)))))
+    change
+      (F ⋙ forget AddCommGrpCat.{u + 1}).map
+          (canonicalTupleOverlapMap 𝒰 (f ≫ g) σ).op
+          (c (fun i ↦ σ ((f ≫ g).toOrderHom i))) =
+        (F ⋙ forget AddCommGrpCat.{u + 1}).map
+          (canonicalTupleOverlapMap 𝒰 g σ).op
+          ((F ⋙ forget AddCommGrpCat.{u + 1}).map
+            (canonicalTupleOverlapMap 𝒰 f
+              (fun i ↦ σ (g.toOrderHom i))).op
+            (c (fun i ↦ σ (g.toOrderHom (f.toOrderHom i)))))
+    rw [← FunctorToTypes.map_comp_apply]
+    congr
+
+/-- A coefficient morphism induces a morphism of selected cosimplicial objects. -/
+private noncomputable def selectedCechCosimplicialMap
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {F G : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}} (η : F ⟶ G) :
+    selectedCechCosimplicialObject 𝒰 F ⟶
+      selectedCechCosimplicialObject 𝒰 G where
+  app x := AddCommGrpCat.ofHom
+    { toFun := fun c σ ↦ η.app _ (c σ)
+      map_zero' := by
+        funext σ
+        exact map_zero _
+      map_add' := by
+        intro c d
+        funext σ
+        exact map_add _ _ _ }
+  naturality {x y} f := by
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro c
+    funext σ
+    change
+      η.app _
+          (F.map (canonicalTupleOverlapMap 𝒰 f σ).op
+            (c (fun i ↦ σ (f.toOrderHom i)))) =
+        G.map (canonicalTupleOverlapMap 𝒰 f σ).op
+          (η.app _ (c (fun i ↦ σ (f.toOrderHom i))))
+    exact ConcreteCategory.congr_hom
+      (η.naturality (canonicalTupleOverlapMap 𝒰 f σ).op) _
+
+/-- The selected Čech cosimplicial object, functorial in large coefficients. -/
+private noncomputable def selectedCechCosimplicialFunctor
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) ⥤
+      CosimplicialObject AddCommGrpCat.{u + 1} where
+  obj := selectedCechCosimplicialObject 𝒰
+  map := selectedCechCosimplicialMap 𝒰
+  map_id F := by
+    apply NatTrans.ext
+    funext x
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro c
+    funext σ
+    rfl
+  map_comp η θ := by
+    apply NatTrans.ext
+    funext x
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro c
+    funext σ
+    rfl
+
+/-- The actual large-valued selected Čech cochain-complex functor. -/
+noncomputable def selectedCechComplexFunctor
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) ⥤
+      CochainComplex AddCommGrpCat.{u + 1} ℕ :=
+  selectedCechCosimplicialFunctor 𝒰 ⋙
+    AlgebraicTopology.alternatingCofaceMapComplex AddCommGrpCat.{u + 1}
+
+/-- A coface acts by the corresponding selected-overlap restriction. -/
+private theorem selectedCechCosimplicialObject_delta_apply
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1})
+    (n : ℕ) (i : Fin (n + 2))
+    (c : SelectedCechCochain 𝒰 F n)
+    (σ : (canonicalCoverRelative 𝒰).simplex (n + 1)) :
+    ((selectedCechCosimplicialObject 𝒰 F).δ i).hom c σ =
+      F.map ((canonicalCoverRelative 𝒰).faceRestriction n i σ).op
+        (c ((canonicalCoverRelative 𝒰).face n i σ)) := by
+  change F.map (canonicalTupleOverlapMap 𝒰 (SimplexCategory.δ i) σ).op
+      (c (fun k ↦ σ ((SimplexCategory.δ i).toOrderHom k))) =
+    F.map ((canonicalCoverRelative 𝒰).faceRestriction n i σ).op
+      (c ((canonicalCoverRelative 𝒰).face n i σ))
+  congr 2
+
+/-- The degree-`n` object is the product of sections on selected overlaps. -/
+@[simp] theorem selectedCechComplexFunctor_obj_X
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ) :
+    (((selectedCechComplexFunctor 𝒰).obj F).X n : Type (u + 1)) =
+      SelectedCechCochain 𝒰 F n :=
+  rfl
+
+/-- The selected Čech differential is the alternating sum of restrictions. -/
+theorem selectedCechComplexFunctor_obj_d_apply
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
+    (c : SelectedCechCochain 𝒰 F n)
+    (σ : (canonicalCoverRelative 𝒰).simplex (n + 1)) :
+    (((selectedCechComplexFunctor 𝒰).obj F).d n (n + 1)).hom c σ =
+      ∑ i : Fin (n + 2), ((-1 : ℤ) ^ i.1) •
+        F.map ((canonicalCoverRelative 𝒰).faceRestriction n i σ).op
+          (c ((canonicalCoverRelative 𝒰).face n i σ)) := by
+  change
+    ((AlgebraicTopology.AlternatingCofaceMapComplex.obj
+      (selectedCechCosimplicialObject 𝒰 F)).d n (n + 1)).hom c σ = _
+  dsimp only [AlgebraicTopology.AlternatingCofaceMapComplex.obj]
+  rw [CochainComplex.of_d]
+  change (AddCommGrpCat.homAddEquiv
+    (∑ i : Fin (n + 2), ((-1 : ℤ) ^ i.1) •
+      (selectedCechCosimplicialObject 𝒰 F).δ i)) c σ = _
+  rw [map_sum]
+  change ((AddMonoidHom.eval c)
+    (∑ i : Fin (n + 2), ((-1 : ℤ) ^ i.1) •
+      AddCommGrpCat.homAddEquiv
+        ((selectedCechCosimplicialObject 𝒰 F).δ i))) σ = _
+  rw [map_sum, Finset.sum_apply]
+  simp only [map_zsmul]
+  apply Finset.sum_congr rfl
+  intro i _hi
+  change ((-1 : ℤ) ^ i.1) •
+    ((selectedCechCosimplicialObject 𝒰 F).δ i).hom c σ = _
+  rw [selectedCechCosimplicialObject_delta_apply]
+
+/-- A coefficient morphism acts pointwise on the selected Čech complex. -/
+@[simp] theorem selectedCechComplexFunctor_map_f_apply
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {F G : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}} (η : F ⟶ G)
+    (n : ℕ) (c : SelectedCechCochain 𝒰 F n)
+    (σ : (canonicalCoverRelative 𝒰).simplex n) :
+    (((selectedCechComplexFunctor 𝒰).map η).f n).hom c σ =
+      η.app _ (c σ) :=
+  rfl
+
 namespace CoverRelativeCechComplex
 
 variable {𝒰 𝒱 𝒲 : CoverRelativeCechCover S}
@@ -989,6 +1206,148 @@ theorem canonicalCechHom_app_apply
     Ob.carrier.toPresheaf.map (s.overlapMap n σ).op
       (Ob.carrier.toPresheaf.map (r.overlapMap n (s.simplexMap n σ)).op
         (c (r.simplexMap n (s.simplexMap n σ))))
+  rw [← FunctorToTypes.map_comp_apply]
+  congr
+
+/-- A refinement map between the selected cosimplicial section objects. -/
+private noncomputable def selectedCechCosimplicialMap
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Refinement 𝒰 𝒱)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) :
+    Cohomology.selectedCechCosimplicialObject 𝒰 F ⟶
+      Cohomology.selectedCechCosimplicialObject 𝒱 F where
+  app x := AddCommGrpCat.ofHom
+    { toFun := fun c σ ↦
+        F.map (r.overlapMap x.len σ).op (c (r.simplexMap x.len σ))
+      map_zero' := by
+        funext σ
+        exact map_zero _
+      map_add' := by
+        intro c d
+        funext σ
+        exact map_add _ _ _ }
+  naturality {x y} f := by
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro c
+    funext σ
+    change
+      (F ⋙ forget AddCommGrpCat.{u + 1}).map
+          (r.overlapMap y.len σ).op
+          ((F ⋙ forget AddCommGrpCat.{u + 1}).map
+            (Cohomology.canonicalTupleOverlapMap 𝒰 f
+              (r.simplexMap y.len σ)).op
+            (c (fun i ↦ r.indexMap (σ (f.toOrderHom i))))) =
+        (F ⋙ forget AddCommGrpCat.{u + 1}).map
+            (Cohomology.canonicalTupleOverlapMap 𝒱 f σ).op
+          ((F ⋙ forget AddCommGrpCat.{u + 1}).map
+            (r.overlapMap x.len (fun i ↦ σ (f.toOrderHom i))).op
+            (c (fun i ↦ r.indexMap (σ (f.toOrderHom i)))))
+    rw [← FunctorToTypes.map_comp_apply, ← FunctorToTypes.map_comp_apply]
+    congr
+
+/-- Refinement is natural in the large additive coefficient presheaf. -/
+private noncomputable def selectedCechCosimplicialNatTrans
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Refinement 𝒰 𝒱) :
+    Cohomology.selectedCechCosimplicialFunctor 𝒰 ⟶
+      Cohomology.selectedCechCosimplicialFunctor 𝒱 where
+  app F := r.selectedCechCosimplicialMap F
+  naturality {F G} η := by
+    apply NatTrans.ext
+    funext x
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro c
+    funext σ
+    dsimp [Cohomology.selectedCechCosimplicialFunctor,
+      Cohomology.selectedCechCosimplicialMap, selectedCechCosimplicialMap]
+    change
+      G.map (r.overlapMap x.len σ).op
+          (η.app _ (c (r.simplexMap x.len σ))) =
+        η.app _ (F.map (r.overlapMap x.len σ).op
+          (c (r.simplexMap x.len σ)))
+    exact (ConcreteCategory.congr_hom
+      (η.naturality (r.overlapMap x.len σ).op) _).symm
+
+/--
+A selected-cover refinement induces a natural cochain map for every large
+additive coefficient presheaf.
+
+Implementation notes: applying Mathlib's alternating-coface functor to the
+cosimplicial refinement map derives the cochain law. No cohomology-level map
+or commutation certificate is supplied as input.
+-/
+noncomputable def selectedCechMap
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Refinement 𝒰 𝒱) :
+    Cohomology.selectedCechComplexFunctor 𝒰 ⟶
+      Cohomology.selectedCechComplexFunctor 𝒱 :=
+  CategoryTheory.Functor.whiskerRight r.selectedCechCosimplicialNatTrans
+    (AlgebraicTopology.alternatingCofaceMapComplex AddCommGrpCat.{u + 1})
+
+/-- Pointwise formula for the large selected refinement cochain map. -/
+@[simp] theorem selectedCechMap_app_f_apply
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Refinement 𝒰 𝒱)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1})
+    (n : ℕ) (c : Cohomology.SelectedCechCochain 𝒰 F n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒱).simplex n) :
+    (((r.selectedCechMap).app F).f n).hom c σ =
+      F.map (r.overlapMap n σ).op (c (r.simplexMap n σ)) :=
+  by
+    rfl
+
+/-- The selected refinement map is natural in the large coefficient presheaf. -/
+@[reassoc] theorem selectedCechMap_coefficient_naturality
+    {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Refinement 𝒰 𝒱)
+    {F G : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}} (η : F ⟶ G) :
+    (Cohomology.selectedCechComplexFunctor 𝒰).map η ≫
+        r.selectedCechMap.app G =
+      r.selectedCechMap.app F ≫
+        (Cohomology.selectedCechComplexFunctor 𝒱).map η :=
+  r.selectedCechMap.naturality η
+
+/-- Identity refinements induce the identity natural cochain map. -/
+@[simp] theorem selectedCechMap_refl
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    (refl 𝒰).selectedCechMap = 𝟙 _ := by
+  apply NatTrans.ext
+  funext F
+  apply HomologicalComplex.Hom.ext
+  funext n
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro c
+  funext σ
+  change F.map ((refl 𝒰).overlapMap n σ).op (c σ) = c σ
+  have hf : (refl 𝒰).overlapMap n σ = 𝟙 _ := Subsingleton.elim _ _
+  rw [hf]
+  exact FunctorToTypes.map_id_apply
+    (F := F ⋙ forget AddCommGrpCat.{u + 1}) (c σ)
+
+/-- Composite refinements induce the composite natural cochain map. -/
+@[simp] theorem selectedCechMap_comp
+    {𝒰 𝒱 𝒲 : Site.AATCoverageFamily S.requirements S.overlap base}
+    (r : Refinement 𝒰 𝒱) (s : Refinement 𝒱 𝒲) :
+    (r.comp s).selectedCechMap = r.selectedCechMap ≫ s.selectedCechMap := by
+  apply NatTrans.ext
+  funext F
+  apply HomologicalComplex.Hom.ext
+  funext n
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro c
+  funext σ
+  change
+    (F ⋙ forget AddCommGrpCat.{u + 1}).map
+        ((r.comp s).overlapMap n σ).op
+        (c (r.simplexMap n (s.simplexMap n σ))) =
+      (F ⋙ forget AddCommGrpCat.{u + 1}).map (s.overlapMap n σ).op
+        ((F ⋙ forget AddCommGrpCat.{u + 1}).map
+          (r.overlapMap n (s.simplexMap n σ)).op
+          (c (r.simplexMap n (s.simplexMap n σ))))
   rw [← FunctorToTypes.map_comp_apply]
   congr
 
