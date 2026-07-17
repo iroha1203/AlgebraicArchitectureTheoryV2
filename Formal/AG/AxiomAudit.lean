@@ -4753,6 +4753,20 @@ def readingFunctoriality_selectedCechResolutionColumn_exactAt :=
 def readingFunctoriality_selectedCechResolutionColumn_homology_subsingleton :=
   @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionColumn_homology_subsingleton
 
+/-! Part 4 R5c8: augmented resolution-column exactness. -/
+
+/-- Audit alias for degree-zero exactness of the actual resolution augmentation. -/
+def readingFunctoriality_selectedCechResolutionAugmentation_exactAtZero :=
+  @AAT.AG.Cohomology.selectedCechResolutionAugmentation_exactAtZero
+
+/-- Audit alias for surjectivity of restrictions of an actual injective sheaf. -/
+def readingFunctoriality_injectiveSheaf_restriction_surjective :=
+  @AAT.AG.Cohomology.injectiveSheaf_restriction_surjective
+
+/-- Audit alias for degree-zero selected Čech exactness of an actual sheaf. -/
+def readingFunctoriality_sheaf_selectedCechAugmentation_exactAtZero :=
+  @AAT.AG.Cohomology.sheaf_selectedCechAugmentation_exactAtZero
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

@@ -2676,4 +2676,264 @@ theorem IsLerayFor.selectedCechResolutionColumn_homology_subsingleton
   rw [← HomologicalComplex.exactAt_iff_isZero_homology]
   exact hLeray.selectedCechResolutionColumn_exactAt q hq p
 
+/--
+The resolution augmentation is exact at degree zero in every selected Čech
+degree. Exactness is mapped from the actual injective resolution through each
+overlap evaluation and the resulting preimages are assembled pointwise.
+-/
+theorem selectedCechResolutionAugmentation_exactAtZero
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (p : ℕ) :
+    Function.Exact
+      ((selectedCechResolutionAugmentation 𝒰 Ob).f p).hom
+      (((selectedCechResolutionBicomplex 𝒰 Ob).d 0 1).f p).hom := by
+  let R := obstructionInjectiveResolution Ob
+  intro x
+  constructor
+  · intro hx
+    have hpreimage : ∀ σ : (canonicalCoverRelative 𝒰).simplex p,
+        ∃ y : Ob.toAddCommGrpSheaf.val.obj
+            (Opposite.op ((canonicalCoverRelative 𝒰).overlap p σ)),
+          ((R.ι.f 0).val.app _).hom y = x σ := by
+      intro σ
+      let F := sheafToPresheaf S.topology AddCommGrpCat.{u + 1} ⋙
+        (evaluation S.categoryᵒᵖ AddCommGrpCat.{u + 1}).obj
+          (Opposite.op ((canonicalCoverRelative 𝒰).overlap p σ))
+      let K := ShortComplex.mk (R.ι.f 0) (R.cocomplex.d 0 1)
+        R.ι_f_zero_comp_complex_d
+      have hK : K.Exact := R.exact₀
+      have hmap : (K.map F).Exact :=
+        hK.map_of_mono_of_preservesKernel F (by infer_instance) (by infer_instance)
+      have hfun : Function.Exact (F.map (R.ι.f 0))
+          (F.map (R.cocomplex.d 0 1)) :=
+        (ShortComplex.ab_exact_iff_function_exact (S := K.map F)).mp hmap
+      apply (hfun (x σ)).mp
+      change ((R.cocomplex.d 0 1).val.app _).hom (x σ) = 0
+      calc
+        _ = ((((selectedCechResolutionBicomplex 𝒰 Ob).d 0 1).f p).hom x) σ := by
+          symm
+          exact selectedCechResolutionBicomplex_resolution_d_apply
+            𝒰 Ob 0 p x σ
+        _ = 0 := congrFun hx σ
+    choose y hy using hpreimage
+    refine ⟨fun σ => y σ, ?_⟩
+    funext σ
+    rw [selectedCechResolutionAugmentation_f_apply]
+    exact hy σ
+  · rintro ⟨c, rfl⟩
+    exact ConcreteCategory.congr_hom
+      (selectedCechResolutionAugmentation_comp_resolution_d 𝒰 Ob p) c
+
+/--
+Restriction maps of an injective additive sheaf on an AAT context site are
+surjective. The proof represents a section by a morphism from the sheafified
+free Yoneda object and extends that morphism across the mono induced by the
+context arrow.
+-/
+theorem injectiveSheaf_restriction_surjective
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (I : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [Injective I]
+    {X Y : S.category} (f : X ⟶ Y) :
+    Function.Surjective (I.val.map f.op) := by
+  let P (Z : S.category) :=
+    (presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (yoneda.obj Z ⋙ AddCommGrpCat.free)
+  let m : P X ⟶ P Y :=
+    (presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+      (Functor.whiskerRight (yoneda.map f) AddCommGrpCat.free)
+  letI : Mono f := by
+    constructor
+    intro Z g h _
+    exact Subsingleton.elim g h
+  letI : Mono m := by
+    dsimp [m, P]
+    infer_instance
+  intro x
+  let h : P X ⟶ I :=
+    (sheafifiedFreeYonedaHomAddEquiv X I).symm x
+  let e : P Y ⟶ I := Injective.factorThru h m
+  refine ⟨sheafifiedFreeYonedaHomAddEquiv Y I e, ?_⟩
+  rw [← sheafifiedFreeYonedaHomAddEquiv_precomp f I e]
+  change sheafifiedFreeYonedaHomAddEquiv X I (m ≫ e) = x
+  rw [Injective.comp_factorThru]
+  exact (sheafifiedFreeYonedaHomAddEquiv X I).apply_symm_apply x
+
+private def selectedCechSingle
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (i : 𝒰.Index) : (canonicalCoverRelative 𝒰).simplex 0 :=
+  fun _ => i
+
+private def selectedCechPair
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (i j : 𝒰.Index) : (canonicalCoverRelative 𝒰).simplex 1 :=
+  Fin.cases j (fun _ => i)
+
+private theorem selectedCechPair_face_zero
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (i j : 𝒰.Index) :
+    (canonicalCoverRelative 𝒰).face 0 0 (selectedCechPair 𝒰 i j) =
+      selectedCechSingle 𝒰 i := by
+  rfl
+
+private theorem selectedCechPair_face_one
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (i j : 𝒰.Index) :
+    (canonicalCoverRelative 𝒰).face 0 1 (selectedCechPair 𝒰 i j) =
+      selectedCechSingle 𝒰 j := by
+  funext k
+  exact Fin.eq_zero k ▸ rfl
+
+private noncomputable def selectedCechPairLift
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (i j : 𝒰.Index) {Z : S.category}
+    (gi : Z ⟶ (canonicalCoverRelative 𝒰).chart i)
+    (gj : Z ⟶ (canonicalCoverRelative 𝒰).chart j) :
+    Z ⟶ (canonicalCoverRelative 𝒰).overlap 1 (selectedCechPair 𝒰 i j) := by
+  apply homOfLE
+  exact S.overlap.overlap_lift
+    (𝒰.inclusion j) (𝒰.inclusion i) (leOfHom gj) (leOfHom gi)
+
+private theorem selectedCechZeroCompatible
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1})
+    (c : SelectedCechCochain 𝒰 F 0)
+    (hc : (((selectedCechComplexFunctor 𝒰).obj F).d 0 1).hom c = 0) :
+    Presieve.Arrows.Compatible (F ⋙ forget AddCommGrpCat.{u + 1})
+      (fun i => homOfLE (𝒰.inclusion i))
+      (fun i => c (selectedCechSingle 𝒰 i)) := by
+  intro i j Z gi gj _
+  let σ := selectedCechPair 𝒰 i j
+  let k := selectedCechPairLift 𝒰 i j gi gj
+  let ri : (canonicalCoverRelative 𝒰).overlap 1 σ ⟶
+      (canonicalCoverRelative 𝒰).chart i :=
+    (canonicalCoverRelative 𝒰).faceRestriction 0 0 σ ≫
+      eqToHom (congrArg ((canonicalCoverRelative 𝒰).overlap 0)
+        (selectedCechPair_face_zero 𝒰 i j))
+  let rj : (canonicalCoverRelative 𝒰).overlap 1 σ ⟶
+      (canonicalCoverRelative 𝒰).chart j :=
+    (canonicalCoverRelative 𝒰).faceRestriction 0 1 σ ≫
+      eqToHom (congrArg ((canonicalCoverRelative 𝒰).overlap 0)
+        (selectedCechPair_face_one 𝒰 i j))
+  have hdiff := congrFun hc σ
+  rw [selectedCechComplexFunctor_obj_d_apply, Fin.sum_univ_two] at hdiff
+  simp only [Fin.val_zero, pow_zero, one_zsmul, Fin.val_one, pow_one,
+    neg_smul] at hdiff
+  have hraw :
+      F.map ((canonicalCoverRelative 𝒰).faceRestriction 0 0 σ).op
+          (c ((canonicalCoverRelative 𝒰).face 0 0 σ)) =
+        F.map ((canonicalCoverRelative 𝒰).faceRestriction 0 1 σ).op
+          (c ((canonicalCoverRelative 𝒰).face 0 1 σ)) := by
+    apply sub_eq_zero.mp
+    simpa only [sub_eq_add_neg, Pi.zero_apply] using hdiff
+  have hi :
+      F.map ri.op (c (selectedCechSingle 𝒰 i)) =
+        F.map ((canonicalCoverRelative 𝒰).faceRestriction 0 0 σ).op
+          (c ((canonicalCoverRelative 𝒰).face 0 0 σ)) := by
+    simp [ri, σ]
+    congr 1
+  have hj :
+      F.map rj.op (c (selectedCechSingle 𝒰 j)) =
+        F.map ((canonicalCoverRelative 𝒰).faceRestriction 0 1 σ).op
+          (c ((canonicalCoverRelative 𝒰).face 0 1 σ)) := by
+    simp [rj, σ]
+    congr 2
+    funext x
+    exact Fin.eq_zero x ▸ rfl
+  have hlocal : F.map ri.op (c (selectedCechSingle 𝒰 i)) =
+      F.map rj.op (c (selectedCechSingle 𝒰 j)) :=
+    hi.trans (hraw.trans hj.symm)
+  change F.map gi.op (c (selectedCechSingle 𝒰 i)) =
+    F.map gj.op (c (selectedCechSingle 𝒰 j))
+  have hki : ri.op ≫ k.op = gi.op := Subsingleton.elim _ _
+  have hkj : rj.op ≫ k.op = gj.op := Subsingleton.elim _ _
+  calc
+    _ = F.map k.op (F.map ri.op (c (selectedCechSingle 𝒰 i))) := by
+      rw [← ConcreteCategory.comp_apply, ← F.map_comp, hki]
+      rfl
+    _ = F.map k.op (F.map rj.op (c (selectedCechSingle 𝒰 j))) :=
+      congrArg _ hlocal
+    _ = _ := by
+      rw [← ConcreteCategory.comp_apply, ← F.map_comp, hkj]
+      rfl
+
+private theorem baseToSelectedCechZero_comp_cech_d
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) :
+    (baseToSelectedCechZero 𝒰).app F ≫
+        ((selectedCechComplexFunctor 𝒰).obj F).d 0 1 = 0 := by
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro x
+  funext σ
+  change (((selectedCechComplexFunctor 𝒰).obj F).d 0 1).hom
+      (((baseToSelectedCechZero 𝒰).app F).hom x) σ = 0
+  rw [selectedCechComplexFunctor_obj_d_apply, Fin.sum_univ_two]
+  simp only [Fin.val_zero, pow_zero, one_zsmul, Fin.val_one, pow_one,
+    neg_smul, baseToSelectedCechZero_app_apply]
+  let F' := F ⋙ forget AddCommGrpCat.{u + 1}
+  change F'.map ((canonicalCoverRelative 𝒰).faceRestriction 0 0 σ).op
+        (F'.map ((canonicalCoverRelative 𝒰).inclusion
+          (((canonicalCoverRelative 𝒰).face 0 0 σ) 0)).op x) +
+      -F'.map ((canonicalCoverRelative 𝒰).faceRestriction 0 1 σ).op
+        (F'.map ((canonicalCoverRelative 𝒰).inclusion
+          (((canonicalCoverRelative 𝒰).face 0 1 σ) 0)).op x) = 0
+  rw [← FunctorToTypes.map_comp_apply, ← FunctorToTypes.map_comp_apply]
+  have hmor :
+      ((canonicalCoverRelative 𝒰).inclusion
+          (((canonicalCoverRelative 𝒰).face 0 0 σ) 0)).op ≫
+          ((canonicalCoverRelative 𝒰).faceRestriction 0 0 σ).op =
+        ((canonicalCoverRelative 𝒰).inclusion
+          (((canonicalCoverRelative 𝒰).face 0 1 σ) 0)).op ≫
+          ((canonicalCoverRelative 𝒰).faceRestriction 0 1 σ).op :=
+    Subsingleton.elim _ _
+  rw [hmor]
+  simp
+
+/--
+The selected Čech augmentation is exact at degree zero for every actual sheaf.
+The proof converts the degree-zero cocycle equation into compatibility for the
+selected covering family and applies the sheaf gluing condition on its generated
+covering sieve.
+-/
+theorem sheaf_selectedCechAugmentation_exactAtZero
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (I : Sheaf S.topology AddCommGrpCat.{u + 1}) :
+    Function.Exact
+      ((baseToSelectedCechZero 𝒰).app I.val).hom
+      (((selectedCechComplexFunctor 𝒰).obj I.val).d 0 1).hom := by
+  intro c
+  constructor
+  · intro hc
+    have hTypePresheaf : Presheaf.IsSheaf S.topology
+        (I.val ⋙ forget AddCommGrpCat.{u + 1}) :=
+      (Presheaf.isSheaf_iff_isSheaf_forget
+        (J := S.topology) (P' := I.val)
+        (forget AddCommGrpCat.{u + 1})).mp I.cond
+    have hType : Presieve.IsSheaf S.topology
+        (I.val ⋙ forget AddCommGrpCat.{u + 1}) :=
+      (isSheaf_iff_isSheaf_of_type S.topology
+        (I.val ⋙ forget AddCommGrpCat.{u + 1})).mp hTypePresheaf
+    have hgen := hType (Sieve.generate 𝒰.presieve) 𝒰.mem_topology
+    have hcover : Presieve.IsSheafFor
+        (I.val ⋙ forget AddCommGrpCat.{u + 1}) 𝒰.presieve :=
+      (Presieve.isSheafFor_iff_generate 𝒰.presieve).mpr hgen
+    have hglue := (Presieve.isSheafFor_arrows_iff
+      (I.val ⋙ forget AddCommGrpCat.{u + 1})
+      (fun i => homOfLE (𝒰.inclusion i))).mp hcover
+      (fun i => c (selectedCechSingle 𝒰 i))
+      (selectedCechZeroCompatible 𝒰 I.val c hc)
+    obtain ⟨t, ht, _⟩ := hglue
+    refine ⟨t, ?_⟩
+    funext σ
+    have hσ : σ = selectedCechSingle 𝒰 (σ 0) := by
+      funext k
+      exact Fin.eq_zero k ▸ rfl
+    rw [hσ]
+    exact ht (σ 0)
+  · rintro ⟨t, rfl⟩
+    exact ConcreteCategory.congr_hom
+      (baseToSelectedCechZero_comp_cech_d 𝒰 I.val) t
+
 end AAT.AG.Cohomology

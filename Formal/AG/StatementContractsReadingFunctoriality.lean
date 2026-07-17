@@ -1909,6 +1909,28 @@ example (q : ℕ) (hq : 0 < q) (p : ℕ) :
 
 end LerayColumns
 
+/-! Part 4 R5c8: augmentation exactness used by the selected total edge. -/
+
+/-- Fixed degree-zero exactness of the actual resolution augmentation. -/
+example (p : ℕ) :
+    Function.Exact
+      ((Cohomology.selectedCechResolutionAugmentation 𝒰 Ob).f p).hom
+      (((Cohomology.selectedCechResolutionBicomplex 𝒰 Ob).d 0 1).f p).hom :=
+  Cohomology.selectedCechResolutionAugmentation_exactAtZero 𝒰 Ob p
+
+/-- Fixed surjectivity of restriction maps for actual injective sheaves. -/
+example (I : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [Injective I] {X Y : S.category} (f : X ⟶ Y) :
+    Function.Surjective (I.val.map f.op) :=
+  Cohomology.injectiveSheaf_restriction_surjective I f
+
+/-- Fixed degree-zero selected Čech exactness for every actual sheaf. -/
+example (I : Sheaf S.topology AddCommGrpCat.{u + 1}) :
+    Function.Exact
+      ((Cohomology.baseToSelectedCechZero 𝒰).app I.val).hom
+      (((Cohomology.selectedCechComplexFunctor 𝒰).obj I.val).d 0 1).hom :=
+  Cohomology.sheaf_selectedCechAugmentation_exactAtZero 𝒰 I
+
 end SelectedCechResolutionBicomplexSD5
 
 end AAT.AG.StatementContractsReadingFunctoriality
