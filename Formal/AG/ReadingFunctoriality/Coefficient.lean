@@ -11,6 +11,7 @@ import Mathlib.Algebra.Module.TransferInstance
 import Mathlib.CategoryTheory.Sites.Adjunction
 import Mathlib.CategoryTheory.Sites.PreservesSheafification
 import Mathlib.CategoryTheory.Sites.Whiskering
+import Mathlib.Logic.Function.Basic
 import Mathlib.AlgebraicGeometry.Pullbacks
 import Mathlib.AlgebraicGeometry.IdealSheaf.Functorial
 import Mathlib.RingTheory.RingHom.Flat
@@ -226,6 +227,584 @@ theorem coefficientExtension_hasSheafCompose_comp
         LawAlgebra.AATCommAlgCat.{u, v} k')) hPf
 
 end FlatCoefficientChange
+
+namespace LawAlgebra
+
+/-- SD6 / AC28 coefficient change of a structural relation family.
+
+Implementation notes: relation indices and coordinates are unchanged; only
+polynomial coefficients are mapped. This keeps the primitive change data at
+the ring homomorphism and avoids introducing a second relation witness. -/
+noncomputable def StructuralRelationFamily.baseChange
+    {A : ArchitectureObject U} {W : Site.ArchitectureContext A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    {F : CoordinateFamily W}
+    (R : StructuralRelationFamily F k)
+    (f : k →+* k') :
+    StructuralRelationFamily F k' where
+  Relation := R.Relation
+  polynomial r := MvPolynomial.map f (R.polynomial r)
+
+namespace StructuralRelationFamily
+
+private theorem baseChange_JStruct
+    {A : ArchitectureObject U} {W : Site.ArchitectureContext A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    {F : CoordinateFamily W}
+    (R : StructuralRelationFamily F k)
+    (f : k →+* k') :
+    (R.baseChange f).JStruct =
+      Ideal.map (MvPolynomial.map f) R.JStruct := by
+  simp only [JStruct, RelStruct, StructuralRelationFamily.baseChange,
+    Ideal.map_span]
+  congr 1
+  ext p
+  simp
+
+private theorem baseChange_id
+    {A : ArchitectureObject U} {W : Site.ArchitectureContext A}
+    {k : Type v} [CommRing k] {F : CoordinateFamily W}
+    (R : StructuralRelationFamily F k) :
+    R.baseChange (RingHom.id k) = R := by
+  cases R
+  simp [StructuralRelationFamily.baseChange, MvPolynomial.map_id]
+
+private theorem baseChange_comp
+    {A : ArchitectureObject U} {W : Site.ArchitectureContext A}
+    {k k' k'' : Type v} [CommRing k] [CommRing k'] [CommRing k'']
+    {F : CoordinateFamily W}
+    (R : StructuralRelationFamily F k)
+    (f : k →+* k') (g : k' →+* k'') :
+    R.baseChange (g.comp f) = (R.baseChange f).baseChange g := by
+  cases R
+  simp [StructuralRelationFamily.baseChange, MvPolynomial.map_map]
+
+end StructuralRelationFamily
+
+namespace RestrictionStableStructuralRelations
+
+/-- SD6 / AC28 transports restriction-stability by mapping every selected
+variable-image polynomial across the coefficient homomorphism. -/
+noncomputable def baseChange
+    {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : CoordinateFamily source}
+    {targetFamily : CoordinateFamily target}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    {sourceRelations : StructuralRelationFamily sourceFamily k}
+    {targetRelations : StructuralRelationFamily targetFamily k}
+    {g : Site.ContextMorphism source target}
+    (h : RestrictionStableStructuralRelations
+      sourceRelations targetRelations g)
+    (f : k →+* k') :
+    RestrictionStableStructuralRelations
+      (sourceRelations.baseChange f)
+      (targetRelations.baseChange f) g := by
+  let rho : TypedCoordinateRestriction sourceFamily targetFamily k' g :=
+    { variableImage := fun c =>
+        MvPolynomial.map f (h.restriction.variableImage c) }
+  refine { restriction := rho, maps_JStruct := ?_ }
+  intro p hp
+  rw [StructuralRelationFamily.baseChange_JStruct] at hp ⊢
+  have hcomm :
+      rho.polynomialMap.comp (MvPolynomial.map f) =
+        (MvPolynomial.map f).comp h.restriction.polynomialMap := by
+    apply MvPolynomial.ringHom_ext
+    · intro a
+      simp [rho, TypedCoordinateRestriction.polynomialMap]
+    · intro c
+      simp [rho, TypedCoordinateRestriction.polynomialMap]
+  have hold :
+      Ideal.map h.restriction.polynomialMap targetRelations.JStruct ≤
+        sourceRelations.JStruct := by
+    rw [Ideal.map_le_iff_le_comap]
+    intro q hq
+    exact h.maps_JStruct q hq
+  have htotal :
+      Ideal.map rho.polynomialMap
+          (Ideal.map (MvPolynomial.map f) targetRelations.JStruct) ≤
+        Ideal.map (MvPolynomial.map f) sourceRelations.JStruct := by
+    rw [Ideal.map_map, hcomm, ← Ideal.map_map]
+    exact Ideal.map_mono hold
+  exact htotal (Ideal.mem_map_of_mem rho.polynomialMap hp)
+
+private theorem baseChange_polynomialMap_map
+    {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : CoordinateFamily source}
+    {targetFamily : CoordinateFamily target}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    {sourceRelations : StructuralRelationFamily sourceFamily k}
+    {targetRelations : StructuralRelationFamily targetFamily k}
+    {g : Site.ContextMorphism source target}
+    (h : RestrictionStableStructuralRelations
+      sourceRelations targetRelations g)
+    (f : k →+* k')
+    (p : FreeTypedCommAlg targetFamily k) :
+    (h.baseChange f).restriction.polynomialMap
+        (MvPolynomial.map f p) =
+      MvPolynomial.map f (h.restriction.polynomialMap p) := by
+  change MvPolynomial.eval₂Hom _ _ (MvPolynomial.map f p) = _
+  rw [MvPolynomial.eval₂Hom_map_hom]
+  symm
+  simpa [baseChange, TypedCoordinateRestriction.polynomialMap,
+    Function.comp_def] using
+    (MvPolynomial.map_eval₂Hom MvPolynomial.C
+      h.restriction.variableImage (MvPolynomial.map f) p)
+
+private theorem heq_of_relations_of_variableImage
+    {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : CoordinateFamily source}
+    {targetFamily : CoordinateFamily target}
+    {k : Type v} [CommRing k]
+    {sourceRelations sourceRelations' :
+      StructuralRelationFamily sourceFamily k}
+    {targetRelations targetRelations' :
+      StructuralRelationFamily targetFamily k}
+    {g : Site.ContextMorphism source target}
+    (h : RestrictionStableStructuralRelations
+      sourceRelations targetRelations g)
+    (h' : RestrictionStableStructuralRelations
+      sourceRelations' targetRelations' g)
+    (hsource : sourceRelations = sourceRelations')
+    (htarget : targetRelations = targetRelations')
+    (hvariable : h.restriction.variableImage =
+      h'.restriction.variableImage) :
+    HEq h h' := by
+  cases hsource
+  cases htarget
+  cases h with
+  | mk hrestriction hmaps =>
+      cases h' with
+      | mk hrestriction' hmaps' =>
+          cases hrestriction
+          cases hrestriction'
+          cases hvariable
+          rfl
+
+private theorem baseChange_id
+    {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : CoordinateFamily source}
+    {targetFamily : CoordinateFamily target}
+    {k : Type v} [CommRing k]
+    {sourceRelations : StructuralRelationFamily sourceFamily k}
+    {targetRelations : StructuralRelationFamily targetFamily k}
+    {g : Site.ContextMorphism source target}
+    (h : RestrictionStableStructuralRelations
+      sourceRelations targetRelations g) :
+    HEq (h.baseChange (RingHom.id k)) h := by
+  apply heq_of_relations_of_variableImage
+    (h.baseChange (RingHom.id k)) h
+    (StructuralRelationFamily.baseChange_id sourceRelations)
+    (StructuralRelationFamily.baseChange_id targetRelations)
+  funext c
+  exact MvPolynomial.map_id (h.restriction.variableImage c)
+
+private theorem baseChange_comp
+    {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : CoordinateFamily source}
+    {targetFamily : CoordinateFamily target}
+    {k k' k'' : Type v} [CommRing k] [CommRing k'] [CommRing k'']
+    {sourceRelations : StructuralRelationFamily sourceFamily k}
+    {targetRelations : StructuralRelationFamily targetFamily k}
+    {g : Site.ContextMorphism source target}
+    (h : RestrictionStableStructuralRelations
+      sourceRelations targetRelations g)
+    (f : k →+* k') (f' : k' →+* k'') :
+    HEq (h.baseChange (f'.comp f))
+      ((h.baseChange f).baseChange f') := by
+  apply heq_of_relations_of_variableImage
+    (h.baseChange (f'.comp f)) ((h.baseChange f).baseChange f')
+    (StructuralRelationFamily.baseChange_comp sourceRelations f f')
+    (StructuralRelationFamily.baseChange_comp targetRelations f f')
+  funext c
+  exact (MvPolynomial.map_map f f'
+    (h.restriction.variableImage c)).symm
+
+end RestrictionStableStructuralRelations
+
+namespace RawAmbientRestrictionSystem
+
+/-- SD6 / AC28 changes the coefficient ring of every structural relation and
+restriction while leaving the selected coordinate families unchanged. -/
+noncomputable def baseChange
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : k →+* k') :
+    RawAmbientRestrictionSystem S k' where
+  coordFamily := raw.coordFamily
+  relationFamily W := (raw.relationFamily W).baseChange f
+  restrictionStable g := (raw.restrictionStable g).baseChange f
+  identity_polynomialMap X := by
+    apply MvPolynomial.ringHom_ext
+    · intro a
+      simp [RestrictionStableStructuralRelations.baseChange,
+        TypedCoordinateRestriction.polynomialMap]
+    · intro c
+      have h := RingHom.congr_fun (raw.identity_polynomialMap X)
+        (MvPolynomial.X c)
+      simp only [RestrictionStableStructuralRelations.baseChange,
+        TypedCoordinateRestriction.polynomialMap,
+        MvPolynomial.eval₂Hom_X', RingHom.id_apply]
+      change MvPolynomial.map f
+          ((raw.restrictionStable (𝟙 X)).restriction.variableImage c) =
+        MvPolynomial.X c
+      rw [show
+        (raw.restrictionStable (𝟙 X)).restriction.variableImage c =
+          MvPolynomial.X c by
+            simpa [TypedCoordinateRestriction.polynomialMap] using h]
+      simp
+  composition_polynomialMap f' g' := by
+    apply MvPolynomial.ringHom_ext
+    · intro a
+      simp [RestrictionStableStructuralRelations.baseChange,
+        TypedCoordinateRestriction.polynomialMap]
+    · intro c
+      have h := RingHom.congr_fun
+        (raw.composition_polynomialMap f' g') (MvPolynomial.X c)
+      simp only [RestrictionStableStructuralRelations.baseChange,
+        TypedCoordinateRestriction.polynomialMap,
+        MvPolynomial.eval₂Hom_X', RingHom.comp_apply]
+      change MvPolynomial.map f
+          ((raw.restrictionStable (f' ≫ g')).restriction.variableImage c) =
+        ((raw.restrictionStable f').baseChange f).restriction.polynomialMap
+            (MvPolynomial.map f
+              ((raw.restrictionStable g').restriction.variableImage c))
+      rw [RestrictionStableStructuralRelations.baseChange_polynomialMap_map]
+      congr 1
+      simpa [TypedCoordinateRestriction.polynomialMap] using h
+
+private noncomputable def quotientBaseChangeMap
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : k →+* k') (W : S.category) :
+    raw.rawAlgebra W →+* (raw.baseChange f).rawAlgebra W :=
+  Ideal.quotientMap
+    ((raw.baseChange f).relationFamily W).JStruct
+    (MvPolynomial.map f) (by
+      intro p hp
+      rw [Ideal.mem_comap]
+      change MvPolynomial.map f p ∈
+        ((raw.relationFamily W).baseChange f).JStruct
+      rw [StructuralRelationFamily.baseChange_JStruct]
+      exact Ideal.mem_map_of_mem (MvPolynomial.map f) hp)
+
+@[simp] private theorem quotientBaseChangeMap_mk
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : k →+* k') (W : S.category)
+    (p : FreeTypedCommAlg (raw.coordFamily W) k) :
+    quotientBaseChangeMap raw f W
+        ((raw.relationFamily W).quotientMap p) =
+      ((raw.baseChange f).relationFamily W).quotientMap
+        (MvPolynomial.map f p) := by
+  rfl
+
+private theorem quotientBaseChangeMap_natural
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : k →+* k') {X Y : S.category} (g : X ⟶ Y) :
+    (quotientBaseChangeMap raw f X).comp
+        (raw.restrictionStable g).quotientDesc =
+      ((raw.baseChange f).restrictionStable g).quotientDesc.comp
+        (quotientBaseChangeMap raw f Y) := by
+  apply Ideal.Quotient.ringHom_ext
+  apply RingHom.ext
+  intro p
+  change ((raw.baseChange f).relationFamily X).quotientMap
+      (MvPolynomial.map f
+        ((raw.restrictionStable g).restriction.polynomialMap p)) =
+    ((raw.baseChange f).relationFamily X).quotientMap
+      (((raw.restrictionStable g).baseChange f).restriction.polynomialMap
+        (MvPolynomial.map f p))
+  rw [RestrictionStableStructuralRelations.baseChange_polynomialMap_map]
+  rfl
+
+private noncomputable def quotientBaseChangeIsPushout
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : FlatCoefficientChange k k') (W : S.category) :
+    IsPushout
+      (raw.toPresheaf.obj (op W)).hom
+      (CommRingCat.ofHom f.liftedHom)
+      (CommRingCat.ofHom (quotientBaseChangeMap raw f.hom W))
+      ((raw.baseChange f.hom).toPresheaf.obj (op W)).hom := by
+  let oldQuotient := (raw.relationFamily W).quotientMap
+  let newQuotient := ((raw.baseChange f.hom).relationFamily W).quotientMap
+  let coefficientMap := fun (t : CommRingCat) (right :
+      CommRingCat.of (ULift.{max u v, v} k') ⟶ t) =>
+    right.hom.comp ULift.ringEquiv.symm.toRingHom
+  refine
+    { w := ?_
+      isColimit' := ⟨PushoutCocone.isColimitAux'
+        (PushoutCocone.mk _ _ ?_) ?_⟩ }
+  · ext x
+    rcases x with ⟨x⟩
+    change newQuotient (MvPolynomial.map f.hom (MvPolynomial.C x)) =
+      newQuotient (MvPolynomial.C (f.hom x))
+    rw [MvPolynomial.map_C]
+  · ext x
+    rcases x with ⟨x⟩
+    change newQuotient (MvPolynomial.map f.hom (MvPolynomial.C x)) =
+      newQuotient (MvPolynomial.C (f.hom x))
+    rw [MvPolynomial.map_C]
+  · intro s
+    let coeff : k' →+* s.pt := coefficientMap s.pt s.inr
+    let variableValues : (raw.coordFamily W).CoordX → s.pt := fun c =>
+      s.inl.hom (oldQuotient (MvPolynomial.X c))
+    let eval : FreeTypedCommAlg (raw.coordFamily W) k' →+* s.pt :=
+      MvPolynomial.eval₂Hom coeff variableValues
+    have hcoeff (a : k) :
+        coeff (f.hom a) = s.inl.hom (oldQuotient (MvPolynomial.C a)) := by
+      have hs := congrArg
+        (fun h : CommRingCat.of (ULift.{max u v, v} k) ⟶ s.pt =>
+          h.hom (ULift.up a)) s.condition
+      simpa [coeff, coefficientMap, oldQuotient,
+        FlatCoefficientChange.liftedHom] using hs.symm
+    have hevalMap :
+        eval.comp (MvPolynomial.map f.hom) =
+          s.inl.hom.comp oldQuotient := by
+      apply MvPolynomial.ringHom_ext
+      · intro a
+        simpa [eval] using hcoeff a
+      · intro c
+        simp [eval, variableValues]
+        rfl
+    have hevalJ :
+        ((raw.baseChange f.hom).relationFamily W).JStruct ≤
+          RingHom.ker eval := by
+      rw [show (raw.baseChange f.hom).relationFamily W =
+        (raw.relationFamily W).baseChange f.hom from rfl,
+        StructuralRelationFamily.baseChange_JStruct]
+      rw [Ideal.map_le_iff_le_comap]
+      intro p hp
+      rw [Ideal.mem_comap, RingHom.mem_ker]
+      calc
+        eval (MvPolynomial.map f.hom p) =
+            s.inl.hom (oldQuotient p) := RingHom.congr_fun hevalMap p
+        _ = 0 := by
+          rw [show oldQuotient p = 0 by
+            exact Ideal.Quotient.eq_zero_iff_mem.mpr hp]
+          simp
+    let descRing :
+        (raw.baseChange f.hom).rawAlgebra W →+* s.pt :=
+      Ideal.Quotient.lift
+        ((raw.baseChange f.hom).relationFamily W).JStruct eval hevalJ
+    let desc :
+        CommRingCat.of ((raw.baseChange f.hom).rawAlgebra W) ⟶ s.pt :=
+      CommRingCat.ofHom descRing
+    have hdesc (p : FreeTypedCommAlg (raw.coordFamily W) k') :
+        descRing (newQuotient p) = eval p := by
+      change (Ideal.Quotient.lift
+        ((raw.baseChange f.hom).relationFamily W).JStruct eval hevalJ)
+          (Ideal.Quotient.mk
+            ((raw.baseChange f.hom).relationFamily W).JStruct p) = eval p
+      exact Ideal.Quotient.lift_mk
+        ((raw.baseChange f.hom).relationFamily W).JStruct eval hevalJ
+    refine ⟨desc, ?_, ?_, ?_⟩
+    · ext x
+      refine Quotient.inductionOn' x ?_
+      intro p
+      change descRing (newQuotient (MvPolynomial.map f.hom p)) =
+        s.inl.hom (oldQuotient p)
+      exact RingHom.congr_fun hevalMap p
+    · ext x
+      rcases x with ⟨x⟩
+      change descRing (newQuotient (MvPolynomial.C x)) =
+        s.inr.hom (ULift.up x)
+      rw [hdesc]
+      calc
+        eval (MvPolynomial.C x) = coeff x := by
+          simp [eval]
+        _ = s.inr.hom (ULift.up x) := rfl
+    · intro m hmLeft hmRight
+      apply CommRingCat.hom_ext
+      apply Ideal.Quotient.ringHom_ext
+      apply MvPolynomial.ringHom_ext
+      · intro a
+        have hm := congrArg
+          (fun h : CommRingCat.of (ULift.{max u v, v} k') ⟶ s.pt =>
+            h.hom (ULift.up a)) hmRight
+        change m.hom (newQuotient (MvPolynomial.C a)) =
+          descRing (newQuotient (MvPolynomial.C a))
+        rw [hdesc]
+        have hm' : m.hom (newQuotient (MvPolynomial.C a)) =
+            s.inr.hom (ULift.up a) := by
+          simpa only [CommRingCat.comp_apply] using hm
+        calc
+          m.hom (newQuotient (MvPolynomial.C a)) =
+              s.inr.hom (ULift.up a) := hm'
+          _ = coeff a := rfl
+          _ = eval (MvPolynomial.C a) := by
+            symm
+            simp [eval]
+      · intro c
+        have hm := congrArg
+          (fun h : CommRingCat.of (raw.rawAlgebra W) ⟶ s.pt =>
+            h.hom (oldQuotient (MvPolynomial.X c))) hmLeft
+        change m.hom (newQuotient (MvPolynomial.X c)) =
+          descRing (newQuotient (MvPolynomial.X c))
+        rw [hdesc]
+        have hq : quotientBaseChangeMap raw f.hom W
+              (oldQuotient (MvPolynomial.X c)) =
+            newQuotient (MvPolynomial.X c) := by
+          rw [quotientBaseChangeMap_mk, MvPolynomial.map_X]
+        have hm' : m.hom
+              (quotientBaseChangeMap raw f.hom W
+                (oldQuotient (MvPolynomial.X c))) =
+            s.inl.hom (oldQuotient (MvPolynomial.X c)) := by
+          simpa only [CommRingCat.comp_apply] using hm
+        calc
+          m.hom (newQuotient (MvPolynomial.X c)) =
+              m.hom (quotientBaseChangeMap raw f.hom W
+                (oldQuotient (MvPolynomial.X c))) := congrArg m.hom hq.symm
+          _ = s.inl.hom (oldQuotient (MvPolynomial.X c)) := hm'
+          _ = variableValues c := rfl
+          _ = eval (MvPolynomial.X c) := by
+            symm
+            simp [eval]
+
+/-- SD6 / AC28 coefficient change preserves the selected coordinate family. -/
+@[simp] theorem baseChange_coordFamily
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : k →+* k') :
+    (raw.baseChange f).coordFamily = raw.coordFamily :=
+  rfl
+
+/-- SD6 / AC28 characterizes the changed structural relations objectwise. -/
+@[simp] theorem baseChange_relationFamily
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : k →+* k') (W : S.category) :
+    (raw.baseChange f).relationFamily W =
+      (raw.relationFamily W).baseChange f :=
+  rfl
+
+/-- SD6 / AC28 characterizes the transported restriction-stability proof. -/
+theorem baseChange_restrictionStable
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : k →+* k')
+    {W V : S.category} (g : W ⟶ V) :
+    HEq ((raw.baseChange f).restrictionStable g)
+      ((raw.restrictionStable g).baseChange f) :=
+  HEq.rfl
+
+/-- SD6 / AC28 raw coefficient change along the identity is the original
+restriction system. -/
+@[simp] theorem baseChange_id
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k) :
+    raw.baseChange (RingHom.id k) = raw := by
+  let hrelation :
+      (raw.baseChange (RingHom.id k)).relationFamily = raw.relationFamily := by
+    funext W
+    exact StructuralRelationFamily.baseChange_id (raw.relationFamily W)
+  refine RawAmbientRestrictionSystem.ext
+    (raw.baseChange (RingHom.id k)) raw rfl (heq_of_eq hrelation) ?_
+  apply Function.hfunext rfl
+  intro X X' hX
+  cases hX
+  apply Function.hfunext rfl
+  intro Y Y' hY
+  cases hY
+  apply Function.hfunext rfl
+  intro g g' hg
+  cases hg
+  exact RestrictionStableStructuralRelations.baseChange_id
+    (raw.restrictionStable g)
+
+/-- SD6 / AC28 successive raw coefficient changes agree with coefficient
+change along the composite ring homomorphism. -/
+@[simp] theorem baseChange_comp
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' k'' : Type v} [CommRing k] [CommRing k'] [CommRing k'']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : k →+* k') (g : k' →+* k'') :
+    raw.baseChange (g.comp f) =
+      (raw.baseChange f).baseChange g := by
+  let hrelation :
+      (raw.baseChange (g.comp f)).relationFamily =
+        ((raw.baseChange f).baseChange g).relationFamily := by
+    funext W
+    exact StructuralRelationFamily.baseChange_comp (raw.relationFamily W) f g
+  refine RawAmbientRestrictionSystem.ext
+    (raw.baseChange (g.comp f)) ((raw.baseChange f).baseChange g)
+      rfl (heq_of_eq hrelation) ?_
+  apply Function.hfunext rfl
+  intro X X' hX
+  cases hX
+  apply Function.hfunext rfl
+  intro Y Y' hY
+  cases hY
+  apply Function.hfunext rfl
+  intro h h' hh
+  cases hh
+  exact RestrictionStableStructuralRelations.baseChange_comp
+    (raw.restrictionStable h) f g
+
+/-- SD6 / AC28 identifies the structural quotient after coefficient change
+with objectwise extension of coefficients, including restriction naturality. -/
+noncomputable def baseChangePresheafIso
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k k' : Type v}
+    [CommRing k] [CommRing k']
+    (raw : RawAmbientRestrictionSystem S k)
+    (f : FlatCoefficientChange k k') :
+    (raw.baseChange f.hom).toPresheaf ≅
+      raw.toPresheaf ⋙ f.coefficientExtension := by
+  refine NatIso.ofComponents (fun X => ?_) ?_
+  · let h := quotientBaseChangeIsPushout raw f X.unop
+    refine Under.isoMk h.isoPushout ?_
+    exact h.inr_isoPushout_hom
+  · intro X Y g
+    apply Under.UnderMorphism.ext
+    let hX := quotientBaseChangeIsPushout raw f X.unop
+    let hY := quotientBaseChangeIsPushout raw f Y.unop
+    change ((raw.baseChange f.hom).toPresheaf.map g).right ≫
+        hY.isoPushout.hom =
+      hX.isoPushout.hom ≫
+        (f.coefficientExtension.map (raw.toPresheaf.map g)).right
+    rw [← cancel_epi hX.isoPushout.inv]
+    simp only [Iso.inv_hom_id_assoc]
+    have hnat :
+        (CommRingCat.ofHom (quotientBaseChangeMap raw f.hom X.unop)) ≫
+            ((raw.baseChange f.hom).toPresheaf.map g).right =
+          (raw.toPresheaf.map g).right ≫
+            CommRingCat.ofHom
+              (quotientBaseChangeMap raw f.hom Y.unop) := by
+      apply CommRingCat.hom_ext
+      change ((raw.baseChange f.hom).restrictionStable g.unop).quotientDesc.comp
+          (quotientBaseChangeMap raw f.hom X.unop) =
+        (quotientBaseChangeMap raw f.hom Y.unop).comp
+          (raw.restrictionStable g.unop).quotientDesc
+      exact (quotientBaseChangeMap_natural raw f.hom g.unop).symm
+    apply pushout.hom_ext
+    · simp only [← Category.assoc, hX.inl_isoPushout_inv]
+      rw [hnat]
+      rw [Category.assoc, hY.inl_isoPushout_hom]
+      simp [FlatCoefficientChange.coefficientExtension]
+    · simp only [← Category.assoc, hX.inr_isoPushout_inv]
+      rw [Under.w]
+      rw [hY.inr_isoPushout_hom]
+      simp [FlatCoefficientChange.coefficientExtension]
+
+end RawAmbientRestrictionSystem
+
+end LawAlgebra
 
 end
 

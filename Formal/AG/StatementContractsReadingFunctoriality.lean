@@ -2409,6 +2409,103 @@ example
   FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
     f g hf hg
 
+/-! Part 4 SD6 / AC28: raw structural coefficient change. -/
+
+/-- Fixed objectwise change of structural relation coefficients. -/
+noncomputable example
+    {A : ArchitectureObject U}
+    {W : Site.ArchitectureContext A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    {F : LawAlgebra.CoordinateFamily W}
+    (R : LawAlgebra.StructuralRelationFamily F k)
+    (f : k →+* k') :
+    LawAlgebra.StructuralRelationFamily F k' :=
+  R.baseChange f
+
+/-- Fixed transport of restriction-stable structural relations. -/
+noncomputable example
+    {A : ArchitectureObject U}
+    {source target : Site.ArchitectureContext A}
+    {sourceFamily : LawAlgebra.CoordinateFamily source}
+    {targetFamily : LawAlgebra.CoordinateFamily target}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    {sourceRelations :
+      LawAlgebra.StructuralRelationFamily sourceFamily k}
+    {targetRelations :
+      LawAlgebra.StructuralRelationFamily targetFamily k}
+    {g : Site.ContextMorphism source target}
+    (h : LawAlgebra.RestrictionStableStructuralRelations
+      sourceRelations targetRelations g)
+    (f : k →+* k') :
+    LawAlgebra.RestrictionStableStructuralRelations
+      (sourceRelations.baseChange f) (targetRelations.baseChange f) g :=
+  h.baseChange f
+
+/-- Fixed raw restriction-system coefficient change. -/
+noncomputable example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    (f : k →+* k') :
+    LawAlgebra.RawAmbientRestrictionSystem S k' :=
+  raw.baseChange f
+
+/-- Fixed preservation of raw coordinate families. -/
+example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    (f : k →+* k') :
+    (raw.baseChange f).coordFamily = raw.coordFamily :=
+  LawAlgebra.RawAmbientRestrictionSystem.baseChange_coordFamily raw f
+
+/-- Fixed objectwise characterization of changed structural relations. -/
+example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    (f : k →+* k') (W : S.category) :
+    (raw.baseChange f).relationFamily W =
+      (raw.relationFamily W).baseChange f :=
+  LawAlgebra.RawAmbientRestrictionSystem.baseChange_relationFamily raw f W
+
+/-- Fixed characterization of changed restriction-stability data. -/
+example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    (f : k →+* k') {W V : S.category} (g : W ⟶ V) :
+    HEq ((raw.baseChange f).restrictionStable g)
+      ((raw.restrictionStable g).baseChange f) :=
+  LawAlgebra.RawAmbientRestrictionSystem.baseChange_restrictionStable raw f g
+
+/-- Fixed identity coherence of raw coefficient change. -/
+example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k) :
+    raw.baseChange (RingHom.id k) = raw :=
+  LawAlgebra.RawAmbientRestrictionSystem.baseChange_id raw
+
+/-- Fixed composition coherence of raw coefficient change. -/
+example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' k'' : Type v} [CommRing k] [CommRing k'] [CommRing k'']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    (f : k →+* k') (g : k' →+* k'') :
+    raw.baseChange (g.comp f) = (raw.baseChange f).baseChange g :=
+  LawAlgebra.RawAmbientRestrictionSystem.baseChange_comp raw f g
+
+/-- Fixed natural structural-quotient comparison with coefficient extension. -/
+noncomputable example
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    (f : FlatCoefficientChange k k') :
+    (raw.baseChange f.hom).toPresheaf ≅
+      raw.toPresheaf ⋙ f.coefficientExtension :=
+  LawAlgebra.RawAmbientRestrictionSystem.baseChangePresheafIso raw f
+
 end CoefficientChangeSD6
 
 end AAT.AG.StatementContractsReadingFunctoriality
