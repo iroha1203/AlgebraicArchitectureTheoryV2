@@ -4709,6 +4709,22 @@ def readingFunctoriality_baseResolutionToSelectedCechTotal_refinement_naturality
 def readingFunctoriality_isLerayFor :=
   @AAT.AG.Cohomology.IsLerayFor
 
+/-- Audit alias for the actual zero obstruction coefficient. -/
+def readingFunctoriality_zeroObstructionSheaf :=
+  @AAT.AG.Cohomology.zeroObstructionSheaf
+
+/-- Audit alias for the zero-object property of the actual additive coefficient. -/
+def readingFunctoriality_zeroObstructionSheaf_toAddCommGrpSheaf_isZero :=
+  @AAT.AG.Cohomology.zeroObstructionSheaf_toAddCommGrpSheaf_isZero
+
+/-- Audit alias for the satisfying zero-coefficient Leray instance. -/
+def readingFunctoriality_zeroObstructionSheaf_isLerayFor :=
+  @AAT.AG.Cohomology.zeroObstructionSheaf_isLerayFor
+
+/-- Audit alias for rejection by nontrivial actual local cohomology. -/
+def readingFunctoriality_not_isLerayFor_of_nontrivialHPrime :=
+  @AAT.AG.Cohomology.not_isLerayFor_of_nontrivialHPrime
+
 /-- Audit alias for the actual resolution column. -/
 noncomputable def readingFunctoriality_selectedCechResolutionColumn :=
   @AAT.AG.Cohomology.selectedCechResolutionColumn

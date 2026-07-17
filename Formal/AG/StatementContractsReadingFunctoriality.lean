@@ -1834,6 +1834,28 @@ variable [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
 /-- Fixed Leray condition as positive-degree actual local `Sheaf.H'` vanishing. -/
 example : Prop := Cohomology.IsLerayFor 𝒰 Ob
 
+/-- Fixed zero obstruction coefficient used by the satisfying Leray instance. -/
+example : Cohomology.ObstructionSheaf S :=
+  Cohomology.zeroObstructionSheaf S
+
+/-- Fixed zero-object property of the actual additive zero coefficient. -/
+example : Limits.IsZero
+    (Cohomology.zeroObstructionSheaf S).toAddCommGrpSheaf :=
+  Cohomology.zeroObstructionSheaf_toAddCommGrpSheaf_isZero
+
+/-- Fixed satisfying `IsLerayFor` instance for the zero coefficient. -/
+example : Cohomology.IsLerayFor 𝒰 (Cohomology.zeroObstructionSheaf S) :=
+  Cohomology.zeroObstructionSheaf_isLerayFor 𝒰
+
+/-- Fixed rejection of Leray vanishing by a nontrivial actual local `Sheaf.H'`. -/
+example {q p : ℕ} (hq : 0 < q)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p)
+    [Nontrivial
+      ((Ob.toAddCommGrpSheaf).H' q
+        ((Cohomology.canonicalCoverRelative 𝒰).overlap p σ))] :
+    ¬ Cohomology.IsLerayFor 𝒰 Ob :=
+  Cohomology.not_isLerayFor_of_nontrivialHPrime hq σ
+
 /-- Fixed actual resolution column at selected Čech degree `p`. -/
 noncomputable example (p : ℕ) : CochainComplex AddCommGrpCat.{u + 1} ℕ :=
   Cohomology.selectedCechResolutionColumn 𝒰 Ob p

@@ -3,6 +3,7 @@ import Mathlib.Algebra.Category.ModuleCat.AB
 import Mathlib.Algebra.Category.Grp.Colimits
 import Mathlib.Algebra.Category.Grp.Ulift
 import Mathlib.Algebra.Category.Grp.Zero
+import Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughInjectives
 import Mathlib.Algebra.Homology.Additive
 import Mathlib.Algebra.Homology.HomologicalBicomplex
 import Mathlib.Algebra.Homology.TotalComplex
@@ -2444,6 +2445,92 @@ def IsLerayFor
         ((Ob.toAddCommGrpSheaf).H' q
           ((canonicalCoverRelative 𝒰).overlap p σ))
 
+private def zeroAddCommGrpPresheaf
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} :
+    S.categoryᵒᵖ ⥤ AddCommGrpCat.{u} :=
+  (Functor.const S.categoryᵒᵖ).obj (AddCommGrpCat.of PUnit)
+
+/--
+The zero obstruction coefficient used as the satisfying `IsLerayFor` instance.
+
+Implementation notes: this is the actual constant zero additive presheaf,
+packaged through `ObstructionSheaf.ofAddCommGrpValued`. It does not attach a
+vanishing certificate to the coefficient object.
+-/
+def zeroObstructionSheaf
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (S : Site.AATSite A) : ObstructionSheaf S :=
+  ObstructionSheaf.ofAddCommGrpValued
+    (zeroAddCommGrpPresheaf (S := S)) (by
+      intro _base _cover _hcover family _compatible
+      refine ⟨0, ?_, ?_⟩
+      · intro _Y f hf
+        change family f hf = PUnit.unit
+        cases family f hf
+        rfl
+      · intro y _hy
+        change y = PUnit.unit
+        cases y
+        rfl)
+
+/-- The actual additive sheaf underlying `zeroObstructionSheaf` is a zero object. -/
+theorem zeroObstructionSheaf_toAddCommGrpSheaf_isZero
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} :
+    Limits.IsZero (zeroObstructionSheaf S).toAddCommGrpSheaf := by
+  rw [Limits.IsZero.iff_id_eq_zero]
+  apply Sheaf.hom_ext
+  apply NatTrans.ext
+  funext X
+  apply AddCommGrpCat.hom_ext
+  apply AddMonoidHom.ext
+  intro x
+  letI : Subsingleton
+      ((zeroObstructionSheaf S).toAddCommGrpSheaf.val.obj X) := by
+    change Subsingleton (ULift PUnit)
+    infer_instance
+  exact Subsingleton.elim _ _
+
+/--
+The zero obstruction coefficient satisfies the actual positive-degree local
+cohomology condition for every selected cover.
+-/
+theorem zeroObstructionSheaf_isLerayFor
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {base : S.category}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    IsLerayFor 𝒰 (zeroObstructionSheaf S) := by
+  intro q hq p σ
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : q ≠ 0)
+  letI : Injective (zeroObstructionSheaf S).toAddCommGrpSheaf :=
+    zeroObstructionSheaf_toAddCommGrpSheaf_isZero.injective
+  exact CategoryTheory.Abelian.Ext.subsingleton_of_injective _ _ n
+
+/--
+A nontrivial actual local `Sheaf.H'` group makes the selected cover fail the
+Leray condition. This is the rejecting half of the `IsLerayFor` instance pair;
+the SD9 finite declaration must construct the required nontrivial group rather
+than pass a comparison or collapse witness.
+-/
+theorem not_isLerayFor_of_nontrivialHPrime
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {base : S.category}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : ObstructionSheaf S}
+    {q p : ℕ} (hq : 0 < q)
+    (σ : (canonicalCoverRelative 𝒰).simplex p)
+    [Nontrivial
+      ((Ob.toAddCommGrpSheaf).H' q
+        ((canonicalCoverRelative 𝒰).overlap p σ))] :
+    ¬ IsLerayFor 𝒰 Ob := by
+  intro hLeray
+  exact not_subsingleton _ (hLeray q hq p σ)
+
 /--
 The actual resolution column at a fixed selected Čech degree.
 
@@ -2553,14 +2640,25 @@ theorem IsLerayFor.selectedCechResolutionColumn_exactAt
     have hxσ :
         ((obstructionInjectiveResolution Ob).cocomplex.d
           (q + 1) (q + 2)).val.app _ (x σ) = 0 := by
-      exact congrFun hx σ
-    have hrange := hlocal (show x σ ∈
-        ((K.d (q + 1) (q + 2)).hom).ker by
-      exact hxσ)
-    exact hrange
+      calc
+        _ = ((selectedCechResolutionColumn 𝒰 Ob p).d
+              (q + 1) (q + 2)).hom x σ := by
+            symm
+            simpa [Nat.add_assoc] using
+              selectedCechResolutionColumn_d_apply 𝒰 Ob p (q + 1) x σ
+        _ = 0 := congrFun hx σ
+    have hxK : x σ ∈ ((K.d (q + 1) (q + 2)).hom).ker := by
+      change (K.d (q + 1) (q + 2)).hom (x σ) = 0
+      rw [baseResolutionComplex_d_apply]
+      exact hxσ
+    rcases hlocal hxK with ⟨y, hy⟩
+    refine ⟨y, ?_⟩
+    rw [← baseResolutionComplex_d_apply]
+    exact hy
   choose y hy using hpreimage
   refine ⟨fun σ => y σ, ?_⟩
   funext σ
+  rw [selectedCechResolutionColumn_d_apply]
   exact hy σ
 
 /-- Positive-degree homology of every actual resolution column is trivial. -/
