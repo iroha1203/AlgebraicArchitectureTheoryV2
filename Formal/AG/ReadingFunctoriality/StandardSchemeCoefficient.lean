@@ -4,10 +4,23 @@ import Mathlib.AlgebraicGeometry.PullbackCarrier
 /-!
 # Standard-scheme coefficient base change
 
-This module constructs the SD6 / AC29 coefficient change of a standard architecture scheme.
-The underlying scheme is the actual Mathlib pullback over the coefficient affine.  Its
-decoration, affine atlas, coverage proof, and overlap comparisons are then derived from the
-source scheme and the canonical sheafified-section base-change comparison.
+This module constructs coefficient change for a standard architecture scheme.  The underlying
+scheme is definitionally the actual Mathlib pullback over the coefficient affine.  Its
+decoration, affine atlas, coverage proof, and overlap comparisons are derived from the source
+scheme and the canonical sheafified-section base-change comparison.
+
+## Implementation notes
+
+The coefficient structure morphism is the `ΓSpec` transpose of the global interpretation.
+The changed decoration is obtained from the canonical section-object comparison, and every
+changed chart and overlap is reconstructed by pullback universal properties.  Thus the public
+API receives no caller-supplied changed scheme, atlas, overlap presentation, or validity
+certificate.
+
+Keeping this construction separate from `Coefficient` leaves the scalar-extension foundation
+independent of standard-scheme packaging.  An arbitrary comparison morphism or a caller-selected
+atlas was rejected because either choice would hide the canonical pullback data that the
+characterization theorems expose.
 -/
 
 namespace AAT.AG
@@ -1071,12 +1084,17 @@ variable (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
 variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
 variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k')]
 
+/-- The coefficient-affine structure morphism obtained by transposing the global interpretation
+through the `ΓSpec` adjunction. -/
 noncomputable def coefficientStructureMap
     (X : LawAlgebra.StandardArchitectureScheme raw) :
     X.underlying ⟶ Scheme.Spec.obj
       (op (CommRingCat.of (ULift.{max u v, v} k))) :=
   constructedCoefficientStructureMap X
 
+/-- The canonical coefficient change of a standard architecture scheme.  The required
+`HasSheafCompose` instance records preservation of sheaves by the site-dependent scalar-extension
+functor; all changed scheme data are constructed from `X`. -/
 noncomputable def baseChange
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1086,6 +1104,7 @@ noncomputable def baseChange
     LawAlgebra.StandardArchitectureScheme (raw.baseChange f.hom) :=
   constructedStandardScheme X f
 
+/-- The projection from the coefficient-changed scheme to its source scheme. -/
 noncomputable def baseChangeMap
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1095,6 +1114,8 @@ noncomputable def baseChangeMap
     (baseChange raw X f).underlying ⟶ X.underlying :=
   constructedMap X f
 
+/-- The canonical identification of the changed underlying scheme with the actual scheme
+pullback over the coefficient affine. -/
 noncomputable def baseChangeUnderlyingIso
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1106,6 +1127,7 @@ noncomputable def baseChangeUnderlyingIso
         (Scheme.Spec.map (CommRingCat.ofHom f.liftedHom).op) :=
   Iso.refl _
 
+/-- The scheme projection is the first projection of the defining pullback. -/
 theorem baseChangeMap_eq_pullback_fst
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1117,6 +1139,7 @@ theorem baseChangeMap_eq_pullback_fst
         (Scheme.Spec.map (CommRingCat.ofHom f.liftedHom).op) := by
   simp [baseChangeMap, baseChangeUnderlyingIso, coefficientStructureMap, constructedMap]
 
+/-- The changed reading decoration induced by the canonical map on sheafified sections. -/
 noncomputable def baseChangedDecoration
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1127,6 +1150,7 @@ noncomputable def baseChangedDecoration
       (baseChange raw X f).underlying :=
   constructedDecoration X f
 
+/-- Coefficient change preserves the selected reading context. -/
 @[simp] theorem baseChangedDecoration_context
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1136,6 +1160,7 @@ noncomputable def baseChangedDecoration
     (baseChangedDecoration raw X f).context = X.decoration.context :=
   rfl
 
+/-- The changed interpretation commutes with the canonical section map and scheme projection. -/
 theorem baseChangedDecoration_interpretation
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1148,6 +1173,7 @@ theorem baseChangedDecoration_interpretation
       X.decoration.interpretation ≫ (baseChangeMap raw X f).appTop :=
   constructedInterpretation_eq X f
 
+/-- The decoration stored in the changed standard scheme is the canonical changed decoration. -/
 @[simp] theorem baseChange_decoration
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1157,6 +1183,7 @@ theorem baseChangedDecoration_interpretation
     (baseChange raw X f).decoration = baseChangedDecoration raw X f :=
   rfl
 
+/-- The affine atlas reconstructed on the changed scheme by pulling back every source chart. -/
 noncomputable def baseChangedAtlas
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1167,6 +1194,7 @@ noncomputable def baseChangedAtlas
       (baseChange raw X f).underlying (baseChange raw X f).decoration :=
   constructedAtlas X f
 
+/-- The changed atlas uses the same chart index type as the source atlas. -/
 @[simp] theorem baseChangedAtlas_Index
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1176,6 +1204,7 @@ noncomputable def baseChangedAtlas
     (baseChangedAtlas raw X f).Index = X.atlas.Index :=
   rfl
 
+/-- The canonical projection from a changed chart to its corresponding source chart. -/
 noncomputable def baseChangedChartMap
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1188,6 +1217,7 @@ noncomputable def baseChangedChartMap
       (X.atlas.chart i).domain :=
   constructedChangedChartToOld X f i
 
+/-- Each changed chart forms a pullback square with its source chart and the scheme projection. -/
 theorem baseChangedChart_isPullback
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1203,6 +1233,7 @@ theorem baseChangedChart_isPullback
       (X.atlas.chart i).map :=
   constructedChangedChart_isPullback X f i
 
+/-- The atlas stored in the changed standard scheme is the reconstructed pullback atlas. -/
 theorem baseChange_atlas
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1212,6 +1243,8 @@ theorem baseChange_atlas
     (baseChange raw X f).atlas = baseChangedAtlas raw X f :=
   rfl
 
+/-- The overlap presentation reconstructed from the source overlaps and changed chart
+pullbacks. -/
 noncomputable def baseChangedOverlaps
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1222,6 +1255,7 @@ noncomputable def baseChangedOverlaps
       (baseChangedAtlas raw X f) :=
   constructedOverlaps X f
 
+/-- The reconstructed overlap presentation satisfies the required pullback conditions. -/
 theorem baseChangedOverlaps_valid
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
@@ -1232,6 +1266,7 @@ theorem baseChangedOverlaps_valid
       (baseChangedOverlaps raw X f) :=
   constructedOverlaps_valid X f
 
+/-- The overlap presentation stored in the changed standard scheme is the reconstructed one. -/
 theorem baseChange_overlaps
     (X : LawAlgebra.StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')

@@ -2648,7 +2648,7 @@ example
   LawAlgebra.RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso_hom_snd
     raw f W
 
-/-! Part 4 SD6 / AC29: standard-scheme coefficient pullback. -/
+/-! Standard-scheme coefficient pullback contracts. -/
 
 section StandardSchemeCoefficientChange
 

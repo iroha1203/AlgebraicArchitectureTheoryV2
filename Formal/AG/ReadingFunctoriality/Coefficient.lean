@@ -21,20 +21,20 @@ import Mathlib.RingTheory.RingHom.Flat
 
 This module owns direct closed-equational reuse and the flat coefficient-change
 foundation for raw systems, ideal geometry, Tor, linear Čech cohomology, and
-actual sheaf cohomology fixed by Part 4 SD2 and SD6–SD8.  The standard-scheme
+actual sheaf cohomology.  The standard-scheme
 pullback built from this foundation lives in `StandardSchemeCoefficient`.
 
-## Implementation notes (SD6 position)
+## Implementation notes
 
 The declarations in `FlatCoefficientChange` are the coefficient-extension
-foundation required by SD6, AC27, and the coefficient-coherence part of AC30.
-The primitive data are exactly a ring homomorphism and its flatness proof.
+foundation for raw systems, scheme change, and coefficient coherence.  The
+primitive data are exactly a ring homomorphism and its flatness proof.
 Site-dependent `HasSheafCompose` proofs remain explicit premises of the
 scheme-level route; sheaves, sections, schemes, and comparison isomorphisms
 are not stored in the change data.
 
-The coefficient functor uses the common-universe presentation fixed by SD6:
-`liftedHom` conjugates the coefficient map by `ULift.ringEquiv`, and
+The coefficient functor uses a common-universe presentation: `liftedHom`
+conjugates the coefficient map by `ULift.ringEquiv`, and
 `coefficientExtension` applies Mathlib’s `Under.pushout` directly. A
 cross-universe category equivalence is not introduced because it would add a
 repackaging layer outside the fixed statement. Finite-limit preservation
