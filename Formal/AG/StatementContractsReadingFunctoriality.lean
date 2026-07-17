@@ -2009,6 +2009,20 @@ example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (m p : ℕ)
           (m + 1 + p) (m + 1 + p + 1)).hom x' = 0 :=
   hLeray.selectedCechResolutionTotal_eliminateColumn m p x hcycle hsupp
 
+/-- Fixed normalization of every total cycle to resolution degree zero. -/
+example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ)
+    (x : (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).X n)
+    (hcycle : ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).d
+      n (n + 1)).hom x = 0) :
+    ∃ y : (Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).X (n - 1),
+      let x' := x -
+        ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (n - 1) n).hom y
+      Cohomology.SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob n 0 x' ∧
+        ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).d
+          n (n + 1)).hom x' = 0 :=
+  hLeray.selectedCechResolutionTotal_normalizeColumns n x hcycle
+
 end LerayTotalElimination
 
 end SelectedCechResolutionBicomplexSD5

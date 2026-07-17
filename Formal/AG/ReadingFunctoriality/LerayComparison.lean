@@ -4263,4 +4263,134 @@ theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumn
     rw [HomologicalComplex.d_comp_d]
     simp
 
+noncomputable def selectedCechResolutionTotalDegreeAddEquiv
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) {n n' : ℕ} (h : n = n') :
+    ((selectedCechResolutionTotalComplex 𝒰 Ob).X n : Type (u + 1)) ≃+
+      ((selectedCechResolutionTotalComplex 𝒰 Ob).X n' : Type (u + 1)) := by
+  subst h
+  exact AddEquiv.refl _
+
+@[simp] theorem selectedCechResolutionTotalDegreeAddEquiv_rfl
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) (n : ℕ) :
+    selectedCechResolutionTotalDegreeAddEquiv 𝒰 Ob (rfl : n = n) =
+      AddEquiv.refl _ :=
+  rfl
+
+theorem selectedCechResolutionTotal_d_transport_source
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : ObstructionSheaf S) {n n' k : ℕ} (h : n = n')
+    (x : (selectedCechResolutionTotalComplex 𝒰 Ob).X n) :
+    ((selectedCechResolutionTotalComplex 𝒰 Ob).d n k).hom x =
+      ((selectedCechResolutionTotalComplex 𝒰 Ob).d n' k).hom
+        (selectedCechResolutionTotalDegreeAddEquiv 𝒰 Ob h x) := by
+  subst h
+  rfl
+
+theorem IsLerayFor.selectedCechResolutionTotal_eliminateColumnAt
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : ObstructionSheaf S}
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (n m p : ℕ) (hdegree : m + 1 + p = n)
+    (x : (selectedCechResolutionTotalComplex 𝒰 Ob).X n)
+    (hcycle : ((selectedCechResolutionTotalComplex 𝒰 Ob).d n (n + 1)).hom x = 0)
+    (hsupp : SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob n (m + 1) x) :
+    ∃ y : (selectedCechResolutionTotalComplex 𝒰 Ob).X (n - 1),
+      let x' := x -
+        ((selectedCechResolutionTotalComplex 𝒰 Ob).d (n - 1) n).hom y
+      SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob n m x' ∧
+        ((selectedCechResolutionTotalComplex 𝒰 Ob).d n (n + 1)).hom x' = 0 := by
+  subst n
+  rcases hLeray.selectedCechResolutionTotal_eliminateColumn m p x hcycle hsupp with
+    ⟨y, hsupp', hcycle'⟩
+  have hprev : m + p = m + 1 + p - 1 := by omega
+  let y' : (selectedCechResolutionTotalComplex 𝒰 Ob).X (m + 1 + p - 1) :=
+    selectedCechResolutionTotalDegreeAddEquiv 𝒰 Ob hprev y
+  refine ⟨y', ?_⟩
+  have hd := selectedCechResolutionTotal_d_transport_source
+    𝒰 Ob (k := m + 1 + p) hprev y
+  change
+    SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob (m + 1 + p) m
+        (x - ((selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (m + 1 + p - 1) (m + 1 + p)).hom y') ∧
+      ((selectedCechResolutionTotalComplex 𝒰 Ob).d
+        (m + 1 + p) (m + 1 + p + 1)).hom
+        (x - ((selectedCechResolutionTotalComplex 𝒰 Ob).d
+          (m + 1 + p - 1) (m + 1 + p)).hom y') = 0
+  rw [← hd]
+  exact ⟨hsupp', hcycle'⟩
+
+theorem IsLerayFor.selectedCechResolutionTotal_normalizeColumnsAux
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : ObstructionSheaf S}
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (n k : ℕ) (hk : k ≤ n)
+    (x : (selectedCechResolutionTotalComplex 𝒰 Ob).X n)
+    (hcycle : ((selectedCechResolutionTotalComplex 𝒰 Ob).d n (n + 1)).hom x = 0)
+    (hsupp : SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob n k x) :
+    ∃ y : (selectedCechResolutionTotalComplex 𝒰 Ob).X (n - 1),
+      let x' := x -
+        ((selectedCechResolutionTotalComplex 𝒰 Ob).d (n - 1) n).hom y
+      SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob n 0 x' ∧
+        ((selectedCechResolutionTotalComplex 𝒰 Ob).d n (n + 1)).hom x' = 0 := by
+  induction k generalizing x with
+  | zero =>
+      refine ⟨0, ?_⟩
+      simp only [map_zero, sub_zero]
+      exact ⟨hsupp, hcycle⟩
+  | succ k ih =>
+      let p := n - (k + 1)
+      have hdegree : k + 1 + p = n := by
+        dsimp [p]
+        omega
+      rcases hLeray.selectedCechResolutionTotal_eliminateColumnAt
+          n k p hdegree x hcycle hsupp with ⟨y₁, hsupp₁, hcycle₁⟩
+      let x₁ := x -
+        ((selectedCechResolutionTotalComplex 𝒰 Ob).d (n - 1) n).hom y₁
+      rcases ih (by omega) x₁ hcycle₁ hsupp₁ with ⟨y₂, hsupp₂, hcycle₂⟩
+      refine ⟨y₁ + y₂, ?_⟩
+      have hmap :
+          ((selectedCechResolutionTotalComplex 𝒰 Ob).d (n - 1) n).hom (y₁ + y₂) =
+            ((selectedCechResolutionTotalComplex 𝒰 Ob).d (n - 1) n).hom y₁ +
+              ((selectedCechResolutionTotalComplex 𝒰 Ob).d (n - 1) n).hom y₂ :=
+        map_add _ y₁ y₂
+      rw [hmap]
+      dsimp only
+      have hx :
+          x - (((selectedCechResolutionTotalComplex 𝒰 Ob).d
+              (n - 1) n).hom y₁ +
+            ((selectedCechResolutionTotalComplex 𝒰 Ob).d
+              (n - 1) n).hom y₂) =
+          x₁ - ((selectedCechResolutionTotalComplex 𝒰 Ob).d
+            (n - 1) n).hom y₂ := by
+        dsimp [x₁]
+        abel
+      rw [hx]
+      exact ⟨hsupp₂, hcycle₂⟩
+
+theorem IsLerayFor.selectedCechResolutionTotal_normalizeColumns
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : ObstructionSheaf S}
+    (hLeray : IsLerayFor 𝒰 Ob)
+    (n : ℕ)
+    (x : (selectedCechResolutionTotalComplex 𝒰 Ob).X n)
+    (hcycle : ((selectedCechResolutionTotalComplex 𝒰 Ob).d n (n + 1)).hom x = 0) :
+    ∃ y : (selectedCechResolutionTotalComplex 𝒰 Ob).X (n - 1),
+      let x' := x -
+        ((selectedCechResolutionTotalComplex 𝒰 Ob).d (n - 1) n).hom y
+      SelectedCechResolutionTotalSupportedAtMost 𝒰 Ob n 0 x' ∧
+        ((selectedCechResolutionTotalComplex 𝒰 Ob).d n (n + 1)).hom x' = 0 :=
+  hLeray.selectedCechResolutionTotal_normalizeColumnsAux n n (by rfl) x hcycle
+    (selectedCechResolutionTotal_supportedAtMost_top 𝒰 Ob n x)
+
 end AAT.AG.Cohomology

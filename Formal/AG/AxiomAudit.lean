@@ -4803,6 +4803,10 @@ def readingFunctoriality_selectedCechResolutionTotal_d_projection_succ_succ :=
 def readingFunctoriality_selectedCechResolutionTotal_eliminateColumn :=
   @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionTotal_eliminateColumn
 
+/-- Audit alias for normalization of total cycles to resolution degree zero. -/
+def readingFunctoriality_selectedCechResolutionTotal_normalizeColumns :=
+  @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionTotal_normalizeColumns
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
