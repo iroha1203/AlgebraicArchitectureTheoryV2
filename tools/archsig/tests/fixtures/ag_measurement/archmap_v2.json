@@ -52,6 +52,39 @@
         "src:order",
         "src:inventory"
       ]
+    },
+    {
+      "id": "atom:order-cech-section-value",
+      "kind": "semantic",
+      "subject": "ctx:order",
+      "object": "section=shared-contract",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
+        "src:cover"
+      ]
+    },
+    {
+      "id": "atom:inventory-cech-section-value",
+      "kind": "semantic",
+      "subject": "ctx:inventory",
+      "object": "section=shared-contract",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
+        "src:cover"
+      ]
+    },
+    {
+      "id": "atom:shared-cech-section-value",
+      "kind": "semantic",
+      "subject": "ctx:shared",
+      "object": "section=shared-contract",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
+        "src:cover"
+      ]
     }
   ],
   "contexts": [

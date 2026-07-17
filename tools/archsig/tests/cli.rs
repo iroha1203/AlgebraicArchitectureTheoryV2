@@ -3994,24 +3994,38 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             .as_array()
             .expect("representative is array")
             .len(),
-        1
+        3,
+        "fully observed square with three mismatched edges (odd cycle sum) carries the class"
+    );
+    assert_eq!(cech["observedEdgeCount"], 4);
+    assert_eq!(
+        cech["unobservedEdgeRefs"].as_array().map(Vec::len),
+        Some(0)
     );
     assert_eq!(
         cech["observedCocycle"]["mismatchSupportRefs"],
         json!([
             "atom:bottom-cech-section-value",
-            "atom:left-cech-section-value"
+            "atom:left-cech-section-value",
+            "atom:right-cech-section-value",
+            "atom:top-cech-section-value"
         ])
     );
     assert_eq!(
         cech["classSupport"]["edgeRefs"],
-        json!(["ctx:left->ctx:bottom"])
+        json!([
+            "ctx:left->ctx:bottom",
+            "ctx:right->ctx:bottom",
+            "ctx:top->ctx:right"
+        ])
     );
     assert_eq!(
         cech["classSupport"]["supportAtomRefs"],
         json!([
             "atom:bottom-cech-section-value",
-            "atom:left-cech-section-value"
+            "atom:left-cech-section-value",
+            "atom:right-cech-section-value",
+            "atom:top-cech-section-value"
         ])
     );
     assert_eq!(cech["nerveShape"]["b1"], Value::from(1));
@@ -4104,7 +4118,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         json!([
             {
                 "archmapRef": cech_fixture_path,
-                "atomCount": 6,
+                "atomCount": 8,
                 "contextCount": 4,
                 "coverCount": 1,
                 "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
@@ -4121,6 +4135,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                         {
                             "edgeId": "ctx:left->ctx:bottom",
                             "objectKind": "nerveEdge",
+                            "sectionObservation": "observed",
                             "source": "selected cover restriction edge",
                             "sourceContextRef": "ctx:left",
                             "supportAtomRefs": ["atom:bottom-cech-section-value", "atom:left-cech-section-value"],
@@ -4130,15 +4145,17 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                         {
                             "edgeId": "ctx:right->ctx:bottom",
                             "objectKind": "nerveEdge",
+                            "sectionObservation": "observed",
                             "source": "selected cover restriction edge",
                             "sourceContextRef": "ctx:right",
-                            "supportAtomRefs": [],
+                            "supportAtomRefs": ["atom:bottom-cech-section-value", "atom:right-cech-section-value"],
                             "targetContextRef": "ctx:bottom",
-                            "value": 0
+                            "value": 1
                         },
                         {
                             "edgeId": "ctx:top->ctx:left",
                             "objectKind": "nerveEdge",
+                            "sectionObservation": "observed",
                             "source": "selected cover restriction edge",
                             "sourceContextRef": "ctx:top",
                             "supportAtomRefs": [],
@@ -4148,11 +4165,12 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                         {
                             "edgeId": "ctx:top->ctx:right",
                             "objectKind": "nerveEdge",
+                            "sectionObservation": "observed",
                             "source": "selected cover restriction edge",
                             "sourceContextRef": "ctx:top",
-                            "supportAtomRefs": [],
+                            "supportAtomRefs": ["atom:right-cech-section-value", "atom:top-cech-section-value"],
                             "targetContextRef": "ctx:right",
-                            "value": 0
+                            "value": 1
                         }
                     ],
                     "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
@@ -4170,12 +4188,12 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                             "objectKind": "nerveVertex"
                         },
                         {
-                            "atomRefs": ["atom:right"],
+                            "atomRefs": ["atom:right", "atom:right-cech-section-value"],
                             "contextRef": "ctx:right",
                             "objectKind": "nerveVertex"
                         },
                         {
-                            "atomRefs": ["atom:top"],
+                            "atomRefs": ["atom:top", "atom:top-cech-section-value"],
                             "contextRef": "ctx:top",
                             "objectKind": "nerveVertex"
                         }
@@ -4189,9 +4207,16 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "invariantId": "cech-cohomology:profile:ag-default@1",
                 "method": "finite-f2-incidence-graph-cochain@1",
                 "methodStatus": "finite_f2_cech_computed",
+                "observedEdgeCount": 4,
+                "unobservedEdgeRefs": [],
                 "observedCocycle": {
                     "classNonzero": true,
-                    "mismatchSupportRefs": ["atom:bottom-cech-section-value", "atom:left-cech-section-value"],
+                    "mismatchSupportRefs": [
+                        "atom:bottom-cech-section-value",
+                        "atom:left-cech-section-value",
+                        "atom:right-cech-section-value",
+                        "atom:top-cech-section-value"
+                    ],
                     "representative": [
                         {
                             "edge": "ctx:left->ctx:bottom",
@@ -4199,13 +4224,36 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                             "supportAtomRefs": ["atom:bottom-cech-section-value", "atom:left-cech-section-value"],
                             "targetContext": "ctx:bottom",
                             "value": 1
+                        },
+                        {
+                            "edge": "ctx:right->ctx:bottom",
+                            "sourceContext": "ctx:right",
+                            "supportAtomRefs": ["atom:bottom-cech-section-value", "atom:right-cech-section-value"],
+                            "targetContext": "ctx:bottom",
+                            "value": 1
+                        },
+                        {
+                            "edge": "ctx:top->ctx:right",
+                            "sourceContext": "ctx:top",
+                            "supportAtomRefs": ["atom:right-cech-section-value", "atom:top-cech-section-value"],
+                            "targetContext": "ctx:right",
+                            "value": 1
                         }
                     ]
                 },
                 "classSupport": {
                     "kind": "selected-cover-edge-support",
-                    "edgeRefs": ["ctx:left->ctx:bottom"],
-                    "supportAtomRefs": ["atom:bottom-cech-section-value", "atom:left-cech-section-value"]
+                    "edgeRefs": [
+                        "ctx:left->ctx:bottom",
+                        "ctx:right->ctx:bottom",
+                        "ctx:top->ctx:right"
+                    ],
+                    "supportAtomRefs": [
+                        "atom:bottom-cech-section-value",
+                        "atom:left-cech-section-value",
+                        "atom:right-cech-section-value",
+                        "atom:top-cech-section-value"
+                    ]
                 },
                 "nerveShape": {
                     "b1": 1,
@@ -4383,6 +4431,174 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         summary["conclusion"],
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     );
+}
+
+fn run_cech_h1_analyze(case_id: &str, archmap: Value) -> PathBuf {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir(case_id);
+    let archmap_path = out_dir.join("archmap.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("cech archmap serializes"),
+    )
+    .expect("cech archmap writes");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_cech_h1.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        root.join("measurement_profile_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-surface",
+        root.join("law_surface_cech_h1_v052.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    out_dir
+}
+
+fn strip_cech_section_atoms(archmap: &mut Value, subjects: &[&str]) {
+    let removed = archmap["atoms"]
+        .as_array()
+        .expect("atoms are array")
+        .iter()
+        .filter(|atom| {
+            atom["predicate"] == "sectionValue"
+                && atom["subject"]
+                    .as_str()
+                    .is_some_and(|subject| subjects.contains(&subject))
+        })
+        .map(|atom| atom["id"].as_str().expect("atom id").to_string())
+        .collect::<BTreeSet<_>>();
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms are array")
+        .retain(|atom| {
+            !atom["id"]
+                .as_str()
+                .is_some_and(|id| removed.contains(id))
+        });
+    for context in archmap["contexts"].as_array_mut().expect("contexts") {
+        context["atoms"]
+            .as_array_mut()
+            .expect("context atoms")
+            .retain(|atom| {
+                !atom.as_str().is_some_and(|id| removed.contains(id))
+            });
+    }
+}
+
+#[test]
+fn cli_analyze_v2_cech_all_sections_unobserved_is_silence_not_measured_zero() {
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    strip_cech_section_atoms(
+        &mut archmap,
+        &["ctx:top", "ctx:left", "ctx:right", "ctx:bottom"],
+    );
+    let out_dir = run_cech_h1_analyze("ag-cech-all-sections-unobserved", archmap);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let row = &packet["structuralVerdict"][0];
+    assert_eq!(row["evaluator"], "ag.cech-obstruction");
+    assert_eq!(row["verdict"], "not_computed");
+    assert_eq!(row["verdictData"]["methodStatus"], "sections_not_observed");
+    assert_eq!(row["verdictData"]["zero"], false);
+    assert_eq!(
+        row["target"]["scopeSize"],
+        json!({"contexts": 0, "edges": 0, "triangles": 0}),
+        "unmeasured cech row must not claim a positive measured scope"
+    );
+    let invariant = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(invariant["status"], "not_computed");
+    assert_eq!(invariant["observedEdgeCount"], 0);
+    assert_eq!(
+        invariant["unobservedEdgeRefs"].as_array().map(Vec::len),
+        Some(4)
+    );
+    assert!(
+        packet["boundaryStatements"]
+            .as_array()
+            .is_some_and(|rows| rows.iter().any(|statement| {
+                statement["kind"] == "silence_by_design"
+                    && statement["reason"] == "sections_not_observed"
+                    && statement["text"]
+                        .as_str()
+                        .is_some_and(|text| text.contains("supply section observations"))
+            })),
+        "all-unobserved cech run must carry a silence_by_design boundary with whatNext"
+    );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"], "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE",
+        "no NO_MEASURED_H1 conclusion may be drawn from unobserved sections"
+    );
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    assert!(
+        viewer["aatGeometryOverlays"]["nerve"]["edges"]
+            .as_array()
+            .is_some_and(|edges| !edges.is_empty()
+                && edges
+                    .iter()
+                    .all(|edge| edge["sectionObservation"] == "not_observed"))
+    );
+}
+
+#[test]
+fn cli_analyze_v2_cech_partially_observed_edges_measure_observed_and_stay_silent_elsewhere() {
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    strip_cech_section_atoms(&mut archmap, &["ctx:top", "ctx:right"]);
+    let out_dir = run_cech_h1_analyze("ag-cech-partially-observed", archmap);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let row = &packet["structuralVerdict"][0];
+    assert_eq!(row["evaluator"], "ag.cech-obstruction");
+    assert_eq!(
+        row["verdict"], "measured_zero",
+        "a single observed mismatch edge extends to a coboundary; the old nonzero relied on unobserved zeros"
+    );
+    let invariant = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(invariant["observedEdgeCount"], 1);
+    let unobserved = invariant["unobservedEdgeRefs"]
+        .as_array()
+        .expect("unobserved edge refs");
+    assert_eq!(unobserved.len(), 3);
+    let silence = packet["boundaryStatements"]
+        .as_array()
+        .expect("boundary statements")
+        .iter()
+        .find(|statement| {
+            statement["reason"] == "sections_not_observed_on_selected_edges"
+        })
+        .expect("partial observation must emit an unobserved-edges silence statement");
+    assert_eq!(silence["kind"], "silence_by_design");
+    for edge in unobserved {
+        let edge = edge.as_str().expect("edge id");
+        assert!(
+            silence["text"].as_str().is_some_and(|text| text.contains(edge)),
+            "silence text must list unobserved edge {edge}"
+        );
+    }
+    assert!(
+        silence["scopeRefs"]
+            .as_array()
+            .is_some_and(|refs| refs.iter().any(|scope| scope == &row["verdictRef"])),
+        "measured_zero row must be qualified by the unobserved-edges silence"
+    );
+    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
+    let edges = viewer["aatGeometryOverlays"]["nerve"]["edges"]
+        .as_array()
+        .expect("nerve edges");
+    assert!(edges.iter().any(|edge| edge["sectionObservation"] == "observed"));
+    assert!(edges.iter().any(|edge| edge["sectionObservation"] == "not_observed"));
 }
 
 #[test]
@@ -7232,7 +7448,11 @@ fn cli_analyze_v2_cech_ignores_unanchored_mismatch_support() {
     let out_dir = temp_dir("ag-measurement-cech-unanchored-support");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
-    archmap["atoms"][4]["object"] = Value::String("section=bottom-local".to_string());
+    for atom in archmap["atoms"].as_array_mut().expect("atoms are array") {
+        if atom["predicate"] == "sectionValue" {
+            atom["object"] = Value::String("section=bottom-local".to_string());
+        }
+    }
     let archmap_path = out_dir.join("archmap_v2_unanchored_cech.json");
     fs::write(
         &archmap_path,
@@ -7279,7 +7499,11 @@ fn cli_analyze_v2_topological_debt_capacity_does_not_claim_h1_class() {
     let out_dir = temp_dir("ag-measurement-cech-positive-capacity-no-class");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
-    archmap["atoms"][4]["object"] = Value::String("section=bottom-local".to_string());
+    for atom in archmap["atoms"].as_array_mut().expect("atoms are array") {
+        if atom["predicate"] == "sectionValue" {
+            atom["object"] = Value::String("section=bottom-local".to_string());
+        }
+    }
     let top_context = archmap["contexts"]
         .as_array_mut()
         .expect("contexts is array")

@@ -423,6 +423,18 @@ fn boundary_statements_for_measurement_packet(
                 }),
             });
         } else if row.verdict == "not_computed"
+            && row.verdict_data.method_status == "sections_not_observed"
+        {
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:silence-by-design:cech-sections-not-observed:{index}"),
+                kind: "silence_by_design".to_string(),
+                scope_refs: vec![scope_ref.clone()],
+                reason: row.verdict_data.method_status.clone(),
+                text: row.reason.clone().unwrap_or_else(|| {
+                    "sections_not_observed: supply sectionValue observations on both endpoint contexts of a selected edge (or an explicit cocycleValue) before the H1 class can be measured".to_string()
+                }),
+            });
+        } else if row.verdict == "not_computed"
             && row.verdict_data.method_status == "diagnostic_ceiling_not_reached"
         {
             statements.push(BoundaryStatementV1 {
@@ -505,6 +517,49 @@ fn boundary_statements_for_measurement_packet(
                 ),
             });
         }
+    }
+
+    for (index, row) in packet.structural_verdict.iter().enumerate() {
+        if row.evaluator != "ag.cech-obstruction"
+            || !matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero")
+        {
+            continue;
+        }
+        let Some(invariant) = packet
+            .computed_invariants
+            .iter()
+            .find(|invariant| invariant["evaluator"] == "ag.cech-obstruction")
+        else {
+            continue;
+        };
+        let unobserved_edges = invariant["unobservedEdgeRefs"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .collect::<Vec<_>>();
+        if unobserved_edges.is_empty() {
+            continue;
+        }
+        // Follow the square-free precedent: qualify a measured_zero row with the
+        // silence directly, but do not attach silence to a measured_nonzero row
+        // (the nonzero result stands on its observed support). The invariant
+        // itself has status "computed", so it cannot carry a silence scope.
+        let scope_refs = if row.verdict == "measured_zero" {
+            vec![structural_verdict_ref(row)]
+        } else {
+            vec![packet.packet_id.clone()]
+        };
+        statements.push(BoundaryStatementV1 {
+            id: format!("boundary:silence-by-design:cech-unobserved-edges:{index}"),
+            kind: "silence_by_design".to_string(),
+            scope_refs,
+            reason: "sections_not_observed_on_selected_edges".to_string(),
+            text: format!(
+                "The measured H1 class is restricted to observed edges; selected edges without section observations stay silent: {}. Supply sectionValue observations on both endpoint contexts (or an explicit cocycleValue) to include an edge.",
+                unobserved_edges.join(", ")
+            ),
+        });
     }
 
     for (index, reading) in packet.analytic_readings.iter().enumerate() {
@@ -7478,6 +7533,9 @@ struct CechEdgeV1 {
     target_context: String,
     value: u8,
     support_atom_refs: Vec<String>,
+    // true only when the edge value comes from recorded observations: an
+    // explicit cocycleValue atom, or sectionValue atoms on both endpoints.
+    observed: bool,
 }
 
 fn evaluate_cech_obstruction_v1(
@@ -7532,8 +7590,26 @@ fn evaluate_cech_obstruction_v1(
         && witnessed_restriction_edges == selected_restriction_edges;
     let cover_shape_excludes_gluing_obstruction =
         nerve_is_forest && !has_triple_overlap_faces && restriction_surjectivity_checked;
-    let h1_class_nonzero =
-        !empty_selected_scope && !edge_cochain_is_coboundary(&selected_contexts, &edges);
+    let observed_edges = edges
+        .iter()
+        .filter(|edge| edge.observed)
+        .cloned()
+        .collect::<Vec<_>>();
+    let unobserved_edge_refs = edges
+        .iter()
+        .filter(|edge| !edge.observed)
+        .map(|edge| edge.edge_id.clone())
+        .collect::<Vec<_>>();
+    // The measured cochain is restricted to observed edges: an unobserved edge
+    // carries no section evidence, so it must not enter the cocycle as a zero.
+    // Shape-level facts (nerve, H1 capacity, forest exclusion) stay on the full
+    // selected 1-skeleton because they do not depend on section observations.
+    let sections_not_observed = !empty_selected_scope
+        && observed_edges.is_empty()
+        && !cover_shape_excludes_gluing_obstruction;
+    let h1_class_nonzero = !empty_selected_scope
+        && !sections_not_observed
+        && !edge_cochain_is_coboundary(&selected_contexts, &observed_edges);
     let topological_debt_capacity = topological_debt_capacity_invariant_v1(
         profile,
         &selected_contexts,
@@ -7616,6 +7692,15 @@ fn evaluate_cech_obstruction_v1(
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
         });
     }
+    if sections_not_observed {
+        assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/B.8.2-sections-not-observed".to_string(),
+            assumption: "section observations cover at least one selected Cech edge".to_string(),
+            status: "violated".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        });
+    }
 
     let (verdict, zero, non_zero, method_status, reason) = if empty_selected_scope {
         (
@@ -7624,6 +7709,14 @@ fn evaluate_cech_obstruction_v1(
             false,
             "empty_selected_scope".to_string(),
             "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction".to_string(),
+        )
+    } else if sections_not_observed {
+        (
+            "not_computed".to_string(),
+            false,
+            false,
+            "sections_not_observed".to_string(),
+            "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge; supply section observations on both endpoint contexts of a selected edge (or an explicit cocycleValue for the edge) before the H1 class can be measured".to_string(),
         )
     } else if h1_class_nonzero {
         (
@@ -7642,7 +7735,7 @@ fn evaluate_cech_obstruction_v1(
             "finite F2 Cech 1-cocycle is zero or a coboundary on the selected cover".to_string(),
         )
     };
-    let cert_ref = if empty_selected_scope {
+    let cert_ref = if empty_selected_scope || sections_not_observed {
         None
     } else {
         Some(format!(
@@ -7663,21 +7756,27 @@ fn evaluate_cech_obstruction_v1(
                 "invariantId": format!("cech-cohomology:{}", profile.profile_id),
                 "evaluator": "ag.cech-obstruction",
                 "method": "finite-f2-incidence-graph-cochain@1",
-                "status": if empty_selected_scope {
+                "status": if empty_selected_scope || sections_not_observed {
                     "not_computed"
                 } else {
                     "computed"
                 },
                 "methodStatus": if empty_selected_scope {
                     "empty_selected_scope"
+                } else if sections_not_observed {
+                    "sections_not_observed"
                 } else {
                     "finite_f2_cech_computed"
                 },
                 "reason": if empty_selected_scope {
                     "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction"
+                } else if sections_not_observed {
+                    "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge"
                 } else {
                     "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction"
                 },
+                "observedEdgeCount": observed_edges.len(),
+                "unobservedEdgeRefs": unobserved_edge_refs,
                 "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
                 "selectedCoverRef": profile.cover_ref,
                 "coefficient": profile.coefficient,
@@ -11324,12 +11423,11 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
                 .iter()
                 .filter(|atom| atom.subject == edge_id || atom.subject == reverse_edge_id)
                 .collect::<Vec<_>>();
-            let (value, support_atom_refs) = if explicit_support.is_empty() {
+            let (value, support_atom_refs, observed) = if explicit_support.is_empty() {
                 let source_values = cech_section_values(&section_value_atoms, &edge_key.2);
                 let target_values = cech_section_values(&section_value_atoms, &edge_key.3);
-                let mismatch = !source_values.is_empty()
-                    && !target_values.is_empty()
-                    && source_values != target_values;
+                let observed = !source_values.is_empty() && !target_values.is_empty();
+                let mismatch = observed && source_values != target_values;
                 let support_atom_refs = if mismatch {
                     section_value_atoms
                         .iter()
@@ -11339,7 +11437,7 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
                 } else {
                     Vec::new()
                 };
-                (u8::from(mismatch), support_atom_refs)
+                (u8::from(mismatch), support_atom_refs, observed)
             } else {
                 let value = explicit_support.iter().any(|atom| {
                     atom.object
@@ -11354,7 +11452,7 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
                 } else {
                     Vec::new()
                 };
-                (u8::from(value), support_atom_refs)
+                (u8::from(value), support_atom_refs, true)
             };
             edges.push(CechEdgeV1 {
                 edge_id,
@@ -11362,6 +11460,7 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
                 target_context: edge_key.3,
                 value,
                 support_atom_refs,
+                observed,
             });
         }
     }
@@ -11836,6 +11935,7 @@ fn cover_nerve_projection_v1(
                 "targetContextRef": edge.target_context,
                 "value": edge.value,
                 "supportAtomRefs": edge.support_atom_refs,
+                "sectionObservation": if edge.observed { "observed" } else { "not_observed" },
                 "objectKind": "nerveEdge",
                 "source": "selected cover restriction edge"
             })
@@ -13272,6 +13372,9 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "generatedQuotient",
         "detectorFindings",
         "detectorCount",
+        "observedEdgeCount",
+        "unobservedEdgeRefs",
+        "sectionObservation",
         "harmonicDebtNorm",
         "essentialRepairLowerBound",
         "lowerBoundStatus",

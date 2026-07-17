@@ -9,9 +9,9 @@
   },
   "commandName": "analyze",
   "componentFingerprints": {
-    "lawPolicy": "sha256:7be4ae59036c5af2027a35a27e3a79aa0b9c1ae8e728ff3947b14dda3b79dbf6",
-    "lawSurface": "sha256:9533c27219861a1e3b3e23c510b4be8c4872b3ba70d51973275f7e2e87f5bc72",
-    "measurementProfile": "sha256:5409ebe4d9fec65c100fc22395168a801d87f9d542be47189d3f6ccb5fe6c42f"
+    "lawPolicy": "sha256:2a9dabb0e4d1769a7d789dd4854b40bd0067d5f7e7af97aa42ac235227c3f645",
+    "lawSurface": "sha256:05376ed80e1197e1cd323c1f02842ae918988bbf77caac6b6c2a328b5ae7badd",
+    "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
   },
   "conclusionCode": null,
   "generatedArtifacts": [
@@ -30,23 +30,29 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap_head.json",
-      "sha256": "aafd32d33c39324c1329c8565bd9a1f45bf4923b3f31e22634d81f37033d4688"
+      "sha256": "6eda78f325a5fb2ee660d902a03e3fbbcf6e8b9014de7e3376d372e43fcec8cb"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "7be4ae59036c5af2027a35a27e3a79aa0b9c1ae8e728ff3947b14dda3b79dbf6"
+      "sha256": "2a9dabb0e4d1769a7d789dd4854b40bd0067d5f7e7af97aa42ac235227c3f645"
     },
     "lawSurface": {
       "path": "input:law_surface_practical_v052.json",
-      "sha256": "9533c27219861a1e3b3e23c510b4be8c4872b3ba70d51973275f7e2e87f5bc72"
+      "sha256": "05376ed80e1197e1cd323c1f02842ae918988bbf77caac6b6c2a328b5ae7badd"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
-      "sha256": "5409ebe4d9fec65c100fc22395168a801d87f9d542be47189d3f6ccb5fe6c42f"
+      "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
     },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement_profile.json",
+        "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      }
+    ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "5f429f9b294efdec80715872d3c3715ee2082abae4cf4dd4f71be79a5a013ccb"
+      "sha256": "2b39ae3af896d3a1db749cd9ec3a9609e3dada5f096d7859b479249b86e12b07"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -57,6 +63,9 @@
   "lawPolicyInputPath": "input:law_policy.json",
   "lawSurfaceInputPath": "input:law_surface_practical_v052.json",
   "measurementProfileInputPath": "input:measurement_profile.json",
+  "measurementProfileInputPaths": [
+    "input:measurement_profile.json"
+  ],
   "mode": "measurement",
   "nonConclusions": [
     "Finite-poset-site run manifest records the v0.5.3 AG measurement foundation artifacts.",
@@ -66,7 +75,7 @@
   "rawArtifactPaths": null,
   "rawArtifactRetention": "omitted",
   "repairPlanInputPath": null,
-  "runId": "run:02000103301e",
+  "runId": "run:f8b3d4e03ca3",
   "schema": "archsig-run-manifest/v0.5.3",
   "toolVersion": "0.5.3",
   "validationReports": {
