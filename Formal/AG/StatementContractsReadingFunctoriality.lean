@@ -2773,6 +2773,71 @@ example :
 
 end StandardSchemeCoefficientChange
 
+/-! Standard-scheme coefficient-change coherence contracts. -/
+
+section StandardSchemeCoefficientCoherence
+
+variable {A : ArchitectureObject U} {S : Site.AATSite A}
+variable {k k' k'' : Type v}
+variable [CommRing k] [CommRing k'] [CommRing k'']
+variable (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k')]
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k'')]
+variable (X : LawAlgebra.StandardArchitectureScheme raw)
+variable (f : FlatCoefficientChange k k')
+variable (g : FlatCoefficientChange k' k'')
+variable [hf : S.topology.HasSheafCompose
+  (f.coefficientExtension :
+    LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+      LawAlgebra.AATCommAlgCat.{u, v} k')]
+variable [hg : S.topology.HasSheafCompose
+  (g.coefficientExtension :
+    LawAlgebra.AATCommAlgCat.{u, v} k' ⥤
+      LawAlgebra.AATCommAlgCat.{u, v} k'')]
+
+/-- Fixed unit isomorphism for identity coefficient change. -/
+noncomputable example :
+    (X.baseChange raw (FlatCoefficientChange.refl k)).underlying ≅
+      X.underlying :=
+  X.baseChangeIdIso raw
+
+/-- Fixed actual projection formula for identity coefficient change. -/
+example :
+    X.baseChangeMap raw (FlatCoefficientChange.refl k) =
+      (X.baseChangeIdIso raw).hom :=
+  X.baseChangeMap_id raw
+
+/-- Fixed compositor between successive and composite coefficient change. -/
+noncomputable example :
+    letI : S.topology.HasSheafCompose
+        ((f.comp g).coefficientExtension :
+          LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+            LawAlgebra.AATCommAlgCat.{u, v} k'') :=
+      FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
+        f g hf hg
+    ((X.baseChange raw f).baseChange
+        (raw.baseChange f.hom) g).underlying ≅
+      (X.baseChange raw (f.comp g)).underlying :=
+  X.baseChangeCompIso raw f g
+
+/-- Fixed actual morphism equality for composite coefficient change. -/
+example :
+    letI : S.topology.HasSheafCompose
+        ((f.comp g).coefficientExtension :
+          LawAlgebra.AATCommAlgCat.{u, v} k ⥤
+            LawAlgebra.AATCommAlgCat.{u, v} k'') :=
+      FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
+        f g hf hg
+    (X.baseChangeCompIso raw f g).hom ≫
+        X.baseChangeMap raw (f.comp g) =
+      (X.baseChange raw f).baseChangeMap
+          (raw.baseChange f.hom) g ≫
+        X.baseChangeMap raw f :=
+  X.baseChangeMap_comp raw f g
+
+end StandardSchemeCoefficientCoherence
+
 end CoefficientChangeSD6
 
 end AAT.AG.StatementContractsReadingFunctoriality

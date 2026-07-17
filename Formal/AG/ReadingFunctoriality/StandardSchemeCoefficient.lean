@@ -1073,6 +1073,40 @@ private noncomputable def constructedStandardScheme
   overlaps := constructedOverlaps X f
   overlapsValid := constructedOverlaps_valid X f
 
+private theorem constructedStandardScheme_coefficientStructureMap
+    (X : LawAlgebra.StandardArchitectureScheme raw)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤ LawAlgebra.AATCommAlgCat.{u, v} k')] :
+    constructedCoefficientStructureMap (constructedStandardScheme X f) =
+      pullback.snd (constructedCoefficientStructureMap X)
+        (Scheme.Spec.map (CommRingCat.ofHom f.liftedHom).op) := by
+  apply
+    (AlgebraicGeometry.ΓSpec.adjunction.homEquiv
+      (constructedStandardScheme X f).underlying
+      (op (CommRingCat.of (ULift.{max u v, v} k')))).symm.injective
+  simp only [constructedCoefficientStructureMap, Equiv.symm_apply_apply]
+  rw [Adjunction.homEquiv_symm_apply]
+  apply Quiver.Hom.unop_inj
+  simp only [unop_comp, Quiver.Hom.unop_op]
+  change
+    ((raw.baseChange f.hom).toRingedSite.structureSheaf.val.obj
+          (op X.decoration.context)).hom ≫
+        constructedInterpretation X f =
+      (Scheme.ΓSpecIso
+          (CommRingCat.of (ULift.{max u v, v} k'))).inv ≫
+        (pullback.snd (constructedCoefficientStructureMap X)
+          (Scheme.Spec.map (CommRingCat.ofHom f.liftedHom).op)).appTop
+  simp [constructedInterpretation]
+  change
+    pushout.inr
+          (raw.toRingedSite.structureSheaf.val.obj
+            (op X.decoration.context)).hom
+          (CommRingCat.ofHom f.liftedHom) ≫
+        pushout.desc _ _ _ = _
+  rw [pushout.inr_desc]
+
 end LawAlgebra.StandardArchitectureScheme
 
 namespace LawAlgebra.StandardArchitectureScheme
@@ -1275,6 +1309,127 @@ theorem baseChange_overlaps
         LawAlgebra.AATCommAlgCat.{u, v} k ⥤ LawAlgebra.AATCommAlgCat.{u, v} k')] :
     HEq (baseChange raw X f).overlaps (baseChangedOverlaps raw X f) :=
   HEq.rfl
+
+private theorem coefficientSpecMap_refl :
+    Scheme.Spec.map
+        (CommRingCat.ofHom
+          (FlatCoefficientChange.refl k).liftedHom).op =
+      𝟙 (Scheme.Spec.obj
+        (op (CommRingCat.of (ULift.{max u v, v} k)))) := by
+  rw [show CommRingCat.ofHom
+      (FlatCoefficientChange.refl k).liftedHom = 𝟙 _ by
+    ext ⟨a⟩
+    rfl]
+  exact Scheme.Spec.map_id _
+
+private theorem coefficientSpecMap_comp
+    {k'' : Type v} [CommRing k'']
+    (f : FlatCoefficientChange k k')
+    (g : FlatCoefficientChange k' k'') :
+    Scheme.Spec.map (CommRingCat.ofHom g.liftedHom).op ≫
+        Scheme.Spec.map (CommRingCat.ofHom f.liftedHom).op =
+      Scheme.Spec.map
+        (CommRingCat.ofHom (f.comp g).liftedHom).op := by
+  rw [← Scheme.Spec.map_comp]
+  congr 1
+
+/-- The scheme obtained by identity coefficient change is canonically isomorphic to its source;
+the hom of this isomorphism is the actual pullback projection. -/
+noncomputable def baseChangeIdIso
+    (X : LawAlgebra.StandardArchitectureScheme raw) :
+    (baseChange raw X (FlatCoefficientChange.refl k)).underlying ≅
+      X.underlying :=
+  pullback.congrHom rfl coefficientSpecMap_refl ≪≫
+    (IsPullback.id_horiz (coefficientStructureMap raw X)).isoPullback.symm
+
+/-- Identity coefficient change projects to the source through the canonical unit
+isomorphism. -/
+theorem baseChangeMap_id
+    (X : LawAlgebra.StandardArchitectureScheme raw) :
+    baseChangeMap raw X (FlatCoefficientChange.refl k) =
+      (baseChangeIdIso raw X).hom := by
+  change pullback.fst (coefficientStructureMap raw X)
+      (Scheme.Spec.map
+        (CommRingCat.ofHom
+          (FlatCoefficientChange.refl k).liftedHom).op) = _
+  rw [baseChangeIdIso, Iso.trans_hom]
+  change _ =
+    (pullback.congrHom rfl coefficientSpecMap_refl).hom ≫
+      (IsPullback.id_horiz
+        (coefficientStructureMap raw X)).isoPullback.inv
+  rw [← Category.comp_id
+    ((IsPullback.id_horiz
+      (coefficientStructureMap raw X)).isoPullback.inv)]
+  rw [(IsPullback.id_horiz
+    (coefficientStructureMap raw X)).isoPullback_inv_fst]
+  simp
+
+/-- Successive coefficient changes are canonically identified with change along the composite;
+the isomorphism is obtained by pasting the two actual pullback squares. -/
+noncomputable def baseChangeCompIso
+    {k'' : Type v} [CommRing k'']
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k'')]
+    (X : LawAlgebra.StandardArchitectureScheme raw)
+    (f : FlatCoefficientChange k k')
+    (g : FlatCoefficientChange k' k'')
+    [hf : S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤ LawAlgebra.AATCommAlgCat.{u, v} k')]
+    [hg : S.topology.HasSheafCompose
+      (g.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k' ⥤ LawAlgebra.AATCommAlgCat.{u, v} k'')] :
+    letI : S.topology.HasSheafCompose
+        ((f.comp g).coefficientExtension :
+          LawAlgebra.AATCommAlgCat.{u, v} k ⥤ LawAlgebra.AATCommAlgCat.{u, v} k'') :=
+      FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
+        f g hf hg
+    ((baseChange (raw.baseChange f.hom) (baseChange raw X f) g).underlying ≅
+      (baseChange raw X (f.comp g)).underlying) := by
+  letI : S.topology.HasSheafCompose
+      ((f.comp g).coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤ LawAlgebra.AATCommAlgCat.{u, v} k'') :=
+    FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
+      f g hf hg
+  exact
+    pullback.congrHom
+        (constructedStandardScheme_coefficientStructureMap X f) rfl ≪≫
+      pullbackLeftPullbackSndIso
+        (coefficientStructureMap raw X)
+        (Scheme.Spec.map (CommRingCat.ofHom f.liftedHom).op)
+        (Scheme.Spec.map (CommRingCat.ofHom g.liftedHom).op) ≪≫
+      pullback.congrHom rfl (coefficientSpecMap_comp f g)
+
+/-- The map for composite coefficient change agrees with the two successive pullback
+projections after the canonical compositor. -/
+@[reassoc] theorem baseChangeMap_comp
+    {k'' : Type v} [CommRing k'']
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k'')]
+    (X : LawAlgebra.StandardArchitectureScheme raw)
+    (f : FlatCoefficientChange k k')
+    (g : FlatCoefficientChange k' k'')
+    [hf : S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤ LawAlgebra.AATCommAlgCat.{u, v} k')]
+    [hg : S.topology.HasSheafCompose
+      (g.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k' ⥤ LawAlgebra.AATCommAlgCat.{u, v} k'')] :
+    letI : S.topology.HasSheafCompose
+        ((f.comp g).coefficientExtension :
+          LawAlgebra.AATCommAlgCat.{u, v} k ⥤ LawAlgebra.AATCommAlgCat.{u, v} k'') :=
+      FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
+        f g hf hg
+    (baseChangeCompIso raw X f g).hom ≫
+        baseChangeMap raw X (f.comp g) =
+      baseChangeMap (raw.baseChange f.hom) (baseChange raw X f) g ≫
+        baseChangeMap raw X f := by
+  letI : S.topology.HasSheafCompose
+      ((f.comp g).coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{u, v} k ⥤ LawAlgebra.AATCommAlgCat.{u, v} k'') :=
+    FlatCoefficientChange.coefficientExtension_hasSheafCompose_comp
+      f g hf hg
+  simp [baseChangeCompIso, baseChangeMap, baseChange,
+    coefficientStructureMap, constructedMap,
+    Category.assoc]
 
 end LawAlgebra.StandardArchitectureScheme
 end

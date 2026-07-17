@@ -5035,6 +5035,24 @@ def readingFunctoriality_baseChangedOverlaps_valid :=
 def readingFunctoriality_baseChange_overlaps :=
   @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChange_overlaps
 
+/-! Standard-scheme coefficient-change coherence. -/
+
+/-- Audit alias for the identity coefficient-change isomorphism. -/
+noncomputable def readingFunctoriality_baseChangeIdIso :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeIdIso
+
+/-- Audit alias for the identity coefficient-change projection formula. -/
+def readingFunctoriality_baseChangeMap_id :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeMap_id
+
+/-- Audit alias for the coefficient-change compositor isomorphism. -/
+noncomputable def readingFunctoriality_baseChangeCompIso :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeCompIso
+
+/-- Audit alias for the composite coefficient-change morphism formula. -/
+def readingFunctoriality_baseChangeMap_comp :=
+  @AAT.AG.LawAlgebra.StandardArchitectureScheme.baseChangeMap_comp
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/
