@@ -2023,6 +2023,19 @@ example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ)
           n (n + 1)).hom x' = 0 :=
   hLeray.selectedCechResolutionTotal_normalizeColumns n x hcycle
 
+/-- Fixed selected Čech edge quasi-isomorphism derived from Leray vanishing. -/
+example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) :
+    QuasiIso (Cohomology.selectedCechToResolutionTotal 𝒰 Ob) :=
+  hLeray.selectedCechToResolutionTotal_quasiIso
+
+/-- Fixed homology equivalence induced by the actual selected Čech edge. -/
+noncomputable example (hLeray : Cohomology.IsLerayFor 𝒰 Ob) (n : ℕ) :
+    (((Cohomology.selectedCechComplexFunctor 𝒰).obj
+      Ob.toAddCommGrpSheaf.val).homology n : Type (u + 1)) ≃+
+      ((Cohomology.selectedCechResolutionTotalComplex 𝒰 Ob).homology n :
+        Type (u + 1)) :=
+  Cohomology.selectedCechToResolutionTotalHomologyEquiv 𝒰 Ob hLeray n
+
 end LerayTotalElimination
 
 end SelectedCechResolutionBicomplexSD5

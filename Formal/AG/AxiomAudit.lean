@@ -4807,6 +4807,18 @@ def readingFunctoriality_selectedCechResolutionTotal_eliminateColumn :=
 def readingFunctoriality_selectedCechResolutionTotal_normalizeColumns :=
   @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionTotal_normalizeColumns
 
+/-- Audit alias for primitive normalization with zero-column differential. -/
+def readingFunctoriality_selectedCechResolutionTotal_normalizePreimage :=
+  @AAT.AG.Cohomology.IsLerayFor.selectedCechResolutionTotal_normalizePreimage
+
+/-- Audit alias for the actual selected Čech edge quasi-isomorphism. -/
+def readingFunctoriality_selectedCechToResolutionTotal_quasiIso :=
+  @AAT.AG.Cohomology.IsLerayFor.selectedCechToResolutionTotal_quasiIso
+
+/-- Audit alias for the selected-edge homology equivalence. -/
+noncomputable def readingFunctoriality_selectedCechToResolutionTotalHomologyEquiv :=
+  @AAT.AG.Cohomology.selectedCechToResolutionTotalHomologyEquiv
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
