@@ -2814,6 +2814,11 @@ noncomputable def baseChange
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
     StandardArchitectureScheme (raw.baseChange f.hom)
 
+variable {k' k'' : Type v}
+variable [CommRing k'] [CommRing k'']
+variable [HasSheafify S.topology (AATCommAlgCat k')]
+variable [HasSheafify S.topology (AATCommAlgCat k'')]
+
 noncomputable def baseChangeMap
     (X : StandardArchitectureScheme raw)
     (f : FlatCoefficientChange k k')
