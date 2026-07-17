@@ -2076,6 +2076,39 @@ theorem sheaf_selectedCechAugmentation_exactAtZero
       ((baseToSelectedCechZero 𝒰).app I.val).hom
       (((selectedCechComplexFunctor 𝒰).obj I.val).d 0 1).hom
 
+noncomputable def selectedCechFreeChain
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    ChainComplex (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) ℕ
+
+theorem selectedCechFreeBoundaryToCycles_isLocallySurjective
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) :
+    Presheaf.IsLocallySurjective S.topology
+      ((selectedCechFreeChain 𝒰).sc' (n + 2) (n + 1) n).toCycles
+
+noncomputable def selectedCechFreeSheafChain
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {base : S.category}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    ChainComplex (Sheaf S.topology AddCommGrpCat.{u + 1}) ℕ
+
+theorem selectedCechFreeSheafChain_exactAt_succ
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {base : S.category}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) :
+    (selectedCechFreeSheafChain 𝒰).ExactAt (n + 1)
+
 theorem injectiveSheaf_selectedCech_exactAt
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A}
@@ -2154,9 +2187,13 @@ degree zeroのkernelをproductへ組み立てて証明する。
 `injectiveSheaf_restriction_surjective`はsheafified free Yoneda間のactual monoと
 `Injective.factorThru`から導き、surjectivityをcallerから受け取らない。
 `sheaf_selectedCechAugmentation_exactAtZero`は生成sieveに対するactual sheaf gluingだけから証明し、
-injectivityを不要な仮定として追加しない。`injectiveSheaf_selectedCech_exactAt`は、selected overlapごとの
-sheafified free Yonedaを項に持つaugmented Čech chain resolutionを構成し、cover生成元上のextra degeneracy
-からsheaf-level exactnessを証明した後、`Hom(-, I)`と`Injective.factorThru`でactual row exactnessへ送る。
+injectivityを不要な仮定として追加しない。正次数は、selected simplexとそのoverlapへの射を生成元とする
+free additive presheafから`selectedCechFreeChain`を構成し、cover生成元上のextra degeneracyによる
+`selectedCechFreeBoundaryToCycles_isLocallySurjective`をsheafificationして
+`selectedCechFreeSheafChain_exactAt_succ`を証明する。`injectiveSheaf_selectedCech_exactAt`はこの
+positive-degree free Čech chain exactnessを`Hom(-, I)`と`ShortComplex.Exact.descToInjective`で
+actual row exactnessへ送る。次数0のexactnessは前記のactual sheaf gluingが担い、正次数のfree chain証明へ
+混同しない。
 `injectiveSheaf_restriction_surjective`はこの構成の補助に使ってよいが、固定indexへの任意のsection liftを
 coherentなcontracting homotopyとして扱ってはならない。cover indexに`Fintype`または`Nonempty`を追加しては
 ならず、empty indexはsimplexの空性とsheaf conditionから処理する。

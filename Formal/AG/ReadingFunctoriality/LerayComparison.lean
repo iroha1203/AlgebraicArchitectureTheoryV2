@@ -2936,4 +2936,749 @@ theorem sheaf_selectedCechAugmentation_exactAtZero
     exact ConcreteCategory.congr_hom
       (baseToSelectedCechZero_comp_cech_d 𝒰 I.val) t
 
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+
+abbrev SelectedCechFreeGenerator
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (X : S.category) :=
+  Σ σ : (canonicalCoverRelative 𝒰).simplex n,
+    X ⟶ (canonicalCoverRelative 𝒰).overlap n σ
+
+def selectedCechFreeGeneratorMap
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) {X Y : S.categoryᵒᵖ} (f : X ⟶ Y) :
+    SelectedCechFreeGenerator 𝒰 n X.unop → SelectedCechFreeGenerator 𝒰 n Y.unop :=
+  fun g => ⟨g.1, f.unop ≫ g.2⟩
+
+@[simp] theorem selectedCechFreeGeneratorMap_id
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (X : S.categoryᵒᵖ) :
+    selectedCechFreeGeneratorMap 𝒰 n (𝟙 X) = id := by
+  funext g
+  rcases g with ⟨σ, g⟩
+  simp [selectedCechFreeGeneratorMap]
+
+theorem selectedCechFreeGeneratorMap_comp
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) {X Y Z : S.categoryᵒᵖ} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    selectedCechFreeGeneratorMap 𝒰 n (f ≫ g) =
+      selectedCechFreeGeneratorMap 𝒰 n g ∘ selectedCechFreeGeneratorMap 𝒰 n f := by
+  funext h
+  rcases h with ⟨σ, h⟩
+  simp [selectedCechFreeGeneratorMap]
+
+noncomputable def selectedCechFreePresheaf
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1} where
+  obj X := AddCommGrpCat.of (FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 n X.unop))
+  map {X Y} f := AddCommGrpCat.ofHom
+    (FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 n f))
+  map_id X := by
+    change AddCommGrpCat.ofHom
+      (FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 n (𝟙 X))) = 𝟙 _
+    rw [selectedCechFreeGeneratorMap_id, FreeAbelianGroup.map_id]
+    rfl
+  map_comp f g := by
+    change AddCommGrpCat.ofHom
+        (FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 n (f ≫ g))) =
+      AddCommGrpCat.ofHom (FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 n f)) ≫
+        AddCommGrpCat.ofHom (FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 n g))
+    rw [selectedCechFreeGeneratorMap_comp, FreeAbelianGroup.map_comp]
+    rfl
+
+@[simp] theorem selectedCechFreePresheaf_map_of
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) {X Y : S.categoryᵒᵖ} (f : X ⟶ Y)
+    (g : SelectedCechFreeGenerator 𝒰 n X.unop) :
+    (selectedCechFreePresheaf 𝒰 n).map f (FreeAbelianGroup.of g) =
+      FreeAbelianGroup.of ⟨g.1, f.unop ≫ g.2⟩ := by
+  change FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 n f)
+      (FreeAbelianGroup.of g) = _
+  exact FreeAbelianGroup.map_of_apply g
+
+def selectedCechFreeFaceGenerator
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (i : Fin (n + 2)) {X : S.category}
+    (g : SelectedCechFreeGenerator 𝒰 (n + 1) X) : SelectedCechFreeGenerator 𝒰 n X :=
+  ⟨(canonicalCoverRelative 𝒰).face n i g.1,
+    g.2 ≫ (canonicalCoverRelative 𝒰).faceRestriction n i g.1⟩
+
+def selectedCechFreeBoundaryGenerator
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) {X : S.category} :
+    SelectedCechFreeGenerator 𝒰 (n + 1) X → FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 n X) :=
+  fun g => ∑ i : Fin (n + 2),
+    ((-1 : ℤ) ^ i.1) • FreeAbelianGroup.of
+      (selectedCechFreeFaceGenerator 𝒰 n i g)
+
+noncomputable def selectedCechFreeBoundary
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) : selectedCechFreePresheaf 𝒰 (n + 1) ⟶ selectedCechFreePresheaf 𝒰 n where
+  app X := AddCommGrpCat.ofHom (FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 n))
+  naturality X Y f := by
+    apply AddCommGrpCat.hom_ext
+    apply FreeAbelianGroup.lift_ext
+    intro g
+    change FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 n)
+        (FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 (n + 1) f)
+          (FreeAbelianGroup.of g)) =
+      FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 n f)
+        (FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 n)
+          (FreeAbelianGroup.of g))
+    rw [FreeAbelianGroup.map_of_apply, FreeAbelianGroup.lift_apply_of,
+      FreeAbelianGroup.lift_apply_of]
+    simp only [selectedCechFreeBoundaryGenerator, map_sum, map_zsmul,
+      FreeAbelianGroup.map_of_apply]
+    apply Finset.sum_congr rfl
+    intro i _
+    congr 2
+
+@[simp] theorem selectedCechFreeBoundary_app_of
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (X : S.categoryᵒᵖ)
+    (g : SelectedCechFreeGenerator 𝒰 (n + 1) X.unop) :
+    (selectedCechFreeBoundary 𝒰 n).app X (FreeAbelianGroup.of g) =
+      selectedCechFreeBoundaryGenerator 𝒰 n g := by
+  exact FreeAbelianGroup.lift_apply_of (selectedCechFreeBoundaryGenerator 𝒰 n) g
+
+def selectedCechFreeSimplexGeneratorMap
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {x y : SimplexCategory} (f : x ⟶ y) {X : S.category} :
+    SelectedCechFreeGenerator 𝒰 y.len X → SelectedCechFreeGenerator 𝒰 x.len X :=
+  fun g =>
+    ⟨fun i => g.1 (f.toOrderHom i),
+      g.2 ≫ canonicalTupleOverlapMap 𝒰 f g.1⟩
+
+noncomputable def selectedCechFreeSimplexMap
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {x y : SimplexCategory} (f : x ⟶ y) :
+    selectedCechFreePresheaf 𝒰 y.len ⟶ selectedCechFreePresheaf 𝒰 x.len where
+  app X := AddCommGrpCat.ofHom
+    (FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 f))
+  naturality X Y g := by
+    apply AddCommGrpCat.hom_ext
+    apply FreeAbelianGroup.lift_ext
+    intro h
+    change FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 f)
+        (FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 y.len g)
+          (FreeAbelianGroup.of h)) =
+      FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 x.len g)
+        (FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 f)
+          (FreeAbelianGroup.of h))
+    simp only [FreeAbelianGroup.map_of_apply]
+    congr 2
+
+@[simp] theorem selectedCechFreeSimplexMap_app_of
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {x y : SimplexCategory} (f : x ⟶ y) (X : S.categoryᵒᵖ)
+    (g : SelectedCechFreeGenerator 𝒰 y.len X.unop) :
+    (selectedCechFreeSimplexMap 𝒰 f).app X (FreeAbelianGroup.of g) =
+      FreeAbelianGroup.of (selectedCechFreeSimplexGeneratorMap 𝒰 f g) := by
+  exact FreeAbelianGroup.map_of_apply g
+
+@[simp] theorem selectedCechFreeSimplexMap_id
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (x : SimplexCategory) :
+    selectedCechFreeSimplexMap 𝒰 (𝟙 x) = 𝟙 _ := by
+  apply NatTrans.ext
+  funext X
+  apply AddCommGrpCat.hom_ext
+  apply FreeAbelianGroup.lift_ext
+  intro g
+  change FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 (𝟙 x))
+      (FreeAbelianGroup.of g) = FreeAbelianGroup.of g
+  rw [FreeAbelianGroup.map_of_apply]
+  congr 2
+
+theorem selectedCechFreeSimplexMap_comp
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {x y z : SimplexCategory} (f : x ⟶ y) (g : y ⟶ z) :
+    selectedCechFreeSimplexMap 𝒰 (f ≫ g) =
+      selectedCechFreeSimplexMap 𝒰 g ≫ selectedCechFreeSimplexMap 𝒰 f := by
+  apply NatTrans.ext
+  funext X
+  apply AddCommGrpCat.hom_ext
+  apply FreeAbelianGroup.lift_ext
+  intro h
+  change FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 (f ≫ g))
+      (FreeAbelianGroup.of h) =
+    FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 f)
+      (FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 g)
+        (FreeAbelianGroup.of h))
+  rw [FreeAbelianGroup.map_of_apply, FreeAbelianGroup.map_of_apply,
+    FreeAbelianGroup.map_of_apply]
+  apply congrArg FreeAbelianGroup.of
+  apply Sigma.ext
+  · funext i
+    rfl
+  · exact heq_of_eq (Subsingleton.elim _ _)
+
+noncomputable def selectedCechFreeSimplicialObject
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    SimplicialObject (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) where
+  obj x := selectedCechFreePresheaf 𝒰 x.unop.len
+  map f := selectedCechFreeSimplexMap 𝒰 f.unop
+  map_id x := by
+    exact selectedCechFreeSimplexMap_id 𝒰 x.unop
+  map_comp f g := by
+    exact selectedCechFreeSimplexMap_comp 𝒰 g.unop f.unop
+
+noncomputable def selectedCechFreeChain
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    ChainComplex (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) ℕ :=
+  AlgebraicTopology.alternatingFaceMapComplex
+    (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) |>.obj
+      (selectedCechFreeSimplicialObject 𝒰)
+
+theorem selectedCechFreeSimplicial_delta_app_of
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) (i : Fin (n + 2)) (X : S.categoryᵒᵖ)
+    (g : SelectedCechFreeGenerator 𝒰 (n + 1) X.unop) :
+    (((-1 : ℤ) ^ (i : ℕ) •
+      (selectedCechFreeSimplicialObject 𝒰).δ i).app X).hom
+        (FreeAbelianGroup.of g) =
+      ((-1 : ℤ) ^ (i : ℕ)) •
+        FreeAbelianGroup.of (selectedCechFreeFaceGenerator 𝒰 n i g) := by
+  rw [NatTrans.app_zsmul]
+  change (((-1 : ℤ) ^ (i : ℕ)) •
+      FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 (SimplexCategory.δ i)))
+        (FreeAbelianGroup.of g) = _
+  rw [show (((( -1 : ℤ) ^ (i : ℕ)) •
+      FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 (SimplexCategory.δ i)))
+        (FreeAbelianGroup.of g)) =
+      ((-1 : ℤ) ^ (i : ℕ)) •
+        FreeAbelianGroup.map (selectedCechFreeSimplexGeneratorMap 𝒰 (SimplexCategory.δ i))
+          (FreeAbelianGroup.of g) from rfl,
+    FreeAbelianGroup.map_of_apply]
+  rfl
+
+theorem selectedCechFreeChain_d_eq_selectedCechFreeBoundary
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) :
+    (selectedCechFreeChain 𝒰).d (n + 1) n = selectedCechFreeBoundary 𝒰 n := by
+  unfold selectedCechFreeChain
+  rw [AlgebraicTopology.alternatingFaceMapComplex_obj_d]
+  apply NatTrans.ext
+  funext X
+  apply AddCommGrpCat.hom_ext
+  apply FreeAbelianGroup.lift_ext
+  intro g
+  change
+    ((∑ i : Fin (n + 2), (-1 : ℤ) ^ (i : ℕ) •
+      (selectedCechFreeSimplicialObject 𝒰).δ i).app X) (FreeAbelianGroup.of g) = _
+  rw [show
+    (∑ i : Fin (n + 2), (-1 : ℤ) ^ (i : ℕ) •
+      (selectedCechFreeSimplicialObject 𝒰).δ i).app X =
+        ∑ i : Fin (n + 2), ((-1 : ℤ) ^ (i : ℕ) •
+          (selectedCechFreeSimplicialObject 𝒰).δ i).app X by
+      simpa using map_sum
+        (NatTrans.appHom (F := selectedCechFreePresheaf 𝒰 (n + 1))
+          (G := selectedCechFreePresheaf 𝒰 n) X)
+        (fun i : Fin (n + 2) => (-1 : ℤ) ^ (i : ℕ) •
+          (selectedCechFreeSimplicialObject 𝒰).δ i) Finset.univ]
+  let ev : ((selectedCechFreePresheaf 𝒰 (n + 1)).obj X ⟶
+      (selectedCechFreePresheaf 𝒰 n).obj X) →+
+      ((selectedCechFreePresheaf 𝒰 n).obj X : Type (u + 1)) :=
+    { toFun := fun (f : (selectedCechFreePresheaf 𝒰 (n + 1)).obj X ⟶
+        (selectedCechFreePresheaf 𝒰 n).obj X) => f.hom (FreeAbelianGroup.of g)
+      map_zero' := rfl
+      map_add' := fun _ _ => rfl }
+  change ev (∑ i : Fin (n + 2), ((-1 : ℤ) ^ (i : ℕ) •
+    (selectedCechFreeSimplicialObject 𝒰).δ i).app X) = _
+  rw [show ev (∑ i : Fin (n + 2), ((-1 : ℤ) ^ (i : ℕ) •
+      (selectedCechFreeSimplicialObject 𝒰).δ i).app X) =
+        ∑ i : Fin (n + 2), ev
+          (((-1 : ℤ) ^ (i : ℕ) •
+            (selectedCechFreeSimplicialObject 𝒰).δ i).app X) by
+      simpa using map_sum ev
+        (fun i : Fin (n + 2) => ((-1 : ℤ) ^ (i : ℕ) •
+          (selectedCechFreeSimplicialObject 𝒰).δ i).app X) Finset.univ]
+  dsimp [ev]
+  calc
+    _ = ∑ i : Fin (n + 2), ((-1 : ℤ) ^ (i : ℕ)) •
+        FreeAbelianGroup.of (selectedCechFreeFaceGenerator 𝒰 n i g) := by
+      apply Finset.sum_congr rfl
+      intro i _
+      exact selectedCechFreeSimplicial_delta_app_of 𝒰 n i X g
+    _ = _ := by
+      change (∑ i : Fin (n + 2), ((-1 : ℤ) ^ (i : ℕ)) •
+          FreeAbelianGroup.of (selectedCechFreeFaceGenerator 𝒰 n i g)) =
+        FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 n)
+          (FreeAbelianGroup.of g)
+      rw [FreeAbelianGroup.lift_apply_of]
+      rfl
+
+def selectedCechPrependSimplex
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : ℕ} (i : 𝒰.Index)
+    (σ : (canonicalCoverRelative 𝒰).simplex n) :
+    (canonicalCoverRelative 𝒰).simplex (n + 1) :=
+  Fin.cases i σ
+
+theorem selectedCechPrependSimplex_face_zero
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : ℕ} (i : 𝒰.Index)
+    (σ : (canonicalCoverRelative 𝒰).simplex n) :
+    (canonicalCoverRelative 𝒰).face n 0 (selectedCechPrependSimplex 𝒰 i σ) = σ := by
+  funext k
+  rfl
+
+theorem selectedCechPrependSimplex_face_succ
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : ℕ} (i : 𝒰.Index)
+    (σ : (canonicalCoverRelative 𝒰).simplex (n + 1))
+    (j : Fin (n + 2)) :
+    (canonicalCoverRelative 𝒰).face (n + 1) j.succ
+        (selectedCechPrependSimplex 𝒰 i σ) =
+      selectedCechPrependSimplex 𝒰 i ((canonicalCoverRelative 𝒰).face n j σ) := by
+  funext k
+  refine Fin.cases ?_ (fun k => ?_) k
+  · rfl
+  · simp [canonicalCoverRelative_face,
+      Site.FinitePosetCechCanonicalTupleSimplex.simplexMap_apply,
+      SimplexCategory.δ, selectedCechPrependSimplex]
+
+noncomputable def selectedCechPrependLift
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : ℕ} {Y : S.category} (i : 𝒰.Index)
+    (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
+    (g : SelectedCechFreeGenerator 𝒰 n Y) :
+    Y ⟶ (canonicalCoverRelative 𝒰).overlap (n + 1)
+      (selectedCechPrependSimplex 𝒰 i g.1) :=
+  canonicalTupleOverlapLift 𝒰 (selectedCechPrependSimplex 𝒰 i g.1)
+    (Fin.cases a (fun k => g.2 ≫ canonicalTupleOverlapProjection 𝒰 g.1 k))
+
+noncomputable def selectedCechPrependGenerator
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : ℕ} {Y : S.category} (i : 𝒰.Index)
+    (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
+    (g : SelectedCechFreeGenerator 𝒰 n Y) : SelectedCechFreeGenerator 𝒰 (n + 1) Y :=
+  ⟨selectedCechPrependSimplex 𝒰 i g.1, selectedCechPrependLift 𝒰 i a g⟩
+
+def selectedCechContractionGenerator
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : ℕ} {Y : S.category} (i : 𝒰.Index)
+    (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i) :
+    SelectedCechFreeGenerator 𝒰 n Y → FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 1) Y) :=
+  fun g => FreeAbelianGroup.of (selectedCechPrependGenerator 𝒰 i a g)
+
+def selectedCechContraction
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : ℕ} {Y : S.category} (i : 𝒰.Index)
+    (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i) :
+    FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 n Y) →+
+      FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 1) Y) :=
+  FreeAbelianGroup.lift (selectedCechContractionGenerator 𝒰 i a)
+
+theorem selectedCechFreeFaceGenerator_zero_prepend
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : ℕ} {Y : S.category} (i : 𝒰.Index)
+    (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
+    (g : SelectedCechFreeGenerator 𝒰 n Y) :
+    selectedCechFreeFaceGenerator 𝒰 n 0 (selectedCechPrependGenerator 𝒰 i a g) = g := by
+  have hface := selectedCechPrependSimplex_face_zero 𝒰 i g.1
+  apply Sigma.ext hface
+  apply Quiver.heq_of_homOfEq_ext rfl
+    (congrArg ((canonicalCoverRelative 𝒰).overlap n) hface)
+  exact Subsingleton.elim _ _
+
+theorem selectedCechFreeFaceGenerator_succ_prepend
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    {n : ℕ} {Y : S.category} (i : 𝒰.Index)
+    (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
+    (g : SelectedCechFreeGenerator 𝒰 (n + 1) Y) (j : Fin (n + 2)) :
+    selectedCechFreeFaceGenerator 𝒰 (n + 1) j.succ (selectedCechPrependGenerator 𝒰 i a g) =
+      selectedCechPrependGenerator 𝒰 i a (selectedCechFreeFaceGenerator 𝒰 n j g) := by
+  have hface := selectedCechPrependSimplex_face_succ 𝒰 i g.1 j
+  apply Sigma.ext hface
+  apply Quiver.heq_of_homOfEq_ext rfl
+    (congrArg ((canonicalCoverRelative 𝒰).overlap (n + 1)) hface)
+  exact Subsingleton.elim _ _
+
+theorem selectedCechFreeBoundary_contraction_generator
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) {Y : S.category} (i : 𝒰.Index)
+    (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
+    (g : SelectedCechFreeGenerator 𝒰 (n + 1) Y) :
+    FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 (n + 1))
+        (selectedCechContraction 𝒰 i a (FreeAbelianGroup.of g)) +
+      selectedCechContraction 𝒰 i a
+        (FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 n)
+          (FreeAbelianGroup.of g)) =
+      FreeAbelianGroup.of g := by
+  simp only [selectedCechContraction, selectedCechContractionGenerator,
+    FreeAbelianGroup.lift_apply_of,
+    selectedCechFreeBoundaryGenerator, map_sum, map_zsmul]
+  rw [Fin.sum_univ_succ]
+  simp only [Fin.val_zero, pow_zero, one_zsmul,
+    selectedCechFreeFaceGenerator_zero_prepend, Fin.val_succ,
+    selectedCechFreeFaceGenerator_succ_prepend]
+  have hpow (x : Fin (n + 2)) :
+      (-1 : ℤ) ^ (x.1 + 1) = -((-1 : ℤ) ^ x.1) := by
+    rw [pow_succ]
+    ring
+  simp_rw [hpow]
+  simp only [neg_zsmul, Finset.sum_neg_distrib]
+  abel
+
+theorem selectedCechFreeBoundary_contraction
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) {Y : S.category} (i : 𝒰.Index)
+    (a : Y ⟶ (canonicalCoverRelative 𝒰).chart i)
+    (x : FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 1) Y)) :
+    FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 (n + 1))
+        (selectedCechContraction 𝒰 i a x) +
+      selectedCechContraction 𝒰 i a
+        (FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 n) x) = x := by
+  let lhs : FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 1) Y) →+
+      FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 1) Y) :=
+    (FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 (n + 1))).comp
+        (selectedCechContraction 𝒰 i a) +
+      (selectedCechContraction 𝒰 i a).comp
+        (FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 n))
+  have hlhs : lhs = AddMonoidHom.id _ := by
+    apply FreeAbelianGroup.lift_ext
+    intro g
+    exact selectedCechFreeBoundary_contraction_generator 𝒰 n i a g
+  exact DFunLike.congr_fun hlhs x
+
+theorem selectedCechFreeBoundaryToCycles_isLocallySurjective
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) :
+    Presheaf.IsLocallySurjective S.topology
+      ((selectedCechFreeChain 𝒰).sc' (n + 2) (n + 1) n).toCycles := by
+  classical
+  let SC := (selectedCechFreeChain 𝒰).sc' (n + 2) (n + 1) n
+  constructor
+  intro X s
+  let x : FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 1) X) :=
+    (SC.iCycles.app (Opposite.op X)).hom s
+  cases isEmpty_or_nonempty (SelectedCechFreeGenerator 𝒰 (n + 1) X) with
+  | inl hEmpty =>
+      haveI : IsEmpty (SelectedCechFreeGenerator 𝒰 (n + 1) X) := hEmpty
+      have hx : x = 0 := Subsingleton.elim _ _
+      refine S.topology.superset_covering ?_ (S.topology.top_mem X)
+      intro Y f _
+      rw [Presheaf.imageSieve_apply]
+      refine ⟨0, ?_⟩
+      apply (AddCommGrpCat.mono_iff_injective
+        (SC.iCycles.app (Opposite.op Y))).mp inferInstance
+      change (((SC.toCycles ≫ SC.iCycles).app (Opposite.op Y)).hom 0) =
+        (SC.iCycles.app (Opposite.op Y)).hom
+          ((SC.cycles.map f.op).hom s)
+      rw [SC.toCycles_i]
+      simp only [map_zero]
+      rw [NatTrans.naturality_apply SC.iCycles f.op s]
+      change 0 = (selectedCechFreePresheaf 𝒰 (n + 1)).map f.op x
+      rw [hx, map_zero]
+  | inr hNonempty =>
+      let g₀ : SelectedCechFreeGenerator 𝒰 (n + 1) X := Classical.choice hNonempty
+      let b : X ⟶ base :=
+        g₀.2 ≫ canonicalTupleOverlapProjection 𝒰 g₀.1 0 ≫
+          (canonicalCoverRelative 𝒰).inclusion (g₀.1 0)
+      refine S.topology.superset_covering ?_
+        (S.topology.pullback_stable b (Site.AATCoverageFamily.mem_topology 𝒰))
+      intro Y f hf
+      rw [Presheaf.imageSieve_apply]
+      rw [Sieve.pullback_apply] at hf
+      rcases hf with ⟨Z, a, c, hc, hfac⟩
+      let i : 𝒰.Index := hc.idx
+      let chartFactor : Y ⟶ (canonicalCoverRelative 𝒰).chart i :=
+        a ≫ eqToHom hc.obj_idx.symm
+      let xY : FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 1) Y) :=
+        (selectedCechFreePresheaf 𝒰 (n + 1)).map f.op x
+      let primitive : (SC.X₁.obj (Opposite.op Y) : Type (u + 1)) := by
+        change FreeAbelianGroup (SelectedCechFreeGenerator 𝒰 (n + 2) Y)
+        exact selectedCechContraction 𝒰 i chartFactor xY
+      refine ⟨primitive, ?_⟩
+      apply (AddCommGrpCat.mono_iff_injective
+        (SC.iCycles.app (Opposite.op Y))).mp inferInstance
+      change (((SC.toCycles ≫ SC.iCycles).app (Opposite.op Y)).hom primitive) =
+        (SC.iCycles.app (Opposite.op Y)).hom
+          ((SC.cycles.map f.op).hom s)
+      rw [SC.toCycles_i]
+      rw [NatTrans.naturality_apply SC.iCycles f.op s]
+      change (((selectedCechFreeChain 𝒰).d (n + 2) (n + 1)).app
+          (Opposite.op Y)).hom primitive = xY
+      rw [selectedCechFreeChain_d_eq_selectedCechFreeBoundary]
+      change FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 (n + 1))
+          primitive = xY
+      have hcycleX : (SC.g.app (Opposite.op X)).hom x = 0 := by
+        dsimp [x]
+        change (((SC.iCycles ≫ SC.g).app (Opposite.op X)).hom s) = 0
+        rw [SC.iCycles_g]
+        rfl
+      have hcycleY' : (SC.g.app (Opposite.op Y)).hom xY = 0 := by
+        dsimp [xY]
+        change (SC.g.app (Opposite.op Y)).hom
+          ((SC.X₂.map f.op).hom x) = 0
+        rw [NatTrans.naturality_apply SC.g f.op x, hcycleX, map_zero]
+      have hcycleY :
+          FreeAbelianGroup.lift (selectedCechFreeBoundaryGenerator 𝒰 n) xY = 0 := by
+        change ((selectedCechFreeBoundary 𝒰 n).app (Opposite.op Y)).hom xY = 0
+        rw [← selectedCechFreeChain_d_eq_selectedCechFreeBoundary]
+        exact hcycleY'
+      have hcontract := selectedCechFreeBoundary_contraction 𝒰 n i chartFactor xY
+      dsimp [primitive]
+      rw [hcycleY, map_zero, add_zero] at hcontract
+      exact hcontract
+
+noncomputable def selectedCechFreePresheafHomOfCochain
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
+    (c : SelectedCechCochain 𝒰 F n) : selectedCechFreePresheaf 𝒰 n ⟶ F where
+  app X := AddCommGrpCat.ofHom
+    (FreeAbelianGroup.lift (fun g => F.map g.2.op (c g.1)))
+  naturality X Y f := by
+    apply AddCommGrpCat.hom_ext
+    apply FreeAbelianGroup.lift_ext
+    intro g
+    change FreeAbelianGroup.lift (fun g => F.map g.2.op (c g.1))
+        (FreeAbelianGroup.map (selectedCechFreeGeneratorMap 𝒰 n f)
+          (FreeAbelianGroup.of g)) =
+      F.map f
+        (FreeAbelianGroup.lift (fun g => F.map g.2.op (c g.1))
+          (FreeAbelianGroup.of g))
+    rw [FreeAbelianGroup.map_of_apply, FreeAbelianGroup.lift_apply_of,
+      FreeAbelianGroup.lift_apply_of]
+    rw [← ConcreteCategory.comp_apply, ← F.map_comp]
+    rfl
+
+@[simp] theorem selectedCechFreePresheafHomOfCochain_app_of
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
+    (c : SelectedCechCochain 𝒰 F n) (X : S.categoryᵒᵖ)
+    (g : SelectedCechFreeGenerator 𝒰 n X.unop) :
+    (selectedCechFreePresheafHomOfCochain 𝒰 F n c).app X
+        (FreeAbelianGroup.of g) = F.map g.2.op (c g.1) :=
+  FreeAbelianGroup.lift_apply_of _ _
+
+noncomputable def selectedCechFreePresheafHomAddEquiv
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ) :
+    ((selectedCechFreePresheaf 𝒰 n ⟶ F) : Type (u + 1)) ≃+
+      SelectedCechCochain 𝒰 F n := by
+  let toFun : (selectedCechFreePresheaf 𝒰 n ⟶ F) →
+      SelectedCechCochain 𝒰 F n := fun η σ =>
+    η.app (Opposite.op ((canonicalCoverRelative 𝒰).overlap n σ))
+      (FreeAbelianGroup.of ⟨σ, 𝟙 _⟩)
+  let invFun : SelectedCechCochain 𝒰 F n →
+      (selectedCechFreePresheaf 𝒰 n ⟶ F) :=
+    selectedCechFreePresheafHomOfCochain 𝒰 F n
+  exact
+    { toFun := toFun
+      invFun := invFun
+      left_inv := by
+        intro η
+        apply NatTrans.ext
+        funext X
+        apply AddCommGrpCat.hom_ext
+        apply FreeAbelianGroup.lift_ext
+        intro g
+        dsimp [invFun]
+        calc
+          _ = F.map g.2.op (toFun η g.1) :=
+            selectedCechFreePresheafHomOfCochain_app_of 𝒰 F n (toFun η) X g
+          _ = η.app X ((selectedCechFreePresheaf 𝒰 n).map g.2.op
+              (FreeAbelianGroup.of ⟨g.1, 𝟙 _⟩)) :=
+            (NatTrans.naturality_apply η g.2.op
+              (FreeAbelianGroup.of ⟨g.1, 𝟙 _⟩)).symm
+          _ = η.app X (FreeAbelianGroup.of g) := by
+            rw [selectedCechFreePresheaf_map_of]
+            congr 3
+      right_inv := by
+        intro c
+        funext σ
+        dsimp [invFun, toFun]
+        rw [selectedCechFreePresheafHomOfCochain_app_of]
+        change F.map (𝟙 _).op (c σ) = c σ
+        simpa only using FunctorToTypes.map_id_apply
+          (F := F ⋙ forget AddCommGrpCat.{u + 1}) (c σ)
+      map_add' := by
+        intro η θ
+        funext σ
+        rfl }
+
+@[simp] theorem selectedCechFreePresheafHomAddEquiv_apply
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
+    (η : selectedCechFreePresheaf 𝒰 n ⟶ F)
+    (σ : (canonicalCoverRelative 𝒰).simplex n) :
+    selectedCechFreePresheafHomAddEquiv 𝒰 F n η σ =
+      η.app (Opposite.op ((canonicalCoverRelative 𝒰).overlap n σ))
+        (FreeAbelianGroup.of ⟨σ, 𝟙 _⟩) :=
+  rfl
+
+theorem selectedCechFreePresheafHomAddEquiv_precomp_boundary
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) (n : ℕ)
+    (η : selectedCechFreePresheaf 𝒰 n ⟶ F) :
+    selectedCechFreePresheafHomAddEquiv 𝒰 F (n + 1)
+        (selectedCechFreeBoundary 𝒰 n ≫ η) =
+      (((selectedCechComplexFunctor 𝒰).obj F).d n (n + 1)).hom
+        (selectedCechFreePresheafHomAddEquiv 𝒰 F n η) := by
+  funext σ
+  rw [selectedCechComplexFunctor_obj_d_apply]
+  rw [selectedCechFreePresheafHomAddEquiv_apply]
+  change η.app (Opposite.op ((canonicalCoverRelative 𝒰).overlap (n + 1) σ))
+      ((selectedCechFreeBoundary 𝒰 n).app
+        (Opposite.op ((canonicalCoverRelative 𝒰).overlap (n + 1) σ))
+        (FreeAbelianGroup.of ⟨σ, 𝟙 _⟩)) = _
+  rw [selectedCechFreeBoundary_app_of]
+  simp_rw [selectedCechFreePresheafHomAddEquiv_apply]
+  simp only [selectedCechFreeBoundaryGenerator, map_sum, map_zsmul]
+  apply Finset.sum_congr rfl
+  intro i _
+  let τ := (canonicalCoverRelative 𝒰).face n i σ
+  let r := (canonicalCoverRelative 𝒰).faceRestriction n i σ
+  change ((-1 : ℤ) ^ (i : ℕ)) •
+      η.app (Opposite.op ((canonicalCoverRelative 𝒰).overlap (n + 1) σ))
+        (FreeAbelianGroup.of (selectedCechFreeFaceGenerator 𝒰 n i ⟨σ, 𝟙 _⟩)) =
+    ((-1 : ℤ) ^ (i : ℕ)) •
+      F.map r.op
+        (η.app (Opposite.op ((canonicalCoverRelative 𝒰).overlap n τ))
+          (FreeAbelianGroup.of ⟨τ, 𝟙 _⟩))
+  congr 1
+  simpa [τ, r, selectedCechFreeFaceGenerator] using
+    NatTrans.naturality_apply η r.op
+      (FreeAbelianGroup.of ⟨τ, 𝟙 _⟩)
+
+noncomputable def selectedCechFreeSheafChain
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    ChainComplex (Sheaf S.topology AddCommGrpCat.{u + 1}) ℕ :=
+  ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).mapHomologicalComplex
+    (ComplexShape.down ℕ)).obj (selectedCechFreeChain 𝒰)
+
+noncomputable def selectedCechFreeSheafHomAddEquiv
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (I : Sheaf S.topology AddCommGrpCat.{u + 1}) (n : ℕ) :
+    (((selectedCechFreeSheafChain 𝒰).X n ⟶ I) : Type (u + 1)) ≃+
+      SelectedCechCochain 𝒰 I.val n := by
+  change ((((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+    (selectedCechFreePresheaf 𝒰 n)) ⟶ I) : Type (u + 1)) ≃+ _
+  exact ((sheafificationAdjunction S.topology
+    AddCommGrpCat.{u + 1}).homAddEquiv (selectedCechFreePresheaf 𝒰 n) I).trans
+      (selectedCechFreePresheafHomAddEquiv 𝒰 I.val n)
+
+@[simp] theorem selectedCechFreeSheafHomAddEquiv_apply
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (I : Sheaf S.topology AddCommGrpCat.{u + 1}) (n : ℕ)
+    (f : (selectedCechFreeSheafChain 𝒰).X n ⟶ I) :
+    selectedCechFreeSheafHomAddEquiv 𝒰 I n f =
+      selectedCechFreePresheafHomAddEquiv 𝒰 I.val n
+        ((sheafificationAdjunction S.topology
+          AddCommGrpCat.{u + 1}).homAddEquiv (selectedCechFreePresheaf 𝒰 n) I f) :=
+  rfl
+
+theorem selectedCechFreeSheafHomAddEquiv_precomp_d
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (I : Sheaf S.topology AddCommGrpCat.{u + 1}) (n : ℕ)
+    (f : (selectedCechFreeSheafChain 𝒰).X n ⟶ I) :
+    selectedCechFreeSheafHomAddEquiv 𝒰 I (n + 1)
+        ((selectedCechFreeSheafChain 𝒰).d (n + 1) n ≫ f) =
+      (((selectedCechComplexFunctor 𝒰).obj I.val).d n (n + 1)).hom
+        (selectedCechFreeSheafHomAddEquiv 𝒰 I n f) := by
+  rw [selectedCechFreeSheafHomAddEquiv_apply,
+    selectedCechFreeSheafHomAddEquiv_apply]
+  have hd : (selectedCechFreeSheafChain 𝒰).d (n + 1) n =
+      (presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+        (selectedCechFreeBoundary 𝒰 n) := by
+    change (presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+        ((selectedCechFreeChain 𝒰).d (n + 1) n) = _
+    rw [selectedCechFreeChain_d_eq_selectedCechFreeBoundary]
+  rw [hd]
+  have hadj := (sheafificationAdjunction S.topology
+    AddCommGrpCat.{u + 1}).homEquiv_naturality_left
+      (selectedCechFreeBoundary 𝒰 n) f
+  change
+    ((sheafificationAdjunction S.topology
+      AddCommGrpCat.{u + 1}).homAddEquiv (selectedCechFreePresheaf 𝒰 (n + 1)) I)
+        ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+          (selectedCechFreeBoundary 𝒰 n) ≫ f) =
+      selectedCechFreeBoundary 𝒰 n ≫
+        ((sheafificationAdjunction S.topology
+          AddCommGrpCat.{u + 1}).homAddEquiv (selectedCechFreePresheaf 𝒰 n) I) f at hadj
+  rw [hadj]
+  exact selectedCechFreePresheafHomAddEquiv_precomp_boundary 𝒰 I.val n _
+
+theorem selectedCechFreeSheafChain_exactAt_succ
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : ℕ) :
+    (selectedCechFreeSheafChain 𝒰).ExactAt (n + 1) := by
+  let F := presheafToSheaf S.topology AddCommGrpCat.{u + 1}
+  let P := (selectedCechFreeChain 𝒰).sc' (n + 2) (n + 1) n
+  have hlocal : Presheaf.IsLocallySurjective S.topology P.toCycles :=
+    selectedCechFreeBoundaryToCycles_isLocallySurjective 𝒰 n
+  have hsheafLocal : Sheaf.IsLocallySurjective (F.map P.toCycles) :=
+    (Presheaf.isLocallySurjective_presheafToSheaf_map_iff
+      S.topology P.toCycles).mpr hlocal
+  letI : Sheaf.IsLocallySurjective (F.map P.toCycles) := hsheafLocal
+  haveI : Epi (F.map P.toCycles) := inferInstance
+  have hmapCycles :
+      F.map P.toCycles =
+        (P.map F).toCycles ≫ (P.mapCyclesIso F).hom := by
+    rw [← cancel_mono (F.map P.iCycles)]
+    rw [Category.assoc, P.mapCyclesIso_hom_iCycles,
+      (P.map F).toCycles_i]
+    rw [← F.map_comp, P.toCycles_i]
+    rfl
+  haveI : Epi ((P.map F).toCycles ≫ (P.mapCyclesIso F).hom) := by
+    rw [← hmapCycles]
+    infer_instance
+  haveI : Epi (P.map F).toCycles :=
+    (epi_comp_iff_of_isIso (P.map F).toCycles (P.mapCyclesIso F).hom).mp
+      inferInstance
+  have hExact : (P.map F).Exact :=
+    (ShortComplex.exact_iff_epi_toCycles (P.map F)).mpr inferInstance
+  rw [(selectedCechFreeSheafChain 𝒰).exactAt_iff'
+    (n + 2) (n + 1) n (by simp) (by simp)]
+  change (P.map F).Exact
+  exact hExact
+
+theorem injectiveSheaf_selectedCech_exactAt
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (I : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [Injective I]
+    (p : ℕ) (hp : 0 < p) :
+    ((selectedCechComplexFunctor 𝒰).obj I.val).ExactAt p := by
+  rcases p with _ | n
+  · omega
+  rw [((selectedCechComplexFunctor 𝒰).obj I.val).exactAt_iff'
+    n (n + 1) (n + 2) (CochainComplex.prev_nat_succ n) (by simp)]
+  rw [ShortComplex.ab_exact_iff_ker_le_range]
+  intro c hc
+  let T := (selectedCechFreeSheafChain 𝒰).sc' (n + 2) (n + 1) n
+  have hT : T.Exact := by
+    rw [← (selectedCechFreeSheafChain 𝒰).exactAt_iff'
+      (n + 2) (n + 1) n (by simp) (by simp)]
+    exact selectedCechFreeSheafChain_exactAt_succ 𝒰 n
+  let f : T.X₂ ⟶ I :=
+    (selectedCechFreeSheafHomAddEquiv 𝒰 I (n + 1)).symm c
+  have hf : T.f ≫ f = 0 := by
+    apply (selectedCechFreeSheafHomAddEquiv 𝒰 I (n + 2)).injective
+    change selectedCechFreeSheafHomAddEquiv 𝒰 I (n + 2)
+        ((selectedCechFreeSheafChain 𝒰).d (n + 2) (n + 1) ≫ f) =
+      selectedCechFreeSheafHomAddEquiv 𝒰 I (n + 2) 0
+    rw [selectedCechFreeSheafHomAddEquiv_precomp_d, map_zero]
+    rw [(selectedCechFreeSheafHomAddEquiv 𝒰 I (n + 1)).apply_symm_apply c]
+    change (((selectedCechComplexFunctor 𝒰).obj I.val).d
+      (n + 1) (n + 2)).hom c = 0
+    exact hc
+  let primitive : T.X₃ ⟶ I := hT.descToInjective f hf
+  refine ⟨selectedCechFreeSheafHomAddEquiv 𝒰 I n primitive, ?_⟩
+  change (((selectedCechComplexFunctor 𝒰).obj I.val).d n (n + 1)).hom
+      (selectedCechFreeSheafHomAddEquiv 𝒰 I n primitive) = c
+  rw [← selectedCechFreeSheafHomAddEquiv_precomp_d]
+  change selectedCechFreeSheafHomAddEquiv 𝒰 I (n + 1)
+      (T.g ≫ primitive) = c
+  rw [hT.comp_descToInjective]
+  exact (selectedCechFreeSheafHomAddEquiv 𝒰 I (n + 1)).apply_symm_apply c
+
 end AAT.AG.Cohomology

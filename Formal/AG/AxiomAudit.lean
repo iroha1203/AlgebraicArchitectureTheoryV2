@@ -4767,6 +4767,26 @@ def readingFunctoriality_injectiveSheaf_restriction_surjective :=
 def readingFunctoriality_sheaf_selectedCechAugmentation_exactAtZero :=
   @AAT.AG.Cohomology.sheaf_selectedCechAugmentation_exactAtZero
 
+/-- Audit alias for the selected free Čech chain. -/
+noncomputable def readingFunctoriality_selectedCechFreeChain :=
+  @AAT.AG.Cohomology.selectedCechFreeChain
+
+/-- Audit alias for local surjectivity onto positive-degree free Čech cycles. -/
+def readingFunctoriality_selectedCechFreeBoundaryToCycles_isLocallySurjective :=
+  @AAT.AG.Cohomology.selectedCechFreeBoundaryToCycles_isLocallySurjective
+
+/-- Audit alias for the sheafified selected free Čech chain. -/
+noncomputable def readingFunctoriality_selectedCechFreeSheafChain :=
+  @AAT.AG.Cohomology.selectedCechFreeSheafChain
+
+/-- Audit alias for positive-degree exactness of the sheafified free Čech chain. -/
+def readingFunctoriality_selectedCechFreeSheafChain_exactAt_succ :=
+  @AAT.AG.Cohomology.selectedCechFreeSheafChain_exactAt_succ
+
+/-- Audit alias for positive-degree selected Čech exactness of an injective sheaf. -/
+def readingFunctoriality_injectiveSheaf_selectedCech_exactAt :=
+  @AAT.AG.Cohomology.injectiveSheaf_selectedCech_exactAt
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

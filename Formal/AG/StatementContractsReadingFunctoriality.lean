@@ -1931,6 +1931,33 @@ example (I : Sheaf S.topology AddCommGrpCat.{u + 1}) :
       (((Cohomology.selectedCechComplexFunctor 𝒰).obj I.val).d 0 1).hom :=
   Cohomology.sheaf_selectedCechAugmentation_exactAtZero 𝒰 I
 
+/-- Fixed free Čech chain built from selected simplices and overlap arrows. -/
+noncomputable example :
+    ChainComplex (S.categoryᵒᵖ ⥤ AddCommGrpCat.{u + 1}) ℕ :=
+  Cohomology.selectedCechFreeChain 𝒰
+
+/-- Fixed local surjectivity onto positive-degree cycles before sheafification. -/
+example (n : ℕ) :
+    Presheaf.IsLocallySurjective S.topology
+      ((Cohomology.selectedCechFreeChain 𝒰).sc' (n + 2) (n + 1) n).toCycles :=
+  Cohomology.selectedCechFreeBoundaryToCycles_isLocallySurjective 𝒰 n
+
+/-- Fixed sheafified free Čech chain. -/
+noncomputable example :
+    ChainComplex (Sheaf S.topology AddCommGrpCat.{u + 1}) ℕ :=
+  Cohomology.selectedCechFreeSheafChain 𝒰
+
+/-- Fixed positive-degree exactness of the sheafified free Čech chain. -/
+example (n : ℕ) :
+    (Cohomology.selectedCechFreeSheafChain 𝒰).ExactAt (n + 1) :=
+  Cohomology.selectedCechFreeSheafChain_exactAt_succ 𝒰 n
+
+/-- Fixed positive-degree selected Čech exactness for an injective sheaf. -/
+example (I : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [Injective I] (p : ℕ) (hp : 0 < p) :
+    ((Cohomology.selectedCechComplexFunctor 𝒰).obj I.val).ExactAt p :=
+  Cohomology.injectiveSheaf_selectedCech_exactAt 𝒰 I p hp
+
 end SelectedCechResolutionBicomplexSD5
 
 end AAT.AG.StatementContractsReadingFunctoriality
