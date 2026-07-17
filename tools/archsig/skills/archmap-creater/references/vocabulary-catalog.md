@@ -134,6 +134,11 @@ Bad: a semantic atom with no `object`.
 - Subject: `<domain-or-module>.<Symbol>`.
 - Atom id: `atom:<kind>:<slug(subject)>[:<slug(predicate-or-object)>]`.
 - Source id: file evidence uses `src:<repo-relative-path>`.
+- Refs may cite a line as `src:<repo-relative-path>:<line>`. The `sources`
+  table declares file-level ids only; validation and the authoring audit
+  resolve a trailing line suffix to its file source, and the cited line is
+  carried into `sourceRefSamples`. Line refs survive integration — do not
+  strip them from final atoms.
 
 ## Atom Match Key
 

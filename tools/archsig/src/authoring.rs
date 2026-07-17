@@ -1088,12 +1088,15 @@ fn adopted_adjudication_keys(consistency: &[ArchmapExtractionConsistencyV1]) -> 
 }
 
 fn citation_was_surveyed(source_ref: &str, input: &AuthoringAuditInputV1) -> bool {
+    // A `src:<path>:<line>` citation is surveyed when its file-level source was
+    // read; the line suffix narrows evidence without naming a new source.
+    let base_ref = crate::archmap::source_ref_line_base(source_ref).map(|(base, _)| base);
     input
         .candidate_packets
         .iter()
         .flat_map(|packet| packet.survey_rows.iter())
         .any(|row| {
-            row.source_id == source_ref
+            (row.source_id == source_ref || Some(row.source_id.as_str()) == base_ref)
                 && (row.status == "read" || (row.status == "partial" && source_ref.contains('#')))
         })
 }

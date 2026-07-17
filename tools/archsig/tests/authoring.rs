@@ -315,3 +315,163 @@ fn archmap_cli_runs_minimal_authoring_audit() {
     assert!(output.status.success());
     assert_eq!(read_json(&report)["summary"]["result"], "pass");
 }
+
+#[test]
+fn archmap_cli_accepts_line_suffixed_source_refs_in_authoring_audit() {
+    let out_dir = temp_dir("archmap-authoring-audit-line-refs");
+    let atom = json!({
+        "id": "atom:common",
+        "kind": "semantic",
+        "subject": "module:a",
+        "axis": "responsibility",
+        "predicate": "documents",
+        "object": "authoring survey provenance",
+        "refs": ["src:src/a.rs:42"]
+    });
+    let archmap = json!({
+        "schema": "archmap/v0.5.3",
+        "id": "archmap:authoring-audit-line",
+        "sources": {
+            "src:src/a.rs": { "kind": "file", "path": "src/a.rs" }
+        },
+        "atoms": [atom],
+        "contexts": [],
+        "covers": []
+    });
+    let scope = json!({
+        "schema": "archmap-scope-manifest/v0.5.3",
+        "id": "scope:test",
+        "repository": {
+            "root": ".",
+            "revision": "git:0000000000000000000000000000000000000000",
+            "dirty": false
+        },
+        "scopeSpec": {
+            "includeGlobs": ["src/**/*.rs"],
+            "excludeGlobs": [],
+            "addedEvidence": [],
+            "requestedScope": "authoring audit line-ref test",
+            "approvedBy": "test"
+        },
+        "worklist": [{
+            "order": 1,
+            "sourceId": "src:src/a.rs",
+            "path": "src/a.rs",
+            "kind": "file",
+            "contentHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            "sizeBytes": 11,
+            "authorAdded": false
+        }],
+        "exclusions": []
+    });
+    let candidate = json!({
+        "schema": "archmap-candidate-packet/v0.5.3",
+        "id": "candidates:pass-a",
+        "scopeManifestRef": "scope:test",
+        "passId": "pass-a",
+        "chunk": { "worklistOrderFrom": 1, "worklistOrderTo": 1 },
+        "reviewedSources": ["src:src/a.rs"],
+        "candidateSources": {
+            "src:src/a.rs": { "kind": "file", "path": "src/a.rs" }
+        },
+        "candidateAtoms": [archmap["atoms"][0].clone()],
+        "candidateContexts": [],
+        "candidateCovers": [],
+        "surveyRows": [{
+            "sourceId": "src:src/a.rs",
+            "status": "read",
+            "surveyedKinds": ["semantic"],
+            "candidateAtomIds": ["atom:common"],
+            "notes": []
+        }],
+        "privateUnavailableNotes": [],
+        "selfReview": {
+            "notScriptGenerated": true,
+            "notCoarseWhenEvidenceWasRicher": true,
+            "semanticAtomsHaveUseEvidence": true,
+            "noDiagnosticShortcutAtoms": true,
+            "worklistChunkFullyRead": true,
+            "aliasPreservingSemantics": true
+        }
+    });
+    let ledger = json!({
+        "schema": "archmap-coverage-ledger/v0.5.3",
+        "id": "coverage:test",
+        "scopeManifestRef": "scope:test",
+        "archmapRef": "archmap:authoring-audit-line",
+        "passRefs": ["candidates:pass-a"],
+        "rows": [{
+            "sourceId": "src:src/a.rs",
+            "surveyStatus": "surveyed",
+            "passes": ["pass-a"],
+            "surveyedKinds": ["semantic"],
+            "adoptedAtomIds": ["atom:common"]
+        }],
+        "claimBoundary": "Rows record the authoring survey of the selected scope at the recorded revision. They do not assert extraction completeness."
+    });
+    let paths = [
+        ("archmap.json", archmap.clone()),
+        ("scope.json", scope),
+        ("candidate.json", candidate),
+        ("ledger.json", ledger),
+    ];
+    for (name, value) in paths {
+        fs::write(
+            out_dir.join(name),
+            serde_json::to_vec_pretty(&value).expect("authoring artifact serializes"),
+        )
+        .expect("authoring artifact writes");
+    }
+    let report = out_dir.join("validation.json");
+    let output = run(&[
+        "archmap",
+        "--input",
+        out_dir
+            .join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--scope-manifest",
+        out_dir
+            .join("scope.json")
+            .to_str()
+            .expect("scope path is utf-8"),
+        "--candidate-packets",
+        out_dir
+            .join("candidate.json")
+            .to_str()
+            .expect("candidate path is utf-8"),
+        "--coverage-ledger",
+        out_dir
+            .join("ledger.json")
+            .to_str()
+            .expect("ledger path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(output.status.success());
+    assert_eq!(read_json(&report)["summary"]["result"], "pass");
+
+    // A line suffix must not resurrect a source that was never declared.
+    let mut unknown = archmap;
+    unknown["atoms"][0]["refs"] = json!(["src:src/missing.rs:7"]);
+    fs::write(
+        out_dir.join("archmap-unknown.json"),
+        serde_json::to_vec_pretty(&unknown).expect("unknown archmap serializes"),
+    )
+    .expect("unknown archmap writes");
+    let unknown_report = out_dir.join("validation-unknown.json");
+    let unknown_output = run(&[
+        "archmap",
+        "--input",
+        out_dir
+            .join("archmap-unknown.json")
+            .to_str()
+            .expect("unknown archmap path is utf-8"),
+        "--out",
+        unknown_report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(!unknown_output.status.success() || {
+        read_json(&unknown_report)["summary"]["result"] != "pass"
+    });
+    assert_eq!(read_json(&unknown_report)["summary"]["result"], "fail");
+}
