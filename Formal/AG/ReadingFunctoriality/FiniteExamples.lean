@@ -1052,6 +1052,7 @@ private theorem nonLerayPairOverlap_noMarkerReads
         nonLerayContext, nonLeraySupportReads] at h
   · exact False.elim (hne (h0.trans h1.symm))
 
+/-- Decidable equality for the two branches of the comparison cover. -/
 local instance : DecidableEq nonLerayComparisonCover.Index := Classical.decEq _
 
 private noncomputable def nonLerayCechOneCochain :
