@@ -11,6 +11,7 @@ import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Formal.AG.ReadingFunctoriality
+import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
 import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
 import Formal.AG.StatementContractsReadingFunctoriality
 import Formal.Util.AssertStandardAxioms
@@ -5883,6 +5884,26 @@ def readingFunctoriality_coarseFineSheafHMap_nonzero :=
   @AAT.AG.ReadingFunctorialityFinite.coarseFineSheafHMap_nonzero
 def readingFunctoriality_topologyActualHOneFiring :=
   @AAT.AG.ReadingFunctorialityFinite.topologyActualHOneFiring
+
+/-! R9g concrete `Tor₁` flat-base-change firing. -/
+
+noncomputable def readingFunctoriality_modTwoTorOneBaseChangeIso :=
+  AAT.AG.ReadingFunctorialityFinite.modTwoTorOneBaseChangeIso
+
+noncomputable def readingFunctoriality_modTwoTorOneSourceWitness :=
+  AAT.AG.ReadingFunctorialityFinite.modTwoTorOneSourceWitness
+
+def readingFunctoriality_modTwoTorOneSourceWitness_ne_zero :=
+  @AAT.AG.ReadingFunctorialityFinite.modTwoTorOneSourceWitness_ne_zero
+
+noncomputable def readingFunctoriality_modTwoTorOneTargetWitness :=
+  AAT.AG.ReadingFunctorialityFinite.modTwoTorOneTargetWitness
+
+def readingFunctoriality_modTwoTorOneTargetWitness_ne_zero :=
+  @AAT.AG.ReadingFunctorialityFinite.modTwoTorOneTargetWitness_ne_zero
+
+def readingFunctoriality_modTwoTorOne_baseChange_nonzero :=
+  @AAT.AG.ReadingFunctorialityFinite.modTwoTorOne_baseChange_nonzero
 
 end AAT.AG.AxiomAudit
 
