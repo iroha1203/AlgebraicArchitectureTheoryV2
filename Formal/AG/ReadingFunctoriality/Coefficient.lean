@@ -1680,6 +1680,9 @@ noncomputable def baseChangeCompIso
       (Functor.isoWhiskerLeft Ob.modulePresheaf
         (ModuleCat.extendScalarsComp.{u, u + 1} f.hom g.hom).symm)
 
+/-- Internal natural-transformation form of section-map composition coherence.
+It uses the additive sheafification units and Mathlib's scalar-extension compositor;
+`baseChangeSectionMap_comp` is the public pointwise API. -/
 private theorem baseChangeSectionMap_comp_nat
     {R R' R'' : Type u}
     [CommRing R] [CommRing R'] [CommRing R'']
