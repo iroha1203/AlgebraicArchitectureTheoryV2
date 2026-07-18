@@ -113,15 +113,17 @@ independence_evidence: <how this reviewer received the source without another au
 decision: approve | reject
 
 checked:
-- math-A / math-B: GOAL claim — <concrete observation>
-- math-A / math-B: quantification — <concrete observation>
-- math-A / math-B: coefficient — <concrete observation>
-- math-A / math-B: conclusion strength — <concrete observation>
-- math-A / math-B: premise — <concrete observation>
-- lean-A / lean-B: elaboration — <concrete observation>
-- lean-A / lean-B: additional premise — <concrete observation>
-- lean-A / lean-B: definitional escape — <concrete observation>
-- lean-A / lean-B: API connection — <concrete observation>
+  math:
+    GOAL claim: <concrete observation | not-applicable for Lean lane>
+    quantification: <concrete observation | not-applicable for Lean lane>
+    coefficient: <concrete observation | not-applicable for Lean lane>
+    conclusion strength: <concrete observation | not-applicable for Lean lane>
+    premise: <concrete observation | not-applicable for Lean lane>
+  lean:
+    elaboration: <concrete observation | not-applicable for math lane>
+    additional premise: <concrete observation | not-applicable for math lane>
+    definitional escape: <concrete observation | not-applicable for math lane>
+    API connection: <concrete observation | not-applicable for math lane>
 unchecked: none
 finding:
 - none
@@ -131,4 +133,4 @@ evidence:
 - <少なくとも1件の具体的な確認sourceまたは実行証拠>
 ```
 
-`lane`はmath-A、math-B、lean-A、lean-Bを各1本だけ許可する。4本のaudit permalink、`reviewer_ref`、comment metadataのauthor、`input_snapshot`、`independence_evidence`は確認可能な形で記録し、permalink・reviewer_ref・authorは相互に異ならなければならない。`checked`は該当laneの全項目を1項目ずつ記録し、`refutation_attempts`と`evidence`は各1件以上の具体的な内容を持つ。`approve`には`unchecked: none`、`finding: none`、lane固有の全項目、`independence: independent-input`、placeholderでない具体的な独立入力記録を必須とする。受理済みcommentは編集して差し替えない。signatureを変更するときは実装を停止し、新versionのcontract comment、active reference、4本のaudit、preflight記録を追加してから再開する。
+`lane`はmath-A、math-B、lean-A、lean-Bを各1本だけ許可する。4本のaudit permalink、`reviewer_ref`、comment metadataのauthor、`input_snapshot`、`independence_evidence`は確認可能な形で記録し、permalink・reviewer_ref・authorは相互に異ならなければならない。`checked`は該当laneの全項目を1項目ずつ記録し、他laneの項目は`not-applicable`と明記する。`refutation_attempts`と`evidence`は各1件以上の具体的な内容を持つ。`approve`には`unchecked: none`、`finding: none`、lane固有の全項目、`independence: independent-input`、placeholderでない具体的な独立入力記録を必須とする。T0は4本のaudit本文がmetadataだけ異なる同一内容でないことも確認する。受理済みcommentは編集して差し替えない。signatureを変更するときは実装を停止し、新versionのcontract comment、active reference、4本のaudit、preflight記録を追加してから再開する。
