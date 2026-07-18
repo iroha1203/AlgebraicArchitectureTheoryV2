@@ -3340,6 +3340,120 @@ example
       K.classBaseChange f n c :=
   K.class_baseChange_naturality f n c
 
+/-! Fixed AC37 canonical coefficient Čech comparison contracts. -/
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    ((Ob.canonicalLinearCech 𝒰).scalarExtension f).X n ⟶
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.X n :=
+  Ob.canonicalBaseChangeCochain f 𝒰 n
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    (Ob.canonicalLinearCech 𝒰).scalarExtension f ⟶
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex :=
+  Ob.canonicalCechBaseChangeHom f 𝒰
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    (Ob.canonicalCechBaseChangeHom f 𝒰).f n =
+      Ob.canonicalBaseChangeCochain f 𝒰 n :=
+  Ob.canonicalCechBaseChangeHom_f f 𝒰 n
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) : Prop :=
+  Ob.CechCoefficientBaseChangeCompatible f 𝒰
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    Cohomology.LinearCoefficientSheaf.moduleScalarExtension f
+        ((Ob.canonicalLinearCech 𝒰).complex.homology n) ⟶
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.homology n :=
+  Ob.canonicalCechHnBaseChangeMap f 𝒰 n
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    (Ob.canonicalLinearCech 𝒰).complex.cycles n →
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.cycles n :=
+  Ob.canonicalCocycleBaseChange f 𝒰 n
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat)
+    (c : (Ob.canonicalLinearCech 𝒰).complex.cycles n) :
+    ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.homologyπ n
+        (Ob.canonicalCocycleBaseChange f 𝒰 n c) =
+      Ob.canonicalCechHnBaseChangeMap f 𝒰 n
+        (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1} f
+          ((Ob.canonicalLinearCech 𝒰).complex.homology n)
+          ((Ob.canonicalLinearCech 𝒰).complex.homologyπ n c)) :=
+  Ob.canonicalCocycleBaseChange_class f 𝒰 n c
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hcompat : Ob.CechCoefficientBaseChangeCompatible f 𝒰)
+    (n : Nat) :
+    IsIso (Ob.canonicalCechHnBaseChangeMap f 𝒰 n) :=
+  Ob.canonicalCechHnBaseChangeMap_isIso f 𝒰 hcompat n
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hcompat : Ob.CechCoefficientBaseChangeCompatible f 𝒰)
+    (n : Nat) :
+    Cohomology.LinearCoefficientSheaf.moduleScalarExtension f
+        ((Ob.canonicalLinearCech 𝒰).complex.homology n) ≅
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.homology n :=
+  Ob.canonicalCechHnFlatBaseChangeIso f 𝒰 hcompat n
+
 end CoefficientChangeSD8
 
 end AAT.AG.StatementContractsReadingFunctoriality

@@ -5223,6 +5223,42 @@ noncomputable def readingFunctoriality_linearCechClassBaseChange :=
 def readingFunctoriality_linearCechClass_baseChange_naturality :=
   @AAT.AG.Cohomology.LinearCoverRelativeCechComplex.class_baseChange_naturality
 
+/-- Audit alias for the canonical degreewise coefficient Čech map. -/
+noncomputable def readingFunctoriality_canonicalBaseChangeCochain :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalBaseChangeCochain
+
+/-- Audit alias for the canonical coefficient Čech complex hom. -/
+noncomputable def readingFunctoriality_canonicalCechBaseChangeHom :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalCechBaseChangeHom
+
+/-- Audit alias for the component formula of the canonical complex hom. -/
+def readingFunctoriality_canonicalCechBaseChangeHom_f :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalCechBaseChangeHom_f
+
+/-- Audit alias for canonical degreewise coefficient compatibility. -/
+def readingFunctoriality_cechCoefficientBaseChangeCompatible :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.CechCoefficientBaseChangeCompatible
+
+/-- Audit alias for the canonical coefficient Čech Hn map. -/
+noncomputable def readingFunctoriality_canonicalCechHnBaseChangeMap :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalCechHnBaseChangeMap
+
+/-- Audit alias for the canonical target cocycle under coefficient change. -/
+noncomputable def readingFunctoriality_canonicalCocycleBaseChange :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalCocycleBaseChange
+
+/-- Audit alias for the canonical target cocycle's class formula. -/
+def readingFunctoriality_canonicalCocycleBaseChange_class :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalCocycleBaseChange_class
+
+/-- Audit alias for isomorphy of the canonical Hn map under compatibility. -/
+def readingFunctoriality_canonicalCechHnBaseChangeMap_isIso :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalCechHnBaseChangeMap_isIso
+
+/-- Audit alias for the canonical coefficient Čech Hn base-change isomorphism. -/
+noncomputable def readingFunctoriality_canonicalCechHnFlatBaseChangeIso :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalCechHnFlatBaseChangeIso
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/

@@ -2048,6 +2048,288 @@ by
 
 end LinearCoverRelativeCechComplex
 
+namespace LinearCoefficientSheaf
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+
+private noncomputable def linearCechProjection
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat)
+    (σ : (canonicalCoverRelative 𝒰).simplex n) :
+    ModuleCat.of R
+        (∀ τ : (canonicalCoverRelative 𝒰).simplex n,
+          Ob.modulePresheaf.obj
+            (op ((canonicalCoverRelative 𝒰).overlap n τ))) ⟶
+      Ob.modulePresheaf.obj
+        (op ((canonicalCoverRelative 𝒰).overlap n σ)) :=
+  ModuleCat.ofHom (LinearMap.proj σ)
+
+private noncomputable def linearCechBaseChangeNatTrans
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    ((CosimplicialObject.whiskering
+      (ModuleCat.{u + 1} R) (ModuleCat.{u + 1} R')).obj
+        (ModuleCat.extendScalars.{u, u, u + 1} f.hom)).obj
+          (linearCechCosimplicialObject Ob 𝒰) ⟶
+      linearCechCosimplicialObject (Ob.baseChange f) 𝒰 where
+  app x := ModuleCat.ofHom (LinearMap.pi (R := R') fun σ =>
+    (((ModuleCat.extendScalars.{u, u, u + 1} f.hom).map
+        (linearCechProjection Ob 𝒰 x.len σ)) ≫
+      Ob.baseChangeSectionMap f
+        ((canonicalCoverRelative 𝒰).overlap x.len σ)).hom)
+  naturality x y g := by
+    let E : ModuleCat.{u + 1} R ⥤ ModuleCat.{u + 1} R' :=
+      ModuleCat.extendScalars.{u, u, u + 1} f.hom
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro z
+    funext σ
+    have hproj :
+        (linearCechCosimplicialObject Ob 𝒰).map g ≫
+            linearCechProjection Ob 𝒰 y.len σ =
+          linearCechProjection Ob 𝒰 x.len
+              (fun i => σ (g.toOrderHom i)) ≫
+            Ob.modulePresheaf.map
+              (canonicalTupleOverlapMap 𝒰 g σ).op := by
+      apply ModuleCat.hom_ext
+      ext c
+      rfl
+    have hE :
+        E.map ((linearCechCosimplicialObject Ob 𝒰).map g) ≫
+            E.map (linearCechProjection Ob 𝒰 y.len σ) =
+          E.map (linearCechProjection Ob 𝒰 x.len
+              (fun i => σ (g.toOrderHom i))) ≫
+            E.map (Ob.modulePresheaf.map
+              (canonicalTupleOverlapMap 𝒰 g σ).op) := by
+      rw [← E.map_comp, hproj, E.map_comp]
+    have hEapply :
+        (E.map (linearCechProjection Ob 𝒰 y.len σ)).hom
+            ((E.map ((linearCechCosimplicialObject Ob 𝒰).map g)).hom z) =
+          (E.map (Ob.modulePresheaf.map
+              (canonicalTupleOverlapMap 𝒰 g σ).op)).hom
+            ((E.map (linearCechProjection Ob 𝒰 x.len
+              (fun i => σ (g.toOrderHom i)))).hom z) := by
+      simpa only [ConcreteCategory.comp_apply] using
+        ConcreteCategory.congr_hom hE z
+    have hsection := ConcreteCategory.congr_hom
+      (Ob.baseChangeSectionMap_naturality f
+        (canonicalTupleOverlapMap 𝒰 g σ))
+      ((E.map (linearCechProjection Ob 𝒰 x.len
+        (fun i => σ (g.toOrderHom i)))).hom z)
+    dsimp [CosimplicialObject.whiskering, Functor.whiskeringRight,
+      linearCechCosimplicialObject]
+    exact (congrArg
+      (fun w => Ob.baseChangeSectionMap f
+        ((canonicalCoverRelative 𝒰).overlap y.len σ) w) hEapply).trans
+      (by simpa only [ConcreteCategory.comp_apply] using hsection)
+
+/-- The canonical degreewise map from scalar-extended source cochains to the
+cochains of the canonically base-changed coefficient sheaf. -/
+noncomputable def canonicalBaseChangeCochain
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    ((Ob.canonicalLinearCech 𝒰).scalarExtension f).X n ⟶
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.X n :=
+  ((Ob.canonicalLinearCech 𝒰).scalarExtensionObjIso f n).hom ≫
+    (linearCechBaseChangeNatTrans Ob f 𝒰).app (SimplexCategory.mk n)
+
+private theorem canonicalBaseChangeCochain_comm
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    ((Ob.canonicalLinearCech 𝒰).scalarExtension f).d n (n + 1) ≫
+        canonicalBaseChangeCochain Ob f 𝒰 (n + 1) =
+      canonicalBaseChangeCochain Ob f 𝒰 n ≫
+        ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.d n (n + 1) := by
+  rw [canonicalBaseChangeCochain, canonicalBaseChangeCochain,
+    ← Category.assoc,
+    (Ob.canonicalLinearCech 𝒰).scalarExtension_d f n]
+  simp only [Category.assoc]
+  rw [cancel_epi
+    ((Ob.canonicalLinearCech 𝒰).scalarExtensionObjIso f n).hom]
+  simp only [canonicalLinearCech, CochainComplex.of_d]
+  change
+    (ModuleCat.extendScalars f.hom).map
+          (linearCechDifferential Ob 𝒰 n) ≫
+        (linearCechBaseChangeNatTrans Ob f 𝒰).app
+          (SimplexCategory.mk (n + 1)) =
+      (linearCechBaseChangeNatTrans Ob f 𝒰).app
+          (SimplexCategory.mk n) ≫
+        linearCechDifferential (Ob.baseChange f) 𝒰 n
+  letI := linearExtendScalars_additive f.hom
+  let E : ModuleCat.{u + 1} R ⥤ ModuleCat.{u + 1} R' :=
+    ModuleCat.extendScalars.{u, u, u + 1} f.hom
+  have hsource :
+      AlgebraicTopology.AlternatingCofaceMapComplex.objD
+          (((CosimplicialObject.whiskering
+            (ModuleCat.{u + 1} R) (ModuleCat.{u + 1} R')).obj E).obj
+              (linearCechCosimplicialObject Ob 𝒰)) n =
+        E.map (linearCechDifferential Ob 𝒰 n) := by
+    dsimp [linearCechDifferential,
+      AlgebraicTopology.AlternatingCofaceMapComplex.objD,
+      CosimplicialObject.whiskering, Functor.whiskeringRight]
+    rw [Functor.map_sum]
+    simp only [Functor.map_zsmul]
+    apply Finset.sum_congr rfl
+    intro i _hi
+    rfl
+  rw [← hsource]
+  have hcomm := (AlgebraicTopology.AlternatingCofaceMapComplex.map
+    (linearCechBaseChangeNatTrans Ob f 𝒰)).comm' n (n + 1) rfl
+  dsimp [AlgebraicTopology.AlternatingCofaceMapComplex.map,
+    AlgebraicTopology.AlternatingCofaceMapComplex.obj] at hcomm
+  simpa only [CochainComplex.of_d, linearCechDifferential] using hcomm.symm
+
+/-- The canonical complex hom generated by the sectionwise sheafification
+unit and its restriction naturality. -/
+noncomputable def canonicalCechBaseChangeHom
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    (Ob.canonicalLinearCech 𝒰).scalarExtension f ⟶
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex where
+  f n := canonicalBaseChangeCochain Ob f 𝒰 n
+  comm' i j hij := by
+    obtain rfl := hij
+    exact (canonicalBaseChangeCochain_comm Ob f 𝒰 i).symm
+
+/-- The components of the canonical complex hom are the named degreewise
+base-change maps. -/
+theorem canonicalCechBaseChangeHom_f
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    (canonicalCechBaseChangeHom Ob f 𝒰).f n =
+      canonicalBaseChangeCochain Ob f 𝒰 n :=
+  rfl
+
+/-- Coefficient compatibility asks exactly that the canonical degreewise
+cochain maps are isomorphisms. -/
+def CechCoefficientBaseChangeCompatible
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) : Prop :=
+  ∀ n, IsIso (canonicalBaseChangeCochain Ob f 𝒰 n)
+
+/-- The canonical Hn map: flat homology comparison followed by the homology
+map of the canonical coefficient complex hom. -/
+noncomputable def canonicalCechHnBaseChangeMap
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    moduleScalarExtension f
+        ((Ob.canonicalLinearCech 𝒰).complex.homology n) ⟶
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.homology n :=
+  ((Ob.canonicalLinearCech 𝒰).hnFlatBaseChangeIso f n).hom ≫
+    HomologicalComplex.homologyMap
+      (canonicalCechBaseChangeHom Ob f 𝒰) n
+
+/-- The actual target cocycle obtained from the flat scalar-extension cycle
+and the canonical coefficient complex hom. -/
+noncomputable def canonicalCocycleBaseChange
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    (Ob.canonicalLinearCech 𝒰).complex.cycles n →
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.cycles n := fun c =>
+  HomologicalComplex.cyclesMap
+    (canonicalCechBaseChangeHom Ob f 𝒰) n
+    ((Ob.canonicalLinearCech 𝒰).cycleBaseChange f n c)
+
+/-- The canonical cocycle map represents the image of the source class under
+the canonical Hn base-change map. -/
+theorem canonicalCocycleBaseChange_class
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat)
+    (c : (Ob.canonicalLinearCech 𝒰).complex.cycles n) :
+    ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.homologyπ n
+        (canonicalCocycleBaseChange Ob f 𝒰 n c) =
+      canonicalCechHnBaseChangeMap Ob f 𝒰 n
+        (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1} f
+          ((Ob.canonicalLinearCech 𝒰).complex.homology n)
+          ((Ob.canonicalLinearCech 𝒰).complex.homologyπ n c)) := by
+  let K := Ob.canonicalLinearCech 𝒰
+  have hclass := K.class_baseChange_naturality f n c
+  have hπ := ConcreteCategory.congr_hom
+    (HomologicalComplex.homologyπ_naturality
+      (φ := canonicalCechBaseChangeHom Ob f 𝒰) (i := n))
+    (K.cycleBaseChange f n c)
+  simpa only [canonicalCocycleBaseChange, canonicalCechHnBaseChangeMap,
+    LinearCoverRelativeCechComplex.classBaseChange,
+    ConcreteCategory.comp_apply] using hπ.symm.trans
+      (congrArg
+        (fun z => HomologicalComplex.homologyMap
+          (canonicalCechBaseChangeHom Ob f 𝒰) n z) hclass.symm)
+
+/-- Degreewise coefficient compatibility makes the canonical Hn map an
+isomorphism in every degree. -/
+theorem canonicalCechHnBaseChangeMap_isIso
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hcompat : CechCoefficientBaseChangeCompatible Ob f 𝒰)
+    (n : Nat) :
+    IsIso (canonicalCechHnBaseChangeMap Ob f 𝒰 n) := by
+  letI (m : Nat) : IsIso
+      ((canonicalCechBaseChangeHom Ob f 𝒰).f m) := by
+    rw [canonicalCechBaseChangeHom_f]
+    exact hcompat m
+  letI : IsIso (canonicalCechBaseChangeHom Ob f 𝒰) :=
+    HomologicalComplex.Hom.isIso_of_components _
+  dsimp only [canonicalCechHnBaseChangeMap]
+  infer_instance
+
+/-- The canonical arbitrary-degree flat Čech homology base-change
+isomorphism under coefficient compatibility. -/
+noncomputable def canonicalCechHnFlatBaseChangeIso
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hcompat : CechCoefficientBaseChangeCompatible Ob f 𝒰)
+    (n : Nat) :
+    moduleScalarExtension f
+        ((Ob.canonicalLinearCech 𝒰).complex.homology n) ≅
+      ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.homology n := by
+  letI : IsIso (canonicalCechHnBaseChangeMap Ob f 𝒰 n) :=
+    canonicalCechHnBaseChangeMap_isIso Ob f 𝒰 hcompat n
+  exact asIso (canonicalCechHnBaseChangeMap Ob f 𝒰 n)
+
+end LinearCoefficientSheaf
+
 end Cohomology
 
 end
