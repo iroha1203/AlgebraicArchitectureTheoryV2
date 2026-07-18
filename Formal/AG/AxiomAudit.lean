@@ -5175,6 +5175,14 @@ noncomputable def readingFunctoriality_linearBaseChangeSectionMap :=
 def readingFunctoriality_linearBaseChangeSectionMap_naturality :=
   @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeSectionMap_naturality
 
+/-- Audit alias for identity coherence of the canonical section map. -/
+def readingFunctoriality_linearBaseChangeSectionMap_id :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeSectionMap_id
+
+/-- Audit alias for composition coherence of the canonical section map. -/
+def readingFunctoriality_linearBaseChangeSectionMap_comp :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeSectionMap_comp
+
 /-- Audit alias for a large module-valued Čech complex and its cochain presentation. -/
 def readingFunctoriality_linearCoverRelativeCechComplex :=
   @AAT.AG.Cohomology.LinearCoverRelativeCechComplex
@@ -5246,6 +5254,10 @@ noncomputable def readingFunctoriality_canonicalCechHnBaseChangeMap :=
 /-- Audit alias for the canonical target cocycle under coefficient change. -/
 noncomputable def readingFunctoriality_canonicalCocycleBaseChange :=
   @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalCocycleBaseChange
+
+/-- Audit alias for the sectionwise characterization of the canonical cocycle. -/
+def readingFunctoriality_canonicalCocycleBaseChange_iCycles_apply :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalCocycleBaseChange_iCycles_apply
 
 /-- Audit alias for the canonical target cocycle's class formula. -/
 def readingFunctoriality_canonicalCocycleBaseChange_class :=
@@ -5436,6 +5448,22 @@ noncomputable def readingFunctoriality_sheafHFlatBaseChangeIso :=
 /-- Audit alias for the base-change isomorphism hom identity. -/
 def readingFunctoriality_sheafHFlatBaseChangeIso_hom :=
   @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeIso_hom
+
+/-- Audit alias for identity comparison on terminal Leray cohomology. -/
+noncomputable def readingFunctoriality_baseChangeIdTerminalLerayHModuleIso :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeIdTerminalLerayHModuleIso
+
+/-- Audit alias for composition comparison on terminal Leray cohomology. -/
+noncomputable def readingFunctoriality_baseChangeCompTerminalLerayHModuleIso :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeCompTerminalLerayHModuleIso
+
+/-- Audit alias for identity coherence of actual sheaf-cohomology base change. -/
+def readingFunctoriality_sheafHFlatBaseChangeMap_id :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeMap_id
+
+/-- Audit alias for composition coherence of actual sheaf-cohomology base change. -/
+def readingFunctoriality_sheafHFlatBaseChangeMap_comp :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeMap_comp
 
 end AAT.AG.AxiomAudit
 

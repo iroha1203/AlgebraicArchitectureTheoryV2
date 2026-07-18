@@ -1680,6 +1680,84 @@ noncomputable def baseChangeCompIso
       (Functor.isoWhiskerLeft Ob.modulePresheaf
         (ModuleCat.extendScalarsComp.{u, u + 1} f.hom g.hom).symm)
 
+private theorem baseChangeSectionMap_comp_nat
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    Functor.whiskerRight
+          (moduleSheafificationUnit (Ob.rawBaseChangePresheaf f))
+          (ModuleCat.extendScalars.{u, u, u + 1} g.hom) ≫
+        moduleSheafificationUnit
+          ((moduleSheafification (Ob.rawBaseChangePresheaf f)).modulePresheaf ⋙
+            ModuleCat.extendScalars.{u, u, u + 1} g.hom) ≫
+        (moduleSheafificationWhiskeredUnitIso
+          (Ob.rawBaseChangePresheaf f) g).inv ≫
+        (moduleSheafificationMapIso
+          (Functor.isoWhiskerLeft Ob.modulePresheaf
+            (ModuleCat.extendScalarsComp.{u, u + 1}
+              f.hom g.hom).symm)).hom =
+      (Functor.isoWhiskerLeft Ob.modulePresheaf
+          (ModuleCat.extendScalarsComp.{u, u + 1}
+            f.hom g.hom).symm).hom ≫
+        moduleSheafificationUnit (Ob.rawBaseChangePresheaf (f.comp g)) := by
+  let E := ModuleCat.extendScalars.{u, u, u + 1} g.hom
+  let P := Ob.rawBaseChangePresheaf f
+  let α := Functor.whiskerRight (moduleSheafificationUnit P) E
+  let β := Functor.isoWhiskerLeft Ob.modulePresheaf
+    (ModuleCat.extendScalarsComp.{u, u + 1} f.hom g.hom).symm
+  rw [← Category.assoc, ← Category.assoc,
+    moduleSheafificationUnit_map α]
+  change
+    moduleSheafificationUnit (P ⋙ E) ≫
+        (moduleSheafificationWhiskeredUnitIso P g).hom ≫
+        (moduleSheafificationWhiskeredUnitIso P g).inv ≫
+        (moduleSheafificationMapIso β).hom =
+      β.hom ≫ moduleSheafificationUnit (Ob.rawBaseChangePresheaf (f.comp g))
+  rw [Iso.hom_inv_id_assoc]
+  exact (moduleSheafificationUnit_map β.hom).symm
+
+/-- The canonical section map for the identity coefficient change is the
+Mathlib scalar-extension identity map after the canonical sheafification
+identity isomorphism. -/
+@[reassoc] theorem baseChangeSectionMap_id
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (W : S.category) :
+    Ob.baseChangeSectionMap (FlatCoefficientChange.refl R) W ≫
+        (Ob.baseChangeIdIso).hom.app (op W) =
+      (ModuleCat.extendScalarsId.{u, u + 1} R).hom.app
+        (Ob.modulePresheaf.obj (op W)) := by
+  simp [baseChangeSectionMap, baseChangeIdIso,
+    moduleSheafificationUnitIso, rawBaseChangePresheaf]
+
+/-- Iterated canonical section maps agree with the composite section map
+after the additive-sheafification and scalar-extension compositors. -/
+@[reassoc] theorem baseChangeSectionMap_comp
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (W : S.category) :
+    (ModuleCat.extendScalars g.hom).map
+          (Ob.baseChangeSectionMap f W) ≫
+        (Ob.baseChange f).baseChangeSectionMap g W ≫
+        (Ob.baseChangeCompIso f g).hom.app (op W) =
+      (ModuleCat.extendScalarsComp.{u, u + 1}
+          f.hom g.hom).symm.hom.app
+          (Ob.modulePresheaf.obj (op W)) ≫
+        Ob.baseChangeSectionMap (f.comp g) W := by
+  simpa only [baseChangeSectionMap, baseChangeCompIso,
+    moduleSheafificationWhiskeredUnitIso, moduleSheafificationMapIso,
+    rawBaseChangePresheaf, Iso.trans_hom, Iso.symm_hom,
+    NatTrans.comp_app] using
+      NatTrans.congr_app (baseChangeSectionMap_comp_nat Ob f g) (op W)
+
 end LinearCoefficientSheaf
 
 /-!
@@ -2261,6 +2339,64 @@ noncomputable def canonicalCocycleBaseChange
   HomologicalComplex.cyclesMap
     (canonicalCechBaseChangeHom Ob f 𝒰) n
     ((Ob.canonicalLinearCech 𝒰).cycleBaseChange f n c)
+
+/-- The canonical base-changed cocycle is obtained sectionwise by applying
+the scalar-extension unit followed by the canonical sheafification section map. -/
+theorem canonicalCocycleBaseChange_iCycles_apply
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat)
+    (c : (Ob.canonicalLinearCech 𝒰).complex.cycles n)
+    (σ : (canonicalCoverRelative 𝒰).simplex n) :
+    (((Ob.baseChange f).canonicalLinearCech 𝒰).complex.iCycles n).hom
+        (canonicalCocycleBaseChange Ob f 𝒰 n c) σ =
+      Ob.baseChangeSectionMap f
+        ((canonicalCoverRelative 𝒰).overlap n σ)
+        ((1 : R') ⊗ₜ[R, f.hom]
+          (((Ob.canonicalLinearCech 𝒰).complex.iCycles n).hom c σ)) := by
+  let K := Ob.canonicalLinearCech 𝒰
+  let E : ModuleCat.{u + 1} R ⥤ ModuleCat.{u + 1} R' :=
+    ModuleCat.extendScalars.{u, u, u + 1} f.hom
+  letI : E.PreservesHomology := linearExtendScalars_preservesHomology f
+  have hcycle := ConcreteCategory.congr_hom
+    ((K.complex.sc n).mapCyclesIso_hom_iCycles E)
+    (K.cycleBaseChange f n c)
+  have hcycle' :
+      ((K.scalarExtension f).iCycles n).hom (K.cycleBaseChange f n c) =
+        (E.map (K.complex.iCycles n)).hom
+          (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1}
+            f (K.complex.cycles n) c) := by
+    calc
+      _ = (E.map (K.complex.iCycles n)).hom
+          (((K.complex.sc n).mapCyclesIso E).hom
+            (K.cycleBaseChange f n c)) := hcycle.symm
+      _ = _ := by
+        change (E.map (K.complex.iCycles n)).hom
+          (((K.complex.sc n).mapCyclesIso E).hom
+            (((K.complex.sc n).mapCyclesIso E).inv
+              (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1}
+                f (K.complex.cycles n) c))) = _
+        rw [Iso.inv_hom_id_apply]
+  have hmap := ConcreteCategory.congr_hom
+    (HomologicalComplex.cyclesMap_i
+      (canonicalCechBaseChangeHom Ob f 𝒰) n)
+    (K.cycleBaseChange f n c)
+  have hmap' :
+      (((Ob.baseChange f).canonicalLinearCech 𝒰).complex.iCycles n).hom
+          (HomologicalComplex.cyclesMap
+            (canonicalCechBaseChangeHom Ob f 𝒰) n
+            (K.cycleBaseChange f n c)) σ =
+        ((canonicalCechBaseChangeHom Ob f 𝒰).f n).hom
+          (((K.scalarExtension f).iCycles n).hom
+            (K.cycleBaseChange f n c)) σ := by
+    simpa only [ConcreteCategory.comp_apply] using congrArg (fun z => z σ) hmap
+  rw [canonicalCocycleBaseChange]
+  rw [hmap']
+  rw [hcycle']
+  rfl
 
 /-- The canonical cocycle map represents the image of the source class under
 the canonical Hn base-change map. -/

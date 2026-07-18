@@ -3243,6 +3243,37 @@ example
         (Ob.baseChange f).modulePresheaf.map g.op :=
   Ob.baseChangeSectionMap_naturality f g
 
+/-- Fixed identity coherence for the canonical section map. -/
+example
+    {R : Type u} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (W : S.category) :
+    Ob.baseChangeSectionMap (FlatCoefficientChange.refl R) W ≫
+        (Ob.baseChangeIdIso).hom.app (op W) =
+      (ModuleCat.extendScalarsId.{u, u + 1} R).hom.app
+        (Ob.modulePresheaf.obj (op W)) :=
+  Ob.baseChangeSectionMap_id W
+
+/-- Fixed composition coherence for the canonical section map. -/
+example
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (W : S.category) :
+    (ModuleCat.extendScalars g.hom).map
+          (Ob.baseChangeSectionMap f W) ≫
+        (Ob.baseChange f).baseChangeSectionMap g W ≫
+        (Ob.baseChangeCompIso f g).hom.app (op W) =
+      (ModuleCat.extendScalarsComp.{u, u + 1}
+          f.hom g.hom).symm.hom.app
+          (Ob.modulePresheaf.obj (op W)) ≫
+        Ob.baseChangeSectionMap (f.comp g) W :=
+  Ob.baseChangeSectionMap_comp f g W
+
 /-! Fixed AC36 canonical linear Čech and flat homology contracts. -/
 
 example
@@ -3684,6 +3715,95 @@ example
     (Ob.sheafHFlatBaseChangeIso f 𝒰 hbase hcompat hsource htarget n).hom =
       Ob.sheafHFlatBaseChangeMap f 𝒰 hbase hsource htarget n :=
   Ob.sheafHFlatBaseChangeIso_hom f 𝒰 hbase hcompat hsource htarget n
+
+/-- Fixed identity comparison on transported terminal Leray cohomology. -/
+noncomputable example
+    {R : Type u} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hsource : Ob.IsLinearLerayFor 𝒰)
+    (htarget : (Ob.baseChange
+      (FlatCoefficientChange.refl R)).IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    (Ob.baseChange (FlatCoefficientChange.refl R)).terminalLerayHModule
+        𝒰 hbase htarget n ≅
+      Ob.terminalLerayHModule 𝒰 hbase hsource n :=
+  Ob.baseChangeIdTerminalLerayHModuleIso
+    𝒰 hbase hsource htarget n
+
+/-- Fixed composition comparison on transported terminal Leray cohomology. -/
+noncomputable example
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hiterated : ((Ob.baseChange f).baseChange g).IsLinearLerayFor 𝒰)
+    (hcomposite : (Ob.baseChange (f.comp g)).IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    ((Ob.baseChange f).baseChange g).terminalLerayHModule
+        𝒰 hbase hiterated n ≅
+      (Ob.baseChange (f.comp g)).terminalLerayHModule
+        𝒰 hbase hcomposite n :=
+  Ob.baseChangeCompTerminalLerayHModuleIso f g
+    𝒰 hbase hiterated hcomposite n
+
+/-- Fixed identity coherence of the actual-`Sheaf.H` base-change map. -/
+example
+    {R : Type u} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hsource : Ob.IsLinearLerayFor 𝒰)
+    (htarget : (Ob.baseChange
+      (FlatCoefficientChange.refl R)).IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    Ob.sheafHFlatBaseChangeMap (FlatCoefficientChange.refl R)
+          𝒰 hbase hsource htarget n ≫
+        (Ob.baseChangeIdTerminalLerayHModuleIso
+          𝒰 hbase hsource htarget n).hom =
+      (Derived.Intersection.moduleScalarExtensionIdIso.{u, u + 2}
+        (Ob.terminalLerayHModule 𝒰 hbase hsource n)).hom :=
+  Ob.sheafHFlatBaseChangeMap_id 𝒰 hbase hsource htarget n
+
+/-- Fixed composition coherence of the actual-`Sheaf.H` base-change map. -/
+example
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hsource : Ob.IsLinearLerayFor 𝒰)
+    (hmiddle : (Ob.baseChange f).IsLinearLerayFor 𝒰)
+    (hiterated : ((Ob.baseChange f).baseChange g).IsLinearLerayFor 𝒰)
+    (hcomposite : (Ob.baseChange (f.comp g)).IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    (ModuleCat.extendScalars g.hom).map
+          (Ob.sheafHFlatBaseChangeMap f
+            𝒰 hbase hsource hmiddle n) ≫
+        (Ob.baseChange f).sheafHFlatBaseChangeMap g
+          𝒰 hbase hmiddle hiterated n ≫
+        (Ob.baseChangeCompTerminalLerayHModuleIso f g
+          𝒰 hbase hiterated hcomposite n).hom =
+      (Derived.Intersection.moduleScalarExtensionCompIso.{u, u + 2} f g
+          (Ob.terminalLerayHModule 𝒰 hbase hsource n)).hom ≫
+        Ob.sheafHFlatBaseChangeMap (f.comp g)
+          𝒰 hbase hsource hcomposite n :=
+  Ob.sheafHFlatBaseChangeMap_comp f g 𝒰 hbase hsource hmiddle
+    hiterated hcomposite n
 
 end LinearLerayComparisonSD8d
 
