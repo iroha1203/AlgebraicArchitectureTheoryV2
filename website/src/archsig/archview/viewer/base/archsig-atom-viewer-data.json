@@ -472,6 +472,42 @@
         "valence": 1
       },
       {
+        "atomRef": "atom:drift-cell-boundary",
+        "carrier": "cell:display-total",
+        "carrierColorRole": "carrier_color:cell-display-total",
+        "colorRole": "source_evidence",
+        "fiber": "relation",
+        "fiberShapeRole": "fiber_shape:relation",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:drift-cell-capture",
+        "carrier": "cell:psp-capture",
+        "carrierColorRole": "carrier_color:cell-psp-capture",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:drift-cell-display",
+        "carrier": "cell:display-total",
+        "carrierColorRole": "carrier_color:cell-display-total",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
         "atomRef": "atom:effect-inventory-decrement",
         "carrier": "store:InventoryPortImpl",
         "carrierColorRole": "carrier_color:store-InventoryPortImpl",
@@ -1318,6 +1354,42 @@
           "valence": 1
         },
         {
+          "atomRef": "atom:drift-cell-boundary",
+          "carrier": "cell:display-total",
+          "carrierColorRole": "carrier_color:cell-display-total",
+          "colorRole": "source_evidence",
+          "fiber": "relation",
+          "fiberShapeRole": "fiber_shape:relation",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:drift-cell-capture",
+          "carrier": "cell:psp-capture",
+          "carrierColorRole": "carrier_color:cell-psp-capture",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:drift-cell-display",
+          "carrier": "cell:display-total",
+          "carrierColorRole": "carrier_color:cell-display-total",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
           "atomRef": "atom:effect-inventory-decrement",
           "carrier": "store:InventoryPortImpl",
           "carrierColorRole": "carrier_color:store-InventoryPortImpl",
@@ -1691,7 +1763,20 @@
       },
       "forbiddenCages": [],
       "locusField": {
-        "blockedRegions": [],
+        "blockedRegions": [
+          {
+            "regionId": "blocked-region:ag.saga-grounded",
+            "shapeRole": "blocked_unmeasured_region",
+            "source": "non-terminal packet verdict",
+            "status": "not_computed"
+          },
+          {
+            "regionId": "blocked-region:ag.saga-descent",
+            "shapeRole": "blocked_unmeasured_region",
+            "source": "non-terminal packet verdict",
+            "status": "not_computed"
+          }
+        ],
         "fieldRows": [],
         "measuredZeroRegions": [
           {
@@ -1947,6 +2032,9 @@
             "atomRefs": [
               "atom:capability-present-demo",
               "atom:cech-money-runtime",
+              "atom:drift-cell-boundary",
+              "atom:drift-cell-capture",
+              "atom:drift-cell-display",
               "atom:runtime-checkout-trace",
               "atom:runtime-concurrency-trace",
               "atom:runtime-demo-calls-checkout",
@@ -2082,7 +2170,20 @@
       ]
     },
     "locusField": {
-      "blockedRegions": [],
+      "blockedRegions": [
+        {
+          "regionId": "blocked-region:ag.saga-grounded",
+          "shapeRole": "blocked_unmeasured_region",
+          "source": "non-terminal packet verdict",
+          "status": "not_computed"
+        },
+        {
+          "regionId": "blocked-region:ag.saga-descent",
+          "shapeRole": "blocked_unmeasured_region",
+          "source": "non-terminal packet verdict",
+          "status": "not_computed"
+        }
+      ],
       "fieldRows": [],
       "measuredZeroRegions": [
         {
@@ -2338,6 +2439,9 @@
           "atomRefs": [
             "atom:capability-present-demo",
             "atom:cech-money-runtime",
+            "atom:drift-cell-boundary",
+            "atom:drift-cell-capture",
+            "atom:drift-cell-display",
             "atom:runtime-checkout-trace",
             "atom:runtime-concurrency-trace",
             "atom:runtime-demo-calls-checkout",
@@ -2418,6 +2522,32 @@
       "id": "action:next_inspection:1",
       "kind": "next_inspection",
       "nonClaims": [
+        "This is not a measured zero result."
+      ],
+      "reason": "ag.saga-descent did not compute because repair_plan_not_supplied.",
+      "targetRefs": [
+        "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
+      ],
+      "title": "Inspect blocking reason"
+    },
+    {
+      "expectedUserOutcome": "Decide which measured support, boundary, or source ref to inspect next.",
+      "id": "action:next_inspection:2",
+      "kind": "next_inspection",
+      "nonClaims": [
+        "This is not a measured zero result."
+      ],
+      "reason": "ag.saga-grounded did not compute because repair_plan_not_supplied.",
+      "targetRefs": [
+        "structuralVerdict/ag-saga-grounded/law-money-convention/repair-plan-not-supplied"
+      ],
+      "title": "Inspect blocking reason"
+    },
+    {
+      "expectedUserOutcome": "Decide which measured support, boundary, or source ref to inspect next.",
+      "id": "action:next_inspection:3",
+      "kind": "next_inspection",
+      "nonClaims": [
         "This does not mean the architecture is clean.",
         "This does not rule out unmeasured or unknown support."
       ],
@@ -2447,7 +2577,7 @@
     },
     {
       "expectedUserOutcome": "Decide which measured support, boundary, or source ref to inspect next.",
-      "id": "action:next_inspection:2",
+      "id": "action:next_inspection:4",
       "kind": "next_inspection",
       "nonClaims": [
         "Boundary visibility is not a negative conclusion by itself."
@@ -2923,9 +3053,27 @@
       "targetNodeRef": "atom:cech-money-runtime"
     },
     {
-      "edgeId": "edge:ctx:runtime:atom:cech-money-runtime->atom:runtime-checkout-trace",
+      "edgeId": "edge:ctx:runtime:atom:cech-money-runtime->atom:drift-cell-boundary",
       "edgeKind": "contextMembership",
       "sourceNodeRef": "atom:cech-money-runtime",
+      "targetNodeRef": "atom:drift-cell-boundary"
+    },
+    {
+      "edgeId": "edge:ctx:runtime:atom:drift-cell-boundary->atom:drift-cell-capture",
+      "edgeKind": "contextMembership",
+      "sourceNodeRef": "atom:drift-cell-boundary",
+      "targetNodeRef": "atom:drift-cell-capture"
+    },
+    {
+      "edgeId": "edge:ctx:runtime:atom:drift-cell-capture->atom:drift-cell-display",
+      "edgeKind": "contextMembership",
+      "sourceNodeRef": "atom:drift-cell-capture",
+      "targetNodeRef": "atom:drift-cell-display"
+    },
+    {
+      "edgeId": "edge:ctx:runtime:atom:drift-cell-display->atom:runtime-checkout-trace",
+      "edgeKind": "contextMembership",
+      "sourceNodeRef": "atom:drift-cell-display",
       "targetNodeRef": "atom:runtime-checkout-trace"
     },
     {
@@ -2989,7 +3137,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "component",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:application"
       ],
@@ -3023,7 +3171,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "component",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:application"
       ],
@@ -3057,7 +3205,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "catalogLookupBoundary",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:ports"
       ],
@@ -3091,7 +3239,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "inventoryReservationBoundary",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:ports"
       ],
@@ -3125,7 +3273,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "paymentAuthorizationBoundary",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:ports"
       ],
@@ -3159,7 +3307,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "policyRuleCatalogBoundary",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:policy"
       ],
@@ -3193,7 +3341,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "authorizesPayment",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:ports"
       ],
@@ -3227,7 +3375,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "evaluatesPolicyCatalog",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:policy"
       ],
@@ -3268,7 +3416,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "placesOrder",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:application"
       ],
@@ -3302,7 +3450,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "plansShipment",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:ports"
       ],
@@ -3336,7 +3484,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "presentsArchSigDemo",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:runtime"
       ],
@@ -3370,7 +3518,7 @@
       "objectRefCount": 0,
       "observationStatus": "normalized",
       "predicate": "reservesInventory",
-      "priorityScore": 100,
+      "priorityScore": 10,
       "projectionRefs": [
         "ctx:ports"
       ],
@@ -4404,6 +4552,102 @@
         }
       ],
       "subjectRef": "domain:ShipmentPlan"
+    },
+    {
+      "atomFamily": "relation",
+      "atomKind": "relation",
+      "axis": "laplacian",
+      "labels": [
+        "laplacian",
+        "cellularBoundary"
+      ],
+      "moleculeMemberships": [
+        "ctx:runtime"
+      ],
+      "nodeId": "atom:drift-cell-boundary",
+      "normalizationStatus": "normalized",
+      "objectRef": "cell:psp-capture",
+      "objectRefCount": 1,
+      "observationStatus": "normalized",
+      "predicate": "cellularBoundary",
+      "priorityScore": 10,
+      "projectionRefs": [
+        "ctx:runtime"
+      ],
+      "sourceAtomId": "atom:drift-cell-boundary",
+      "sourceRefCount": 1,
+      "sourceRefSamples": [
+        {
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json",
+          "ref": "runtime:reconciliation",
+          "sourceKind": "runtimeTrace"
+        }
+      ],
+      "subjectRef": "cell:display-total"
+    },
+    {
+      "atomFamily": "semantic",
+      "atomKind": "semantic",
+      "axis": "laplacian",
+      "labels": [
+        "laplacian",
+        "cellularCochain"
+      ],
+      "moleculeMemberships": [
+        "ctx:runtime"
+      ],
+      "nodeId": "atom:drift-cell-capture",
+      "normalizationStatus": "normalized",
+      "objectRef": "0",
+      "objectRefCount": 1,
+      "observationStatus": "normalized",
+      "predicate": "cellularCochain",
+      "priorityScore": 10,
+      "projectionRefs": [
+        "ctx:runtime"
+      ],
+      "sourceAtomId": "atom:drift-cell-capture",
+      "sourceRefCount": 1,
+      "sourceRefSamples": [
+        {
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json",
+          "ref": "runtime:reconciliation",
+          "sourceKind": "runtimeTrace"
+        }
+      ],
+      "subjectRef": "cell:psp-capture"
+    },
+    {
+      "atomFamily": "semantic",
+      "atomKind": "semantic",
+      "axis": "laplacian",
+      "labels": [
+        "laplacian",
+        "cellularCochain"
+      ],
+      "moleculeMemberships": [
+        "ctx:runtime"
+      ],
+      "nodeId": "atom:drift-cell-display",
+      "normalizationStatus": "normalized",
+      "objectRef": "0",
+      "objectRefCount": 1,
+      "observationStatus": "normalized",
+      "predicate": "cellularCochain",
+      "priorityScore": 10,
+      "projectionRefs": [
+        "ctx:runtime"
+      ],
+      "sourceAtomId": "atom:drift-cell-display",
+      "sourceRefCount": 1,
+      "sourceRefSamples": [
+        {
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json",
+          "ref": "runtime:reconciliation",
+          "sourceKind": "runtimeTrace"
+        }
+      ],
+      "subjectRef": "cell:display-total"
     },
     {
       "atomFamily": "effect",
@@ -5535,17 +5779,18 @@
     }
   ],
   "componentFingerprints": {
-    "lawPolicy": "sha256:db369504d12e07d047d92a76cd44b28a4ba276e7506f432a482a46fbd602f87d",
-    "lawSurface": "sha256:7714a01230e75b1ed71ceb1d3c08bd24aa800417f6dd17c24baa5188d93aa7a5",
+    "lawPolicy": "sha256:cee78ff6bf5af905cee93d86a64c9c6bd76ef777a7ee4fbba454396b8a0e16a9",
+    "lawSurface": "sha256:653b7e4d4e2a77fab32d9156958b4d379a4a549373359bbc97a54f19d2ba0aba",
     "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
   },
   "copyBlocks": {
     "llmHandoff": {
-      "boundary": "Profile-relative. 7 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "boundary": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 2 not_computed.",
       "instruction": "Use the following ArchSig result as bounded evidence. Do not infer beyond the listed claims and boundaries.",
       "topInsights": [
-        "No selected-cover H^1 glue mismatch was measured under this profile.",
-        "Checked, assumed, unmeasured, unknown, and not_computed states are preserved for review."
+        "ag.saga-descent did not compute because repair_plan_not_supplied.",
+        "ag.saga-grounded did not compute because repair_plan_not_supplied.",
+        "No selected-cover H^1 glue mismatch was measured under this profile."
       ]
     },
     "sourceRefs": [
@@ -5572,7 +5817,7 @@
       "summaryRef": "archsig-analysis-summary.json",
       "viewerDataRef": "archsig-atom-viewer-data.json"
     },
-    "boundaryDigest": "Profile-relative. 7 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "boundaryDigest": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 2 not_computed.",
     "conclusion": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
     "validation": "see archsig-analysis-validation.json"
   },
@@ -6177,6 +6422,54 @@
           "domain:ShipmentPlan"
         ],
         "subject": "domain:ShipmentPlan"
+      },
+      {
+        "atomKind": "relation",
+        "axis": "laplacian",
+        "contextMemberships": [
+          "ctx:runtime"
+        ],
+        "normalizationStatus": "normalized",
+        "normalizedAtomId": "atom:drift-cell-boundary",
+        "object": "cell:psp-capture",
+        "predicate": "cellularBoundary",
+        "sourceAtomId": "atom:drift-cell-boundary",
+        "sourceRefs": [
+          "runtime:reconciliation"
+        ],
+        "subject": "cell:display-total"
+      },
+      {
+        "atomKind": "semantic",
+        "axis": "laplacian",
+        "contextMemberships": [
+          "ctx:runtime"
+        ],
+        "normalizationStatus": "normalized",
+        "normalizedAtomId": "atom:drift-cell-capture",
+        "object": "0",
+        "predicate": "cellularCochain",
+        "sourceAtomId": "atom:drift-cell-capture",
+        "sourceRefs": [
+          "runtime:reconciliation"
+        ],
+        "subject": "cell:psp-capture"
+      },
+      {
+        "atomKind": "semantic",
+        "axis": "laplacian",
+        "contextMemberships": [
+          "ctx:runtime"
+        ],
+        "normalizationStatus": "normalized",
+        "normalizedAtomId": "atom:drift-cell-display",
+        "object": "0",
+        "predicate": "cellularCochain",
+        "sourceAtomId": "atom:drift-cell-display",
+        "sourceRefs": [
+          "runtime:reconciliation"
+        ],
+        "subject": "cell:display-total"
       },
       {
         "atomKind": "effect",
@@ -6801,6 +7094,9 @@
         "atomIds": [
           "atom:capability-present-demo",
           "atom:cech-money-runtime",
+          "atom:drift-cell-boundary",
+          "atom:drift-cell-capture",
+          "atom:drift-cell-display",
           "atom:runtime-checkout-trace",
           "atom:runtime-concurrency-trace",
           "atom:runtime-demo-calls-checkout",
@@ -6856,6 +7152,96 @@
     ]
   },
   "guidedTours": [
+    {
+      "insightRefs": [
+        "insight:not-computed:ag-saga-descent"
+      ],
+      "steps": [
+        {
+          "caption": "These contexts form the selected cover.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "site-cover"
+        },
+        {
+          "caption": "This scene highlights the measured support or blocker.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "boundary-assumption"
+        },
+        {
+          "caption": "These source refs ground the insight.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "source-evidence"
+        },
+        {
+          "caption": "This boundary explains what is checked, assumed, unknown, unmeasured, or not_computed.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "boundary-assumption"
+        }
+      ],
+      "title": "Measurement blocked by reason code",
+      "tourId": "tour:not-computed:ag-saga-descent"
+    },
+    {
+      "insightRefs": [
+        "insight:not-computed:ag-saga-grounded"
+      ],
+      "steps": [
+        {
+          "caption": "These contexts form the selected cover.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "site-cover"
+        },
+        {
+          "caption": "This scene highlights the measured support or blocker.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "boundary-assumption"
+        },
+        {
+          "caption": "These source refs ground the insight.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "source-evidence"
+        },
+        {
+          "caption": "This boundary explains what is checked, assumed, unknown, unmeasured, or not_computed.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "boundary-assumption"
+        }
+      ],
+      "title": "Measurement blocked by reason code",
+      "tourId": "tour:not-computed:ag-saga-grounded"
+    },
     {
       "insightRefs": [
         "insight:h1-glue-mismatch:zero"
@@ -7194,19 +7580,19 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap.json",
-      "sha256": "a15b66bc2ad1a73a1999e98daff923b8f7512e7bb7e0df69e325ade5726718f2"
+      "sha256": "4fa9f202742780e15175ab41a34958de8eda61555670899d066c41d6e76367c5"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "db369504d12e07d047d92a76cd44b28a4ba276e7506f432a482a46fbd602f87d"
+      "sha256": "cee78ff6bf5af905cee93d86a64c9c6bd76ef777a7ee4fbba454396b8a0e16a9"
     },
     "lawSurface": {
-      "path": "input:law_surface_practical_base_v052.json",
-      "sha256": "7714a01230e75b1ed71ceb1d3c08bd24aa800417f6dd17c24baa5188d93aa7a5"
+      "path": "input:law_surface_base.json",
+      "sha256": "653b7e4d4e2a77fab32d9156958b4d379a4a549373359bbc97a54f19d2ba0aba"
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "8b1e8521660340e58dd69d73ab9c87780360e5a1be8f3508b12ba03596127c01"
+      "sha256": "7ccf65a78ae06fa91959bdd2e5f325dbf99ce35b98fba761544b917b3acf738f"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
@@ -7216,19 +7602,227 @@
       {
         "path": "input:measurement_profile.json",
         "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      },
+      {
+        "path": "input:measurement_profile_drift.json",
+        "sha256": "22c62a5b8f1f00f3759d4d9d26905f6e63b0f3a393010ce82977a94b473ac0d3"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "2b39ae3af896d3a1db749cd9ec3a9609e3dada5f096d7859b479249b86e12b07"
+      "sha256": "f699097b54922e3f52c3465a818bb2946c2aab070e7c7195dbc3416610ad1e72"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "e86dfe155bb6f367d5b682d5551ee8067a3df271fdaad4eae00d928cc178e9af",
+      "sha256": "41eb66211260dd7ef11cff89090f54f542f0cbde1a41e9a586923b3f95e94aef",
       "status": "computed"
     }
   },
   "insightQueue": [
+    {
+      "evidence": {
+        "analyticReadingRefs": [
+          "analytic:harmonic-debt:profile:money-drift@1",
+          "candidate-regime:stability-placeholder"
+        ],
+        "assumptionRefs": [
+          "part4/11.1",
+          "part4/12.3",
+          "part4/12.4",
+          "part8/4.2",
+          "part8/8.1",
+          "part8/8.5",
+          "part8/8.6",
+          "part8/8.7",
+          "part8/B.8.2"
+        ],
+        "atomRefs": [],
+        "computedInvariantRefs": [
+          "saga-descent-stage1-input"
+        ],
+        "contextRefs": [],
+        "coverRefs": [
+          "cover:commerce-fulfillment"
+        ],
+        "evaluatorRefs": [
+          "ag.saga-descent"
+        ],
+        "evidenceResolutionStatus": "boundary_only",
+        "sourceRefs": [],
+        "structuralVerdictRefs": [
+          "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
+        ]
+      },
+      "id": "insight:not-computed:ag-saga-descent",
+      "kind": "not_computed_blocker",
+      "nextAction": {
+        "kind": "next_inspection",
+        "label": "Inspect blocking reason",
+        "targetRefs": [
+          "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
+        ]
+      },
+      "nonClaims": [
+        "This is not a measured zero result."
+      ],
+      "oneLine": "ag.saga-descent did not compute because repair_plan_not_supplied.",
+      "rankingBasis": [
+        "not_computed due to reason code",
+        "repair_plan_not_supplied"
+      ],
+      "sampleRefs": {
+        "atomRefs": [
+          "atom:app-checkout-service-component",
+          "atom:app-reservation-allocator-component",
+          "atom:authority-catalog-price",
+          "atom:authority-inventory-write",
+          "atom:authority-payment-auth",
+          "atom:authority-policy-rule-catalog",
+          "atom:capability-authorize-payment",
+          "atom:capability-evaluate-policy"
+        ],
+        "contextRefs": [
+          "ctx:application",
+          "ctx:domain",
+          "ctx:infrastructure",
+          "ctx:policy",
+          "ctx:ports",
+          "ctx:runtime",
+          "ctx:shared"
+        ],
+        "note": "Sample refs support orientation only; measured insight evidence is listed under evidence.",
+        "sourceRefs": [
+          "app:CatalogPort",
+          "app:CheckoutService",
+          "app:InventoryPort",
+          "app:OutboxPort",
+          "app:PaymentPort",
+          "app:ReservationAllocator",
+          "app:RiskPort",
+          "app:ShippingPort",
+          "ctx:application",
+          "ctx:domain",
+          "ctx:infrastructure",
+          "ctx:policy"
+        ]
+      },
+      "severity": "high",
+      "title": "Measurement blocked by reason code",
+      "tourRefs": [
+        "tour:not-computed:ag-saga-descent"
+      ],
+      "viewerNavigation": {
+        "highlightRefs": {
+          "atomRefs": [],
+          "contextRefs": [],
+          "sourceRefs": []
+        },
+        "sceneId": "boundary-assumption"
+      },
+      "whyItMatters": "The blocked reason belongs in the Decision Bar so reviewers do not mistake an empty scene for absence of conflict."
+    },
+    {
+      "evidence": {
+        "analyticReadingRefs": [
+          "analytic:harmonic-debt:profile:money-drift@1",
+          "candidate-regime:stability-placeholder"
+        ],
+        "assumptionRefs": [
+          "part4/11.1",
+          "part4/12.3",
+          "part4/12.4",
+          "part8/4.2",
+          "part8/8.1",
+          "part8/8.5",
+          "part8/8.6",
+          "part8/8.7",
+          "part8/B.8.2"
+        ],
+        "atomRefs": [],
+        "computedInvariantRefs": [
+          "saga-generated-end-to-end-packet"
+        ],
+        "contextRefs": [],
+        "coverRefs": [
+          "cover:commerce-fulfillment"
+        ],
+        "evaluatorRefs": [
+          "ag.saga-grounded"
+        ],
+        "evidenceResolutionStatus": "boundary_only",
+        "sourceRefs": [],
+        "structuralVerdictRefs": [
+          "structuralVerdict/ag-saga-grounded/law-money-convention/repair-plan-not-supplied"
+        ]
+      },
+      "id": "insight:not-computed:ag-saga-grounded",
+      "kind": "not_computed_blocker",
+      "nextAction": {
+        "kind": "next_inspection",
+        "label": "Inspect blocking reason",
+        "targetRefs": [
+          "structuralVerdict/ag-saga-grounded/law-money-convention/repair-plan-not-supplied"
+        ]
+      },
+      "nonClaims": [
+        "This is not a measured zero result."
+      ],
+      "oneLine": "ag.saga-grounded did not compute because repair_plan_not_supplied.",
+      "rankingBasis": [
+        "not_computed due to reason code",
+        "repair_plan_not_supplied"
+      ],
+      "sampleRefs": {
+        "atomRefs": [
+          "atom:app-checkout-service-component",
+          "atom:app-reservation-allocator-component",
+          "atom:authority-catalog-price",
+          "atom:authority-inventory-write",
+          "atom:authority-payment-auth",
+          "atom:authority-policy-rule-catalog",
+          "atom:capability-authorize-payment",
+          "atom:capability-evaluate-policy"
+        ],
+        "contextRefs": [
+          "ctx:application",
+          "ctx:domain",
+          "ctx:infrastructure",
+          "ctx:policy",
+          "ctx:ports",
+          "ctx:runtime",
+          "ctx:shared"
+        ],
+        "note": "Sample refs support orientation only; measured insight evidence is listed under evidence.",
+        "sourceRefs": [
+          "app:CatalogPort",
+          "app:CheckoutService",
+          "app:InventoryPort",
+          "app:OutboxPort",
+          "app:PaymentPort",
+          "app:ReservationAllocator",
+          "app:RiskPort",
+          "app:ShippingPort",
+          "ctx:application",
+          "ctx:domain",
+          "ctx:infrastructure",
+          "ctx:policy"
+        ]
+      },
+      "severity": "high",
+      "title": "Measurement blocked by reason code",
+      "tourRefs": [
+        "tour:not-computed:ag-saga-grounded"
+      ],
+      "viewerNavigation": {
+        "highlightRefs": {
+          "atomRefs": [],
+          "contextRefs": [],
+          "sourceRefs": []
+        },
+        "sceneId": "boundary-assumption"
+      },
+      "whyItMatters": "The blocked reason belongs in the Decision Bar so reviewers do not mistake an empty scene for absence of conflict."
+    },
     {
       "evidence": {
         "analyticReadingRefs": [],
@@ -7237,6 +7831,10 @@
           "part4/12.3",
           "part4/12.4",
           "part8/4.2",
+          "part8/8.1",
+          "part8/8.5",
+          "part8/8.6",
+          "part8/8.7",
           "part8/B.8.2"
         ],
         "atomRefs": [
@@ -7409,13 +8007,18 @@
     {
       "evidence": {
         "analyticReadingRefs": [
-          "candidate-regime:stability-placeholder"
+          "candidate-regime:stability-placeholder",
+          "analytic:harmonic-debt:profile:money-drift@1"
         ],
         "assumptionRefs": [
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
           "part8/4.2",
+          "part8/8.1",
+          "part8/8.5",
+          "part8/8.6",
+          "part8/8.7",
           "part8/B.8.2"
         ],
         "atomRefs": [
@@ -7431,7 +8034,10 @@
         "computedInvariantRefs": [
           "finite-poset-site-shape",
           "cech-cohomology:profile:commerce-fulfillment@1",
-          "topological-debt-capacity:profile:commerce-fulfillment@1"
+          "topological-debt-capacity:profile:commerce-fulfillment@1",
+          "saga-generated-end-to-end-packet",
+          "saga-descent-stage1-input",
+          "harmonic-debt:profile:money-drift@1"
         ],
         "contextRefs": [
           "ctx:application",
@@ -7446,7 +8052,9 @@
           "cover:commerce-fulfillment"
         ],
         "evaluatorRefs": [
-          "ag.cech-obstruction"
+          "ag.cech-obstruction",
+          "ag.saga-descent",
+          "ag.saga-grounded"
         ],
         "evidenceResolutionStatus": "analytic_or_boundary_summary",
         "sourceRefs": [
@@ -7579,37 +8187,10 @@
       "omittedRefs": [],
       "policy": "preserve_for_top_insight",
       "preservedRefs": [
-        "app:CatalogPort",
-        "app:CheckoutService",
-        "app:InventoryPort",
-        "app:PaymentPort",
-        "app:ReservationAllocator",
-        "app:ShippingPort",
-        "atom:app-checkout-service-component",
-        "atom:app-reservation-allocator-component",
-        "atom:authority-catalog-price",
-        "atom:authority-inventory-write",
-        "atom:authority-payment-auth",
-        "atom:authority-policy-rule-catalog",
-        "atom:capability-authorize-payment",
-        "atom:capability-evaluate-policy",
-        "atom:capability-place-order",
-        "atom:capability-plan-shipment",
-        "atom:capability-present-demo",
-        "atom:capability-reserve-inventory",
-        "cech-cohomology:profile:commerce-fulfillment@1",
-        "ctx:application",
-        "ctx:domain",
-        "ctx:infrastructure",
-        "ctx:policy",
-        "ctx:ports",
-        "ctx:runtime",
-        "ctx:shared",
-        "policy:DEFAULT_POLICY_RULES",
-        "policy:PolicyEngine",
-        "scenario:run_demo",
-        "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/finite-f2-cech-computed",
-        "topological-debt-capacity:profile:commerce-fulfillment@1"
+        "analytic:harmonic-debt:profile:money-drift@1",
+        "candidate-regime:stability-placeholder",
+        "saga-descent-stage1-input",
+        "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
       ]
     }
   },
@@ -7813,6 +8394,9 @@
       "atomIds": [
         "atom:capability-present-demo",
         "atom:cech-money-runtime",
+        "atom:drift-cell-boundary",
+        "atom:drift-cell-capture",
+        "atom:drift-cell-display",
         "atom:runtime-checkout-trace",
         "atom:runtime-concurrency-trace",
         "atom:runtime-demo-calls-checkout",
@@ -7822,6 +8406,9 @@
       "atomObservationRefs": [
         "atom:capability-present-demo",
         "atom:cech-money-runtime",
+        "atom:drift-cell-boundary",
+        "atom:drift-cell-capture",
+        "atom:drift-cell-display",
         "atom:runtime-checkout-trace",
         "atom:runtime-concurrency-trace",
         "atom:runtime-demo-calls-checkout",
@@ -7881,6 +8468,32 @@
         "id": "action:next_inspection:1",
         "kind": "next_inspection",
         "nonClaims": [
+          "This is not a measured zero result."
+        ],
+        "reason": "ag.saga-descent did not compute because repair_plan_not_supplied.",
+        "targetRefs": [
+          "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
+        ],
+        "title": "Inspect blocking reason"
+      },
+      {
+        "expectedUserOutcome": "Decide which measured support, boundary, or source ref to inspect next.",
+        "id": "action:next_inspection:2",
+        "kind": "next_inspection",
+        "nonClaims": [
+          "This is not a measured zero result."
+        ],
+        "reason": "ag.saga-grounded did not compute because repair_plan_not_supplied.",
+        "targetRefs": [
+          "structuralVerdict/ag-saga-grounded/law-money-convention/repair-plan-not-supplied"
+        ],
+        "title": "Inspect blocking reason"
+      },
+      {
+        "expectedUserOutcome": "Decide which measured support, boundary, or source ref to inspect next.",
+        "id": "action:next_inspection:3",
+        "kind": "next_inspection",
+        "nonClaims": [
           "This does not mean the architecture is clean.",
           "This does not rule out unmeasured or unknown support."
         ],
@@ -7910,7 +8523,7 @@
       },
       {
         "expectedUserOutcome": "Decide which measured support, boundary, or source ref to inspect next.",
-        "id": "action:next_inspection:2",
+        "id": "action:next_inspection:4",
         "kind": "next_inspection",
         "nonClaims": [
           "Boundary visibility is not a negative conclusion by itself."
@@ -7928,8 +8541,8 @@
       "viewerDataRef": "archsig-atom-viewer-data.json"
     },
     "assumptionSummary": {
-      "assumedCount": 7,
-      "checkedCount": 4,
+      "assumedCount": 9,
+      "checkedCount": 6,
       "violatedCount": 0
     },
     "boundaryDigest": {
@@ -7982,11 +8595,38 @@
           "checkedBy": null,
           "status": "assumed",
           "theoremRef": "part4/12.4"
+        },
+        {
+          "assumedBy": "measurement-profile:profile:money-drift@1",
+          "assumption": "harmonic debt minimality remains theorem-candidate",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part8/8.6"
+        },
+        {
+          "assumedBy": "measurement-profile:profile:money-drift@1",
+          "assumption": "cost model is 1-Lipschitz with finite-hodge@1",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part8/8.7"
         }
       ],
-      "assumedCount": 7,
-      "blocking": [],
-      "blockingCount": 0,
+      "assumedCount": 9,
+      "blocking": [
+        {
+          "evaluator": "ag.saga-grounded",
+          "kind": "not_computed",
+          "reason": "repair-plan not supplied; ag.saga-grounded remains silent by design",
+          "reasonCode": "repair_plan_not_supplied"
+        },
+        {
+          "evaluator": "ag.saga-descent",
+          "kind": "not_computed",
+          "reason": "repair-plan not supplied; ag.saga-descent remains silent by design until --repair-plan is provided.",
+          "reasonCode": "repair_plan_not_supplied"
+        }
+      ],
+      "blockingCount": 2,
       "checked": [
         {
           "assumedBy": null,
@@ -8015,18 +8655,32 @@
           "checkedBy": "measurement-profile:profile:commerce-fulfillment@1.coefficient=F2",
           "status": "checked",
           "theoremRef": "part4/12.3"
+        },
+        {
+          "assumedBy": null,
+          "assumption": "finite cellular measurement model selected by supplied law-equation-surface",
+          "checkedBy": "law-surface:provided-law-equation-surface",
+          "status": "checked",
+          "theoremRef": "part8/8.1"
+        },
+        {
+          "assumedBy": null,
+          "assumption": "finite Hodge decomposition is analytic reading only",
+          "checkedBy": "finite-graph-laplacian@1",
+          "status": "checked",
+          "theoremRef": "part8/8.5"
         }
       ],
-      "checkedCount": 4,
+      "checkedCount": 6,
       "conclusionRef": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
       "id": "boundary-digest:main",
       "nonClaims": [
         "Boundary digest qualifies where the conclusion applies; it does not add a new negative conclusion.",
         "Unmeasured, unknown, and not_computed are not measured zero."
       ],
-      "notComputedCount": 0,
+      "notComputedCount": 2,
       "profileRef": "profile:commerce-fulfillment@1",
-      "shortText": "Profile-relative. 7 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "shortText": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 2 not_computed.",
       "unknownCount": 0,
       "unmeasuredCount": 0,
       "violatedCount": 0
@@ -8043,12 +8697,220 @@
     "insightQueue": [
       {
         "evidence": {
+          "analyticReadingRefs": [
+            "analytic:harmonic-debt:profile:money-drift@1",
+            "candidate-regime:stability-placeholder"
+          ],
+          "assumptionRefs": [
+            "part4/11.1",
+            "part4/12.3",
+            "part4/12.4",
+            "part8/4.2",
+            "part8/8.1",
+            "part8/8.5",
+            "part8/8.6",
+            "part8/8.7",
+            "part8/B.8.2"
+          ],
+          "atomRefs": [],
+          "computedInvariantRefs": [
+            "saga-descent-stage1-input"
+          ],
+          "contextRefs": [],
+          "coverRefs": [
+            "cover:commerce-fulfillment"
+          ],
+          "evaluatorRefs": [
+            "ag.saga-descent"
+          ],
+          "evidenceResolutionStatus": "boundary_only",
+          "sourceRefs": [],
+          "structuralVerdictRefs": [
+            "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
+          ]
+        },
+        "id": "insight:not-computed:ag-saga-descent",
+        "kind": "not_computed_blocker",
+        "nextAction": {
+          "kind": "next_inspection",
+          "label": "Inspect blocking reason",
+          "targetRefs": [
+            "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
+          ]
+        },
+        "nonClaims": [
+          "This is not a measured zero result."
+        ],
+        "oneLine": "ag.saga-descent did not compute because repair_plan_not_supplied.",
+        "rankingBasis": [
+          "not_computed due to reason code",
+          "repair_plan_not_supplied"
+        ],
+        "sampleRefs": {
+          "atomRefs": [
+            "atom:app-checkout-service-component",
+            "atom:app-reservation-allocator-component",
+            "atom:authority-catalog-price",
+            "atom:authority-inventory-write",
+            "atom:authority-payment-auth",
+            "atom:authority-policy-rule-catalog",
+            "atom:capability-authorize-payment",
+            "atom:capability-evaluate-policy"
+          ],
+          "contextRefs": [
+            "ctx:application",
+            "ctx:domain",
+            "ctx:infrastructure",
+            "ctx:policy",
+            "ctx:ports",
+            "ctx:runtime",
+            "ctx:shared"
+          ],
+          "note": "Sample refs support orientation only; measured insight evidence is listed under evidence.",
+          "sourceRefs": [
+            "app:CatalogPort",
+            "app:CheckoutService",
+            "app:InventoryPort",
+            "app:OutboxPort",
+            "app:PaymentPort",
+            "app:ReservationAllocator",
+            "app:RiskPort",
+            "app:ShippingPort",
+            "ctx:application",
+            "ctx:domain",
+            "ctx:infrastructure",
+            "ctx:policy"
+          ]
+        },
+        "severity": "high",
+        "title": "Measurement blocked by reason code",
+        "tourRefs": [
+          "tour:not-computed:ag-saga-descent"
+        ],
+        "viewerNavigation": {
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "boundary-assumption"
+        },
+        "whyItMatters": "The blocked reason belongs in the Decision Bar so reviewers do not mistake an empty scene for absence of conflict."
+      },
+      {
+        "evidence": {
+          "analyticReadingRefs": [
+            "analytic:harmonic-debt:profile:money-drift@1",
+            "candidate-regime:stability-placeholder"
+          ],
+          "assumptionRefs": [
+            "part4/11.1",
+            "part4/12.3",
+            "part4/12.4",
+            "part8/4.2",
+            "part8/8.1",
+            "part8/8.5",
+            "part8/8.6",
+            "part8/8.7",
+            "part8/B.8.2"
+          ],
+          "atomRefs": [],
+          "computedInvariantRefs": [
+            "saga-generated-end-to-end-packet"
+          ],
+          "contextRefs": [],
+          "coverRefs": [
+            "cover:commerce-fulfillment"
+          ],
+          "evaluatorRefs": [
+            "ag.saga-grounded"
+          ],
+          "evidenceResolutionStatus": "boundary_only",
+          "sourceRefs": [],
+          "structuralVerdictRefs": [
+            "structuralVerdict/ag-saga-grounded/law-money-convention/repair-plan-not-supplied"
+          ]
+        },
+        "id": "insight:not-computed:ag-saga-grounded",
+        "kind": "not_computed_blocker",
+        "nextAction": {
+          "kind": "next_inspection",
+          "label": "Inspect blocking reason",
+          "targetRefs": [
+            "structuralVerdict/ag-saga-grounded/law-money-convention/repair-plan-not-supplied"
+          ]
+        },
+        "nonClaims": [
+          "This is not a measured zero result."
+        ],
+        "oneLine": "ag.saga-grounded did not compute because repair_plan_not_supplied.",
+        "rankingBasis": [
+          "not_computed due to reason code",
+          "repair_plan_not_supplied"
+        ],
+        "sampleRefs": {
+          "atomRefs": [
+            "atom:app-checkout-service-component",
+            "atom:app-reservation-allocator-component",
+            "atom:authority-catalog-price",
+            "atom:authority-inventory-write",
+            "atom:authority-payment-auth",
+            "atom:authority-policy-rule-catalog",
+            "atom:capability-authorize-payment",
+            "atom:capability-evaluate-policy"
+          ],
+          "contextRefs": [
+            "ctx:application",
+            "ctx:domain",
+            "ctx:infrastructure",
+            "ctx:policy",
+            "ctx:ports",
+            "ctx:runtime",
+            "ctx:shared"
+          ],
+          "note": "Sample refs support orientation only; measured insight evidence is listed under evidence.",
+          "sourceRefs": [
+            "app:CatalogPort",
+            "app:CheckoutService",
+            "app:InventoryPort",
+            "app:OutboxPort",
+            "app:PaymentPort",
+            "app:ReservationAllocator",
+            "app:RiskPort",
+            "app:ShippingPort",
+            "ctx:application",
+            "ctx:domain",
+            "ctx:infrastructure",
+            "ctx:policy"
+          ]
+        },
+        "severity": "high",
+        "title": "Measurement blocked by reason code",
+        "tourRefs": [
+          "tour:not-computed:ag-saga-grounded"
+        ],
+        "viewerNavigation": {
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "boundary-assumption"
+        },
+        "whyItMatters": "The blocked reason belongs in the Decision Bar so reviewers do not mistake an empty scene for absence of conflict."
+      },
+      {
+        "evidence": {
           "analyticReadingRefs": [],
           "assumptionRefs": [
             "part4/11.1",
             "part4/12.3",
             "part4/12.4",
             "part8/4.2",
+            "part8/8.1",
+            "part8/8.5",
+            "part8/8.6",
+            "part8/8.7",
             "part8/B.8.2"
           ],
           "atomRefs": [
@@ -8221,13 +9083,18 @@
       {
         "evidence": {
           "analyticReadingRefs": [
-            "candidate-regime:stability-placeholder"
+            "candidate-regime:stability-placeholder",
+            "analytic:harmonic-debt:profile:money-drift@1"
           ],
           "assumptionRefs": [
             "part4/11.1",
             "part4/12.3",
             "part4/12.4",
             "part8/4.2",
+            "part8/8.1",
+            "part8/8.5",
+            "part8/8.6",
+            "part8/8.7",
             "part8/B.8.2"
           ],
           "atomRefs": [
@@ -8243,7 +9110,10 @@
           "computedInvariantRefs": [
             "finite-poset-site-shape",
             "cech-cohomology:profile:commerce-fulfillment@1",
-            "topological-debt-capacity:profile:commerce-fulfillment@1"
+            "topological-debt-capacity:profile:commerce-fulfillment@1",
+            "saga-generated-end-to-end-packet",
+            "saga-descent-stage1-input",
+            "harmonic-debt:profile:money-drift@1"
           ],
           "contextRefs": [
             "ctx:application",
@@ -8258,7 +9128,9 @@
             "cover:commerce-fulfillment"
           ],
           "evaluatorRefs": [
-            "ag.cech-obstruction"
+            "ag.cech-obstruction",
+            "ag.saga-descent",
+            "ag.saga-grounded"
           ],
           "evidenceResolutionStatus": "analytic_or_boundary_summary",
           "sourceRefs": [
@@ -8392,112 +9264,310 @@
     },
     "profileRef": "profile:commerce-fulfillment@1",
     "readThisFirst": {
-      "boundary": "Profile-relative. 7 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "boundary": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 2 not_computed.",
       "conclusion": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
       "details": {
-        "analyticReadingRefs": [],
+        "analyticReadingRefs": [
+          "analytic:harmonic-debt:profile:money-drift@1",
+          "candidate-regime:stability-placeholder"
+        ],
         "assumptionRefs": [
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
           "part8/4.2",
+          "part8/8.1",
+          "part8/8.5",
+          "part8/8.6",
+          "part8/8.7",
           "part8/B.8.2"
         ],
-        "atomRefs": [
-          "atom:app-checkout-service-component",
-          "atom:app-reservation-allocator-component",
-          "atom:authority-catalog-price",
-          "atom:authority-inventory-write",
-          "atom:authority-payment-auth",
-          "atom:authority-policy-rule-catalog",
-          "atom:capability-authorize-payment",
-          "atom:capability-evaluate-policy",
-          "atom:capability-place-order",
-          "atom:capability-plan-shipment",
-          "atom:capability-present-demo",
-          "atom:capability-reserve-inventory"
-        ],
+        "atomRefs": [],
         "computedInvariantRefs": [
-          "cech-cohomology:profile:commerce-fulfillment@1",
-          "topological-debt-capacity:profile:commerce-fulfillment@1"
+          "saga-descent-stage1-input"
         ],
-        "contextRefs": [
-          "ctx:application",
-          "ctx:domain",
-          "ctx:infrastructure",
-          "ctx:policy",
-          "ctx:ports",
-          "ctx:runtime",
-          "ctx:shared"
-        ],
+        "contextRefs": [],
         "coverRefs": [
           "cover:commerce-fulfillment"
         ],
         "evaluatorRefs": [
-          "ag.cech-obstruction"
+          "ag.saga-descent"
         ],
-        "evidenceResolutionStatus": "resolved_from_packet_support",
-        "sourceRefs": [
-          "app:CatalogPort",
-          "app:CheckoutService",
-          "app:InventoryPort",
-          "app:PaymentPort",
-          "app:ReservationAllocator",
-          "app:ShippingPort",
-          "policy:DEFAULT_POLICY_RULES",
-          "policy:PolicyEngine",
-          "scenario:run_demo"
-        ],
+        "evidenceResolutionStatus": "boundary_only",
+        "sourceRefs": [],
         "structuralVerdictRefs": [
-          "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/finite-f2-cech-computed"
+          "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
         ]
       },
       "heading": "Read this first",
-      "nextAction": "Inspect measurement boundary",
-      "whatItMeans": "No selected-cover H^1 glue mismatch was measured under this profile.",
-      "whereToLookFirst": [
-        "app:CatalogPort",
-        "app:CheckoutService",
-        "app:InventoryPort",
-        "app:PaymentPort",
-        "app:ReservationAllocator",
-        "app:ShippingPort",
-        "policy:DEFAULT_POLICY_RULES",
-        "policy:PolicyEngine",
-        "scenario:run_demo"
-      ]
+      "nextAction": "Inspect blocking reason",
+      "whatItMeans": "ag.saga-descent did not compute because repair_plan_not_supplied.",
+      "whereToLookFirst": []
     },
     "structuralVerdictSummary": {
       "measuredNonzeroCount": 0,
-      "nonTerminalCount": 0,
-      "rowCount": 1,
+      "nonTerminalCount": 2,
+      "rowCount": 3,
       "unmeasuredCount": 0
     }
   },
-  "runId": "run:8a21e519dc8c",
+  "runId": "run:45bcb06313a1",
   "sagaDescent": {
-    "leafFieldMap": [],
+    "leafFieldMap": [
+      {
+        "packetPath": "/structuralVerdict/1/evaluator",
+        "viewerPath": "stages[0].rows[0].evaluator"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/law",
+        "viewerPath": "stages[0].rows[0].law"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdict",
+        "viewerPath": "stages[0].rows[0].verdict"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdictData/inScope",
+        "viewerPath": "stages[0].rows[0].inScope"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdictData/zero",
+        "viewerPath": "stages[0].rows[0].zero"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdictData/nonZero",
+        "viewerPath": "stages[0].rows[0].nonZero"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdictData/methodStatus",
+        "viewerPath": "stages[0].rows[0].methodStatus"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/reason",
+        "viewerPath": "stages[0].rows[0].reason"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/evaluator",
+        "viewerPath": "stages[1].rows[0].evaluator"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/law",
+        "viewerPath": "stages[1].rows[0].law"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdict",
+        "viewerPath": "stages[1].rows[0].verdict"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdictData/inScope",
+        "viewerPath": "stages[1].rows[0].inScope"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdictData/zero",
+        "viewerPath": "stages[1].rows[0].zero"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdictData/nonZero",
+        "viewerPath": "stages[1].rows[0].nonZero"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdictData/methodStatus",
+        "viewerPath": "stages[1].rows[0].methodStatus"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/reason",
+        "viewerPath": "stages[1].rows[0].reason"
+      },
+      {
+        "packetPath": "/computedInvariants/3/invariantId",
+        "viewerPath": "stages[0].rows[1].invariantId"
+      },
+      {
+        "packetPath": "/computedInvariants/3/evaluator",
+        "viewerPath": "stages[0].rows[1].evaluator"
+      },
+      {
+        "packetPath": "/computedInvariants/5/invariantId",
+        "viewerPath": "stages[1].harmonicDebt[0].invariantId"
+      },
+      {
+        "packetPath": "/computedInvariants/5/evaluator",
+        "viewerPath": "stages[1].harmonicDebt[0].evaluator"
+      },
+      {
+        "packetPath": "/computedInvariants/5/essentialRepairLowerBound",
+        "viewerPath": "stages[1].harmonicDebt[0].essentialRepairLowerBound"
+      },
+      {
+        "packetPath": "/computedInvariants/5/lowerBoundStatus",
+        "viewerPath": "stages[1].harmonicDebt[0].lowerBoundStatus"
+      },
+      {
+        "packetPath": "/analyticReadings/1/evaluator",
+        "viewerPath": "stages[1].harmonicDebt[1].evaluator"
+      },
+      {
+        "packetPath": "/analyticReadings/1/readingId",
+        "viewerPath": "stages[1].harmonicDebt[1].readingId"
+      },
+      {
+        "packetPath": "/analyticReadings/1/regime",
+        "viewerPath": "stages[1].harmonicDebt[1].regime"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/certificate",
+        "viewerPath": "stages[1].harmonicDebt[1].value.certificate"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/essentialRepairLowerBound",
+        "viewerPath": "stages[1].harmonicDebt[1].value.essentialRepairLowerBound"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/harmonicDebtNorm",
+        "viewerPath": "stages[1].harmonicDebt[1].value.harmonicDebtNorm"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/lowerBoundStatus",
+        "viewerPath": "stages[1].harmonicDebt[1].value.lowerBoundStatus"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/nonConclusion",
+        "viewerPath": "stages[1].harmonicDebt[1].value.nonConclusion"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/readingKind",
+        "viewerPath": "stages[1].harmonicDebt[1].value.readingKind"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/selectedCoverRef",
+        "viewerPath": "stages[1].harmonicDebt[1].value.selectedCoverRef"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/sourceProxyReadingKind",
+        "viewerPath": "stages[1].harmonicDebt[1].value.sourceProxyReadingKind"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/id",
+        "viewerPath": "silenceRows[0].id"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/id",
+        "viewerPath": "stages[3].rows[0].id"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/kind",
+        "viewerPath": "silenceRows[0].status"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/kind",
+        "viewerPath": "stages[3].rows[0].status"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/reason",
+        "viewerPath": "silenceRows[0].reason"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/reason",
+        "viewerPath": "stages[3].rows[0].reason"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/text",
+        "viewerPath": "silenceRows[0].whatNext"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/text",
+        "viewerPath": "stages[3].rows[0].whatNext"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/scopeRefs/0",
+        "viewerPath": "silenceRows[0].scopeRefs[0]"
+      },
+      {
+        "packetPath": "/boundaryStatements/7/scopeRefs/0",
+        "viewerPath": "stages[3].rows[0].scopeRefs[0]"
+      }
+    ],
     "nonClaims": [
       "The projection does not create structural verdicts, comparison results, or repair decisions.",
       "A missing packet field remains absent; silence_by_design remains visible as a silence row."
     ],
     "projectionBoundary": "Every displayed measurement value is selected from the measurement packet or its SAGA-scoped boundary statements; stage status is a presentation aggregation of displayed packet rows and no viewer verdict is synthesized.",
-    "silenceRows": [],
+    "silenceRows": [
+      {
+        "id": "boundary:silence-by-design:saga-descent:2",
+        "reason": "repair_plan_not_supplied",
+        "scopeRefs": [
+          "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
+        ],
+        "status": "silence_by_design",
+        "whatNext": "repair-plan not supplied; ag.saga-descent remains silent by design until --repair-plan is provided."
+      }
+    ],
     "sourcePacketRef": "archsig-measurement-packet.json",
     "stages": [
       {
         "measurements": [],
         "order": 0,
-        "rows": [],
+        "rows": [
+          {
+            "dependsOnAssumptions": [],
+            "evaluator": "ag.saga-grounded",
+            "inScope": true,
+            "law": "law:money-convention",
+            "methodStatus": "repair_plan_not_supplied",
+            "nonZero": false,
+            "reason": "repair-plan not supplied; ag.saga-grounded remains silent by design",
+            "verdict": "not_computed",
+            "zero": false
+          },
+          {
+            "evaluator": "ag.saga-grounded",
+            "invariantId": "saga-generated-end-to-end-packet"
+          }
+        ],
         "stageId": "grounding",
         "status": "not_computed",
         "visualRole": "grounding"
       },
       {
-        "harmonicDebt": [],
+        "harmonicDebt": [
+          {
+            "essentialRepairLowerBound": 0.0,
+            "evaluator": "ag.harmonic-debt",
+            "invariantId": "harmonic-debt:profile:money-drift@1",
+            "lowerBoundStatus": "cost_model_supplied"
+          },
+          {
+            "evaluator": "ag.harmonic-debt",
+            "readingId": "analytic:harmonic-debt:profile:money-drift@1",
+            "regime": "analytic-measurement",
+            "value": {
+              "certificate": "local adjustment cannot reduce repair cost below ||h(g)||/L under the supplied cost model",
+              "essentialRepairLowerBound": 0.0,
+              "harmonicDebtNorm": 0.0,
+              "lowerBoundStatus": "cost_model_supplied",
+              "nonConclusion": "analytic harmonic debt is not a structural lawfulness verdict",
+              "readingKind": "harmonic-debt@1",
+              "selectedCoverRef": "cover:commerce-fulfillment",
+              "sourceProxyReadingKind": "graph-laplacian-hodge-proxy@1"
+            }
+          }
+        ],
         "measurements": [],
         "order": 1,
-        "rows": [],
+        "rows": [
+          {
+            "dependsOnAssumptions": [],
+            "evaluator": "ag.saga-descent",
+            "inScope": true,
+            "law": "law:money-repair-descent",
+            "methodStatus": "repair_plan_not_supplied",
+            "nonZero": false,
+            "reason": "repair-plan not supplied; ag.saga-descent remains silent by design until --repair-plan is provided.",
+            "verdict": "not_computed",
+            "zero": false
+          }
+        ],
         "stageId": "descent",
         "status": "not_computed",
         "visualRole": "descent-measurement"
@@ -8511,9 +9581,19 @@
       },
       {
         "order": 3,
-        "rows": [],
+        "rows": [
+          {
+            "id": "boundary:silence-by-design:saga-descent:2",
+            "reason": "repair_plan_not_supplied",
+            "scopeRefs": [
+              "structuralVerdict/ag-saga-descent/law-money-repair-descent/repair-plan-not-supplied"
+            ],
+            "status": "silence_by_design",
+            "whatNext": "repair-plan not supplied; ag.saga-descent remains silent by design until --repair-plan is provided."
+          }
+        ],
         "stageId": "silence",
-        "status": "not_computed",
+        "status": "silence_by_design",
         "visualRole": "silence"
       }
     ]
@@ -8584,6 +9664,8 @@
               "cover:commerce-fulfillment"
             ],
             "insightRefs": [
+              "insight:not-computed:ag-saga-descent",
+              "insight:not-computed:ag-saga-grounded",
               "insight:h1-glue-mismatch:zero",
               "insight:measurement-boundary:001"
             ],
@@ -8635,6 +9717,8 @@
           "cover:commerce-fulfillment"
         ],
         "insightRefs": [
+          "insight:not-computed:ag-saga-descent",
+          "insight:not-computed:ag-saga-grounded",
           "insight:h1-glue-mismatch:zero",
           "insight:measurement-boundary:001"
         ],
@@ -8713,7 +9797,7 @@
       ],
       "visualEncodings": [
         {
-          "colorRole": "measured_zero",
+          "colorRole": "not_computed",
           "encodingId": "encoding:overview:main",
           "lineRole": "thick_glowing_line",
           "shapeRole": "sphere",
@@ -8782,6 +9866,8 @@
               "cover:commerce-fulfillment"
             ],
             "insightRefs": [
+              "insight:not-computed:ag-saga-descent",
+              "insight:not-computed:ag-saga-grounded",
               "insight:h1-glue-mismatch:zero",
               "insight:measurement-boundary:001"
             ],
@@ -8833,6 +9919,8 @@
           "cover:commerce-fulfillment"
         ],
         "insightRefs": [
+          "insight:not-computed:ag-saga-descent",
+          "insight:not-computed:ag-saga-grounded",
           "insight:h1-glue-mismatch:zero",
           "insight:measurement-boundary:001"
         ],
@@ -9549,20 +10637,23 @@
       "kind": "law_conflict",
       "layers": [
         {
-          "animationPurpose": "orientation",
+          "animationPurpose": "navigation",
           "clickTargetKind": "lawConflictBridge",
           "encodingRef": "encoding:law-conflict-tor:main",
           "geometryRole": "bridge",
           "kind": "law_conflict_bridge",
           "layerId": "layer:law-conflict-tor:law_conflict_bridge",
-          "omissionPolicy": "omittable_background",
+          "omissionPolicy": "preserve_for_top_insight",
           "refs": {
             "atomRefs": [],
             "contextRefs": [],
             "coverRefs": [
               "cover:commerce-fulfillment"
             ],
-            "insightRefs": [],
+            "insightRefs": [
+              "insight:not-computed:ag-saga-descent",
+              "insight:not-computed:ag-saga-grounded"
+            ],
             "sourceRefs": []
           }
         }
@@ -9573,12 +10664,15 @@
         "coverRefs": [
           "cover:commerce-fulfillment"
         ],
-        "insightRefs": [],
+        "insightRefs": [
+          "insight:not-computed:ag-saga-descent",
+          "insight:not-computed:ag-saga-grounded"
+        ],
         "sourceRefs": []
       },
       "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
       "sceneId": "law-conflict-tor",
-      "sceneStatus": "not_active_for_packet",
+      "sceneStatus": "active",
       "title": "Law Conflict",
       "userQuestion": "Which law universe conflict is loaded on which witness?",
       "visualEncodingLegend": [
@@ -9633,11 +10727,11 @@
       ],
       "visualEncodings": [
         {
-          "colorRole": "not_applicable",
+          "colorRole": "not_computed",
           "encodingId": "encoding:law-conflict-tor:main",
           "lineRole": "broken_line",
           "shapeRole": "wall",
-          "textRole": "not active for this packet: common ambient conflict witness"
+          "textRole": "no_common_ambient blocker or not_computed reason code"
         }
       ]
     },
@@ -9758,7 +10852,7 @@
           "encodingId": "encoding:hodge-debt-field:main",
           "lineRole": "contour",
           "shapeRole": "heat",
-          "textRole": "not active for this packet: harmonic mass analytic reading"
+          "textRole": "curvature support field; blocked/unmeasured remains visibly separate from measured-zero"
         }
       ]
     },

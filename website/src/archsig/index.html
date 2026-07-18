@@ -31,9 +31,11 @@
               <p>Three modules handle money under three different conventions — each one exactly what its owner's spec demands. The defect is not in any diff hunk; it lives on the loop <em>checkout&nbsp;→ payment&nbsp;→ settlement&nbsp;→ checkout</em>, which no single file view contains. With three conventions on a cycle, no per-module fix reconciles the loop: the disagreement is global. That distinction — repairable locally versus obstructed globally — is exactly what ArchSig measures, and it is invisible to pairwise interface checks.</p>
               <figure class="code-panel">
                 <figcaption>The shipped demo, end to end</figcaption>
-                <pre><code>[analyze head]           MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
+                <pre><code>[grounding head]         measured_zero (every chart's own law holds)
+[descent head]           measured_nonzero (residual class in Z1/B1)
+[analyze head]           MEASURED_NONGLUING_RESIDUAL_CLASS
 [gate head]              BLOCKED_BY_GATE_POLICY
-[analyze repaired]       NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
+[analyze repaired]       REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
 [compare head-&gt;repaired] MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE
 [gate repaired]          PASS_WITHIN_GATE_POLICY</code></pre>
               </figure>
@@ -70,7 +72,7 @@ Return findings with code refs and repair candidates.</code></pre>
               <h2>What you get back</h2>
               <p>The output is a small set of JSON artifacts designed to be read — by the agent first, then by you. The headline is always a positive, bounded conclusion, never a vague score.</p>
               <ul class="status-list">
-                <li><strong>A conclusion you can act on</strong><span><code>MEASURED_H1_OBSTRUCTION_UNDER_PROFILE</code> means "a cross-context glue mismatch was measured under the selected profile". <code>NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE</code> is a real measured zero, not an absence of data.</span></li>
+                <li><strong>A conclusion you can act on</strong><span><code>MEASURED_H1_OBSTRUCTION_UNDER_PROFILE</code> means "a cross-context glue mismatch was measured under the selected profile". <code>NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE</code> is a real measured zero, not an absence of data. When SAGA repair data is supplied and validated, the vocabulary sharpens further: <code>MEASURED_NONGLUING_RESIDUAL_CLASS</code> and <code>REPAIR_GLUES_WITHIN_SELECTED_COMPLEX</code> speak at the level of the residual class itself.</span></li>
                 <li><strong>The exact support</strong><span>The measurement packet names the overlap edges and evidence atoms that carry the mismatch, with references back to source paths and symbols.</span></li>
                 <li><strong>A CI decision</strong><span><code>gate</code> maps the five-valued verdict to <code>pass</code> / <code>pass_with_boundary</code> / <code>block</code> under a policy your CI owns — and exits nonzero on block.</span></li>
                 <li><strong>Declared silence</strong><span>What the selected evidence cannot support is recorded as <code>unmeasured</code> or <code>not_computed</code> with a boundary statement — never rounded up to "safe" or down to "error".</span></li>

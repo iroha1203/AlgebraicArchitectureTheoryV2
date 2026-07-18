@@ -9,8 +9,8 @@
   },
   "commandName": "analyze",
   "componentFingerprints": {
-    "lawPolicy": "sha256:2a9dabb0e4d1769a7d789dd4854b40bd0067d5f7e7af97aa42ac235227c3f645",
-    "lawSurface": "sha256:05376ed80e1197e1cd323c1f02842ae918988bbf77caac6b6c2a328b5ae7badd",
+    "lawPolicy": "sha256:0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b",
+    "lawSurface": "sha256:896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed",
     "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
   },
   "conclusionCode": null,
@@ -18,6 +18,7 @@
     "archmap-validation.json",
     "law-policy-validation.json",
     "law-surface-validation.json",
+    "repair-plan-validation.json",
     "normalized-archmap.json",
     "archsig-measurement-packet.json",
     "archsig-analysis-validation.json",
@@ -30,15 +31,15 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap_repaired.json",
-      "sha256": "ea01ec32af531f67634968e7285a3173dba422a20885686b5db98bbd309ec25d"
+      "sha256": "8d46a6b0e8edaa1f3c18688b34d554338e9f8809487b6709842fd0fbc06af1ad"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "2a9dabb0e4d1769a7d789dd4854b40bd0067d5f7e7af97aa42ac235227c3f645"
+      "sha256": "0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b"
     },
     "lawSurface": {
-      "path": "input:law_surface_practical_v052.json",
-      "sha256": "05376ed80e1197e1cd323c1f02842ae918988bbf77caac6b6c2a328b5ae7badd"
+      "path": "input:law_surface.json",
+      "sha256": "896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
@@ -48,23 +49,28 @@
       {
         "path": "input:measurement_profile.json",
         "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      },
+      {
+        "path": "input:measurement_profile_drift.json",
+        "sha256": "22c62a5b8f1f00f3759d4d9d26905f6e63b0f3a393010ce82977a94b473ac0d3"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "2b39ae3af896d3a1db749cd9ec3a9609e3dada5f096d7859b479249b86e12b07"
+      "sha256": "f699097b54922e3f52c3465a818bb2946c2aab070e7c7195dbc3416610ad1e72"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "1a0e6eb84b839c216ea0672d4365ecc0838f05928baaa3443ed00725c8f104cf",
+      "sha256": "e3ae81e46a9aa93d0d990d4aaa9b02d86c150ff51aa24c8c5914f63e7e9bd35b",
       "status": "computed"
     }
   },
   "lawPolicyInputPath": "input:law_policy.json",
-  "lawSurfaceInputPath": "input:law_surface_practical_v052.json",
+  "lawSurfaceInputPath": "input:law_surface.json",
   "measurementProfileInputPath": "input:measurement_profile.json",
   "measurementProfileInputPaths": [
-    "input:measurement_profile.json"
+    "input:measurement_profile.json",
+    "input:measurement_profile_drift.json"
   ],
   "mode": "measurement",
   "nonConclusions": [
@@ -74,8 +80,8 @@
   "omittedArtifacts": [],
   "rawArtifactPaths": null,
   "rawArtifactRetention": "omitted",
-  "repairPlanInputPath": null,
-  "runId": "run:33ea6451608b",
+  "repairPlanInputPath": "input:repair_plan_repaired.json",
+  "runId": "run:8e5ab0ca43a5",
   "schema": "archsig-run-manifest/v0.5.3",
   "toolVersion": "0.5.3",
   "validationReports": {
@@ -83,7 +89,7 @@
     "archmap": "archmap-validation.json",
     "lawPolicy": "law-policy-validation.json",
     "lawSurface": "law-surface-validation.json",
-    "repairPlan": null
+    "repairPlan": "repair-plan-validation.json"
   },
   "validationResultSummary": {
     "analysis": {
@@ -106,6 +112,10 @@
       "result": "pass",
       "warningCheckCount": 0
     },
-    "repairPlan": null
+    "repairPlan": {
+      "failedCheckCount": 0,
+      "result": "warn",
+      "warningCheckCount": 1
+    }
   }
 }

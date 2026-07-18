@@ -484,6 +484,42 @@
         "valence": 1
       },
       {
+        "atomRef": "atom:drift-cell-boundary",
+        "carrier": "cell:display-total",
+        "carrierColorRole": "carrier_color:cell-display-total",
+        "colorRole": "source_evidence",
+        "fiber": "relation",
+        "fiberShapeRole": "fiber_shape:relation",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:drift-cell-capture",
+        "carrier": "cell:psp-capture",
+        "carrierColorRole": "carrier_color:cell-psp-capture",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:drift-cell-display",
+        "carrier": "cell:display-total",
+        "carrierColorRole": "carrier_color:cell-display-total",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
         "atomRef": "atom:effect-inventory-decrement",
         "carrier": "store:InventoryPortImpl",
         "carrierColorRole": "carrier_color:store-InventoryPortImpl",
@@ -1378,6 +1414,42 @@
           "valence": 1
         },
         {
+          "atomRef": "atom:drift-cell-boundary",
+          "carrier": "cell:display-total",
+          "carrierColorRole": "carrier_color:cell-display-total",
+          "colorRole": "source_evidence",
+          "fiber": "relation",
+          "fiberShapeRole": "fiber_shape:relation",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:drift-cell-capture",
+          "carrier": "cell:psp-capture",
+          "carrierColorRole": "carrier_color:cell-psp-capture",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:drift-cell-display",
+          "carrier": "cell:display-total",
+          "carrierColorRole": "carrier_color:cell-display-total",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
           "atomRef": "atom:effect-inventory-decrement",
           "carrier": "store:InventoryPortImpl",
           "carrierColorRole": "carrier_color:store-InventoryPortImpl",
@@ -1795,6 +1867,30 @@
             "shapeRole": "smooth_measured_zero_patch",
             "source": "selected-support zero packet verdict",
             "status": "measured_zero"
+          },
+          {
+            "regionId": "measured-zero-region:ag.saga-grounded",
+            "shapeRole": "smooth_measured_zero_patch",
+            "source": "selected-support zero packet verdict",
+            "status": "measured_zero"
+          },
+          {
+            "regionId": "measured-zero-region:ag.saga-descent",
+            "shapeRole": "smooth_measured_zero_patch",
+            "source": "selected-support zero packet verdict",
+            "status": "measured_zero"
+          },
+          {
+            "regionId": "measured-zero-region:ag.saga-descent",
+            "shapeRole": "smooth_measured_zero_patch",
+            "source": "selected-support zero packet verdict",
+            "status": "measured_zero"
+          },
+          {
+            "regionId": "measured-zero-region:ag.saga-descent",
+            "shapeRole": "smooth_measured_zero_patch",
+            "source": "selected-support zero packet verdict",
+            "status": "measured_zero"
           }
         ]
       },
@@ -2075,6 +2171,9 @@
             "atomRefs": [
               "atom:capability-present-demo",
               "atom:cech-money-runtime",
+              "atom:drift-cell-boundary",
+              "atom:drift-cell-capture",
+              "atom:drift-cell-display",
               "atom:runtime-checkout-trace",
               "atom:runtime-concurrency-trace",
               "atom:runtime-demo-calls-checkout",
@@ -2225,6 +2324,30 @@
       "measuredZeroRegions": [
         {
           "regionId": "measured-zero-region:ag.cech-obstruction",
+          "shapeRole": "smooth_measured_zero_patch",
+          "source": "selected-support zero packet verdict",
+          "status": "measured_zero"
+        },
+        {
+          "regionId": "measured-zero-region:ag.saga-grounded",
+          "shapeRole": "smooth_measured_zero_patch",
+          "source": "selected-support zero packet verdict",
+          "status": "measured_zero"
+        },
+        {
+          "regionId": "measured-zero-region:ag.saga-descent",
+          "shapeRole": "smooth_measured_zero_patch",
+          "source": "selected-support zero packet verdict",
+          "status": "measured_zero"
+        },
+        {
+          "regionId": "measured-zero-region:ag.saga-descent",
+          "shapeRole": "smooth_measured_zero_patch",
+          "source": "selected-support zero packet verdict",
+          "status": "measured_zero"
+        },
+        {
+          "regionId": "measured-zero-region:ag.saga-descent",
           "shapeRole": "smooth_measured_zero_patch",
           "source": "selected-support zero packet verdict",
           "status": "measured_zero"
@@ -2508,6 +2631,9 @@
           "atomRefs": [
             "atom:capability-present-demo",
             "atom:cech-money-runtime",
+            "atom:drift-cell-boundary",
+            "atom:drift-cell-capture",
+            "atom:drift-cell-display",
             "atom:runtime-checkout-trace",
             "atom:runtime-concurrency-trace",
             "atom:runtime-demo-calls-checkout",
@@ -3128,9 +3254,27 @@
       "targetNodeRef": "atom:cech-money-runtime"
     },
     {
-      "edgeId": "edge:ctx:runtime:atom:cech-money-runtime->atom:runtime-checkout-trace",
+      "edgeId": "edge:ctx:runtime:atom:cech-money-runtime->atom:drift-cell-boundary",
       "edgeKind": "contextMembership",
       "sourceNodeRef": "atom:cech-money-runtime",
+      "targetNodeRef": "atom:drift-cell-boundary"
+    },
+    {
+      "edgeId": "edge:ctx:runtime:atom:drift-cell-boundary->atom:drift-cell-capture",
+      "edgeKind": "contextMembership",
+      "sourceNodeRef": "atom:drift-cell-boundary",
+      "targetNodeRef": "atom:drift-cell-capture"
+    },
+    {
+      "edgeId": "edge:ctx:runtime:atom:drift-cell-capture->atom:drift-cell-display",
+      "edgeKind": "contextMembership",
+      "sourceNodeRef": "atom:drift-cell-capture",
+      "targetNodeRef": "atom:drift-cell-display"
+    },
+    {
+      "edgeId": "edge:ctx:runtime:atom:drift-cell-display->atom:runtime-checkout-trace",
+      "edgeKind": "contextMembership",
+      "sourceNodeRef": "atom:drift-cell-display",
       "targetNodeRef": "atom:runtime-checkout-trace"
     },
     {
@@ -4675,6 +4819,102 @@
       "subjectRef": "domain:ShipmentPlan"
     },
     {
+      "atomFamily": "relation",
+      "atomKind": "relation",
+      "axis": "laplacian",
+      "labels": [
+        "laplacian",
+        "cellularBoundary"
+      ],
+      "moleculeMemberships": [
+        "ctx:runtime"
+      ],
+      "nodeId": "atom:drift-cell-boundary",
+      "normalizationStatus": "normalized",
+      "objectRef": "cell:psp-capture",
+      "objectRefCount": 1,
+      "observationStatus": "normalized",
+      "predicate": "cellularBoundary",
+      "priorityScore": 10,
+      "projectionRefs": [
+        "ctx:runtime"
+      ],
+      "sourceAtomId": "atom:drift-cell-boundary",
+      "sourceRefCount": 1,
+      "sourceRefSamples": [
+        {
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json",
+          "ref": "runtime:reconciliation",
+          "sourceKind": "runtimeTrace"
+        }
+      ],
+      "subjectRef": "cell:display-total"
+    },
+    {
+      "atomFamily": "semantic",
+      "atomKind": "semantic",
+      "axis": "laplacian",
+      "labels": [
+        "laplacian",
+        "cellularCochain"
+      ],
+      "moleculeMemberships": [
+        "ctx:runtime"
+      ],
+      "nodeId": "atom:drift-cell-capture",
+      "normalizationStatus": "normalized",
+      "objectRef": "0",
+      "objectRefCount": 1,
+      "observationStatus": "normalized",
+      "predicate": "cellularCochain",
+      "priorityScore": 10,
+      "projectionRefs": [
+        "ctx:runtime"
+      ],
+      "sourceAtomId": "atom:drift-cell-capture",
+      "sourceRefCount": 1,
+      "sourceRefSamples": [
+        {
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json",
+          "ref": "runtime:reconciliation",
+          "sourceKind": "runtimeTrace"
+        }
+      ],
+      "subjectRef": "cell:psp-capture"
+    },
+    {
+      "atomFamily": "semantic",
+      "atomKind": "semantic",
+      "axis": "laplacian",
+      "labels": [
+        "laplacian",
+        "cellularCochain"
+      ],
+      "moleculeMemberships": [
+        "ctx:runtime"
+      ],
+      "nodeId": "atom:drift-cell-display",
+      "normalizationStatus": "normalized",
+      "objectRef": "0",
+      "objectRefCount": 1,
+      "observationStatus": "normalized",
+      "predicate": "cellularCochain",
+      "priorityScore": 10,
+      "projectionRefs": [
+        "ctx:runtime"
+      ],
+      "sourceAtomId": "atom:drift-cell-display",
+      "sourceRefCount": 1,
+      "sourceRefSamples": [
+        {
+          "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json",
+          "ref": "runtime:reconciliation",
+          "sourceKind": "runtimeTrace"
+        }
+      ],
+      "subjectRef": "cell:display-total"
+    },
+    {
       "atomFamily": "effect",
       "atomKind": "effect",
       "axis": "dataflow",
@@ -5924,13 +6164,13 @@
     }
   ],
   "componentFingerprints": {
-    "lawPolicy": "sha256:2a9dabb0e4d1769a7d789dd4854b40bd0067d5f7e7af97aa42ac235227c3f645",
-    "lawSurface": "sha256:05376ed80e1197e1cd323c1f02842ae918988bbf77caac6b6c2a328b5ae7badd",
+    "lawPolicy": "sha256:0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b",
+    "lawSurface": "sha256:896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed",
     "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
   },
   "copyBlocks": {
     "llmHandoff": {
-      "boundary": "Profile-relative. 7 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "boundary": "Profile-relative. 14 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
       "instruction": "Use the following ArchSig result as bounded evidence. Do not infer beyond the listed claims and boundaries.",
       "topInsights": [
         "No selected-cover H^1 glue mismatch was measured under this profile.",
@@ -5961,8 +6201,8 @@
       "summaryRef": "archsig-analysis-summary.json",
       "viewerDataRef": "archsig-atom-viewer-data.json"
     },
-    "boundaryDigest": "Profile-relative. 7 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
-    "conclusion": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+    "boundaryDigest": "Profile-relative. 14 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "conclusion": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
     "validation": "see archsig-analysis-validation.json"
   },
   "finitePosetSite": {
@@ -6583,6 +6823,54 @@
           "domain:ShipmentPlan"
         ],
         "subject": "domain:ShipmentPlan"
+      },
+      {
+        "atomKind": "relation",
+        "axis": "laplacian",
+        "contextMemberships": [
+          "ctx:runtime"
+        ],
+        "normalizationStatus": "normalized",
+        "normalizedAtomId": "atom:drift-cell-boundary",
+        "object": "cell:psp-capture",
+        "predicate": "cellularBoundary",
+        "sourceAtomId": "atom:drift-cell-boundary",
+        "sourceRefs": [
+          "runtime:reconciliation"
+        ],
+        "subject": "cell:display-total"
+      },
+      {
+        "atomKind": "semantic",
+        "axis": "laplacian",
+        "contextMemberships": [
+          "ctx:runtime"
+        ],
+        "normalizationStatus": "normalized",
+        "normalizedAtomId": "atom:drift-cell-capture",
+        "object": "0",
+        "predicate": "cellularCochain",
+        "sourceAtomId": "atom:drift-cell-capture",
+        "sourceRefs": [
+          "runtime:reconciliation"
+        ],
+        "subject": "cell:psp-capture"
+      },
+      {
+        "atomKind": "semantic",
+        "axis": "laplacian",
+        "contextMemberships": [
+          "ctx:runtime"
+        ],
+        "normalizationStatus": "normalized",
+        "normalizedAtomId": "atom:drift-cell-display",
+        "object": "0",
+        "predicate": "cellularCochain",
+        "sourceAtomId": "atom:drift-cell-display",
+        "sourceRefs": [
+          "runtime:reconciliation"
+        ],
+        "subject": "cell:display-total"
       },
       {
         "atomKind": "effect",
@@ -7262,6 +7550,9 @@
         "atomIds": [
           "atom:capability-present-demo",
           "atom:cech-money-runtime",
+          "atom:drift-cell-boundary",
+          "atom:drift-cell-capture",
+          "atom:drift-cell-display",
           "atom:runtime-checkout-trace",
           "atom:runtime-concurrency-trace",
           "atom:runtime-demo-calls-checkout",
@@ -7681,19 +7972,19 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap_repaired.json",
-      "sha256": "ea01ec32af531f67634968e7285a3173dba422a20885686b5db98bbd309ec25d"
+      "sha256": "8d46a6b0e8edaa1f3c18688b34d554338e9f8809487b6709842fd0fbc06af1ad"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "2a9dabb0e4d1769a7d789dd4854b40bd0067d5f7e7af97aa42ac235227c3f645"
+      "sha256": "0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b"
     },
     "lawSurface": {
-      "path": "input:law_surface_practical_v052.json",
-      "sha256": "05376ed80e1197e1cd323c1f02842ae918988bbf77caac6b6c2a328b5ae7badd"
+      "path": "input:law_surface.json",
+      "sha256": "896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed"
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "e2c5c5fd80e48a59d5dcfcc8c31584b4c2bc6f95b8d6868cc4dad06814b47a3c"
+      "sha256": "c51d8d78ccf410b8dee99d32d436738f06f5a6f8585cbe6c3108fe377a94b0a8"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
@@ -7703,15 +7994,19 @@
       {
         "path": "input:measurement_profile.json",
         "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      },
+      {
+        "path": "input:measurement_profile_drift.json",
+        "sha256": "22c62a5b8f1f00f3759d4d9d26905f6e63b0f3a393010ce82977a94b473ac0d3"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "2b39ae3af896d3a1db749cd9ec3a9609e3dada5f096d7859b479249b86e12b07"
+      "sha256": "f699097b54922e3f52c3465a818bb2946c2aab070e7c7195dbc3416610ad1e72"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "1a0e6eb84b839c216ea0672d4365ecc0838f05928baaa3443ed00725c8f104cf",
+      "sha256": "e3ae81e46a9aa93d0d990d4aaa9b02d86c150ff51aa24c8c5914f63e7e9bd35b",
       "status": "computed"
     }
   },
@@ -7720,10 +8015,20 @@
       "evidence": {
         "analyticReadingRefs": [],
         "assumptionRefs": [
+          "part10/3.1",
+          "part10/6.2",
+          "part10/7.3",
+          "part3/11.3",
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
+          "part4/4.6",
+          "part4/4.7",
           "part8/4.2",
+          "part8/8.1",
+          "part8/8.5",
+          "part8/8.6",
+          "part8/8.7",
           "part8/B.8.2"
         ],
         "atomRefs": [
@@ -7900,13 +8205,24 @@
     {
       "evidence": {
         "analyticReadingRefs": [
-          "candidate-regime:stability-placeholder"
+          "candidate-regime:stability-placeholder",
+          "analytic:harmonic-debt:profile:money-drift@1"
         ],
         "assumptionRefs": [
+          "part10/3.1",
+          "part10/6.2",
+          "part10/7.3",
+          "part3/11.3",
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
+          "part4/4.6",
+          "part4/4.7",
           "part8/4.2",
+          "part8/8.1",
+          "part8/8.5",
+          "part8/8.6",
+          "part8/8.7",
           "part8/B.8.2"
         ],
         "atomRefs": [
@@ -7922,7 +8238,13 @@
         "computedInvariantRefs": [
           "finite-poset-site-shape",
           "cech-cohomology:profile:commerce-fulfillment@1",
-          "topological-debt-capacity:profile:commerce-fulfillment@1"
+          "topological-debt-capacity:profile:commerce-fulfillment@1",
+          "saga-generated-end-to-end-packet",
+          "saga-descent:boundary-membership",
+          "saga-descent:closure-diagnostics",
+          "saga-descent:residual-class",
+          "saga-comparison:h1-transfer",
+          "harmonic-debt:profile:money-drift@1"
         ],
         "contextRefs": [
           "ctx:application",
@@ -7938,7 +8260,9 @@
           "cover:commerce-fulfillment"
         ],
         "evaluatorRefs": [
-          "ag.cech-obstruction"
+          "ag.cech-obstruction",
+          "ag.saga-descent",
+          "ag.saga-grounded"
         ],
         "evidenceResolutionStatus": "analytic_or_boundary_summary",
         "sourceRefs": [
@@ -8312,6 +8636,9 @@
       "atomIds": [
         "atom:capability-present-demo",
         "atom:cech-money-runtime",
+        "atom:drift-cell-boundary",
+        "atom:drift-cell-capture",
+        "atom:drift-cell-display",
         "atom:runtime-checkout-trace",
         "atom:runtime-concurrency-trace",
         "atom:runtime-demo-calls-checkout",
@@ -8321,6 +8648,9 @@
       "atomObservationRefs": [
         "atom:capability-present-demo",
         "atom:cech-money-runtime",
+        "atom:drift-cell-boundary",
+        "atom:drift-cell-capture",
+        "atom:drift-cell-display",
         "atom:runtime-checkout-trace",
         "atom:runtime-concurrency-trace",
         "atom:runtime-demo-calls-checkout",
@@ -8447,8 +8777,8 @@
       "viewerDataRef": "archsig-atom-viewer-data.json"
     },
     "assumptionSummary": {
-      "assumedCount": 7,
-      "checkedCount": 4,
+      "assumedCount": 14,
+      "checkedCount": 7,
       "violatedCount": 0
     },
     "boundaryDigest": {
@@ -8501,9 +8831,58 @@
           "checkedBy": null,
           "status": "assumed",
           "theoremRef": "part4/12.4"
+        },
+        {
+          "assumedBy": "law-surface:law-surface:practical-rust-v052",
+          "assumption": "selected quotient sheaf condition for law-surface:practical-rust-v052",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part10/7.3"
+        },
+        {
+          "assumedBy": "repair-plan author",
+          "assumption": "repair-plan complex enumeration completeness for repair-plan:one-cent-repaired",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part10/3.1"
+        },
+        {
+          "assumedBy": "comparison author",
+          "assumption": "comparison target complex enumeration completeness for repair-plan:one-cent-repaired",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part10/6.2"
+        },
+        {
+          "assumedBy": "trueSheafCertificate author",
+          "assumption": "global sheaf condition for repair-plan:one-cent-repaired",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part4/4.7"
+        },
+        {
+          "assumedBy": "RepairPlan author",
+          "assumption": "faithfulness law supplied for repair-plan:one-cent-repaired",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part4/4.6"
+        },
+        {
+          "assumedBy": "measurement-profile:profile:money-drift@1",
+          "assumption": "harmonic debt minimality remains theorem-candidate",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part8/8.6"
+        },
+        {
+          "assumedBy": "measurement-profile:profile:money-drift@1",
+          "assumption": "cost model is 1-Lipschitz with finite-hodge@1",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part8/8.7"
         }
       ],
-      "assumedCount": 7,
+      "assumedCount": 14,
       "blocking": [],
       "blockingCount": 0,
       "checked": [
@@ -8534,10 +8913,31 @@
           "checkedBy": "measurement-profile:profile:commerce-fulfillment@1.coefficient=F2",
           "status": "checked",
           "theoremRef": "part4/12.3"
+        },
+        {
+          "assumedBy": null,
+          "assumption": "displayedRequiredLawsHold is operationalized only by the declared holdsCriterion raw-value check",
+          "checkedBy": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+          "status": "checked",
+          "theoremRef": "part3/11.3"
+        },
+        {
+          "assumedBy": null,
+          "assumption": "finite cellular measurement model selected by supplied law-equation-surface",
+          "checkedBy": "law-surface:provided-law-equation-surface",
+          "status": "checked",
+          "theoremRef": "part8/8.1"
+        },
+        {
+          "assumedBy": null,
+          "assumption": "finite Hodge decomposition is analytic reading only",
+          "checkedBy": "finite-graph-laplacian@1",
+          "status": "checked",
+          "theoremRef": "part8/8.5"
         }
       ],
-      "checkedCount": 4,
-      "conclusionRef": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+      "checkedCount": 7,
+      "conclusionRef": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
       "id": "boundary-digest:main",
       "nonClaims": [
         "Boundary digest qualifies where the conclusion applies; it does not add a new negative conclusion.",
@@ -8545,12 +8945,12 @@
       ],
       "notComputedCount": 0,
       "profileRef": "profile:commerce-fulfillment@1",
-      "shortText": "Profile-relative. 7 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "shortText": "Profile-relative. 14 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
       "unknownCount": 0,
       "unmeasuredCount": 0,
       "violatedCount": 0
     },
-    "conclusion": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+    "conclusion": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
     "evidenceDetailShape": [
       "What",
       "Why",
@@ -8564,10 +8964,20 @@
         "evidence": {
           "analyticReadingRefs": [],
           "assumptionRefs": [
+            "part10/3.1",
+            "part10/6.2",
+            "part10/7.3",
+            "part3/11.3",
             "part4/11.1",
             "part4/12.3",
             "part4/12.4",
+            "part4/4.6",
+            "part4/4.7",
             "part8/4.2",
+            "part8/8.1",
+            "part8/8.5",
+            "part8/8.6",
+            "part8/8.7",
             "part8/B.8.2"
           ],
           "atomRefs": [
@@ -8744,13 +9154,24 @@
       {
         "evidence": {
           "analyticReadingRefs": [
-            "candidate-regime:stability-placeholder"
+            "candidate-regime:stability-placeholder",
+            "analytic:harmonic-debt:profile:money-drift@1"
           ],
           "assumptionRefs": [
+            "part10/3.1",
+            "part10/6.2",
+            "part10/7.3",
+            "part3/11.3",
             "part4/11.1",
             "part4/12.3",
             "part4/12.4",
+            "part4/4.6",
+            "part4/4.7",
             "part8/4.2",
+            "part8/8.1",
+            "part8/8.5",
+            "part8/8.6",
+            "part8/8.7",
             "part8/B.8.2"
           ],
           "atomRefs": [
@@ -8766,7 +9187,13 @@
           "computedInvariantRefs": [
             "finite-poset-site-shape",
             "cech-cohomology:profile:commerce-fulfillment@1",
-            "topological-debt-capacity:profile:commerce-fulfillment@1"
+            "topological-debt-capacity:profile:commerce-fulfillment@1",
+            "saga-generated-end-to-end-packet",
+            "saga-descent:boundary-membership",
+            "saga-descent:closure-diagnostics",
+            "saga-descent:residual-class",
+            "saga-comparison:h1-transfer",
+            "harmonic-debt:profile:money-drift@1"
           ],
           "contextRefs": [
             "ctx:application",
@@ -8782,7 +9209,9 @@
             "cover:commerce-fulfillment"
           ],
           "evaluatorRefs": [
-            "ag.cech-obstruction"
+            "ag.cech-obstruction",
+            "ag.saga-descent",
+            "ag.saga-grounded"
           ],
           "evidenceResolutionStatus": "analytic_or_boundary_summary",
           "sourceRefs": [
@@ -8918,15 +9347,25 @@
     },
     "profileRef": "profile:commerce-fulfillment@1",
     "readThisFirst": {
-      "boundary": "Profile-relative. 7 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
-      "conclusion": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+      "boundary": "Profile-relative. 14 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "conclusion": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
       "details": {
         "analyticReadingRefs": [],
         "assumptionRefs": [
+          "part10/3.1",
+          "part10/6.2",
+          "part10/7.3",
+          "part3/11.3",
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
+          "part4/4.6",
+          "part4/4.7",
           "part8/4.2",
+          "part8/8.1",
+          "part8/8.5",
+          "part8/8.6",
+          "part8/8.7",
           "part8/B.8.2"
         ],
         "atomRefs": [
@@ -8997,13 +9436,750 @@
     "structuralVerdictSummary": {
       "measuredNonzeroCount": 0,
       "nonTerminalCount": 0,
-      "rowCount": 1,
+      "rowCount": 5,
       "unmeasuredCount": 0
     }
   },
-  "runId": "run:33ea6451608b",
+  "runId": "run:8e5ab0ca43a5",
   "sagaDescent": {
-    "leafFieldMap": [],
+    "leafFieldMap": [
+      {
+        "packetPath": "/structuralVerdict/1/evaluator",
+        "viewerPath": "stages[0].rows[0].evaluator"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/law",
+        "viewerPath": "stages[0].rows[0].law"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdict",
+        "viewerPath": "stages[0].rows[0].verdict"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdictData/inScope",
+        "viewerPath": "stages[0].rows[0].inScope"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdictData/zero",
+        "viewerPath": "stages[0].rows[0].zero"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdictData/nonZero",
+        "viewerPath": "stages[0].rows[0].nonZero"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdictData/methodStatus",
+        "viewerPath": "stages[0].rows[0].methodStatus"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/verdictData/certRef",
+        "viewerPath": "stages[0].rows[0].certRef"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/reason",
+        "viewerPath": "stages[0].rows[0].reason"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/dependsOnAssumptions/0",
+        "viewerPath": "stages[0].rows[0].dependsOnAssumptions[0]"
+      },
+      {
+        "packetPath": "/structuralVerdict/1/dependsOnAssumptions/1",
+        "viewerPath": "stages[0].rows[0].dependsOnAssumptions[1]"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/evaluator",
+        "viewerPath": "stages[1].rows[0].evaluator"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/law",
+        "viewerPath": "stages[1].rows[0].law"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdict",
+        "viewerPath": "stages[1].rows[0].verdict"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdictData/inScope",
+        "viewerPath": "stages[1].rows[0].inScope"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdictData/zero",
+        "viewerPath": "stages[1].rows[0].zero"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdictData/nonZero",
+        "viewerPath": "stages[1].rows[0].nonZero"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdictData/methodStatus",
+        "viewerPath": "stages[1].rows[0].methodStatus"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/verdictData/certRef",
+        "viewerPath": "stages[1].rows[0].certRef"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/reason",
+        "viewerPath": "stages[1].rows[0].reason"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/dependsOnAssumptions/0",
+        "viewerPath": "stages[1].rows[0].dependsOnAssumptions[0]"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/dependsOnAssumptions/1",
+        "viewerPath": "stages[1].rows[0].dependsOnAssumptions[1]"
+      },
+      {
+        "packetPath": "/structuralVerdict/2/dependsOnAssumptions/2",
+        "viewerPath": "stages[1].rows[0].dependsOnAssumptions[2]"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/evaluator",
+        "viewerPath": "stages[1].rows[1].evaluator"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/law",
+        "viewerPath": "stages[1].rows[1].law"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/verdict",
+        "viewerPath": "stages[1].rows[1].verdict"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/verdictData/inScope",
+        "viewerPath": "stages[1].rows[1].inScope"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/verdictData/zero",
+        "viewerPath": "stages[1].rows[1].zero"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/verdictData/nonZero",
+        "viewerPath": "stages[1].rows[1].nonZero"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/verdictData/methodStatus",
+        "viewerPath": "stages[1].rows[1].methodStatus"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/verdictData/certRef",
+        "viewerPath": "stages[1].rows[1].certRef"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/reason",
+        "viewerPath": "stages[1].rows[1].reason"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/dependsOnAssumptions/0",
+        "viewerPath": "stages[1].rows[1].dependsOnAssumptions[0]"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/dependsOnAssumptions/1",
+        "viewerPath": "stages[1].rows[1].dependsOnAssumptions[1]"
+      },
+      {
+        "packetPath": "/structuralVerdict/3/dependsOnAssumptions/2",
+        "viewerPath": "stages[1].rows[1].dependsOnAssumptions[2]"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/evaluator",
+        "viewerPath": "stages[1].rows[2].evaluator"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/law",
+        "viewerPath": "stages[1].rows[2].law"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/verdict",
+        "viewerPath": "stages[1].rows[2].verdict"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/verdictData/inScope",
+        "viewerPath": "stages[1].rows[2].inScope"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/verdictData/zero",
+        "viewerPath": "stages[1].rows[2].zero"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/verdictData/nonZero",
+        "viewerPath": "stages[1].rows[2].nonZero"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/verdictData/methodStatus",
+        "viewerPath": "stages[1].rows[2].methodStatus"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/verdictData/certRef",
+        "viewerPath": "stages[1].rows[2].certRef"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/reason",
+        "viewerPath": "stages[1].rows[2].reason"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/dependsOnAssumptions/0",
+        "viewerPath": "stages[1].rows[2].dependsOnAssumptions[0]"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/dependsOnAssumptions/1",
+        "viewerPath": "stages[1].rows[2].dependsOnAssumptions[1]"
+      },
+      {
+        "packetPath": "/structuralVerdict/4/dependsOnAssumptions/2",
+        "viewerPath": "stages[1].rows[2].dependsOnAssumptions[2]"
+      },
+      {
+        "packetPath": "/computedInvariants/3/invariantId",
+        "viewerPath": "stages[0].rows[1].invariantId"
+      },
+      {
+        "packetPath": "/computedInvariants/3/evaluator",
+        "viewerPath": "stages[0].rows[1].evaluator"
+      },
+      {
+        "packetPath": "/computedInvariants/3/theoremRef",
+        "viewerPath": "stages[0].rows[1].theoremRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/checkKind",
+        "viewerPath": "stages[0].rows[1].premise.checkKind"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/name",
+        "viewerPath": "stages[0].rows[1].premise.name"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/0/chart",
+        "viewerPath": "stages[0].rows[1].premise.perChart[0].chart"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/0/defectObservable/axis",
+        "viewerPath": "stages[0].rows[1].premise.perChart[0].defectObservable.axis"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/0/defectObservable/predicate",
+        "viewerPath": "stages[0].rows[1].premise.perChart[0].defectObservable.predicate"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/0/defectValueRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[0].defectValueRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/0/holds",
+        "viewerPath": "stages[0].rows[1].premise.perChart[0].holds"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/0/holdsCriterionRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[0].holdsCriterionRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/0/law",
+        "viewerPath": "stages[0].rows[1].premise.perChart[0].law"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/1/chart",
+        "viewerPath": "stages[0].rows[1].premise.perChart[1].chart"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/1/defectObservable/axis",
+        "viewerPath": "stages[0].rows[1].premise.perChart[1].defectObservable.axis"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/1/defectObservable/predicate",
+        "viewerPath": "stages[0].rows[1].premise.perChart[1].defectObservable.predicate"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/1/defectValueRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[1].defectValueRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/1/holds",
+        "viewerPath": "stages[0].rows[1].premise.perChart[1].holds"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/1/holdsCriterionRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[1].holdsCriterionRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/1/law",
+        "viewerPath": "stages[0].rows[1].premise.perChart[1].law"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/2/chart",
+        "viewerPath": "stages[0].rows[1].premise.perChart[2].chart"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/2/defectObservable/axis",
+        "viewerPath": "stages[0].rows[1].premise.perChart[2].defectObservable.axis"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/2/defectObservable/predicate",
+        "viewerPath": "stages[0].rows[1].premise.perChart[2].defectObservable.predicate"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/2/defectValueRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[2].defectValueRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/2/holds",
+        "viewerPath": "stages[0].rows[1].premise.perChart[2].holds"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/2/holdsCriterionRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[2].holdsCriterionRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/2/law",
+        "viewerPath": "stages[0].rows[1].premise.perChart[2].law"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/3/chart",
+        "viewerPath": "stages[0].rows[1].premise.perChart[3].chart"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/3/defectObservable/axis",
+        "viewerPath": "stages[0].rows[1].premise.perChart[3].defectObservable.axis"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/3/defectObservable/predicate",
+        "viewerPath": "stages[0].rows[1].premise.perChart[3].defectObservable.predicate"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/3/defectValueRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[3].defectValueRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/3/holds",
+        "viewerPath": "stages[0].rows[1].premise.perChart[3].holds"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/3/holdsCriterionRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[3].holdsCriterionRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/3/law",
+        "viewerPath": "stages[0].rows[1].premise.perChart[3].law"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/4/chart",
+        "viewerPath": "stages[0].rows[1].premise.perChart[4].chart"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/4/defectObservable/axis",
+        "viewerPath": "stages[0].rows[1].premise.perChart[4].defectObservable.axis"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/4/defectObservable/predicate",
+        "viewerPath": "stages[0].rows[1].premise.perChart[4].defectObservable.predicate"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/4/defectValueRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[4].defectValueRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/4/holds",
+        "viewerPath": "stages[0].rows[1].premise.perChart[4].holds"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/4/holdsCriterionRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[4].holdsCriterionRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/4/law",
+        "viewerPath": "stages[0].rows[1].premise.perChart[4].law"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/5/chart",
+        "viewerPath": "stages[0].rows[1].premise.perChart[5].chart"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/5/defectObservable/axis",
+        "viewerPath": "stages[0].rows[1].premise.perChart[5].defectObservable.axis"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/5/defectObservable/predicate",
+        "viewerPath": "stages[0].rows[1].premise.perChart[5].defectObservable.predicate"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/5/defectValueRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[5].defectValueRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/5/holds",
+        "viewerPath": "stages[0].rows[1].premise.perChart[5].holds"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/5/holdsCriterionRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[5].holdsCriterionRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/5/law",
+        "viewerPath": "stages[0].rows[1].premise.perChart[5].law"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/6/chart",
+        "viewerPath": "stages[0].rows[1].premise.perChart[6].chart"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/6/defectObservable/axis",
+        "viewerPath": "stages[0].rows[1].premise.perChart[6].defectObservable.axis"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/6/defectObservable/predicate",
+        "viewerPath": "stages[0].rows[1].premise.perChart[6].defectObservable.predicate"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/6/defectValueRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[6].defectValueRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/6/holds",
+        "viewerPath": "stages[0].rows[1].premise.perChart[6].holds"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/6/holdsCriterionRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[6].holdsCriterionRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/6/law",
+        "viewerPath": "stages[0].rows[1].premise.perChart[6].law"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/7/chart",
+        "viewerPath": "stages[0].rows[1].premise.perChart[7].chart"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/7/defectObservable/axis",
+        "viewerPath": "stages[0].rows[1].premise.perChart[7].defectObservable.axis"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/7/defectObservable/predicate",
+        "viewerPath": "stages[0].rows[1].premise.perChart[7].defectObservable.predicate"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/7/defectValueRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[7].defectValueRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/7/holds",
+        "viewerPath": "stages[0].rows[1].premise.perChart[7].holds"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/7/holdsCriterionRef",
+        "viewerPath": "stages[0].rows[1].premise.perChart[7].holdsCriterionRef"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/perChart/7/law",
+        "viewerPath": "stages[0].rows[1].premise.perChart[7].law"
+      },
+      {
+        "packetPath": "/computedInvariants/3/lawDependent/premise/status",
+        "viewerPath": "stages[0].rows[1].premise.status"
+      },
+      {
+        "packetPath": "/computedInvariants/3/detectorCount",
+        "viewerPath": "stages[0].rows[1].detectorCount"
+      },
+      {
+        "packetPath": "/computedInvariants/4/invariantId",
+        "viewerPath": "stages[1].measurements[0].invariantId"
+      },
+      {
+        "packetPath": "/computedInvariants/4/evaluator",
+        "viewerPath": "stages[1].measurements[0].evaluator"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/inB1",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.inB1"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/residualSupport/0/overlapRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.residualSupport[0].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/residualSupport/1/overlapRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.residualSupport[1].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/residualSupport/2/overlapRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.residualSupport[2].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/residualSupport/3/overlapRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.residualSupport[3].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/residualSupport/4/overlapRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.residualSupport[4].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/residualSupport/5/overlapRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.residualSupport[5].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/residualSupport/6/overlapRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.residualSupport[6].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/residualSupport/7/overlapRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.residualSupport[7].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/residualSupport/8/overlapRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.residualSupport[8].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/witnessPrimitiveCombination/0/chartRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.witnessPrimitiveCombination[0].chartRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/witnessPrimitiveCombination/1/chartRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.witnessPrimitiveCombination[1].chartRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/witnessPrimitiveCombination/2/chartRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.witnessPrimitiveCombination[2].chartRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/witnessPrimitiveCombination/3/chartRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.witnessPrimitiveCombination[3].chartRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/witnessPrimitiveCombination/4/chartRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.witnessPrimitiveCombination[4].chartRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/witnessPrimitiveCombination/5/chartRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.witnessPrimitiveCombination[5].chartRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/witnessPrimitiveCombination/6/chartRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.witnessPrimitiveCombination[6].chartRef"
+      },
+      {
+        "packetPath": "/computedInvariants/4/boundaryMembership/witnessPrimitiveCombination/7/chartRef",
+        "viewerPath": "stages[1].measurements[0].boundaryMembership.witnessPrimitiveCombination[7].chartRef"
+      },
+      {
+        "packetPath": "/computedInvariants/5/invariantId",
+        "viewerPath": "stages[1].measurements[1].invariantId"
+      },
+      {
+        "packetPath": "/computedInvariants/5/evaluator",
+        "viewerPath": "stages[1].measurements[1].evaluator"
+      },
+      {
+        "packetPath": "/computedInvariants/5/closureDiagnostics/residualComponentCovered",
+        "viewerPath": "stages[1].measurements[1].closureDiagnostics.residualComponentCovered"
+      },
+      {
+        "packetPath": "/computedInvariants/5/closureDiagnostics/residualComponentFaithful",
+        "viewerPath": "stages[1].measurements[1].closureDiagnostics.residualComponentFaithful"
+      },
+      {
+        "packetPath": "/computedInvariants/5/faithfulnessBasis/basis",
+        "viewerPath": "stages[1].measurements[1].faithfulnessBasis.basis"
+      },
+      {
+        "packetPath": "/computedInvariants/5/faithfulnessBasis/completeSupportPrimitiveCount",
+        "viewerPath": "stages[1].measurements[1].faithfulnessBasis.completeSupportPrimitiveCount"
+      },
+      {
+        "packetPath": "/computedInvariants/5/faithfulnessBasis/mode",
+        "viewerPath": "stages[1].measurements[1].faithfulnessBasis.mode"
+      },
+      {
+        "packetPath": "/computedInvariants/6/invariantId",
+        "viewerPath": "stages[1].measurements[2].invariantId"
+      },
+      {
+        "packetPath": "/computedInvariants/6/evaluator",
+        "viewerPath": "stages[1].measurements[2].evaluator"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/basis",
+        "viewerPath": "stages[1].measurements[2].residualClass.basis"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/cocycle/checked",
+        "viewerPath": "stages[1].measurements[2].residualClass.cocycle.checked"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/cocycle/deltaOne",
+        "viewerPath": "stages[1].measurements[2].residualClass.cocycle.deltaOne"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/cocycle/tripleOverlapRefs/0/overlapRefs/0",
+        "viewerPath": "stages[1].measurements[2].residualClass.cocycle.tripleOverlapRefs[0].overlapRefs[0]"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/cocycle/tripleOverlapRefs/0/overlapRefs/1",
+        "viewerPath": "stages[1].measurements[2].residualClass.cocycle.tripleOverlapRefs[0].overlapRefs[1]"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/cocycle/tripleOverlapRefs/0/overlapRefs/2",
+        "viewerPath": "stages[1].measurements[2].residualClass.cocycle.tripleOverlapRefs[0].overlapRefs[2]"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/cocycle/tripleOverlapRefs/0/tripleRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.cocycle.tripleOverlapRefs[0].tripleRef"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/nonZero",
+        "viewerPath": "stages[1].measurements[2].residualClass.nonZero"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/quotient",
+        "viewerPath": "stages[1].measurements[2].residualClass.quotient"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/representative/0/overlapRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.representative[0].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/representative/1/overlapRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.representative[1].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/representative/2/overlapRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.representative[2].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/representative/3/overlapRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.representative[3].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/representative/4/overlapRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.representative[4].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/representative/5/overlapRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.representative[5].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/representative/6/overlapRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.representative[6].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/representative/7/overlapRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.representative[7].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/6/residualClassSupport/representative/8/overlapRef",
+        "viewerPath": "stages[1].measurements[2].residualClass.representative[8].overlapRef"
+      },
+      {
+        "packetPath": "/computedInvariants/7/invariantId",
+        "viewerPath": "stages[2].rows[0].invariantId"
+      },
+      {
+        "packetPath": "/computedInvariants/7/evaluator",
+        "viewerPath": "stages[2].rows[0].evaluator"
+      },
+      {
+        "packetPath": "/computedInvariants/7/kind",
+        "viewerPath": "stages[2].rows[0].kind"
+      },
+      {
+        "packetPath": "/computedInvariants/7/status",
+        "viewerPath": "stages[2].rows[0].status"
+      },
+      {
+        "packetPath": "/computedInvariants/7/conclusionCode",
+        "viewerPath": "stages[2].rows[0].conclusionCode"
+      },
+      {
+        "packetPath": "/computedInvariants/7/failureCode",
+        "viewerPath": "stages[2].rows[0].failureCode"
+      },
+      {
+        "packetPath": "/computedInvariants/7/contract/classPrerequisite",
+        "viewerPath": "stages[2].rows[0].contract.classPrerequisite"
+      },
+      {
+        "packetPath": "/computedInvariants/7/contract/contractChecked",
+        "viewerPath": "stages[2].rows[0].contract.contractChecked"
+      },
+      {
+        "packetPath": "/computedInvariants/7/contract/h1ComparisonDataKind",
+        "viewerPath": "stages[2].rows[0].contract.h1ComparisonDataKind"
+      },
+      {
+        "packetPath": "/computedInvariants/7/contract/incidenceBridgeKind",
+        "viewerPath": "stages[2].rows[0].contract.incidenceBridgeKind"
+      },
+      {
+        "packetPath": "/computedInvariants/7/contract/normalizedComplexFingerprint",
+        "viewerPath": "stages[2].rows[0].contract.normalizedComplexFingerprint"
+      },
+      {
+        "packetPath": "/computedInvariants/7/contract/targetClassComputed",
+        "viewerPath": "stages[2].rows[0].contract.targetClassComputed"
+      },
+      {
+        "packetPath": "/computedInvariants/8/invariantId",
+        "viewerPath": "stages[1].harmonicDebt[0].invariantId"
+      },
+      {
+        "packetPath": "/computedInvariants/8/evaluator",
+        "viewerPath": "stages[1].harmonicDebt[0].evaluator"
+      },
+      {
+        "packetPath": "/computedInvariants/8/essentialRepairLowerBound",
+        "viewerPath": "stages[1].harmonicDebt[0].essentialRepairLowerBound"
+      },
+      {
+        "packetPath": "/computedInvariants/8/lowerBoundStatus",
+        "viewerPath": "stages[1].harmonicDebt[0].lowerBoundStatus"
+      },
+      {
+        "packetPath": "/analyticReadings/1/evaluator",
+        "viewerPath": "stages[1].harmonicDebt[1].evaluator"
+      },
+      {
+        "packetPath": "/analyticReadings/1/readingId",
+        "viewerPath": "stages[1].harmonicDebt[1].readingId"
+      },
+      {
+        "packetPath": "/analyticReadings/1/regime",
+        "viewerPath": "stages[1].harmonicDebt[1].regime"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/certificate",
+        "viewerPath": "stages[1].harmonicDebt[1].value.certificate"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/essentialRepairLowerBound",
+        "viewerPath": "stages[1].harmonicDebt[1].value.essentialRepairLowerBound"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/harmonicDebtNorm",
+        "viewerPath": "stages[1].harmonicDebt[1].value.harmonicDebtNorm"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/lowerBoundStatus",
+        "viewerPath": "stages[1].harmonicDebt[1].value.lowerBoundStatus"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/nonConclusion",
+        "viewerPath": "stages[1].harmonicDebt[1].value.nonConclusion"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/readingKind",
+        "viewerPath": "stages[1].harmonicDebt[1].value.readingKind"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/selectedCoverRef",
+        "viewerPath": "stages[1].harmonicDebt[1].value.selectedCoverRef"
+      },
+      {
+        "packetPath": "/analyticReadings/1/value/sourceProxyReadingKind",
+        "viewerPath": "stages[1].harmonicDebt[1].value.sourceProxyReadingKind"
+      }
+    ],
     "nonClaims": [
       "The projection does not create structural verdicts, comparison results, or repair decisions.",
       "A missing packet field remains absent; silence_by_design remains visible as a silence row."
@@ -9015,25 +10191,402 @@
       {
         "measurements": [],
         "order": 0,
-        "rows": [],
+        "rows": [
+          {
+            "certRef": "computedInvariants/saga-generated-end-to-end-packet",
+            "dependsOnAssumptions": [
+              "assumption:part3-11-3:displayedRequiredLawsHold-is-operationalized-only-by-the-declared-holdsCriterion-raw-value-check",
+              "assumption:part10-7-3:selected-quotient-sheaf-condition-for-law-surface-practical-rust-v052"
+            ],
+            "evaluator": "ag.saga-grounded",
+            "inScope": true,
+            "law": "law:money-convention",
+            "methodStatus": "holds_criterion_raw_value_zero",
+            "nonZero": false,
+            "reason": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+            "verdict": "measured_zero",
+            "zero": true
+          },
+          {
+            "detectorCount": 0,
+            "detectorFindings": [],
+            "evaluator": "ag.saga-grounded",
+            "invariantId": "saga-generated-end-to-end-packet",
+            "premise": {
+              "checkKind": "holds-criterion-raw-value",
+              "name": "displayedRequiredLawsHold",
+              "perChart": [
+                {
+                  "chart": "ctx:domain",
+                  "defectObservable": {
+                    "axis": "square-free",
+                    "predicate": "support"
+                  },
+                  "defectValueRef": "input:archmap_repaired.json#ctx:domain",
+                  "holds": true,
+                  "holdsCriterionRef": "law-surface:law-surface:practical-rust-v052#defectSources/law:money-convention/holdsCriterion",
+                  "law": "law:money-convention",
+                  "rawAtomRefs": [],
+                  "supportVariables": []
+                },
+                {
+                  "chart": "ctx:ports",
+                  "defectObservable": {
+                    "axis": "square-free",
+                    "predicate": "support"
+                  },
+                  "defectValueRef": "input:archmap_repaired.json#ctx:ports",
+                  "holds": true,
+                  "holdsCriterionRef": "law-surface:law-surface:practical-rust-v052#defectSources/law:money-convention/holdsCriterion",
+                  "law": "law:money-convention",
+                  "rawAtomRefs": [],
+                  "supportVariables": []
+                },
+                {
+                  "chart": "ctx:application",
+                  "defectObservable": {
+                    "axis": "square-free",
+                    "predicate": "support"
+                  },
+                  "defectValueRef": "input:archmap_repaired.json#ctx:application",
+                  "holds": true,
+                  "holdsCriterionRef": "law-surface:law-surface:practical-rust-v052#defectSources/law:money-convention/holdsCriterion",
+                  "law": "law:money-convention",
+                  "rawAtomRefs": [],
+                  "supportVariables": []
+                },
+                {
+                  "chart": "ctx:infrastructure",
+                  "defectObservable": {
+                    "axis": "square-free",
+                    "predicate": "support"
+                  },
+                  "defectValueRef": "input:archmap_repaired.json#ctx:infrastructure",
+                  "holds": true,
+                  "holdsCriterionRef": "law-surface:law-surface:practical-rust-v052#defectSources/law:money-convention/holdsCriterion",
+                  "law": "law:money-convention",
+                  "rawAtomRefs": [],
+                  "supportVariables": []
+                },
+                {
+                  "chart": "ctx:policy",
+                  "defectObservable": {
+                    "axis": "square-free",
+                    "predicate": "support"
+                  },
+                  "defectValueRef": "input:archmap_repaired.json#ctx:policy",
+                  "holds": true,
+                  "holdsCriterionRef": "law-surface:law-surface:practical-rust-v052#defectSources/law:money-convention/holdsCriterion",
+                  "law": "law:money-convention",
+                  "rawAtomRefs": [],
+                  "supportVariables": []
+                },
+                {
+                  "chart": "ctx:runtime",
+                  "defectObservable": {
+                    "axis": "square-free",
+                    "predicate": "support"
+                  },
+                  "defectValueRef": "input:archmap_repaired.json#ctx:runtime",
+                  "holds": true,
+                  "holdsCriterionRef": "law-surface:law-surface:practical-rust-v052#defectSources/law:money-convention/holdsCriterion",
+                  "law": "law:money-convention",
+                  "rawAtomRefs": [],
+                  "supportVariables": []
+                },
+                {
+                  "chart": "ctx:shared",
+                  "defectObservable": {
+                    "axis": "square-free",
+                    "predicate": "support"
+                  },
+                  "defectValueRef": "input:archmap_repaired.json#ctx:shared",
+                  "holds": true,
+                  "holdsCriterionRef": "law-surface:law-surface:practical-rust-v052#defectSources/law:money-convention/holdsCriterion",
+                  "law": "law:money-convention",
+                  "rawAtomRefs": [],
+                  "supportVariables": []
+                },
+                {
+                  "chart": "ctx:settlement",
+                  "defectObservable": {
+                    "axis": "square-free",
+                    "predicate": "support"
+                  },
+                  "defectValueRef": "input:archmap_repaired.json#ctx:settlement",
+                  "holds": true,
+                  "holdsCriterionRef": "law-surface:law-surface:practical-rust-v052#defectSources/law:money-convention/holdsCriterion",
+                  "law": "law:money-convention",
+                  "rawAtomRefs": [],
+                  "supportVariables": []
+                }
+              ],
+              "status": "holds"
+            },
+            "theoremRef": "part10/7.5"
+          }
+        ],
         "stageId": "grounding",
-        "status": "not_computed",
+        "status": "measured_zero",
         "visualRole": "grounding"
       },
       {
-        "harmonicDebt": [],
-        "measurements": [],
+        "harmonicDebt": [
+          {
+            "essentialRepairLowerBound": 0.0,
+            "evaluator": "ag.harmonic-debt",
+            "invariantId": "harmonic-debt:profile:money-drift@1",
+            "lowerBoundStatus": "cost_model_supplied"
+          },
+          {
+            "evaluator": "ag.harmonic-debt",
+            "readingId": "analytic:harmonic-debt:profile:money-drift@1",
+            "regime": "analytic-measurement",
+            "value": {
+              "certificate": "local adjustment cannot reduce repair cost below ||h(g)||/L under the supplied cost model",
+              "essentialRepairLowerBound": 0.0,
+              "harmonicDebtNorm": 0.0,
+              "lowerBoundStatus": "cost_model_supplied",
+              "nonConclusion": "analytic harmonic debt is not a structural lawfulness verdict",
+              "readingKind": "harmonic-debt@1",
+              "selectedCoverRef": "cover:commerce-fulfillment",
+              "sourceProxyReadingKind": "graph-laplacian-hodge-proxy@1"
+            }
+          }
+        ],
+        "measurements": [
+          {
+            "boundaryMembership": {
+              "inB1": true,
+              "residualSupport": [
+                {
+                  "overlapRef": "overlap:application-settlement",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:application-ports",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:infrastructure-ports",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:infrastructure-settlement",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:application-domain",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:application-shared",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:domain-shared",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:policy-shared",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:runtime-application",
+                  "support": []
+                }
+              ],
+              "witnessPrimitiveCombination": [
+                {
+                  "chartRef": "ctx:domain",
+                  "variables": []
+                },
+                {
+                  "chartRef": "ctx:ports",
+                  "variables": []
+                },
+                {
+                  "chartRef": "ctx:application",
+                  "variables": []
+                },
+                {
+                  "chartRef": "ctx:infrastructure",
+                  "variables": []
+                },
+                {
+                  "chartRef": "ctx:policy",
+                  "variables": []
+                },
+                {
+                  "chartRef": "ctx:runtime",
+                  "variables": []
+                },
+                {
+                  "chartRef": "ctx:shared",
+                  "variables": []
+                },
+                {
+                  "chartRef": "ctx:settlement",
+                  "variables": []
+                }
+              ]
+            },
+            "evaluator": "ag.saga-descent",
+            "invariantId": "saga-descent:boundary-membership"
+          },
+          {
+            "closureDiagnostics": {
+              "aliasWitnesses": [],
+              "residualComponentCovered": true,
+              "residualComponentFaithful": true
+            },
+            "evaluator": "ag.saga-descent",
+            "faithfulnessBasis": {
+              "basis": "supplied-data",
+              "completeSupportPrimitiveCount": 0,
+              "mode": "supplied"
+            },
+            "invariantId": "saga-descent:closure-diagnostics"
+          },
+          {
+            "evaluator": "ag.saga-descent",
+            "invariantId": "saga-descent:residual-class",
+            "residualClass": {
+              "basis": "Z1/B1",
+              "cocycle": {
+                "checked": true,
+                "deltaOne": "zero",
+                "tripleOverlapRefs": [
+                  {
+                    "overlapRefs": [
+                      "overlap:application-domain",
+                      "overlap:application-shared",
+                      "overlap:domain-shared"
+                    ],
+                    "tripleRef": "triple:application-domain-shared"
+                  }
+                ]
+              },
+              "nonZero": false,
+              "quotient": "Z1/B1",
+              "representative": [
+                {
+                  "overlapRef": "overlap:application-settlement",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:application-ports",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:infrastructure-ports",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:infrastructure-settlement",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:application-domain",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:application-shared",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:domain-shared",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:policy-shared",
+                  "support": []
+                },
+                {
+                  "overlapRef": "overlap:runtime-application",
+                  "support": []
+                }
+              ]
+            }
+          }
+        ],
         "order": 1,
-        "rows": [],
+        "rows": [
+          {
+            "certRef": "computedInvariants/saga-descent:boundary-membership",
+            "dependsOnAssumptions": [
+              "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-one-cent-repaired",
+              "assumption:part10-6-2:comparison-target-complex-enumeration-completeness-for-repair-plan-one-cent-repaired",
+              "assumption:part4-4-6:faithfulness-law-supplied-for-repair-plan-one-cent-repaired"
+            ],
+            "evaluator": "ag.saga-descent",
+            "inScope": true,
+            "law": "saga.residual-boundary-membership",
+            "methodStatus": "residual_in_b1",
+            "nonZero": false,
+            "reason": "supplied residual lies in B1 for the selected RepairPlan complex",
+            "verdict": "measured_zero",
+            "zero": true
+          },
+          {
+            "certRef": "computedInvariants/saga-descent:closure-diagnostics",
+            "dependsOnAssumptions": [
+              "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-one-cent-repaired",
+              "assumption:part10-6-2:comparison-target-complex-enumeration-completeness-for-repair-plan-one-cent-repaired",
+              "assumption:part4-4-6:faithfulness-law-supplied-for-repair-plan-one-cent-repaired"
+            ],
+            "evaluator": "ag.saga-descent",
+            "inScope": true,
+            "law": "saga.global-coherence",
+            "methodStatus": "complete_support_global_coherent",
+            "nonZero": false,
+            "reason": "residual is a B1 boundary inside the complete-support RepairPlan regime",
+            "verdict": "measured_zero",
+            "zero": true
+          },
+          {
+            "certRef": "computedInvariants/saga-descent:residual-class",
+            "dependsOnAssumptions": [
+              "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-one-cent-repaired",
+              "assumption:part10-6-2:comparison-target-complex-enumeration-completeness-for-repair-plan-one-cent-repaired",
+              "assumption:part4-4-6:faithfulness-law-supplied-for-repair-plan-one-cent-repaired"
+            ],
+            "evaluator": "ag.saga-descent",
+            "inScope": true,
+            "law": "saga.residual-class",
+            "methodStatus": "zero_class_representative",
+            "nonZero": false,
+            "reason": "supplied Z1 representative is zero in Z1/B1",
+            "verdict": "measured_zero",
+            "zero": true
+          }
+        ],
         "stageId": "descent",
-        "status": "not_computed",
+        "status": "measured_zero",
         "visualRole": "descent-measurement"
       },
       {
         "order": 2,
-        "rows": [],
+        "rows": [
+          {
+            "conclusionCode": "SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA",
+            "contract": {
+              "classPrerequisite": true,
+              "contractChecked": true,
+              "h1ComparisonDataKind": "explicit",
+              "incidenceBridgeKind": "explicit",
+              "normalizedComplexFingerprint": "574638b7510e991db10a8cebfbd17202219a126ba7edd510e57f50367ce382e6",
+              "targetClassComputed": true
+            },
+            "evaluator": "ag.saga-comparison",
+            "failureCode": null,
+            "invariantId": "saga-comparison:h1-transfer",
+            "kind": "h1-comparison-transfer",
+            "status": "established"
+          }
+        ],
         "stageId": "comparison",
-        "status": "not_computed",
+        "status": "measured_zero",
         "visualRole": "transfer-comparison"
       },
       {
