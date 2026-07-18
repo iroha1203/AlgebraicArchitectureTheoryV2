@@ -1,5 +1,6 @@
 import Formal.AG.ReadingFunctoriality
 import Formal.AG.ReadingFunctoriality.FiniteExamples
+import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
 import Formal.AG.ReadingFunctoriality.LinearLerayComparison
 
 /-!
@@ -4372,5 +4373,81 @@ example : Sieve.generate topologyFineCover.presieve ∈ fineTopology topologyBas
   topologyFineCover_mem_fineTopology
 
 end R9c
+
+/-! R9d: actual topology-change firing on `Sheaf.H`. -/
+
+namespace R9d
+
+open ReadingFunctorialityFinite
+
+example : Cohomology.IsLerayFor topologyCoarseCover topologyObstructionSheaf :=
+  topologyCoarseLerayCover
+
+noncomputable example :
+    (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).CechCocycle 1 :=
+  topologyCechOneCocycle
+
+noncomputable example :
+    (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).AdditiveCechHn 1 :=
+  topologyCechOneClass
+
+example : topologyCechOneClass ≠ 0 := topologyCechOneClass_ne_zero
+
+example
+    (x : (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).AdditiveCechHn 1) :
+    x = 0 ∨ x = topologyCechOneClass :=
+  topologyCechHOne_eq_zero_or_eq_one x
+
+noncomputable example : CommonCoefficientSheaf coarseTopology fineTopology :=
+  topologyCoefficient
+
+example : topologyCoefficient.presheaf =
+    topologyObstructionSheaf.toAddCommGrpSheaf.val :=
+  topologyCoefficient_presheaf
+
+noncomputable example : topologyCoefficient.coarse.H nonzeroDegree :=
+  topologySourceHOneClass
+
+example : topologySourceHOneClass =
+    Cohomology.cechToSheafH topologyCoarseCover topologyObstructionSheaf
+      topologyBaseIsTerminal topologyCoarseLerayCover nonzeroDegree
+      topologyCechOneClass :=
+  topologySourceHOneClass_eq_cech
+
+noncomputable example :
+    (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).AdditiveCechHn 1 ≃+
+        topologyCoefficient.fine.H nonzeroDegree :=
+  topologyCechToFineHOneEquiv
+
+noncomputable example : topologyCoefficient.fine.H nonzeroDegree :=
+  topologyTargetHOneClass
+
+example :
+    topologyCechToFineHOneEquiv.toAddMonoidHom =
+      (coarseFineTopologyRefinement.sheafHMap
+        topologyCoefficient nonzeroDegree).comp
+        (Cohomology.cechToSheafH topologyCoarseCover
+          topologyObstructionSheaf topologyBaseIsTerminal
+          topologyCoarseLerayCover nonzeroDegree) :=
+  topologyCechToFineHOneEquiv_eq_sheafHMap_comp_cech
+
+example :
+    coarseFineTopologyRefinement.sheafHMap
+        topologyCoefficient nonzeroDegree topologySourceHOneClass =
+      topologyTargetHOneClass :=
+  topologySheafHMap_on_sourceClass
+
+example : topologyTargetHOneClass ≠ 0 := topologyTargetHOneClass_ne_zero
+
+example :
+    coarseFineTopologyRefinement.sheafHMap
+      topologyCoefficient nonzeroDegree ≠ 0 :=
+  coarseFineSheafHMap_nonzero
+
+end R9d
 
 end AAT.AG.StatementContractsReadingFunctoriality

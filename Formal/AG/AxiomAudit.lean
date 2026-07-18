@@ -11,6 +11,7 @@ import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Formal.AG.ReadingFunctoriality
+import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
 import Formal.AG.StatementContractsReadingFunctoriality
 import Formal.Util.AssertStandardAxioms
 
@@ -5847,6 +5848,39 @@ def readingFunctoriality_coarseFineTopologyRefinement_selects_fineCover :=
   @AAT.AG.ReadingFunctorialityFinite.coarseFineTopologyRefinement_selects_fineCover
 def readingFunctoriality_topologyFineCover_mem_fineTopology :=
   @AAT.AG.ReadingFunctorialityFinite.topologyFineCover_mem_fineTopology
+
+/-! R9d actual topology-change firing on `Sheaf.H`. -/
+
+def readingFunctoriality_topologyCoarseLerayCover :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoarseLerayCover
+noncomputable def readingFunctoriality_topologyCechOneCocycle :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCechOneCocycle
+noncomputable def readingFunctoriality_topologyCechOneClass :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCechOneClass
+def readingFunctoriality_topologyCechOneClass_ne_zero :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCechOneClass_ne_zero
+def readingFunctoriality_topologyCechHOne_eq_zero_or_eq_one :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCechHOne_eq_zero_or_eq_one
+noncomputable def readingFunctoriality_topologyCoefficient :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCoefficient
+def readingFunctoriality_topologyCoefficient_presheaf :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoefficient_presheaf
+noncomputable def readingFunctoriality_topologySourceHOneClass :=
+  AAT.AG.ReadingFunctorialityFinite.topologySourceHOneClass
+def readingFunctoriality_topologySourceHOneClass_eq_cech :=
+  @AAT.AG.ReadingFunctorialityFinite.topologySourceHOneClass_eq_cech
+noncomputable def readingFunctoriality_topologyCechToFineHOneEquiv :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCechToFineHOneEquiv
+noncomputable def readingFunctoriality_topologyTargetHOneClass :=
+  AAT.AG.ReadingFunctorialityFinite.topologyTargetHOneClass
+def readingFunctoriality_topologyCechToFineHOneEquiv_eq_sheafHMap_comp_cech :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCechToFineHOneEquiv_eq_sheafHMap_comp_cech
+def readingFunctoriality_topologySheafHMap_on_sourceClass :=
+  @AAT.AG.ReadingFunctorialityFinite.topologySheafHMap_on_sourceClass
+def readingFunctoriality_topologyTargetHOneClass_ne_zero :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyTargetHOneClass_ne_zero
+def readingFunctoriality_coarseFineSheafHMap_nonzero :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseFineSheafHMap_nonzero
 
 end AAT.AG.AxiomAudit
 

@@ -5420,5 +5420,1340 @@ theorem topologyCoarseToFineCechHom_nonzero :
   rw [hone] at hval
   exact one_ne_zero hval
 
+private theorem topologyProductWithAuxPatch_not_noMarkerReads_of_A
+    {W : Site.ArchCtx FiniteModel.object} {support : W.Support}
+    (hread : W.minimal.supportReads support
+      FiniteModel.FiniteAtom.componentA) :
+    ¬ TopologyNoMarkerReads
+      (Site.productContext W topologyAuxPatch.ctx) := by
+  intro h
+  exact h.1 (support, PUnit.unit)
+    ⟨hread, by
+      change topologySupportReads .auxPatch FiniteModel.FiniteAtom.componentA
+      exact Or.inl rfl⟩
+
+private theorem topologyProductWithAuxPatch_not_noMarkerReads_of_B
+    {W : Site.ArchCtx FiniteModel.object} {support : W.Support}
+    (hread : W.minimal.supportReads support
+      FiniteModel.FiniteAtom.componentB) :
+    ¬ TopologyNoMarkerReads
+      (Site.productContext W topologyAuxPatch.ctx) := by
+  intro h
+  exact h.2 (support, PUnit.unit)
+    ⟨hread, by
+      change topologySupportReads .auxPatch FiniteModel.FiniteAtom.componentB
+      exact Or.inr rfl⟩
+
+private theorem topologyCoefficientPresheaf_isSheaf_aux_ofTypes :
+    Presieve.IsSheaf topologyAuxPrecoverage.toGrothendieck
+      (topologyCoefficientPresheaf ⋙ forget AddCommGrpCat.{0}) := by
+  rw [Precoverage.isSheaf_toGrothendieck_iff]
+  intro X Y f R hR
+  rcases hR with ⟨hX, hR⟩
+  subst X
+  have hR : R = Presieve.singleton topologyAuxInclusion := eq_of_heq hR
+  subst R
+  intro family hfamily
+  classical
+  have hsubmodule : topologyCoefficientSubmodule
+      (Site.productContext Y.ctx topologyAuxPatch.ctx) =
+        topologyCoefficientSubmodule Y.ctx := by
+    by_cases hY : TopologyNoMarkerReads Y.ctx
+    · have hQ := topologyNoMarkerReads_product_left
+        (V := topologyAuxPatch.ctx) hY
+      simp [topologyCoefficientSubmodule, hY, hQ]
+    · simp only [TopologyNoMarkerReads, not_and_or, not_forall,
+        not_not] at hY
+      rcases hY with hA | hB
+      · rcases hA with ⟨support, hsupport⟩
+        have hQ := topologyProductWithAuxPatch_not_noMarkerReads_of_A hsupport
+        have hYnot : ¬ TopologyNoMarkerReads Y.ctx := fun h =>
+          h.1 support hsupport
+        rw [topologyCoefficientSubmodule, if_neg hQ,
+          topologyCoefficientSubmodule, if_neg hYnot]
+      · rcases hB with ⟨support, hsupport⟩
+        have hQ := topologyProductWithAuxPatch_not_noMarkerReads_of_B hsupport
+        have hYnot : ¬ TopologyNoMarkerReads Y.ctx := fun h =>
+          h.2 support hsupport
+        rw [topologyCoefficientSubmodule, if_neg hQ,
+          topologyCoefficientSubmodule, if_neg hYnot]
+  let Q := topologyProductObject Y topologyAuxPatch
+  let q : Q ⟶ Y := topologyProductLeft Y topologyAuxPatch
+  let qpatch : Q ⟶ topologyAuxPatch :=
+    topologyProductRight Y topologyAuxPatch
+  have hq : (Sieve.generate
+      (Presieve.singleton topologyAuxInclusion)).pullback f q := by
+    change Sieve.generate (Presieve.singleton topologyAuxInclusion) (q ≫ f)
+    have hinclusion : Sieve.generate
+        (Presieve.singleton topologyAuxInclusion) topologyAuxInclusion :=
+      Sieve.le_generate _ _ Presieve.singleton.mk
+    have hcomp := (Sieve.generate
+      (Presieve.singleton topologyAuxInclusion)).downward_closed
+        hinclusion qpatch
+    convert hcomp using 1
+  let reference := family q hq
+  have reference_mem_Y : reference.1 ∈ topologyCoefficientSubmodule Y.ctx := by
+    rw [← hsubmodule]
+    exact reference.2
+  let global : topologyCoefficientSubmodule Y.ctx :=
+    ⟨reference.1, reference_mem_Y⟩
+  have hconstant : ∀ {Z : topologySite.category}
+      (g : Z ⟶ Y)
+      (hg : (Sieve.generate
+        (Presieve.singleton topologyAuxInclusion)).pullback f g),
+      (family g hg).1 = reference.1 := by
+    intro Z g hg
+    let P := topologyProductObject Z Q
+    let pz : P ⟶ Z := topologyProductLeft Z Q
+    let pq : P ⟶ Q := topologyProductRight Z Q
+    have hcompat := hfamily pz pq hg hq (Subsingleton.elim _ _)
+    exact congrArg Subtype.val hcompat
+  refine ⟨global, ?_, ?_⟩
+  · intro Z g hg
+    apply Subtype.ext
+    change global.1 = (family g hg).1
+    exact (hconstant g hg).symm
+  · intro other hother
+    apply Subtype.ext
+    have hqOther := hother q hq
+    have hval := congrArg Subtype.val hqOther
+    change other.1 = global.1
+    exact hval
+
+private theorem topologyCoefficientPresheaf_isSheaf_fine_ofTypes :
+    Presieve.IsSheaf fineTopology
+      (topologyCoefficientPresheaf ⋙ forget AddCommGrpCat.{0}) := by
+  let K := coarseTopology.toCoverage
+  let L := topologyAuxPrecoverage.toGrothendieck.toCoverage
+  have htop : (K ⊔ L).toGrothendieck = fineTopology := by
+    calc
+      (K ⊔ L).toGrothendieck =
+          K.toGrothendieck ⊔ L.toGrothendieck :=
+        (Coverage.gi topologySite.category).gc.l_sup
+      _ = coarseTopology ⊔ topologyAuxPrecoverage.toGrothendieck := by
+        rw [(Coverage.gi topologySite.category).l_u_eq,
+          (Coverage.gi topologySite.category).l_u_eq]
+      _ = fineTopology := fineTopology_eq_coarse_sup_aux.symm
+  rw [← htop]
+  apply (Presieve.isSheaf_sup K L _).2
+  constructor
+  · rw [(Coverage.gi topologySite.category).l_u_eq]
+    simpa [coarseTopology] using topologyCoefficientPresheaf_isSheaf_ofTypes
+  · rw [(Coverage.gi topologySite.category).l_u_eq]
+    exact topologyCoefficientPresheaf_isSheaf_aux_ofTypes
+
+private theorem topologyCoefficientPresheaf_isSheaf_fine :
+    Presheaf.IsSheaf fineTopology
+      topologyObstructionSheaf.toAddCommGrpSheaf.val := by
+  refine (Presheaf.isSheaf_iff_isSheaf_forget
+    (J := fineTopology)
+    (P' := topologyObstructionSheaf.toAddCommGrpSheaf.val)
+    (forget AddCommGrpCat.{1})).2 ?_
+  refine (isSheaf_iff_isSheaf_of_type fineTopology _).2 ?_
+  change Presieve.IsSheaf fineTopology
+    ((topologyCoefficientPresheaf ⋙ forget AddCommGrpCat.{0}) ⋙
+      uliftFunctor.{1, 0})
+  exact Presieve.isSheaf_comp_uliftFunctor fineTopology
+    topologyCoefficientPresheaf_isSheaf_fine_ofTypes
+
+/-- The topology coefficient as one presheaf with coarse and fine sheaf proofs. -/
+noncomputable def topologyCoefficient :
+    CommonCoefficientSheaf coarseTopology fineTopology where
+  presheaf := topologyObstructionSheaf.toAddCommGrpSheaf.val
+  isSheaf_coarse := by
+    simpa [coarseTopology] using topologyObstructionSheaf.toAddCommGrpSheaf.cond
+  isSheaf_fine := topologyCoefficientPresheaf_isSheaf_fine
+
+@[simp] theorem topologyCoefficient_presheaf :
+    topologyCoefficient.presheaf =
+      topologyObstructionSheaf.toAddCommGrpSheaf.val := rfl
+
+private theorem topologySite_contains_of_hom_to_right
+    {X : topologySite.category} (hX : X ⟶ topologyRightObject) :
+    ∀ {Z : topologySite.category} (f : X ⟶ Z)
+      {R : Sieve Z}, R ∈ topologySite.topology Z → R f := by
+  intro Z f R hR
+  change (Site.admissiblePrecoverage topologySite.requirements
+    topologySite.overlap).Saturate Z R at hR
+  induction hR with
+  | of Z P hP =>
+      rcases hP with ⟨F, rfl⟩
+      rcases topology_admissibleCover_has_right F with ⟨i, hi⟩
+      let g : X ⟶ Site.ContextCategoryObject.of topologyContextPreorder
+          (F.patch i) :=
+        hX ≫ eqToHom (congrArg
+          (Site.ContextCategoryObject.of topologyContextPreorder) hi).symm
+      have hinclusion : (Sieve.generate F.presieve)
+          (homOfLE (F.inclusion i)) :=
+        Sieve.le_generate F.presieve _ (Presieve.ofArrows.mk i)
+      have hcomp := (Sieve.generate F.presieve).downward_closed
+        hinclusion g
+      convert hcomp using 1
+  | top Z => simp
+  | pullback Z S hS Y g ih =>
+      change S (f ≫ g)
+      exact ih (f ≫ g)
+  | transitive Z S R hS hlocal ihS ihlocal =>
+      have hSf : S f := ihS f
+      have hRf : (R.pullback f) (𝟙 X) := ihlocal hSf (𝟙 X)
+      simpa using hRf
+
+private theorem topologySite_topology_eq_top_of_hom_to_left
+    {X : topologySite.category} (hX : X ⟶ topologyLeftObject)
+    {R : Sieve X} (hR : R ∈ coarseTopology X) : R = ⊤ := by
+  apply le_antisymm le_top
+  intro Y f hf
+  exact topologySite_contains_of_hom_to_left (f ≫ hX) f hR
+
+private theorem topologySite_topology_eq_top_of_hom_to_right
+    {X : topologySite.category} (hX : X ⟶ topologyRightObject)
+    {R : Sieve X} (hR : R ∈ coarseTopology X) : R = ⊤ := by
+  apply le_antisymm le_top
+  intro Y f hf
+  exact topologySite_contains_of_hom_to_right (f ≫ hX) f hR
+
+private noncomputable def topologySheafifiedFreeYoneda
+    (X : topologySite.category) :
+    Sheaf coarseTopology AddCommGrpCat.{1} :=
+  (presheafToSheaf coarseTopology AddCommGrpCat.{1}).obj
+    (yoneda.obj X ⋙ AddCommGrpCat.free)
+
+private theorem topologySheafifiedFreeYoneda_projective_of_hom_to_left
+    (X : topologySite.category) (hX : X ⟶ topologyLeftObject) :
+    Projective (topologySheafifiedFreeYoneda X) := by
+  constructor
+  intro E G f e he
+  letI : Epi e := he
+  have hloc : Presheaf.IsLocallySurjective coarseTopology e.val :=
+    (Sheaf.isLocallySurjective_iff_epi' AddCommGrpCat.{1} e).2 inferInstance
+  let x := Cohomology.sheafifiedFreeYonedaHomAddEquiv X G f
+  have hcover := Presheaf.imageSieve_mem coarseTopology e.val x
+  have htop := topologySite_topology_eq_top_of_hom_to_left hX hcover
+  have hid : Presheaf.imageSieve e.val x (𝟙 X) := by
+    rw [htop]
+    trivial
+  rcases hid with ⟨t, ht⟩
+  let lift : topologySheafifiedFreeYoneda X ⟶ E :=
+    (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).symm t
+  refine ⟨lift, ?_⟩
+  apply (Cohomology.sheafifiedFreeYonedaHomAddEquiv X G).injective
+  rw [Cohomology.sheafifiedFreeYonedaHomAddEquiv_comp]
+  change e.val.app (op X)
+      (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift) = x
+  rw [show Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift = t by
+    exact (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).apply_symm_apply t]
+  simpa using ht
+
+private theorem topologySheafifiedFreeYoneda_projective_of_hom_to_right
+    (X : topologySite.category) (hX : X ⟶ topologyRightObject) :
+    Projective (topologySheafifiedFreeYoneda X) := by
+  constructor
+  intro E G f e he
+  letI : Epi e := he
+  have hloc : Presheaf.IsLocallySurjective coarseTopology e.val :=
+    (Sheaf.isLocallySurjective_iff_epi' AddCommGrpCat.{1} e).2 inferInstance
+  let x := Cohomology.sheafifiedFreeYonedaHomAddEquiv X G f
+  have hcover := Presheaf.imageSieve_mem coarseTopology e.val x
+  have htop := topologySite_topology_eq_top_of_hom_to_right hX hcover
+  have hid : Presheaf.imageSieve e.val x (𝟙 X) := by
+    rw [htop]
+    trivial
+  rcases hid with ⟨t, ht⟩
+  let lift : topologySheafifiedFreeYoneda X ⟶ E :=
+    (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).symm t
+  refine ⟨lift, ?_⟩
+  apply (Cohomology.sheafifiedFreeYonedaHomAddEquiv X G).injective
+  rw [Cohomology.sheafifiedFreeYonedaHomAddEquiv_comp]
+  change e.val.app (op X)
+      (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift) = x
+  rw [show Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift = t by
+    exact (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).apply_symm_apply t]
+  simpa using ht
+
+/-- The selected coarse cover is Leray for the topology obstruction coefficient. -/
+theorem topologyCoarseLerayCover :
+    Cohomology.IsLerayFor topologyCoarseCover topologyObstructionSheaf := by
+  intro q hq p σ
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : q ≠ 0)
+  let X := (Cohomology.canonicalCoverRelative
+    topologyCoarseCover).overlap p σ
+  have hprojection := Cohomology.canonicalTupleOverlapProjection
+    topologyCoarseCover σ (0 : Fin (p + 1))
+  cases hindex : σ 0 with
+  | left =>
+      have hp : X ⟶ topologyLeftObject := by
+        simpa [X, Cohomology.canonicalCoverRelative,
+          topologyCoarseCoverPatch, hindex] using hprojection
+      letI : Projective (topologySheafifiedFreeYoneda X) :=
+        topologySheafifiedFreeYoneda_projective_of_hom_to_left X hp
+      exact CategoryTheory.Abelian.Ext.subsingleton_of_projective
+        (topologySheafifiedFreeYoneda X)
+          topologyObstructionSheaf.toAddCommGrpSheaf n
+  | right =>
+      have hp : X ⟶ topologyRightObject := by
+        simpa [X, Cohomology.canonicalCoverRelative,
+          topologyCoarseCoverPatch, hindex] using hprojection
+      letI : Projective (topologySheafifiedFreeYoneda X) :=
+        topologySheafifiedFreeYoneda_projective_of_hom_to_right X hp
+      exact CategoryTheory.Abelian.Ext.subsingleton_of_projective
+        (topologySheafifiedFreeYoneda X)
+          topologyObstructionSheaf.toAddCommGrpSheaf n
+
+@[simp] private theorem topologyObstructionMap_val
+    {X Y : topologySite.category} (f : X ⟶ Y)
+    (x : topologyObstructionSheaf.carrier.toPresheaf.obj (op Y)) :
+    (topologyObstructionSheaf.mapAddMonoidHom f x).1 = x.1 := rfl
+
+set_option maxHeartbeats 800000 in
+private theorem topologyCechOneCochain_isCocycle :
+    (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).d 1 topologyCechOneCochain =
+        (0 : (Cohomology.canonicalCechComplex topologyCoarseCover
+          topologyObstructionSheaf).AdditiveCochain 2) := by
+  funext σ
+  rw [Cohomology.canonicalCechComplex_d_apply]
+  refine Subtype.ext ?_
+  classical
+  rw [Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.sum_univ_succ]
+  simp only [Fintype.sum_empty, add_zero,
+    Cohomology.canonicalCoverRelative_face]
+  rw [Submodule.coe_add, Submodule.coe_add]
+  norm_num
+  rw [Submodule.coe_neg, topologyObstructionMap_val]
+  change _ = (0 : ZMod 2)
+  cases h0 : σ 0 <;> cases h1 : σ 1 <;> cases h2 : σ 2 <;>
+    simp [topologyCechOneCochain, topologyOneValue, topologyPotential,
+      SimplexCategory.δ, Fin.succAbove, h0, h1, h2] <;>
+    decide
+
+/-- The explicit degree-one cocycle on the selected coarse cover. -/
+noncomputable def topologyCechOneCocycle :
+    (Cohomology.canonicalCechComplex
+      topologyCoarseCover topologyObstructionSheaf).CechCocycle 1 :=
+  ⟨topologyCechOneCochain, topologyCechOneCochain_isCocycle⟩
+
+/-- The explicit degree-one additive Čech class. -/
+noncomputable def topologyCechOneClass :
+    (Cohomology.canonicalCechComplex
+      topologyCoarseCover topologyObstructionSheaf).AdditiveCechHn 1 :=
+  (Cohomology.canonicalCechComplex
+    topologyCoarseCover topologyObstructionSheaf).additiveH1Class
+      topologyCechOneCocycle
+
+private theorem topologyCoefficientSubmodule_left_eq_bot :
+    topologyCoefficientSubmodule topologyLeftObject.ctx = ⊥ := by
+  exact topologyCoefficientSubmodule_eq_bot_of_readsA _ PUnit.unit rfl
+
+private theorem topologyCoefficientSubmodule_right_eq_bot :
+    topologyCoefficientSubmodule topologyRightObject.ctx = ⊥ := by
+  exact topologyCoefficientSubmodule_eq_bot_of_readsB _ PUnit.unit rfl
+
+private theorem topologyDegreeZeroCoefficient_eq_bot
+    (σ : (Cohomology.canonicalCoverRelative topologyCoarseCover).simplex 0) :
+    topologyCoefficientSubmodule
+      ((Cohomology.canonicalCoverRelative
+        topologyCoarseCover).overlap 0 σ).ctx = ⊥ := by
+  cases h : σ 0
+  · simpa [Cohomology.canonicalCoverRelative,
+      Cohomology.canonicalTupleOverlap, topologyCoarseCover,
+      topologyCoarseCoverPatch, h] using
+      topologyCoefficientSubmodule_left_eq_bot
+  · simpa [Cohomology.canonicalCoverRelative,
+      Cohomology.canonicalTupleOverlap, topologyCoarseCover,
+      topologyCoarseCoverPatch, h] using
+      topologyCoefficientSubmodule_right_eq_bot
+
+private theorem topologyCechZeroCochain_eq_zero
+    (b : (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).AdditiveCochain 0) : b = 0 := by
+  funext σ
+  refine Subtype.ext ?_
+  let x : ZMod 2 := (b σ).1
+  have hx : x ∈ topologyCoefficientSubmodule
+      ((Cohomology.canonicalCoverRelative
+        topologyCoarseCover).overlap 0 σ).ctx := (b σ).2
+  rw [topologyDegreeZeroCoefficient_eq_bot σ] at hx
+  change x = 0 at hx
+  exact hx
+
+private def topologyMixedOneSimplex :
+    (Cohomology.canonicalCoverRelative topologyCoarseCover).simplex 1 :=
+  fun i => if i = 0 then .left else .right
+
+private def topologyReverseMixedOneSimplex :
+    (Cohomology.canonicalCoverRelative topologyCoarseCover).simplex 1 :=
+  fun i => if i = 0 then .right else .left
+
+private def topologyMixedTwoSimplex :
+    (Cohomology.canonicalCoverRelative topologyCoarseCover).simplex 2 :=
+  fun i => if i = 1 then .right else .left
+
+private theorem topologyOneSimplex_eq_mixed
+    (σ : (Cohomology.canonicalCoverRelative
+      topologyCoarseCover).simplex 1)
+    (h0 : σ 0 = .left) (h1 : σ 1 = .right) :
+    σ = topologyMixedOneSimplex := by
+  funext i
+  fin_cases i
+  · exact h0
+  · exact h1
+
+private theorem topologyOneSimplex_eq_reverse_mixed
+    (σ : (Cohomology.canonicalCoverRelative
+      topologyCoarseCover).simplex 1)
+    (h0 : σ 0 = .right) (h1 : σ 1 = .left) :
+    σ = topologyReverseMixedOneSimplex := by
+  funext i
+  fin_cases i
+  · exact h0
+  · exact h1
+
+private theorem topologyDegreeOneCoefficient_eq_bot_of_same
+    (σ : (Cohomology.canonicalCoverRelative
+      topologyCoarseCover).simplex 1)
+    (h : σ 0 = σ 1) :
+    topologyCoefficientSubmodule
+      ((Cohomology.canonicalCoverRelative
+        topologyCoarseCover).overlap 1 σ).ctx = ⊥ := by
+  cases h0 : σ 0 with
+  | left =>
+      have h1 : σ 1 = .left := h.symm.trans h0
+      have hsigma : σ = fun _ => .left := by
+        funext i
+        fin_cases i
+        · exact h0
+        · exact h1
+      subst σ
+      apply topologyCoefficientSubmodule_eq_bot_of_readsA _
+        (PUnit.unit, PUnit.unit)
+      change topologySupportReads .left
+          FiniteModel.FiniteAtom.componentA ∧
+        topologySupportReads .left FiniteModel.FiniteAtom.componentA
+      simp [topologySupportReads]
+  | right =>
+      have h1 : σ 1 = .right := h.symm.trans h0
+      have hsigma : σ = fun _ => .right := by
+        funext i
+        fin_cases i
+        · exact h0
+        · exact h1
+      subst σ
+      apply topologyCoefficientSubmodule_eq_bot_of_readsB _
+        (PUnit.unit, PUnit.unit)
+      change topologySupportReads .right
+          FiniteModel.FiniteAtom.componentB ∧
+        topologySupportReads .right FiniteModel.FiniteAtom.componentB
+      simp [topologySupportReads]
+
+private theorem topologyCechOneCochain_value_eq_zero_of_same
+    (c : (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).AdditiveCochain 1)
+    (σ : (Cohomology.canonicalCoverRelative
+      topologyCoarseCover).simplex 1)
+    (h : σ 0 = σ 1) : c σ = 0 := by
+  apply Subtype.ext
+  change (c σ).1 = 0
+  have hx : (c σ).1 ∈ topologyCoefficientSubmodule
+      ((Cohomology.canonicalCoverRelative
+        topologyCoarseCover).overlap 1 σ).ctx := (c σ).2
+  have hx' : (c σ).1 ∈ (⊥ : Submodule (ZMod 2) (ZMod 2)) := by
+    simpa only [topologyDegreeOneCoefficient_eq_bot_of_same σ h] using hx
+  exact hx'
+
+private theorem topologyMixedTwoFaceZero :
+    Site.FinitePosetCechCanonicalTupleSimplex.simplexMap
+      (SimplexCategory.δ (0 : Fin 3)) topologyMixedTwoSimplex =
+        topologyReverseMixedOneSimplex := by
+  funext i
+  fin_cases i <;> rfl
+
+private theorem topologyMixedTwoFaceOne :
+    Site.FinitePosetCechCanonicalTupleSimplex.simplexMap
+      (SimplexCategory.δ (Fin.succ 0 : Fin 3)) topologyMixedTwoSimplex =
+        (fun _ => .left) := by
+  funext i
+  fin_cases i <;> rfl
+
+private theorem topologyMixedTwoFaceTwo :
+    Site.FinitePosetCechCanonicalTupleSimplex.simplexMap
+      (SimplexCategory.δ ((Fin.succ 0).succ : Fin 3))
+        topologyMixedTwoSimplex =
+        topologyMixedOneSimplex := by
+  funext i
+  fin_cases i <;> rfl
+
+private theorem topologyCechOneCocycle_mixed_reverse_eq
+    (c : (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).CechCocycle 1) :
+    (c.1 topologyMixedOneSimplex).1 =
+      (c.1 topologyReverseMixedOneSimplex).1 := by
+  have h := congrFun c.2 topologyMixedTwoSimplex
+  rw [Cohomology.canonicalCechComplex_d_apply] at h
+  have hv := congrArg Subtype.val h
+  rw [Fin.sum_univ_succ, Fin.sum_univ_succ,
+    Fin.sum_univ_succ] at hv
+  simp only [Fintype.sum_empty, add_zero,
+    Cohomology.canonicalCoverRelative_face] at hv
+  rw [Submodule.coe_add, Submodule.coe_add] at hv
+  norm_num at hv
+  rw [Submodule.coe_neg, topologyObstructionMap_val] at hv
+  rw [topologyMixedTwoFaceZero, topologyMixedTwoFaceOne,
+    topologyMixedTwoFaceTwo] at hv
+  rw [show c.1 (fun _ => .left) = 0 by
+    apply topologyCechOneCochain_value_eq_zero_of_same
+    rfl] at hv
+  have hv' :
+      (c.1 topologyReverseMixedOneSimplex).1 +
+        (c.1 topologyMixedOneSimplex).1 = 0 := by
+    simpa using hv
+  have hneg :
+      (c.1 topologyReverseMixedOneSimplex).1 =
+        -(c.1 topologyMixedOneSimplex).1 :=
+    eq_neg_of_add_eq_zero_left hv'
+  simpa only [ZMod.neg_eq_self_mod_two] using hneg.symm
+
+private theorem topologyCechOneCocycle_cochain_eq_zero_or_eq_one
+    (c : (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).CechCocycle 1) :
+    c.1 = (0 : (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).AdditiveCochain 1) ∨
+    c.1 = topologyCechOneCochain := by
+  let x : ZMod 2 := (c.1 topologyMixedOneSimplex).1
+  have hx : x = 0 ∨ x = 1 := by
+    have hxlt : x.val < 2 := x.val_lt
+    have hxval : x.val = 0 ∨ x.val = 1 := by omega
+    rcases hxval with hxval | hxval
+    · left
+      apply ZMod.val_injective
+      simpa using hxval
+    · right
+      apply ZMod.val_injective
+      simpa using hxval
+  have hmixed : (c.1 topologyMixedOneSimplex).1 = 0 ∨
+      (c.1 topologyMixedOneSimplex).1 = 1 := hx
+  rcases hmixed with hmixed | hmixed
+  · left
+    funext σ
+    apply Subtype.ext
+    change (c.1 σ).1 = 0
+    cases h0 : σ 0 <;> cases h1 : σ 1
+    · have hsame : σ 0 = σ 1 := h0.trans h1.symm
+      rw [topologyCechOneCochain_value_eq_zero_of_same c.1 σ hsame]
+      simp
+    · rw [topologyOneSimplex_eq_mixed σ h0 h1]
+      exact hmixed
+    · rw [topologyOneSimplex_eq_reverse_mixed σ h0 h1]
+      rw [← topologyCechOneCocycle_mixed_reverse_eq c, hmixed]
+    · have hsame : σ 0 = σ 1 := h0.trans h1.symm
+      rw [topologyCechOneCochain_value_eq_zero_of_same c.1 σ hsame]
+      simp
+  · right
+    funext σ
+    apply Subtype.ext
+    cases h0 : σ 0 <;> cases h1 : σ 1
+    · have hsame : σ 0 = σ 1 := h0.trans h1.symm
+      rw [topologyCechOneCochain_value_eq_zero_of_same c.1 σ hsame]
+      simp [topologyCechOneCochain, topologyOneValue, topologyPotential, h0, h1]
+    · rw [topologyOneSimplex_eq_mixed σ h0 h1]
+      exact hmixed
+    · rw [topologyOneSimplex_eq_reverse_mixed σ h0 h1]
+      rw [← topologyCechOneCocycle_mixed_reverse_eq c, hmixed]
+      rfl
+    · have hsame : σ 0 = σ 1 := h0.trans h1.symm
+      rw [topologyCechOneCochain_value_eq_zero_of_same c.1 σ hsame]
+      simp [topologyCechOneCochain, topologyOneValue, topologyPotential, h0, h1]
+
+private theorem topologyCechOneCochain_mixed_val :
+    (topologyCechOneCochain topologyMixedOneSimplex).1 =
+      (1 : ZMod 2) := by
+  rfl
+
+private theorem topologyCechOneCochain_ne_zero :
+    topologyCechOneCochain ≠ 0 := by
+  intro h
+  have hv := congrArg
+    (fun c => (c topologyMixedOneSimplex).1) h
+  change (topologyCechOneCochain topologyMixedOneSimplex).1 =
+    ((0 : (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).AdditiveCochain 1)
+        topologyMixedOneSimplex).1 at hv
+  rw [topologyCechOneCochain_mixed_val] at hv
+  change (1 : ZMod 2) = 0 at hv
+  exact one_ne_zero hv
+
+/-- The explicit topology-change Čech class is nonzero. -/
+theorem topologyCechOneClass_ne_zero : topologyCechOneClass ≠ 0 := by
+  intro hzero
+  let K := Cohomology.canonicalCechComplex
+    topologyCoarseCover topologyObstructionSheaf
+  rcases (K.additiveH1Class_eq_zero_iff
+    topologyCechOneCocycle).mp hzero with ⟨b, hb⟩
+  rw [topologyCechZeroCochain_eq_zero b] at hb
+  have : topologyCechOneCochain = 0 := by
+    simpa [K] using hb
+  exact topologyCechOneCochain_ne_zero this
+
+/-- Every selected degree-one Čech class is zero or the explicit mixed class. -/
+theorem topologyCechHOne_eq_zero_or_eq_one
+    (x : (Cohomology.canonicalCechComplex topologyCoarseCover
+      topologyObstructionSheaf).AdditiveCechHn 1) :
+    x = 0 ∨ x = topologyCechOneClass := by
+  let K := Cohomology.canonicalCechComplex
+    topologyCoarseCover topologyObstructionSheaf
+  change K.CechCocycleSubgroup 1 ⧸
+    K.CechCoboundarySubgroupSucc 0 at x
+  rcases QuotientAddGroup.mk_surjective x with ⟨z, rfl⟩
+  let c : K.CechCocycle 1 := ⟨z.1, z.2⟩
+  rcases topologyCechOneCocycle_cochain_eq_zero_or_eq_one c with h | h
+  · left
+    have hz : z = 0 := by
+      apply Subtype.ext
+      exact h
+    subst z
+    simp
+  · right
+    have hz : z =
+        (⟨topologyCechOneCochain,
+          topologyCechOneCochain_isCocycle⟩ : K.CechCocycleSubgroup 1) := by
+      apply Subtype.ext
+      exact h
+    rw [hz]
+    rfl
+
+/-- The coarse actual `Sheaf.H` class represented by the explicit Čech class. -/
+noncomputable def topologySourceHOneClass :
+    topologyCoefficient.coarse.H nonzeroDegree :=
+  Cohomology.cechToSheafH topologyCoarseCover topologyObstructionSheaf
+    topologyBaseIsTerminal topologyCoarseLerayCover nonzeroDegree
+    topologyCechOneClass
+
+theorem topologySourceHOneClass_eq_cech :
+    topologySourceHOneClass =
+      Cohomology.cechToSheafH topologyCoarseCover topologyObstructionSheaf
+        topologyBaseIsTerminal topologyCoarseLerayCover nonzeroDegree
+        topologyCechOneClass := rfl
+
+/-- The selected overlap projection to the left branch. -/
+noncomputable def topologyOverlapToLeft :
+    topologyOverlapObject ⟶ topologyLeftObject :=
+  homOfLE (topologyOverlap.left topology_left_le_base topology_right_le_base)
+
+/-- The selected overlap projection to the right branch. -/
+noncomputable def topologyOverlapToRight :
+    topologyOverlapObject ⟶ topologyRightObject :=
+  homOfLE (topologyOverlap.right topology_left_le_base topology_right_le_base)
+
+/-- The selected left-branch inclusion into the topology base. -/
+noncomputable def topologyLeftToBase :
+    topologyLeftObject ⟶ topologyBase :=
+  homOfLE topology_left_le_base
+
+/-- The selected right-branch inclusion into the topology base. -/
+noncomputable def topologyRightToBase :
+    topologyRightObject ⟶ topologyBase :=
+  homOfLE topology_right_le_base
+
+private def topologyFineSupportVisibleOn
+    (W : Site.ArchCtx FiniteModel.object)
+    (atom : FiniteModel.carrier.Atom) : Prop :=
+  topologySupportVisibleOn W atom ∨
+    (W = topologyAuxPatch.ctx ∧
+      (atom = FiniteModel.FiniteAtom.componentA ∨
+        atom = FiniteModel.FiniteAtom.componentB))
+
+private def topologyFineBoundaryVisibleOn
+    (W base : Site.ArchCtx FiniteModel.object) : Prop :=
+  (base = topologyBase.ctx ∧
+      ∀ axis : W.Axis, W.minimal.axisReads axis) ∨
+    (base = topologyAuxBase.ctx ∧
+      ∃ axis : W.Axis, ¬ W.minimal.axisReads axis)
+
+private def topologyFineCoverageRequirements :
+    Site.CoverageRequirements FiniteModel.object
+      FiniteModel.lawUniverse FiniteModel.signature where
+  requiredSupport := fun atom =>
+    atom = FiniteModel.FiniteAtom.componentA ∨
+      atom = FiniteModel.FiniteAtom.componentB
+  requiredWitness := fun _ => False
+  requiredAxis := fun _ => False
+  supportVisibleOn := topologyFineSupportVisibleOn
+  witnessVisibleOn := fun _ _ => False
+  axisReadableOn := fun _ _ => False
+  boundaryVisibleOn := topologyFineBoundaryVisibleOn
+
+private noncomputable def topologyFineSite :
+    Site.AATSite FiniteModel.corePackage.object where
+  contextPreorder := topologyContextPreorder
+  lawUniverse := FiniteModel.lawUniverse
+  signature := FiniteModel.signature
+  requirements := topologyFineCoverageRequirements
+  overlap := topologyOverlap
+
+private noncomputable def topologyFineSiteCoarseCover :
+    Site.AATCoverageFamily topologyFineSite.requirements
+      topologyFineSite.overlap topologyBase where
+  Index := TopologyCoarseCoverIndex
+  patch := topologyCoarseCoverPatch
+  inclusion := by
+    intro i
+    cases i
+    · exact topology_left_le_base
+    · exact topology_right_le_base
+  admissible := {
+    atomSupportCoverage := by
+      intro atom h
+      rcases h with rfl | rfl
+      · exact ⟨.left, Or.inl (Or.inl ⟨rfl, rfl⟩)⟩
+      · exact ⟨.right, Or.inl (Or.inr ⟨rfl, rfl⟩)⟩
+    lawWitnessCoverage := by
+      intro witness h
+      exact False.elim h
+    signatureAxisCoverage := by
+      intro axis h
+      exact False.elim h
+    boundaryCoverage := by
+      intro i j
+      apply Or.inl
+      refine ⟨rfl, ?_⟩
+      rintro ⟨leftAxis, rightAxis⟩
+      cases i <;> cases j <;>
+        change topologyAxisReads _ ∧ topologyAxisReads _ <;>
+        simp [topologyAxisReads]
+    nonGeneration := by
+      intro i support atom h
+      simpa [topologyBase, topologyContext, topologySupportReads] using h
+  }
+
+private noncomputable def topologyFineSiteAuxCover :
+    Site.AATCoverageFamily topologyFineSite.requirements
+      topologyFineSite.overlap topologyAuxBase where
+  Index := PUnit
+  patch := fun _ => topologyAuxPatch.ctx
+  inclusion := fun _ => topology_auxPatch_le_auxBase
+  admissible := {
+    atomSupportCoverage := by
+      intro atom h
+      rcases h with rfl | rfl
+      · exact ⟨PUnit.unit, Or.inr ⟨rfl, Or.inl rfl⟩⟩
+      · exact ⟨PUnit.unit, Or.inr ⟨rfl, Or.inr rfl⟩⟩
+    lawWitnessCoverage := by
+      intro witness h
+      exact False.elim h
+    signatureAxisCoverage := by
+      intro axis h
+      exact False.elim h
+    boundaryCoverage := by
+      intro i j
+      apply Or.inr
+      refine ⟨rfl, (PUnit.unit, PUnit.unit), ?_⟩
+      change ¬ (topologyAxisReads .auxPatch ∧ topologyAxisReads .auxPatch)
+      simp [topologyAxisReads]
+    nonGeneration := by
+      intro i support atom h
+      simpa [topologyAuxBase, topologyAuxPatch, topologyContext] using
+        (topologyContext .auxBase).supportReads_objectFamily h
+  }
+
+private theorem topologyFineSiteCoarseCover_mem :
+    Sieve.generate topologyFineSiteCoarseCover.presieve ∈
+      topologyFineSite.topology topologyBase :=
+  Site.AATCoverageFamily.mem_topology topologyFineSiteCoarseCover
+
+private theorem topologyFineSiteAuxCover_mem :
+    Sieve.generate topologyFineSiteAuxCover.presieve ∈
+      topologyFineSite.topology topologyAuxBase :=
+  Site.AATCoverageFamily.mem_topology topologyFineSiteAuxCover
+
+private theorem topologyFineSiteCoarseCover_presieve_eq :
+    topologyFineSiteCoarseCover.presieve =
+      topologyCoarseCover.presieve := rfl
+
+private theorem topologyFineSiteAuxCover_presieve_eq :
+    topologyFineSiteAuxCover.presieve =
+      Presieve.singleton topologyAuxInclusion := by
+  apply le_antisymm
+  · intro Y f hf
+    cases hf with
+    | mk i =>
+        exact Presieve.singleton.mk
+  · intro Y f hf
+    cases hf
+    exact Presieve.ofArrows.mk PUnit.unit
+
+private theorem topologyFine_left_self_all_axes_readable :
+    ∀ axis : (topologyFineSite.overlap.overlap topologyBase.ctx
+      (topologyContext .left) (topologyContext .left)).Axis,
+      (topologyFineSite.overlap.overlap topologyBase.ctx
+        (topologyContext .left) (topologyContext .left)).minimal.axisReads axis := by
+  rintro ⟨leftAxis, rightAxis⟩
+  change topologyAxisReads .left ∧ topologyAxisReads .left
+  simp [topologyAxisReads]
+
+private theorem topologyFine_right_self_all_axes_readable :
+    ∀ axis : (topologyFineSite.overlap.overlap topologyBase.ctx
+      (topologyContext .right) (topologyContext .right)).Axis,
+      (topologyFineSite.overlap.overlap topologyBase.ctx
+        (topologyContext .right) (topologyContext .right)).minimal.axisReads axis := by
+  rintro ⟨leftAxis, rightAxis⟩
+  change topologyAxisReads .right ∧ topologyAxisReads .right
+  simp [topologyAxisReads]
+
+private theorem topologyFine_aux_self_has_unreadable_axis :
+    ∃ axis : (topologyFineSite.overlap.overlap topologyAuxBase.ctx
+      topologyAuxPatch.ctx topologyAuxPatch.ctx).Axis,
+      ¬ (topologyFineSite.overlap.overlap topologyAuxBase.ctx
+        topologyAuxPatch.ctx topologyAuxPatch.ctx).minimal.axisReads axis := by
+  refine ⟨(PUnit.unit, PUnit.unit), ?_⟩
+  change ¬ (topologyAxisReads .auxPatch ∧ topologyAxisReads .auxPatch)
+  simp [topologyAxisReads]
+
+private theorem topology_base_not_le_auxBase :
+    ¬ topologyContextPreorder.le topologyBase.ctx topologyAuxBase.ctx := by
+  rintro ⟨f, hf⟩
+  exact Empty.elim (f.observableRestrict PUnit.unit)
+
+private theorem topologyFine_admissible_has_left_or_aux
+    {Z : topologyFineSite.category}
+    (F : Site.AATCoverageFamily topologyFineSite.requirements
+      topologyFineSite.overlap Z) :
+    ∃ i : F.Index,
+      F.patch i = topologyContext .left ∨
+        F.patch i = topologyAuxPatch.ctx := by
+  rcases F.admissible.atomSupportCoverage
+      FiniteModel.FiniteAtom.componentA (Or.inl rfl) with ⟨i, hi⟩
+  refine ⟨i, ?_⟩
+  rcases hi with hi | hi
+  · rcases hi with (⟨hleft, hatom⟩ | ⟨hright, hatom⟩)
+    · exact Or.inl hleft
+    · exact False.elim (by simpa using hatom)
+  · exact Or.inr hi.1
+
+private theorem topologyFine_admissible_has_right_or_aux
+    {Z : topologyFineSite.category}
+    (F : Site.AATCoverageFamily topologyFineSite.requirements
+      topologyFineSite.overlap Z) :
+    ∃ i : F.Index,
+      F.patch i = topologyContext .right ∨
+        F.patch i = topologyAuxPatch.ctx := by
+  rcases F.admissible.atomSupportCoverage
+      FiniteModel.FiniteAtom.componentB (Or.inr rfl) with ⟨i, hi⟩
+  refine ⟨i, ?_⟩
+  rcases hi with hi | hi
+  · rcases hi with (⟨hleft, hatom⟩ | ⟨hright, hatom⟩)
+    · exact False.elim (by simpa using hatom)
+    · exact Or.inl hright
+  · exact Or.inr hi.1
+
+private theorem topologyFine_admissible_base_eq_base_or_aux
+    {Z : topologyFineSite.category}
+    (F : Site.AATCoverageFamily topologyFineSite.requirements
+      topologyFineSite.overlap Z) :
+    Z = topologyBase ∨ Z = topologyAuxBase := by
+  rcases topologyFine_admissible_has_left_or_aux F with ⟨i, hi⟩
+  have hboundary := F.admissible.boundaryCoverage i i
+  change (Z.ctx = topologyBase.ctx ∧
+      ∀ axis : (topologyFineSite.overlap.overlap Z.ctx
+        (F.patch i) (F.patch i)).Axis,
+        (topologyFineSite.overlap.overlap Z.ctx
+          (F.patch i) (F.patch i)).minimal.axisReads axis) ∨
+    (Z.ctx = topologyAuxBase.ctx ∧
+      ∃ axis : (topologyFineSite.overlap.overlap Z.ctx
+        (F.patch i) (F.patch i)).Axis,
+        ¬ (topologyFineSite.overlap.overlap Z.ctx
+          (F.patch i) (F.patch i)).minimal.axisReads axis) at hboundary
+  rcases hboundary with hbase | haux
+  · left
+    cases Z
+    cases hbase.1
+    rfl
+  · right
+    cases Z
+    cases haux.1
+    rfl
+
+private theorem topologyFineCoarseCover_presieve_le_admissible
+    (F : Site.AATCoverageFamily topologyFineSite.requirements
+      topologyFineSite.overlap topologyBase) :
+    topologyFineSiteCoarseCover.presieve ≤ F.presieve := by
+  intro Y f hf
+  cases hf with
+  | mk i =>
+      cases i with
+      | left =>
+          rcases topologyFine_admissible_has_left_or_aux F with ⟨j, hj⟩
+          rcases hj with hj | hj
+          · let hobj := (congrArg
+              (Site.ContextCategoryObject.of topologyContextPreorder) hj).symm
+            exact Presieve.ofArrows.mk' j hobj (Subsingleton.elim _ _)
+          · have hboundary := F.admissible.boundaryCoverage j j
+            change (topologyBase.ctx = topologyBase.ctx ∧
+                ∀ axis : (topologyFineSite.overlap.overlap topologyBase.ctx
+                  (F.patch j) (F.patch j)).Axis,
+                  (topologyFineSite.overlap.overlap topologyBase.ctx
+                    (F.patch j) (F.patch j)).minimal.axisReads axis) ∨
+              (topologyBase.ctx = topologyAuxBase.ctx ∧
+                ∃ axis : (topologyFineSite.overlap.overlap topologyBase.ctx
+                  (F.patch j) (F.patch j)).Axis,
+                  ¬ (topologyFineSite.overlap.overlap topologyBase.ctx
+                    (F.patch j) (F.patch j)).minimal.axisReads axis) at hboundary
+            rcases hboundary with hbase | haux
+            · rw [hj] at hbase
+              rcases topologyFine_aux_self_has_unreadable_axis with
+                ⟨axis, haxis⟩
+              exact False.elim (haxis (hbase.2 axis))
+            · exact False.elim (by
+                apply topology_base_not_le_auxBase
+                rw [haux.1]
+                exact topologyContextPreorder.refl _)
+      | right =>
+          rcases topologyFine_admissible_has_right_or_aux F with ⟨j, hj⟩
+          rcases hj with hj | hj
+          · let hobj := (congrArg
+              (Site.ContextCategoryObject.of topologyContextPreorder) hj).symm
+            exact Presieve.ofArrows.mk' j hobj (Subsingleton.elim _ _)
+          · have hboundary := F.admissible.boundaryCoverage j j
+            change (topologyBase.ctx = topologyBase.ctx ∧
+                ∀ axis : (topologyFineSite.overlap.overlap topologyBase.ctx
+                  (F.patch j) (F.patch j)).Axis,
+                  (topologyFineSite.overlap.overlap topologyBase.ctx
+                    (F.patch j) (F.patch j)).minimal.axisReads axis) ∨
+              (topologyBase.ctx = topologyAuxBase.ctx ∧
+                ∃ axis : (topologyFineSite.overlap.overlap topologyBase.ctx
+                  (F.patch j) (F.patch j)).Axis,
+                  ¬ (topologyFineSite.overlap.overlap topologyBase.ctx
+                    (F.patch j) (F.patch j)).minimal.axisReads axis) at hboundary
+            rcases hboundary with hbase | haux
+            · rw [hj] at hbase
+              rcases topologyFine_aux_self_has_unreadable_axis with
+                ⟨axis, haxis⟩
+              exact False.elim (haxis (hbase.2 axis))
+            · exact False.elim (by
+                apply topology_base_not_le_auxBase
+                rw [haux.1]
+                exact topologyContextPreorder.refl _)
+
+private theorem topologyFineAuxCover_presieve_le_admissible
+    (F : Site.AATCoverageFamily topologyFineSite.requirements
+      topologyFineSite.overlap topologyAuxBase) :
+    topologyFineSiteAuxCover.presieve ≤ F.presieve := by
+  intro Y f hf
+  cases hf with
+  | mk i =>
+      rcases topologyFine_admissible_has_left_or_aux F with ⟨j, hj⟩
+      rcases hj with hj | hj
+      · have hboundary := F.admissible.boundaryCoverage j j
+        change (topologyAuxBase.ctx = topologyBase.ctx ∧
+            ∀ axis : (topologyFineSite.overlap.overlap topologyAuxBase.ctx
+              (F.patch j) (F.patch j)).Axis,
+              (topologyFineSite.overlap.overlap topologyAuxBase.ctx
+                (F.patch j) (F.patch j)).minimal.axisReads axis) ∨
+          (topologyAuxBase.ctx = topologyAuxBase.ctx ∧
+            ∃ axis : (topologyFineSite.overlap.overlap topologyAuxBase.ctx
+              (F.patch j) (F.patch j)).Axis,
+              ¬ (topologyFineSite.overlap.overlap topologyAuxBase.ctx
+                (F.patch j) (F.patch j)).minimal.axisReads axis) at hboundary
+        rcases hboundary with hbase | haux
+        · exact False.elim (by
+            apply topology_base_not_le_auxBase
+            rw [← hbase.1]
+            exact topologyContextPreorder.refl _)
+        · rw [hj] at haux
+          rcases haux.2 with ⟨axis, haxis⟩
+          exact False.elim (haxis (topologyFine_left_self_all_axes_readable axis))
+      · let hobj := (congrArg
+          (Site.ContextCategoryObject.of topologyContextPreorder) hj).symm
+        exact Presieve.ofArrows.mk' j hobj (Subsingleton.elim _ _)
+
+private theorem topologyFineSite_le_fineTopology :
+    topologyFineSite.topology ≤ fineTopology := by
+  intro Z R hR
+  change (Site.admissiblePrecoverage topologyFineSite.requirements
+    topologyFineSite.overlap).Saturate Z R at hR
+  induction hR with
+  | of Z P hP =>
+      rcases hP with ⟨F, rfl⟩
+      rcases topologyFine_admissible_base_eq_base_or_aux F with hbase | haux
+      · subst Z
+        have hcover : Sieve.generate topologyFineSiteCoarseCover.presieve ∈
+            fineTopology topologyBase := by
+          rw [topologyFineSiteCoarseCover_presieve_eq]
+          exact (show coarseTopology ≤ fineTopology from le_sup_left)
+            topologyBase topologyCoarseCover_mem_coarseTopology
+        exact fineTopology.superset_covering
+          (Sieve.generate_mono
+            (topologyFineCoarseCover_presieve_le_admissible F)) hcover
+      · subst Z
+        have hcover : Sieve.generate topologyFineSiteAuxCover.presieve ∈
+            fineTopology topologyAuxBase := by
+          rw [topologyFineSiteAuxCover_presieve_eq]
+          exact (show topologyAuxPrecoverage.toGrothendieck ≤ fineTopology from
+            le_sup_right) topologyAuxBase
+            (Precoverage.generate_mem_toGrothendieck ⟨rfl, HEq.rfl⟩)
+        exact fineTopology.superset_covering
+          (Sieve.generate_mono
+            (topologyFineAuxCover_presieve_le_admissible F)) hcover
+  | top Z => simp
+  | pullback Z S hS Y f ih =>
+      exact fineTopology.pullback_stable f ih
+  | transitive Z S R hS hlocal ihS ihlocal =>
+      exact fineTopology.transitive ihS R ihlocal
+
+private theorem topologyCoarseGenerated_le_fineSite :
+    topologyCoarsePrecoverage.toGrothendieck ≤
+      topologyFineSite.topology := by
+  intro Z R hR
+  change topologyCoarsePrecoverage.Saturate Z R at hR
+  induction hR with
+  | of Z P hP =>
+      rcases hP with ⟨hZ, hP⟩
+      subst Z
+      have hP : P = topologyCoarseCover.presieve := eq_of_heq hP
+      subst P
+      rw [← topologyFineSiteCoarseCover_presieve_eq]
+      exact topologyFineSiteCoarseCover_mem
+  | top Z => simp
+  | pullback Z S hS Y f ih =>
+      exact topologyFineSite.topology.pullback_stable f ih
+  | transitive Z S R hS hlocal ihS ihlocal =>
+      exact topologyFineSite.topology.transitive ihS R ihlocal
+
+private theorem topologyAuxGenerated_le_fineSite :
+    topologyAuxPrecoverage.toGrothendieck ≤
+      topologyFineSite.topology := by
+  intro Z R hR
+  change topologyAuxPrecoverage.Saturate Z R at hR
+  induction hR with
+  | of Z P hP =>
+      rcases hP with ⟨hZ, hP⟩
+      subst Z
+      have hP : P = Presieve.singleton topologyAuxInclusion := eq_of_heq hP
+      subst P
+      rw [← topologyFineSiteAuxCover_presieve_eq]
+      exact topologyFineSiteAuxCover_mem
+  | top Z => simp
+  | pullback Z S hS Y f ih =>
+      exact topologyFineSite.topology.pullback_stable f ih
+  | transitive Z S R hS hlocal ihS ihlocal =>
+      exact topologyFineSite.topology.transitive ihS R ihlocal
+
+private theorem fineTopology_le_topologyFineSite :
+    fineTopology ≤ topologyFineSite.topology := by
+  rw [fineTopology_eq_coarse_sup_aux]
+  apply sup_le
+  · rw [coarseTopology, topologySite_topology_eq_coarseGenerated]
+    exact topologyCoarseGenerated_le_fineSite
+  · exact topologyAuxGenerated_le_fineSite
+
+private theorem topologyFineSite_topology_eq_fineTopology :
+    topologyFineSite.topology = fineTopology :=
+  le_antisymm topologyFineSite_le_fineTopology
+    fineTopology_le_topologyFineSite
+
+private theorem topologyCoefficientPresheaf_isSheaf_fineSite_ofTypes :
+    Presieve.IsSheaf topologyFineSite.topology
+      (topologyCoefficientPresheaf ⋙ forget AddCommGrpCat.{0}) := by
+  rw [topologyFineSite_topology_eq_fineTopology]
+  exact topologyCoefficientPresheaf_isSheaf_fine_ofTypes
+
+private noncomputable def topologyFineObstructionSheaf :
+    Cohomology.ObstructionSheaf topologyFineSite :=
+  Cohomology.ObstructionSheaf.ofAddCommGrpValued
+    topologyCoefficientPresheaf
+    ((Site.AATSheafCondition.iff_presieve_isSheaf topologyFineSite _).2
+      topologyCoefficientPresheaf_isSheaf_fineSite_ofTypes)
+
+private def TopologyNoObservableReads
+    (W : Site.ArchCtx FiniteModel.object) : Prop :=
+  ∀ observable : W.Observable,
+    ¬ W.minimal.observableReads observable
+
+private theorem topologyNoObservableReads_left :
+    TopologyNoObservableReads topologyLeftObject.ctx := by
+  intro observable
+  change ¬ topologyObservableReads .left observable
+  exact id
+
+private theorem topologyNoObservableReads_right :
+    TopologyNoObservableReads topologyRightObject.ctx := by
+  intro observable
+  change ¬ topologyObservableReads .right observable
+  exact id
+
+private theorem topologyNoObservableReads_product
+    {W V : Site.ArchCtx FiniteModel.object}
+    (hW : TopologyNoObservableReads W)
+    (hV : TopologyNoObservableReads V) :
+    TopologyNoObservableReads (Site.productContext W V) := by
+  rintro (observable | observable) hread
+  · exact hW observable hread
+  · exact hV observable hread
+
+private theorem topologyFineSelectedOverlap_noObservableReads :
+    ∀ p (sigma : (Cohomology.canonicalCoverRelative
+      topologyFineSiteCoarseCover).simplex p),
+      TopologyNoObservableReads
+        ((Cohomology.canonicalCoverRelative
+          topologyFineSiteCoarseCover).overlap p sigma).ctx := by
+  intro p
+  induction p with
+  | zero =>
+      intro sigma
+      cases hindex : sigma 0 with
+      | left =>
+          simpa [Cohomology.canonicalCoverRelative,
+            Cohomology.canonicalTupleOverlap,
+            topologyFineSiteCoarseCover, topologyCoarseCoverPatch,
+            hindex] using topologyNoObservableReads_left
+      | right =>
+          simpa [Cohomology.canonicalCoverRelative,
+            Cohomology.canonicalTupleOverlap,
+            topologyFineSiteCoarseCover, topologyCoarseCoverPatch,
+            hindex] using topologyNoObservableReads_right
+  | succ p ih =>
+      intro sigma
+      apply topologyNoObservableReads_product
+      · exact ih (fun i => sigma i.castSucc)
+      · cases sigma (Fin.last (p + 1)) with
+        | left => exact topologyNoObservableReads_left
+        | right => exact topologyNoObservableReads_right
+
+private theorem topologyFineSite_contains_of_selected_projection
+    {X : topologyFineSite.category}
+    (hnoObservable : TopologyNoObservableReads X.ctx)
+    (hprojection : Nonempty (X ⟶ topologyLeftObject) ∨
+      Nonempty (X ⟶ topologyRightObject)) :
+    ∀ {Z : topologyFineSite.category} (f : X ⟶ Z)
+      {R : Sieve Z}, R ∈ topologyFineSite.topology Z → R f := by
+  intro Z f R hR
+  change (Site.admissiblePrecoverage topologyFineSite.requirements
+    topologyFineSite.overlap).Saturate Z R at hR
+  induction hR with
+  | of Z P hP =>
+      rcases hP with ⟨F, rfl⟩
+      rcases topologyFine_admissible_base_eq_base_or_aux F with hbase | haux
+      · subst Z
+        rcases hprojection with hleft | hright
+        · rcases hleft with ⟨hleft⟩
+          have hinclusion : Sieve.generate F.presieve
+              (homOfLE (topologyFineSiteCoarseCover.inclusion
+                TopologyCoarseCoverIndex.left)) :=
+            Sieve.le_generate F.presieve _
+              (topologyFineCoarseCover_presieve_le_admissible F _
+                (Presieve.ofArrows.mk TopologyCoarseCoverIndex.left))
+          have hcomp := (Sieve.generate F.presieve).downward_closed
+            hinclusion hleft
+          convert hcomp using 1
+        · rcases hright with ⟨hright⟩
+          have hinclusion : Sieve.generate F.presieve
+              (homOfLE (topologyFineSiteCoarseCover.inclusion
+                TopologyCoarseCoverIndex.right)) :=
+            Sieve.le_generate F.presieve _
+              (topologyFineCoarseCover_presieve_le_admissible F _
+                (Presieve.ofArrows.mk TopologyCoarseCoverIndex.right))
+          have hcomp := (Sieve.generate F.presieve).downward_closed
+            hinclusion hright
+          convert hcomp using 1
+      · subst Z
+        let readable := topologyContextPreorder.readableMorphism (leOfHom f)
+        have hrestriction :=
+          topologyContextPreorder.readableMorphism_isRestriction (leOfHom f)
+        have hread := hrestriction.2.2.1
+          (observable := PUnit.unit) trivial
+        exact False.elim (hnoObservable _ hread)
+  | top Z => simp
+  | pullback Z S hS Y g ih =>
+      change S (f ≫ g)
+      exact ih (f ≫ g)
+  | transitive Z S R hS hlocal ihS ihlocal =>
+      have hSf : S f := ihS f
+      have hRf : (R.pullback f) (𝟙 X) := ihlocal hSf (𝟙 X)
+      simpa using hRf
+
+private theorem topologyFineSite_topology_eq_top_of_selected_overlap
+    (p : Nat)
+    (sigma : (Cohomology.canonicalCoverRelative
+      topologyFineSiteCoarseCover).simplex p)
+    {R : Sieve ((Cohomology.canonicalCoverRelative
+      topologyFineSiteCoarseCover).overlap p sigma)}
+    (hR : R ∈ topologyFineSite.topology _) : R = ⊤ := by
+  let X := (Cohomology.canonicalCoverRelative
+    topologyFineSiteCoarseCover).overlap p sigma
+  have hprojection := Cohomology.canonicalTupleOverlapProjection
+    topologyFineSiteCoarseCover sigma (0 : Fin (p + 1))
+  have hbranch : Nonempty (X ⟶ topologyLeftObject) ∨
+      Nonempty (X ⟶ topologyRightObject) := by
+    cases hindex : sigma 0 with
+    | left =>
+        left
+        exact ⟨by
+          simpa [X, Cohomology.canonicalCoverRelative,
+            topologyFineSiteCoarseCover, topologyCoarseCoverPatch,
+            hindex] using hprojection⟩
+    | right =>
+        right
+        exact ⟨by
+          simpa [X, Cohomology.canonicalCoverRelative,
+            topologyFineSiteCoarseCover, topologyCoarseCoverPatch,
+            hindex] using hprojection⟩
+  apply le_antisymm le_top
+  intro Y f hf
+  have hid : R (𝟙 X) :=
+    topologyFineSite_contains_of_selected_projection
+      (topologyFineSelectedOverlap_noObservableReads p sigma)
+        hbranch (𝟙 X) hR
+  exact R.downward_closed hid f
+
+private noncomputable def topologyFineSheafifiedFreeYoneda
+    (X : topologyFineSite.category) :
+    Sheaf topologyFineSite.topology AddCommGrpCat.{1} :=
+  (presheafToSheaf topologyFineSite.topology AddCommGrpCat.{1}).obj
+    (yoneda.obj X ⋙ AddCommGrpCat.free)
+
+private theorem topologyFineSheafifiedFreeYoneda_projective
+    (p : Nat)
+    (sigma : (Cohomology.canonicalCoverRelative
+      topologyFineSiteCoarseCover).simplex p) :
+    Projective (topologyFineSheafifiedFreeYoneda
+      ((Cohomology.canonicalCoverRelative
+        topologyFineSiteCoarseCover).overlap p sigma)) := by
+  let X := (Cohomology.canonicalCoverRelative
+    topologyFineSiteCoarseCover).overlap p sigma
+  constructor
+  intro E G f e he
+  letI : Epi e := he
+  have hloc : Presheaf.IsLocallySurjective topologyFineSite.topology e.val :=
+    (Sheaf.isLocallySurjective_iff_epi' AddCommGrpCat.{1} e).2 inferInstance
+  let x := Cohomology.sheafifiedFreeYonedaHomAddEquiv X G f
+  have hcover := Presheaf.imageSieve_mem topologyFineSite.topology e.val x
+  have htop := topologyFineSite_topology_eq_top_of_selected_overlap
+    p sigma hcover
+  have hid : Presheaf.imageSieve e.val x (𝟙 X) := by
+    rw [htop]
+    trivial
+  rcases hid with ⟨t, ht⟩
+  let lift : topologyFineSheafifiedFreeYoneda X ⟶ E :=
+    (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).symm t
+  refine ⟨lift, ?_⟩
+  apply (Cohomology.sheafifiedFreeYonedaHomAddEquiv X G).injective
+  rw [Cohomology.sheafifiedFreeYonedaHomAddEquiv_comp]
+  change e.val.app (op X)
+      (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift) = x
+  rw [show Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift = t by
+    exact (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).apply_symm_apply t]
+  simpa using ht
+
+private theorem topologyFineLerayCover :
+    Cohomology.IsLerayFor topologyFineSiteCoarseCover
+      topologyFineObstructionSheaf := by
+  intro q hq p sigma
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : q ≠ 0)
+  let X := (Cohomology.canonicalCoverRelative
+    topologyFineSiteCoarseCover).overlap p sigma
+  letI : Projective (topologyFineSheafifiedFreeYoneda X) :=
+    topologyFineSheafifiedFreeYoneda_projective p sigma
+  exact CategoryTheory.Abelian.Ext.subsingleton_of_projective
+    (topologyFineSheafifiedFreeYoneda X)
+      topologyFineObstructionSheaf.toAddCommGrpSheaf n
+
+private noncomputable def topologyCoarseFineCechOneEquiv :
+    (Cohomology.canonicalCechComplex
+      topologyCoarseCover topologyObstructionSheaf).AdditiveCechHn 1 ≃+
+    (Cohomology.canonicalCechComplex
+      topologyFineSiteCoarseCover topologyFineObstructionSheaf).AdditiveCechHn 1 :=
+  AddEquiv.refl _
+
+private noncomputable def topologyFineActualCechToRawHOneEquiv :
+    (Cohomology.canonicalCechComplex
+      topologyFineSiteCoarseCover topologyFineObstructionSheaf).AdditiveCechHn 1 ≃+
+      topologyFineObstructionSheaf.toAddCommGrpSheaf.H nonzeroDegree :=
+  AddEquiv.ofBijective
+    (Cohomology.cechToSheafH topologyFineSiteCoarseCover
+      topologyFineObstructionSheaf topologyBaseIsTerminal
+      topologyFineLerayCover nonzeroDegree)
+    (Cohomology.cechToSheafH_bijective topologyFineSiteCoarseCover
+      topologyFineObstructionSheaf topologyBaseIsTerminal
+      topologyFineLerayCover nonzeroDegree)
+
+private theorem topologySheaf_heq_of_val_eq
+    {J J' : GrothendieckTopology topologySite.category}
+    {F : Sheaf J AddCommGrpCat.{1}}
+    {G : Sheaf J' AddCommGrpCat.{1}}
+    (hJ : J = J') (hval : F.val = G.val) : HEq F G := by
+  subst J'
+  cases F with
+  | mk F hF =>
+      cases G with
+      | mk G hG =>
+          dsimp at hval
+          subst G
+          rfl
+
+@[ext] private structure TopologyFineHIndex where
+  topology : GrothendieckTopology topologySite.category
+  sheaf : Sheaf topology AddCommGrpCat.{1}
+  hasExt : HasExt.{2} (Sheaf topology AddCommGrpCat.{1})
+
+private noncomputable def topologyFineRawHIndex : TopologyFineHIndex where
+  topology := topologyFineSite.topology
+  sheaf := topologyFineObstructionSheaf.toAddCommGrpSheaf
+  hasExt := inferInstance
+
+private noncomputable def topologyFineTargetHIndex : TopologyFineHIndex where
+  topology := fineTopology
+  sheaf := topologyCoefficient.fine
+  hasExt := inferInstance
+
+private noncomputable def topologyFineHCarrier
+    (p : TopologyFineHIndex) : Type 2 :=
+  letI := p.hasExt
+  p.sheaf.H nonzeroDegree
+
+private noncomputable instance topologyFineHCarrierAddCommGroup
+    (p : TopologyFineHIndex) : AddCommGroup (topologyFineHCarrier p) := by
+  dsimp [topologyFineHCarrier]
+  letI := p.hasExt
+  infer_instance
+
+private theorem topologyFineHIndex_eq :
+    topologyFineRawHIndex = topologyFineTargetHIndex := by
+  apply TopologyFineHIndex.ext
+  · exact topologyFineSite_topology_eq_fineTopology
+  · exact topologySheaf_heq_of_val_eq
+      topologyFineSite_topology_eq_fineTopology rfl
+
+private noncomputable def topologyFineHOneTransport :
+    topologyFineObstructionSheaf.toAddCommGrpSheaf.H nonzeroDegree ≃+
+      topologyCoefficient.fine.H nonzeroDegree := by
+  change topologyFineHCarrier topologyFineRawHIndex ≃+
+    topologyFineHCarrier topologyFineTargetHIndex
+  exact AddEquiv.cast topologyFineHIndex_eq
+
+private noncomputable def topologyFineActualCechToHOneEquiv :
+    (Cohomology.canonicalCechComplex
+      topologyFineSiteCoarseCover topologyFineObstructionSheaf).AdditiveCechHn 1 ≃+
+      topologyCoefficient.fine.H nonzeroDegree :=
+  topologyFineActualCechToRawHOneEquiv.trans topologyFineHOneTransport
+
+/-- The fine actual `Sheaf.H` comparison obtained from its injective resolution. -/
+noncomputable def topologyCechToFineHOneEquiv :
+    (Cohomology.canonicalCechComplex
+      topologyCoarseCover topologyObstructionSheaf).AdditiveCechHn 1 ≃+
+        topologyCoefficient.fine.H nonzeroDegree :=
+  topologyCoarseFineCechOneEquiv.trans
+    topologyFineActualCechToHOneEquiv
+
+/-- The fine actual `Sheaf.H` class represented by the explicit Čech class. -/
+noncomputable def topologyTargetHOneClass :
+    topologyCoefficient.fine.H nonzeroDegree :=
+  topologyCechToFineHOneEquiv topologyCechOneClass
+
+/-- The independently constructed fine class is nonzero. -/
+theorem topologyTargetHOneClass_ne_zero :
+    topologyTargetHOneClass ≠ 0 := by
+  intro hzero
+  apply topologyCechOneClass_ne_zero
+  apply topologyCechToFineHOneEquiv.injective
+  simpa [topologyTargetHOneClass] using hzero
+
 
 end AAT.AG.ReadingFunctorialityFinite

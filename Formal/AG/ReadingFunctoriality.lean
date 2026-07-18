@@ -7,6 +7,7 @@ import Formal.AG.ReadingFunctoriality.Coefficient
 import Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient
 import Formal.AG.ReadingFunctoriality.CoefficientGeometry
 import Formal.AG.ReadingFunctoriality.FiniteExamples
+import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
 
 /-!
 # Reading functoriality
