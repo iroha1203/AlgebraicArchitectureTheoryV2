@@ -955,7 +955,10 @@ premise_delta:
     - concrete finite locally free and split constant-rank witnesses
     - D0-D2 and all later target obligations
 certificate_provenance:
-  accepted_inputs: []
+  accepted_inputs:
+    - target outside protected labels as a stated input
+    - operation-module projectivity as a direction hypothesis; concrete witness remains open
+    - protected-response split constant-rank data as a direction hypothesis; concrete witness remains open
   generated:
     - actual stalk maps from tilde comparison and stalk functoriality
     - fiber equivalences from IsLocalizedModule universal properties
