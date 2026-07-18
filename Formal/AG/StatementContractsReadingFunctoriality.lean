@@ -782,6 +782,61 @@ noncomputable example : Site.AATCoverageFamily.Refinement coarseCover fineCover 
 example : ¬ Function.Bijective coarseToFineCover.indexMap :=
   coarseToFineCover_not_bijective
 
+/-- Fixed coarse topology on the finite selected site. -/
+noncomputable example : GrothendieckTopology finiteSite.category :=
+  coarseTopology
+
+/-- Fixed identification of the coarse topology with the site topology. -/
+example : coarseTopology = finiteSite.topology :=
+  coarseTopology_eq_site
+
+/-- Fixed strictly finer topology on the same finite category. -/
+noncomputable example : GrothendieckTopology finiteSite.category :=
+  fineTopology
+
+/-- Fixed positive degree for the finite firing matrix. -/
+example : Nat := nonzeroDegree
+
+/-- Fixed actual topology refinement. -/
+noncomputable example :
+    CoverageTopologyRefinement coarseTopology fineTopology :=
+  coarseFineTopologyRefinement
+
+/-- Fixed strictness of the finite topology refinement. -/
+example : coarseTopology ≠ fineTopology :=
+  coarseFineTopology_strict
+
+/-- Fixed coarse-cover membership in the coarse topology. -/
+example :
+    Sieve.generate coarseCover.presieve ∈ coarseTopology finiteBase :=
+  coarseCover_mem_coarseTopology
+
+/-- Fixed selected-sieve output of the topology refinement. -/
+example :
+    (coarseFineTopologyRefinement.refineCover
+      finiteBase (Sieve.generate coarseCover.presieve)
+      coarseCover_mem_coarseTopology).1 =
+        Sieve.generate fineCover.presieve :=
+  coarseFineTopologyRefinement_selects_fineCover
+
+/-- Fixed fine-cover membership in the finer topology. -/
+example :
+    Sieve.generate fineCover.presieve ∈ fineTopology finiteBase :=
+  fineCover_mem_fineTopology
+
+/-- Fixed degree-dependent invalid simplex map. -/
+noncomputable example :
+    ∀ n,
+      (Cohomology.canonicalCoverRelative fineCover).simplex n →
+        (Cohomology.canonicalCoverRelative coarseCover).simplex n :=
+  brokenFaceMap
+
+/-- Fixed rejection of the invalid simplex map. -/
+example :
+    ¬ ∃ r : Site.AATCoverageFamily.Refinement coarseCover fineCover,
+      r.simplexMap = brokenFaceMap :=
+  brokenFaceMap_not_refinement
+
 end CoverageRefinementSD3
 
 namespace CanonicalCechFunctorialitySD4

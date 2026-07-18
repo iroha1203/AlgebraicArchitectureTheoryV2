@@ -4111,6 +4111,50 @@ def readingFunctoriality_refinement_overlapMap_face_naturality :=
 def readingFunctoriality_coarseToFineCover_not_bijective :=
   @AAT.AG.ReadingFunctorialityFinite.coarseToFineCover_not_bijective
 
+/-- Audit alias for the selected finite-site topology. -/
+noncomputable def readingFunctoriality_coarseTopology :=
+  AAT.AG.ReadingFunctorialityFinite.coarseTopology
+
+/-- Audit alias for identification of the coarse and site topologies. -/
+def readingFunctoriality_coarseTopology_eq_site :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseTopology_eq_site
+
+/-- Audit alias for the strictly finer finite topology. -/
+noncomputable def readingFunctoriality_fineTopology :=
+  AAT.AG.ReadingFunctorialityFinite.fineTopology
+
+/-- Audit alias for the selected positive degree. -/
+def readingFunctoriality_nonzeroDegree :=
+  AAT.AG.ReadingFunctorialityFinite.nonzeroDegree
+
+/-- Audit alias for the actual finite topology refinement. -/
+noncomputable def readingFunctoriality_coarseFineTopologyRefinement :=
+  AAT.AG.ReadingFunctorialityFinite.coarseFineTopologyRefinement
+
+/-- Audit alias for strictness of the finite topology refinement. -/
+def readingFunctoriality_coarseFineTopology_strict :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseFineTopology_strict
+
+/-- Audit alias for coarse-cover membership. -/
+def readingFunctoriality_coarseCover_mem_coarseTopology :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseCover_mem_coarseTopology
+
+/-- Audit alias for the selected fine sieve returned by refinement. -/
+def readingFunctoriality_coarseFineTopologyRefinement_selects_fineCover :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseFineTopologyRefinement_selects_fineCover
+
+/-- Audit alias for fine-cover membership. -/
+def readingFunctoriality_fineCover_mem_fineTopology :=
+  @AAT.AG.ReadingFunctorialityFinite.fineCover_mem_fineTopology
+
+/-- Audit alias for the degree-dependent invalid simplex map. -/
+noncomputable def readingFunctoriality_brokenFaceMap :=
+  AAT.AG.ReadingFunctorialityFinite.brokenFaceMap
+
+/-- Audit alias for rejection of the invalid simplex map. -/
+def readingFunctoriality_brokenFaceMap_not_refinement :=
+  @AAT.AG.ReadingFunctorialityFinite.brokenFaceMap_not_refinement
+
 /-! Part 4 R4: canonical Čech refinement functoriality. -/
 
 /-- Audit alias for additive obstruction-sheaf restriction. -/

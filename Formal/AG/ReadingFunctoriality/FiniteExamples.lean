@@ -1565,6 +1565,109 @@ private theorem finite_topology_eq_top_of_hom_to_right
   intro Y f hf
   exact finite_topology_contains_of_hom_to_right (f ≫ hX) f hR
 
+/-! ## R9c: strict topology refinement and invalid face map -/
+
+/-- The selected finite-site topology used as the coarse topology. -/
+noncomputable def coarseTopology :
+    GrothendieckTopology finiteSite.category :=
+  finiteSite.topology
+
+/-- The coarse topology is the actual topology of the selected finite site. -/
+@[simp] theorem coarseTopology_eq_site :
+    coarseTopology = finiteSite.topology := rfl
+
+/-- Strictly finer topology on the same finite context category. -/
+noncomputable def fineTopology :
+    GrothendieckTopology finiteSite.category :=
+  ⊤
+
+/-- Fixed positive degree used by the finite firing matrix. -/
+def nonzeroDegree : Nat := 1
+
+private theorem coarseCover_presieve_eq_fineCover :
+    coarseCover.presieve = fineCover.presieve := by
+  apply le_antisymm
+  · intro Y f h
+    cases h with
+    | mk i =>
+        exact Presieve.ofArrows.mk (i, false)
+  · intro Y f h
+    cases h with
+    | mk i =>
+        exact Presieve.ofArrows.mk i.1
+
+private theorem coarseCover_generate_eq_fineCover :
+    Sieve.generate coarseCover.presieve = Sieve.generate fineCover.presieve := by
+  rw [coarseCover_presieve_eq_fineCover]
+
+/-- Actual refinement from the selected site topology to the finer topology. -/
+noncomputable def coarseFineTopologyRefinement :
+    CoverageTopologyRefinement coarseTopology fineTopology where
+  refineCover X R hR := ⟨R, by simp [fineTopology], le_rfl⟩
+
+/-- The refined topology is strictly finer than the selected site topology. -/
+theorem coarseFineTopology_strict : coarseTopology ≠ fineTopology := by
+  intro heq
+  have hbot : (⊥ : Sieve finiteLeftObject) ∈
+      coarseTopology finiteLeftObject := by
+    rw [heq]
+    simp [fineTopology]
+  have htop := finite_topology_eq_top_of_hom_to_left
+    (𝟙 finiteLeftObject) (by simpa [coarseTopology] using hbot)
+  have hid : (⊥ : Sieve finiteLeftObject) (𝟙 finiteLeftObject) := by
+    rw [htop]
+    simp
+  exact hid
+
+/-- The selected coarse cover is covering for the coarse topology. -/
+theorem coarseCover_mem_coarseTopology :
+    Sieve.generate coarseCover.presieve ∈ coarseTopology finiteBase := by
+  simpa [coarseTopology] using
+    (Site.AATCoverageFamily.mem_topology coarseCover)
+
+/-- The topology refinement selects the generated sieve of the fine cover. -/
+theorem coarseFineTopologyRefinement_selects_fineCover :
+    (coarseFineTopologyRefinement.refineCover
+      finiteBase (Sieve.generate coarseCover.presieve)
+      coarseCover_mem_coarseTopology).1 =
+        Sieve.generate fineCover.presieve := by
+  exact coarseCover_generate_eq_fineCover
+
+/-- The selected fine cover is covering for the finer topology. -/
+theorem fineCover_mem_fineTopology :
+    Sieve.generate fineCover.presieve ∈ fineTopology finiteBase := by
+  simp [fineTopology]
+
+/-- Degree-dependent simplex map that cannot arise from one chart index map. -/
+noncomputable def brokenFaceMap :
+    ∀ n,
+      (Cohomology.canonicalCoverRelative fineCover).simplex n →
+        (Cohomology.canonicalCoverRelative coarseCover).simplex n
+  | 0 => fun _ _ => FiniteModel.TwoPatchCoverIndex.left
+  | _ + 1 => fun _ _ => FiniteModel.TwoPatchCoverIndex.right
+
+/-- The degree-dependent simplex map is not induced by any selected-cover refinement. -/
+theorem brokenFaceMap_not_refinement :
+    ¬ ∃ r : Site.AATCoverageFamily.Refinement coarseCover fineCover,
+      r.simplexMap = brokenFaceMap := by
+  rintro ⟨r, hr⟩
+  let selected : fineCover.Index :=
+    (FiniteModel.TwoPatchCoverIndex.left, false)
+  let σ₀ : (Cohomology.canonicalCoverRelative fineCover).simplex 0 :=
+    fun _ => selected
+  let σ₁ : (Cohomology.canonicalCoverRelative fineCover).simplex 1 :=
+    fun _ => selected
+  have hleft : r.indexMap selected = FiniteModel.TwoPatchCoverIndex.left := by
+    have h := congrFun (congrFun (congrFun hr 0) σ₀) (0 : Fin 1)
+    simpa [Site.AATCoverageFamily.Refinement.simplexMap, brokenFaceMap,
+      σ₀] using h
+  have hright : r.indexMap selected = FiniteModel.TwoPatchCoverIndex.right := by
+    have h := congrFun (congrFun (congrFun hr 1) σ₁) (0 : Fin 2)
+    simpa [Site.AATCoverageFamily.Refinement.simplexMap, brokenFaceMap,
+      σ₁] using h
+  rw [hleft] at hright
+  exact FiniteModel.TwoPatchCoverIndex.noConfusion hright
+
 private noncomputable def finiteSheafifiedFreeYoneda
     (X : finiteSite.category) :
     Sheaf finiteSite.topology AddCommGrpCat.{1} :=
