@@ -11,6 +11,7 @@ import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Mathlib.Algebra.Category.ModuleCat.Adjunctions
 import Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughProjectives
 import Mathlib.CategoryTheory.Sites.EpiMono
+import Mathlib.RingTheory.Flat.TorsionFree
 
 /-!
 # Reading-functoriality reference models
@@ -2493,6 +2494,168 @@ theorem nonidentityExactCoreChange_fires :
   change FiniteModel.FiniteAtom.componentB =
     FiniteModel.FiniteAtom.componentA at h
   exact FiniteModel.FiniteAtom.noConfusion h
+
+/-! ## R9e: coefficient arithmetic, raw data, and negative primitives -/
+
+/-!
+### Implementation notes
+
+The positive coefficient change uses the canonical inclusion
+`Int → Polynomial Int`. Polynomial rings are free, hence flat, over their
+coefficient ring, while the coefficient of `X` detects failure of surjectivity.
+The selected ideal is `(2)`; its properness before and after extension is
+detected by the unit criterion for constant polynomials.
+
+The raw fixture reuses the existing typed finite raw presheaf. The negative
+raw change preserves its coordinate and restriction data and keeps the same
+`Unit` relation index, but replaces every relation polynomial by zero. This
+was chosen instead of changing only an index type, so the rejection theorem
+detects an actual relation-polynomial difference from canonical base change.
+-/
+
+/-- The canonical flat, non-surjective coefficient change from integers to polynomials. -/
+noncomputable def intPolynomialFlatChange :
+    FlatCoefficientChange Int (Polynomial Int) where
+  hom := Polynomial.C
+  flat := by
+    change (algebraMap Int (Polynomial Int)).Flat
+    rw [RingHom.flat_algebraMap_iff]
+    exact Module.Flat.of_free
+
+/-- The positive coefficient change uses the canonical constant-polynomial inclusion. -/
+@[simp] theorem intPolynomialFlatChange_hom :
+    intPolynomialFlatChange.hom = Polynomial.C :=
+  rfl
+
+/-- The positive coefficient change is genuinely nonidentity on its target ring. -/
+theorem intPolynomialFlatChange_nonidentity :
+    ¬ Function.Surjective intPolynomialFlatChange.hom := by
+  intro hsurjective
+  rcases hsurjective Polynomial.X with ⟨z, hz⟩
+  have hcoeff := congrArg (fun p : Polynomial Int => p.coeff 1) hz
+  simp only [intPolynomialFlatChange, Polynomial.coeff_C,
+    Polynomial.coeff_X] at hcoeff
+  norm_num at hcoeff
+
+/-- The selected nonzero proper source ideal `(2)`. -/
+noncomputable def properIdeal : Ideal Int :=
+  Ideal.span {2}
+
+/-- Characterization of the selected proper source ideal. -/
+theorem properIdeal_eq : properIdeal = Ideal.span {2} :=
+  rfl
+
+/-- The selected source ideal `(2)` is proper. -/
+theorem properIdeal_ne_top : properIdeal ≠ ⊤ := by
+  exact Ideal.span_singleton_ne_top (by
+    intro hunit
+    rcases Int.isUnit_iff.mp hunit with h | h <;> norm_num at h)
+
+/-- Extending `(2)` along the polynomial inclusion remains a proper ideal. -/
+theorem properIdeal_baseChange :
+    properIdeal.map intPolynomialFlatChange.hom ≠ ⊤ := by
+  rw [properIdeal_eq, intPolynomialFlatChange_hom, Ideal.map_span]
+  change Ideal.span (Polynomial.C '' {2}) ≠ ⊤
+  rw [Set.image_singleton]
+  exact Ideal.span_singleton_ne_top (by
+    rw [Polynomial.isUnit_C]
+    intro hunit
+    rcases Int.isUnit_iff.mp hunit with h | h <;> norm_num at h)
+
+/-- The existing finite typed raw restriction system used by coefficient firing. -/
+noncomputable def coefficientRaw :
+    LawAlgebra.RawAmbientRestrictionSystem finiteSite Int :=
+  LawAlgebra.FiniteExamples.RawPresheaf.system
+
+/-- The canonical integer quotient map to `ZMod 2`. -/
+noncomputable def intZModTwo : Int →+* ZMod 2 :=
+  Int.castRingHom (ZMod 2)
+
+/-- The quotient `Int → ZMod 2` is not flat, detected by its nonzero two-torsion. -/
+theorem intZModTwo_not_flat : ¬ intZModTwo.Flat := by
+  intro hflat
+  letI : Module Int (ZMod 2) := intZModTwo.toAlgebra.toModule
+  haveI : Module.Flat Int (ZMod 2) := by
+    exact hflat
+  have hinjective :=
+    Module.Flat.isSMulRegular_of_isRegular (M := ZMod 2)
+      (IsRegular.of_ne_zero' (by norm_num : (2 : Int) ≠ 0))
+  have hone : (1 : ZMod 2) = 0 := by
+    apply hinjective
+    change (2 : ZMod 2) = 0
+    decide
+  norm_num at hone
+
+private noncomputable def brokenRelationFamily (W : finiteSite.category) :
+    LawAlgebra.StructuralRelationFamily
+      ((coefficientRaw.baseChange intPolynomialFlatChange.hom).coordFamily W)
+      (Polynomial Int) where
+  Relation := Unit
+  polynomial := fun _ => 0
+
+private noncomputable def brokenRestrictionStable
+    {X Y : finiteSite.category} (f : X ⟶ Y) :
+    LawAlgebra.RestrictionStableStructuralRelations
+      (brokenRelationFamily X) (brokenRelationFamily Y)
+      (finiteSite.contextPreorder.morphism (CategoryTheory.leOfHom f)) where
+  restriction :=
+    ((coefficientRaw.baseChange intPolynomialFlatChange.hom).restrictionStable f).restriction
+  maps_JStruct := by
+    intro p hp
+    have hJ : (brokenRelationFamily Y).JStruct = ⊥ := by
+      rw [LawAlgebra.StructuralRelationFamily.JStruct, Ideal.span_eq_bot]
+      rintro _ ⟨relation, rfl⟩
+      cases relation
+      rfl
+    have hp0 : p = 0 := by
+      rw [hJ] at hp
+      simpa using hp
+    subst p
+    simp
+
+/-- A coherent raw system whose zero relations do not arise by canonical base change. -/
+noncomputable def brokenRelationChange :
+    LawAlgebra.RawAmbientRestrictionSystem finiteSite (Polynomial Int) where
+  coordFamily :=
+    (coefficientRaw.baseChange intPolynomialFlatChange.hom).coordFamily
+  relationFamily := brokenRelationFamily
+  restrictionStable := brokenRestrictionStable
+  identity_polynomialMap :=
+    (coefficientRaw.baseChange intPolynomialFlatChange.hom).identity_polynomialMap
+  composition_polynomialMap :=
+    (coefficientRaw.baseChange intPolynomialFlatChange.hom).composition_polynomialMap
+
+/-- The zero-relation change differs from canonical transport of the selected nonzero relation. -/
+theorem brokenRelationChange_not_rawBaseChange :
+    brokenRelationChange ≠
+      coefficientRaw.baseChange intPolynomialFlatChange.hom := by
+  intro h
+  let HasNonzeroRelation
+      (raw : LawAlgebra.RawAmbientRestrictionSystem
+        finiteSite (Polynomial Int)) : Prop :=
+    ∃ r : (raw.relationFamily
+        LawAlgebra.FiniteExamples.RawPresheaf.left).Relation,
+      (raw.relationFamily
+        LawAlgebra.FiniteExamples.RawPresheaf.left).polynomial r ≠ 0
+  have hproperty : HasNonzeroRelation brokenRelationChange =
+      HasNonzeroRelation
+        (coefficientRaw.baseChange intPolynomialFlatChange.hom) :=
+    congrArg HasNonzeroRelation h
+  have hcanonical : HasNonzeroRelation
+      (coefficientRaw.baseChange intPolynomialFlatChange.hom) := by
+    refine ⟨(), ?_⟩
+    change MvPolynomial.map Polynomial.C (MvPolynomial.X () ^ 2 - 1) ≠ 0
+    intro hzero
+    have heval := congrArg
+      (MvPolynomial.eval₂Hom (RingHom.id (Polynomial Int))
+        (fun _ : Unit => 0)) hzero
+    simp at heval
+  have hbroken : HasNonzeroRelation brokenRelationChange := by
+    rw [hproperty]
+    exact hcanonical
+  rcases hbroken with ⟨relation, hrelation⟩
+  cases relation
+  exact hrelation rfl
 
 
 end AAT.AG.ReadingFunctorialityFinite

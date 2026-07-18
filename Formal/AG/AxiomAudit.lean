@@ -5541,6 +5541,56 @@ def readingFunctoriality_negativeCircuit_not_positive :=
 def readingFunctoriality_negativeCircuit_not_transportable :=
   @AAT.AG.ReadingFunctorialityFinite.negativeCircuit_not_transportable
 
+/-! ## Coefficient arithmetic, raw data, and negative primitives -/
+
+/-- Audit alias for the flat integer-to-polynomial coefficient change. -/
+noncomputable def readingFunctoriality_intPolynomialFlatChange :=
+  AAT.AG.ReadingFunctorialityFinite.intPolynomialFlatChange
+
+/-- Audit alias for the underlying polynomial constant homomorphism. -/
+def readingFunctoriality_intPolynomialFlatChange_hom :=
+  @AAT.AG.ReadingFunctorialityFinite.intPolynomialFlatChange_hom
+
+/-- Audit alias for non-surjectivity of the coefficient change. -/
+def readingFunctoriality_intPolynomialFlatChange_nonidentity :=
+  @AAT.AG.ReadingFunctorialityFinite.intPolynomialFlatChange_nonidentity
+
+/-- Audit alias for the selected proper source ideal. -/
+noncomputable def readingFunctoriality_properIdeal :=
+  AAT.AG.ReadingFunctorialityFinite.properIdeal
+
+/-- Audit alias for the source ideal characterization. -/
+def readingFunctoriality_properIdeal_eq :=
+  @AAT.AG.ReadingFunctorialityFinite.properIdeal_eq
+
+/-- Audit alias for properness of the source ideal. -/
+def readingFunctoriality_properIdeal_ne_top :=
+  @AAT.AG.ReadingFunctorialityFinite.properIdeal_ne_top
+
+/-- Audit alias for properness after polynomial coefficient extension. -/
+def readingFunctoriality_properIdeal_baseChange :=
+  @AAT.AG.ReadingFunctorialityFinite.properIdeal_baseChange
+
+/-- Audit alias for the finite raw restriction system. -/
+noncomputable def readingFunctoriality_coefficientRaw :=
+  AAT.AG.ReadingFunctorialityFinite.coefficientRaw
+
+/-- Audit alias for the integer quotient homomorphism to `ZMod 2`. -/
+noncomputable def readingFunctoriality_intZModTwo :=
+  AAT.AG.ReadingFunctorialityFinite.intZModTwo
+
+/-- Audit alias for non-flatness of the integer quotient. -/
+def readingFunctoriality_intZModTwo_not_flat :=
+  @AAT.AG.ReadingFunctorialityFinite.intZModTwo_not_flat
+
+/-- Audit alias for the coherent noncanonical relation change. -/
+noncomputable def readingFunctoriality_brokenRelationChange :=
+  AAT.AG.ReadingFunctorialityFinite.brokenRelationChange
+
+/-- Audit alias for rejection of the noncanonical relation change. -/
+def readingFunctoriality_brokenRelationChange_not_rawBaseChange :=
+  @AAT.AG.ReadingFunctorialityFinite.brokenRelationChange_not_rawBaseChange
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
