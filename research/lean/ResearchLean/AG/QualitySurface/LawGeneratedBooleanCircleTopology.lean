@@ -33,7 +33,11 @@ theorem exists_componentA_patch
   obtain ⟨i, hi⟩ := F.admissible.atomSupportCoverage
     FiniteModel.FiniteAtom.componentA (Or.inl rfl)
   refine ⟨i, ?_⟩
-  simpa [coverageRequirements] using hi
+  have hi' : F.patch i = context (chartContextIndex 0) ∧
+      ∃ support, (F.patch i).minimal.supportReads support
+        FiniteModel.FiniteAtom.componentA := by
+    simpa [coverageRequirements] using hi
+  exact hi'.1
 
 theorem exists_componentB_patch
     {X : site.category}
@@ -42,16 +46,24 @@ theorem exists_componentB_patch
   obtain ⟨i, hi⟩ := F.admissible.atomSupportCoverage
     FiniteModel.FiniteAtom.componentB (Or.inr (Or.inl rfl))
   refine ⟨i, ?_⟩
-  simpa [coverageRequirements] using hi
+  have hi' : F.patch i = context (chartContextIndex 1) ∧
+      ∃ support, (F.patch i).minimal.supportReads support
+        FiniteModel.FiniteAtom.componentB := by
+    simpa [coverageRequirements] using hi
+  exact hi'.1
 
 theorem exists_componentC_patch
     {X : site.category}
     (F : Site.AATCoverageFamily coverageRequirements contextOverlap X) :
     ∃ i : F.Index, F.patch i = context (chartContextIndex 2) := by
   obtain ⟨i, hi⟩ := F.admissible.atomSupportCoverage
-    FiniteModel.FiniteAtom.componentC (Or.inr (Or.inr rfl))
+    FiniteModel.FiniteAtom.dependsAB (Or.inr (Or.inr rfl))
   refine ⟨i, ?_⟩
-  simpa [coverageRequirements] using hi
+  have hi' : F.patch i = context (chartContextIndex 2) ∧
+      ∃ support, (F.patch i).minimal.supportReads support
+        FiniteModel.FiniteAtom.dependsAB := by
+    simpa [coverageRequirements] using hi
+  exact hi'.1
 
 theorem family_base_eq
     {X : site.category}

@@ -44,8 +44,9 @@ theorem overlapObject_one_ctx (sigma : Tuple geometry 1) :
   simp [overlapObject, tupleGeometry,
     Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
     Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap,
-    site, contextOverlap, overlapContext, geometry, base, cover, chartContextIndex,
-    Site.ContextCategoryObject.of, recognized_context, indexOf_context]
+    site, selectedGeometryReading, contextOverlap, overlapContext, geometry, base,
+    cover, chartContextIndex, Site.ContextCategoryObject.of, recognized_context,
+    indexOf_context]
 
 /-- A degree-two canonical overlap is the union of its three singleton charts. -/
 theorem overlapObject_two_ctx (sigma : Tuple geometry 2) :
@@ -54,8 +55,9 @@ theorem overlapObject_two_ctx (sigma : Tuple geometry 2) :
   simp [overlapObject, tupleGeometry,
     Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
     Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap,
-    site, contextOverlap, overlapContext, geometry, base, cover, chartContextIndex,
-    Site.ContextCategoryObject.of, recognized_context, indexOf_context]
+    site, selectedGeometryReading, contextOverlap, overlapContext, geometry, base,
+    cover, chartContextIndex, Site.ContextCategoryObject.of, recognized_context,
+    indexOf_context]
 
 /-- No two selected indices exhaust `Fin 3`. -/
 theorem pair_ne_univ (a b : Fin 3) :
