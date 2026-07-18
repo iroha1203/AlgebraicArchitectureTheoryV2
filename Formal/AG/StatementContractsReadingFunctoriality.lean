@@ -1,5 +1,6 @@
 import Formal.AG.ReadingFunctoriality
 import Formal.AG.ReadingFunctoriality.FiniteExamples
+import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
 import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
 import Formal.AG.ReadingFunctoriality.LinearLerayComparison
 
@@ -4457,5 +4458,44 @@ example :
   topologyActualHOneFiring
 
 end R9d
+
+/-! R9g: concrete `Tor₁` flat-base-change firing. -/
+
+namespace R9g
+
+open ReadingFunctorialityFinite
+
+noncomputable example :
+    Derived.Intersection.moduleScalarExtension intPolynomialFlatChange
+        (Derived.Intersection.mathlibTor Int properIdeal properIdeal 1) ≅
+      Derived.Intersection.mathlibTor (Polynomial Int)
+        (properIdeal.map intPolynomialFlatChange.hom)
+        (properIdeal.map intPolynomialFlatChange.hom) 1 :=
+  modTwoTorOneBaseChangeIso
+
+noncomputable example :
+    Derived.Intersection.mathlibTor Int properIdeal properIdeal 1 :=
+  modTwoTorOneSourceWitness
+
+example : modTwoTorOneSourceWitness ≠ 0 :=
+  modTwoTorOneSourceWitness_ne_zero
+
+noncomputable example :
+    Derived.Intersection.mathlibTor (Polynomial Int)
+      (properIdeal.map intPolynomialFlatChange.hom)
+      (properIdeal.map intPolynomialFlatChange.hom) 1 :=
+  modTwoTorOneTargetWitness
+
+example : modTwoTorOneTargetWitness ≠ 0 :=
+  modTwoTorOneTargetWitness_ne_zero
+
+example :
+    Nontrivial
+      (Derived.Intersection.mathlibTor (Polynomial Int)
+        (properIdeal.map intPolynomialFlatChange.hom)
+        (properIdeal.map intPolynomialFlatChange.hom) 1) :=
+  modTwoTorOne_baseChange_nonzero
+
+end R9g
 
 end AAT.AG.StatementContractsReadingFunctoriality
