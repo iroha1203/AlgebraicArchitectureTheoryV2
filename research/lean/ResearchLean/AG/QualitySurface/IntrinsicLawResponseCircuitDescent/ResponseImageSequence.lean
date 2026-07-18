@@ -17,6 +17,20 @@ morphisms.
 On every selected lawful-space chart, sections of the protected kernel are
 identified with the linear kernel used by `ChartCircuitLocus`, and the target
 map agrees with `chartTargetOnProtectedKernel` under that identification.
+
+## Implementation notes
+
+The chart target comparison evaluates the categorical product and then uses
+product preservation followed by `ModuleCat.piIsoPi`. This route retains the
+same product projections as the actual sheaf morphism, so every component can
+be compared directly with the existing chart response.
+
+The protected-kernel comparison is the composite of evaluation's canonical
+kernel-preservation isomorphism, the kernel map induced by that product
+comparison, and `ModuleCat.kernelIsoKer`. Consequently its compatibility with
+the actual kernel inclusion is proved from universal properties. No external
+kernel comparison or arbitrary linear equivalence is accepted, and the sheaf
+kernel is not replaced by a separately defined pointwise kernel.
 -/
 
 open CategoryTheory CategoryTheory.Limits
@@ -373,6 +387,9 @@ theorem chartTargetOnProtectedKernel_compatibility
             (Core.obstructionIdeal W) i))).hom
   rw [chartProtectedKernelSectionsEquiv_subtype]
   rfl
+
+#assert_standard_axioms_only
+  ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.ResponseImageSequence
 
 end ResponseImageSequence
 end IntrinsicLawResponseCircuitDescent
