@@ -3024,4 +3024,67 @@ end SemanticCoreCoefficientGeometry
 
 end CoefficientChangeSD6
 
+namespace CoefficientChangeSD7
+
+open scoped ChangeOfRings
+
+/-! Fixed AC34 generic affine Tor base-change contracts. -/
+
+noncomputable example
+    {R R' : Type u}
+    [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M : ModuleCat.{max u v} R) :
+    ModuleCat.{max u v} R' :=
+  Derived.Intersection.moduleScalarExtension f M
+
+noncomputable example
+    {R R' : Type u}
+    [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M : ModuleCat.{max u v} R) :
+    M ⟶ (ModuleCat.restrictScalars f.hom).obj
+      (Derived.Intersection.moduleScalarExtension f M) :=
+  Derived.Intersection.moduleScalarExtensionUnit f M
+
+example
+    {R R' : Type u}
+    [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M : ModuleCat.{max u v} R) (m : M) :
+    Derived.Intersection.moduleScalarExtensionUnit f M m =
+      (1 : R') ⊗ₜ[R, f.hom] m :=
+  Derived.Intersection.moduleScalarExtensionUnit_apply f M m
+
+noncomputable example
+    {R : Type u} [CommRing R]
+    (M : ModuleCat.{max u v} R) :
+    Derived.Intersection.moduleScalarExtension
+        (FlatCoefficientChange.refl R) M ≅ M :=
+  Derived.Intersection.moduleScalarExtensionIdIso M
+
+noncomputable example
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    (M : ModuleCat.{max u v} R) :
+    Derived.Intersection.moduleScalarExtension g
+        (Derived.Intersection.moduleScalarExtension f M) ≅
+      Derived.Intersection.moduleScalarExtension (f.comp g) M :=
+  Derived.Intersection.moduleScalarExtensionCompIso f g M
+
+noncomputable example
+    {R R' : Type v}
+    [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (I J : Ideal R) (n : Nat) :
+    Derived.Intersection.moduleScalarExtension f
+        (Derived.Intersection.mathlibTor R I J n) ≅
+      Derived.Intersection.mathlibTor R'
+        (I.map f.hom) (J.map f.hom) n :=
+  Derived.Intersection.mathlibTorFlatBaseChangeIso f I J n
+
+end CoefficientChangeSD7
+
 end AAT.AG.StatementContractsReadingFunctoriality
