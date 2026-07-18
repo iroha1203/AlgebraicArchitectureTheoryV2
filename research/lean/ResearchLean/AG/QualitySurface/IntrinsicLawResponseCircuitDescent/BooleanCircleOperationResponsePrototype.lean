@@ -385,8 +385,10 @@ theorem aatCover_admissible :
 theorem selectedSupport_visibleOn_aatPatch :
     coverageRequirements.supportVisibleOn
       (cover.patch (chartEquivCoverIndex 0)) responseCore.supportAtom := by
-  simp [coverageRequirements, cover, chartEquivCoverIndex, responseCore,
-    chartContextIndex]
+  apply Or.inl
+  refine ⟨?_, rfl, PUnit.unit, ?_⟩
+  · simp [cover, chartEquivCoverIndex, chartContextIndex]
+  · exact FiniteModel.allFamily_mem _ (by simp [responseCore])
 
 theorem aatPatch_pair_overlap (i j : Fin 3) :
     contextOverlap.overlap base.1
