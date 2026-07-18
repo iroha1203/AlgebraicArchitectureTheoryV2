@@ -1078,6 +1078,554 @@ end RawAmbientRestrictionSystem
 
 end LawAlgebra
 
+namespace Cohomology
+
+open scoped ChangeOfRings
+
+/-- A large fixed-ring coefficient presheaf whose underlying additive
+presheaf satisfies the actual sheaf condition. -/
+structure LinearCoefficientSheaf
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (R : Type u) [CommRing R]
+    (S : Site.AATSite A) where
+  /-- The large `R`-module-valued coefficient presheaf. -/
+  modulePresheaf : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R
+  /-- The sheaf condition after forgetting only the fixed `R`-module action. -/
+  isSheaf : Presheaf.IsSheaf S.topology
+    (modulePresheaf ⋙
+      forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})
+
+namespace LinearCoefficientSheaf
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A}
+
+/-- The underlying large additive sheaf of a linear coefficient sheaf. -/
+noncomputable def toAddCommGrpSheaf
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S) :
+    Sheaf S.topology AddCommGrpCat.{u + 1} :=
+  ⟨_, Ob.isSheaf⟩
+
+/-!
+## Implementation notes
+
+The fixed `R`-action is transported through additive sheafification by mapping
+`ModuleCat.smulNatTrans`.  `ModuleCat.mkOfSMul` reconstructs every section as
+an `R`-module, and naturality of the mapped scalar endomorphisms makes every
+restriction map linear.  Thus this construction uses only additive
+`HasSheafify`; it does not request a module-valued sheafification instance or
+accept a target coefficient sheaf from the caller.
+
+Composition coherence is obtained from the universal property of this
+additive construction.  The internal adjunction to Mathlib's category of
+module-valued sheaves lets the existing `PreservesSheafification` theorem for
+the scalar-extension adjunction prove that the whiskered unit becomes an
+isomorphism.  This avoids treating iterated sheafification as definitional.
+-/
+
+private noncomputable def sheafifiedScalarAction
+    {R : Type u} [CommRing R]
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (W : S.categoryᵒᵖ) :
+    R →+* End ((sheafify S.topology
+      (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})).obj W) where
+  toFun r := (sheafifyMap S.topology
+    (Functor.whiskerLeft P (ModuleCat.smulNatTrans R r))).app W
+  map_one' := by simp
+  map_zero' := by
+    change ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+      (Functor.whiskerLeft P (ModuleCat.smulNatTrans R 0))).val.app W = 0
+    rw [map_zero]
+    change ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map 0).val.app W = 0
+    rw [Functor.map_zero]
+    rfl
+  map_mul' r s := by simp
+  map_add' r s := by
+    change ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+      (Functor.whiskerLeft P (ModuleCat.smulNatTrans R (r + s)))).val.app W = _
+    rw [map_add]
+    change ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).map
+      (Functor.whiskerLeft P
+        ((ModuleCat.smulNatTrans R) r + (ModuleCat.smulNatTrans R) s))).val.app W = _
+    rw [show Functor.whiskerLeft P
+      ((ModuleCat.smulNatTrans R) r + (ModuleCat.smulNatTrans R) s) =
+        Functor.whiskerLeft P (ModuleCat.smulNatTrans R r) +
+          Functor.whiskerLeft P (ModuleCat.smulNatTrans R s) by rfl]
+    rw [Functor.map_add]
+    rfl
+
+private noncomputable def sheafifiedModulePresheaf
+    {R : Type u} [CommRing R]
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R where
+  obj W := ModuleCat.mkOfSMul (sheafifiedScalarAction P W)
+  map {X Y} g := ModuleCat.homMk
+    ((sheafify S.topology
+      (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})).map g)
+    (fun r => (sheafifyMap S.topology
+      (Functor.whiskerLeft P (ModuleCat.smulNatTrans R r))).naturality g)
+  map_id X := by
+    apply ModuleCat.hom_ext
+    ext x
+    change ((sheafify S.topology
+      (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})).map (𝟙 X)) x = x
+    simp
+  map_comp f g := by
+    apply ModuleCat.hom_ext
+    ext x
+    change ((sheafify S.topology
+      (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})).map (f ≫ g)) x = _
+    simp
+    rfl
+
+/-- Additively sheafify a large fixed-ring module presheaf and transport its
+scalar action through the sheafification functor. -/
+noncomputable def moduleSheafification
+    {R : Type u} [CommRing R]
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    LinearCoefficientSheaf R S where
+  modulePresheaf := sheafifiedModulePresheaf P
+  isSheaf := by
+    exact ((presheafToSheaf S.topology AddCommGrpCat.{u + 1}).obj
+      (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})).cond
+
+private noncomputable def moduleSheafificationUnit
+    {R : Type u} [CommRing R]
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    P ⟶ (moduleSheafification P).modulePresheaf where
+  app W := ModuleCat.homMk
+    ((toSheafify S.topology
+      (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})).app W)
+    (fun r => (NatTrans.congr_app
+      (toSheafify_naturality (J := S.topology)
+        (Functor.whiskerLeft P (ModuleCat.smulNatTrans R r))) W).symm)
+  naturality X Y g := by
+    apply ModuleCat.hom_ext
+    ext x
+    exact CategoryTheory.congr_fun
+      ((toSheafify S.topology
+        (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})).naturality g) x
+
+/-- Objectwise extension of scalars before additive sheafification. -/
+noncomputable def rawBaseChangePresheaf
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R') :
+    S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R' :=
+  Ob.modulePresheaf ⋙ ModuleCat.extendScalars f.hom
+
+/-- The canonical SD8 coefficient change: extend scalars objectwise and then
+apply additive sheafification. -/
+noncomputable def baseChange
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    LinearCoefficientSheaf R' S :=
+  moduleSheafification (Ob.rawBaseChangePresheaf f)
+
+/-- Scalar extension of a large module, used by the linear Čech API. -/
+noncomputable def moduleScalarExtension
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M : ModuleCat.{u + 1} R) :
+    ModuleCat.{u + 1} R' :=
+  (ModuleCat.extendScalars f.hom).obj M
+
+/-- The sectionwise component of the additive sheafification unit after
+objectwise scalar extension. -/
+noncomputable def baseChangeSectionMap
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (W : S.category) :
+    moduleScalarExtension f (Ob.modulePresheaf.obj (op W)) ⟶
+      (Ob.baseChange f).modulePresheaf.obj (op W) :=
+  (moduleSheafificationUnit (Ob.rawBaseChangePresheaf f)).app (op W)
+
+/-- Naturality of the canonical section map with respect to site
+restriction morphisms. -/
+theorem baseChangeSectionMap_naturality
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {source target : S.category} (g : source ⟶ target) :
+    (ModuleCat.extendScalars f.hom).map
+          (Ob.modulePresheaf.map g.op) ≫
+        Ob.baseChangeSectionMap f source =
+      Ob.baseChangeSectionMap f target ≫
+        (Ob.baseChange f).modulePresheaf.map g.op := by
+  exact (moduleSheafificationUnit (Ob.rawBaseChangePresheaf f)).naturality g.op
+
+private noncomputable def moduleSheafificationMap
+    {R : Type u} [CommRing R]
+    {P Q : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (α : P ⟶ Q) :
+    (moduleSheafification P).modulePresheaf ⟶
+      (moduleSheafification Q).modulePresheaf where
+  app W := ModuleCat.homMk
+    ((sheafifyMap S.topology
+      (Functor.whiskerRight α
+        (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}))).app W)
+    (fun r => by
+      change (sheafifyMap S.topology
+          (Functor.whiskerRight α
+            (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) ≫
+        sheafifyMap S.topology
+          (Functor.whiskerLeft Q (ModuleCat.smulNatTrans R r))).app W =
+        (sheafifyMap S.topology
+          (Functor.whiskerLeft P (ModuleCat.smulNatTrans R r)) ≫
+        sheafifyMap S.topology
+          (Functor.whiskerRight α
+            (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}))).app W
+      apply NatTrans.congr_app
+      rw [← sheafifyMap_comp, ← sheafifyMap_comp]
+      congr 1
+      ext W x
+      exact ((α.app W).hom.map_smul r x).symm)
+  naturality X Y g := by
+    apply ModuleCat.hom_ext
+    ext x
+    exact CategoryTheory.congr_fun
+      ((sheafifyMap S.topology
+        (Functor.whiskerRight α
+          (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}))).naturality g) x
+
+@[simp]
+private theorem moduleSheafificationMap_id
+    {R : Type u} [CommRing R]
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    moduleSheafificationMap (𝟙 P) = 𝟙 _ := by
+  ext W x
+  change (sheafifyMap S.topology
+    (Functor.whiskerRight (𝟙 P)
+      (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}))).app W x = x
+  simp
+
+@[simp]
+private theorem moduleSheafificationMap_comp
+    {R : Type u} [CommRing R]
+    {P Q T : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (α : P ⟶ Q) (β : Q ⟶ T) :
+    moduleSheafificationMap (α ≫ β) =
+      moduleSheafificationMap α ≫ moduleSheafificationMap β := by
+  ext W x
+  change (sheafifyMap S.topology
+    (Functor.whiskerRight (α ≫ β)
+      (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}))).app W x = _
+  simp
+  rfl
+
+@[reassoc (attr := simp)]
+private theorem moduleSheafificationUnit_map
+    {R : Type u} [CommRing R]
+    {P Q : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (α : P ⟶ Q) :
+    α ≫ moduleSheafificationUnit Q =
+      moduleSheafificationUnit P ≫ moduleSheafificationMap α := by
+  ext W x
+  exact CategoryTheory.congr_fun
+    (NatTrans.congr_app
+      (toSheafify_naturality (J := S.topology)
+        (Functor.whiskerRight α
+          (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}))) W) x
+
+private noncomputable def moduleSheafificationUnitIso
+    {R : Type u} [CommRing R]
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (hP : Presheaf.IsSheaf S.topology
+      (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) :
+    P ≅ (moduleSheafification P).modulePresheaf := by
+  letI : IsIso (toSheafify S.topology
+      (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) :=
+    isIso_toSheafify S.topology hP
+  haveI (W : S.categoryᵒᵖ) : IsIso ((moduleSheafificationUnit P).app W) := by
+    letI : IsIso ((forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}).map
+        ((moduleSheafificationUnit P).app W)) := by
+      change IsIso ((toSheafify S.topology
+        (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})).app W)
+      infer_instance
+    exact isIso_of_reflects_iso ((moduleSheafificationUnit P).app W)
+      ((forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}))
+  haveI : IsIso (moduleSheafificationUnit P) :=
+    NatIso.isIso_of_isIso_app (moduleSheafificationUnit P)
+  exact asIso (moduleSheafificationUnit P)
+
+private def IsLinearSheaf
+    (R : Type u) [CommRing R] :
+    ObjectProperty (S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R) :=
+  fun P => Presheaf.IsSheaf S.topology
+    (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})
+
+private abbrev LinearSheafCategory
+    (R : Type u) [CommRing R] :=
+  (IsLinearSheaf (S := S) R).FullSubcategory
+
+private noncomputable def moduleSheafificationLift
+    {R : Type u} [CommRing R]
+    {P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (T : LinearSheafCategory (S := S) R)
+    (α : P ⟶ T.obj) :
+    (moduleSheafification P).modulePresheaf ⟶ T.obj where
+  app W := ModuleCat.homMk
+    ((sheafifyLift S.topology
+      (Functor.whiskerRight α
+        (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) T.property).app W)
+    (fun r => by
+      change (sheafifyLift S.topology
+          (Functor.whiskerRight α
+            (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) T.property ≫
+        Functor.whiskerLeft T.obj (ModuleCat.smulNatTrans R r)).app W =
+        (sheafifyMap S.topology
+            (Functor.whiskerLeft P (ModuleCat.smulNatTrans R r)) ≫
+          sheafifyLift S.topology
+            (Functor.whiskerRight α
+              (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) T.property).app W
+      apply NatTrans.congr_app
+      apply sheafify_hom_ext S.topology _ _ T.property
+      rw [← Category.assoc, toSheafify_sheafifyLift]
+      rw [← Category.assoc, ← toSheafify_naturality, Category.assoc,
+        toSheafify_sheafifyLift]
+      ext W x
+      exact ((α.app W).hom.map_smul r x).symm)
+  naturality X Y g := by
+    apply ModuleCat.hom_ext
+    ext x
+    exact CategoryTheory.congr_fun
+      ((sheafifyLift S.topology
+        (Functor.whiskerRight α
+          (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) T.property).naturality g) x
+
+@[reassoc (attr := simp)]
+private theorem moduleSheafificationUnit_lift
+    {R : Type u} [CommRing R]
+    {P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (T : LinearSheafCategory (S := S) R)
+    (α : P ⟶ T.obj) :
+    moduleSheafificationUnit P ≫ moduleSheafificationLift T α = α := by
+  ext W x
+  exact CategoryTheory.congr_fun
+    (NatTrans.congr_app
+      (toSheafify_sheafifyLift S.topology
+        (Functor.whiskerRight α
+          (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) T.property) W) x
+
+private theorem moduleSheafificationLift_unique
+    {R : Type u} [CommRing R]
+    {P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (T : LinearSheafCategory (S := S) R)
+    (α : P ⟶ T.obj)
+    (γ : (moduleSheafification P).modulePresheaf ⟶ T.obj)
+    (h : moduleSheafificationUnit P ≫ γ = α) :
+    γ = moduleSheafificationLift T α := by
+  apply NatTrans.ext
+  ext W x
+  have hUnderlying :
+      toSheafify S.topology
+          (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}) ≫
+        Functor.whiskerRight γ
+          (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}) =
+      Functor.whiskerRight α
+        (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}) := by
+    simpa using congrArg
+      (fun τ => Functor.whiskerRight τ
+        (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) h
+  have hLift := sheafifyLift_unique S.topology
+    (Functor.whiskerRight α
+      (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) T.property
+    (Functor.whiskerRight γ
+      (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) hUnderlying
+  exact CategoryTheory.congr_fun (NatTrans.congr_app hLift W) x
+
+private noncomputable def linearSheafCategoryOfSheaf
+    (R : Type u) [CommRing R]
+    (T : Sheaf S.topology (ModuleCat.{u + 1} R)) :
+    LinearSheafCategory (S := S) R :=
+  ⟨T.val, Presheaf.isSheaf_comp_of_isSheaf S.topology T.val
+    (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}) T.cond⟩
+
+private noncomputable def modulePresheafToMathlibSheaf
+    (R : Type u) [CommRing R]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    (S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R) ⥤
+      Sheaf S.topology (ModuleCat.{u + 1} R) where
+  obj P := ⟨(moduleSheafification P).modulePresheaf,
+    Presheaf.isSheaf_of_isSheaf_comp S.topology
+      (moduleSheafification P).modulePresheaf
+      (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})
+      (moduleSheafification P).isSheaf⟩
+  map α := ⟨moduleSheafificationMap α⟩
+  map_id P := Sheaf.Hom.ext (moduleSheafificationMap_id P)
+  map_comp α β := Sheaf.Hom.ext (moduleSheafificationMap_comp α β)
+
+private noncomputable def moduleSheafificationMathlibAdjunction
+    (R : Type u) [CommRing R]
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    modulePresheafToMathlibSheaf (S := S) R ⊣
+      sheafToPresheaf S.topology (ModuleCat.{u + 1} R) :=
+  Adjunction.mkOfHomEquiv
+    { homEquiv := fun P T =>
+        { toFun := fun e => by
+            change P ⟶ T.val
+            exact moduleSheafificationUnit P ≫ e.val
+          invFun := fun α => by
+            refine ⟨moduleSheafificationLift
+              (linearSheafCategoryOfSheaf R T) α⟩
+          left_inv := fun e => by
+            apply Sheaf.Hom.ext
+            change moduleSheafificationLift
+              (linearSheafCategoryOfSheaf R T)
+              (moduleSheafificationUnit P ≫ e.val) = e.val
+            symm
+            apply moduleSheafificationLift_unique
+              (linearSheafCategoryOfSheaf R T) _ e.val
+            rfl
+          right_inv := fun α =>
+            moduleSheafificationUnit_lift
+              (linearSheafCategoryOfSheaf R T) α }
+      homEquiv_naturality_left_symm := by
+        intro P Q T f g
+        apply Sheaf.Hom.ext
+        change moduleSheafificationLift
+            (linearSheafCategoryOfSheaf R T) (f ≫ g) =
+          moduleSheafificationMap f ≫
+            moduleSheafificationLift (linearSheafCategoryOfSheaf R T) g
+        symm
+        apply moduleSheafificationLift_unique
+          (linearSheafCategoryOfSheaf R T) _ _
+        rw [← Category.assoc, ← moduleSheafificationUnit_map f,
+          Category.assoc, moduleSheafificationUnit_lift]
+      homEquiv_naturality_right := by
+        intro P T T' f g
+        rfl }
+
+private theorem isIso_moduleSheafificationMap_whiskeredUnit
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    IsIso (moduleSheafificationMap
+      (Functor.whiskerRight (moduleSheafificationUnit P)
+        (ModuleCat.extendScalars.{u, u, u + 1} f.hom))) := by
+  letI : S.topology.PreservesSheafification
+      (ModuleCat.extendScalars.{u, u, u + 1} f.hom) :=
+    Sheaf.preservesSheafification_of_adjunction S.topology
+      (show ModuleCat.extendScalars.{u, u, u + 1} f.hom ⊣ _ from
+        ModuleCat.extendRestrictScalarsAdj.{u + 1, u, u} f.hom)
+  haveI : IsIso
+      ((modulePresheafToMathlibSheaf (S := S) R').map
+        (Functor.whiskerRight (moduleSheafificationUnit P)
+          (ModuleCat.extendScalars.{u, u, u + 1} f.hom))) :=
+    ((S.topology.preservesSheafification_iff_of_adjunctions
+      (ModuleCat.extendScalars.{u, u, u + 1} f.hom)
+      (moduleSheafificationMathlibAdjunction (S := S) R)
+      (moduleSheafificationMathlibAdjunction (S := S) R')).mp
+        (by infer_instance)) P
+  change IsIso (((modulePresheafToMathlibSheaf (S := S) R').map
+    (Functor.whiskerRight (moduleSheafificationUnit P)
+      (ModuleCat.extendScalars.{u, u, u + 1} f.hom))).val)
+  exact (inferInstance : IsIso
+    ((sheafToPresheaf S.topology (ModuleCat.{u + 1} R')).map
+      ((modulePresheafToMathlibSheaf (S := S) R').map
+        (Functor.whiskerRight (moduleSheafificationUnit P)
+          (ModuleCat.extendScalars.{u, u, u + 1} f.hom)))))
+
+private noncomputable def moduleSheafificationWhiskeredUnitIso
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    (moduleSheafification
+      (P ⋙ ModuleCat.extendScalars.{u, u, u + 1} f.hom)).modulePresheaf ≅
+    (moduleSheafification
+      ((moduleSheafification P).modulePresheaf ⋙
+        ModuleCat.extendScalars.{u, u, u + 1} f.hom)).modulePresheaf := by
+  letI := isIso_moduleSheafificationMap_whiskeredUnit P f
+  exact asIso (moduleSheafificationMap
+    (Functor.whiskerRight (moduleSheafificationUnit P)
+      (ModuleCat.extendScalars.{u, u, u + 1} f.hom)))
+
+private noncomputable def moduleSheafificationMapIso
+    {R : Type u} [CommRing R]
+    {P Q : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R}
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (e : P ≅ Q) :
+    (moduleSheafification P).modulePresheaf ≅
+      (moduleSheafification Q).modulePresheaf :=
+  (sheafToPresheaf S.topology (ModuleCat.{u + 1} R)).mapIso
+    ((modulePresheafToMathlibSheaf (S := S) R).mapIso e)
+
+private noncomputable def rawBaseChangeIdUnderlyingIso
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S) :
+    (Ob.rawBaseChangePresheaf (FlatCoefficientChange.refl R) ⋙
+        forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}) ≅
+      (Ob.modulePresheaf ⋙
+        forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}) := by
+  simpa [rawBaseChangePresheaf, FlatCoefficientChange.refl] using
+    Functor.isoWhiskerRight
+      (Functor.isoWhiskerLeft Ob.modulePresheaf
+        (ModuleCat.extendScalarsId.{u, u + 1} R))
+      (forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})
+
+private theorem rawBaseChangeId_isSheaf
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S) :
+    Presheaf.IsSheaf S.topology
+      (Ob.rawBaseChangePresheaf (FlatCoefficientChange.refl R) ⋙
+        forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1}) :=
+  (Presheaf.isSheaf_of_iso_iff (rawBaseChangeIdUnderlyingIso Ob)).2 Ob.isSheaf
+
+/-- Identity coherence for canonical coefficient base change, using the
+sheafification unit and Mathlib's scalar-extension identity isomorphism. -/
+noncomputable def baseChangeIdIso
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    (Ob.baseChange (FlatCoefficientChange.refl R)).modulePresheaf ≅
+      Ob.modulePresheaf :=
+  (moduleSheafificationUnitIso
+      (Ob.rawBaseChangePresheaf (FlatCoefficientChange.refl R))
+      (rawBaseChangeId_isSheaf Ob)).symm ≪≫
+    Functor.isoWhiskerLeft Ob.modulePresheaf
+      (ModuleCat.extendScalarsId.{u, u + 1} R)
+
+/-- Composition coherence for canonical coefficient base change, using the
+additive sheafification compositor and Mathlib's scalar-extension compositor. -/
+noncomputable def baseChangeCompIso
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    ((Ob.baseChange f).baseChange g).modulePresheaf ≅
+      (Ob.baseChange (f.comp g)).modulePresheaf :=
+  (moduleSheafificationWhiskeredUnitIso
+      (Ob.rawBaseChangePresheaf f) g).symm ≪≫
+    moduleSheafificationMapIso
+      (Functor.isoWhiskerLeft Ob.modulePresheaf
+        (ModuleCat.extendScalarsComp.{u, u + 1} f.hom g.hom).symm)
+
+end LinearCoefficientSheaf
+
+end Cohomology
+
 end
 
 end AAT.AG
