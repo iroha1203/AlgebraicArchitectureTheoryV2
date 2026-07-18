@@ -32,10 +32,6 @@ Final review packet:
 - dependency DAG: <present | missing>
 - anti-weakening audit: <present | missing>
 - report / tracking Issue refs: <present | missing>
-- statement contract preflight: <present | missing>
-- statement contract: use the exact nested mapping below; flat aliases are invalid
-- statement contract active reference: <present | stale | missing>
-- contract invariants: <pass | fail | cannot-determine>
 
 Reviewer vetoes:
 - math reviewer A: <pass | veto | unchecked-central-claim>
@@ -95,29 +91,6 @@ completion_criteria_status: <satisfied | not-satisfied | refuted | cannot-determ
 math_lean_review_verdict: <verdict>
 math_lean_review_gate: <pass | fail>
 target_proved_gate: <pass | fail | cannot-determine>
-statement_contract_gate: <pass | fail | cannot-determine>
-statement_contract:
-  status: <active | stale | missing>
-  version: <version>
-  permalink: <canonical contract or external artifact permalink>
-  source: <issue-comment | external-artifact>
-  source_revision: <immutable source revision>
-  reference_permalink: <active gate comment permalink>
-  supersedes: <previous active reference permalink | none>
-  preflight_cycle: <cycle>
-  preflight_recorded_at: <timestamp>
-  contract_accepted_before_implementation: <true | false | cannot-determine>
-  implementation_start_ref: <none | ref>
-  implementation_scope:
-    baseline_ref: <preflight-base-commit>
-    target_files:
-      - <repo-relative-target-Lean-file>
-  audits:
-    math_a: <audit-comment-permalink>
-    math_b: <audit-comment-permalink>
-    lean_a: <audit-comment-permalink>
-    lean_b: <audit-comment-permalink>
-contract_invariants_satisfied: <true | false | cannot-determine>
 final_review_packet_status: <complete | incomplete>
 reviewer_vetoes:
   - <reviewer / finding>
