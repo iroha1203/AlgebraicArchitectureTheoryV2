@@ -8,6 +8,30 @@ This module transports the generic large additive-sheaf Leray comparison to
 the canonical linear Čech complex.  It equips actual terminal `Sheaf.H` with
 the transported coefficient-module structure and conjugates the canonical
 Čech base-change map into actual sheaf cohomology.
+
+## Implementation notes
+
+This is the R8d / AC37 bridge from the module-valued Čech theory to actual
+terminal `Sheaf.H`.  The underlying additive linear Čech complex is identified
+with the generic selected Čech complex by identity component isomorphisms;
+differential compatibility is proved from the two canonical alternating
+restriction formulas.  The resulting cross-universe additive equivalence from
+Čech homology in `Type (u + 1)` to actual `Sheaf.H` in `Type (u + 2)` transports
+the `R`-module structure onto the actual carrier.
+
+The base-change map is composed directly as `LinearMap.baseChange` of the
+source comparison inverse, the canonical Čech Hn base-change map, and the
+target comparison.  The target module instance is reconstructed from the same
+additive equivalence so that this cross-universe composition uses exactly the
+transported structure exposed by `terminalLerayHModule`.
+
+Caller-supplied H-level module structures, comparison maps, or isomorphisms are
+not used because they would add the conclusion-level data that R8d constructs.
+An independent module-valued sheafification route is also not used: it would
+require another comparison with actual `Sheaf.H` and would not by itself fix
+the carrier required by AC37.  A single-category morphism composition is not
+used because the Čech and actual-cohomology carriers live in different
+universes; the direct linear-map composition preserves both carrier levels.
 -/
 
 noncomputable section
