@@ -3589,6 +3589,27 @@ theorem LinearCoverRelativeCechComplex.class_baseChange_naturality
           (K.complex.homology n) (K.complex.homologyπ n c)) =
       K.classBaseChange f n c
 
+def IsLerayForSheaf
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})] :
+    Prop :=
+  ∀ q, 0 < q →
+    ∀ p, ∀ σ : (canonicalCoverRelative 𝒰).simplex p,
+      Subsingleton
+        (F.H' q ((canonicalCoverRelative 𝒰).overlap p σ))
+
+noncomputable def selectedCechToSheafHAtBaseEquivForSheaf
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hLeray : IsLerayForSheaf 𝒰 F)
+    (n : Nat) :
+    (((selectedCechComplexFunctor 𝒰).obj F.val).homology n : Type (u + 1)) ≃+
+      (F.H' n base : Type (u + 2))
+
 namespace LinearCoefficientSheaf
 
 noncomputable def canonicalBaseChangeCochain
@@ -3977,7 +3998,8 @@ sheafHFlatBaseChangeMap_id / sheafHFlatBaseChangeMap_compを証明する。
 | linear Čech terms / flat tensor exactness | 本文由来 | scalar-extension theorem | module-valued differentialと`FlatCoefficientChange.flat`から証明 |
 | `LinearCoefficientSheaf` / canonical `baseChange` | 本文由来 | source coefficientとbase-changed target coefficient | `ModuleCat.{u + 1}` presheafとunderlying `AddCommGrpCat.{u + 1}` sheaf conditionから生成し、target sheafをcallerから受けない |
 | `CechCoefficientBaseChangeCompatible` | 本文由来 | Appendix A.2.1のcoefficient compatibility | canonical complex homのcomponentだけを検査し、map / isoをfieldとして受けない。finite modelではflat extensionのfinite-limit preservationで放電 |
-| `terminalLerayHModule` / `cechToSheafHLinearIso` | 放電済み | actual `Sheaf.H`のmodule carrierとČech comparison | `terminalLerayHModule`をresult universe `u + 2`に置き、large linear Čech Hnとのcross-universe `LinearEquiv`をlarge-coefficient Leray comparisonと`AddEquiv.module`から生成 |
+| `IsLerayForSheaf` / `selectedCechToSheafHAtBaseEquivForSheaf` | 放電済み | arbitrary large additive sheafのselected Čech homologyからactual `Sheaf.H'`への接続 | positive-degree local vanishingだけをpredicateに持ち、actual injective resolution、selected Čech bicomplex、両edge quasi-isomorphismからcross-universe `AddEquiv`を生成。comparison data inputは禁止 |
+| `terminalLerayHModule` / `cechToSheafHLinearIso` | 放電済み | actual `Sheaf.H`のmodule carrierとČech comparison | `terminalLerayHModule`をresult universe `u + 2`に置き、large linear Čech Hnとのcross-universe `LinearEquiv`を`selectedCechToSheafHAtBaseEquivForSheaf`、`terminalHComparison`、`AddEquiv.module`から生成 |
 | base-change unit / compositor iso | 放電済み | coefficient sheafとactual H mapのidentity / composition | additive sheafificationと`ModuleCat.extendScalars`のunit / compositorから生成し、definitionally同一視しない |
 | finite Čech model | firing限定 | nonzero計算とcanonical coefficient compatibilityの放電 | abstract complex theoremの明示引数やtypeclassへ追加しない |
 | `ConditionalSpaceCohomology`、selected H1 comparison field | 未放電 | completion routeに使用不可 | final source scanで主経路からzero |
@@ -4753,6 +4775,8 @@ flat coefficient change
 - objectwise module scalar extensionとadditive sheafificationからcanonical base-changed
   `LinearCoefficientSheaf`を生成する。
 - canonical Čech complex hom、degreewise compatibility、Hn mapをsection mapとdifferential可換性から構成する。
+- arbitrary large additive sheafについて、selected cover上のpositive-degree actual `Sheaf.H'`
+  vanishingからinjective-resolution Leray comparisonを構成する。
 - terminal Leray comparisonでactual `Sheaf.H`へmodule structureをtransportし、
   `sheafHFlatBaseChangeMap`とclass formulaを構成する。
 - additive sheafificationとmodule scalar extensionのunit / compositor isoを構成し、
