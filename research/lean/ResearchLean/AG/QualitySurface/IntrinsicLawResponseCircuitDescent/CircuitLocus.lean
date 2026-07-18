@@ -20,6 +20,18 @@ canonical tensor-to-kernel map is an equivalence after every scalar extension.
 The cokernel support is then identified with residue-field normalized-repair
 failure and, through `LinearRepair`, with a target-containing support-minimal
 circuit.
+
+## Implementation notes
+
+The forward kernel comparison is fixed to mathlib's canonical
+`LinearMap.tensorKer`. Projective splittings are used only to prove that map
+bijective; choosing a splitting as the comparison map would lose the required
+canonical provenance. The response family is represented by `LinearMap.pi`
+because the protected labels are finite, rather than by a custom response
+matrix wrapper. Support is read through mathlib's residue-field tensor
+characterization and then connected to the reviewed `LinearRepair` API;
+storing a repair or circuit certificate in a new structure would make the
+conclusion an input and is therefore deliberately avoided.
 -/
 
 noncomputable section
@@ -36,16 +48,25 @@ variable {R : Type uR} {E : Type uE} {F : Type uF}
 variable [CommRing R] [AddCommGroup E] [Module R E]
 variable [AddCommGroup F] [Module R F]
 
+/-- A projective-lifting API helper that chooses a section of the range
+restriction. Its projective-range premise is the split-regularity direction
+hypothesis; the chosen section is not a comparison certificate. -/
 noncomputable def rangeSection (f : E →ₗ[R] F) [Module.Projective R f.range] :
     f.range →ₗ[R] E :=
   Classical.choose <| Module.projective_lifting_property f.rangeRestrict LinearMap.id
     (LinearMap.range_eq_top.mp f.range_rangeRestrict)
 
+/-- The API law for `rangeSection`: composing with the range restriction is
+the identity. This exposes the lifting-property construction without requiring
+downstream proofs to unfold it. -/
 theorem rangeSection_spec (f : E →ₗ[R] F) [Module.Projective R f.range] :
     f.rangeRestrict ∘ₗ rangeSection f = LinearMap.id :=
   Classical.choose_spec <| Module.projective_lifting_property f.rangeRestrict LinearMap.id
     (LinearMap.range_eq_top.mp f.range_rangeRestrict)
 
+/-- The projection onto the kernel induced by the projective range splitting.
+This is an API construction for the C0a kernel theorem, not the scalar
+base-change map. -/
 noncomputable def kernelProjection (f : E →ₗ[R] F) [Module.Projective R f.range] :
     E →ₗ[R] f.ker where
   toFun e := ⟨e - rangeSection f (f.rangeRestrict e), by
@@ -63,6 +84,8 @@ noncomputable def kernelProjection (f : E →ₗ[R] F) [Module.Projective R f.ra
     simp only [map_smul]
     exact (smul_sub r x (rangeSection f (f.rangeRestrict x))).symm
 
+/-- The kernel projection retracts the canonical kernel subtype. This is the
+split-submodule API used by the finite and projective kernel results. -/
 theorem kernelProjection_comp_subtype (f : E →ₗ[R] F) [Module.Projective R f.range] :
     kernelProjection f ∘ₗ f.ker.subtype = LinearMap.id := by
   ext x
@@ -72,28 +95,41 @@ theorem kernelProjection_comp_subtype (f : E →ₗ[R] F) [Module.Projective R f
     exact x.2
   rw [hx, map_zero, sub_zero]
 
+/-- C0a accepted result: the kernel of a map from a finite module is finite
+when the map range is projective. The projective-range premise supplies the
+split used to construct the finite quotient. -/
 theorem kernel_finite (f : E →ₗ[R] F) [Module.Finite R E]
     [Module.Projective R f.range] : Module.Finite R f.ker := by
   apply Module.Finite.of_surjective (kernelProjection f)
   intro x
   exact ⟨x, DFunLike.congr_fun (kernelProjection_comp_subtype f) x⟩
 
+/-- C0a accepted result: a split kernel of a map from a projective module is
+projective. Projectivity of the range supplies the splitting. -/
 theorem kernel_projective (f : E →ₗ[R] F) [Module.Projective R E]
     [Module.Projective R f.range] : Module.Projective R f.ker :=
   Module.Projective.of_split f.ker.subtype (kernelProjection f)
     (kernelProjection_comp_subtype f)
 
+/-- A projective-lifting API helper that chooses a section of the quotient by
+a submodule. It is used to split the response-map image inclusion after scalar
+extension. -/
 noncomputable def quotientSection (p : Submodule R F)
     [Module.Projective R (F ⧸ p)] : (F ⧸ p) →ₗ[R] F :=
   Classical.choose <| Module.projective_lifting_property p.mkQ LinearMap.id
     (Submodule.mkQ_surjective p)
 
+/-- The API law for `quotientSection`: quotienting after the chosen lift is the
+identity. -/
 theorem quotientSection_spec (p : Submodule R F)
     [Module.Projective R (F ⧸ p)] :
     p.mkQ ∘ₗ quotientSection p = LinearMap.id :=
   Classical.choose_spec <| Module.projective_lifting_property p.mkQ LinearMap.id
     (Submodule.mkQ_surjective p)
 
+/-- The projection onto a submodule obtained from a projective quotient. For a
+response-map range this supplies the image-inclusion splitting used in the
+surjectivity proof for canonical kernel base change. -/
 noncomputable def submoduleProjection (p : Submodule R F)
     [Module.Projective R (F ⧸ p)] : F →ₗ[R] p where
   toFun y := ⟨y - quotientSection p (p.mkQ y), by
@@ -114,6 +150,7 @@ noncomputable def submoduleProjection (p : Submodule R F)
     simp only [map_smul]
     exact (smul_sub r x (quotientSection p (p.mkQ x))).symm
 
+/-- The submodule projection retracts the canonical subtype inclusion. -/
 theorem submoduleProjection_comp_subtype (p : Submodule R F)
     [Module.Projective R (F ⧸ p)] :
     submoduleProjection p ∘ₗ p.subtype = LinearMap.id := by
@@ -123,6 +160,9 @@ theorem submoduleProjection_comp_subtype (p : Submodule R F)
     (Submodule.Quotient.mk_eq_zero (p := p) (x := x.1)).mpr x.2
   rw [hx, map_zero, sub_zero]
 
+/-- The source decomposes as its kernel component plus its chosen range
+component. This API lemma supplies the computation used after scalar
+extension. -/
 theorem kernel_decomposition (f : E →ₗ[R] F) [Module.Projective R f.range] :
     f.ker.subtype ∘ₗ kernelProjection f + rangeSection f ∘ₗ f.rangeRestrict =
       LinearMap.id := by
@@ -131,10 +171,15 @@ theorem kernel_decomposition (f : E →ₗ[R] F) [Module.Projective R f.range] :
 
 variable (A : Type*) [CommRing A] [Algebra R A]
 
+/-- C0a accepted construction: the forward scalar-extension comparison for a
+kernel, fixed to mathlib's canonical `LinearMap.tensorKer`. It has no supplied
+comparison or inverse certificate. -/
 noncomputable def kernelBaseChangeMap (f : E →ₗ[R] F) :
     TensorProduct R A f.ker →ₗ[A] (f.baseChange A).ker :=
   f.tensorKer A A
 
+/-- The canonical kernel base-change map is injective when the original range
+is projective. The proof transports the kernel splitting through tensor. -/
 theorem kernelBaseChangeMap_injective (f : E →ₗ[R] F)
     [Module.Projective R f.range] :
     Function.Injective (kernelBaseChangeMap A f) := by
@@ -149,6 +194,9 @@ theorem kernelBaseChangeMap_injective (f : E →ₗ[R] F)
   simpa [← LinearMap.comp_apply, ← LinearMap.lTensor_comp,
     kernelProjection_comp_subtype] using hleft
 
+/-- Base change preserves injectivity of a range subtype when the quotient is
+projective. This is the image-splitting API used by kernel-base-change
+surjectivity. -/
 theorem rangeSubtype_baseChange_injective (f : E →ₗ[R] F)
     [Module.Projective R (F ⧸ f.range)] :
     Function.Injective (f.range.subtype.baseChange A) := by
@@ -157,6 +205,9 @@ theorem rangeSubtype_baseChange_injective (f : E →ₗ[R] F)
   simpa [← LinearMap.comp_apply, ← LinearMap.baseChange_comp,
     submoduleProjection_comp_subtype] using hleft
 
+/-- The canonical kernel base-change map is surjective when the range and its
+quotient are projective. Both projective premises are used through their
+source-level splittings. -/
 theorem kernelBaseChangeMap_surjective (f : E →ₗ[R] F)
     [Module.Projective R f.range] [Module.Projective R (F ⧸ f.range)] :
     Function.Surjective (kernelBaseChangeMap A f) := by
@@ -179,12 +230,17 @@ theorem kernelBaseChangeMap_surjective (f : E →ₗ[R] F)
   rw [LinearMap.tensorKer_coe]
   simpa only [LinearMap.baseChange_eq_ltensor] using happ
 
+/-- C0a accepted result: mathlib's canonical kernel base-change map is a
+linear equivalence for every commutative scalar extension under the two split
+regularity direction hypotheses. -/
 noncomputable def kernelBaseChangeEquiv (f : E →ₗ[R] F)
     [Module.Projective R f.range] [Module.Projective R (F ⧸ f.range)] :
     TensorProduct R A f.ker ≃ₗ[A] (f.baseChange A).ker :=
   LinearEquiv.ofBijective (kernelBaseChangeMap A f)
     ⟨kernelBaseChangeMap_injective A f, kernelBaseChangeMap_surjective A f⟩
 
+/-- Right-exactness API: the scalar extension of a scalar-map cokernel is
+nontrivial exactly when the base-changed scalar map is not surjective. -/
 theorem tensor_responseCokernel_nontrivial_iff_not_surjective
     (s : E →ₗ[R] R) :
     Nontrivial (TensorProduct R A (R ⧸ LinearMap.range s)) ↔
@@ -197,6 +253,9 @@ theorem tensor_responseCokernel_nontrivial_iff_not_surjective
       LinearMap.range (LinearMap.lTensor A s) = ⊤ ↔
         Function.Surjective (LinearMap.lTensor A s))
 
+/-- C0a accepted support comparison: a prime belongs to the response
+cokernel's support exactly when the residue-field base change of the scalar
+response is not surjective. -/
 theorem mem_support_responseCokernel_iff (s : E →ₗ[R] R)
     (p : PrimeSpectrum R) :
     p ∈ Module.support R (R ⧸ LinearMap.range s) ↔
@@ -205,11 +264,15 @@ theorem mem_support_responseCokernel_iff (s : E →ₗ[R] R)
   exact tensor_responseCokernel_nontrivial_iff_not_surjective
     p.asIdeal.ResidueField s
 
+/-- The scalar-valued response on a tensor fiber, using the canonical
+tensor-unit equivalence rather than a selected coordinate identification. -/
 noncomputable def residueScalarMap (s : E →ₗ[R] R) :
     TensorProduct R A E →ₗ[A] A :=
   (TensorProduct.AlgebraTensorModule.rid R A A).toLinearMap.comp
     (s.baseChange A)
 
+/-- A scalar-valued base-changed response is surjective exactly when it takes
+the value one. This API lemma packages the normalization witness. -/
 theorem residueScalarMap_surjective_iff_exists_one (s : E →ₗ[R] R) :
     Function.Surjective (s.baseChange A) ↔
       ∃ x, residueScalarMap A s x = 1 := by
@@ -230,19 +293,28 @@ section ResponseFamily
 
 variable {L : Type*}
 
+/-- The protected response map is the canonical finite product of the
+protected labeled functionals. Finiteness comes from `P : Finset L`; no
+response matrix is supplied. -/
 def protectedResponseMap (response : L → Module.Dual R E) (P : Finset L) :
     E →ₗ[R] (P → R) :=
   LinearMap.pi (fun p : P ↦ response p.1)
 
+/-- The target response restricted canonically to the generated protected
+kernel. This is the C0a scalar map whose cokernel support is studied. -/
 def targetOnProtectedKernel (response : L → Module.Dual R E)
     (P : Finset L) (target : L) :
     (protectedResponseMap response P).ker →ₗ[R] R :=
   (response target).comp (protectedResponseMap response P).ker.subtype
 
+/-- The labeled response on a scalar-extension fiber, obtained from
+`residueScalarMap` and hence from the original response functional. -/
 noncomputable def fiberResponse (response : L → Module.Dual R E)
     (label : L) : Module.Dual A (TensorProduct R A E) :=
   residueScalarMap A (response label)
 
+/-- The base-changed protected response agrees with the finite product of the
+fiber responses after the canonical finite-product tensor equivalence. -/
 theorem protectedResponseMap_baseChange_comp_piScalarRight
     (response : L → Module.Dual R E) (P : Finset L) :
     (TensorProduct.piScalarRightHom R A A P).comp
@@ -252,6 +324,9 @@ theorem protectedResponseMap_baseChange_comp_piScalarRight
   ext a e
   simp [protectedResponseMap, fiberResponse, residueScalarMap]
 
+/-- Evaluation of the target-on-kernel response commutes with the canonical
+kernel base-change equivalence. The range/cokernel projectivity premises are
+the split-regularity direction hypotheses used to build that equivalence. -/
 theorem residueScalarMap_targetOnProtectedKernel
     (response : L → Module.Dual R E) (P : Finset L) (target : L)
     [Module.Projective R (protectedResponseMap response P).range]
@@ -285,6 +360,9 @@ theorem residueScalarMap_targetOnProtectedKernel
 
 variable {K : Type*} [Field K] [Algebra R K]
 
+/-- C0a accepted result: an actual normalized repair vector in the fiber is
+equivalent to a scalar-one witness on the base-changed protected kernel. The
+repair is constructed through finite-product and kernel-base-change APIs. -/
 theorem exists_fiber_normalizedRepair_iff_exists_scalarOnKernel
     (response : L → Module.Dual R E) (P : Finset L) (target : L)
     [Module.Projective R (protectedResponseMap response P).range]
@@ -328,6 +406,10 @@ theorem exists_fiber_normalizedRepair_iff_exists_scalarOnKernel
     · rw [← residueScalarMap_targetOnProtectedKernel K response P target x]
       exact hx
 
+/-- C0a accepted result: response-cokernel support at a prime is equivalent to
+failure of an actual normalized repair in its residue-field fiber. The
+projectivity premises provide the two canonical comparison theorems used in
+the proof. -/
 theorem mem_support_responseCokernel_iff_no_fiber_normalizedRepair
     (response : L → Module.Dual R E) (P : Finset L) (target : L)
     [Module.Projective R (protectedResponseMap response P).range]
@@ -346,8 +428,11 @@ theorem mem_support_responseCokernel_iff_no_fiber_normalizedRepair
 end ResponseFamily
 
 
-/-- The support of the response cokernel is exactly the residue-field circuit
-locus.  The conclusion includes both the singleton loop and nonloop cases. -/
+/-- C0a accepted circuit-locus result: the support of the response cokernel is
+exactly the existence locus of a target-containing support-minimal residue-field
+dependence. The projectivity premises are split-regularity direction
+hypotheses, and the finite circuit extraction is supplied by the reviewed L0
+API. The conclusion includes both the singleton loop and nonloop cases. -/
 theorem mem_support_responseCokernel_iff_exists_supportMinimalCircuit
     (response : L → Module.Dual R E) (P : Finset L) (target : L)
     (htarget : target ∉ P)
