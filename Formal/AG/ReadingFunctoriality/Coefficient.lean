@@ -1078,6 +1078,64 @@ end RawAmbientRestrictionSystem
 
 end LawAlgebra
 
+namespace Derived.Intersection
+
+open scoped ChangeOfRings
+
+/-- The SD7 / AC34 supporting scalar-extension object. It uses Mathlib's functor directly;
+`f.hom` supplies the coefficient action, while flatness is used by homology comparisons. -/
+noncomputable def moduleScalarExtension
+    {R R' : Type u}
+    [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M : ModuleCat.{max u v} R) :
+    ModuleCat.{max u v} R' :=
+  (ModuleCat.extendScalars f.hom).obj M
+
+/-- The SD7 / AC34 supporting unit for class-level formulas. It is the canonical adjunction unit
+determined by the coefficient homomorphism `f.hom`. -/
+noncomputable def moduleScalarExtensionUnit
+    {R R' : Type u}
+    [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M : ModuleCat.{max u v} R) :
+    M ⟶ (ModuleCat.restrictScalars f.hom).obj
+      (moduleScalarExtension f M) :=
+  (ModuleCat.extendRestrictScalarsAdj f.hom).unit.app M
+
+/-- The SD7 characterization API for `moduleScalarExtensionUnit`: the unit determined by `f.hom`
+sends every element to its canonical pure tensor. -/
+@[simp] theorem moduleScalarExtensionUnit_apply
+    {R R' : Type u}
+    [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M : ModuleCat.{max u v} R) (m : M) :
+    moduleScalarExtensionUnit f M m =
+      (1 : R') ⊗ₜ[R, f.hom] m := by
+  rfl
+
+/-- The SD7 identity-coherence API. The identity coefficient change supplies the ring identity
+homomorphism, and Mathlib's canonical extension-of-scalars identity iso supplies the result. -/
+noncomputable def moduleScalarExtensionIdIso
+    {R : Type u} [CommRing R]
+    (M : ModuleCat.{max u v} R) :
+    moduleScalarExtension (FlatCoefficientChange.refl R) M ≅ M :=
+  (ModuleCat.extendScalarsId R).app M
+
+/-- The SD7 composition-coherence API. The coefficient changes `f` and `g` supply the composite
+ring homomorphism, and Mathlib's scalar-extension compositor supplies the canonical iso. -/
+noncomputable def moduleScalarExtensionCompIso
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    (M : ModuleCat.{max u v} R) :
+    moduleScalarExtension g (moduleScalarExtension f M) ≅
+      moduleScalarExtension (f.comp g) M :=
+  (ModuleCat.extendScalarsComp f.hom g.hom).symm.app M
+
+end Derived.Intersection
+
 namespace Cohomology
 
 open scoped ChangeOfRings
@@ -1623,6 +1681,372 @@ noncomputable def baseChangeCompIso
         (ModuleCat.extendScalarsComp.{u, u + 1} f.hom g.hom).symm)
 
 end LinearCoefficientSheaf
+
+/-!
+## Linear Čech implementation notes
+
+The module-valued cosimplicial object is built directly from the selected
+overlap restrictions. `CochainComplex.of` consumes Mathlib's
+`AlternatingCofaceMapComplex.d_squared`, so neither the complex nor its
+square-zero proof is caller data.
+
+For scalar extension in `ModuleCat.{u + 1}`, the same-universe finite-limit
+instance from `ModuleCat.Descent` is not applicable. The homology comparison
+therefore proves exactness directly from `f.flat` via
+`Module.Flat.lTensor_exact`. Class change is then the actual target
+`homologyπ` of the cycle produced by the scalar-extension unit and
+`mapCyclesIso`; it is not defined by reading the requested class equality.
+-/
+
+/-- A large fixed-ring Čech complex together with its canonical selected-overlap
+cochain presentation. -/
+structure LinearCoverRelativeCechComplex
+    (R : Type u) [CommRing R]
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : LinearCoefficientSheaf R S) where
+  /-- The actual module-valued cochain complex. -/
+  complex : CochainComplex (ModuleCat.{u + 1} R) Nat
+  /-- Its degreewise identification with selected-overlap sections. -/
+  cochainIso :
+    ∀ n, complex.X n ≅
+      ModuleCat.of R
+        (∀ σ : (canonicalCoverRelative 𝒰).simplex n,
+          Ob.modulePresheaf.obj
+            (op ((canonicalCoverRelative 𝒰).overlap n σ)))
+
+private noncomputable def linearCechCosimplicialObject
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {base : S.category}
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    CosimplicialObject (ModuleCat.{u + 1} R) where
+  obj x := ModuleCat.of R
+    (∀ σ : (canonicalCoverRelative 𝒰).simplex x.len,
+      Ob.modulePresheaf.obj
+        (op ((canonicalCoverRelative 𝒰).overlap x.len σ)))
+  map {x y} f := ModuleCat.ofHom
+    { toFun := fun c σ =>
+        Ob.modulePresheaf.map (canonicalTupleOverlapMap 𝒰 f σ).op
+          (c (fun i => σ (f.toOrderHom i)))
+      map_add' := by
+        intro c d
+        funext σ
+        exact map_add _ _ _
+      map_smul' := by
+        intro r c
+        funext σ
+        exact map_smul _ _ _ }
+  map_id x := by
+    apply ModuleCat.hom_ext
+    ext c σ
+    change Ob.modulePresheaf.map
+      (canonicalTupleOverlapMap 𝒰 (𝟙 x) σ).op (c σ) = c σ
+    have hf : canonicalTupleOverlapMap 𝒰 (𝟙 x) σ = 𝟙 _ :=
+      Subsingleton.elim _ _
+    rw [hf]
+    exact FunctorToTypes.map_id_apply
+      (F := Ob.modulePresheaf ⋙ forget (ModuleCat.{u + 1} R)) (c σ)
+  map_comp {x y z} f g := by
+    apply ModuleCat.hom_ext
+    ext c σ
+    change
+      Ob.modulePresheaf.map (canonicalTupleOverlapMap 𝒰 (f ≫ g) σ).op
+          (c (fun i => σ ((f ≫ g).toOrderHom i))) =
+        Ob.modulePresheaf.map (canonicalTupleOverlapMap 𝒰 g σ).op
+          (Ob.modulePresheaf.map
+            (canonicalTupleOverlapMap 𝒰 f
+              (fun i => σ (g.toOrderHom i))).op
+            (c (fun i => σ (g.toOrderHom (f.toOrderHom i)))))
+    change
+      (Ob.modulePresheaf ⋙ forget (ModuleCat.{u + 1} R)).map
+          (canonicalTupleOverlapMap 𝒰 (f ≫ g) σ).op
+          (c (fun i => σ ((f ≫ g).toOrderHom i))) =
+        (Ob.modulePresheaf ⋙ forget (ModuleCat.{u + 1} R)).map
+          (canonicalTupleOverlapMap 𝒰 g σ).op
+          ((Ob.modulePresheaf ⋙ forget (ModuleCat.{u + 1} R)).map
+            (canonicalTupleOverlapMap 𝒰 f
+              (fun i => σ (g.toOrderHom i))).op
+            (c (fun i => σ (g.toOrderHom (f.toOrderHom i)))))
+    rw [← FunctorToTypes.map_comp_apply]
+    congr
+
+/-- The canonical module-valued Čech differential, obtained as the alternating
+sum of selected-overlap restriction maps. -/
+noncomputable def linearCechDifferential
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {base : S.category}
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    ModuleCat.of R
+        (∀ σ : (canonicalCoverRelative 𝒰).simplex n,
+          Ob.modulePresheaf.obj
+            (op ((canonicalCoverRelative 𝒰).overlap n σ))) ⟶
+      ModuleCat.of R
+        (∀ σ : (canonicalCoverRelative 𝒰).simplex (n + 1),
+          Ob.modulePresheaf.obj
+            (op ((canonicalCoverRelative 𝒰).overlap (n + 1) σ))) :=
+  AlgebraicTopology.AlternatingCofaceMapComplex.objD
+    (linearCechCosimplicialObject Ob 𝒰) n
+
+namespace LinearCoefficientSheaf
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+
+/-- The canonical large linear Čech complex generated by the selected cover's
+actual overlap restrictions. The square-zero proof comes from Mathlib's
+alternating-coface construction rather than from caller data. -/
+noncomputable def canonicalLinearCech
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    LinearCoverRelativeCechComplex R 𝒰 Ob where
+  complex := CochainComplex.of
+    (fun n => ModuleCat.of R
+      (∀ σ : (canonicalCoverRelative 𝒰).simplex n,
+        Ob.modulePresheaf.obj
+          (op ((canonicalCoverRelative 𝒰).overlap n σ))))
+    (linearCechDifferential Ob 𝒰)
+    (fun n => AlgebraicTopology.AlternatingCofaceMapComplex.d_squared
+      (linearCechCosimplicialObject Ob 𝒰) n)
+  cochainIso := fun _ => Iso.refl _
+
+/-- The differential of the canonical linear Čech complex is the named
+alternating restriction map in every degree. -/
+theorem canonicalLinearCech_d
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    (Ob.canonicalLinearCech 𝒰).complex.d n (n + 1) =
+      ((Ob.canonicalLinearCech 𝒰).cochainIso n).hom ≫
+        linearCechDifferential Ob 𝒰 n ≫
+        ((Ob.canonicalLinearCech 𝒰).cochainIso (n + 1)).inv := by
+  simp [canonicalLinearCech, linearCechDifferential]
+
+end LinearCoefficientSheaf
+
+private noncomputable instance linearExtendScalars_additive
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (φ : R →+* R') :
+    (ModuleCat.extendScalars.{u, u, u + 1} φ).Additive where
+  map_add := by
+    intro X Y a b
+    letI := φ.toAlgebra
+    ext s
+    change
+      ((1 : R') ⊗ₜ[R, φ] (a.hom s + b.hom s)) =
+        (1 : R') ⊗ₜ[R, φ] a.hom s +
+          (1 : R') ⊗ₜ[R, φ] b.hom s
+    exact TensorProduct.tmul_add _ _ _
+
+private theorem linearExtendScalars_preservesHomology
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R') :
+    (ModuleCat.extendScalars.{u, u, u + 1} f.hom).PreservesHomology := by
+  apply Functor.preservesHomology_of_map_exact
+  intro L hL
+  rw [ShortComplex.ShortExact.moduleCat_exact_iff_function_exact] at hL ⊢
+  letI := f.hom.toAlgebra
+  haveI : Module.Flat R R' := f.flat
+  simpa only [ModuleCat.extendScalars, ModuleCat.ExtendScalars.map',
+      LinearMap.baseChange_eq_ltensor] using
+    (Module.Flat.lTensor_exact R' hL)
+
+namespace LinearCoverRelativeCechComplex
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+variable {R : Type u} [CommRing R]
+variable {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+variable {Ob : LinearCoefficientSheaf R S}
+
+/-- Objectwise scalar extension of the actual module-valued Čech complex. -/
+noncomputable def scalarExtension
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R') :
+    CochainComplex (ModuleCat.{u + 1} R') Nat := by
+  let E : ModuleCat.{u + 1} R ⥤ ModuleCat.{u + 1} R' :=
+    ModuleCat.extendScalars.{u, u, u + 1} f.hom
+  exact (E.mapHomologicalComplex (ComplexShape.up Nat)).obj K.complex
+
+/-- Degreewise identification of the mapped complex with the named scalar
+extension object. -/
+noncomputable def scalarExtensionObjIso
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    (K.scalarExtension f).X n ≅
+      LinearCoefficientSheaf.moduleScalarExtension f (K.complex.X n) :=
+  eqToIso (Functor.mapHomologicalComplex_obj_X
+    (ModuleCat.extendScalars.{u, u, u + 1} f.hom)
+    (ComplexShape.up Nat) K.complex n)
+
+/-- The canonical extension/restriction unit on degree-`n` cochains. -/
+noncomputable def scalarExtensionCochain
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    K.complex.X n ⟶
+      (ModuleCat.restrictScalars f.hom).obj ((K.scalarExtension f).X n) := by
+  exact Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1}
+    f (K.complex.X n)
+
+/-- The canonical cochain map agrees with the named scalar-extension unit
+under the degreewise object isomorphism. -/
+theorem scalarExtensionCochain_objIso
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    K.scalarExtensionCochain f n ≫
+        (ModuleCat.restrictScalars f.hom).map
+          (K.scalarExtensionObjIso f n).hom =
+      Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1}
+        f (K.complex.X n) := by
+  simp [scalarExtensionCochain, scalarExtensionObjIso]
+
+/-- Scalar extension carries each source differential to the corresponding
+differential of the mapped complex. -/
+theorem scalarExtension_d
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    (K.scalarExtension f).d n (n + 1) ≫
+        (K.scalarExtensionObjIso f (n + 1)).hom =
+      (K.scalarExtensionObjIso f n).hom ≫
+        (ModuleCat.extendScalars f.hom).map
+          (K.complex.d n (n + 1)) := by
+  dsimp [scalarExtensionObjIso, scalarExtension]
+  simp
+
+/-- Flat scalar extension preserves the homology of every large linear Čech
+complex in every degree.
+
+Implementation notes: the standard same-universe finite-limit theorem for
+`ModuleCat.extendScalars` does not apply to `ModuleCat.{u + 1}`. Instead this
+proof derives preservation of homology directly: `f.flat` supplies
+`Module.Flat R R'`, and `Module.Flat.lTensor_exact` proves that the mapped
+short complex remains exact. This keeps arbitrary degree and introduces no
+finite, projective, or caller-supplied comparison premise. -/
+noncomputable def hnFlatBaseChangeIso
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    LinearCoefficientSheaf.moduleScalarExtension f
+        (K.complex.homology n) ≅
+      (K.scalarExtension f).homology n := by
+  let E : ModuleCat.{u + 1} R ⥤ ModuleCat.{u + 1} R' :=
+    ModuleCat.extendScalars.{u, u, u + 1} f.hom
+  letI : E.PreservesHomology := linearExtendScalars_preservesHomology f
+  simpa only [LinearCoefficientSheaf.moduleScalarExtension, scalarExtension,
+    HomologicalComplex.homology] using
+    ((K.complex.sc n).mapHomologyIso E).symm
+
+private theorem hnFlatBaseChangeIso_homologyπ
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat)
+    [(ModuleCat.extendScalars.{u, u, u + 1} f.hom).PreservesHomology] :
+    (ModuleCat.extendScalars f.hom).map (K.complex.homologyπ n) ≫
+        (K.hnFlatBaseChangeIso f n).hom =
+      ((K.complex.sc n).mapCyclesIso
+          (ModuleCat.extendScalars.{u, u, u + 1} f.hom)).inv ≫
+        (K.scalarExtension f).homologyπ n := by
+  let E : ModuleCat.{u + 1} R ⥤ ModuleCat.{u + 1} R' :=
+    ModuleCat.extendScalars.{u, u, u + 1} f.hom
+  let h := (K.complex.sc n).leftHomologyData
+  change E.map (K.complex.homologyπ n) ≫
+      ((K.complex.sc n).mapHomologyIso E).inv =
+    ((K.complex.sc n).mapCyclesIso E).inv ≫
+      ((E.mapHomologicalComplex (ComplexShape.up Nat)).obj
+        K.complex).homologyπ n
+  rw [h.mapHomologyIso_eq E, h.mapCyclesIso_eq E]
+  dsimp only [HomologicalComplex.homologyπ, Iso.trans_inv,
+    Functor.mapIso, Iso.symm_inv]
+  simp only [Category.assoc]
+  rw [← Category.assoc, ← E.map_comp,
+    h.homologyπ_comp_homologyIso_hom, E.map_comp]
+  change E.map h.cyclesIso.hom ≫ (h.map E).π ≫
+    (h.map E).homologyIso.inv = _
+  rw [(h.map E).π_comp_homologyIso_inv]
+  rfl
+
+/-- The actual target cycle obtained from the scalar-extension unit on source
+cycles and Mathlib's cycle comparison for a homology-preserving functor. -/
+private noncomputable def cycleBaseChange
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    K.complex.cycles n → (K.scalarExtension f).cycles n := by
+  let E : ModuleCat.{u + 1} R ⥤ ModuleCat.{u + 1} R' :=
+    ModuleCat.extendScalars.{u, u, u + 1} f.hom
+  letI : E.PreservesHomology := linearExtendScalars_preservesHomology f
+  intro c
+  exact ((K.complex.sc n).mapCyclesIso E).inv
+    (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1} f
+      (K.complex.cycles n) c)
+
+/-- Send the actual scalar-extended target cycle through the target complex's
+canonical homology quotient. -/
+noncomputable def classBaseChange
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    K.complex.cycles n →
+      (K.scalarExtension f).homology n := fun c =>
+  (K.scalarExtension f).homologyπ n (K.cycleBaseChange f n c)
+
+/-- Characterization of class base change by the canonical unit and the
+arbitrary-degree flat homology isomorphism. -/
+theorem class_baseChange_naturality
+    {R' : Type u} [CommRing R']
+    (K : LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat)
+    (c : K.complex.cycles n) :
+    (K.hnFlatBaseChangeIso f n).hom
+        (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1} f
+          (K.complex.homology n) (K.complex.homologyπ n c)) =
+      K.classBaseChange f n c :=
+by
+  let E : ModuleCat.{u + 1} R ⥤ ModuleCat.{u + 1} R' :=
+    ModuleCat.extendScalars.{u, u, u + 1} f.hom
+  letI : E.PreservesHomology := linearExtendScalars_preservesHomology f
+  have hunit := ConcreteCategory.congr_hom
+    ((ModuleCat.extendRestrictScalarsAdj.{u + 1, u, u} f.hom).unit.naturality
+      (K.complex.homologyπ n)) c
+  have hunit' :
+      Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1} f
+          (K.complex.homology n) (K.complex.homologyπ n c) =
+        E.map (K.complex.homologyπ n)
+          (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1} f
+            (K.complex.cycles n) c) := by
+    simpa only [Derived.Intersection.moduleScalarExtensionUnit,
+      ConcreteCategory.comp_apply, Functor.id_obj, Functor.id_map] using hunit
+  have hπ := ConcreteCategory.congr_hom
+    (K.hnFlatBaseChangeIso_homologyπ f n)
+    (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1} f
+      (K.complex.cycles n) c)
+  rw [hunit']
+  simpa only [classBaseChange, cycleBaseChange,
+    ConcreteCategory.comp_apply] using hπ
+
+end LinearCoverRelativeCechComplex
 
 end Cohomology
 

@@ -913,58 +913,6 @@ private noncomputable def moduleScalarExtensionTorIso
           (ComplexShape.down Nat)).app P.complex) n ≪≫
       (Q.isoLeftDerivedObj F' n).symm
 
-/-- The SD7 / AC34 supporting scalar-extension object. It uses Mathlib's functor directly;
-`f.hom` supplies the coefficient action, while flatness is used by the Tor comparison below. -/
-noncomputable def moduleScalarExtension
-    {R R' : Type u}
-    [CommRing R] [CommRing R']
-    (f : FlatCoefficientChange R R')
-    (M : ModuleCat.{max u v} R) :
-    ModuleCat.{max u v} R' :=
-  (ModuleCat.extendScalars f.hom).obj M
-
-/-- The SD7 / AC34 supporting unit for class-level formulas. It is the canonical adjunction unit
-determined by the coefficient homomorphism `f.hom`. -/
-noncomputable def moduleScalarExtensionUnit
-    {R R' : Type u}
-    [CommRing R] [CommRing R']
-    (f : FlatCoefficientChange R R')
-    (M : ModuleCat.{max u v} R) :
-    M ⟶ (ModuleCat.restrictScalars f.hom).obj
-      (moduleScalarExtension f M) :=
-  (ModuleCat.extendRestrictScalarsAdj f.hom).unit.app M
-
-/-- The SD7 characterization API for `moduleScalarExtensionUnit`: the unit determined by `f.hom`
-sends every element to its canonical pure tensor. -/
-@[simp] theorem moduleScalarExtensionUnit_apply
-    {R R' : Type u}
-    [CommRing R] [CommRing R']
-    (f : FlatCoefficientChange R R')
-    (M : ModuleCat.{max u v} R) (m : M) :
-    moduleScalarExtensionUnit f M m =
-      (1 : R') ⊗ₜ[R, f.hom] m := by
-  rfl
-
-/-- The SD7 identity-coherence API. The identity coefficient change supplies the ring identity
-homomorphism, and Mathlib's canonical extension-of-scalars identity iso supplies the result. -/
-noncomputable def moduleScalarExtensionIdIso
-    {R : Type u} [CommRing R]
-    (M : ModuleCat.{max u v} R) :
-    moduleScalarExtension (FlatCoefficientChange.refl R) M ≅ M :=
-  (ModuleCat.extendScalarsId R).app M
-
-/-- The SD7 composition-coherence API. The coefficient changes `f` and `g` supply the composite
-ring homomorphism, and Mathlib's scalar-extension compositor supplies the canonical iso. -/
-noncomputable def moduleScalarExtensionCompIso
-    {R R' R'' : Type u}
-    [CommRing R] [CommRing R'] [CommRing R'']
-    (f : FlatCoefficientChange R R')
-    (g : FlatCoefficientChange R' R'')
-    (M : ModuleCat.{max u v} R) :
-    moduleScalarExtension g (moduleScalarExtension f M) ≅
-      moduleScalarExtension (f.comp g) M :=
-  (ModuleCat.extendScalarsComp f.hom g.hom).symm.app M
-
 /-- The SD7 / R7 / AC34 main declaration: flatness induces the bare affine Tor-object
 base-change isomorphism in every degree. Its proof uses the generic projective-resolution route
 documented on `moduleScalarExtensionTorIso`; it is not a finite specialization. -/

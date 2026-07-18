@@ -5175,6 +5175,54 @@ noncomputable def readingFunctoriality_linearBaseChangeSectionMap :=
 def readingFunctoriality_linearBaseChangeSectionMap_naturality :=
   @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeSectionMap_naturality
 
+/-- Audit alias for a large module-valued Čech complex and its cochain presentation. -/
+def readingFunctoriality_linearCoverRelativeCechComplex :=
+  @AAT.AG.Cohomology.LinearCoverRelativeCechComplex
+
+/-- Audit alias for the canonical alternating linear Čech differential. -/
+noncomputable def readingFunctoriality_linearCechDifferential :=
+  @AAT.AG.Cohomology.linearCechDifferential
+
+/-- Audit alias for the canonical large linear Čech complex. -/
+noncomputable def readingFunctoriality_canonicalLinearCech :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalLinearCech
+
+/-- Audit alias for the canonical complex's differential characterization. -/
+def readingFunctoriality_canonicalLinearCech_d :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalLinearCech_d
+
+/-- Audit alias for objectwise scalar extension of a linear Čech complex. -/
+noncomputable def readingFunctoriality_linearCechScalarExtension :=
+  @AAT.AG.Cohomology.LinearCoverRelativeCechComplex.scalarExtension
+
+/-- Audit alias for the degreewise scalar-extension object isomorphism. -/
+noncomputable def readingFunctoriality_linearCechScalarExtensionObjIso :=
+  @AAT.AG.Cohomology.LinearCoverRelativeCechComplex.scalarExtensionObjIso
+
+/-- Audit alias for the canonical scalar-extension cochain unit. -/
+noncomputable def readingFunctoriality_linearCechScalarExtensionCochain :=
+  @AAT.AG.Cohomology.LinearCoverRelativeCechComplex.scalarExtensionCochain
+
+/-- Audit alias for the cochain unit's object-isomorphism formula. -/
+def readingFunctoriality_linearCechScalarExtensionCochain_objIso :=
+  @AAT.AG.Cohomology.LinearCoverRelativeCechComplex.scalarExtensionCochain_objIso
+
+/-- Audit alias for scalar-extension differential compatibility. -/
+def readingFunctoriality_linearCechScalarExtension_d :=
+  @AAT.AG.Cohomology.LinearCoverRelativeCechComplex.scalarExtension_d
+
+/-- Audit alias for arbitrary-degree flat homology base change. -/
+noncomputable def readingFunctoriality_linearCechHnFlatBaseChangeIso :=
+  @AAT.AG.Cohomology.LinearCoverRelativeCechComplex.hnFlatBaseChangeIso
+
+/-- Audit alias for canonical cocycle-class base change. -/
+noncomputable def readingFunctoriality_linearCechClassBaseChange :=
+  @AAT.AG.Cohomology.LinearCoverRelativeCechComplex.classBaseChange
+
+/-- Audit alias for cocycle-class base-change naturality. -/
+def readingFunctoriality_linearCechClass_baseChange_naturality :=
+  @AAT.AG.Cohomology.LinearCoverRelativeCechComplex.class_baseChange_naturality
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/
