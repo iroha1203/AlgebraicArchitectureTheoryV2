@@ -913,7 +913,8 @@ private noncomputable def moduleScalarExtensionTorIso
           (ComplexShape.down Nat)).app P.complex) n ≪≫
       (Q.isoLeftDerivedObj F' n).symm
 
-/-- The AC34 scalar-extension object, using Mathlib's extension-of-scalars functor directly. -/
+/-- The SD7 / AC34 supporting scalar-extension object. It uses Mathlib's functor directly;
+`f.hom` supplies the coefficient action, while flatness is used by the Tor comparison below. -/
 noncomputable def moduleScalarExtension
     {R R' : Type u}
     [CommRing R] [CommRing R']
@@ -922,7 +923,8 @@ noncomputable def moduleScalarExtension
     ModuleCat.{max u v} R' :=
   (ModuleCat.extendScalars f.hom).obj M
 
-/-- The canonical extension/restriction adjunction unit for the AC34 scalar extension. -/
+/-- The SD7 / AC34 supporting unit for class-level formulas. It is the canonical adjunction unit
+determined by the coefficient homomorphism `f.hom`. -/
 noncomputable def moduleScalarExtensionUnit
     {R R' : Type u}
     [CommRing R] [CommRing R']
@@ -932,7 +934,8 @@ noncomputable def moduleScalarExtensionUnit
       (moduleScalarExtension f M) :=
   (ModuleCat.extendRestrictScalarsAdj f.hom).unit.app M
 
-/-- The scalar-extension unit sends a module element to the canonical pure tensor. -/
+/-- The SD7 characterization API for `moduleScalarExtensionUnit`: the unit determined by `f.hom`
+sends every element to its canonical pure tensor. -/
 @[simp] theorem moduleScalarExtensionUnit_apply
     {R R' : Type u}
     [CommRing R] [CommRing R']
@@ -942,14 +945,16 @@ noncomputable def moduleScalarExtensionUnit
       (1 : R') ⊗ₜ[R, f.hom] m := by
   rfl
 
-/-- Identity scalar extension is canonically isomorphic to the original module. -/
+/-- The SD7 identity-coherence API. The identity coefficient change supplies the ring identity
+homomorphism, and Mathlib's canonical extension-of-scalars identity iso supplies the result. -/
 noncomputable def moduleScalarExtensionIdIso
     {R : Type u} [CommRing R]
     (M : ModuleCat.{max u v} R) :
     moduleScalarExtension (FlatCoefficientChange.refl R) M ≅ M :=
   (ModuleCat.extendScalarsId R).app M
 
-/-- Iterated scalar extension is canonically isomorphic to extension along the composite. -/
+/-- The SD7 composition-coherence API. The coefficient changes `f` and `g` supply the composite
+ring homomorphism, and Mathlib's scalar-extension compositor supplies the canonical iso. -/
 noncomputable def moduleScalarExtensionCompIso
     {R R' R'' : Type u}
     [CommRing R] [CommRing R'] [CommRing R'']
