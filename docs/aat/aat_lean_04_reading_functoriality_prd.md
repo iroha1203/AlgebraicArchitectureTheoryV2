@@ -4020,6 +4020,7 @@ sheafHFlatBaseChangeMap_id / sheafHFlatBaseChangeMap_compを証明する。
 | `LinearCoefficientSheaf` / canonical `baseChange` | 本文由来 | source coefficientとbase-changed target coefficient | `ModuleCat.{u + 1}` presheafとunderlying `AddCommGrpCat.{u + 1}` sheaf conditionから生成し、target sheafをcallerから受けない |
 | `CechCoefficientBaseChangeCompatible` | 本文由来 | Appendix A.2.1のcoefficient compatibility | canonical complex homのcomponentだけを検査し、map / isoをfieldとして受けない。finite modelではflat extensionのfinite-limit preservationで放電 |
 | `IsLerayForSheaf` / instance pair / `selectedCechToSheafHAtBaseEquivForSheaf` | 放電済み | arbitrary large additive sheafのselected Čech homologyからactual `Sheaf.H'`への接続 | positive-degree local vanishingだけをpredicateに持つ。既存zero sheafで成立例を、nontrivial local `H'`で不成立例を固定し、actual injective resolution、selected Čech bicomplex、両edge quasi-isomorphismからcross-universe `AddEquiv`を生成。comparison data inputは禁止 |
+| `nonLerayCover_not_isLerayForSheaf` | 放電済み | `IsLerayForSheaf`の具体的不成立例 | 既存R5 finite witnessのnontrivial actual local `H'`から、generic rejection lemmaを使って前提なしで構成 |
 | `terminalLerayHModule` / `cechToSheafHLinearIso` | 放電済み | actual `Sheaf.H`のmodule carrierとČech comparison | `terminalLerayHModule`をresult universe `u + 2`に置き、large linear Čech Hnとのcross-universe `LinearEquiv`を`selectedCechToSheafHAtBaseEquivForSheaf`、`terminalHComparison`、`AddEquiv.module`から生成 |
 | base-change unit / compositor iso | 放電済み | coefficient sheafとactual H mapのidentity / composition | additive sheafificationと`ModuleCat.extendScalars`のunit / compositorから生成し、definitionally同一視しない |
 | finite Čech model | firing限定 | nonzero計算とcanonical coefficient compatibilityの放電 | abstract complex theoremの明示引数やtypeclassへ追加しない |
@@ -4308,6 +4309,10 @@ theorem nonLerayCover_containsIdentity :
 
 theorem nonLerayCover_not_completionEvidence :
     ¬ Cohomology.IsLerayFor nonLerayCover nonLerayObstructionSheaf
+
+theorem nonLerayCover_not_isLerayForSheaf :
+    ¬ Cohomology.IsLerayForSheaf
+      nonLerayCover nonLerayObstructionSheaf.toAddCommGrpSheaf
 
 noncomputable def topologyCoefficient :
     CommonCoefficientSheaf coarseTopology fineTopology
