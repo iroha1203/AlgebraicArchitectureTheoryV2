@@ -11,7 +11,6 @@ import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Mathlib.Algebra.Category.ModuleCat.Adjunctions
 import Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughProjectives
 import Mathlib.CategoryTheory.Sites.EpiMono
-import Mathlib.RingTheory.Flat.TorsionFree
 
 /-!
 # Reading-functoriality reference models
@@ -2577,15 +2576,30 @@ theorem intZModTwo_not_flat : ¬ intZModTwo.Flat := by
   letI : Module Int (ZMod 2) := intZModTwo.toAlgebra.toModule
   haveI : Module.Flat Int (ZMod 2) := by
     exact hflat
-  have hinjective :=
-    Module.Flat.isSMulRegular_of_isRegular (M := ZMod 2)
-      (IsRegular.of_ne_zero' (by norm_num : (2 : Int) ≠ 0))
+  have hTensor :=
+    Module.Flat.rTensor_preserves_injective_linearMap (M := ZMod 2)
+      (LinearMap.toSpanSingleton Int Int (2 : Int))
+      (IsRegular.of_ne_zero' (by norm_num : (2 : Int) ≠ 0)).right
+  have hinjective : Function.Injective (fun x : ZMod 2 => (2 : Int) • x) := by
+    have hformula :
+        (fun x : ZMod 2 => (2 : Int) • x) =
+          ((TensorProduct.lid Int (ZMod 2)) ∘ₗ
+            (LinearMap.rTensor (ZMod 2)
+              (LinearMap.toSpanSingleton Int Int (2 : Int))) ∘ₗ
+            (TensorProduct.lid Int (ZMod 2)).symm) := by
+      ext x
+      simp
+      change (2 : ZMod 2) * x = (2 : ZMod 2) * x
+      rfl
+    rw [hformula]
+    simp [hTensor, LinearEquiv.injective]
   have hone : (1 : ZMod 2) = 0 := by
     apply hinjective
     change (2 : ZMod 2) = 0
     decide
   norm_num at hone
 
+/-- Internal zero-relation family used by the noncanonical raw-system firing. -/
 private noncomputable def brokenRelationFamily (W : finiteSite.category) :
     LawAlgebra.StructuralRelationFamily
       ((coefficientRaw.baseChange intPolynomialFlatChange.hom).coordFamily W)
@@ -2593,6 +2607,7 @@ private noncomputable def brokenRelationFamily (W : finiteSite.category) :
   Relation := Unit
   polynomial := fun _ => 0
 
+/-- Restriction coherence for zero relations, derived from their generated bottom ideal. -/
 private noncomputable def brokenRestrictionStable
     {X Y : finiteSite.category} (f : X ⟶ Y) :
     LawAlgebra.RestrictionStableStructuralRelations
