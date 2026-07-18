@@ -11,6 +11,7 @@ import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Formal.AG.ReadingFunctoriality
+import Formal.AG.ReadingFunctoriality.InfiniteProductCechFiring
 import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
 import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
 import Formal.AG.StatementContractsReadingFunctoriality
@@ -5177,6 +5178,11 @@ noncomputable def readingFunctoriality_linearBaseChangeSectionMap :=
 def readingFunctoriality_linearBaseChangeSectionMap_naturality :=
   @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeSectionMap_naturality
 
+/-- Audit alias for isomorphy of a section map when raw base change is already
+a sheaf. -/
+def readingFunctoriality_linearBaseChangeSectionMap_isIso_of_raw_isSheaf :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeSectionMap_isIso_of_raw_isSheaf
+
 /-- Audit alias for identity coherence of the canonical section map. -/
 def readingFunctoriality_linearBaseChangeSectionMap_id :=
   @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeSectionMap_id
@@ -5236,6 +5242,10 @@ def readingFunctoriality_linearCechClass_baseChange_naturality :=
 /-- Audit alias for the canonical degreewise coefficient Čech map. -/
 noncomputable def readingFunctoriality_canonicalBaseChangeCochain :=
   @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalBaseChangeCochain
+
+/-- Audit alias for the pointwise formula of the canonical degreewise map. -/
+def readingFunctoriality_canonicalBaseChangeCochain_apply :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalBaseChangeCochain_apply
 
 /-- Audit alias for the canonical coefficient Čech complex hom. -/
 noncomputable def readingFunctoriality_canonicalCechBaseChangeHom :=
@@ -5904,6 +5914,29 @@ def readingFunctoriality_modTwoTorOneTargetWitness_ne_zero :=
 
 def readingFunctoriality_modTwoTorOne_baseChange_nonzero :=
   @AAT.AG.ReadingFunctorialityFinite.modTwoTorOne_baseChange_nonzero
+
+/-! R9i infinite-product Čech incompatibility firing. -/
+
+noncomputable def readingFunctoriality_intRationalFlatChange :=
+  AAT.AG.ReadingFunctorialityFinite.intRationalFlatChange
+
+def readingFunctoriality_intRationalFlatChange_hom :=
+  @AAT.AG.ReadingFunctorialityFinite.intRationalFlatChange_hom
+
+noncomputable def readingFunctoriality_infiniteDuplicatedCover :=
+  AAT.AG.ReadingFunctorialityFinite.infiniteDuplicatedCover
+
+noncomputable def readingFunctoriality_infiniteDuplicatedCoverIndexEquiv :=
+  AAT.AG.ReadingFunctorialityFinite.infiniteDuplicatedCoverIndexEquiv
+
+noncomputable def readingFunctoriality_infiniteProductLinearCoefficientSheaf :=
+  AAT.AG.ReadingFunctorialityFinite.infiniteProductLinearCoefficientSheaf
+
+def readingFunctoriality_infiniteProductCech_degreeZero_not_isIso :=
+  @AAT.AG.ReadingFunctorialityFinite.infiniteProductCech_degreeZero_not_isIso
+
+def readingFunctoriality_infiniteProductCech_not_compatible :=
+  @AAT.AG.ReadingFunctorialityFinite.infiniteProductCech_not_compatible
 
 end AAT.AG.AxiomAudit
 
