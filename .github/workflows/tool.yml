@@ -45,10 +45,10 @@ jobs:
           out=".tmp/archsig-practical-rust-service"
           jq -e '.conclusion == "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"' \
             "$out/base/archsig-analysis-summary.json"
-          jq -e '.conclusion == "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"' \
+          jq -e '.conclusion == "MEASURED_NONGLUING_RESIDUAL_CLASS"' \
             "$out/head/archsig-analysis-summary.json"
           jq -e '.decision == "BLOCKED_BY_GATE_POLICY"' "$out/gate-head.json"
-          jq -e '.conclusion == "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"' \
+          jq -e '.conclusion == "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX"' \
             "$out/repaired/archsig-analysis-summary.json"
           jq -e '.conclusionCode == "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE"' \
             "$out/compare-repaired/archsig-comparison-report.json"
