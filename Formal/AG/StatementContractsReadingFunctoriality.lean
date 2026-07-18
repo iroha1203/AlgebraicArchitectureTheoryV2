@@ -3087,4 +3087,102 @@ noncomputable example
 
 end CoefficientChangeSD7
 
+namespace CoefficientChangeSD8
+
+open CategoryTheory Opposite
+open scoped ChangeOfRings
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A}
+
+/-! Fixed AC37 canonical linear-coefficient base-change contracts. -/
+
+example
+    {R : Type u} [CommRing R]
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    (hP : Presheaf.IsSheaf S.topology
+      (P ⋙ forget₂ (ModuleCat.{u + 1} R) AddCommGrpCat.{u + 1})) :
+    Cohomology.LinearCoefficientSheaf R S :=
+  ⟨P, hP⟩
+
+noncomputable example
+    {R : Type u} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R S) :
+    Sheaf S.topology AddCommGrpCat.{u + 1} :=
+  Ob.toAddCommGrpSheaf
+
+noncomputable example
+    {R : Type u} [CommRing R]
+    (P : S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    Cohomology.LinearCoefficientSheaf R S :=
+  Cohomology.LinearCoefficientSheaf.moduleSheafification P
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R') :
+    S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R' :=
+  Ob.rawBaseChangePresheaf f
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    Cohomology.LinearCoefficientSheaf R' S :=
+  Ob.baseChange f
+
+noncomputable example
+    {R : Type u} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    (Ob.baseChange (FlatCoefficientChange.refl R)).modulePresheaf ≅
+      Ob.modulePresheaf :=
+  Ob.baseChangeIdIso
+
+noncomputable example
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}] :
+    ((Ob.baseChange f).baseChange g).modulePresheaf ≅
+      (Ob.baseChange (f.comp g)).modulePresheaf :=
+  Ob.baseChangeCompIso f g
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M : ModuleCat.{u + 1} R) :
+    ModuleCat.{u + 1} R' :=
+  Cohomology.LinearCoefficientSheaf.moduleScalarExtension f M
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (W : S.category) :
+    Cohomology.LinearCoefficientSheaf.moduleScalarExtension f
+        (Ob.modulePresheaf.obj (op W)) ⟶
+      (Ob.baseChange f).modulePresheaf.obj (op W) :=
+  Ob.baseChangeSectionMap f W
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {source target : S.category} (g : source ⟶ target) :
+    (ModuleCat.extendScalars f.hom).map
+          (Ob.modulePresheaf.map g.op) ≫
+        Ob.baseChangeSectionMap f source =
+      Ob.baseChangeSectionMap f target ≫
+        (Ob.baseChange f).modulePresheaf.map g.op :=
+  Ob.baseChangeSectionMap_naturality f g
+
+end CoefficientChangeSD8
+
 end AAT.AG.StatementContractsReadingFunctoriality

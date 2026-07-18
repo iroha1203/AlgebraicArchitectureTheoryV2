@@ -5133,6 +5133,48 @@ noncomputable def readingFunctoriality_moduleScalarExtensionCompIso :=
 noncomputable def readingFunctoriality_mathlibTorFlatBaseChangeIso :=
   @AAT.AG.Derived.Intersection.mathlibTorFlatBaseChangeIso
 
+/-! Part 4 SD8: canonical linear-coefficient base change. -/
+
+/-- Audit alias for the large fixed-ring linear coefficient sheaf. -/
+def readingFunctoriality_linearCoefficientSheaf :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf
+
+/-- Audit alias for the underlying additive sheaf. -/
+noncomputable def readingFunctoriality_linearCoefficientToAddCommGrpSheaf :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.toAddCommGrpSheaf
+
+/-- Audit alias for additive sheafification with transported scalar action. -/
+noncomputable def readingFunctoriality_moduleSheafification :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.moduleSheafification
+
+/-- Audit alias for objectwise scalar extension before sheafification. -/
+noncomputable def readingFunctoriality_rawLinearBaseChangePresheaf :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.rawBaseChangePresheaf
+
+/-- Audit alias for canonical linear-coefficient base change. -/
+noncomputable def readingFunctoriality_linearCoefficientBaseChange :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChange
+
+/-- Audit alias for identity coherence of linear-coefficient base change. -/
+noncomputable def readingFunctoriality_linearCoefficientBaseChangeIdIso :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeIdIso
+
+/-- Audit alias for composition coherence of linear-coefficient base change. -/
+noncomputable def readingFunctoriality_linearCoefficientBaseChangeCompIso :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeCompIso
+
+/-- Audit alias for section-module scalar extension. -/
+noncomputable def readingFunctoriality_linearModuleScalarExtension :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.moduleScalarExtension
+
+/-- Audit alias for the canonical sectionwise sheafification map. -/
+noncomputable def readingFunctoriality_linearBaseChangeSectionMap :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeSectionMap
+
+/-- Audit alias for restriction naturality of the canonical section map. -/
+def readingFunctoriality_linearBaseChangeSectionMap_naturality :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.baseChangeSectionMap_naturality
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/
