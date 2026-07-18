@@ -5,6 +5,7 @@ import Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient
 import Formal.AG.ReadingFunctoriality.CoefficientGeometry
 import Formal.AG.ReadingFunctoriality.LerayComparison
 import Formal.AG.ReadingFunctoriality.LargeLerayComparison
+import Formal.AG.ReadingFunctoriality.LinearLerayComparison
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Mathlib.Algebra.Category.ModuleCat.Adjunctions
