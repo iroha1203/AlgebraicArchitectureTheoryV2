@@ -5465,6 +5465,64 @@ def readingFunctoriality_sheafHFlatBaseChangeMap_id :=
 def readingFunctoriality_sheafHFlatBaseChangeMap_comp :=
   @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeMap_comp
 
+/-! ## Positive-only finite core change -/
+
+/-- Audit alias for the positive source core. -/
+noncomputable def readingFunctoriality_positiveSourceCore :=
+  AAT.AG.ReadingFunctorialityFinite.positiveSourceCore
+
+/-- Audit alias for the positive target core. -/
+noncomputable def readingFunctoriality_positiveTargetCore :=
+  AAT.AG.ReadingFunctorialityFinite.positiveTargetCore
+
+/-- Audit alias for the positive-only reading change. -/
+noncomputable def readingFunctoriality_positiveCoreChange :=
+  AAT.AG.ReadingFunctorialityFinite.positiveCoreChange
+
+/-- Audit alias for the selected positive law. -/
+noncomputable def readingFunctoriality_positiveLawIndex :=
+  AAT.AG.ReadingFunctorialityFinite.positiveLawIndex
+
+/-- Audit alias for the accepted positive circuit. -/
+noncomputable def readingFunctoriality_positiveCircuit :=
+  AAT.AG.ReadingFunctorialityFinite.positiveCircuit
+
+/-- Audit alias for the selected positive query. -/
+noncomputable def readingFunctoriality_positiveQuery :=
+  AAT.AG.ReadingFunctorialityFinite.positiveQuery
+
+/-- Audit alias for membership of the selected positive query. -/
+def readingFunctoriality_positiveQuery_mem :=
+  @AAT.AG.ReadingFunctorialityFinite.positiveQuery_mem
+
+/-- Audit alias for nonemptiness of the selected positive circuit. -/
+def readingFunctoriality_positiveCircuit_queries_nonempty :=
+  @AAT.AG.ReadingFunctorialityFinite.positiveCircuit_queries_nonempty
+
+/-- Audit alias for transport of the accepted positive circuit. -/
+noncomputable def readingFunctoriality_positiveCircuit_transport :=
+  AAT.AG.ReadingFunctorialityFinite.positiveCircuit_transport
+
+/-- Audit alias for reachability of the mapped source base. -/
+def readingFunctoriality_positiveBase_target_reachable :=
+  @AAT.AG.ReadingFunctorialityFinite.positiveBase_target_reachable
+
+/-- Audit alias for failure of signed exactness. -/
+def readingFunctoriality_positiveOnly_not_signedExact :=
+  @AAT.AG.ReadingFunctorialityFinite.positiveOnly_not_signedExact
+
+/-- Audit alias for the signed negative query. -/
+noncomputable def readingFunctoriality_negativeCircuit :=
+  AAT.AG.ReadingFunctorialityFinite.negativeCircuit
+
+/-- Audit alias for failure of positivity of the signed negative query. -/
+def readingFunctoriality_negativeCircuit_not_positive :=
+  @AAT.AG.ReadingFunctorialityFinite.negativeCircuit_not_positive
+
+/-- Audit alias for failure of signed-query transport. -/
+def readingFunctoriality_negativeCircuit_not_transportable :=
+  @AAT.AG.ReadingFunctorialityFinite.negativeCircuit_not_transportable
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

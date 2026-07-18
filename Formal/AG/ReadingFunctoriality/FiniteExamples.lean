@@ -1671,5 +1671,511 @@ theorem finite_cechToSheafH_bijective (n : Nat) :
   Cohomology.cechToSheafH_bijective coarseCover finiteObstructionSheaf
     finiteBaseIsTerminal finiteLerayCover n
 
+/-! ## R9a: positive core reading change and signed-query obstruction -/
+
+private inductive PositiveExtractionSource where
+  | source
+  | target
+
+private def positiveSourceAllows (atom : FiniteModel.carrier.Atom) : Prop :=
+  atom = FiniteModel.FiniteAtom.componentA ∨
+    atom = FiniteModel.FiniteAtom.componentB
+
+private def positiveTargetAllows (atom : FiniteModel.carrier.Atom) : Prop :=
+  atom = FiniteModel.FiniteAtom.componentC
+
+private def positiveExtractionDoctrine :
+    ExtractionDoctrine FiniteModel.carrier where
+  Source := PositiveExtractionSource
+  Vocabulary := PUnit
+  SemanticReading := PUnit
+  Resolution := PUnit
+  vocabulary := PUnit.unit
+  semanticReading := PUnit.unit
+  resolution := PUnit.unit
+  vocabularyAllows := fun _ _ => True
+  semanticAllows := fun _ selectedSource atom =>
+    match selectedSource with
+    | .source => positiveSourceAllows atom
+    | .target => positiveTargetAllows atom
+  resolutionAllows := fun _ _ _ => True
+  sourceSemantics := fun _ _ => True
+  normalize := id
+
+private def positiveCompositionReading :
+    CompositionReading FiniteModel.carrier where
+  compose family _ := {
+    family := family
+    relation := fun _ _ => False
+    identification := fun _ _ => False
+  }
+  family_eq := by intros; rfl
+  family_supported := by
+    intro family hfinite
+    exact ⟨fun h => False.elim h, fun h => False.elim h⟩
+
+private def positiveLaw : Law FiniteModel.carrier where
+  holds _ := False
+
+private def positiveLawUniverse : LawUniverse FiniteModel.carrier where
+  Index := PUnit
+  law _ := positiveLaw
+  role _ := LawRole.required
+  witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
+  SelectedReading := PUnit
+  selectedReading := PUnit.unit
+  coverageAssumptions := True
+  exactnessAssumptions := True
+
+private def positiveSourceDatum : FiniteCircuitDatum FiniteModel.carrier where
+  queries := [(.atomPresent FiniteModel.FiniteAtom.componentA, true)]
+
+private def positiveTargetDatum : FiniteCircuitDatum FiniteModel.carrier where
+  queries := [(.atomPresent FiniteModel.FiniteAtom.componentC, true)]
+
+private noncomputable def positiveSourceCircuitReading :
+    CircuitReading positiveLawUniverse where
+  code _ := .exact positiveSourceDatum
+  sound := by
+    intro i A Q hmatches haccepts
+    exact fun h => h
+
+private noncomputable def positiveTargetCircuitReading :
+    CircuitReading positiveLawUniverse where
+  code _ := .exact positiveTargetDatum
+  sound := by
+    intro i A Q hmatches haccepts
+    exact fun h => h
+
+private noncomputable def positiveSourceLawReading :
+    LawReading FiniteModel.carrier where
+  lawUniverse := positiveLawUniverse
+  circuits := positiveSourceCircuitReading
+
+private noncomputable def positiveTargetLawReading :
+    LawReading FiniteModel.carrier where
+  lawUniverse := positiveLawUniverse
+  circuits := positiveTargetCircuitReading
+
+private noncomputable def positiveSourceCoreReading :
+    CoreReading FiniteModel.carrier where
+  doctrine := positiveExtractionDoctrine
+  source := .source
+  family_listFinite := ⟨FiniteModel.FiniteAtom.all,
+    fun atom _ => FiniteModel.FiniteAtom.mem_all atom⟩
+  composition := positiveCompositionReading
+  objectReading := FiniteModel.objectReading
+  lawReading := positiveSourceLawReading
+  invariantReading := FiniteModel.invariantFamily
+  signatureReading := FiniteModel.signature
+  operationReading := FiniteModel.operationReading
+
+private noncomputable def positiveTargetCoreReading :
+    CoreReading FiniteModel.carrier where
+  doctrine := positiveExtractionDoctrine
+  source := .target
+  family_listFinite := ⟨FiniteModel.FiniteAtom.all,
+    fun atom _ => FiniteModel.FiniteAtom.mem_all atom⟩
+  composition := positiveCompositionReading
+  objectReading := FiniteModel.objectReading
+  lawReading := positiveTargetLawReading
+  invariantReading := FiniteModel.invariantFamily
+  signatureReading := FiniteModel.signature
+  operationReading := FiniteModel.operationReading
+
+/-- Source core whose selected family contains the two distinguishable source atoms. -/
+noncomputable def positiveSourceCore :
+    AATCorePackage FiniteModel.carrier :=
+  AATCorePackage.generate FiniteModel.axiomSystem positiveSourceCoreReading
+
+/-- Target core whose selected family contains the common image atom. -/
+noncomputable def positiveTargetCore :
+    AATCorePackage FiniteModel.carrier :=
+  AATCorePackage.generate FiniteModel.axiomSystem positiveTargetCoreReading
+
+private theorem positiveSourceCore_family_mem_iff
+    (atom : FiniteModel.carrier.Atom) :
+    positiveSourceCore.family.mem atom ↔ positiveSourceAllows atom := by
+  rw [positiveSourceCore.family_mem_iff_extracts]
+  change (True ∧ positiveSourceAllows atom ∧ True ∧ True) ↔ _
+  simp
+
+private theorem positiveTargetCore_family_mem_iff
+    (atom : FiniteModel.carrier.Atom) :
+    positiveTargetCore.family.mem atom ↔ positiveTargetAllows atom := by
+  rw [positiveTargetCore.family_mem_iff_extracts]
+  change (True ∧ positiveTargetAllows atom ∧ True ∧ True) ↔ _
+  simp
+
+private def positiveAtomMap (_ : FiniteModel.carrier.Atom) :
+    FiniteModel.carrier.Atom :=
+  FiniteModel.FiniteAtom.componentC
+
+private def positiveQueryMap :
+    CircuitQuery FiniteModel.carrier → CircuitQuery FiniteModel.carrier
+  | .atomPresent _ => .atomPresent FiniteModel.FiniteAtom.componentC
+  | .relationPresent _ _ =>
+      .relationPresent FiniteModel.FiniteAtom.componentC
+        FiniteModel.FiniteAtom.componentC
+  | .identificationPresent _ _ =>
+      .identificationPresent FiniteModel.FiniteAtom.componentC
+        FiniteModel.FiniteAtom.componentC
+
+private def positiveCircuitMap
+    (datum : FiniteCircuitDatum FiniteModel.carrier) :
+    FiniteCircuitDatum FiniteModel.carrier where
+  queries := datum.queries.map fun pair => (positiveQueryMap pair.1, pair.2)
+
+private def positiveObjectMap
+    (A : ArchitectureObject FiniteModel.carrier) :
+    ArchitectureObject FiniteModel.carrier :=
+  FiniteModel.objectOfConfiguration (A.configuration.transport positiveAtomMap)
+
+private def positiveCompositionMap
+    (family : AtomFamily FiniteModel.carrier) (hfinite : family.ListFinite) :
+    ConfigurationHom
+      (positiveSourceCore.reading.composition.compose family hfinite)
+      (positiveTargetCore.reading.composition.compose
+        (family.transport positiveAtomMap) (hfinite.transport positiveAtomMap)) where
+  atomMap := positiveAtomMap
+  maps_family h := ⟨_, h, rfl⟩
+  maps_relation h := False.elim h
+  maps_identification h := False.elim h
+
+private def positiveTransportOperation
+    {A B : ArchitectureObject FiniteModel.carrier}
+    (op : FiniteModel.operationReading.Op A B) :
+    FiniteModel.operationReading.Op (positiveObjectMap A) (positiveObjectMap B) where
+  atomMap := id
+  maps_family := by
+    rintro target ⟨source, hsource, hmap⟩
+    exact ⟨op.atomMap source, op.maps_family hsource, by
+      simpa [positiveAtomMap] using hmap⟩
+  maps_relation := by
+    rintro target₁ target₂ ⟨source₁, source₂, hsource, hmap₁, hmap₂⟩
+    exact ⟨op.atomMap source₁, op.atomMap source₂,
+      op.maps_relation hsource,
+      by simpa [positiveAtomMap] using hmap₁,
+      by simpa [positiveAtomMap] using hmap₂⟩
+  maps_identification := by
+    rintro target₁ target₂ ⟨source₁, source₂, hsource, hmap₁, hmap₂⟩
+    exact ⟨op.atomMap source₁, op.atomMap source₂,
+      op.maps_identification hsource,
+      by simpa [positiveAtomMap] using hmap₁,
+      by simpa [positiveAtomMap] using hmap₂⟩
+
+private theorem positiveTargetFamily_eq_transport :
+    positiveTargetCore.family =
+      positiveSourceCore.family.transport positiveAtomMap := by
+  ext atom
+  constructor
+  · intro htarget
+    have hatom : atom = FiniteModel.FiniteAtom.componentC := by
+      exact (positiveTargetCore_family_mem_iff atom).mp htarget
+    subst atom
+    exact ⟨FiniteModel.FiniteAtom.componentA, by
+      exact (positiveSourceCore_family_mem_iff _).mpr (Or.inl rfl), rfl⟩
+  · rintro ⟨source, hsource, rfl⟩
+    exact (positiveTargetCore_family_mem_iff _).mpr rfl
+
+private theorem positiveObjectMap_source_eq_target :
+    positiveObjectMap positiveSourceCore.object = positiveTargetCore.object := by
+  apply congrArg FiniteModel.objectOfConfiguration
+  apply AtomConfiguration.ext
+  · simpa [positiveSourceCore, positiveTargetCore,
+      positiveSourceCoreReading, positiveTargetCoreReading,
+      positiveCompositionReading] using positiveTargetFamily_eq_transport.symm
+  · intro a b
+    constructor
+    · rintro ⟨source₁, source₂, h, _, _⟩
+      exact False.elim h
+    · intro h
+      exact False.elim h
+  · intro a b
+    constructor
+    · rintro ⟨source₁, source₂, h, _, _⟩
+      exact False.elim h
+    · intro h
+      exact False.elim h
+
+private theorem positiveCircuitMap_positive
+    (datum : FiniteCircuitDatum FiniteModel.carrier)
+    (hpositive : datum.Positive) :
+    (positiveCircuitMap datum).Positive := by
+  intro query expected hmem
+  rcases List.mem_map.mp hmem with ⟨pair, hpair, hp⟩
+  cases hp
+  exact hpositive pair.1 pair.2 hpair
+
+private theorem positiveCircuitMap_matches
+    (datum : FiniteCircuitDatum FiniteModel.carrier)
+    (A : ArchitectureObject FiniteModel.carrier)
+    (hpositive : datum.Positive)
+    (hmatches : datum.Matches A) :
+    (positiveCircuitMap datum).Matches (positiveObjectMap A) := by
+  intro query expected hmem
+  rcases List.mem_map.mp hmem with ⟨pair, hpair, hp⟩
+  cases hp
+  rcases pair with ⟨sourceQuery, sourceExpected⟩
+  have hexpected : sourceExpected = true :=
+    hpositive sourceQuery sourceExpected hpair
+  subst sourceExpected
+  constructor
+  · intro _
+    rfl
+  · intro _
+    have hholds : sourceQuery.Holds A :=
+      (hmatches sourceQuery true hpair).mpr rfl
+    cases sourceQuery with
+    | atomPresent atom =>
+        exact ⟨atom, hholds, rfl⟩
+    | relationPresent atom₁ atom₂ =>
+        exact ⟨⟨atom₁, hholds.1, rfl⟩,
+          ⟨⟨atom₂, hholds.2.1, rfl⟩,
+            ⟨atom₁, atom₂, hholds.2.2, rfl, rfl⟩⟩⟩
+    | identificationPresent atom₁ atom₂ =>
+        exact ⟨⟨atom₁, hholds.1, rfl⟩,
+          ⟨⟨atom₂, hholds.2.1, rfl⟩,
+            ⟨atom₁, atom₂, hholds.2.2, rfl, rfl⟩⟩⟩
+
+/-- Positive-only core reading change that collapses the selected source atoms. -/
+noncomputable def positiveCoreChange :
+    PositiveCoreReadingHom positiveSourceCore positiveTargetCore where
+  atomMap := positiveAtomMap
+  extraction_mono := by
+    intro atom h
+    rw [positiveTargetFamily_eq_transport]
+    exact h
+  compositionMap := positiveCompositionMap
+  compositionMap_atomMap := by intros; rfl
+  objectMap := positiveObjectMap
+  object_formation_eq := by intros; rfl
+  base_reachable := by
+    rw [positiveObjectMap_source_eq_target]
+    exact OperationReading.Reachable.base
+  configurationMap A := AtomConfiguration.transportHom positiveAtomMap A.configuration
+  configurationMap_atomMap := by intros; rfl
+  operationMap := positiveTransportOperation
+  operation_naturality := by
+    intro A B op
+    apply ConfigurationHom.ext
+    funext atom
+    rfl
+  lawMap := id
+  queryMap := positiveCircuitMap
+  positive_preserved := positiveCircuitMap_positive
+  matches_of_positive := positiveCircuitMap_matches
+  accepts_mono := by
+    intro i datum hpositive haccepts
+    cases i
+    have hsource : positiveSourceDatum = datum :=
+      (CircuitDetectorCode.eval_exact_eq_true_iff positiveSourceDatum datum).mp haccepts
+    subst datum
+    change (CircuitDetectorCode.exact positiveTargetDatum).eval
+      (positiveCircuitMap positiveSourceDatum) = true
+    apply (CircuitDetectorCode.eval_exact_eq_true_iff _ _).mpr
+    rfl
+
+/-- Selected law of the positive finite model. -/
+noncomputable def positiveLawIndex :
+    positiveSourceCore.algebra.lawReading.lawUniverse.Index :=
+  PUnit.unit
+
+/-- Distinguished positive atom-presence query. -/
+noncomputable def positiveQuery : CircuitQuery FiniteModel.carrier :=
+  .atomPresent FiniteModel.FiniteAtom.componentA
+
+/-- Positive circuit accepted at the selected source base object. -/
+noncomputable def positiveCircuit :
+    PositiveCircuitDatum positiveSourceCore
+      positiveSourceCore.baseObject positiveLawIndex := by
+  refine ⟨positiveSourceDatum, ?_, ?_, ?_⟩
+  · exact FiniteCircuitDatum.positive_singleton positiveQuery
+  · intro query expected hmem
+    simp only [positiveSourceDatum, List.mem_singleton] at hmem
+    cases hmem
+    constructor
+    · intro _
+      rfl
+    · intro _
+      change positiveSourceCore.object.configuration.family.mem
+        FiniteModel.FiniteAtom.componentA
+      rw [positiveSourceCore.object_configuration_eq,
+        positiveSourceCore.configuration_family_eq]
+      exact (positiveSourceCore_family_mem_iff _).mpr (Or.inl rfl)
+  · exact (CircuitDetectorCode.eval_exact_eq_true_iff _ _).mpr rfl
+
+/-- The selected positive query occurs in the positive circuit. -/
+theorem positiveQuery_mem :
+    (positiveQuery, true) ∈ positiveCircuit.1.queries := by
+  simp [positiveCircuit, positiveQuery, positiveSourceDatum]
+
+/-- The selected positive circuit has at least one query. -/
+theorem positiveCircuit_queries_nonempty :
+    positiveCircuit.1.queries ≠ [] :=
+  List.ne_nil_of_mem positiveQuery_mem
+
+/-- Transported positive circuit at the mapped base object and law. -/
+def positiveCircuit_transport :
+    PositiveCircuitDatum positiveTargetCore
+      (positiveCoreChange.objMap positiveSourceCore.baseObject)
+      (positiveCoreChange.lawMap positiveLawIndex) :=
+  positiveCoreChange.mapPositiveCircuit positiveCircuit
+
+/-- The mapped source base is reachable from the selected target base. -/
+theorem positiveBase_target_reachable :
+    positiveTargetCore.reading.operationReading.Reachable
+      positiveTargetCore.object
+      (positiveCoreChange.objectMap positiveSourceCore.object) :=
+  positiveCoreChange.base_reachable
+
+private def positiveSingletonConfiguration
+    (atom : FiniteModel.carrier.Atom) : AtomConfiguration FiniteModel.carrier where
+  family := { mem := fun actual => actual = atom }
+  relation _ _ := False
+  identification _ _ := False
+
+private def positiveSingletonObject
+    (atom : FiniteModel.carrier.Atom) : ArchitectureObject FiniteModel.carrier :=
+  FiniteModel.objectOfConfiguration (positiveSingletonConfiguration atom)
+
+/-- Signed negative query that distinguishes the two collapsed source atoms. -/
+noncomputable def negativeCircuit : FiniteCircuitDatum FiniteModel.carrier where
+  queries := [(.atomPresent FiniteModel.FiniteAtom.componentB, false)]
+
+/-- The signed negative query is not a positive circuit datum. -/
+theorem negativeCircuit_not_positive : ¬ negativeCircuit.Positive :=
+  FiniteCircuitDatum.not_positive_singleton_false _
+
+private theorem negativeCircuit_matches_componentA :
+    negativeCircuit.Matches
+      (positiveSingletonObject FiniteModel.FiniteAtom.componentA) := by
+  intro query expected hmem
+  simp only [negativeCircuit, List.mem_singleton] at hmem
+  cases hmem
+  constructor
+  · intro h
+    change FiniteModel.FiniteAtom.componentB =
+      FiniteModel.FiniteAtom.componentA at h
+    exact FiniteModel.FiniteAtom.noConfusion h
+  · intro h
+    exact Bool.noConfusion h
+
+private theorem negativeCircuit_not_matches_componentB :
+    ¬ negativeCircuit.Matches
+      (positiveSingletonObject FiniteModel.FiniteAtom.componentB) := by
+  intro hmatches
+  have h := (hmatches (.atomPresent FiniteModel.FiniteAtom.componentB) false
+    (by simp [negativeCircuit])).mp
+      (show (CircuitQuery.atomPresent FiniteModel.FiniteAtom.componentB).Holds
+        (positiveSingletonObject FiniteModel.FiniteAtom.componentB) by
+          change FiniteModel.FiniteAtom.componentB =
+            FiniteModel.FiniteAtom.componentB
+          rfl)
+  exact Bool.noConfusion h
+
+private theorem positiveObjectMap_singletons_eq :
+    positiveObjectMap
+        (positiveSingletonObject FiniteModel.FiniteAtom.componentA) =
+      positiveObjectMap
+        (positiveSingletonObject FiniteModel.FiniteAtom.componentB) := by
+  apply congrArg FiniteModel.objectOfConfiguration
+  apply AtomConfiguration.ext
+  · ext atom
+    constructor <;> rintro ⟨source, hsource, rfl⟩
+    · exact ⟨FiniteModel.FiniteAtom.componentB, rfl, rfl⟩
+    · exact ⟨FiniteModel.FiniteAtom.componentA, rfl, rfl⟩
+  · intro a b
+    constructor <;> rintro ⟨source₁, source₂, h, _, _⟩ <;> exact False.elim h
+  · intro a b
+    constructor <;> rintro ⟨source₁, source₂, h, _, _⟩ <;> exact False.elim h
+
+/-- No signed query can reflect the collapsed negative query along the positive map. -/
+theorem negativeCircuit_not_transportable :
+    ¬ ∃ target : FiniteCircuitDatum FiniteModel.carrier,
+      ∀ A,
+        negativeCircuit.Matches A ↔
+          target.Matches (positiveCoreChange.objectMap A) := by
+  rintro ⟨target, htarget⟩
+  have hA := (htarget
+    (positiveSingletonObject FiniteModel.FiniteAtom.componentA)).mp
+      negativeCircuit_matches_componentA
+  change target.Matches
+    (positiveObjectMap
+      (positiveSingletonObject FiniteModel.FiniteAtom.componentA)) at hA
+  rw [positiveObjectMap_singletons_eq] at hA
+  exact negativeCircuit_not_matches_componentB
+    ((htarget (positiveSingletonObject FiniteModel.FiniteAtom.componentB)).mpr
+      (by simpa [positiveCoreChange] using hA))
+
+private theorem exactAtomMap_componentA
+    (f : SignedExactCoreReadingHom positiveSourceCore positiveTargetCore) :
+    f.atomMap FiniteModel.FiniteAtom.componentA =
+      FiniteModel.FiniteAtom.componentC := by
+  have hsource : positiveSourceCore.family.mem FiniteModel.FiniteAtom.componentA := by
+    exact (positiveSourceCore_family_mem_iff _).mpr (Or.inl rfl)
+  have htransport :
+      (positiveSourceCore.family.transport f.atomMap).mem
+        (f.atomMap FiniteModel.FiniteAtom.componentA) :=
+    ⟨_, hsource, rfl⟩
+  rw [← f.extraction_eq] at htransport
+  exact (positiveTargetCore_family_mem_iff _).mp htransport
+
+private theorem exactAtomMap_componentB
+    (f : SignedExactCoreReadingHom positiveSourceCore positiveTargetCore) :
+    f.atomMap FiniteModel.FiniteAtom.componentB =
+      FiniteModel.FiniteAtom.componentC := by
+  have hsource : positiveSourceCore.family.mem FiniteModel.FiniteAtom.componentB := by
+    exact (positiveSourceCore_family_mem_iff _).mpr (Or.inr rfl)
+  have htransport :
+      (positiveSourceCore.family.transport f.atomMap).mem
+        (f.atomMap FiniteModel.FiniteAtom.componentB) :=
+    ⟨_, hsource, rfl⟩
+  rw [← f.extraction_eq] at htransport
+  exact (positiveTargetCore_family_mem_iff _).mp htransport
+
+private theorem exactObjectMap_singletons_eq
+    (f : SignedExactCoreReadingHom positiveSourceCore positiveTargetCore) :
+    f.objectMap (positiveSingletonObject FiniteModel.FiniteAtom.componentA) =
+      f.objectMap (positiveSingletonObject FiniteModel.FiniteAtom.componentB) := by
+  change f.objectMap
+      (positiveSourceCore.reading.objectReading.object
+        (positiveSingletonConfiguration FiniteModel.FiniteAtom.componentA)) =
+    f.objectMap
+      (positiveSourceCore.reading.objectReading.object
+        (positiveSingletonConfiguration FiniteModel.FiniteAtom.componentB))
+  rw [f.object_formation_eq, f.object_formation_eq]
+  apply congrArg FiniteModel.objectOfConfiguration
+  apply AtomConfiguration.ext
+  · ext atom
+    constructor
+    · rintro ⟨source, hsource, rfl⟩
+      change source = FiniteModel.FiniteAtom.componentA at hsource
+      subst source
+      exact ⟨FiniteModel.FiniteAtom.componentB, rfl, by
+        rw [exactAtomMap_componentA f, exactAtomMap_componentB f]⟩
+    · rintro ⟨source, hsource, rfl⟩
+      change source = FiniteModel.FiniteAtom.componentB at hsource
+      subst source
+      exact ⟨FiniteModel.FiniteAtom.componentA, rfl, by
+        rw [exactAtomMap_componentA f, exactAtomMap_componentB f]⟩
+  · intro a b
+    constructor <;> rintro ⟨source₁, source₂, h, _, _⟩ <;> exact False.elim h
+  · intro a b
+    constructor <;> rintro ⟨source₁, source₂, h, _, _⟩ <;> exact False.elim h
+
+/-- The positive-only reading change cannot be strengthened to signed exactness. -/
+theorem positiveOnly_not_signedExact :
+    ¬ Nonempty
+      (SignedExactCoreReadingHom positiveSourceCore positiveTargetCore) := by
+  rintro ⟨f⟩
+  have hA := (f.matches_iff negativeCircuit
+    (positiveSingletonObject FiniteModel.FiniteAtom.componentA)).mp
+      negativeCircuit_matches_componentA
+  rw [exactObjectMap_singletons_eq f] at hA
+  exact negativeCircuit_not_matches_componentB
+    ((f.matches_iff negativeCircuit
+      (positiveSingletonObject FiniteModel.FiniteAtom.componentB)).mpr hA)
+
 
 end AAT.AG.ReadingFunctorialityFinite
