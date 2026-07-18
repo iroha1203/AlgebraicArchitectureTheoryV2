@@ -3807,4 +3807,75 @@ example
 
 end LinearLerayComparisonSD8d
 
+/-! ## SD9a: positive-only finite core change -/
+
+noncomputable example : AATCorePackage FiniteModel.carrier :=
+  ReadingFunctorialityFinite.positiveSourceCore
+
+noncomputable example : AATCorePackage FiniteModel.carrier :=
+  ReadingFunctorialityFinite.positiveTargetCore
+
+noncomputable example :
+    PositiveCoreReadingHom
+      ReadingFunctorialityFinite.positiveSourceCore
+      ReadingFunctorialityFinite.positiveTargetCore :=
+  ReadingFunctorialityFinite.positiveCoreChange
+
+noncomputable example :
+    ReadingFunctorialityFinite.positiveSourceCore.algebra.lawReading.lawUniverse.Index :=
+  ReadingFunctorialityFinite.positiveLawIndex
+
+noncomputable example :
+    PositiveCircuitDatum ReadingFunctorialityFinite.positiveSourceCore
+      ReadingFunctorialityFinite.positiveSourceCore.baseObject
+      ReadingFunctorialityFinite.positiveLawIndex :=
+  ReadingFunctorialityFinite.positiveCircuit
+
+noncomputable example : CircuitQuery FiniteModel.carrier :=
+  ReadingFunctorialityFinite.positiveQuery
+
+example :
+    (ReadingFunctorialityFinite.positiveQuery, true) ∈
+      ReadingFunctorialityFinite.positiveCircuit.1.queries :=
+  ReadingFunctorialityFinite.positiveQuery_mem
+
+example : ReadingFunctorialityFinite.positiveCircuit.1.queries ≠ [] :=
+  ReadingFunctorialityFinite.positiveCircuit_queries_nonempty
+
+noncomputable example :
+    PositiveCircuitDatum ReadingFunctorialityFinite.positiveTargetCore
+      (ReadingFunctorialityFinite.positiveCoreChange.objMap
+        ReadingFunctorialityFinite.positiveSourceCore.baseObject)
+      (ReadingFunctorialityFinite.positiveCoreChange.lawMap
+        ReadingFunctorialityFinite.positiveLawIndex) :=
+  ReadingFunctorialityFinite.positiveCircuit_transport
+
+example :
+    ReadingFunctorialityFinite.positiveTargetCore.reading.operationReading.Reachable
+      ReadingFunctorialityFinite.positiveTargetCore.object
+      (ReadingFunctorialityFinite.positiveCoreChange.objectMap
+        ReadingFunctorialityFinite.positiveSourceCore.object) :=
+  ReadingFunctorialityFinite.positiveBase_target_reachable
+
+example :
+    ¬ Nonempty
+      (SignedExactCoreReadingHom
+        ReadingFunctorialityFinite.positiveSourceCore
+        ReadingFunctorialityFinite.positiveTargetCore) :=
+  ReadingFunctorialityFinite.positiveOnly_not_signedExact
+
+noncomputable example : FiniteCircuitDatum FiniteModel.carrier :=
+  ReadingFunctorialityFinite.negativeCircuit
+
+example : ¬ ReadingFunctorialityFinite.negativeCircuit.Positive :=
+  ReadingFunctorialityFinite.negativeCircuit_not_positive
+
+example :
+    ¬ ∃ target : FiniteCircuitDatum FiniteModel.carrier,
+      ∀ A,
+        ReadingFunctorialityFinite.negativeCircuit.Matches A ↔
+          target.Matches
+            (ReadingFunctorialityFinite.positiveCoreChange.objectMap A) :=
+  ReadingFunctorialityFinite.negativeCircuit_not_transportable
+
 end AAT.AG.StatementContractsReadingFunctoriality
