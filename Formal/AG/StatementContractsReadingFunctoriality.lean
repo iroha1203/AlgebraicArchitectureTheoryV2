@@ -3895,4 +3895,67 @@ example :
             (ReadingFunctorialityFinite.positiveCoreChange.objectMap A) :=
   ReadingFunctorialityFinite.negativeCircuit_not_transportable
 
+/-! ## SD9e: coefficient arithmetic, raw data, and negative primitives -/
+
+/-- Fixed positive coefficient change from integers to polynomials. -/
+noncomputable example : FlatCoefficientChange Int (Polynomial Int) :=
+  ReadingFunctorialityFinite.intPolynomialFlatChange
+
+/-- Fixed identification of the positive coefficient homomorphism. -/
+example :
+    ReadingFunctorialityFinite.intPolynomialFlatChange.hom = Polynomial.C :=
+  ReadingFunctorialityFinite.intPolynomialFlatChange_hom
+
+/-- Fixed non-surjectivity firing for the positive coefficient change. -/
+example :
+    ¬ Function.Surjective
+      ReadingFunctorialityFinite.intPolynomialFlatChange.hom :=
+  ReadingFunctorialityFinite.intPolynomialFlatChange_nonidentity
+
+/-- Fixed proper source ideal `(2)`. -/
+noncomputable example : Ideal Int :=
+  ReadingFunctorialityFinite.properIdeal
+
+/-- Fixed characterization of the proper source ideal. -/
+example :
+    ReadingFunctorialityFinite.properIdeal = Ideal.span {2} :=
+  ReadingFunctorialityFinite.properIdeal_eq
+
+/-- Fixed properness of the source ideal. -/
+example : ReadingFunctorialityFinite.properIdeal ≠ ⊤ :=
+  ReadingFunctorialityFinite.properIdeal_ne_top
+
+/-- Fixed properness after polynomial coefficient extension. -/
+example :
+    ReadingFunctorialityFinite.properIdeal.map
+      ReadingFunctorialityFinite.intPolynomialFlatChange.hom ≠ ⊤ :=
+  ReadingFunctorialityFinite.properIdeal_baseChange
+
+/-- Fixed finite raw restriction system used by coefficient firing. -/
+noncomputable example :
+    LawAlgebra.RawAmbientRestrictionSystem
+      ReadingFunctorialityFinite.finiteSite Int :=
+  ReadingFunctorialityFinite.coefficientRaw
+
+/-- Fixed non-flat quotient homomorphism to `ZMod 2`. -/
+noncomputable example : Int →+* ZMod 2 :=
+  ReadingFunctorialityFinite.intZModTwo
+
+/-- Fixed non-flatness firing for the quotient to `ZMod 2`. -/
+example : ¬ ReadingFunctorialityFinite.intZModTwo.Flat :=
+  ReadingFunctorialityFinite.intZModTwo_not_flat
+
+/-- Fixed coherent relation change that is not canonical coefficient transport. -/
+noncomputable example :
+    LawAlgebra.RawAmbientRestrictionSystem
+      ReadingFunctorialityFinite.finiteSite (Polynomial Int) :=
+  ReadingFunctorialityFinite.brokenRelationChange
+
+/-- Fixed rejection of the noncanonical relation change. -/
+example :
+    ReadingFunctorialityFinite.brokenRelationChange ≠
+      ReadingFunctorialityFinite.coefficientRaw.baseChange
+        ReadingFunctorialityFinite.intPolynomialFlatChange.hom :=
+  ReadingFunctorialityFinite.brokenRelationChange_not_rawBaseChange
+
 end AAT.AG.StatementContractsReadingFunctoriality
