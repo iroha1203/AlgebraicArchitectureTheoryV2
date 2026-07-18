@@ -715,7 +715,7 @@ tracking_issue_closed: false
   base change, response-cokernel support comparison, and residue-field circuit
   equivalence
 - base merge SHA: `9909a77fbe70a63194207ef150a41e330b76331b`
-- PR: pending
+- PR: #3554
 
 ### Construction
 
