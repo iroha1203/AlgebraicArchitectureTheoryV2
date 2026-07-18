@@ -2098,6 +2098,65 @@ end LerayTotalElimination
 
 end SelectedCechResolutionBicomplexSD5
 
+namespace LargeLerayComparisonSD8d
+
+open CategoryTheory
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+
+/-- Fixed generic Leray predicate for an arbitrary large additive sheaf. -/
+example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})] : Prop :=
+  Cohomology.IsLerayForSheaf 𝒰 F
+
+/-- Fixed satisfying instance supplied by the actual zero obstruction sheaf. -/
+example
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    Cohomology.IsLerayForSheaf
+      𝒰 (Cohomology.zeroObstructionSheaf S).toAddCommGrpSheaf :=
+  Cohomology.zeroObstructionSheaf_isLerayForSheaf 𝒰
+
+/-- Fixed rejection from nontrivial actual local positive-degree cohomology. -/
+example
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {F : Sheaf S.topology AddCommGrpCat.{u + 1}}
+    {q p : ℕ} (hq : 0 < q)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex p)
+    [Nontrivial
+      (F.H' q ((Cohomology.canonicalCoverRelative 𝒰).overlap p σ))] :
+    ¬ Cohomology.IsLerayForSheaf 𝒰 F :=
+  Cohomology.not_isLerayForSheaf_of_nontrivialHPrime hq σ
+
+/-- Fixed cross-universe selected Čech comparison for a large additive sheaf. -/
+noncomputable example
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (F : Sheaf S.topology AddCommGrpCat.{u + 1})
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hLeray : Cohomology.IsLerayForSheaf 𝒰 F)
+    (n : Nat) :
+    (((Cohomology.selectedCechComplexFunctor 𝒰).obj F.val).homology n :
+        Type (u + 1)) ≃+
+      (F.H' n base : Type (u + 2)) :=
+  Cohomology.selectedCechToSheafHAtBaseEquivForSheaf 𝒰 F hLeray n
+
+/-- Fixed concrete rejection firing for the identity-containing finite cover. -/
+example :
+    ¬ Cohomology.IsLerayForSheaf
+      ReadingFunctorialityFinite.nonLerayCover
+      ReadingFunctorialityFinite.nonLerayObstructionSheaf.toAddCommGrpSheaf :=
+  ReadingFunctorialityFinite.nonLerayCover_not_isLerayForSheaf
+
+end LargeLerayComparisonSD8d
+
 namespace FiniteSheafHFiringSD9
 
 open CategoryTheory ReadingFunctorialityFinite

@@ -5373,6 +5373,28 @@ def readingFunctoriality_nonLerayCover_containsIdentity :=
 def readingFunctoriality_nonLerayCover_not_completionEvidence :=
   @AAT.AG.ReadingFunctorialityFinite.nonLerayCover_not_completionEvidence
 
+/-! ## Generic large additive sheaf Leray comparison -/
+
+/-- Audit alias for the generic large-sheaf Leray predicate. -/
+def readingFunctoriality_isLerayForSheaf :=
+  @AAT.AG.Cohomology.IsLerayForSheaf
+
+/-- Audit alias for the zero-sheaf satisfying instance. -/
+def readingFunctoriality_zeroObstructionSheaf_isLerayForSheaf :=
+  @AAT.AG.Cohomology.zeroObstructionSheaf_isLerayForSheaf
+
+/-- Audit alias for the generic nontrivial-local-cohomology rejection. -/
+def readingFunctoriality_not_isLerayForSheaf_of_nontrivialHPrime :=
+  @AAT.AG.Cohomology.not_isLerayForSheaf_of_nontrivialHPrime
+
+/-- Audit alias for the generic selected Čech-to-local-cohomology equivalence. -/
+noncomputable def readingFunctoriality_selectedCechToSheafHAtBaseEquivForSheaf :=
+  @AAT.AG.Cohomology.selectedCechToSheafHAtBaseEquivForSheaf
+
+/-- Audit alias for the concrete generic Leray rejection firing. -/
+def readingFunctoriality_nonLerayCover_not_isLerayForSheaf :=
+  @AAT.AG.ReadingFunctorialityFinite.nonLerayCover_not_isLerayForSheaf
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

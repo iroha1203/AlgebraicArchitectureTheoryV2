@@ -4,6 +4,7 @@ import Formal.AG.ReadingFunctoriality.Coefficient
 import Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient
 import Formal.AG.ReadingFunctoriality.CoefficientGeometry
 import Formal.AG.ReadingFunctoriality.LerayComparison
+import Formal.AG.ReadingFunctoriality.LargeLerayComparison
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Mathlib.Algebra.Category.ModuleCat.Adjunctions
@@ -1361,6 +1362,23 @@ theorem nonLerayCover_not_completionEvidence :
       nonLerayIdentityCoverPatch] using nonLerayHPrimeOne_nontrivial
   exact Cohomology.not_isLerayFor_of_nontrivialHPrime
     (𝒰 := nonLerayCover) (Ob := nonLerayObstructionSheaf)
+    (q := 1) (p := 0) (by omega) σ
+
+/-- The same concrete coefficient rejects the generic large-sheaf Leray predicate. -/
+theorem nonLerayCover_not_isLerayForSheaf :
+    ¬ Cohomology.IsLerayForSheaf
+      nonLerayCover nonLerayObstructionSheaf.toAddCommGrpSheaf := by
+  let σ : (Cohomology.canonicalCoverRelative nonLerayCover).simplex 0 :=
+    fun _ => none
+  letI : Nontrivial
+      ((nonLerayObstructionSheaf.toAddCommGrpSheaf).H' 1
+        ((Cohomology.canonicalCoverRelative nonLerayCover).overlap 0 σ)) := by
+    simpa [σ, Cohomology.canonicalCoverRelative,
+      Cohomology.canonicalTupleOverlap, nonLerayCover,
+      nonLerayIdentityCoverPatch] using nonLerayHPrimeOne_nontrivial
+  exact Cohomology.not_isLerayForSheaf_of_nontrivialHPrime
+    (𝒰 := nonLerayCover)
+    (F := nonLerayObstructionSheaf.toAddCommGrpSheaf)
     (q := 1) (p := 0) (by omega) σ
 
 /-! ## SD9 positive actual-Sheaf-H firing -/
