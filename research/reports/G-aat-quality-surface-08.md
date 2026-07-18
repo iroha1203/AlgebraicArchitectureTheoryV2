@@ -10,11 +10,11 @@ Issue #3282.
 ## Target Proof State
 
 - status: target-proof-checkpoint
-- latest reviewed cycle: 12
+- latest reviewed cycle: 15
 - completion candidate: no
 - tracking Issue: #3282
 - current phase: Phase 1 — Local Circuit and Support
-- next obligation: C0 kernel base change, support comparison, and fiber circuit locus
+- next obligation: C0c-1 actual selected-chart allowed-operation tilde comparison (#3575)
 
 ## Cycle 1 — BC0 statement and API compatibility
 
@@ -852,6 +852,93 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: C0b generated operation-sheaf and labeled-response instantiation and chartwise support connection
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 15 — C0c-0 affine image exactness infrastructure
+
+- decision: approve
+- result type: target-proof-checkpoint
+- proof obligation: prove that open restriction and affine `tilde` preserve
+  the abelian image factorizations needed for the actual selected-chart
+  allowed-operation sheaf comparison
+- statement contract: Issue #3577, v1 fixed and elaborated before implementation
+- base merge SHA: `ad864139e4b86e9a3dcd3ad03e49d1c9d8f3ddc3`
+
+### Construction
+
+`AffineImageExactness.lean` proves the two missing monomorphism-preservation
+facts directly. Open restriction reuses the injective presheaf component on
+the image open. For `tilde`, an injective module map is localized at each
+prime; `IsLocalizedModule.map_injective` proves injectivity on the locally
+fractional section values, and sheaf section extensionality lifts this to the
+module-sheaf morphism.
+
+Both image comparisons use the mapped canonical epimorphism
+`factorThruImage`, the mapped canonical monomorphism `image.ι`, and
+`Limits.image.isoStrongEpiMono`. No exactness or comparison certificate is
+accepted as an input.
+
+### Premise and route audit
+
+- discharged in this checkpoint:
+  - open restriction preserves monomorphisms;
+  - affine `tilde` preserves monomorphisms;
+  - open restriction preserves abelian images;
+  - affine `tilde` preserves abelian images.
+- material premises added: none.
+- certificate provenance: all comparison isomorphisms are generated from the
+  canonical abelian image factorization and localization injectivity.
+- proof use: both monomorphism theorems are used by the corresponding image
+  comparison.
+- route integrity: pass. No comparison, exactness, quasi-coherence, or
+  `fromTildeΓ` isomorphism is supplied.
+- remaining C0 obligation: Issue #3575 specializes this infrastructure to the
+  actual `allowedOperationSheaf` and selected affine chart.
+
+### Verification
+
+- focused target elaboration: pass
+- contract v1 signature match: pass
+- standard-axiom audit: pass
+- `git diff --check`: pass
+- hidden / bidirectional Unicode scan: pass
+- placeholder scan: pass
+
+```yaml
+goal: G-aat-quality-surface-08
+target_theorem: Intrinsic Law-Response Circuit–Descent Theorem
+cycle: 15
+decision: approve
+result_type: target-proof-checkpoint
+proof_obligation: C0c-0 affine module-sheaf image exactness infrastructure
+proof_obligation_delta: open restriction and affine tilde canonically preserve abelian image factorizations
+statement_contract:
+  source: GitHub Issue #3577
+  version: v1
+  status: implemented-as-fixed
+premise_delta:
+  discharged:
+    - restriction preserves module-sheaf monomorphisms
+    - tilde preserves module monomorphisms after localization
+    - restriction and tilde preserve abelian images
+  remaining:
+    - C0c-1 actual selected-chart allowed-operation tilde comparison
+    - C0c-2 geometric-fiber response compatibility and circuit-locus transport
+    - D0-D2 and all later target obligations
+certificate_provenance:
+  accepted_inputs: []
+  generated:
+    - localization injectivity from IsLocalizedModule.map_injective
+    - canonical image isomorphisms from strong-epi/mono uniqueness
+  unresolved:
+    - actual selected-chart specialization
+route_integrity_audit:
+  status: pass
+  concerns: []
+blocking_findings: []
+next_obligation: C0c-1 actual selected-chart allowed-operation tilde comparison
 completion_candidate: false
 tracking_issue_closed: false
 ```
