@@ -266,6 +266,10 @@
       "kind": "policy",
       "path": "tools/archsig/examples/practical-rust-service/archmap/archmap_repaired.json",
       "section": "contexts.ctx:settlement"
+    },
+    "runtime:reconciliation": {
+      "kind": "runtimeTrace",
+      "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
     }
   },
   "atoms": [
@@ -1072,6 +1076,42 @@
         "ledger:SettlementLedger"
       ],
       "label": "Settlement ledger books the checkout total and records the exact rounding residual as its own entry"
+    },
+    {
+      "id": "atom:drift-cell-display",
+      "kind": "semantic",
+      "subject": "cell:display-total",
+      "object": "0",
+      "axis": "laplacian",
+      "predicate": "cellularCochain",
+      "refs": [
+        "runtime:reconciliation"
+      ],
+      "label": "Unexplained deviation of the displayed checkout total from the exact book of record, in cents"
+    },
+    {
+      "id": "atom:drift-cell-capture",
+      "kind": "semantic",
+      "subject": "cell:psp-capture",
+      "object": "0",
+      "axis": "laplacian",
+      "predicate": "cellularCochain",
+      "refs": [
+        "runtime:reconciliation"
+      ],
+      "label": "Unexplained deviation of the PSP captured amount from the exact book of record, in cents"
+    },
+    {
+      "id": "atom:drift-cell-boundary",
+      "kind": "relation",
+      "subject": "cell:display-total",
+      "object": "cell:psp-capture",
+      "axis": "laplacian",
+      "predicate": "cellularBoundary",
+      "refs": [
+        "runtime:reconciliation"
+      ],
+      "label": "Reconciliation compares the displayed total against the PSP capture"
     }
   ],
   "contexts": [
@@ -1221,7 +1261,10 @@
         "atom:capability-present-demo",
         "atom:runtime-checkout-trace",
         "atom:runtime-concurrency-trace",
-        "atom:cech-money-runtime"
+        "atom:cech-money-runtime",
+        "atom:drift-cell-display",
+        "atom:drift-cell-capture",
+        "atom:drift-cell-boundary"
       ],
       "restrictsTo": [
         "ctx:application",

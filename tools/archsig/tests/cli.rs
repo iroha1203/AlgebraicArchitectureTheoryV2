@@ -12406,6 +12406,16 @@ fn practical_rust_service_example_runs_current_analyze() {
     let out_dir = temp_dir("practical-rust-service-current-analyze");
     let root = practical_rust_service_root();
 
+    // Mirror the demo script's base act: same LawPolicy, base law surface.
+    let mut policy = read_json(&root.join("law_policy/law_policy.json"));
+    policy["lawSurfaceRef"] = json!("law-surface:practical-rust-base-v052");
+    let policy_path = out_dir.join("law_policy_base.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("base policy serializes"),
+    )
+    .expect("base policy writes");
+
     let output = run_sig0_output(&[
         "analyze",
         "--archmap",
@@ -12413,19 +12423,17 @@ fn practical_rust_service_example_runs_current_analyze() {
             .to_str()
             .expect("path is utf-8"),
         "--law-policy",
-        root.join("law_policy/law_policy.json")
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        root.join("law_policy/measurement_profile.json")
             .to_str()
             .expect("path is utf-8"),
         "--measurement-profile",
-        test_measurement_profile_path(Path::new(
-            root.join("law_policy/law_policy.json")
-                .to_str()
-                .expect("path is utf-8"),
-        ))
-        .to_str()
-        .expect("path is utf-8"),
+        root.join("law_policy/measurement_profile_drift.json")
+            .to_str()
+            .expect("path is utf-8"),
         "--law-surface",
-        root.join("law_policy/law_surface.json")
+        root.join("law_policy/law_surface_base.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -12438,14 +12446,14 @@ fn practical_rust_service_example_runs_current_analyze() {
         String::from_utf8_lossy(&output.stderr)
     );
     let archmap_validation = read_json(&out_dir.join("archmap-validation.json"));
-    assert_eq!(archmap_validation["summary"]["atomCount"], 67);
+    assert_eq!(archmap_validation["summary"]["atomCount"], 70);
     assert_eq!(archmap_validation["summary"]["contextCount"], 7);
     assert_eq!(archmap_validation["summary"]["coverCount"], 1);
     assert_eq!(archmap_validation["summary"]["result"], "pass");
 
     let normalized = read_json(&out_dir.join("normalized-archmap.json"));
     assert_eq!(normalized["schema"], "normalized-archmap/v0.5.3");
-    assert_eq!(normalized["summary"]["normalizedAtomCount"], 67);
+    assert_eq!(normalized["summary"]["normalizedAtomCount"], 70);
     assert_eq!(normalized["summary"]["contextCount"], 7);
     assert_eq!(normalized["summary"]["coverCount"], 1);
 
@@ -12458,18 +12466,32 @@ fn practical_rust_service_example_runs_current_analyze() {
         measurement_packet["packetId"],
         "measurement:practical-rust-commerce-fulfillment/v0.5.3"
     );
+    let verdict_rows = measurement_packet["structuralVerdict"]
+        .as_array()
+        .expect("structural verdict rows");
+    assert_eq!(
+        verdict_rows.len(),
+        3,
+        "base act carries the cech row plus the two silent SAGA rows"
+    );
     assert!(
-        measurement_packet["structuralVerdict"]
-            .as_array()
-            .is_some_and(|rows| rows.len() == 1
-                && rows[0]["evaluator"] == "ag.cech-obstruction"
-                && rows[0]["verdict"] == "measured_zero"),
+        verdict_rows.iter().any(|row| {
+            row["evaluator"] == "ag.cech-obstruction" && row["verdict"] == "measured_zero"
+        }),
         "practical sample must expose the selected AG structural verdict"
+    );
+    assert!(
+        verdict_rows.iter().all(|row| {
+            row["evaluator"] == "ag.cech-obstruction"
+                || (row["verdict"] == "not_computed"
+                    && row["verdictData"]["methodStatus"] == "repair_plan_not_supplied")
+        }),
+        "without a RepairPlan the SAGA rows must stay typed silence"
     );
     assert!(
         measurement_packet["computedInvariants"]
             .as_array()
-            .is_some_and(|rows| rows.iter().any(|row| row["atomCount"] == 67
+            .is_some_and(|rows| rows.iter().any(|row| row["atomCount"] == 70
                 && row["contextCount"] == 7
                 && row["coverCount"] == 1)),
         "measurement packet must preserve the finite-poset-site shape counts"
@@ -12483,13 +12505,13 @@ fn practical_rust_service_example_runs_current_analyze() {
         summary["conclusion"],
         "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     );
-    assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 1);
-    assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 0);
+    assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 3);
+    assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 2);
 
     assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.3");
-    assert_eq!(viewer["atomNodes"].as_array().map(Vec::len), Some(67));
+    assert_eq!(viewer["atomNodes"].as_array().map(Vec::len), Some(70));
     assert_eq!(viewer["moleculeGroups"].as_array().map(Vec::len), Some(7));
-    assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(85));
+    assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(88));
     assert_eq!(
         viewer["viewerVisualScenes"].as_array().map(Vec::len),
         Some(12)
@@ -12502,7 +12524,11 @@ fn practical_rust_service_example_runs_current_analyze() {
         viewer_scene_by_id(&viewer, "period-stokes")["sceneStatus"],
         "not_active_for_packet"
     );
-    assert_eq!(viewer["guidedTours"].as_array().map(Vec::len), Some(2));
+    assert_eq!(viewer["guidedTours"].as_array().map(Vec::len), Some(4));
+    assert_eq!(
+        viewer["sagaDescent"]["stages"][3]["status"],
+        "silence_by_design"
+    );
     assert_eq!(
         viewer["decisionBar"]["conclusion"],
         "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
@@ -12617,7 +12643,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
         vec![
             "analyze".to_string(),
             "--archmap".to_string(),
-            root.join("archmap/archmap.json")
+            root.join("archmap/archmap_head.json")
                 .to_str()
                 .expect("path is utf-8")
                 .to_string(),
@@ -12631,8 +12657,18 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
                 .to_str()
                 .expect("path is utf-8")
                 .to_string(),
+            "--measurement-profile".to_string(),
+            root.join("law_policy/measurement_profile_drift.json")
+                .to_str()
+                .expect("path is utf-8")
+                .to_string(),
             "--law-surface".to_string(),
             root.join("law_policy/law_surface.json")
+                .to_str()
+                .expect("path is utf-8")
+                .to_string(),
+            "--repair-plan".to_string(),
+            root.join("saga/repair_plan_head.json")
                 .to_str()
                 .expect("path is utf-8")
                 .to_string(),
@@ -12665,26 +12701,32 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.3");
-    assert_eq!(manifest["runId"], "run:c43fa5d5be2c");
+    assert_eq!(manifest["runId"], "run:1dce8eb8a66f");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
-        "a15b66bc2ad1a73a1999e98daff923b8f7512e7bb7e0df69e325ade5726718f2"
+        "9d6efc75366470a5850446865e1fab26e976ab42fd0f6076e73f8f4264ae3df9"
     );
     assert_eq!(
         manifest["inputDigests"]["lawPolicy"]["sha256"],
-        "2a9dabb0e4d1769a7d789dd4854b40bd0067d5f7e7af97aa42ac235227c3f645"
+        "0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b"
     );
     assert_eq!(
         manifest["inputDigests"]["measurementProfile"]["sha256"],
         "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
     );
     assert_eq!(
+        manifest["inputDigests"]["measurementProfiles"]
+            .as_array()
+            .map(Vec::len),
+        Some(2)
+    );
+    assert_eq!(
         manifest["inputDigests"]["profileFingerprint"]["sha256"],
-        "2b39ae3af896d3a1db749cd9ec3a9609e3dada5f096d7859b479249b86e12b07"
+        "f699097b54922e3f52c3465a818bb2946c2aab070e7c7195dbc3416610ad1e72"
     );
     assert_eq!(
         manifest["inputDigests"]["siteCoverDigest"]["sha256"],
-        "e86dfe155bb6f367d5b682d5551ee8067a3df271fdaad4eae00d928cc178e9af"
+        "e3ae81e46a9aa93d0d990d4aaa9b02d86c150ff51aa24c8c5914f63e7e9bd35b"
     );
     assert_eq!(
         manifest["inputDigests"]["siteCoverDigest"]["basis"],
@@ -12701,7 +12743,7 @@ fn cli_analyze_outputs_do_not_embed_local_absolute_input_paths() {
     let archmap_path = input_dir.join("archmap.json");
     let law_policy_path = input_dir.join("law_policy.json");
     let measurement_profile_path = input_dir.join("measurement_profile.json");
-    fs::copy(root.join("archmap/archmap.json"), &archmap_path)
+    fs::copy(root.join("archmap/archmap_head.json"), &archmap_path)
         .expect("archmap fixture copies to absolute temp path");
     fs::copy(root.join("law_policy/law_policy.json"), &law_policy_path)
         .expect("law policy fixture copies to absolute temp path");
@@ -12711,10 +12753,20 @@ fn cli_analyze_outputs_do_not_embed_local_absolute_input_paths() {
     )
     .expect("measurement profile fixture copies to absolute temp path");
     fs::copy(
+        root.join("law_policy/measurement_profile_drift.json"),
+        input_dir.join("measurement_profile_drift.json"),
+    )
+    .expect("drift profile fixture copies to absolute temp path");
+    fs::copy(
         root.join("law_policy/law_surface.json"),
         input_dir.join("law_surface.json"),
     )
     .expect("law surface fixture copies to absolute temp path");
+    fs::copy(
+        root.join("saga/repair_plan_head.json"),
+        input_dir.join("repair_plan.json"),
+    )
+    .expect("repair plan fixture copies to absolute temp path");
 
     let args = |out_dir: &Path| {
         vec![
@@ -12728,9 +12780,21 @@ fn cli_analyze_outputs_do_not_embed_local_absolute_input_paths() {
                 .to_str()
                 .expect("path is utf-8")
                 .to_string(),
+            "--measurement-profile".to_string(),
+            input_dir
+                .join("measurement_profile_drift.json")
+                .to_str()
+                .expect("path is utf-8")
+                .to_string(),
             "--law-surface".to_string(),
             input_dir
                 .join("law_surface.json")
+                .to_str()
+                .expect("path is utf-8")
+                .to_string(),
+            "--repair-plan".to_string(),
+            input_dir
+                .join("repair_plan.json")
                 .to_str()
                 .expect("path is utf-8")
                 .to_string(),
@@ -12802,7 +12866,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     let args = vec![
         "analyze".to_string(),
         "--archmap".to_string(),
-        root.join("archmap/archmap.json")
+        root.join("archmap/archmap_head.json")
             .to_str()
             .expect("path is utf-8")
             .to_string(),
@@ -12816,8 +12880,18 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
             .to_str()
             .expect("path is utf-8")
             .to_string(),
+        "--measurement-profile".to_string(),
+        root.join("law_policy/measurement_profile_drift.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
         "--law-surface".to_string(),
         root.join("law_policy/law_surface.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--repair-plan".to_string(),
+        root.join("saga/repair_plan_head.json")
             .to_str()
             .expect("path is utf-8")
             .to_string(),
@@ -12832,7 +12906,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:c43fa5d5be2c-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:1dce8eb8a66f-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
