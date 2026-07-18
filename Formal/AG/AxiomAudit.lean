@@ -1554,12 +1554,14 @@ theorem finiteAcyclicSectionPrimeMapMemLocalLawfulLocus
 theorem structureSheafMathlibSheafificationLiftUnique
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
     {k : Type} [CommRing k]
-    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    [hs : CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     (raw : LawAlgebra.AlgebraValuedAATPresheaf S k)
     (F : LawAlgebra.LawAlgebraSheaf S k) (η : raw ⟶ F.val) :
-    ∃! lift : (sheafify S.topology raw ⟶ F.val),
-      toSheafify S.topology raw ≫ lift = η :=
-  LawAlgebra.LawAlgebraSheafificationBridge.mathlib_sheafification_lift_unique raw F η
+    ∃! lift :
+        (@sheafify _ _ S.topology _ _ hs.isRightAdjoint raw ⟶ F.val),
+      @toSheafify _ _ S.topology _ _ hs.isRightAdjoint raw ≫ lift = η :=
+  @LawAlgebra.LawAlgebraSheafificationBridge.mathlib_sheafification_lift_unique
+    _ _ S k _ hs raw F η
 
 theorem schemeSingleAffineSpecCompatibilityAllConditions
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
@@ -5894,6 +5896,41 @@ def readingFunctoriality_coarseFineSheafHMap_nonzero :=
   @AAT.AG.ReadingFunctorialityFinite.coarseFineSheafHMap_nonzero
 def readingFunctoriality_topologyActualHOneFiring :=
   @AAT.AG.ReadingFunctorialityFinite.topologyActualHOneFiring
+
+/-! R9f finite coefficient-geometry firing. -/
+
+noncomputable def readingFunctoriality_finiteIntHasSheafify :=
+  AAT.AG.ReadingFunctorialityFinite.finiteIntHasSheafify
+
+noncomputable def readingFunctoriality_finitePolynomialIntHasSheafify :=
+  AAT.AG.ReadingFunctorialityFinite.finitePolynomialIntHasSheafify
+
+noncomputable def readingFunctoriality_coefficientExtension_hasSheafCompose :=
+  AAT.AG.ReadingFunctorialityFinite.coefficientExtension_hasSheafCompose
+
+noncomputable def readingFunctoriality_coefficientSectionSpecBaseChangeIso_fires :=
+  AAT.AG.ReadingFunctorialityFinite.coefficientSectionSpecBaseChangeIso_fires
+
+noncomputable def readingFunctoriality_coefficientScheme :=
+  AAT.AG.ReadingFunctorialityFinite.coefficientScheme
+
+noncomputable def readingFunctoriality_coefficientSemanticCore :=
+  AAT.AG.ReadingFunctorialityFinite.coefficientSemanticCore
+
+noncomputable def readingFunctoriality_coefficientBridge :=
+  AAT.AG.ReadingFunctorialityFinite.coefficientBridge
+
+def readingFunctoriality_coefficientBridge_valid :=
+  @AAT.AG.ReadingFunctorialityFinite.coefficientBridge_valid
+
+def readingFunctoriality_coefficientSemanticCore_realized :=
+  @AAT.AG.ReadingFunctorialityFinite.coefficientSemanticCore_realized
+
+def readingFunctoriality_coefficientSemanticCore_baseChangedChart :=
+  @AAT.AG.ReadingFunctorialityFinite.coefficientSemanticCore_baseChangedChart
+
+def readingFunctoriality_lawfulLocus_baseChange_fires :=
+  @AAT.AG.ReadingFunctorialityFinite.lawfulLocus_baseChange_fires
 
 /-! R9g concrete `Tor₁` flat-base-change firing. -/
 

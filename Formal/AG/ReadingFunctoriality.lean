@@ -6,6 +6,7 @@ import Formal.AG.ReadingFunctoriality.LinearLerayComparison
 import Formal.AG.ReadingFunctoriality.Coefficient
 import Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient
 import Formal.AG.ReadingFunctoriality.CoefficientGeometry
+import Formal.AG.ReadingFunctoriality.CoefficientGeometryFiring
 import Formal.AG.ReadingFunctoriality.FiniteExamples
 import Formal.AG.ReadingFunctoriality.InfiniteProductCechFiring
 import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
