@@ -856,13 +856,13 @@ completion_candidate: false
 tracking_issue_closed: false
 ```
 
-## Cycle 14 — C0b actual chart circuit locus and support
+## Cycle 14 — C0b chart section-module circuit locus and support
 
 - decision: approve
-- result type: proof-obligation-discharged
+- result type: target-proof-checkpoint
 - proof obligation: instantiate C0a on the generated allowed-operation sheaf
-  and actual required-label chart responses, then identify the selected chart
-  circuit locus with response-cokernel support
+  section module and actual required-label chart responses, then identify the
+  section-module fiber circuit locus with response-cokernel support
 - statement contract: Issue #3557, v1 fixed and elaborated before implementation
 - base merge SHA: `200a395aa483d75e7fcc2dfc8c1b1cac846cf3b7`
 
@@ -886,13 +886,13 @@ coker(A_P) -> (P -> R).
 Their retraction laws, together with projectivity of `E_A` and the canonical
 finite-free target, construct the range and cokernel projectivity instances
 required by C0a. They do not store projectivity propositions, kernel
-comparison, repair, support, or circuit conclusions. The actual protected
-kernel is therefore finite projective when `E_A` is finite projective, and
-C0a's canonical `LinearMap.tensorKer` map gives arbitrary commutative scalar
-base change.
+comparison, repair, support, or circuit conclusions. The protected kernel of
+the chart section-module map is therefore finite projective when that section
+module is finite projective, and C0a's canonical `LinearMap.tensorKer` map
+gives arbitrary commutative scalar base change.
 
-The selected chart circuit locus is defined directly as the set of primes
-whose actual residue-field response family has a target-containing
+The chart section-module circuit locus is defined directly as the set of
+primes whose residue-field tensor response family has a target-containing
 support-minimal dependence inside the protected labels plus the target. The
 C0a support theorem is then instantiated on those responses, yielding the
 pointwise support equivalence and the final set equality
@@ -907,9 +907,16 @@ chartCircuitLocus = Supp(coker(target response on ker(A_P))).
   - actual selected-chart scalar ring and allowed-operation section module;
   - required-label response family from existing `labeledResponse.app`;
   - protected-response range and cokernel projectivity from explicit splits;
-  - actual protected kernel finite/projective and canonical base change;
-  - actual response-cokernel support iff residue-field support-minimal circuit;
-  - selected chart circuit locus equals response-cokernel support.
+  - section-module protected kernel finite/projective and canonical base change;
+  - section-module response-cokernel support iff residue-field tensor
+    support-minimal circuit;
+  - section-module circuit locus equals response-cokernel support.
+- remaining C0 obligation:
+  - compare the actual allowed-operation sheaf on the selected affine chart
+    with the module sheaf associated to its sections;
+  - identify section-module residue-field tensor fibers with sheaf geometric
+    fibers and prove response compatibility;
+  - transport the circuit locus equality through that comparison.
 - direction hypotheses: finite/projective actual allowed-operation chart
   module and explicit range/cokernel sections for the protected response map.
 - certificate provenance: chart responses are the existing sheaf-morphism
@@ -922,14 +929,14 @@ chartCircuitLocus = Supp(coker(target response on ker(A_P))).
   extraction.
 - structure-field escape: none. The split structure contains only two maps and
   their retraction laws.
-- route integrity: pass. Actual sheaf sections and actual generated responses
-  occur in every final statement; no conclusion-equivalent certificate is
-  supplied.
+- route integrity: checkpoint. Actual sheaf sections and actual generated
+  responses occur in every statement, and no conclusion-equivalent certificate
+  is supplied. The sheaf geometric-fiber comparison remains C0c.
 - statement integrity: pass. Source declaration names, complete signatures,
   definition bodies, and structure fields match Issue #3557 v1.
 
-C0 is complete as a local circuit-and-support result. G-08 remains incomplete;
-D0-D2 descent construction and all later obligations remain.
+C0 remains incomplete until C0c constructs the sheaf geometric-fiber
+comparison and transports this section-module result. G-08 remains incomplete.
 
 ### Verification
 
@@ -950,9 +957,9 @@ goal: G-aat-quality-surface-08
 target_theorem: Intrinsic Law-Response Circuit–Descent Theorem
 cycle: 14
 decision: approve
-result_type: proof-obligation-discharged
-proof_obligation: C0b actual generated chart response instantiation and circuit-locus support equality
-proof_obligation_delta: generated allowed-operation chart sections and actual required-label responses instantiate C0a and identify the selected circuit locus with response-cokernel support
+result_type: target-proof-checkpoint
+proof_obligation: C0b generated chart section-module response instantiation and circuit-locus support equality
+proof_obligation_delta: generated allowed-operation chart sections and actual required-label responses instantiate C0a and identify the section-module tensor-fiber circuit locus with response-cokernel support
 statement_contract:
   source: GitHub Issue #3557
   version: v1
@@ -976,6 +983,7 @@ premise_delta:
     - actual protected kernel finite/projective and canonical base change
     - actual support-circuit pointwise equivalence and circuit-locus set equality
   remaining:
+    - C0c selected affine-chart sheaf comparison, geometric-fiber response compatibility, and circuit-locus transport
     - D0-D2 image sequence, Cech instance, actual gluing, and zero iff global normalized section
     - E-pre local-circuit and pure-descent witness pair
     - N0 strict labeled presentation naturality and unit rescaling transport
@@ -989,6 +997,7 @@ certificate_provenance:
     - regularity instances from explicit range and cokernel sections
     - kernel comparison and support-circuit result from accepted C0a
   unresolved:
+    - section-module tensor fiber to sheaf geometric fiber comparison
     - descent class, presentation naturality, finite measurement, and witness pair
 proof_use_audit:
   used_material_premises:
@@ -1001,15 +1010,16 @@ structure_field_escape_audit:
   status: none-found
   concerns: []
 route_integrity_audit:
-  status: pass
-  concerns: []
+  status: checkpoint
+  concerns:
+    - sheaf geometric-fiber comparison remains C0c
 cheat_route_audit:
   target_fitting_construction: none-found
   vacuity_or_degeneracy: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
-next_obligation: D0-D2 response-kernel image sequence, Cech instance, actual gluing, and zero iff global normalized section
+next_obligation: C0c selected affine-chart sheaf comparison, geometric-fiber response compatibility, and circuit-locus transport
 completion_candidate: false
 tracking_issue_closed: false
 ```

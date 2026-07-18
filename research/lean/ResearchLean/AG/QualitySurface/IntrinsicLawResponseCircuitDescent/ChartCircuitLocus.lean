@@ -2,13 +2,13 @@ import ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.Circuit
 import ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.ConormalJacobian
 
 /-!
-# Selected-chart circuit locus
+# Selected-chart section-module circuit locus
 
-This file instantiates the affine C0a circuit theorem on an actual selected
-chart of the generated allowed-operation sheaf. The scalar ring is the
-structure-section ring of that open, the operation module is the corresponding
-`allowedOperationSheaf` section module, and every required-label response is
-the existing component of `labeledResponse`.
+This file instantiates the affine C0a circuit theorem on the section module of
+an actual selected chart of the generated allowed-operation sheaf. The scalar
+ring is the structure-section ring of that open, the operation module is the
+corresponding `allowedOperationSheaf` section module, and every required-label
+response is the existing component of `labeledResponse`.
 
 The explicit split data records only a section of the protected-response range
 and a section of its cokernel. Finite/projective kernels, canonical scalar base
@@ -25,6 +25,12 @@ retraction laws instead of projectivity propositions or conclusion
 certificates, so the needed projectivity instances are reconstructed at each
 use. The kernel comparison remains C0a's canonical `LinearMap.tensorKer` map;
 the chosen source-level sections are used only to prove its bijectivity.
+
+No abstract instance pair is added for `AffineSplitConstantRankData`: it is a
+direction hypothesis on a selected actual chart, and its concrete positive or
+negative realization belongs to the later witness obligations. The two
+retraction laws are nevertheless used independently below, so the structure is
+neither a marker nor an automatically inhabited certificate.
 -/
 
 open CategoryTheory
@@ -161,8 +167,8 @@ noncomputable abbrev chartResponseCokernel
   chartRing Core W G i ⧸ LinearMap.range
     (chartTargetOnProtectedKernel Core W Pres G i protectedLabels target)
 
-/-- The selected-chart circuit locus generated from support-minimal
-dependencies among the actual residue-field response family. -/
+/-- The selected-chart section-module circuit locus generated from
+support-minimal dependencies among the residue-field tensor response family. -/
 noncomputable def chartCircuitLocus
     (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
       State BeforeWitness AfterWitness)
@@ -305,8 +311,9 @@ theorem mem_support_chartResponseCokernel_iff_exists_supportMinimalCircuit
       (CircuitLocus.mem_support_responseCokernel_iff_exists_supportMinimalCircuit
         response protectedLabels target htarget p)
 
-/-- The selected-chart circuit locus generated from actual sheaf responses is
-exactly the support of the actual target-response cokernel. -/
+/-- The selected-chart section-module circuit locus generated from actual
+sheaf-response components is exactly the support of the target-response
+cokernel. -/
 theorem chartCircuitLocus_eq_support
     (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
       State BeforeWitness AfterWitness)
