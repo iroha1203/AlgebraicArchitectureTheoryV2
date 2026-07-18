@@ -24,6 +24,8 @@ noncomputable section
 
 namespace AAT.AG.ReadingFunctorialityFinite
 
+universe v
+
 open CategoryTheory
 open Opposite
 
@@ -2658,6 +2660,1338 @@ theorem brokenRelationChange_not_rawBaseChange :
   rcases hbroken with ⟨relation, hrelation⟩
   cases relation
   exact hrelation rfl
+
+/-! ## R9h: finite linear Cech and actual sheaf-cohomology firing -/
+
+/-!
+### Implementation notes
+
+The linear firing uses its own three-context presentation.  The base reads the
+entire selected object and has no observables, so it is terminal in the actual
+context category.  The two middle contexts read the two selected marker atoms;
+their actual meet reads neither marker.  The coefficient presheaf is the
+submodule `Int` on marker-free contexts and zero elsewhere.  This makes the
+mixed overlap nonzero while the two branches and the terminal base are zero.
+
+The site, cover, coefficient presheaf, and gluing proof are constructed here
+from primitive data.  In particular, this lane does not reuse `finiteSite`,
+`coarseCover`, or an `ObstructionSheaf` as its positive firing witness.
+-/
+
+private inductive FiniteLinearContextIndex where
+  | left
+  | right
+  | base
+
+private def finiteLinearSupportReads
+    (i : FiniteLinearContextIndex)
+    (atom : FiniteModel.carrier.Atom) : Prop :=
+  match i with
+  | .left => atom = FiniteModel.FiniteAtom.componentA
+  | .right => atom = FiniteModel.FiniteAtom.componentB
+  | .base => FiniteModel.object.configuration.family.mem atom
+
+private def finiteLinearContext (i : FiniteLinearContextIndex) :
+    Site.ArchCtx FiniteModel.object where
+  minimal := {
+    Support := PUnit
+    Axis := PUnit
+    Observable := Empty
+    supportReads := fun _ atom => finiteLinearSupportReads i atom
+    supportReads_objectFamily := by
+      intro support atom h
+      cases i with
+      | left =>
+          rw [h]
+          exact FiniteModel.allFamily_mem _ (by simp)
+      | right =>
+          rw [h]
+          exact FiniteModel.allFamily_mem _ (by simp)
+      | base => exact h
+    axisReads := fun _ => True
+    observableReads := Empty.elim
+  }
+  Extension := FiniteLinearContextIndex
+  extension := i
+
+private noncomputable abbrev finiteLinearContextPreorder :
+    Site.ContextPreorderCategory FiniteModel.object :=
+  Site.contextMorphismPreorderCategory FiniteModel.object
+
+private def finiteLinearContextMorphism
+    (i j : FiniteLinearContextIndex)
+    (_h : ∀ atom, finiteLinearSupportReads i atom →
+      finiteLinearSupportReads j atom) :
+    Site.ContextMorphism (finiteLinearContext i) (finiteLinearContext j) where
+  supportMap := id
+  axisMap := id
+  observableRestrict := Empty.elim
+
+private theorem finiteLinearContextMorphism_isRestriction
+    (i j : FiniteLinearContextIndex)
+    (h : ∀ atom, finiteLinearSupportReads i atom →
+      finiteLinearSupportReads j atom) :
+    (finiteLinearContextMorphism i j h).IsRestriction := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro support atom hread
+    change finiteLinearSupportReads i atom at hread
+    exact h atom hread
+  · intro axis hread
+    trivial
+  · intro observable
+    exact Empty.elim observable
+  · intro support atom hread
+    exact (finiteLinearContext j).supportReads_objectFamily hread
+
+private theorem finiteLinearContextLe_of_support
+    (i j : FiniteLinearContextIndex)
+    (h : ∀ atom, finiteLinearSupportReads i atom →
+      finiteLinearSupportReads j atom) :
+    finiteLinearContextPreorder.le
+      (finiteLinearContext i) (finiteLinearContext j) :=
+  ⟨finiteLinearContextMorphism i j h,
+    finiteLinearContextMorphism_isRestriction i j h⟩
+
+private theorem finiteLinear_left_le_base :
+    finiteLinearContextPreorder.le
+      (finiteLinearContext .left) (finiteLinearContext .base) := by
+  apply finiteLinearContextLe_of_support
+  intro atom h
+  rw [h]
+  exact FiniteModel.allFamily_mem _ (by simp)
+
+private theorem finiteLinear_right_le_base :
+    finiteLinearContextPreorder.le
+      (finiteLinearContext .right) (finiteLinearContext .base) := by
+  apply finiteLinearContextLe_of_support
+  intro atom h
+  rw [h]
+  exact FiniteModel.allFamily_mem _ (by simp)
+
+private theorem finiteLinear_not_le_of_atom
+    (i j : FiniteLinearContextIndex) (atom : FiniteModel.carrier.Atom)
+    (hi : finiteLinearSupportReads i atom)
+    (hj : ¬ finiteLinearSupportReads j atom) :
+    ¬ finiteLinearContextPreorder.le
+      (finiteLinearContext i) (finiteLinearContext j) := by
+  rintro ⟨f, hf⟩
+  have hread := hf.1 (support := PUnit.unit) hi
+  apply hj
+  simpa [finiteLinearContext] using hread
+
+private theorem finiteLinear_left_not_le_right :
+    ¬ finiteLinearContextPreorder.le
+      (finiteLinearContext .left) (finiteLinearContext .right) := by
+  apply finiteLinear_not_le_of_atom .left .right
+    FiniteModel.FiniteAtom.componentA
+  · simp [finiteLinearSupportReads]
+  · simp [finiteLinearSupportReads]
+
+private theorem finiteLinear_right_not_le_left :
+    ¬ finiteLinearContextPreorder.le
+      (finiteLinearContext .right) (finiteLinearContext .left) := by
+  apply finiteLinear_not_le_of_atom .right .left
+    FiniteModel.FiniteAtom.componentB
+  · simp [finiteLinearSupportReads]
+  · simp [finiteLinearSupportReads]
+
+private theorem finiteLinear_base_not_le_left :
+    ¬ finiteLinearContextPreorder.le
+      (finiteLinearContext .base) (finiteLinearContext .left) := by
+  apply finiteLinear_not_le_of_atom .base .left
+    FiniteModel.FiniteAtom.componentB
+  · exact FiniteModel.allFamily_mem _ (by simp)
+  · simp [finiteLinearSupportReads]
+
+private theorem finiteLinear_base_not_le_right :
+    ¬ finiteLinearContextPreorder.le
+      (finiteLinearContext .base) (finiteLinearContext .right) := by
+  apply finiteLinear_not_le_of_atom .base .right
+    FiniteModel.FiniteAtom.componentA
+  · exact FiniteModel.allFamily_mem _ (by simp)
+  · simp [finiteLinearSupportReads]
+
+private noncomputable def finiteLinearOverlap :
+    Site.ContextOverlapPullback finiteLinearContextPreorder :=
+  Site.meetOverlapPullback finiteLinearContextPreorder
+    Site.productContextFiniteMeet
+
+private def finiteLinearSupportVisibleOn
+    (W : Site.ArchCtx FiniteModel.object)
+    (atom : FiniteModel.carrier.Atom) : Prop :=
+  (W = finiteLinearContext .left ∧
+      atom = FiniteModel.FiniteAtom.componentA) ∨
+    (W = finiteLinearContext .right ∧
+      atom = FiniteModel.FiniteAtom.componentB)
+
+private def finiteLinearCoverageRequirements :
+    Site.CoverageRequirements FiniteModel.object
+      FiniteModel.lawUniverse FiniteModel.signature where
+  requiredSupport := fun atom =>
+    atom = FiniteModel.FiniteAtom.componentA ∨
+      atom = FiniteModel.FiniteAtom.componentB
+  requiredWitness := fun _ => True
+  requiredAxis := fun _ => True
+  supportVisibleOn := finiteLinearSupportVisibleOn
+  witnessVisibleOn := fun _ _ => True
+  axisReadableOn := fun W _ =>
+    W = finiteLinearContext .left ∨ W = finiteLinearContext .right
+  boundaryVisibleOn := fun _ _ => True
+
+/-- Independent AAT site used by the finite linear coefficient firing. -/
+noncomputable def finiteLinearSite :
+    Site.AATSite FiniteModel.corePackage.object where
+  contextPreorder := finiteLinearContextPreorder
+  lawUniverse := FiniteModel.lawUniverse
+  signature := FiniteModel.signature
+  requirements := finiteLinearCoverageRequirements
+  overlap := finiteLinearOverlap
+
+/-- Named additive sheafification instance for the independent linear site. -/
+noncomputable instance finiteLinearAddCommGrpHasSheafify :
+    HasSheafify finiteLinearSite.topology AddCommGrpCat.{1} := by
+  infer_instance
+
+/-- Terminal context selected by the finite linear coefficient model. -/
+noncomputable def finiteLinearBase : finiteLinearSite.category :=
+  Site.ContextCategoryObject.of finiteLinearContextPreorder
+    (finiteLinearContext .base)
+
+private def finiteLinearContextToBaseMorphism
+    (X : finiteLinearSite.category) :
+    Site.ContextMorphism X.ctx (finiteLinearContext .base) where
+  supportMap _ := PUnit.unit
+  axisMap _ := PUnit.unit
+  observableRestrict := Empty.elim
+
+private theorem finiteLinearContextToBaseMorphism_isRestriction
+    (X : finiteLinearSite.category) :
+    (finiteLinearContextToBaseMorphism X).IsRestriction := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro support atom hread
+    change finiteLinearSupportReads .base atom
+    exact X.ctx.minimal.supportReads_objectFamily hread
+  · intro axis hread
+    trivial
+  · intro observable
+    exact Empty.elim observable
+  · intro support atom hread
+    change FiniteModel.object.configuration.family.mem atom at hread
+    exact hread
+
+private theorem finiteLinearContextLeBase (X : finiteLinearSite.category) :
+    finiteLinearSite.contextPreorder.le X.ctx finiteLinearBase.ctx :=
+  ⟨finiteLinearContextToBaseMorphism X,
+    finiteLinearContextToBaseMorphism_isRestriction X⟩
+
+private noncomputable def finiteLinearContextToBase
+    (X : finiteLinearSite.category) : X ⟶ finiteLinearBase :=
+  homOfLE (finiteLinearContextLeBase X)
+
+/-- The selected base is terminal in the actual context category. -/
+noncomputable def finiteLinearBaseIsTerminal : Limits.IsTerminal finiteLinearBase :=
+  Limits.IsTerminal.ofUniqueHom finiteLinearContextToBase
+    (fun _ _ => Subsingleton.elim _ _)
+
+/-- Left branch of the independent strict-diamond model. -/
+def finiteLinearLeftObject : finiteLinearSite.category :=
+  Site.ContextCategoryObject.of finiteLinearContextPreorder
+    (finiteLinearContext .left)
+
+/-- Right branch of the independent strict-diamond model. -/
+def finiteLinearRightObject : finiteLinearSite.category :=
+  Site.ContextCategoryObject.of finiteLinearContextPreorder
+    (finiteLinearContext .right)
+
+private def finiteLinearSelectedOverlapContext :
+    Site.ArchCtx FiniteModel.object :=
+  finiteLinearOverlap.overlap (finiteLinearContext .base)
+    (finiteLinearContext .left) (finiteLinearContext .right)
+
+/-- Actual overlap of the two branches in the independent linear model. -/
+def finiteLinearOverlapObject : finiteLinearSite.category :=
+  Site.ContextCategoryObject.of finiteLinearContextPreorder
+    finiteLinearSelectedOverlapContext
+
+/-- The selected overlap is definitionally the site's actual pair overlap. -/
+theorem finiteLinearPairOverlap_eq :
+    finiteLinearSite.overlap.overlap finiteLinearBase.ctx
+        finiteLinearLeftObject.ctx finiteLinearRightObject.ctx =
+      finiteLinearOverlapObject.ctx :=
+  rfl
+
+private theorem finiteLinear_left_not_le_overlapObject :
+    ¬ finiteLinearSite.contextPreorder.le
+      finiteLinearLeftObject.ctx finiteLinearOverlapObject.ctx := by
+  rintro ⟨f, hf⟩
+  have hread := hf.1 (support := PUnit.unit)
+    (atom := FiniteModel.FiniteAtom.componentA)
+    (by
+      change finiteLinearSupportReads .left FiniteModel.FiniteAtom.componentA
+      rfl)
+  change
+    finiteLinearSupportReads .left FiniteModel.FiniteAtom.componentA ∧
+      finiteLinearSupportReads .right FiniteModel.FiniteAtom.componentA at hread
+  simpa [finiteLinearSupportReads] using hread.2
+
+private theorem finiteLinear_right_not_le_overlapObject :
+    ¬ finiteLinearSite.contextPreorder.le
+      finiteLinearRightObject.ctx finiteLinearOverlapObject.ctx := by
+  rintro ⟨f, hf⟩
+  have hread := hf.1 (support := PUnit.unit)
+    (atom := FiniteModel.FiniteAtom.componentB)
+    (by
+      change finiteLinearSupportReads .right FiniteModel.FiniteAtom.componentB
+      rfl)
+  change
+    finiteLinearSupportReads .left FiniteModel.FiniteAtom.componentB ∧
+      finiteLinearSupportReads .right FiniteModel.FiniteAtom.componentB at hread
+  simpa [finiteLinearSupportReads] using hread.1
+
+/-- The actual overlap, branches, and terminal base form a strict diamond. -/
+theorem finiteLinearStrictDiamond :
+    finiteLinearSite.contextPreorder.le
+        finiteLinearOverlapObject.ctx finiteLinearLeftObject.ctx ∧
+      finiteLinearSite.contextPreorder.le
+        finiteLinearOverlapObject.ctx finiteLinearRightObject.ctx ∧
+      finiteLinearSite.contextPreorder.le
+        finiteLinearLeftObject.ctx finiteLinearBase.ctx ∧
+      finiteLinearSite.contextPreorder.le
+        finiteLinearRightObject.ctx finiteLinearBase.ctx ∧
+      (¬ finiteLinearSite.contextPreorder.le
+        finiteLinearLeftObject.ctx finiteLinearRightObject.ctx) ∧
+      (¬ finiteLinearSite.contextPreorder.le
+        finiteLinearRightObject.ctx finiteLinearLeftObject.ctx) ∧
+      (¬ finiteLinearSite.contextPreorder.le
+        finiteLinearBase.ctx finiteLinearLeftObject.ctx) ∧
+      (¬ finiteLinearSite.contextPreorder.le
+        finiteLinearBase.ctx finiteLinearRightObject.ctx) ∧
+      (¬ finiteLinearSite.contextPreorder.le
+        finiteLinearLeftObject.ctx finiteLinearOverlapObject.ctx) ∧
+      (¬ finiteLinearSite.contextPreorder.le
+        finiteLinearRightObject.ctx finiteLinearOverlapObject.ctx) := by
+  refine ⟨?_, ?_, finiteLinear_left_le_base, finiteLinear_right_le_base,
+    finiteLinear_left_not_le_right, finiteLinear_right_not_le_left,
+    finiteLinear_base_not_le_left, finiteLinear_base_not_le_right,
+    finiteLinear_left_not_le_overlapObject,
+    finiteLinear_right_not_le_overlapObject⟩
+  · exact Site.productContextFiniteMeet.meet_le_left _ _
+  · exact Site.productContextFiniteMeet.meet_le_right _ _
+
+private inductive FiniteLinearCoverIndex where
+  | left
+  | right
+
+private def finiteLinearCoverPatch :
+    FiniteLinearCoverIndex -> Site.ArchCtx FiniteModel.object
+  | .left => finiteLinearContext .left
+  | .right => finiteLinearContext .right
+
+/-- Two-branch cover of the independent strict-diamond model. -/
+noncomputable def finiteLinearCover :
+    Site.AATCoverageFamily finiteLinearSite.requirements
+      finiteLinearSite.overlap finiteLinearBase where
+  Index := FiniteLinearCoverIndex
+  patch := finiteLinearCoverPatch
+  inclusion := by
+    intro i
+    cases i
+    · exact finiteLinear_left_le_base
+    · exact finiteLinear_right_le_base
+  admissible := {
+    atomSupportCoverage := by
+      intro atom h
+      rcases h with rfl | rfl
+      · exact ⟨.left, Or.inl ⟨rfl, rfl⟩⟩
+      · exact ⟨.right, Or.inr ⟨rfl, rfl⟩⟩
+    lawWitnessCoverage := by
+      intro witness h
+      exact Or.inl ⟨.left, trivial⟩
+    signatureAxisCoverage := by
+      intro axis h
+      exact ⟨.left, Or.inl rfl⟩
+    boundaryCoverage := by
+      intro i j
+      trivial
+    nonGeneration := by
+      intro i support atom h
+      simpa [finiteLinearBase, finiteLinearContext,
+        finiteLinearSupportReads] using h
+  }
+
+/-- The finite linear cover has exactly two branch indices. -/
+def finiteLinearCoverIndexEquiv : finiteLinearCover.Index ≃ Bool where
+  toFun
+    | .left => false
+    | .right => true
+  invFun
+    | false => .left
+    | true => .right
+  left_inv i := by cases i <;> rfl
+  right_inv b := by cases b <;> rfl
+
+/-- The finite linear cover contains distinct left and right branches. -/
+theorem finiteLinearCover_twoBranches :
+    ∃ i j : finiteLinearCover.Index,
+      i ≠ j ∧
+        finiteLinearCover.patch i = finiteLinearLeftObject.ctx ∧
+        finiteLinearCover.patch j = finiteLinearRightObject.ctx := by
+  refine ⟨.left, .right, ?_, rfl, rfl⟩
+  simp
+
+private def FiniteLinearNoMarkerReads
+    (W : Site.ArchCtx FiniteModel.object) : Prop :=
+  (∀ support : W.Support,
+      ¬ W.minimal.supportReads support FiniteModel.FiniteAtom.componentA) ∧
+    (∀ support : W.Support,
+      ¬ W.minimal.supportReads support FiniteModel.FiniteAtom.componentB)
+
+private theorem finiteLinearNoMarkerReads_of_le
+    {W V : Site.ArchCtx FiniteModel.object}
+    (h : finiteLinearContextPreorder.le W V)
+    (hV : FiniteLinearNoMarkerReads V) :
+    FiniteLinearNoMarkerReads W := by
+  let f := finiteLinearContextPreorder.readableMorphism h
+  have hf := finiteLinearContextPreorder.readableMorphism_isRestriction h
+  constructor
+  · intro support hread
+    exact hV.1 (f.supportMap support) (hf.1 hread)
+  · intro support hread
+    exact hV.2 (f.supportMap support) (hf.1 hread)
+
+private noncomputable def finiteLinearCoefficientSubmodule
+    (W : Site.ArchCtx FiniteModel.object) : Submodule Int (ULift Int) := by
+  classical
+  exact if FiniteLinearNoMarkerReads W then ⊤ else ⊥
+
+private theorem finiteLinearCoefficientSubmodule_mono
+    {W V : Site.ArchCtx FiniteModel.object}
+    (h : finiteLinearContextPreorder.le W V) :
+    finiteLinearCoefficientSubmodule V ≤
+      finiteLinearCoefficientSubmodule W := by
+  by_cases hV : FiniteLinearNoMarkerReads V
+  · have hW := finiteLinearNoMarkerReads_of_le h hV
+    simp [finiteLinearCoefficientSubmodule, hV, hW]
+  · simp [finiteLinearCoefficientSubmodule, hV]
+
+private noncomputable def finiteLinearCoefficientPresheaf :
+    finiteLinearSite.categoryᵒᵖ ⥤ ModuleCat.{1} Int where
+  obj X := ModuleCat.of Int
+    (finiteLinearCoefficientSubmodule X.unop.ctx)
+  map {X Y} f := ModuleCat.ofHom
+    (Submodule.inclusion
+      (finiteLinearCoefficientSubmodule_mono (leOfHom f.unop)))
+  map_id X := by
+    apply ModuleCat.hom_ext
+    ext x
+    rfl
+  map_comp {X Y Z} f g := by
+    apply ModuleCat.hom_ext
+    ext x
+    rfl
+
+private theorem finiteLinear_admissibleCover_has_left
+    {Z : finiteLinearSite.category}
+    (F : Site.AATCoverageFamily finiteLinearSite.requirements
+      finiteLinearSite.overlap Z) :
+    ∃ i : F.Index, F.patch i = finiteLinearContext .left := by
+  rcases F.admissible.atomSupportCoverage
+      FiniteModel.FiniteAtom.componentA (Or.inl rfl) with ⟨i, hi⟩
+  refine ⟨i, ?_⟩
+  rcases hi with hi | hi
+  · exact hi.1
+  · exact False.elim (by simpa using hi.2)
+
+private theorem finiteLinear_admissibleCover_has_right
+    {Z : finiteLinearSite.category}
+    (F : Site.AATCoverageFamily finiteLinearSite.requirements
+      finiteLinearSite.overlap Z) :
+    ∃ i : F.Index, F.patch i = finiteLinearContext .right := by
+  rcases F.admissible.atomSupportCoverage
+      FiniteModel.FiniteAtom.componentB (Or.inr rfl) with ⟨i, hi⟩
+  refine ⟨i, ?_⟩
+  rcases hi with hi | hi
+  · exact False.elim (by simpa using hi.2)
+  · exact hi.1
+
+private theorem finiteLinearNoMarkerReads_product_left
+    {W V : Site.ArchCtx FiniteModel.object}
+    (hW : FiniteLinearNoMarkerReads W) :
+    FiniteLinearNoMarkerReads (Site.productContext W V) := by
+  constructor
+  · rintro ⟨w, v⟩ h
+    exact hW.1 w h.1
+  · rintro ⟨w, v⟩ h
+    exact hW.2 w h.1
+
+private theorem finiteLinearProductWithLeft_not_noMarkerReads
+    {W : Site.ArchCtx FiniteModel.object} {support : W.Support}
+    (hread : W.minimal.supportReads support
+      FiniteModel.FiniteAtom.componentA) :
+    ¬ FiniteLinearNoMarkerReads
+      (Site.productContext W (finiteLinearContext .left)) := by
+  intro h
+  exact h.1 (support, PUnit.unit)
+    ⟨hread, by simp [finiteLinearContext, finiteLinearSupportReads]⟩
+
+private theorem finiteLinearProductWithRight_not_noMarkerReads
+    {W : Site.ArchCtx FiniteModel.object} {support : W.Support}
+    (hread : W.minimal.supportReads support
+      FiniteModel.FiniteAtom.componentB) :
+    ¬ FiniteLinearNoMarkerReads
+      (Site.productContext W (finiteLinearContext .right)) := by
+  intro h
+  exact h.2 (support, PUnit.unit)
+    ⟨hread, by simp [finiteLinearContext, finiteLinearSupportReads]⟩
+
+private def finiteLinearProductObject
+    (X Y : finiteLinearSite.category) : finiteLinearSite.category :=
+  Site.ContextCategoryObject.of finiteLinearContextPreorder
+    (Site.productContext X.ctx Y.ctx)
+
+private noncomputable def finiteLinearProductLeft
+    (X Y : finiteLinearSite.category) : finiteLinearProductObject X Y ⟶ X :=
+  homOfLE (Site.productContextFiniteMeet.meet_le_left X.ctx Y.ctx)
+
+private noncomputable def finiteLinearProductRight
+    (X Y : finiteLinearSite.category) : finiteLinearProductObject X Y ⟶ Y :=
+  homOfLE (Site.productContextFiniteMeet.meet_le_right X.ctx Y.ctx)
+
+private theorem finiteLinearCoefficientPresheaf_isSheaf_ofTypes :
+    Presieve.IsSheaf finiteLinearSite.topology
+      (finiteLinearCoefficientPresheaf ⋙
+        forget₂ (ModuleCat.{1} Int) AddCommGrpCat.{1} ⋙
+        forget AddCommGrpCat.{1}) := by
+  rw [Site.AATSite.topology, Site.AATGrothendieckTopology]
+  rw [Precoverage.isSheaf_toGrothendieck_iff]
+  intro X Y f R hR
+  rcases hR with ⟨F, rfl⟩
+  intro family hfamily
+  classical
+  have hmarker : ∃ i : F.Index,
+      finiteLinearCoefficientSubmodule
+          (Site.productContext Y.ctx (F.patch i)) =
+        finiteLinearCoefficientSubmodule Y.ctx := by
+    by_cases hY : FiniteLinearNoMarkerReads Y.ctx
+    · rcases finiteLinear_admissibleCover_has_left F with ⟨i, hi⟩
+      refine ⟨i, ?_⟩
+      have hQ := finiteLinearNoMarkerReads_product_left
+        (V := F.patch i) hY
+      simp [finiteLinearCoefficientSubmodule, hY, hQ]
+    · simp only [FiniteLinearNoMarkerReads, not_and_or, not_forall,
+        not_not] at hY
+      rcases hY with hA | hB
+      · rcases hA with ⟨support, hsupport⟩
+        rcases finiteLinear_admissibleCover_has_left F with ⟨i, hi⟩
+        refine ⟨i, ?_⟩
+        have hQ : ¬ FiniteLinearNoMarkerReads
+            (Site.productContext Y.ctx (F.patch i)) := by
+          rw [hi]
+          exact finiteLinearProductWithLeft_not_noMarkerReads hsupport
+        have hYnot : ¬ FiniteLinearNoMarkerReads Y.ctx := fun h =>
+          h.1 support hsupport
+        simp [finiteLinearCoefficientSubmodule, hYnot, hQ]
+      · rcases hB with ⟨support, hsupport⟩
+        rcases finiteLinear_admissibleCover_has_right F with ⟨i, hi⟩
+        refine ⟨i, ?_⟩
+        have hQ : ¬ FiniteLinearNoMarkerReads
+            (Site.productContext Y.ctx (F.patch i)) := by
+          rw [hi]
+          exact finiteLinearProductWithRight_not_noMarkerReads hsupport
+        have hYnot : ¬ FiniteLinearNoMarkerReads Y.ctx := fun h =>
+          h.2 support hsupport
+        simp [finiteLinearCoefficientSubmodule, hYnot, hQ]
+  rcases hmarker with ⟨i, hsubmodule⟩
+  let patchObject := Site.ContextCategoryObject.of finiteLinearContextPreorder
+    (F.patch i)
+  let Q := finiteLinearProductObject Y patchObject
+  let q : Q ⟶ Y := finiteLinearProductLeft Y patchObject
+  let qpatch : Q ⟶ patchObject := finiteLinearProductRight Y patchObject
+  have hq : (Sieve.generate F.presieve).pullback f q := by
+    change Sieve.generate F.presieve (q ≫ f)
+    have hinclusion : Sieve.generate F.presieve
+        (homOfLE (F.inclusion i)) :=
+      Sieve.le_generate F.presieve _ (Presieve.ofArrows.mk i)
+    have hcomp := (Sieve.generate F.presieve).downward_closed
+      hinclusion qpatch
+    convert hcomp using 1
+  let reference := family q hq
+  have reference_mem_Y : reference.1 ∈
+      finiteLinearCoefficientSubmodule Y.ctx := by
+    rw [← hsubmodule]
+    exact reference.2
+  let global : finiteLinearCoefficientSubmodule Y.ctx :=
+    ⟨reference.1, reference_mem_Y⟩
+  have hconstant : ∀ {Z : finiteLinearSite.category}
+      (g : Z ⟶ Y) (hg : (Sieve.generate F.presieve).pullback f g),
+      (family g hg).1 = reference.1 := by
+    intro Z g hg
+    let P := finiteLinearProductObject Z Q
+    let pz : P ⟶ Z := finiteLinearProductLeft Z Q
+    let pq : P ⟶ Q := finiteLinearProductRight Z Q
+    have hcompat := hfamily pz pq hg hq (Subsingleton.elim _ _)
+    exact congrArg Subtype.val hcompat
+  refine ⟨global, ?_, ?_⟩
+  · intro Z g hg
+    apply Subtype.ext
+    change global.1 = (family g hg).1
+    exact (hconstant g hg).symm
+  · intro other hother
+    apply Subtype.ext
+    have hqOther := hother q hq
+    have hval := congrArg Subtype.val hqOther
+    change other.1 = global.1
+    exact hval
+
+private theorem finiteLinearCoefficientPresheaf_isSheaf :
+    Presheaf.IsSheaf finiteLinearSite.topology
+      (finiteLinearCoefficientPresheaf ⋙
+        forget₂ (ModuleCat.{1} Int) AddCommGrpCat.{1}) := by
+  apply Presheaf.isSheaf_of_isSheaf_comp
+    (P := finiteLinearCoefficientPresheaf ⋙
+      forget₂ (ModuleCat.{1} Int) AddCommGrpCat.{1})
+    (s := forget AddCommGrpCat.{1})
+  rw [isSheaf_iff_isSheaf_of_type]
+  exact finiteLinearCoefficientPresheaf_isSheaf_ofTypes
+
+/-- `Int`-linear coefficient sheaf on the independent strict-diamond site. -/
+noncomputable def finiteLinearCoefficientSheaf :
+    Cohomology.LinearCoefficientSheaf Int finiteLinearSite where
+  modulePresheaf := finiteLinearCoefficientPresheaf
+  isSheaf := finiteLinearCoefficientPresheaf_isSheaf
+
+/-- Finiteness of the selected two-branch cover, transported from `Bool`. -/
+noncomputable instance finiteLinearCoverIndexFintype :
+    Fintype finiteLinearCover.Index :=
+  Fintype.ofEquiv Bool finiteLinearCoverIndexEquiv.symm
+
+/-- Canonical polynomial coefficient sheaf obtained from the integer model. -/
+noncomputable def finiteBaseChangedLinearCoefficientSheaf :
+    Cohomology.LinearCoefficientSheaf (Polynomial Int) finiteLinearSite :=
+  finiteLinearCoefficientSheaf.baseChange intPolynomialFlatChange
+
+private noncomputable def finiteLinearRawPolynomialPresheaf :
+    finiteLinearSite.categoryᵒᵖ ⥤ ModuleCat.{1} (Polynomial Int) :=
+  finiteLinearCoefficientSheaf.rawBaseChangePresheaf intPolynomialFlatChange
+
+private theorem finiteLinearRawPolynomialPresheaf_map_injective
+    {X Y : finiteLinearSite.category} (g : X ⟶ Y) :
+    Function.Injective (finiteLinearRawPolynomialPresheaf.map g.op) := by
+  letI : Algebra Int (Polynomial Int) := intPolynomialFlatChange.hom.toAlgebra
+  letI : Module Int (Polynomial Int) := Algebra.toModule
+  haveI : Module.Flat Int (Polynomial Int) := by
+    exact intPolynomialFlatChange.flat
+  have hinjective : Function.Injective
+      (finiteLinearCoefficientPresheaf.map g.op).hom := by
+    change Function.Injective (Submodule.inclusion
+      (finiteLinearCoefficientSubmodule_mono (leOfHom g)))
+    intro x y hxy
+    apply Subtype.ext
+    exact congrArg
+      (fun z : finiteLinearCoefficientSubmodule X.ctx => (z : ULift Int)) hxy
+  change Function.Injective
+    ((ModuleCat.extendScalars intPolynomialFlatChange.hom).map
+      (finiteLinearCoefficientPresheaf.map g.op)).hom
+  simpa only [ModuleCat.extendScalars, ModuleCat.ExtendScalars.map',
+    LinearMap.baseChange_eq_ltensor] using
+    (Module.Flat.lTensor_preserves_injective_linearMap
+      (finiteLinearCoefficientPresheaf.map g.op).hom hinjective)
+
+private theorem finiteLinearRawPolynomialPresheaf_isSheaf_ofTypes :
+    Presieve.IsSheaf finiteLinearSite.topology
+      (finiteLinearRawPolynomialPresheaf ⋙
+        forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1} ⋙
+        forget AddCommGrpCat.{1}) := by
+  rw [Site.AATSite.topology, Site.AATGrothendieckTopology]
+  rw [Precoverage.isSheaf_toGrothendieck_iff]
+  intro X Y f R hR
+  rcases hR with ⟨F, rfl⟩
+  intro family hfamily
+  classical
+  have hmarker : ∃ i : F.Index,
+      finiteLinearCoefficientSubmodule
+          (Site.productContext Y.ctx (F.patch i)) =
+        finiteLinearCoefficientSubmodule Y.ctx := by
+    by_cases hY : FiniteLinearNoMarkerReads Y.ctx
+    · rcases finiteLinear_admissibleCover_has_left F with ⟨i, hi⟩
+      refine ⟨i, ?_⟩
+      have hQ := finiteLinearNoMarkerReads_product_left
+        (V := F.patch i) hY
+      simp [finiteLinearCoefficientSubmodule, hY, hQ]
+    · simp only [FiniteLinearNoMarkerReads, not_and_or, not_forall,
+        not_not] at hY
+      rcases hY with hA | hB
+      · rcases hA with ⟨support, hsupport⟩
+        rcases finiteLinear_admissibleCover_has_left F with ⟨i, hi⟩
+        refine ⟨i, ?_⟩
+        have hQ : ¬ FiniteLinearNoMarkerReads
+            (Site.productContext Y.ctx (F.patch i)) := by
+          rw [hi]
+          exact finiteLinearProductWithLeft_not_noMarkerReads hsupport
+        have hYnot : ¬ FiniteLinearNoMarkerReads Y.ctx := fun h =>
+          h.1 support hsupport
+        simp [finiteLinearCoefficientSubmodule, hYnot, hQ]
+      · rcases hB with ⟨support, hsupport⟩
+        rcases finiteLinear_admissibleCover_has_right F with ⟨i, hi⟩
+        refine ⟨i, ?_⟩
+        have hQ : ¬ FiniteLinearNoMarkerReads
+            (Site.productContext Y.ctx (F.patch i)) := by
+          rw [hi]
+          exact finiteLinearProductWithRight_not_noMarkerReads hsupport
+        have hYnot : ¬ FiniteLinearNoMarkerReads Y.ctx := fun h =>
+          h.2 support hsupport
+        simp [finiteLinearCoefficientSubmodule, hYnot, hQ]
+  rcases hmarker with ⟨i, hsubmodule⟩
+  let patchObject := Site.ContextCategoryObject.of finiteLinearContextPreorder
+    (F.patch i)
+  let Q := finiteLinearProductObject Y patchObject
+  let q : Q ⟶ Y := finiteLinearProductLeft Y patchObject
+  let qpatch : Q ⟶ patchObject := finiteLinearProductRight Y patchObject
+  have hq : (Sieve.generate F.presieve).pullback f q := by
+    change Sieve.generate F.presieve (q ≫ f)
+    have hinclusion : Sieve.generate F.presieve
+        (homOfLE (F.inclusion i)) :=
+      Sieve.le_generate F.presieve _ (Presieve.ofArrows.mk i)
+    have hcomp := (Sieve.generate F.presieve).downward_closed
+      hinclusion qpatch
+    convert hcomp using 1
+  haveI : IsIso (finiteLinearCoefficientPresheaf.map q.op) := by
+    rw [ConcreteCategory.isIso_iff_bijective]
+    constructor
+    · change Function.Injective (Submodule.inclusion
+        (finiteLinearCoefficientSubmodule_mono (leOfHom q)))
+      intro x y hxy
+      apply Subtype.ext
+      exact congrArg
+        (fun z : finiteLinearCoefficientSubmodule Q.ctx => (z : ULift Int)) hxy
+    · intro y
+      refine ⟨⟨y.1, ?_⟩, ?_⟩
+      · have hy := y.2
+        change y.1 ∈ finiteLinearCoefficientSubmodule
+          (Site.productContext Y.ctx (F.patch i)) at hy
+        rw [hsubmodule] at hy
+        exact hy
+      · apply Subtype.ext
+        rfl
+  haveI : IsIso (finiteLinearRawPolynomialPresheaf.map q.op) := by
+    change IsIso ((ModuleCat.extendScalars intPolynomialFlatChange.hom).map
+      (finiteLinearCoefficientPresheaf.map q.op))
+    infer_instance
+  let reference := family q hq
+  let global := inv (finiteLinearRawPolynomialPresheaf.map q.op) reference
+  refine ⟨global, ?_, ?_⟩
+  · intro Z g hg
+    let P := finiteLinearProductObject Z Q
+    let pz : P ⟶ Z := finiteLinearProductLeft Z Q
+    let pq : P ⟶ Q := finiteLinearProductRight Z Q
+    apply finiteLinearRawPolynomialPresheaf_map_injective pz
+    have hcompat := hfamily pz pq hg hq (Subsingleton.elim _ _)
+    change
+      (finiteLinearRawPolynomialPresheaf ⋙
+        forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1} ⋙
+        forget AddCommGrpCat.{1}).map pz.op
+          ((finiteLinearRawPolynomialPresheaf ⋙
+            forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1} ⋙
+            forget AddCommGrpCat.{1}).map g.op global) = _
+    calc
+      _ = (finiteLinearRawPolynomialPresheaf ⋙
+            forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1} ⋙
+            forget AddCommGrpCat.{1}).map pq.op
+          ((finiteLinearRawPolynomialPresheaf ⋙
+            forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1} ⋙
+            forget AddCommGrpCat.{1}).map q.op global) := by
+              rw [← FunctorToTypes.map_comp_apply,
+                ← FunctorToTypes.map_comp_apply]
+              congr 2
+      _ = (finiteLinearRawPolynomialPresheaf ⋙
+            forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1} ⋙
+            forget AddCommGrpCat.{1}).map pq.op reference := by
+            dsimp [global]
+            rw [IsIso.inv_hom_id_apply]
+      _ = (finiteLinearRawPolynomialPresheaf ⋙
+            forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1} ⋙
+            forget AddCommGrpCat.{1}).map pz.op (family g hg) :=
+            hcompat.symm
+  · intro other hother
+    apply finiteLinearRawPolynomialPresheaf_map_injective q
+    change
+      (finiteLinearRawPolynomialPresheaf ⋙
+        forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1} ⋙
+        forget AddCommGrpCat.{1}).map q.op other =
+      (finiteLinearRawPolynomialPresheaf ⋙
+        forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1} ⋙
+        forget AddCommGrpCat.{1}).map q.op global
+    dsimp [global]
+    rw [IsIso.inv_hom_id_apply]
+    exact hother q hq
+
+private theorem finiteLinearRawPolynomialPresheaf_isSheaf :
+    Presheaf.IsSheaf finiteLinearSite.topology
+      (finiteLinearRawPolynomialPresheaf ⋙
+        forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1}) := by
+  apply Presheaf.isSheaf_of_isSheaf_comp
+    (P := finiteLinearRawPolynomialPresheaf ⋙
+      forget₂ (ModuleCat.{1} (Polynomial Int)) AddCommGrpCat.{1})
+    (s := forget AddCommGrpCat.{1})
+  rw [isSheaf_iff_isSheaf_of_type]
+  exact finiteLinearRawPolynomialPresheaf_isSheaf_ofTypes
+
+/-- Canonical coefficient change commutes with every degree of the finite Čech complex. -/
+theorem finiteCechCoefficientCompatible :
+    Cohomology.LinearCoefficientSheaf.CechCoefficientBaseChangeCompatible
+      finiteLinearCoefficientSheaf intPolynomialFlatChange finiteLinearCover :=
+  Cohomology.LinearCoefficientSheaf.cechCoefficientBaseChangeCompatible_of_finite_raw_isSheaf
+      finiteLinearCoefficientSheaf intPolynomialFlatChange finiteLinearCover
+      finiteLinearRawPolynomialPresheaf_isSheaf
+
+private theorem finiteLinear_topology_contains_of_hom_to_left
+    {X : finiteLinearSite.category}
+    (hX : X ⟶ finiteLinearLeftObject) :
+    ∀ {Z : finiteLinearSite.category} (f : X ⟶ Z)
+      {R : Sieve Z}, R ∈ finiteLinearSite.topology Z → R f := by
+  intro Z f R hR
+  change (Site.admissiblePrecoverage finiteLinearCoverageRequirements
+    finiteLinearOverlap).Saturate Z R at hR
+  induction hR with
+  | of Z P hP =>
+      rcases hP with ⟨F, rfl⟩
+      rcases finiteLinear_admissibleCover_has_left F with ⟨i, hi⟩
+      let g : X ⟶ Site.ContextCategoryObject.of finiteLinearContextPreorder
+          (F.patch i) :=
+        hX ≫ eqToHom (congrArg
+          (Site.ContextCategoryObject.of finiteLinearContextPreorder) hi).symm
+      have hinclusion : (Sieve.generate F.presieve)
+          (homOfLE (F.inclusion i)) :=
+        Sieve.le_generate F.presieve _ (Presieve.ofArrows.mk i)
+      have hcomp := (Sieve.generate F.presieve).downward_closed
+        hinclusion g
+      convert hcomp using 1
+  | top Z => simp
+  | pullback Z S hS Y g ih =>
+      change S (f ≫ g)
+      exact ih (f ≫ g)
+  | transitive Z S R hS hlocal ihS ihlocal =>
+      have hSf : S f := ihS f
+      have hRf : (R.pullback f) (𝟙 X) := ihlocal hSf (𝟙 X)
+      simpa using hRf
+
+private theorem finiteLinear_topology_contains_of_hom_to_right
+    {X : finiteLinearSite.category}
+    (hX : X ⟶ finiteLinearRightObject) :
+    ∀ {Z : finiteLinearSite.category} (f : X ⟶ Z)
+      {R : Sieve Z}, R ∈ finiteLinearSite.topology Z → R f := by
+  intro Z f R hR
+  change (Site.admissiblePrecoverage finiteLinearCoverageRequirements
+    finiteLinearOverlap).Saturate Z R at hR
+  induction hR with
+  | of Z P hP =>
+      rcases hP with ⟨F, rfl⟩
+      rcases finiteLinear_admissibleCover_has_right F with ⟨i, hi⟩
+      let g : X ⟶ Site.ContextCategoryObject.of finiteLinearContextPreorder
+          (F.patch i) :=
+        hX ≫ eqToHom (congrArg
+          (Site.ContextCategoryObject.of finiteLinearContextPreorder) hi).symm
+      have hinclusion : (Sieve.generate F.presieve)
+          (homOfLE (F.inclusion i)) :=
+        Sieve.le_generate F.presieve _ (Presieve.ofArrows.mk i)
+      have hcomp := (Sieve.generate F.presieve).downward_closed
+        hinclusion g
+      convert hcomp using 1
+  | top Z => simp
+  | pullback Z S hS Y g ih =>
+      change S (f ≫ g)
+      exact ih (f ≫ g)
+  | transitive Z S R hS hlocal ihS ihlocal =>
+      have hSf : S f := ihS f
+      have hRf : (R.pullback f) (𝟙 X) := ihlocal hSf (𝟙 X)
+      simpa using hRf
+
+private theorem finiteLinear_topology_eq_top_of_hom_to_left
+    {X : finiteLinearSite.category}
+    (hX : X ⟶ finiteLinearLeftObject)
+    {R : Sieve X} (hR : R ∈ finiteLinearSite.topology X) :
+    R = ⊤ := by
+  apply top_unique
+  intro Y f hf
+  exact finiteLinear_topology_contains_of_hom_to_left (f ≫ hX) f hR
+
+private theorem finiteLinear_topology_eq_top_of_hom_to_right
+    {X : finiteLinearSite.category}
+    (hX : X ⟶ finiteLinearRightObject)
+    {R : Sieve X} (hR : R ∈ finiteLinearSite.topology X) :
+    R = ⊤ := by
+  apply top_unique
+  intro Y f hf
+  exact finiteLinear_topology_contains_of_hom_to_right (f ≫ hX) f hR
+
+private noncomputable def finiteLinearSheafifiedFreeYoneda
+    (X : finiteLinearSite.category) :
+    Sheaf finiteLinearSite.topology AddCommGrpCat.{1} :=
+  (presheafToSheaf finiteLinearSite.topology AddCommGrpCat.{1}).obj
+    (yoneda.obj X ⋙ AddCommGrpCat.free)
+
+private theorem finiteLinearSheafifiedFreeYoneda_projective_of_hom_to_left
+    (X : finiteLinearSite.category) (hX : X ⟶ finiteLinearLeftObject) :
+    Projective (finiteLinearSheafifiedFreeYoneda X) := by
+  constructor
+  intro E G f e he
+  letI : Epi e := he
+  have hloc : Presheaf.IsLocallySurjective finiteLinearSite.topology e.val :=
+    (Sheaf.isLocallySurjective_iff_epi' AddCommGrpCat.{1} e).2 inferInstance
+  let x := Cohomology.sheafifiedFreeYonedaHomAddEquiv X G f
+  have hcover := Presheaf.imageSieve_mem finiteLinearSite.topology e.val x
+  have htop := finiteLinear_topology_eq_top_of_hom_to_left hX hcover
+  have hid : Presheaf.imageSieve e.val x (𝟙 X) := by
+    rw [htop]
+    trivial
+  rcases hid with ⟨t, ht⟩
+  let lift : finiteLinearSheafifiedFreeYoneda X ⟶ E :=
+    (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).symm t
+  refine ⟨lift, ?_⟩
+  apply (Cohomology.sheafifiedFreeYonedaHomAddEquiv X G).injective
+  rw [Cohomology.sheafifiedFreeYonedaHomAddEquiv_comp]
+  change e.val.app (op X)
+      (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift) = x
+  rw [show Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift = t by
+    exact (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).apply_symm_apply t]
+  simpa using ht
+
+private theorem finiteLinearSheafifiedFreeYoneda_projective_of_hom_to_right
+    (X : finiteLinearSite.category) (hX : X ⟶ finiteLinearRightObject) :
+    Projective (finiteLinearSheafifiedFreeYoneda X) := by
+  constructor
+  intro E G f e he
+  letI : Epi e := he
+  have hloc : Presheaf.IsLocallySurjective finiteLinearSite.topology e.val :=
+    (Sheaf.isLocallySurjective_iff_epi' AddCommGrpCat.{1} e).2 inferInstance
+  let x := Cohomology.sheafifiedFreeYonedaHomAddEquiv X G f
+  have hcover := Presheaf.imageSieve_mem finiteLinearSite.topology e.val x
+  have htop := finiteLinear_topology_eq_top_of_hom_to_right hX hcover
+  have hid : Presheaf.imageSieve e.val x (𝟙 X) := by
+    rw [htop]
+    trivial
+  rcases hid with ⟨t, ht⟩
+  let lift : finiteLinearSheafifiedFreeYoneda X ⟶ E :=
+    (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).symm t
+  refine ⟨lift, ?_⟩
+  apply (Cohomology.sheafifiedFreeYonedaHomAddEquiv X G).injective
+  rw [Cohomology.sheafifiedFreeYonedaHomAddEquiv_comp]
+  change e.val.app (op X)
+      (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift) = x
+  rw [show Cohomology.sheafifiedFreeYonedaHomAddEquiv X E lift = t by
+    exact (Cohomology.sheafifiedFreeYonedaHomAddEquiv X E).apply_symm_apply t]
+  simpa using ht
+
+private theorem finiteLinearCover_isLeray_for
+    {R : Type} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R finiteLinearSite) :
+    Cohomology.LinearCoefficientSheaf.IsLinearLerayFor finiteLinearCover Ob := by
+  intro q hq p σ
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : q ≠ 0)
+  let X := (Cohomology.canonicalCoverRelative finiteLinearCover).overlap p σ
+  have hprojection := Cohomology.canonicalTupleOverlapProjection
+    finiteLinearCover σ (0 : Fin (p + 1))
+  cases hindex : σ 0 with
+  | left =>
+      have hp : X ⟶ finiteLinearLeftObject := by
+        simpa [X, Cohomology.canonicalCoverRelative,
+          finiteLinearCoverPatch, hindex] using hprojection
+      letI : Projective (finiteLinearSheafifiedFreeYoneda X) :=
+        finiteLinearSheafifiedFreeYoneda_projective_of_hom_to_left X hp
+      exact CategoryTheory.Abelian.Ext.subsingleton_of_projective
+        (finiteLinearSheafifiedFreeYoneda X) Ob.toAddCommGrpSheaf n
+  | right =>
+      have hp : X ⟶ finiteLinearRightObject := by
+        simpa [X, Cohomology.canonicalCoverRelative,
+          finiteLinearCoverPatch, hindex] using hprojection
+      letI : Projective (finiteLinearSheafifiedFreeYoneda X) :=
+        finiteLinearSheafifiedFreeYoneda_projective_of_hom_to_right X hp
+      exact CategoryTheory.Abelian.Ext.subsingleton_of_projective
+        (finiteLinearSheafifiedFreeYoneda X) Ob.toAddCommGrpSheaf n
+
+/-- The selected finite cover is Leray for the source integer coefficient. -/
+theorem finiteLinearLerayCover :
+    Cohomology.LinearCoefficientSheaf.IsLinearLerayFor
+      finiteLinearCover finiteLinearCoefficientSheaf :=
+  finiteLinearCover_isLeray_for finiteLinearCoefficientSheaf
+
+/-- The same selected finite cover is Leray for the canonical target coefficient. -/
+theorem finiteTargetLinearLerayCover :
+    Cohomology.LinearCoefficientSheaf.IsLinearLerayFor finiteLinearCover
+      finiteBaseChangedLinearCoefficientSheaf :=
+  finiteLinearCover_isLeray_for finiteBaseChangedLinearCoefficientSheaf
+
+/-- Canonical linear Čech complex of the finite integer model. -/
+noncomputable def finiteLinearCech :
+    Cohomology.LinearCoverRelativeCechComplex Int
+      finiteLinearCover finiteLinearCoefficientSheaf :=
+  finiteLinearCoefficientSheaf.canonicalLinearCech finiteLinearCover
+
+/-- Degree selected by the finite nonzero class. -/
+def finiteDegree : Nat := 1
+
+private def finiteLinearPotential : FiniteLinearCoverIndex → Int
+  | .left => 0
+  | .right => 1
+
+private def finiteLinearOneValue
+    (i j : FiniteLinearCoverIndex) : ULift Int :=
+  ULift.up (finiteLinearPotential j - finiteLinearPotential i)
+
+private theorem finiteLinearNoMarkerReads_left_right :
+    FiniteLinearNoMarkerReads
+      (Site.productContext (finiteLinearContext .left)
+        (finiteLinearContext .right)) := by
+  constructor <;> rintro ⟨leftSupport, rightSupport⟩ hread
+  · simpa [finiteLinearContext, finiteLinearSupportReads] using hread.2
+  · simpa [finiteLinearContext, finiteLinearSupportReads] using hread.1
+
+private theorem finiteLinearNoMarkerReads_right_left :
+    FiniteLinearNoMarkerReads
+      (Site.productContext (finiteLinearContext .right)
+        (finiteLinearContext .left)) := by
+  constructor <;> rintro ⟨rightSupport, leftSupport⟩ hread
+  · simpa [finiteLinearContext, finiteLinearSupportReads] using hread.1
+  · simpa [finiteLinearContext, finiteLinearSupportReads] using hread.2
+
+private noncomputable def finiteLinearCechOneCochain :
+    finiteLinearCech.complex.X 1 := fun σ => by
+  refine ⟨finiteLinearOneValue (σ 0) (σ 1), ?_⟩
+  cases h0 : σ 0 <;> cases h1 : σ 1
+  · rw [show finiteLinearOneValue .left .left = 0 by rfl]
+    exact Submodule.zero_mem _
+  · have hnomarker : FiniteLinearNoMarkerReads
+        ((Cohomology.canonicalCoverRelative finiteLinearCover).overlap 1 σ).ctx := by
+      simpa [Cohomology.canonicalCoverRelative,
+        Cohomology.canonicalTupleOverlap, finiteLinearCover,
+        finiteLinearCoverPatch, h0, h1] using
+        finiteLinearNoMarkerReads_left_right
+    change FiniteLinearNoMarkerReads
+      (finiteLinearSite.overlap.overlap finiteLinearBase.ctx
+        (Site.ContextCategoryObject.of finiteLinearSite.contextPreorder
+          (finiteLinearCover.patch (σ 0))).ctx
+        (finiteLinearCover.patch (σ 1))) at hnomarker
+    simp [finiteLinearOneValue, finiteLinearPotential,
+      finiteLinearCoefficientSubmodule, hnomarker]
+  · have hnomarker : FiniteLinearNoMarkerReads
+        ((Cohomology.canonicalCoverRelative finiteLinearCover).overlap 1 σ).ctx := by
+      simpa [Cohomology.canonicalCoverRelative,
+        Cohomology.canonicalTupleOverlap, finiteLinearCover,
+        finiteLinearCoverPatch, h0, h1] using
+        finiteLinearNoMarkerReads_right_left
+    change FiniteLinearNoMarkerReads
+      (finiteLinearSite.overlap.overlap finiteLinearBase.ctx
+        (Site.ContextCategoryObject.of finiteLinearSite.contextPreorder
+          (finiteLinearCover.patch (σ 0))).ctx
+        (finiteLinearCover.patch (σ 1))) at hnomarker
+    simp [finiteLinearOneValue, finiteLinearPotential,
+      finiteLinearCoefficientSubmodule, hnomarker]
+  · rw [show finiteLinearOneValue .right .right = 0 by rfl]
+    exact Submodule.zero_mem _
+
+private theorem finiteLinearCoefficientMap_val
+    {X Y : finiteLinearSite.category} (f : X ⟶ Y)
+    (x : finiteLinearCoefficientSheaf.modulePresheaf.obj (op Y)) :
+    ((finiteLinearCoefficientSheaf.modulePresheaf.map f.op) x).1 = x.1 :=
+  rfl
+
+private theorem finiteLinearCechOneCochain_isCocycle :
+    finiteLinearCech.complex.d 1 2 finiteLinearCechOneCochain = 0 := by
+  change
+    (finiteLinearCoefficientSheaf.canonicalLinearCech
+      finiteLinearCover).complex.d 1 2 finiteLinearCechOneCochain = 0
+  funext σ
+  rw [Cohomology.LinearCoefficientSheaf.canonicalLinearCech_d_apply]
+  classical
+  rw [Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.sum_univ_succ]
+  simp only [Fintype.sum_empty, add_zero]
+  norm_num
+  apply Subtype.ext
+  change
+    ((finiteLinearCoefficientSheaf.modulePresheaf.map
+        (Cohomology.canonicalTupleOverlapMap finiteLinearCover
+          (SimplexCategory.δ (0 : Fin 3)) σ).op)
+      (finiteLinearCechOneCochain
+        (fun j => σ ((SimplexCategory.δ (0 : Fin 3)).toOrderHom j)))).1 +
+      (-((finiteLinearCoefficientSheaf.modulePresheaf.map
+          (Cohomology.canonicalTupleOverlapMap finiteLinearCover
+            (SimplexCategory.δ (1 : Fin 3)) σ).op)
+        (finiteLinearCechOneCochain
+          (fun j => σ ((SimplexCategory.δ (1 : Fin 3)).toOrderHom j)))).1 +
+        ((finiteLinearCoefficientSheaf.modulePresheaf.map
+          (Cohomology.canonicalTupleOverlapMap finiteLinearCover
+            (SimplexCategory.δ (2 : Fin 3)) σ).op)
+        (finiteLinearCechOneCochain
+          (fun j => σ ((SimplexCategory.δ (2 : Fin 3)).toOrderHom j)))).1) = 0
+  rw [finiteLinearCoefficientMap_val, finiteLinearCoefficientMap_val,
+    finiteLinearCoefficientMap_val]
+  apply ULift.down_injective
+  simp [finiteLinearCechOneCochain, finiteLinearOneValue,
+    SimplexCategory.δ, Fin.succAbove]
+
+private noncomputable def finiteLinearDegreeOneCochainHom :
+    ModuleCat.of Int (ULift Int) ⟶ finiteLinearCech.complex.X 1 :=
+  ModuleCat.ofHom
+    { toFun := fun r => r.down • finiteLinearCechOneCochain
+      map_add' := by
+        intro x y
+        simp [add_smul]
+      map_smul' := by
+        intro x y
+        simp [mul_smul] }
+
+private theorem finiteLinearDegreeOneCochainHom_comp_d :
+    finiteLinearDegreeOneCochainHom ≫ finiteLinearCech.complex.d 1 2 = 0 := by
+  apply ModuleCat.hom_ext
+  apply LinearMap.ext
+  intro r
+  change (finiteLinearCech.complex.d 1 2)
+      (r.down • finiteLinearCechOneCochain) = 0
+  rw [map_smul, finiteLinearCechOneCochain_isCocycle]
+  simp
+
+/-- Explicit degree-one cycle in the canonical finite linear Čech complex. -/
+noncomputable def finiteCocycle :
+    finiteLinearCech.complex.cycles finiteDegree :=
+  (finiteLinearCech.complex.liftCycles finiteLinearDegreeOneCochainHom 2
+    (by simp) finiteLinearDegreeOneCochainHom_comp_d).hom
+      (ULift.up 1)
+
+private theorem finiteCocycle_iCycles :
+    (finiteLinearCech.complex.iCycles 1).hom finiteCocycle =
+      finiteLinearCechOneCochain := by
+  have h := ConcreteCategory.congr_hom
+    (finiteLinearCech.complex.liftCycles_i
+      finiteLinearDegreeOneCochainHom 2 (by simp)
+      finiteLinearDegreeOneCochainHom_comp_d) (ULift.up 1)
+  rw [ConcreteCategory.comp_apply] at h
+  dsimp only [finiteCocycle]
+  convert h using 1
+  change finiteLinearCechOneCochain =
+    (1 : Int) • finiteLinearCechOneCochain
+  simp
+
+private theorem finiteLinearCoefficientSubmodule_left_eq_bot :
+    finiteLinearCoefficientSubmodule (finiteLinearContext .left) = ⊥ := by
+  have hnot : ¬ FiniteLinearNoMarkerReads (finiteLinearContext .left) := by
+    intro h
+    exact h.1 PUnit.unit (by rfl)
+  simp [finiteLinearCoefficientSubmodule, hnot]
+
+private theorem finiteLinearCoefficientSubmodule_right_eq_bot :
+    finiteLinearCoefficientSubmodule (finiteLinearContext .right) = ⊥ := by
+  have hnot : ¬ FiniteLinearNoMarkerReads (finiteLinearContext .right) := by
+    intro h
+    exact h.2 PUnit.unit (by rfl)
+  simp [finiteLinearCoefficientSubmodule, hnot]
+
+private theorem finiteLinearDegreeZeroCoefficient_eq_bot
+    (σ : (Cohomology.canonicalCoverRelative finiteLinearCover).simplex 0) :
+    finiteLinearCoefficientSubmodule
+      ((Cohomology.canonicalCoverRelative finiteLinearCover).overlap 0 σ).ctx =
+        ⊥ := by
+  cases h : σ 0
+  · simpa [Cohomology.canonicalCoverRelative,
+      Cohomology.canonicalTupleOverlap, finiteLinearCover,
+      finiteLinearCoverPatch, h] using
+      finiteLinearCoefficientSubmodule_left_eq_bot
+  · simpa [Cohomology.canonicalCoverRelative,
+      Cohomology.canonicalTupleOverlap, finiteLinearCover,
+      finiteLinearCoverPatch, h] using
+      finiteLinearCoefficientSubmodule_right_eq_bot
+
+private theorem finiteLinearCechZeroCochain_eq_zero
+    (b : finiteLinearCech.complex.X 0) : b = 0 := by
+  funext σ
+  apply Subtype.ext
+  have hb : (b σ).1 ∈ (⊥ : Submodule Int (ULift Int)) := by
+    rw [← finiteLinearDegreeZeroCoefficient_eq_bot σ]
+    exact (b σ).2
+  exact hb
+
+private theorem moduleCochainHomologyπ_eq_zero_iff
+    {R : Type} [CommRing R]
+    (K : CochainComplex (ModuleCat.{1} R) Nat)
+    (n : Nat) (z : K.cycles n) :
+    (K.homologyπ n).hom z = 0 ↔
+      ∃ y : K.X (n - 1),
+        (K.d (n - 1) n).hom y = (K.iCycles n).hom z := by
+  let Q := ShortComplex.mk (K.toCycles (n - 1) n) (K.homologyπ n)
+    (K.toCycles_comp_homologyπ (n - 1) n)
+  have hQ : Q.Exact := ShortComplex.exact_of_g_is_cokernel _
+    (K.homologyIsCokernel (n - 1) n (by cases n <;> simp))
+  have hfun : Function.Exact Q.f.hom Q.g.hom :=
+    (ShortComplex.ShortExact.moduleCat_exact_iff_function_exact Q).mp hQ
+  constructor
+  · intro hz
+    rcases (hfun z).mp hz with ⟨y, hy⟩
+    refine ⟨y, ?_⟩
+    have hi := congrArg (K.iCycles n).hom hy
+    have hcomp := ConcreteCategory.congr_hom (K.toCycles_i (n - 1) n) y
+    rw [ConcreteCategory.comp_apply] at hcomp
+    exact hcomp.symm.trans hi
+  · rintro ⟨y, hy⟩
+    apply (hfun z).mpr
+    refine ⟨y, ?_⟩
+    apply (ModuleCat.mono_iff_injective (K.iCycles n)).mp inferInstance
+    have hcomp := ConcreteCategory.congr_hom (K.toCycles_i (n - 1) n) y
+    rw [ConcreteCategory.comp_apply] at hcomp
+    exact hcomp.trans hy
+
+private def finiteLinearMixedOneSimplex :
+    (Cohomology.canonicalCoverRelative finiteLinearCover).simplex 1 :=
+  fun i => if i = 0 then .left else .right
+
+private theorem finiteLinearCechOneCochain_mixed_val :
+    (finiteLinearCechOneCochain finiteLinearMixedOneSimplex).1 = ULift.up 1 := by
+  rfl
+
+private theorem finiteLinearCechOneCochain_ne_zero :
+    finiteLinearCechOneCochain ≠ 0 := by
+  intro h
+  have hv := congrArg
+    (fun c => (c finiteLinearMixedOneSimplex).1.down) h
+  change (1 : Int) = 0 at hv
+  norm_num at hv
+
+private theorem finiteLinearCechOneClass_ne_zero :
+    (finiteLinearCech.complex.homologyπ 1).hom finiteCocycle ≠ 0 := by
+  intro hzero
+  rcases (moduleCochainHomologyπ_eq_zero_iff
+    finiteLinearCech.complex 1 finiteCocycle).mp hzero with ⟨b, hb⟩
+  rw [finiteLinearCechZeroCochain_eq_zero b, map_zero] at hb
+  have hcycle : (finiteLinearCech.complex.iCycles 1).hom finiteCocycle = 0 :=
+    hb.symm
+  rw [finiteCocycle_iCycles] at hcycle
+  exact finiteLinearCechOneCochain_ne_zero hcycle
+
+private theorem intPolynomialModuleScalarExtensionUnit_injective
+    (M : ModuleCat.{v} Int) :
+    Function.Injective
+      (Derived.Intersection.moduleScalarExtensionUnit.{0, v}
+        intPolynomialFlatChange M) := by
+  intro x y hxy
+  rw [Derived.Intersection.moduleScalarExtensionUnit_apply,
+    Derived.Intersection.moduleScalarExtensionUnit_apply] at hxy
+  letI : Module Int (Polynomial Int) :=
+    Module.compHom (Polynomial Int) intPolynomialFlatChange.hom
+  let coeffZero : Polynomial Int →ₗ[Int] Int :=
+    { toFun := fun p : Polynomial Int => Polynomial.coeff p 0
+      map_add' := by simp
+      map_smul' := by
+        intro r p
+        change (Polynomial.C r * p).coeff 0 = r * p.coeff 0
+        simp }
+  let contract := (LinearMap.lsmul Int M).comp coeffZero
+  have hretract := congrArg (TensorProduct.lift contract) hxy
+  simpa [contract, coeffZero] using hretract
+
+/-- Actual terminal degree-one source class obtained from Leray comparison. -/
+noncomputable def finiteActualSourceClass :
+    finiteLinearCoefficientSheaf.terminalLerayHModule
+      finiteLinearCover finiteLinearBaseIsTerminal finiteLinearLerayCover
+        finiteDegree :=
+  finiteLinearCoefficientSheaf.cechToSheafHLinearIso
+    finiteLinearCover finiteLinearBaseIsTerminal finiteLinearLerayCover
+      finiteDegree
+    (finiteLinearCech.complex.homologyπ finiteDegree finiteCocycle)
+
+/-- Canonical actual-`Sheaf.H` map for the finite coefficient firing. -/
+noncomputable def finiteSheafHBaseChangeMap :
+    Derived.Intersection.moduleScalarExtension.{0, 2}
+        intPolynomialFlatChange
+        (finiteLinearCoefficientSheaf.terminalLerayHModule
+          finiteLinearCover finiteLinearBaseIsTerminal
+            finiteLinearLerayCover finiteDegree) ⟶
+      finiteBaseChangedLinearCoefficientSheaf.terminalLerayHModule
+        finiteLinearCover finiteLinearBaseIsTerminal
+          finiteTargetLinearLerayCover finiteDegree :=
+  Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeMap
+    finiteLinearCoefficientSheaf intPolynomialFlatChange finiteLinearCover
+    finiteLinearBaseIsTerminal finiteLinearLerayCover
+    finiteTargetLinearLerayCover finiteDegree
+
+/-- The finite actual-`Sheaf.H` base-change map is the hom of the canonical iso. -/
+noncomputable def finiteSheafHBaseChangeIso :
+    Derived.Intersection.moduleScalarExtension.{0, 2}
+        intPolynomialFlatChange
+        (finiteLinearCoefficientSheaf.terminalLerayHModule
+          finiteLinearCover finiteLinearBaseIsTerminal
+            finiteLinearLerayCover finiteDegree) ≅
+      finiteBaseChangedLinearCoefficientSheaf.terminalLerayHModule
+        finiteLinearCover finiteLinearBaseIsTerminal
+          finiteTargetLinearLerayCover finiteDegree :=
+  Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeIso
+    finiteLinearCoefficientSheaf intPolynomialFlatChange finiteLinearCover
+    finiteLinearBaseIsTerminal finiteCechCoefficientCompatible
+    finiteLinearLerayCover finiteTargetLinearLerayCover finiteDegree
+
+/-- Identification of the canonical actual-`Sheaf.H` map with the iso hom. -/
+theorem finiteSheafHBaseChangeIso_hom :
+    finiteSheafHBaseChangeIso.hom = finiteSheafHBaseChangeMap :=
+  Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeIso_hom
+    finiteLinearCoefficientSheaf intPolynomialFlatChange finiteLinearCover
+    finiteLinearBaseIsTerminal finiteCechCoefficientCompatible
+    finiteLinearLerayCover finiteTargetLinearLerayCover finiteDegree
+
+/-- The explicit degree-one class remains nonzero after polynomial scalar extension. -/
+theorem finiteClass_baseChange_nonzero :
+    finiteLinearCech.classBaseChange intPolynomialFlatChange
+      finiteDegree finiteCocycle ≠ 0 := by
+  intro hzero
+  have hunit :
+      Derived.Intersection.moduleScalarExtensionUnit.{0, 1}
+          intPolynomialFlatChange (finiteLinearCech.complex.homology finiteDegree)
+          (finiteLinearCech.complex.homologyπ finiteDegree finiteCocycle) = 0 := by
+    apply (ConcreteCategory.bijective_of_isIso
+      (finiteLinearCech.hnFlatBaseChangeIso
+        intPolynomialFlatChange finiteDegree).hom).1
+    rw [finiteLinearCech.class_baseChange_naturality, hzero, map_zero]
+  have hsource :
+      finiteLinearCech.complex.homologyπ finiteDegree finiteCocycle = 0 := by
+    apply intPolynomialModuleScalarExtensionUnit_injective
+      (finiteLinearCech.complex.homology finiteDegree)
+    simpa using hunit
+  exact finiteLinearCechOneClass_ne_zero (by simpa [finiteDegree] using hsource)
+
+/-- The canonical actual terminal `Sheaf.H` class has nonzero coefficient image. -/
+theorem finiteSheafHClass_baseChange_nonzero :
+    finiteSheafHBaseChangeMap
+        (Derived.Intersection.moduleScalarExtensionUnit.{0, 2}
+          intPolynomialFlatChange
+          (finiteLinearCoefficientSheaf.terminalLerayHModule
+            finiteLinearCover finiteLinearBaseIsTerminal
+              finiteLinearLerayCover finiteDegree)
+          finiteActualSourceClass) ≠ 0 := by
+  intro hzero
+  have hunit :
+      Derived.Intersection.moduleScalarExtensionUnit.{0, 2}
+          intPolynomialFlatChange
+          (finiteLinearCoefficientSheaf.terminalLerayHModule
+            finiteLinearCover finiteLinearBaseIsTerminal
+              finiteLinearLerayCover finiteDegree)
+          finiteActualSourceClass = 0 := by
+    apply (ConcreteCategory.bijective_of_isIso
+      finiteSheafHBaseChangeIso.hom).1
+    rw [finiteSheafHBaseChangeIso_hom, hzero, map_zero]
+  have hsource : finiteActualSourceClass = 0 := by
+    apply intPolynomialModuleScalarExtensionUnit_injective
+      (finiteLinearCoefficientSheaf.terminalLerayHModule
+        finiteLinearCover finiteLinearBaseIsTerminal finiteLinearLerayCover
+          finiteDegree)
+    simpa using hunit
+  apply finiteLinearCechOneClass_ne_zero
+  apply (finiteLinearCoefficientSheaf.cechToSheafHLinearIso
+    finiteLinearCover finiteLinearBaseIsTerminal finiteLinearLerayCover
+      finiteDegree).injective
+  simpa [finiteActualSourceClass, finiteDegree] using hsource
+
+/-- The zero cycle does not provide a positive firing witness. -/
+theorem zeroClass_not_firing :
+    finiteLinearCech.classBaseChange intPolynomialFlatChange
+      finiteDegree 0 = 0 := by
+  rw [← finiteLinearCech.class_baseChange_naturality]
+  simp
 
 
 end AAT.AG.ReadingFunctorialityFinite

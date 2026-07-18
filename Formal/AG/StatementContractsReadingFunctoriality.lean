@@ -11,6 +11,7 @@ Executable exact-signature contracts for Part 4 SD0–SD9 live in this module.
 namespace AAT.AG.StatementContractsReadingFunctoriality
 
 open AAT.AG
+open CategoryTheory CategoryTheory.Limits
 
 universe u v w w'
 
@@ -3957,5 +3958,234 @@ example :
       ReadingFunctorialityFinite.coefficientRaw.baseChange
         ReadingFunctorialityFinite.intPolynomialFlatChange.hom :=
   ReadingFunctorialityFinite.brokenRelationChange_not_rawBaseChange
+
+example {A : ArchitectureObject U} {S : Site.AATSite A}
+    {base : S.category} {R : Type u} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) (c : (Ob.canonicalLinearCech 𝒰).complex.X n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex (n + 1)) :
+    ((Ob.canonicalLinearCech 𝒰).complex.d n (n + 1)).hom c σ =
+      ∑ i : Fin (n + 2), ((-1 : Int) ^ i.1) •
+        Ob.modulePresheaf.map
+          (Cohomology.canonicalTupleOverlapMap 𝒰
+            (SimplexCategory.δ i) σ).op
+          (c (fun j => σ ((SimplexCategory.δ i).toOrderHom j))) :=
+  Ob.canonicalLinearCech_d_apply 𝒰 n c σ
+
+example {A : ArchitectureObject U} {S : Site.AATSite A}
+    {base : S.category} {R R' : Type u}
+    [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    [Fintype 𝒰.Index]
+    (hraw : Presheaf.IsSheaf S.topology
+      (Ob.rawBaseChangePresheaf f ⋙
+        forget₂ (ModuleCat.{u + 1} R') AddCommGrpCat.{u + 1})) :
+    Cohomology.LinearCoefficientSheaf.CechCoefficientBaseChangeCompatible
+      Ob f 𝒰 :=
+  Cohomology.LinearCoefficientSheaf.cechCoefficientBaseChangeCompatible_of_finite_raw_isSheaf
+      Ob f 𝒰 hraw
+
+/-! ## SD9h: finite linear Čech and actual `Sheaf.H` firing -/
+
+noncomputable example : Site.AATSite FiniteModel.corePackage.object :=
+  ReadingFunctorialityFinite.finiteLinearSite
+
+noncomputable example :
+    HasSheafify ReadingFunctorialityFinite.finiteLinearSite.topology
+      AddCommGrpCat.{1} :=
+  ReadingFunctorialityFinite.finiteLinearAddCommGrpHasSheafify
+
+noncomputable example : ReadingFunctorialityFinite.finiteLinearSite.category :=
+  ReadingFunctorialityFinite.finiteLinearBase
+
+noncomputable example :
+    IsTerminal ReadingFunctorialityFinite.finiteLinearBase :=
+  ReadingFunctorialityFinite.finiteLinearBaseIsTerminal
+
+noncomputable example : ReadingFunctorialityFinite.finiteLinearSite.category :=
+  ReadingFunctorialityFinite.finiteLinearLeftObject
+
+noncomputable example : ReadingFunctorialityFinite.finiteLinearSite.category :=
+  ReadingFunctorialityFinite.finiteLinearRightObject
+
+noncomputable example : ReadingFunctorialityFinite.finiteLinearSite.category :=
+  ReadingFunctorialityFinite.finiteLinearOverlapObject
+
+example :
+    ReadingFunctorialityFinite.finiteLinearSite.overlap.overlap
+        ReadingFunctorialityFinite.finiteLinearBase.ctx
+        ReadingFunctorialityFinite.finiteLinearLeftObject.ctx
+        ReadingFunctorialityFinite.finiteLinearRightObject.ctx =
+      ReadingFunctorialityFinite.finiteLinearOverlapObject.ctx :=
+  ReadingFunctorialityFinite.finiteLinearPairOverlap_eq
+
+example :
+    ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearOverlapObject.ctx
+          ReadingFunctorialityFinite.finiteLinearLeftObject.ctx ∧
+      ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearOverlapObject.ctx
+          ReadingFunctorialityFinite.finiteLinearRightObject.ctx ∧
+      ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearLeftObject.ctx
+          ReadingFunctorialityFinite.finiteLinearBase.ctx ∧
+      ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearRightObject.ctx
+          ReadingFunctorialityFinite.finiteLinearBase.ctx ∧
+      (¬ ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearLeftObject.ctx
+          ReadingFunctorialityFinite.finiteLinearRightObject.ctx) ∧
+      (¬ ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearRightObject.ctx
+          ReadingFunctorialityFinite.finiteLinearLeftObject.ctx) ∧
+      (¬ ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearBase.ctx
+          ReadingFunctorialityFinite.finiteLinearLeftObject.ctx) ∧
+      (¬ ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearBase.ctx
+          ReadingFunctorialityFinite.finiteLinearRightObject.ctx) ∧
+      (¬ ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearLeftObject.ctx
+          ReadingFunctorialityFinite.finiteLinearOverlapObject.ctx) ∧
+      (¬ ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.le
+        ReadingFunctorialityFinite.finiteLinearRightObject.ctx
+          ReadingFunctorialityFinite.finiteLinearOverlapObject.ctx) :=
+  ReadingFunctorialityFinite.finiteLinearStrictDiamond
+
+noncomputable example :
+    Site.AATCoverageFamily
+      ReadingFunctorialityFinite.finiteLinearSite.requirements
+      ReadingFunctorialityFinite.finiteLinearSite.overlap
+      ReadingFunctorialityFinite.finiteLinearBase :=
+  ReadingFunctorialityFinite.finiteLinearCover
+
+example : ReadingFunctorialityFinite.finiteLinearCover.Index ≃ Bool :=
+  ReadingFunctorialityFinite.finiteLinearCoverIndexEquiv
+
+example :
+    ∃ i j : ReadingFunctorialityFinite.finiteLinearCover.Index,
+      i ≠ j ∧
+        ReadingFunctorialityFinite.finiteLinearCover.patch i =
+          ReadingFunctorialityFinite.finiteLinearLeftObject.ctx ∧
+        ReadingFunctorialityFinite.finiteLinearCover.patch j =
+          ReadingFunctorialityFinite.finiteLinearRightObject.ctx :=
+  ReadingFunctorialityFinite.finiteLinearCover_twoBranches
+
+noncomputable example :
+    Cohomology.LinearCoefficientSheaf Int
+      ReadingFunctorialityFinite.finiteLinearSite :=
+  ReadingFunctorialityFinite.finiteLinearCoefficientSheaf
+
+noncomputable example : Fintype ReadingFunctorialityFinite.finiteLinearCover.Index :=
+  ReadingFunctorialityFinite.finiteLinearCoverIndexFintype
+
+noncomputable example :
+    Cohomology.LinearCoefficientSheaf (Polynomial Int)
+      ReadingFunctorialityFinite.finiteLinearSite :=
+  ReadingFunctorialityFinite.finiteBaseChangedLinearCoefficientSheaf
+
+example :
+    Cohomology.LinearCoefficientSheaf.CechCoefficientBaseChangeCompatible
+      ReadingFunctorialityFinite.finiteLinearCoefficientSheaf
+      ReadingFunctorialityFinite.intPolynomialFlatChange
+      ReadingFunctorialityFinite.finiteLinearCover :=
+  ReadingFunctorialityFinite.finiteCechCoefficientCompatible
+
+example :
+    Cohomology.LinearCoefficientSheaf.IsLinearLerayFor
+      ReadingFunctorialityFinite.finiteLinearCover
+      ReadingFunctorialityFinite.finiteLinearCoefficientSheaf :=
+  ReadingFunctorialityFinite.finiteLinearLerayCover
+
+example :
+    Cohomology.LinearCoefficientSheaf.IsLinearLerayFor
+      ReadingFunctorialityFinite.finiteLinearCover
+      ReadingFunctorialityFinite.finiteBaseChangedLinearCoefficientSheaf :=
+  ReadingFunctorialityFinite.finiteTargetLinearLerayCover
+
+noncomputable example :
+    Cohomology.LinearCoverRelativeCechComplex Int
+      ReadingFunctorialityFinite.finiteLinearCover
+      ReadingFunctorialityFinite.finiteLinearCoefficientSheaf :=
+  ReadingFunctorialityFinite.finiteLinearCech
+
+example : Nat := ReadingFunctorialityFinite.finiteDegree
+
+noncomputable example :
+    ReadingFunctorialityFinite.finiteLinearCech.complex.cycles
+      ReadingFunctorialityFinite.finiteDegree :=
+  ReadingFunctorialityFinite.finiteCocycle
+
+noncomputable example :
+    ReadingFunctorialityFinite.finiteLinearCoefficientSheaf.terminalLerayHModule
+      ReadingFunctorialityFinite.finiteLinearCover
+      ReadingFunctorialityFinite.finiteLinearBaseIsTerminal
+      ReadingFunctorialityFinite.finiteLinearLerayCover
+      ReadingFunctorialityFinite.finiteDegree :=
+  ReadingFunctorialityFinite.finiteActualSourceClass
+
+noncomputable example :
+    Derived.Intersection.moduleScalarExtension.{0, 2}
+        ReadingFunctorialityFinite.intPolynomialFlatChange
+        (ReadingFunctorialityFinite.finiteLinearCoefficientSheaf.terminalLerayHModule
+            ReadingFunctorialityFinite.finiteLinearCover
+            ReadingFunctorialityFinite.finiteLinearBaseIsTerminal
+            ReadingFunctorialityFinite.finiteLinearLerayCover
+            ReadingFunctorialityFinite.finiteDegree) ⟶
+      ReadingFunctorialityFinite.finiteBaseChangedLinearCoefficientSheaf.terminalLerayHModule
+          ReadingFunctorialityFinite.finiteLinearCover
+          ReadingFunctorialityFinite.finiteLinearBaseIsTerminal
+          ReadingFunctorialityFinite.finiteTargetLinearLerayCover
+          ReadingFunctorialityFinite.finiteDegree :=
+  ReadingFunctorialityFinite.finiteSheafHBaseChangeMap
+
+noncomputable example :
+    Derived.Intersection.moduleScalarExtension.{0, 2}
+        ReadingFunctorialityFinite.intPolynomialFlatChange
+        (ReadingFunctorialityFinite.finiteLinearCoefficientSheaf.terminalLerayHModule
+            ReadingFunctorialityFinite.finiteLinearCover
+            ReadingFunctorialityFinite.finiteLinearBaseIsTerminal
+            ReadingFunctorialityFinite.finiteLinearLerayCover
+            ReadingFunctorialityFinite.finiteDegree) ≅
+      ReadingFunctorialityFinite.finiteBaseChangedLinearCoefficientSheaf.terminalLerayHModule
+          ReadingFunctorialityFinite.finiteLinearCover
+          ReadingFunctorialityFinite.finiteLinearBaseIsTerminal
+          ReadingFunctorialityFinite.finiteTargetLinearLerayCover
+          ReadingFunctorialityFinite.finiteDegree :=
+  ReadingFunctorialityFinite.finiteSheafHBaseChangeIso
+
+example :
+    ReadingFunctorialityFinite.finiteSheafHBaseChangeIso.hom =
+      ReadingFunctorialityFinite.finiteSheafHBaseChangeMap :=
+  ReadingFunctorialityFinite.finiteSheafHBaseChangeIso_hom
+
+example :
+    ReadingFunctorialityFinite.finiteLinearCech.classBaseChange
+      ReadingFunctorialityFinite.intPolynomialFlatChange
+      ReadingFunctorialityFinite.finiteDegree
+      ReadingFunctorialityFinite.finiteCocycle ≠ 0 :=
+  ReadingFunctorialityFinite.finiteClass_baseChange_nonzero
+
+example :
+    ReadingFunctorialityFinite.finiteSheafHBaseChangeMap
+      (Derived.Intersection.moduleScalarExtensionUnit.{0, 2}
+        ReadingFunctorialityFinite.intPolynomialFlatChange
+        (ReadingFunctorialityFinite.finiteLinearCoefficientSheaf.terminalLerayHModule
+            ReadingFunctorialityFinite.finiteLinearCover
+            ReadingFunctorialityFinite.finiteLinearBaseIsTerminal
+            ReadingFunctorialityFinite.finiteLinearLerayCover
+            ReadingFunctorialityFinite.finiteDegree)
+        ReadingFunctorialityFinite.finiteActualSourceClass) ≠ 0 :=
+  ReadingFunctorialityFinite.finiteSheafHClass_baseChange_nonzero
+
+example :
+    ReadingFunctorialityFinite.finiteLinearCech.classBaseChange
+      ReadingFunctorialityFinite.intPolynomialFlatChange
+      ReadingFunctorialityFinite.finiteDegree 0 = 0 :=
+  ReadingFunctorialityFinite.zeroClass_not_firing
 
 end AAT.AG.StatementContractsReadingFunctoriality

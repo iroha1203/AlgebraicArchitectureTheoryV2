@@ -12,6 +12,7 @@ import Mathlib.CategoryTheory.Sites.Adjunction
 import Mathlib.CategoryTheory.Sites.PreservesSheafification
 import Mathlib.CategoryTheory.Sites.Whiskering
 import Mathlib.Logic.Function.Basic
+import Mathlib.LinearAlgebra.TensorProduct.Pi
 import Mathlib.AlgebraicGeometry.Pullbacks
 import Mathlib.AlgebraicGeometry.IdealSheaf.Functorial
 import Mathlib.RingTheory.RingHom.Flat
@@ -1911,6 +1912,31 @@ theorem canonicalLinearCech_d
         ((Ob.canonicalLinearCech 𝒰).cochainIso (n + 1)).inv := by
   simp [canonicalLinearCech, linearCechDifferential]
 
+/-- Pointwise alternating-sum formula for the canonical linear Čech differential. -/
+theorem canonicalLinearCech_d_apply
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat)
+    (c : (Ob.canonicalLinearCech 𝒰).complex.X n)
+    (σ : (canonicalCoverRelative 𝒰).simplex (n + 1)) :
+    ((Ob.canonicalLinearCech 𝒰).complex.d n (n + 1)).hom c σ =
+      ∑ i : Fin (n + 2), ((-1 : ℤ) ^ i.1) •
+        Ob.modulePresheaf.map
+          (canonicalTupleOverlapMap 𝒰 (SimplexCategory.δ i) σ).op
+          (c (fun j => σ ((SimplexCategory.δ i).toOrderHom j))) := by
+  rw [canonicalLinearCech_d]
+  simp only [canonicalLinearCech, Iso.refl_hom, Iso.refl_inv,
+    Category.id_comp]
+  change (linearCechDifferential Ob 𝒰 n).hom c σ = _
+  simp only [linearCechDifferential,
+    AlgebraicTopology.AlternatingCofaceMapComplex.objD,
+    ModuleCat.hom_sum, ModuleCat.hom_zsmul, LinearMap.coe_sum,
+    Finset.sum_apply]
+  apply Finset.sum_congr rfl
+  intro i _hi
+  rfl
+
 end LinearCoefficientSheaf
 
 private noncomputable instance linearExtendScalars_additive
@@ -2311,6 +2337,81 @@ def CechCoefficientBaseChangeCompatible
     [HasSheafify S.topology AddCommGrpCat.{u + 1}]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) : Prop :=
   ∀ n, IsIso (canonicalBaseChangeCochain Ob f 𝒰 n)
+
+/-- Finite Čech products commute with scalar extension when the raw
+sectionwise extension is already a sheaf. -/
+theorem cechCoefficientBaseChangeCompatible_of_finite_raw_isSheaf
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    [Fintype 𝒰.Index]
+    (hraw : Presheaf.IsSheaf S.topology
+      (Ob.rawBaseChangePresheaf f ⋙
+        forget₂ (ModuleCat.{u + 1} R') AddCommGrpCat.{u + 1})) :
+    CechCoefficientBaseChangeCompatible Ob f 𝒰 := by
+  classical
+  haveI (W : S.category) : IsIso (Ob.baseChangeSectionMap f W) := by
+    change IsIso
+      ((moduleSheafificationUnit (Ob.rawBaseChangePresheaf f)).app (op W))
+    let e := moduleSheafificationUnitIso
+      (Ob.rawBaseChangePresheaf f) hraw
+    change IsIso (e.hom.app (op W))
+    infer_instance
+  intro n
+  let I := (canonicalCoverRelative 𝒰).simplex n
+  let M : I → Type (u + 1) := fun σ ↦
+    Ob.modulePresheaf.obj
+      (op ((canonicalCoverRelative 𝒰).overlap n σ))
+  let N : I → Type (u + 1) := fun σ ↦
+    (Ob.baseChange f).modulePresheaf.obj
+      (op ((canonicalCoverRelative 𝒰).overlap n σ))
+  letI : Algebra R R' := f.hom.toAlgebra
+  letI : Fintype I := by
+    dsimp [I]
+    infer_instance
+  let epi :
+      (ModuleCat.extendScalars f.hom).obj
+          (ModuleCat.of R (∀ σ : I, M σ)) ≅
+        ModuleCat.of R'
+          (∀ σ : I,
+            (ModuleCat.extendScalars f.hom).obj
+              (ModuleCat.of R (M σ))) :=
+    (TensorProduct.piRight R R' R' M).toModuleIso
+  let esec :
+      ModuleCat.of R'
+          (∀ σ : I,
+            (ModuleCat.extendScalars f.hom).obj
+              (ModuleCat.of R (M σ))) ≅
+        ModuleCat.of R' (∀ σ : I, N σ) :=
+    (LinearEquiv.piCongrRight fun σ ↦
+      (asIso (Ob.baseChangeSectionMap f
+        ((canonicalCoverRelative 𝒰).overlap n σ))).toLinearEquiv).toModuleIso
+  have heq :
+      canonicalBaseChangeCochain Ob f 𝒰 n =
+        ((Ob.canonicalLinearCech 𝒰).scalarExtensionObjIso f n).hom ≫
+          epi.hom ≫ esec.hom := by
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro z
+    induction z using TensorProduct.induction_on with
+    | zero => rfl
+    | tmul s m =>
+        change
+          (fun σ : I ↦
+            (Ob.baseChangeSectionMap f
+              ((canonicalCoverRelative 𝒰).overlap n σ)).hom
+                (s ⊗ₜ[R] m σ)) =
+          (fun σ : I ↦
+            (Ob.baseChangeSectionMap f
+              ((canonicalCoverRelative 𝒰).overlap n σ)).hom
+                (s ⊗ₜ[R] m σ))
+        rfl
+    | add x y hx hy =>
+        rw [map_add, map_add, hx, hy]
+  rw [heq]
+  infer_instance
 
 /-- The canonical Hn map: flat homology comparison followed by the homology
 map of the canonical coefficient complex hom. -/

@@ -5591,6 +5591,128 @@ noncomputable def readingFunctoriality_brokenRelationChange :=
 def readingFunctoriality_brokenRelationChange_not_rawBaseChange :=
   @AAT.AG.ReadingFunctorialityFinite.brokenRelationChange_not_rawBaseChange
 
+/-! ## Finite linear Čech and actual `Sheaf.H` firing -/
+
+/-- Audit alias for the pointwise canonical linear Čech differential formula. -/
+def readingFunctoriality_canonicalLinearCech_d_apply :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.canonicalLinearCech_d_apply
+
+/-- Audit alias for finite coefficient compatibility from a raw sheaf. -/
+def readingFunctoriality_cechCoefficientBaseChangeCompatible_of_finite_raw_isSheaf :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.cechCoefficientBaseChangeCompatible_of_finite_raw_isSheaf
+
+/-- Audit alias for the independent finite linear site. -/
+noncomputable def readingFunctoriality_finiteLinearSite :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearSite
+
+/-- Audit alias for the named additive sheafification instance. -/
+noncomputable def readingFunctoriality_finiteLinearAddCommGrpHasSheafify :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearAddCommGrpHasSheafify
+
+/-- Audit alias for the actual terminal base. -/
+noncomputable def readingFunctoriality_finiteLinearBase :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearBase
+
+/-- Audit alias for terminality of the finite linear base. -/
+noncomputable def readingFunctoriality_finiteLinearBaseIsTerminal :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearBaseIsTerminal
+
+/-- Audit alias for the selected left branch. -/
+noncomputable def readingFunctoriality_finiteLinearLeftObject :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearLeftObject
+
+/-- Audit alias for the selected right branch. -/
+noncomputable def readingFunctoriality_finiteLinearRightObject :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearRightObject
+
+/-- Audit alias for the actual pair-overlap object. -/
+noncomputable def readingFunctoriality_finiteLinearOverlapObject :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearOverlapObject
+
+/-- Audit alias for identification of the actual pair overlap. -/
+def readingFunctoriality_finiteLinearPairOverlap_eq :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteLinearPairOverlap_eq
+
+/-- Audit alias for the strict-diamond incidence theorem. -/
+def readingFunctoriality_finiteLinearStrictDiamond :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteLinearStrictDiamond
+
+/-- Audit alias for the selected finite two-branch cover. -/
+noncomputable def readingFunctoriality_finiteLinearCover :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearCover
+
+/-- Audit alias for the cover-index equivalence with `Bool`. -/
+def readingFunctoriality_finiteLinearCoverIndexEquiv :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteLinearCoverIndexEquiv
+
+/-- Audit alias for the distinct two-branch witness. -/
+def readingFunctoriality_finiteLinearCover_twoBranches :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteLinearCover_twoBranches
+
+/-- Audit alias for the finite integer coefficient sheaf. -/
+noncomputable def readingFunctoriality_finiteLinearCoefficientSheaf :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearCoefficientSheaf
+
+/-- Audit alias for finiteness of the selected cover index. -/
+noncomputable def readingFunctoriality_finiteLinearCoverIndexFintype :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearCoverIndexFintype
+
+/-- Audit alias for the canonical polynomial coefficient sheaf. -/
+noncomputable def readingFunctoriality_finiteBaseChangedLinearCoefficientSheaf :=
+  AAT.AG.ReadingFunctorialityFinite.finiteBaseChangedLinearCoefficientSheaf
+
+/-- Audit alias for canonical finite Čech coefficient compatibility. -/
+def readingFunctoriality_finiteCechCoefficientCompatible :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteCechCoefficientCompatible
+
+/-- Audit alias for the source Leray theorem. -/
+def readingFunctoriality_finiteLinearLerayCover :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteLinearLerayCover
+
+/-- Audit alias for the target Leray theorem. -/
+def readingFunctoriality_finiteTargetLinearLerayCover :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteTargetLinearLerayCover
+
+/-- Audit alias for the canonical finite linear Čech complex. -/
+noncomputable def readingFunctoriality_finiteLinearCech :=
+  AAT.AG.ReadingFunctorialityFinite.finiteLinearCech
+
+/-- Audit alias for the selected degree. -/
+def readingFunctoriality_finiteDegree :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteDegree
+
+/-- Audit alias for the explicit degree-one cycle. -/
+noncomputable def readingFunctoriality_finiteCocycle :=
+  AAT.AG.ReadingFunctorialityFinite.finiteCocycle
+
+/-- Audit alias for the actual source terminal class. -/
+noncomputable def readingFunctoriality_finiteActualSourceClass :=
+  AAT.AG.ReadingFunctorialityFinite.finiteActualSourceClass
+
+/-- Audit alias for the actual `Sheaf.H` base-change map. -/
+noncomputable def readingFunctoriality_finiteSheafHBaseChangeMap :=
+  AAT.AG.ReadingFunctorialityFinite.finiteSheafHBaseChangeMap
+
+/-- Audit alias for the actual `Sheaf.H` base-change isomorphism. -/
+noncomputable def readingFunctoriality_finiteSheafHBaseChangeIso :=
+  AAT.AG.ReadingFunctorialityFinite.finiteSheafHBaseChangeIso
+
+/-- Audit alias identifying the base-change iso hom. -/
+def readingFunctoriality_finiteSheafHBaseChangeIso_hom :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteSheafHBaseChangeIso_hom
+
+/-- Audit alias for nonvanishing of the scalar-extended Čech class. -/
+def readingFunctoriality_finiteClass_baseChange_nonzero :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteClass_baseChange_nonzero
+
+/-- Audit alias for nonvanishing of the actual terminal class image. -/
+def readingFunctoriality_finiteSheafHClass_baseChange_nonzero :=
+  @AAT.AG.ReadingFunctorialityFinite.finiteSheafHClass_baseChange_nonzero
+
+/-- Audit alias for the zero-cycle negative control. -/
+def readingFunctoriality_zeroClass_not_firing :=
+  @AAT.AG.ReadingFunctorialityFinite.zeroClass_not_firing
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
