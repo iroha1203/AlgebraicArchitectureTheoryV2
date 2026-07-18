@@ -9,6 +9,7 @@ target theorem: <name from GOAL card>
 cycle: <N>
 decision: <approve | reject>
 result type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
+statement contract preflight: use the exact `statement_contract` mapping in the Ledger below; do not use flat aliases.
 proof obligation: <one obligation chosen by T1 selector>
 proof obligation delta: <what changed>
 completion candidate: <yes | no>
@@ -53,6 +54,24 @@ target_theorem: <target>
 cycle: <N>
 decision: <approve | reject>
 result_type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
+statement_contract:
+  status: active
+  version: <contract version>
+  permalink: <canonical contract or external artifact permalink>
+  source: <issue-comment | external-artifact>
+  source_revision: <immutable source revision>
+  reference_permalink: <active gate comment permalink>
+  supersedes: <previous active reference permalink | none>
+  preflight_cycle: <cycle>
+  preflight_recorded_at: <tracking-Issue-comment-timestamp>
+  contract_accepted_before_implementation: true
+  implementation_start_ref: <T1-start comment or implementation commit ref>
+  audits:
+    math_a: <audit-comment-permalink>
+    math_b: <audit-comment-permalink>
+    lean_a: <audit-comment-permalink>
+    lean_b: <audit-comment-permalink>
+statement_contract_gate: <pass | statement-contract-blocked>
 proof_obligation: <short>
 proof_obligation_delta: <short>
 lean_artifacts:

@@ -10,6 +10,7 @@
 - `rival`: target theorem が差分を作る比較対象。
 - `claim boundary`: 通常の GOAL claim boundary。
 - `target theorem`: 証明したい大定理の名前と自然言語 statement。
+- `target statement contract reference`: GOAL cardのtarget statement sectionは固定statementまたはcontractへの正確な参照を持つ。target-theorem-loopの既定ではtracking Issueのversion付きstatement contract commentを正本とし、Issue本文またはproof-state commentからactiveな`statement_contract` blockでそのpermalinkとversionを一意に参照する。別の許可されたartifactを正本にする場合も、Issueから正確な位置とversionを解決できることを要求する。contractは対象theoremの名前・完全Lean signature・参照する新規def signature(なければ`none`)を含み、同じversionを対象とするmath-A、math-B、lean-A、lean-Bの各1本のaudit commentが受理根拠になる。external artifactでは、差し替え不能なcommit/ref/hash等の`source_revision`も必須とする。
 - `target theorem boundary`: 語彙、有限性、law universe、coverage topology、係数、site / cover、Lean 置き場所、証拠段階。
 - `target proof artifacts`: 完了時に存在すべき Lean theorem / theorem package / finite witness / concrete certificate / report section。
 - `target proof strategy`: support lemma、normalization、counterexample exclusion、bridge、既存成果の利用 map。
@@ -27,6 +28,7 @@
 - GOAL が active ではない。
 - `research mode: target-theorem` ではない。
 - target theorem / boundary / proof artifacts / proof strategy / completion criteria が不足している。
+- activeな`statement_contract` blockがない、version・正本permalink・source・`source_revision`・active reference permalink・`supersedes`・cycle・実装開始前記録がない、正本の対象theoremの完全signatureまたは参照する新規def signature(なければ`none`)がない、GOAL cardの正確な参照またはIssue本文/proof-state commentからのactive referenceが一意でない、旧active referenceが失効していない、cycle開始前の受理記録がない、または同じversionと正本を対象とするmath-A、math-B、lean-A、lean-Bの各1本のaudit commentがなく、いずれかが`decision: approve`・`unchecked: none`・`finding: none`・lane固有確認・独立入力snapshot・独立実行記録を満たさない。
 - completion criteria が SCORE threshold、candidate card、PR merge だけになっている。
 - completion criteria に final `$math-lean-review` の正式 gate が含まれていない、またはこの skill 側で gate を実行できない。
 - target theorem の結論に必要な実質的前提があるのに、target boundary として残すのか completion までに discharge するのかが不明。
@@ -38,3 +40,95 @@
 - target theorem が GOAL の research aim や rival delta と切り離され、ただの定理一覧項目になっている。
 
 欠陥を見つけたら GOAL 本文は編集せず、tracking Issue コメントまたは別 Issue に改訂案を残す。
+
+## Tracking Issue comment templates
+
+task固有のsignatureはこのtemplateへ書き込まず、実際のtracking Issue commentを正本にする。
+
+### Statement contract comment
+
+`````text
+## Statement contract v<N>
+
+goal: <goal-id>
+contract_version: v<N>
+contract_status: proposed
+contract_source: issue-comment | external-artifact
+source_permalink: <contract-comment-permalink-or-external-artifact-permalink>
+source_revision: <issue-comment-created-at-or-immutable-artifact-revision>
+
+target_theorems:
+```lean
+-- 各対象theoremの名前と完全signature
+```
+
+new_definitions_referenced_by_target:
+```lean
+-- statementが参照する新規defの名前と完全signature。なければ `none`
+```
+`````
+
+`contract_source: issue-comment`が既定であり、このcommentに完全signatureを置く。Issue commentでは`source_revision`にcommentの作成時刻を記録し、受理後に本文を編集しない。`external-artifact`は§5.1で許可された別の正本を選ぶ必要があるtaskだけで使い、`source_permalink`が解決できるstable locationを持ち、`source_revision`にcommit/ref/hash等の差し替え不能な版を記録し、artifact側に同じ完全signatureを置く。Issue comment、GOAL、report、git管理docsへsignatureを重複記載しない。
+
+`contract_status: proposed`は、4本のaudit前のimmutableなcontract comment状態である。4本すべてのauditが同じversionを承認した後、同じcontract permalinkを指すactive gate commentの`statement_contract.status: active`が受理状態を表す。T0はactive gate、contract comment、4本のauditのversion/permalinkを突合し、active gateだけでは受理しない。
+
+### Active statement contract reference comment
+
+```text
+## Statement contract gate v<N>
+
+statement_contract:
+  status: active
+  version: v<N>
+  permalink: <canonical-contract-permalink>
+  source: issue-comment | external-artifact
+  source_revision: <issue-comment-created-at-or-immutable-artifact-revision>
+  reference_permalink: <active-gate-comment-permalink>
+  supersedes: <previous-active-reference-permalink | none>
+  preflight_cycle: <N>
+  preflight_recorded_at: <tracking-Issue-comment-timestamp>
+  contract_accepted_before_implementation: true
+  implementation_start_ref: none
+  audits:
+    math_a: <audit-comment-permalink>
+    math_b: <audit-comment-permalink>
+    lean_a: <audit-comment-permalink>
+    lean_b: <audit-comment-permalink>
+```
+
+Issue本文またはproof-state commentからこのblockを一意に参照する。旧versionのreferenceは編集せず、新versionでは新しいgate commentを追加して`supersedes`で旧referenceを失効させる。T0は最新の未失効blockだけをactiveとして採用し、複数active・未解決の`supersedes`・`implementation_start_ref`が`none`でないpreflight記録・実装開始後のpreflight記録を拒否する。
+
+### Four-lane audit comment
+
+```text
+## Statement contract audit v<N>
+
+contract_version: v<N>
+contract_permalink: <tracking-Issue-comment-permalink>
+input_snapshot: <contract permalink + source_revision + GOAL/source refs or hashes>
+lane: math-A | math-B | lean-A | lean-B
+reviewer_ref: <independent-reviewer-reference>
+independence: independent-input
+independence_evidence: <how this reviewer received the source without another audit output>
+decision: approve | reject
+
+checked:
+- math-A / math-B: GOAL claim — <concrete observation>
+- math-A / math-B: quantification — <concrete observation>
+- math-A / math-B: coefficient — <concrete observation>
+- math-A / math-B: conclusion strength — <concrete observation>
+- math-A / math-B: premise — <concrete observation>
+- lean-A / lean-B: elaboration — <concrete observation>
+- lean-A / lean-B: additional premise — <concrete observation>
+- lean-A / lean-B: definitional escape — <concrete observation>
+- lean-A / lean-B: API connection — <concrete observation>
+unchecked: none
+finding:
+- none
+refutation_attempts:
+- <少なくとも1件の具体的な反証試行と結果>
+evidence:
+- <少なくとも1件の具体的な確認sourceまたは実行証拠>
+```
+
+`lane`はmath-A、math-B、lean-A、lean-Bを各1本だけ許可する。4本のaudit permalink、`reviewer_ref`、comment metadataのauthor、`input_snapshot`、`independence_evidence`は確認可能な形で記録し、permalink・reviewer_ref・authorは相互に異ならなければならない。`checked`は該当laneの全項目を1項目ずつ記録し、`refutation_attempts`と`evidence`は各1件以上の具体的な内容を持つ。`approve`には`unchecked: none`、`finding: none`、lane固有の全項目、`independence: independent-input`、placeholderでない具体的な独立入力記録を必須とする。受理済みcommentは編集して差し替えない。signatureを変更するときは実装を停止し、新versionのcontract comment、active reference、4本のaudit、preflight記録を追加してから再開する。

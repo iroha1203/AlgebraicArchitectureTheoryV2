@@ -4,6 +4,8 @@ GOAL とは、研究で成し遂げたい能力や到達像である。通常は
 
 各 GOAL の静的定義、固定 target statement、完了条件は、このディレクトリの GOAL カードを正本とする。active な GOAL は、サイクルの先頭で `$research-loop` または `$target-theorem-loop` が `goal defect` を検査する。必要な項目は末尾の「GOAL カードの型」にまとめる。カードの中に現れる NT 番号や大定理 G1-G8 は、[docs/note の AG 版考察ノート](../../docs/note/aat_ag_porting_bridges_grand_theorems.md)で定義する。
 
+`target-theorem` の GOAL カードが正本にするのは自然言語のtarget claimとcompletion criteriaである。task固有の完全Lean signatureを固定するstatement contractは、`docs/aat/lean_quality_standard.md` §5.1と`target-theorem-loop`のcontract preflightに従い、指定した一つのartifactを正本として参照する。signatureをGOALカードへ複製しない。
+
 active threshold、current SCORE、proof state、サイクル履歴などの実行状態は、GOAL ごとの GitHub tracking Issue を正本とする。ループ実行中は GOAL カードを編集せず、改訂が必要なら tracking Issue または別 Issue に提案を残す。
 
 ## active
