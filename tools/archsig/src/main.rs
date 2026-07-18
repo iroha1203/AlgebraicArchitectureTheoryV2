@@ -8,17 +8,17 @@ use archsig::{
     ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA,
     ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA, ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ARCHMAP_V2_SCHEMA,
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT, ArchMapDocumentV2,
-    ArchMapValidationReportV2, ArchmapCandidatePacketV1, ArchmapCoverageLedgerV1,
-    ArchmapExtractionConsistencyV1, ArchmapScopeManifestV1, AuthoringAuditInputV1,
-    ExtractionDiffOptions, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
-    LawEquationSurfaceV1, LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1,
-    RepairPlanDocumentV1, SchemaVersionCatalogV0, ScopeManifestOptions,
-    archmap_authoring_audit_checks_v1, build_comparison_artifacts_with_refinement_v1,
-    build_extraction_consistency_v1, build_foundation_measurement_packet_v1, build_gate_report_v1,
-    build_insight_brief_v1, build_insight_report_v1, build_measurement_summary_v1,
-    build_measurement_viewer_data_v1, build_policy_bundle, build_repair_plan_validation_report_v1,
-    build_scope_manifest_v1, component_fingerprints as build_component_fingerprints,
-    normalize_archmap_v2, resolve_and_verify_policy_bundle, static_schema_version_catalog,
+    ArchMapValidationReportV2, ArchmapCoverageLedgerV1, ArchmapExtractionConsistencyV1,
+    ArchmapScopeManifestV1, AuthoringAuditInputV1, ExtractionDiffOptions,
+    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, LawEquationSurfaceV1,
+    LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
+    SchemaVersionCatalogV0, ScopeManifestOptions, archmap_authoring_audit_checks_v1,
+    build_comparison_artifacts_with_refinement_v1, build_extraction_consistency_v1,
+    build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
+    build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
+    build_policy_bundle, build_repair_plan_validation_report_v1, build_scope_manifest_v1,
+    component_fingerprints as build_component_fingerprints, normalize_archmap_v2,
+    parse_candidate_packet_value, resolve_and_verify_policy_bundle, static_schema_version_catalog,
     validate_archmap_v2_report, validate_authoring_audit_input_v1, validate_law_policy_v1_report,
     validate_law_surface_v1_report, validate_measurement_packet_value_v1,
     validate_measurement_profile_v1_checks, validate_refactor_morphism_v1,
@@ -446,7 +446,10 @@ fn load_authoring_audit_input(
             ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA,
             "--candidate-packets",
         )?;
-        packets.push(serde_json::from_value::<ArchmapCandidatePacketV1>(raw)?);
+        packets.push(parse_candidate_packet_value(
+            raw,
+            &path.display().to_string(),
+        )?);
     }
 
     let mut consistency_reports = Vec::new();

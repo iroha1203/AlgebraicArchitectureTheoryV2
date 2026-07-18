@@ -151,6 +151,13 @@ Bad: a semantic atom with no `object`.
 
 `atom-match-key@1 = kind | NFC(trim(subject)) | axis | predicate? | object?`.
 
+`atom-match-key@2` is identical except that an identifier-path subject is
+deterministically rewritten to `<source-dir>.<Class>` using the atom's first
+`src:<dir>/...` ref before keying (free-text subjects, `ctx:` subjects, and
+atoms without a resolvable source dir key as in @1). This is a mechanical
+string mapping, not a semantic comparison. `extraction-diff` matches under @2
+and reports the @1 counts alongside for migration comparison.
+
 The key excludes `id` and `refs`. Refs may vary between passes and are unioned
 only after integrator confirmation. For semantic atoms, `object` is required so
 meaning differences are key-bearing.

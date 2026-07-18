@@ -241,9 +241,19 @@ pub struct ArchmapExtractionConsistencyV1 {
     #[serde(default)]
     pub only_in_pass_b: Vec<ArchmapExtractionOnlyInCandidateV1>,
     pub match_rate: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub atom_match_key1_comparison: Option<ArchmapExtractionKeyComparisonV1>,
     pub context_diff: ArchmapExtractionContextDiffV1,
     #[serde(default)]
     pub adjudications: Vec<ArchmapExtractionAdjudicationV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapExtractionKeyComparisonV1 {
+    pub atom_match_key_spec: String,
+    pub matched_count: usize,
+    pub match_rate: f64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

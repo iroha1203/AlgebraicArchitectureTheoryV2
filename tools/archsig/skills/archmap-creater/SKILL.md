@@ -109,7 +109,7 @@ add or remove support atoms to change the law universe.
 
 6. **Integrate**
    - Build the final `archmap.json` after adjudication.
-   - Use `atom-match-key@1` for candidate deduplication and union refs only after
+   - Use `atom-match-key@2` for candidate deduplication and union refs only after
      the integrator confirms semantic identity.
    - Preserve semantic aliases: if the same subject has different observed
      uses, keep separate semantic atoms and carry the difference in key-bearing
