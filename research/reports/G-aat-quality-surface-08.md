@@ -707,6 +707,155 @@ completion_candidate: false
 tracking_issue_closed: false
 ```
 
+## Cycle 13 — C0a affine kernel base change and circuit locus
+
+- decision: approve
+- result type: proof-obligation-discharged
+- proof obligation: prove the affine module kernel theorem, canonical scalar
+  base change, response-cokernel support comparison, and residue-field circuit
+  equivalence
+- base merge SHA: `9909a77fbe70a63194207ef150a41e330b76331b`
+- PR: #3554
+
+### Construction
+
+`CircuitLocus.lean` forms the protected response map canonically as
+
+```text
+E → (P → R),  e ↦ (alpha_p(e))_p,
+```
+
+and restricts the target response to its kernel. Projectivity of the protected
+map image splits the kernel sequence; projectivity of its cokernel splits the
+image inclusion. These are the affine module form of the permitted
+finite-locally-free / locally-split-constant-rank direction hypothesis.
+Consequently the protected kernel is finite projective whenever `E` is finite
+projective.
+
+For every commutative scalar extension `R → A`, the forward kernel comparison
+is fixed to mathlib's canonical `LinearMap.tensorKer`. The two splittings prove
+that this map is injective and surjective, yielding
+
+```text
+A ⊗_R ker(A_P) ≃ ker(A ⊗_R A_P).
+```
+
+Right exactness identifies the fiber of the response cokernel with the
+quotient by the base-changed target response. The residue-field support theorem
+therefore gives support membership exactly when no scalar-normalized kernel
+element exists. The finite-product comparison transports this statement to an
+actual repair vector in the fiber of `E`. Finally L0 converts repair failure to
+a target-containing support-minimal dependence. The theorem includes the
+singleton loop and nonloop cases without assuming either branch.
+
+### Premise delta and audit
+
+- discharged material obligations:
+  - finite/projective kernel from the split protected-response hypotheses;
+  - arbitrary scalar kernel base change for the canonical `tensorKer` map;
+  - response-cokernel support iff residue-field normalized-repair failure;
+  - support iff a target-containing support-minimal circuit exists.
+- direction hypotheses: finite projective `E`, projective protected-map image,
+  and projective protected-map cokernel. The latter two are the affine split
+  regularity assumptions; they contain no kernel comparison, repair, support,
+  or circuit conclusion.
+- certificate provenance: the protected map is the finite product of the given
+  response functionals; the target map is restriction to its generated kernel;
+  the base-change map is `LinearMap.tensorKer`; support uses the canonical
+  residue-field tensor characterization; the circuit comes from L0.
+- proof use: both projectivity hypotheses occur in the split projections and
+  tensor-kernel bijectivity; `P` finiteness occurs in `piScalarRight`; target
+  nonmembership occurs in L0 minimal-circuit extraction.
+- structure-field escape: none. Kernel base change, support, repair failure,
+  and circuit existence are theorem conclusions.
+- route integrity: pass. No comparison or repair certificate is accepted as
+  input, and the final statement is an actual bidirectional equivalence.
+
+C0a is complete as an affine support result. C0 remains incomplete until the
+generated operation sheaf and labeled response maps supply these regularity
+instances chartwise and the chart support statements are connected to the
+selected circuit-locus surface.
+
+### Verification
+
+```text
+cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/CircuitLocus.lean
+axiom audit: 33 declarations under CircuitLocus, standard axioms only
+T3 independent source audit: Pass
+cd research/lean && lake build
+Build completed successfully (4476 jobs)
+```
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-aat-quality-surface-08
+target_theorem: Intrinsic Law-Response Circuit–Descent Theorem
+cycle: 13
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: C0a affine kernel base change, support comparison, and fiber circuit locus
+proof_obligation_delta: canonical tensorKer base change and response-cokernel support are equivalent to residue-field normalized-repair failure and a target-containing circuit
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/CircuitLocus.lean
+    declarations:
+      - CircuitLocus.kernel_finite
+      - CircuitLocus.kernel_projective
+      - CircuitLocus.kernelBaseChangeMap
+      - CircuitLocus.kernelBaseChangeEquiv
+      - CircuitLocus.mem_support_responseCokernel_iff
+      - CircuitLocus.exists_fiber_normalizedRepair_iff_exists_scalarOnKernel
+      - CircuitLocus.mem_support_responseCokernel_iff_no_fiber_normalizedRepair
+      - CircuitLocus.mem_support_responseCokernel_iff_exists_supportMinimalCircuit
+premise_delta:
+  discharged:
+    - affine finite-projective kernel theorem
+    - canonical arbitrary-scalar kernel base change
+    - response-cokernel support comparison
+    - residue-field repair-failure and circuit equivalence
+  remaining:
+    - C0b generated operation-sheaf and labeled-response instantiation
+    - chartwise support connection to the selected circuit-locus surface
+    - D0-D2 image sequence, Cech instance, actual gluing, and zero iff global normalized section
+    - E-pre local-circuit and pure-descent witness pair
+    - N0 strict labeled presentation naturality and unit rescaling transport
+    - M0 finite measurement chain map and effective certificate
+    - E-cert certified witness pair
+    - main theorem package and independent final gate
+certificate_provenance:
+  discharged:
+    - protected response map from the finite product of labeled responses
+    - target response from canonical restriction to the generated kernel
+    - kernel comparison from mathlib LinearMap.tensorKer
+    - support comparison from residue-field tensor support
+    - circuit extraction from the reviewed L0 theorem
+  unresolved:
+    - chartwise regularity instances and generated sheaf-level connection
+proof_use_audit:
+  used_material_premises:
+    - finite projective operation module
+    - projective protected-response image and cokernel
+    - finite protected label family
+    - target label outside the protected set
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: C0b generated operation-sheaf and labeled-response instantiation and chartwise support connection
+completion_candidate: false
+tracking_issue_closed: false
+```
+
 ## Cycle 11 — J6 typed Boolean-circle nonzero response
 
 - decision: approve
