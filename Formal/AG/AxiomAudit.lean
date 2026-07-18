@@ -5107,6 +5107,32 @@ noncomputable def readingFunctoriality_allLawfulClosedSubschemeBaseChangeMap :=
 def readingFunctoriality_allLawfulClosedSubschemeBaseChangeMap_immersion :=
   @AAT.AG.LawAlgebra.allLawfulClosedSubschemeBaseChangeMap_immersion
 
+/-! Part 4 SD7: generic affine Tor base change. -/
+
+/-- Audit alias for the Mathlib scalar-extension object. -/
+noncomputable def readingFunctoriality_moduleScalarExtension :=
+  @AAT.AG.Derived.Intersection.moduleScalarExtension
+
+/-- Audit alias for the extension/restriction adjunction unit. -/
+noncomputable def readingFunctoriality_moduleScalarExtensionUnit :=
+  @AAT.AG.Derived.Intersection.moduleScalarExtensionUnit
+
+/-- Audit alias for the pure-tensor formula of the scalar-extension unit. -/
+def readingFunctoriality_moduleScalarExtensionUnit_apply :=
+  @AAT.AG.Derived.Intersection.moduleScalarExtensionUnit_apply
+
+/-- Audit alias for identity scalar-extension coherence. -/
+noncomputable def readingFunctoriality_moduleScalarExtensionIdIso :=
+  @AAT.AG.Derived.Intersection.moduleScalarExtensionIdIso
+
+/-- Audit alias for composite scalar-extension coherence. -/
+noncomputable def readingFunctoriality_moduleScalarExtensionCompIso :=
+  @AAT.AG.Derived.Intersection.moduleScalarExtensionCompIso
+
+/-- Audit alias for generic arbitrary-degree affine Tor base change. -/
+noncomputable def readingFunctoriality_mathlibTorFlatBaseChangeIso :=
+  @AAT.AG.Derived.Intersection.mathlibTorFlatBaseChangeIso
+
 /-! Part 4 SD9: actual finite `Sheaf.H` positive and negative firing. -/
 
 /-- Audit alias for the actual terminal base of the finite model. -/
