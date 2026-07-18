@@ -1,12 +1,16 @@
 ---
 name: review-pr
-description: 実装完了後の最終スナップショットを対象に、GitHub PR番号を受け取り、Issue・CI・変更責務を確認し、対応する敵対レビューSKILLへ委譲してマージ可否を統合し、監査コメントを投稿する。"$review-pr PR-number"、最終PRレビュー、マージ可否判定で使う。
+description: 実装完了後の最終スナップショットを対象に、GitHub PR番号を受け取り、Issue・変更責務を確認し、対応する敵対レビューSKILLへ委譲して内容レビューを統合し、監査コメントを投稿する。CI確認とマージ実行は呼び出し側の責務。"$review-pr PR-number"、最終PRレビュー、内容のマージ可否判定で使う。
 ---
 
 # Review PR
 
-GitHub PR のマージゲート。紐づく Issue の受け入れ要件・CI 状態の照合は本体で
+GitHub PR の内容レビューゲート。紐づく Issue の受け入れ要件の照合は本体で
 行い、**内容レビューは分野別の敵対レビュー SKILL へ渡す**。
+CI 状態の確認とマージの実行はこのゲートの責務に含めない。マージ実行側
+(prd-loop または人間)が `gh pr checks` で別途確認する。判定 `Mergeable` は
+内容合格を意味し、CI green を含意しない。内容レビューは CI の完走を
+待たずに開始してよい。
 
 ## 必須契約
 
@@ -33,7 +37,6 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
 1. 作業ツリーと PR メタデータを確認する。
    - `git status --short --branch`
    - `gh pr view <PR> --json number,title,state,isDraft,author,baseRefName,headRefName,headRefOid,mergeStateStatus,reviewDecision,body,url,files,commits,labels,closingIssuesReferences`
-   - `gh pr checks <PR>`
    - `gh pr diff <PR> --name-only`
 
 2. 紐づく Issue を読む。
@@ -73,7 +76,6 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
 
 4. 本体で照合する(委譲と並行してよい)。
    - Issue 受け入れ要件と diff の照合(条件文言と実体の対応)。
-   - CI 状態(`gh pr checks`)。
    - checklist §6 の横断機械 scan(hidden/bidi、privacy / local-path、
      `git diff --check`)。
    - 必要なら統括エージェントが一時 worktree で `lake build` / cargo test を実行する。
@@ -93,12 +95,13 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
        合格判定に使う。
    - **Mergeable**: 委譲した全分野レビューが上記の意味で合格
      (Lean 系は math-lean-review の合格を含む)、Issue受け入れ要件を満たし、
-     CI / 必要なローカル検証が通り、重大な未対応がない。
+     必要なローカル検証が通り、重大な未対応がない。CI 状態は判定対象外
+     (マージ実行側が確認する)。
    - **Needs changes**: 委譲先の不合格、受け入れ要件未達、テスト不足、
-     docs drift、CI failure がある。
-   - **Blocked / cannot determine**: PR head を取得できない、CI 未完了、
+     docs drift がある。
+   - **Blocked / cannot determine**: PR head を取得できない、
      紐づく Issue 不明、サブエージェント起動不能、分野別レビュー未実施、
-     必要な検証が実行できない。
+     必要な検証が実行できない。CI 未完了はこれに含めない。
    - **Needs changes 後の修正確認**: 修正後の確認は共有契約の
      「レビューバッチと修正後確認」に従う(直接対応の資格条件と確認subagentの
      検査義務は同節が正本)。有資格な直接対応は、finding限定の単一subagent確認と
