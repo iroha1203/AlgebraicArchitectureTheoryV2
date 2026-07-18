@@ -856,6 +856,164 @@ completion_candidate: false
 tracking_issue_closed: false
 ```
 
+## Cycle 14 — C0b actual chart circuit locus and support
+
+- decision: approve
+- result type: proof-obligation-discharged
+- proof obligation: instantiate C0a on the generated allowed-operation sheaf
+  and actual required-label chart responses, then identify the selected chart
+  circuit locus with response-cokernel support
+- statement contract: Issue #3557, v1 fixed and elaborated before implementation
+- base merge SHA: `200a395aa483d75e7fcc2dfc8c1b1cac846cf3b7`
+
+### Construction
+
+`ChartCircuitLocus.lean` fixes the scalar ring to the structure-section ring
+of the selected lawful-space chart and the ambient operation module to the
+section module of the generated `allowedOperationSheaf` on that same open.
+For every required `(lawIndex, atom)` label, the response functional is the
+actual component of the existing `labeledResponse` sheaf morphism. No new
+evaluator family or scalar comparison is accepted.
+
+The locally split constant-rank direction data consists of two source-level
+sections:
+
+```text
+range(A_P) -> E_A,
+coker(A_P) -> (P -> R).
+```
+
+Their retraction laws, together with projectivity of `E_A` and the canonical
+finite-free target, construct the range and cokernel projectivity instances
+required by C0a. They do not store projectivity propositions, kernel
+comparison, repair, support, or circuit conclusions. The actual protected
+kernel is therefore finite projective when `E_A` is finite projective, and
+C0a's canonical `LinearMap.tensorKer` map gives arbitrary commutative scalar
+base change.
+
+The selected chart circuit locus is defined directly as the set of primes
+whose actual residue-field response family has a target-containing
+support-minimal dependence inside the protected labels plus the target. The
+C0a support theorem is then instantiated on those responses, yielding the
+pointwise support equivalence and the final set equality
+
+```text
+chartCircuitLocus = Supp(coker(target response on ker(A_P))).
+```
+
+### Premise delta and audit
+
+- discharged material obligations:
+  - actual selected-chart scalar ring and allowed-operation section module;
+  - required-label response family from existing `labeledResponse.app`;
+  - protected-response range and cokernel projectivity from explicit splits;
+  - actual protected kernel finite/projective and canonical base change;
+  - actual response-cokernel support iff residue-field support-minimal circuit;
+  - selected chart circuit locus equals response-cokernel support.
+- direction hypotheses: finite/projective actual allowed-operation chart
+  module and explicit range/cokernel sections for the protected response map.
+- certificate provenance: chart responses are the existing sheaf-morphism
+  components; the protected and target maps are C0a's canonical constructions;
+  projectivity is reconstructed from the two retraction laws; the kernel
+  comparison and circuit theorem are the previously accepted C0a results.
+- proof use: source projectivity constructs range projectivity; the
+  finite-product target constructs cokernel projectivity; both instances feed
+  kernel base change and support comparison; target nonmembership feeds circuit
+  extraction.
+- structure-field escape: none. The split structure contains only two maps and
+  their retraction laws.
+- route integrity: pass. Actual sheaf sections and actual generated responses
+  occur in every final statement; no conclusion-equivalent certificate is
+  supplied.
+- statement integrity: pass. Source declaration names, complete signatures,
+  definition bodies, and structure fields match Issue #3557 v1.
+
+C0 is complete as a local circuit-and-support result. G-08 remains incomplete;
+D0-D2 descent construction and all later obligations remain.
+
+### Verification
+
+```text
+cd research/lean && lake env lean ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ChartCircuitLocus.lean
+axiom audit: 32 declarations under ChartCircuitLocus, standard axioms only
+8 accepted declarations: [propext, Classical.choice, Quot.sound]
+T3 independent source audit: Pass
+cd research/lean && lake build
+Build completed successfully (4477 jobs)
+```
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-aat-quality-surface-08
+target_theorem: Intrinsic Law-Response Circuit–Descent Theorem
+cycle: 14
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: C0b actual generated chart response instantiation and circuit-locus support equality
+proof_obligation_delta: generated allowed-operation chart sections and actual required-label responses instantiate C0a and identify the selected circuit locus with response-cokernel support
+statement_contract:
+  source: GitHub Issue #3557
+  version: v1
+  fixed_before_implementation: true
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ChartCircuitLocus.lean
+    declarations:
+      - ChartCircuitLocus.AffineSplitConstantRankData.range_projective
+      - ChartCircuitLocus.AffineSplitConstantRankData.cokernel_projective
+      - ChartCircuitLocus.chartLabeledResponse_eq_labeledResponse_app
+      - ChartCircuitLocus.chartProtectedKernel_finite
+      - ChartCircuitLocus.chartProtectedKernel_projective
+      - ChartCircuitLocus.chartKernelBaseChangeEquiv
+      - ChartCircuitLocus.mem_support_chartResponseCokernel_iff_exists_supportMinimalCircuit
+      - ChartCircuitLocus.chartCircuitLocus_eq_support
+premise_delta:
+  discharged:
+    - actual selected-chart ring and generated allowed-operation section module
+    - actual required-label response family from labeledResponse.app
+    - range and response-cokernel projectivity from explicit source-level splits
+    - actual protected kernel finite/projective and canonical base change
+    - actual support-circuit pointwise equivalence and circuit-locus set equality
+  remaining:
+    - D0-D2 image sequence, Cech instance, actual gluing, and zero iff global normalized section
+    - E-pre local-circuit and pure-descent witness pair
+    - N0 strict labeled presentation naturality and unit rescaling transport
+    - M0 finite measurement chain map and effective certificate
+    - E-cert certified witness pair
+    - main theorem package and independent final gate
+certificate_provenance:
+  discharged:
+    - scalar ring and operation module from actual selected chart sheaf sections
+    - response family from existing labeledResponse.app components
+    - regularity instances from explicit range and cokernel sections
+    - kernel comparison and support-circuit result from accepted C0a
+  unresolved:
+    - descent class, presentation naturality, finite measurement, and witness pair
+proof_use_audit:
+  used_material_premises:
+    - finite/projective actual allowed-operation chart module
+    - explicit range and response-cokernel sections
+    - finite protected label family
+    - target label outside the protected set
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: D0-D2 response-kernel image sequence, Cech instance, actual gluing, and zero iff global normalized section
+completion_candidate: false
+tracking_issue_closed: false
+```
+
 ## Cycle 11 — J6 typed Boolean-circle nonzero response
 
 - decision: approve
