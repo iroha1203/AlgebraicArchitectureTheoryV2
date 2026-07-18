@@ -29,6 +29,10 @@ statement_contract:
   preflight_recorded_at:
   contract_accepted_before_implementation: true | false | cannot-determine
   implementation_start_ref:
+  implementation_scope:
+    baseline_ref:
+    target_files:
+      -
   audits:
     math_a:
     math_b:

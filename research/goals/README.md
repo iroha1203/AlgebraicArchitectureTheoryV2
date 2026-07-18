@@ -2,7 +2,7 @@
 
 GOAL とは、研究で成し遂げたい能力や到達像である。通常は証明したい定理の一覧ではない。定義と改訂は人間の判断による。`$research-loop` は、active な GOAL に対して候補を探索し、四審判、Lean 検証または証拠固定、SCORE 監査、PR レビューを通して、GOAL の能力がどれだけ増えたかを積み上げる。`research mode: target-theorem` の GOAL では、GOAL の能力を代表する一つの大定理をカードに定義し、その証明を完了条件にしてよい。
 
-各 GOAL の静的定義、固定 target statement、完了条件は、このディレクトリの GOAL カードを正本とする。active な GOAL は、サイクルの先頭で `$research-loop` または `$target-theorem-loop` が `goal defect` を検査する。必要な項目は末尾の「GOAL カードの型」にまとめる。カードの中に現れる NT 番号や大定理 G1-G8 は、[docs/note の AG 版考察ノート](../../docs/note/aat_ag_porting_bridges_grand_theorems.md)で定義する。
+各 GOAL の静的定義、自然言語の固定target claim、完了条件は、このディレクトリの GOAL カードを正本とする。task固有の完全Lean signatureはstatement contractの正本として扱う。active な GOAL は、サイクルの先頭で `$research-loop` または `$target-theorem-loop` が `goal defect` を検査する。必要な項目は末尾の「GOAL カードの型」にまとめる。カードの中に現れる NT 番号や大定理 G1-G8 は、[docs/note の AG 版考察ノート](../../docs/note/aat_ag_porting_bridges_grand_theorems.md)で定義する。
 
 `target-theorem` の GOAL カードが正本にするのは自然言語のtarget claimとcompletion criteriaである。task固有の完全Lean signatureを固定するstatement contractは、`docs/aat/lean_quality_standard.md` §5.1と`target-theorem-loop`のcontract preflightに従い、指定した一つのartifactを正本として参照する。signatureをGOALカードへ複製しない。
 

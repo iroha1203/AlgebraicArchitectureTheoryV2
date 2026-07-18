@@ -108,6 +108,10 @@ statement_contract:
   preflight_recorded_at: <timestamp>
   contract_accepted_before_implementation: <true | false | cannot-determine>
   implementation_start_ref: <none | ref>
+  implementation_scope:
+    baseline_ref: <preflight-base-commit>
+    target_files:
+      - <repo-relative-target-Lean-file>
   audits:
     math_a: <audit-comment-permalink>
     math_b: <audit-comment-permalink>

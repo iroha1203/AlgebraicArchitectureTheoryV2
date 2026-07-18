@@ -17,7 +17,7 @@ statement contractの保存場所を全workflowへ固定する規律は導入し
 
 既定のIssue commentを正本にする場合は、contract commentに対象theoremの名前と完全Lean signature、およびstatementが参照する新規defのsignatureをLeanコードブロックで含める。別のartifactを正本にする場合は、そのartifactに同じ完全signatureを置き、Issue commentは正確な位置とversionだけを参照する。新規defがない場合は`none`を明記する。GOAL cardのtarget statement sectionには固定statementまたはcontractへの正確な参照を残し、Issue本文またはtracking Issueのproof-state commentには、単一のactiveな`statement_contract` blockで正本の位置とversionを参照する。参照先のcontractと同じversionを対象に、数学査読A/B・Lean査読A/Bの4本の独立audit commentをtracking Issueへ残す。
 
-T0はこのpreflightを実装前gateとして扱う。`statement_contract` blockは`status: active`、version、正本permalink、source、差し替え不能な`source_revision`、active gate自身の`reference_permalink`、旧versionを失効させる`supersedes`、cycle、preflight記録時刻、`implementation_start_ref: none`を持ち、4 laneは各1件だけを同じversionへ結び付ける。各auditは`decision: approve`、`unchecked: none`、`finding: none`、lane固有の必須確認、契約・GOAL・関連sourceの`input_snapshot`、独立入力の記録を持つ。これらが揃わない場合はfail-closedで停止し、T1 selectorおよびT2実装へ進まない。4本のauditは、数学laneがGOAL claim・量化・係数・結論の強さ・premiseを、Lean laneがelaboration可能性・追加premise・definitional escape・API接続を項目別に監査する。T0は各laneの必須項目が項目別に埋まっていること、`refutation_attempts`と`evidence`が少なくとも1件ずつ具体的であること、4本の本文が同一内容の複製ではないことも確認する。受理済みcontractのsignatureを変更する必要が生じたら、既存commentやcanonical referenceを編集せず新versionと新しいactive referenceを追加し、旧versionを失効させたうえで4本を同じversionでやり直す。cycle開始前のpreflight記録がない場合、`implementation_start_ref`が既に設定されている場合、または実装開始後に初めて作成されたcontractで履歴上の未固定を補おうとした場合は通さない。
+T0はこのpreflightを実装前gateとして扱う。`statement_contract` blockは`status: active`、version、正本permalink、source、差し替え不能な`source_revision`、旧versionを失効させる`supersedes`、cycle、preflight記録時刻、`implementation_start_ref: none`、baseline ref、対象Lean file listを持つ。active gate自身のcomment permalinkはIssue/API metadataから解決して後段のpacketへ`reference_permalink`として記録する。4 laneは各1件だけを同じversionへ結び付ける。各auditは`decision: approve`、`unchecked: none`、`finding: none`、lane固有の必須確認、契約・GOAL・関連sourceの`input_snapshot`、独立入力の記録を持つ。これらが揃わない場合はfail-closedで停止し、T1 selectorおよびT2実装へ進まない。4本のauditは、数学laneがGOAL claim・量化・係数・結論の強さ・premiseを、Lean laneがelaboration可能性・追加premise・definitional escape・API接続を項目別に監査する。T0はmath laneの5項目、Lean laneの4項目が各々`item`・`result`・`evidence_ref`付きで埋まっていること、`refutation_attempts`と`evidence`が少なくとも1件ずつ具体的であること、4本の`input_snapshot`と本文が同一内容の複製ではないことも確認する。受理済みcontractのsignatureを変更する必要が生じたら、既存commentやcanonical referenceを編集せず新versionと新しいactive referenceを追加し、旧versionを失効させたうえで4本を同じversionでやり直す。cycle開始前のpreflight記録がない場合、`implementation_start_ref`が既に設定されている場合、または実装開始後に初めて作成されたcontractで履歴上の未固定を補おうとした場合は通さない。
 
 仮定放電、certificate provenance、proof-use、route integrity、完了禁止条件は
 下のTarget Proof Contractを正本とする。T5の正式`$math-lean-review`が
@@ -114,10 +114,10 @@ T5 completion candidate なら final review
 3. GOAL card が active かつ `research mode: target-theorem` か確認する。GOAL が active でなければ Issue を作らず止まる。mode が違う場合も Issue を作らず `$research-loop <goal-id>` へ誘導して止まる。
 4. tracking Issue `Research Loop: <goal-id>` を探し、なければ作る。
 5. Statement contract preflightを実行する。
-   - activeな`statement_contract` blockから、version、正本permalink、source、`source_revision`、active gate自身の`reference_permalink`、`supersedes`、cycle、preflight記録時刻、`implementation_start_ref: none`を解決する。Issue comment sourceではcomment metadataの作成時刻を、external artifactではcommit/ref/hash等を独立に確認する。external artifactの同一URL・同一versionが差し替え可能なら受理しない。preflight記録時刻はIssue commentの作成時刻から独立に確認し、T1-start commentまたは最初のimplementation commit/PR refがその後にあることを確認する。時系列を確認できない場合は止まる。既定のIssue comment以外をsourceにする場合は、§5.1で許可されたartifactの正確な位置とimmutable revisionがIssueから解決できることを確認する。
-   - contractの対象theorem名・完全signature・参照する新規def signatureを確認する。target theorem名とsignatureはGOALのtarget declaration listおよび契約が指すtarget Lean declarationと突合し、各theoremの名前・引数・戻り値・量化対象を省略なく比較する。比較は対象Lean declarationの実際の型表示または対象fileの宣言と、contractのLean code blockを一行ずつ照合して記録する。Lean code blockは空でなくplaceholder tokenを含まないものとする。新規defがない場合は空blockではなく文字列`none`だけを許可し、参照がある場合はdef declaration listと突合する。未解決URL・未解決versionを受理しない。contract受理前に対象target Lean fileへ実装差分がある、または既存の実装差分を後付けcontractで正当化している場合は、git diffとcommit時刻を根拠に停止する。
+   - activeな`statement_contract` blockから、version、正本permalink、source、`source_revision`、`supersedes`、cycle、preflight記録時刻、`implementation_start_ref: none`、baseline ref、対象Lean file listを解決し、active gate自身のcomment permalinkはIssue/API metadataから取得して`reference_permalink`として記録する。Issue comment sourceではcomment metadataのURL・author・作成時刻・本文hashを、external artifactではcommit/ref/hash等を独立に確認する。external artifactの同一URL・同一versionが差し替え可能なら受理しない。preflight記録時刻はIssue commentの作成時刻から独立に確認し、T1-start commentまたは最初のimplementation commit/PR refがその後にあることを確認する。時系列を確認できない場合は止まる。既定のIssue comment以外をsourceにする場合は、§5.1で許可されたartifactの正確な位置とimmutable revisionがIssueから解決できることを確認する。
+   - contractの対象theorem名・完全signature・参照する新規def signatureを確認する。target theorem名とsignatureはGOALのtarget declaration listおよび契約が指すtarget Lean declarationと突合し、各theoremの名前・引数・戻り値・量化対象を省略なく比較する。比較は対象Lean declarationの実際の型表示または対象fileの宣言と、contractのLean code blockを一行ずつ照合して記録する。Lean code blockは空でなくplaceholder tokenを含まないものとする。新規defがない場合は空blockではなく文字列`none`だけを許可し、参照がある場合はdef declaration listと突合する。未解決URL・未解決versionを受理しない。contractに記録されたbaseline refから対象Lean file listを復元し、各fileの差分・commit時刻とpreflight metadataを突合する。contract受理前に対象target Lean fileへ実装差分がある、または既存の実装差分を後付けcontractで正当化している場合は停止する。
    - GOAL cardのtarget statement sectionに固定statementまたはcontractへの正確な参照があり、Issue本文またはproof-state commentからactiveな`statement_contract` blockが一意に参照されていることを確認する。旧active referenceが残る、または`supersedes`の連鎖が解決できない場合は停止する。
-   - 同じversion、`source_revision`、正本permalinkを対象とするmath-A、math-B、lean-A、lean-Bの各1本のaudit commentを確認する。4つのaudit permalink、lane、`reviewer_ref`、comment metadataのauthorは相互に重複せず、`input_snapshot`と`independence_evidence`が各commentにあることを確認する。各commentのlaneがslotと一致し、4本すべてが`decision: approve`、`unchecked: none`、`finding: none`であり、該当lane固有の全項目を項目別に記録し、具体的な反証試行、具体的なevidence、`independence: independent-input`を持つことを確認する。`checked`のlane固有項目、`refutation_attempts`、`evidence`、`independence_evidence`がplaceholder、空、または同じ定型文の複製だけなら拒否する。異なるmetadataを付けただけの同一audit本文も受理しない。
+   - 同じversion、`source_revision`、正本permalinkを対象とするmath-A、math-B、lean-A、lean-Bの各1本のaudit commentを確認する。4つのaudit permalink、lane、`reviewer_ref`、comment metadataのauthor、`input_snapshot`は相互に重複せず、`independence_evidence`が各commentにあることを確認する。各commentのlaneがslotと一致し、4本すべてが`decision: approve`、`unchecked: none`、`finding: none`であり、math laneは5項目、Lean laneは4項目を`item`・`result`・`evidence_ref`付きで記録し、具体的な反証試行、具体的なevidence、`independence: independent-input`を持つことを確認する。`checked`、`refutation_attempts`、`evidence`、`independence_evidence`がplaceholder、空、または同じ定型文の複製だけなら拒否する。異なるmetadataを付けただけの同一audit本文も受理しない。
    - Issue commentの作成時刻、audit commentの作成時刻、対象target Lean fileのcommit/diff時刻を突合する。contractと4本のauditが受理された時刻より前に対象実装が始まった、または受理後に追加されたauditで過去の実装を正当化している場合は停止する。cycle開始前のpreflight commentがあり、`implementation_start_ref: none`の時点でcontractと4本のauditが受理されていることを確認する。これを確認できない場合は`statement-contract-blocked`として止まり、T1へ進まない。
 6. GOAL card から target theorem、boundary、proof artifacts、proof strategy、completion criteria、premise discharge policy、material premise ledger、anti-weakening rule、failure policy を抽出する。
    - material premise ledger の各行を `ambient-boundary`、`direction-hypothesis`、`discharge-required`、`conclusion-equivalent-risk` に分類する。
@@ -151,7 +151,7 @@ selector subagentのcycle input schemaは
 
 ### T2 Lean 証明または blocker を固定する
 
-T2は、T0/T1から同じversionの`statement_contract` block、4本のaudit permalink、`statement_contract_gate: pass`を受け取った場合だけ開始する。T2開始前に、同じversionを参照するappend-onlyのT1-start commentまたはcommit/PR refを`implementation_start_ref`へ記録し、preflight記録時刻より後であることを確認する。signature、active reference、preflight cycle、implementation start refのいずれかが変わった場合は実装を続けず、`statement-contract-blocked`としてT0へ戻る。
+T2は、T0/T1から同じversionの`statement_contract` block、4本のaudit permalink、`statement_contract_gate: pass`を受け取った場合だけ開始する。T2開始前に、同じversionを参照するappend-onlyのT1-start commentまたはcommit/PR refを作成し、cycle ledgerの`implementation_start_ref`へ記録する。active gate commentは編集せず、start recordがpreflight記録時刻より後であることを確認する。signature、active reference、preflight cycle、implementation start refのいずれかが変わった場合は実装を続けず、`statement-contract-blocked`としてT0へ戻る。
 
 Lean 証拠は `research/lean/ResearchLean/AG/<goal-area>/...` に置く。`Formal/AG` 本体は参照または import のみ可とし、このループでは直接編集しない。
 
@@ -274,6 +274,10 @@ final_review_packet:
     preflight_recorded_at:
     contract_accepted_before_implementation:
     implementation_start_ref:
+    implementation_scope:
+      baseline_ref:
+      target_files:
+        -
     audits:
       math_a:
       math_b:

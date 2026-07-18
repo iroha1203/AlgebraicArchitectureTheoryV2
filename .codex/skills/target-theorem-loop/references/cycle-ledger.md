@@ -66,12 +66,16 @@ statement_contract:
   preflight_recorded_at: <tracking-Issue-comment-timestamp>
   contract_accepted_before_implementation: true
   implementation_start_ref: <T1-start comment or implementation commit ref>
+  implementation_scope:
+    baseline_ref: <preflight-base-commit>
+    target_files:
+      - <repo-relative-target-Lean-file>
   audits:
     math_a: <audit-comment-permalink>
     math_b: <audit-comment-permalink>
     lean_a: <audit-comment-permalink>
     lean_b: <audit-comment-permalink>
-statement_contract_gate: <pass | statement-contract-blocked>
+statement_contract_gate: <pass | fail | cannot-determine>
 proof_obligation: <short>
 proof_obligation_delta: <short>
 lean_artifacts:
