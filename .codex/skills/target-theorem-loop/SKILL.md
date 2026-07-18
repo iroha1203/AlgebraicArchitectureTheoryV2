@@ -13,7 +13,7 @@ statement 品質・定義品質・スタイルの判定正本は `docs/aat/lean_
 
 ## Statement contract
 
-target theoremの完全Lean signatureは、実装前にtracking Issueのstatement contract commentへ記録する。GOALにはcontractへの参照だけを置き、signatureを複製しない。contractを変更する場合は、既存commentを編集せず新しいversionを追加する。
+target theoremの完全Lean signatureは、実装前にtracking Issueのstatement contract commentへ記録する。GOALカードは編集せず、signatureをGOALへ複製しない。contractを変更する場合は、既存commentを編集せず新しいversionを追加する。
 
 仮定放電、certificate provenance、proof-use、route integrity、完了禁止条件は
 下のTarget Proof Contractを正本とする。T5の正式`$math-lean-review`が
