@@ -755,7 +755,7 @@ example {𝒰 𝒱 : Site.AATCoverageFamily S.requirements S.overlap base}
           (r.simplexMap (n + 1) σ) :=
   r.overlapMap_face_naturality n i σ
 
-open ReadingFunctorialityFinite
+open AAT.AG.ReadingFunctorialityFinite
 
 /-- Fixed finite-site contract for the R3 reference model. -/
 noncomputable example : Site.AATSite FiniteModel.corePackage.object :=
@@ -4187,5 +4187,190 @@ example :
       ReadingFunctorialityFinite.intPolynomialFlatChange
       ReadingFunctorialityFinite.finiteDegree 0 = 0 :=
   ReadingFunctorialityFinite.zeroClass_not_firing
+
+/-! R9c: independent topology and selected-cover firing. -/
+
+namespace R9c
+
+open ReadingFunctorialityFinite
+
+noncomputable example : Site.AATSite FiniteModel.corePackage.object := topologySite
+noncomputable example : topologySite.category := topologyBase
+noncomputable example : IsTerminal topologyBase := topologyBaseIsTerminal
+example : topologySite.category := topologyLeftObject
+example : topologySite.category := topologyRightObject
+noncomputable example : topologySite.category := topologyOverlapObject
+example :
+    topologySite.overlap.overlap topologyBase.ctx
+        topologyLeftObject.ctx topologyRightObject.ctx = topologyOverlapObject.ctx :=
+  topologyPairOverlap_eq
+example :
+    topologySite.contextPreorder.le topologyOverlapObject.ctx topologyLeftObject.ctx ∧
+      topologySite.contextPreorder.le topologyOverlapObject.ctx topologyRightObject.ctx ∧
+      topologySite.contextPreorder.le topologyLeftObject.ctx topologyBase.ctx ∧
+      topologySite.contextPreorder.le topologyRightObject.ctx topologyBase.ctx ∧
+      ¬ topologySite.contextPreorder.le topologyLeftObject.ctx topologyRightObject.ctx ∧
+      ¬ topologySite.contextPreorder.le topologyRightObject.ctx topologyLeftObject.ctx ∧
+      ¬ topologySite.contextPreorder.le topologyBase.ctx topologyLeftObject.ctx ∧
+      ¬ topologySite.contextPreorder.le topologyBase.ctx topologyRightObject.ctx ∧
+      ¬ topologySite.contextPreorder.le topologyLeftObject.ctx topologyOverlapObject.ctx ∧
+      ¬ topologySite.contextPreorder.le topologyRightObject.ctx topologyOverlapObject.ctx :=
+  topologyStrictDiamond
+
+example : topologySite.category := topologyAuxBase
+example : topologySite.category := topologyAuxPatch
+noncomputable example : topologyAuxPatch ⟶ topologyAuxBase := topologyAuxInclusion
+noncomputable example : topologySite.category := topologyLeftAuxOverlap
+noncomputable example : topologySite.category := topologyRightAuxOverlap
+example :
+    topologySite.overlap.overlap topologyBase.ctx
+        topologyLeftObject.ctx topologyAuxBase.ctx = topologyLeftAuxOverlap.ctx :=
+  topologyLeftAuxOverlap_eq
+example :
+    topologySite.overlap.overlap topologyBase.ctx
+        topologyRightObject.ctx topologyAuxBase.ctx = topologyRightAuxOverlap.ctx :=
+  topologyRightAuxOverlap_eq
+example :
+    (¬ topologySite.contextPreorder.le topologyLeftObject.ctx topologyAuxBase.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyRightObject.ctx topologyAuxBase.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyAuxBase.ctx topologyLeftObject.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyAuxBase.ctx topologyRightObject.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyLeftObject.ctx topologyAuxPatch.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyRightObject.ctx topologyAuxPatch.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyAuxPatch.ctx topologyLeftObject.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyAuxPatch.ctx topologyRightObject.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyOverlapObject.ctx topologyAuxBase.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyAuxBase.ctx topologyOverlapObject.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyOverlapObject.ctx topologyAuxPatch.ctx) ∧
+      (¬ topologySite.contextPreorder.le topologyAuxPatch.ctx topologyOverlapObject.ctx) :=
+  topologyAuxOffDiamond
+example : ¬ topologySite.contextPreorder.le
+    topologyLeftAuxOverlap.ctx topologyAuxPatch.ctx :=
+  topologyLeftAuxOverlap_not_le_auxPatch
+example : ¬ topologySite.contextPreorder.le
+    topologyRightAuxOverlap.ctx topologyAuxPatch.ctx :=
+  topologyRightAuxOverlap_not_le_auxPatch
+
+noncomputable example : Sieve topologyAuxBase := topologyAuxSieve
+example : topologyAuxSieve =
+    Sieve.generate (Presieve.singleton topologyAuxInclusion) :=
+  topologyAuxSieve_eq_generateSingleton
+noncomputable example : Precoverage topologySite.category := topologyAuxPrecoverage
+example {X : topologySite.category} {R : Presieve X} :
+    R ∈ topologyAuxPrecoverage X ↔
+      ∃ _h : X = topologyAuxBase,
+        HEq R (Presieve.singleton topologyAuxInclusion) :=
+  topologyAuxPrecoverage_mem_iff
+
+noncomputable example : Site.AATCoverageFamily topologySite.requirements
+    topologySite.overlap topologyBase := topologyCoarseCover
+noncomputable example : Site.AATCoverageFamily topologySite.requirements
+    topologySite.overlap topologyBase := topologyFineCover
+example : topologyCoarseCover.Index ≃ Bool := topologyCoarseCoverIndexEquiv
+example : topologyFineCover.Index ≃ Bool × Bool := topologyFineCoverIndexEquiv
+example : ∃ i j : topologyCoarseCover.Index,
+    i ≠ j ∧ topologyCoarseCover.patch i = topologyLeftObject.ctx ∧
+      topologyCoarseCover.patch j = topologyRightObject.ctx :=
+  topologyCoarseCover_twoBranches
+example : topologyCoarseCover.presieve = topologyFineCover.presieve :=
+  topologyCoarseCover_presieve_eq_fineCover
+noncomputable example : Precoverage topologySite.category := topologyCoarsePrecoverage
+example {X : topologySite.category} {R : Presieve X} :
+    R ∈ topologyCoarsePrecoverage X ↔
+      ∃ _h : X = topologyBase, HEq R topologyCoarseCover.presieve :=
+  topologyCoarsePrecoverage_mem_iff
+example : topologySite.topology = topologyCoarsePrecoverage.toGrothendieck :=
+  topologySite_topology_eq_coarseGenerated
+
+noncomputable example : Site.AATCoverageFamily.Refinement
+    topologyCoarseCover topologyFineCover := topologyCoarseToFineCover
+example : ¬ Function.Bijective topologyCoarseToFineCover.indexMap :=
+  topologyCoarseToFineCover_not_bijective
+noncomputable example : Cohomology.ObstructionSheaf topologySite :=
+  topologyObstructionSheaf
+example : Subsingleton
+    ((topologyObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op topologyBase) : Type 1)) := topologyBaseCoefficient_subsingleton
+example : Subsingleton
+    ((topologyObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op topologyLeftObject) : Type 1)) := topologyLeftCoefficient_subsingleton
+example : Subsingleton
+    ((topologyObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op topologyRightObject) : Type 1)) := topologyRightCoefficient_subsingleton
+noncomputable example :
+    ((topologyObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op topologyOverlapObject) : Type 1)) ≃+ ZMod 2 :=
+  topologyOverlapCoefficientEquiv
+example : Subsingleton
+    ((topologyObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op topologyAuxBase) : Type 1)) := topologyAuxBaseCoefficient_subsingleton
+example : Subsingleton
+    ((topologyObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op topologyAuxPatch) : Type 1)) := topologyAuxPatchCoefficient_subsingleton
+example : Subsingleton
+    ((topologyObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op topologyLeftAuxOverlap) : Type 1)) :=
+  topologyLeftAuxOverlapCoefficient_subsingleton
+example : Subsingleton
+    ((topologyObstructionSheaf.toAddCommGrpSheaf.val.obj
+      (Opposite.op topologyRightAuxOverlap) : Type 1)) :=
+  topologyRightAuxOverlapCoefficient_subsingleton
+example :
+    ∃ (c : (Cohomology.canonicalCechComplex topologyCoarseCover
+          topologyObstructionSheaf).AdditiveCochain 1)
+      (σ : (Cohomology.canonicalCoverRelative topologyFineCover).simplex 1),
+      (topologyCoarseToFineCover.canonicalCechHom
+        topologyObstructionSheaf).app 1 c σ ≠ 0 :=
+  topologyCoarseToFineCechHom_nonzero
+
+noncomputable example : ∀ n,
+    (Cohomology.canonicalCoverRelative topologyFineCover).simplex n →
+      (Cohomology.canonicalCoverRelative topologyCoarseCover).simplex n :=
+  topologyBrokenFaceMap
+example : ¬ ∃ r : Site.AATCoverageFamily.Refinement
+      topologyCoarseCover topologyFineCover,
+    r.simplexMap = topologyBrokenFaceMap := topologyBrokenFaceMap_not_refinement
+
+noncomputable example : GrothendieckTopology topologySite.category := coarseTopology
+example : coarseTopology = topologySite.topology := coarseTopology_eq_site
+noncomputable example : topologyAuxBase ⟶ topologyBase := topologyAuxBaseToBase
+noncomputable example : Sieve topologyAuxBase := topologyCoarsePullbackAtAuxBase
+example : topologyCoarsePullbackAtAuxBase ∈ coarseTopology topologyAuxBase :=
+  topologyCoarsePullbackAtAuxBase_mem
+example : ¬ topologyCoarsePullbackAtAuxBase ≤ topologyAuxSieve :=
+  topologyCoarsePullbackAtAuxBase_not_le_auxSieve
+noncomputable example : GrothendieckTopology topologySite.category := fineTopology
+example : fineTopology =
+    coarseTopology ⊔ topologyAuxPrecoverage.toGrothendieck :=
+  fineTopology_eq_coarse_sup_aux
+example : fineTopology ≠ ⊤ := fineTopology_ne_top
+example : Nat := nonzeroDegree
+noncomputable example : HasSheafify coarseTopology AddCommGrpCat.{1} :=
+  topologyCoarseAddCommGrpHasSheafify
+noncomputable example : HasSheafify fineTopology AddCommGrpCat.{1} :=
+  topologyFineAddCommGrpHasSheafify
+noncomputable example : HasExt.{2} (Sheaf coarseTopology AddCommGrpCat.{1}) :=
+  topologyCoarseAddCommGrpHasExt
+noncomputable example : HasExt.{2} (Sheaf fineTopology AddCommGrpCat.{1}) :=
+  topologyFineAddCommGrpHasExt
+example : topologyAuxSieve ∈ fineTopology topologyAuxBase :=
+  topologyAuxSieve_mem_fineTopology
+example : topologyAuxSieve ∉ coarseTopology topologyAuxBase :=
+  topologyAuxSieve_not_mem_coarseTopology
+noncomputable example : CoverageTopologyRefinement coarseTopology fineTopology :=
+  coarseFineTopologyRefinement
+example : coarseTopology ≠ fineTopology := coarseFineTopology_strict
+example : Sieve.generate topologyCoarseCover.presieve ∈
+    coarseTopology topologyBase := topologyCoarseCover_mem_coarseTopology
+example :
+    (coarseFineTopologyRefinement.refineCover topologyBase
+      (Sieve.generate topologyCoarseCover.presieve)
+      topologyCoarseCover_mem_coarseTopology).1 =
+        Sieve.generate topologyFineCover.presieve :=
+  coarseFineTopologyRefinement_selects_fineCover
+example : Sieve.generate topologyFineCover.presieve ∈ fineTopology topologyBase :=
+  topologyFineCover_mem_fineTopology
+
+end R9c
 
 end AAT.AG.StatementContractsReadingFunctoriality

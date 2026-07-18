@@ -5713,6 +5713,141 @@ def readingFunctoriality_finiteSheafHClass_baseChange_nonzero :=
 def readingFunctoriality_zeroClass_not_firing :=
   @AAT.AG.ReadingFunctorialityFinite.zeroClass_not_firing
 
+/-! R9c independent topology and selected-cover firing. -/
+
+noncomputable def readingFunctoriality_topologySite :=
+  AAT.AG.ReadingFunctorialityFinite.topologySite
+noncomputable def readingFunctoriality_topologyBase :=
+  AAT.AG.ReadingFunctorialityFinite.topologyBase
+noncomputable def readingFunctoriality_topologyBaseIsTerminal :=
+  AAT.AG.ReadingFunctorialityFinite.topologyBaseIsTerminal
+noncomputable def readingFunctoriality_topologyLeftObject :=
+  AAT.AG.ReadingFunctorialityFinite.topologyLeftObject
+noncomputable def readingFunctoriality_topologyRightObject :=
+  AAT.AG.ReadingFunctorialityFinite.topologyRightObject
+noncomputable def readingFunctoriality_topologyOverlapObject :=
+  AAT.AG.ReadingFunctorialityFinite.topologyOverlapObject
+def readingFunctoriality_topologyPairOverlap_eq :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyPairOverlap_eq
+def readingFunctoriality_topologyStrictDiamond :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyStrictDiamond
+noncomputable def readingFunctoriality_topologyAuxBase :=
+  AAT.AG.ReadingFunctorialityFinite.topologyAuxBase
+noncomputable def readingFunctoriality_topologyAuxPatch :=
+  AAT.AG.ReadingFunctorialityFinite.topologyAuxPatch
+noncomputable def readingFunctoriality_topologyAuxInclusion :=
+  AAT.AG.ReadingFunctorialityFinite.topologyAuxInclusion
+noncomputable def readingFunctoriality_topologyLeftAuxOverlap :=
+  AAT.AG.ReadingFunctorialityFinite.topologyLeftAuxOverlap
+noncomputable def readingFunctoriality_topologyRightAuxOverlap :=
+  AAT.AG.ReadingFunctorialityFinite.topologyRightAuxOverlap
+def readingFunctoriality_topologyLeftAuxOverlap_eq :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyLeftAuxOverlap_eq
+def readingFunctoriality_topologyRightAuxOverlap_eq :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyRightAuxOverlap_eq
+def readingFunctoriality_topologyAuxOffDiamond :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyAuxOffDiamond
+def readingFunctoriality_topologyLeftAuxOverlap_not_le_auxPatch :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyLeftAuxOverlap_not_le_auxPatch
+def readingFunctoriality_topologyRightAuxOverlap_not_le_auxPatch :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyRightAuxOverlap_not_le_auxPatch
+noncomputable def readingFunctoriality_topologyAuxSieve :=
+  AAT.AG.ReadingFunctorialityFinite.topologyAuxSieve
+def readingFunctoriality_topologyAuxSieve_eq_generateSingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyAuxSieve_eq_generateSingleton
+noncomputable def readingFunctoriality_topologyAuxPrecoverage :=
+  AAT.AG.ReadingFunctorialityFinite.topologyAuxPrecoverage
+def readingFunctoriality_topologyAuxPrecoverage_mem_iff :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyAuxPrecoverage_mem_iff
+noncomputable def readingFunctoriality_topologyCoarseCover :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCoarseCover
+noncomputable def readingFunctoriality_topologyFineCover :=
+  AAT.AG.ReadingFunctorialityFinite.topologyFineCover
+def readingFunctoriality_topologyCoarseCoverIndexEquiv :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCoarseCoverIndexEquiv
+def readingFunctoriality_topologyFineCoverIndexEquiv :=
+  AAT.AG.ReadingFunctorialityFinite.topologyFineCoverIndexEquiv
+def readingFunctoriality_topologyCoarseCover_twoBranches :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoarseCover_twoBranches
+def readingFunctoriality_topologyCoarseCover_presieve_eq_fineCover :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoarseCover_presieve_eq_fineCover
+noncomputable def readingFunctoriality_topologyCoarsePrecoverage :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCoarsePrecoverage
+def readingFunctoriality_topologyCoarsePrecoverage_mem_iff :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoarsePrecoverage_mem_iff
+def readingFunctoriality_topologySite_topology_eq_coarseGenerated :=
+  @AAT.AG.ReadingFunctorialityFinite.topologySite_topology_eq_coarseGenerated
+noncomputable def readingFunctoriality_topologyCoarseToFineCover :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCoarseToFineCover
+def readingFunctoriality_topologyCoarseToFineCover_not_bijective :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoarseToFineCover_not_bijective
+noncomputable def readingFunctoriality_topologyObstructionSheaf :=
+  AAT.AG.ReadingFunctorialityFinite.topologyObstructionSheaf
+def readingFunctoriality_topologyBaseCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyBaseCoefficient_subsingleton
+def readingFunctoriality_topologyLeftCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyLeftCoefficient_subsingleton
+def readingFunctoriality_topologyRightCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyRightCoefficient_subsingleton
+noncomputable def readingFunctoriality_topologyOverlapCoefficientEquiv :=
+  AAT.AG.ReadingFunctorialityFinite.topologyOverlapCoefficientEquiv
+def readingFunctoriality_topologyAuxBaseCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyAuxBaseCoefficient_subsingleton
+def readingFunctoriality_topologyAuxPatchCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyAuxPatchCoefficient_subsingleton
+def readingFunctoriality_topologyLeftAuxOverlapCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyLeftAuxOverlapCoefficient_subsingleton
+def readingFunctoriality_topologyRightAuxOverlapCoefficient_subsingleton :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyRightAuxOverlapCoefficient_subsingleton
+def readingFunctoriality_topologyCoarseToFineCechHom_nonzero :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoarseToFineCechHom_nonzero
+noncomputable def readingFunctoriality_topologyBrokenFaceMap :=
+  AAT.AG.ReadingFunctorialityFinite.topologyBrokenFaceMap
+def readingFunctoriality_topologyBrokenFaceMap_not_refinement :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyBrokenFaceMap_not_refinement
+noncomputable def readingFunctoriality_coarseTopology :=
+  AAT.AG.ReadingFunctorialityFinite.coarseTopology
+def readingFunctoriality_coarseTopology_eq_site :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseTopology_eq_site
+noncomputable def readingFunctoriality_topologyAuxBaseToBase :=
+  AAT.AG.ReadingFunctorialityFinite.topologyAuxBaseToBase
+noncomputable def readingFunctoriality_topologyCoarsePullbackAtAuxBase :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCoarsePullbackAtAuxBase
+def readingFunctoriality_topologyCoarsePullbackAtAuxBase_mem :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoarsePullbackAtAuxBase_mem
+def readingFunctoriality_topologyCoarsePullbackAtAuxBase_not_le_auxSieve :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoarsePullbackAtAuxBase_not_le_auxSieve
+noncomputable def readingFunctoriality_fineTopology :=
+  AAT.AG.ReadingFunctorialityFinite.fineTopology
+def readingFunctoriality_fineTopology_eq_coarse_sup_aux :=
+  @AAT.AG.ReadingFunctorialityFinite.fineTopology_eq_coarse_sup_aux
+def readingFunctoriality_fineTopology_ne_top :=
+  @AAT.AG.ReadingFunctorialityFinite.fineTopology_ne_top
+def readingFunctoriality_nonzeroDegree :=
+  @AAT.AG.ReadingFunctorialityFinite.nonzeroDegree
+noncomputable def readingFunctoriality_topologyCoarseAddCommGrpHasSheafify :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCoarseAddCommGrpHasSheafify
+noncomputable def readingFunctoriality_topologyFineAddCommGrpHasSheafify :=
+  AAT.AG.ReadingFunctorialityFinite.topologyFineAddCommGrpHasSheafify
+noncomputable def readingFunctoriality_topologyCoarseAddCommGrpHasExt :=
+  AAT.AG.ReadingFunctorialityFinite.topologyCoarseAddCommGrpHasExt
+noncomputable def readingFunctoriality_topologyFineAddCommGrpHasExt :=
+  AAT.AG.ReadingFunctorialityFinite.topologyFineAddCommGrpHasExt
+def readingFunctoriality_topologyAuxSieve_mem_fineTopology :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyAuxSieve_mem_fineTopology
+def readingFunctoriality_topologyAuxSieve_not_mem_coarseTopology :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyAuxSieve_not_mem_coarseTopology
+noncomputable def readingFunctoriality_coarseFineTopologyRefinement :=
+  AAT.AG.ReadingFunctorialityFinite.coarseFineTopologyRefinement
+def readingFunctoriality_coarseFineTopology_strict :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseFineTopology_strict
+def readingFunctoriality_topologyCoarseCover_mem_coarseTopology :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyCoarseCover_mem_coarseTopology
+def readingFunctoriality_coarseFineTopologyRefinement_selects_fineCover :=
+  @AAT.AG.ReadingFunctorialityFinite.coarseFineTopologyRefinement_selects_fineCover
+def readingFunctoriality_topologyFineCover_mem_fineTopology :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyFineCover_mem_fineTopology
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
