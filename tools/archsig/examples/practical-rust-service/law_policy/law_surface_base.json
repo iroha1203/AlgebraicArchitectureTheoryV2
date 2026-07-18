@@ -1,6 +1,6 @@
 {
   "schema": "law-equation-surface/v0.5.3",
-  "id": "law-surface:practical-rust-v052",
+  "id": "law-surface:practical-rust-base-v052",
   "laws": [
     {
       "lawId": "surface:cech-surface-v052",
@@ -51,17 +51,6 @@
           }
         },
         {
-          "variable": "e_application_settlement",
-          "binding": {
-            "edge": [
-              "ctx:application",
-              "ctx:settlement"
-            ],
-            "axis": "cech",
-            "predicate": "sectionValue"
-          }
-        },
-        {
           "variable": "e_application_shared",
           "binding": {
             "edge": [
@@ -78,17 +67,6 @@
             "edge": [
               "ctx:infrastructure",
               "ctx:ports"
-            ],
-            "axis": "cech",
-            "predicate": "sectionValue"
-          }
-        },
-        {
-          "variable": "e_infrastructure_settlement",
-          "binding": {
-            "edge": [
-              "ctx:infrastructure",
-              "ctx:settlement"
             ],
             "axis": "cech",
             "predicate": "sectionValue"
@@ -148,17 +126,6 @@
             "axis": "cech",
             "predicate": "sectionValue"
           }
-        },
-        {
-          "variable": "e_settlement_shared",
-          "binding": {
-            "edge": [
-              "ctx:settlement",
-              "ctx:shared"
-            ],
-            "axis": "cech",
-            "predicate": "sectionValue"
-          }
         }
       ],
       "forbiddenSupportGenerators": [
@@ -184,22 +151,12 @@
         },
         {
           "support": [
-            "e_application_settlement"
-          ]
-        },
-        {
-          "support": [
             "e_application_shared"
           ]
         },
         {
           "support": [
             "e_infrastructure_ports"
-          ]
-        },
-        {
-          "support": [
-            "e_infrastructure_settlement"
           ]
         },
         {
@@ -226,11 +183,6 @@
           "support": [
             "e_runtime_shared"
           ]
-        },
-        {
-          "support": [
-            "e_settlement_shared"
-          ]
         }
       ]
     },
@@ -238,17 +190,6 @@
       "lawId": "law:money-convention",
       "conditionType": "closed-equational",
       "witnessVariables": [
-        {
-          "variable": "e_application_settlement",
-          "binding": {
-            "edge": [
-              "ctx:application",
-              "ctx:settlement"
-            ],
-            "axis": "cech",
-            "predicate": "sectionValue"
-          }
-        },
         {
           "variable": "e_application_ports",
           "binding": {
@@ -270,26 +211,13 @@
             "axis": "cech",
             "predicate": "sectionValue"
           }
-        },
-        {
-          "variable": "e_infrastructure_settlement",
-          "binding": {
-            "edge": [
-              "ctx:infrastructure",
-              "ctx:settlement"
-            ],
-            "axis": "cech",
-            "predicate": "sectionValue"
-          }
         }
       ],
       "forbiddenSupportGenerators": [
         {
           "support": [
-            "e_application_settlement",
             "e_application_ports",
-            "e_infrastructure_ports",
-            "e_infrastructure_settlement"
+            "e_infrastructure_ports"
           ]
         }
       ]
@@ -363,11 +291,6 @@
       "simplex": "vertex:money-shared",
       "supportAtomRef": "atom:cech-money-shared",
       "requiredLawId": "law:money-convention"
-    },
-    {
-      "simplex": "vertex:money-settlement",
-      "supportAtomRef": "atom:cech-money-settlement",
-      "requiredLawId": "law:money-convention"
     }
   ],
   "defectSources": [
@@ -419,13 +342,6 @@
         },
         {
           "chart": "ctx:shared",
-          "defectObservable": {
-            "axis": "square-free",
-            "predicate": "support"
-          }
-        },
-        {
-          "chart": "ctx:settlement",
           "defectObservable": {
             "axis": "square-free",
             "predicate": "support"

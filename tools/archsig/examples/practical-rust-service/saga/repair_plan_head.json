@@ -1,0 +1,596 @@
+{
+  "schema": "archsig-repair-plan/v0.5.3",
+  "id": "repair-plan:one-cent-head",
+  "residual": {
+    "kind": "supplied"
+  },
+  "complex": {
+    "charts": [
+      "ctx:domain",
+      "ctx:ports",
+      "ctx:application",
+      "ctx:infrastructure",
+      "ctx:policy",
+      "ctx:runtime",
+      "ctx:shared",
+      "ctx:settlement"
+    ],
+    "overlaps": [
+      {
+        "id": "overlap:application-settlement",
+        "left": "ctx:application",
+        "right": "ctx:settlement"
+      },
+      {
+        "id": "overlap:application-ports",
+        "left": "ctx:application",
+        "right": "ctx:ports"
+      },
+      {
+        "id": "overlap:infrastructure-ports",
+        "left": "ctx:infrastructure",
+        "right": "ctx:ports"
+      },
+      {
+        "id": "overlap:infrastructure-settlement",
+        "left": "ctx:infrastructure",
+        "right": "ctx:settlement"
+      },
+      {
+        "id": "overlap:application-domain",
+        "left": "ctx:application",
+        "right": "ctx:domain"
+      },
+      {
+        "id": "overlap:application-shared",
+        "left": "ctx:application",
+        "right": "ctx:shared"
+      },
+      {
+        "id": "overlap:domain-shared",
+        "left": "ctx:domain",
+        "right": "ctx:shared"
+      },
+      {
+        "id": "overlap:policy-shared",
+        "left": "ctx:policy",
+        "right": "ctx:shared"
+      },
+      {
+        "id": "overlap:runtime-application",
+        "left": "ctx:runtime",
+        "right": "ctx:application"
+      }
+    ],
+    "tripleOverlaps": [
+      {
+        "id": "triple:application-domain-shared",
+        "overlapRefs": [
+          "overlap:application-domain",
+          "overlap:application-shared",
+          "overlap:domain-shared"
+        ]
+      }
+    ],
+    "enumerationComplete": true
+  },
+  "primitives": [
+    {
+      "id": "primitive:application-settlement",
+      "overlapRef": "overlap:application-settlement",
+      "resL": [
+        "drift:one-cent"
+      ],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": [
+          "drift:one-cent"
+        ]
+      }
+    },
+    {
+      "id": "primitive:application-ports",
+      "overlapRef": "overlap:application-ports",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    },
+    {
+      "id": "primitive:infrastructure-ports",
+      "overlapRef": "overlap:infrastructure-ports",
+      "resL": [
+        "drift:one-cent"
+      ],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": [
+          "drift:one-cent"
+        ]
+      }
+    },
+    {
+      "id": "primitive:infrastructure-settlement",
+      "overlapRef": "overlap:infrastructure-settlement",
+      "resL": [
+        "drift:one-cent"
+      ],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": [
+          "drift:one-cent"
+        ]
+      }
+    },
+    {
+      "id": "primitive:application-domain",
+      "overlapRef": "overlap:application-domain",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    },
+    {
+      "id": "primitive:application-shared",
+      "overlapRef": "overlap:application-shared",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    },
+    {
+      "id": "primitive:domain-shared",
+      "overlapRef": "overlap:domain-shared",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    },
+    {
+      "id": "primitive:policy-shared",
+      "overlapRef": "overlap:policy-shared",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    },
+    {
+      "id": "primitive:runtime-application",
+      "overlapRef": "overlap:runtime-application",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    }
+  ],
+  "semanticProjection": {
+    "lambda": [
+      "atom:settlement-drift-witness"
+    ],
+    "k": [
+      "drift:one-cent"
+    ],
+    "pi": [
+      {
+        "atomRef": "atom:settlement-drift-witness",
+        "subject": "drift:one-cent"
+      }
+    ]
+  },
+  "faithfulness": {
+    "mode": "supplied",
+    "supplied": {
+      "zeroPrimitiveRef": "primitive:application-ports",
+      "residualSupportPredicate": {
+        "kind": "finite-support",
+        "supportVariables": [
+          "drift:one-cent"
+        ],
+        "zeroOnZeroPrimitive": true
+      },
+      "faithfulnessLaw": "the reconciliation drift witness projects one-to-one onto the settlement observation"
+    }
+  },
+  "coefficient": "f2-additive",
+  "trueSheafCertificate": {
+    "kind": "true-sheaf-certificate",
+    "coverRef": "cover:commerce-fulfillment",
+    "memberCharts": [
+      "ctx:domain",
+      "ctx:ports",
+      "ctx:application",
+      "ctx:infrastructure",
+      "ctx:policy",
+      "ctx:runtime",
+      "ctx:shared",
+      "ctx:settlement"
+    ],
+    "globalCondition": "assumed"
+  },
+  "gluingData": {
+    "kind": "gluing-data",
+    "overlapRefs": [
+      "overlap:application-settlement",
+      "overlap:application-ports",
+      "overlap:infrastructure-ports",
+      "overlap:infrastructure-settlement",
+      "overlap:application-domain",
+      "overlap:application-shared",
+      "overlap:domain-shared",
+      "overlap:policy-shared",
+      "overlap:runtime-application"
+    ],
+    "sectionRefs": [
+      {
+        "overlapRef": "overlap:application-settlement",
+        "sectionRef": "section:money-application-settlement"
+      },
+      {
+        "overlapRef": "overlap:application-ports",
+        "sectionRef": "section:money-application-ports"
+      },
+      {
+        "overlapRef": "overlap:infrastructure-ports",
+        "sectionRef": "section:money-infrastructure-ports"
+      },
+      {
+        "overlapRef": "overlap:infrastructure-settlement",
+        "sectionRef": "section:money-infrastructure-settlement"
+      },
+      {
+        "overlapRef": "overlap:application-domain",
+        "sectionRef": "section:money-application-domain"
+      },
+      {
+        "overlapRef": "overlap:application-shared",
+        "sectionRef": "section:money-application-shared"
+      },
+      {
+        "overlapRef": "overlap:domain-shared",
+        "sectionRef": "section:money-domain-shared"
+      },
+      {
+        "overlapRef": "overlap:policy-shared",
+        "sectionRef": "section:money-policy-shared"
+      },
+      {
+        "overlapRef": "overlap:runtime-application",
+        "sectionRef": "section:money-runtime-application"
+      }
+    ]
+  },
+  "grounding": {
+    "kind": "saga-grounding",
+    "surfaceRef": "law-surface:practical-rust-v052",
+    "profileRef": "profile:commerce-fulfillment@1"
+  },
+  "comparison": {
+    "kind": "saga-comparison",
+    "incidenceBridge": {
+      "kind": "explicit",
+      "sourceComplexRef": "complex:repair",
+      "targetComplexRef": "complex:cech",
+      "targetComplex": {
+        "charts": [
+          "ctx:domain",
+          "ctx:ports",
+          "ctx:application",
+          "ctx:infrastructure",
+          "ctx:policy",
+          "ctx:runtime",
+          "ctx:shared",
+          "ctx:settlement"
+        ],
+        "overlaps": [
+          {
+            "id": "overlap:application-settlement",
+            "left": "ctx:application",
+            "right": "ctx:settlement"
+          },
+          {
+            "id": "overlap:application-ports",
+            "left": "ctx:application",
+            "right": "ctx:ports"
+          },
+          {
+            "id": "overlap:infrastructure-ports",
+            "left": "ctx:infrastructure",
+            "right": "ctx:ports"
+          },
+          {
+            "id": "overlap:infrastructure-settlement",
+            "left": "ctx:infrastructure",
+            "right": "ctx:settlement"
+          },
+          {
+            "id": "overlap:application-domain",
+            "left": "ctx:application",
+            "right": "ctx:domain"
+          },
+          {
+            "id": "overlap:application-shared",
+            "left": "ctx:application",
+            "right": "ctx:shared"
+          },
+          {
+            "id": "overlap:domain-shared",
+            "left": "ctx:domain",
+            "right": "ctx:shared"
+          },
+          {
+            "id": "overlap:policy-shared",
+            "left": "ctx:policy",
+            "right": "ctx:shared"
+          },
+          {
+            "id": "overlap:runtime-application",
+            "left": "ctx:runtime",
+            "right": "ctx:application"
+          }
+        ],
+        "tripleOverlaps": [
+          {
+            "id": "triple:application-domain-shared",
+            "overlapRefs": [
+              "overlap:application-domain",
+              "overlap:application-shared",
+              "overlap:domain-shared"
+            ]
+          }
+        ],
+        "enumerationComplete": true
+      }
+    },
+    "h1ComparisonData": {
+      "schema": "h1-comparison-data/v0.5.3",
+      "kind": "explicit",
+      "cochainMapRef": "comparison:cochain-map",
+      "sourceComplexFingerprint": "574638b7510e991db10a8cebfbd17202219a126ba7edd510e57f50367ce382e6",
+      "targetComplexFingerprint": "574638b7510e991db10a8cebfbd17202219a126ba7edd510e57f50367ce382e6",
+      "targetCochainSupport": [
+        {
+          "overlapRef": "overlap:application-settlement",
+          "support": [
+            "drift:one-cent"
+          ]
+        },
+        {
+          "overlapRef": "overlap:application-ports",
+          "support": []
+        },
+        {
+          "overlapRef": "overlap:infrastructure-ports",
+          "support": [
+            "drift:one-cent"
+          ]
+        },
+        {
+          "overlapRef": "overlap:infrastructure-settlement",
+          "support": [
+            "drift:one-cent"
+          ]
+        },
+        {
+          "overlapRef": "overlap:application-domain",
+          "support": []
+        },
+        {
+          "overlapRef": "overlap:application-shared",
+          "support": []
+        },
+        {
+          "overlapRef": "overlap:domain-shared",
+          "support": []
+        },
+        {
+          "overlapRef": "overlap:policy-shared",
+          "support": []
+        },
+        {
+          "overlapRef": "overlap:runtime-application",
+          "support": []
+        }
+      ],
+      "cochainMap": {
+        "degreeZero": [
+          {
+            "sourceChartRef": "ctx:domain",
+            "targetChartRef": "ctx:domain",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceChartRef": "ctx:ports",
+            "targetChartRef": "ctx:ports",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceChartRef": "ctx:application",
+            "targetChartRef": "ctx:application",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceChartRef": "ctx:infrastructure",
+            "targetChartRef": "ctx:infrastructure",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceChartRef": "ctx:policy",
+            "targetChartRef": "ctx:policy",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceChartRef": "ctx:runtime",
+            "targetChartRef": "ctx:runtime",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceChartRef": "ctx:shared",
+            "targetChartRef": "ctx:shared",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceChartRef": "ctx:settlement",
+            "targetChartRef": "ctx:settlement",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          }
+        ],
+        "degreeOne": [
+          {
+            "sourceOverlapRef": "overlap:application-settlement",
+            "targetOverlapRef": "overlap:application-settlement",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceOverlapRef": "overlap:application-ports",
+            "targetOverlapRef": "overlap:application-ports",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceOverlapRef": "overlap:infrastructure-ports",
+            "targetOverlapRef": "overlap:infrastructure-ports",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceOverlapRef": "overlap:infrastructure-settlement",
+            "targetOverlapRef": "overlap:infrastructure-settlement",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceOverlapRef": "overlap:application-domain",
+            "targetOverlapRef": "overlap:application-domain",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceOverlapRef": "overlap:application-shared",
+            "targetOverlapRef": "overlap:application-shared",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceOverlapRef": "overlap:domain-shared",
+            "targetOverlapRef": "overlap:domain-shared",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceOverlapRef": "overlap:policy-shared",
+            "targetOverlapRef": "overlap:policy-shared",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          },
+          {
+            "sourceOverlapRef": "overlap:runtime-application",
+            "targetOverlapRef": "overlap:runtime-application",
+            "variableMap": [
+              {
+                "source": "drift:one-cent",
+                "target": "drift:one-cent"
+              }
+            ]
+          }
+        ],
+        "degreeTwo": {
+          "basisMap": [
+            {
+              "sourceTripleRef": "triple:application-domain-shared",
+              "targetTripleRef": "triple:application-domain-shared"
+            }
+          ],
+          "zeroImage": []
+        }
+      }
+    }
+  }
+}

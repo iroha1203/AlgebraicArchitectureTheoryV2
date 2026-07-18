@@ -31,10 +31,14 @@ R9 numeric locks are executable in `cli_r9_numeric_locks_preserve_ag_measurement
 - repeated circle-nerve runs: byte-identical packet, summary, viewer, and
   manifest artifacts.
 
-The one-cent drift script asserts the four-act lock:
-`analyze → gate BLOCK → repair → PASS`, including the expected comparison
-codes. The head and repaired runs use the same policy bundle so the selected
-law surface and measurement profile are fixed together.
+The one-cent drift script asserts the five-act SAGA-staircase lock:
+base typed silence → head `MEASURED_NONGLUING_RESIDUAL_CLASS` (grounding
+`measured_zero`, residual class `measured_nonzero`, `h1-transfer`
+`established`, harmonic-debt lower bound `0.353553`) → gate BLOCK → repaired
+`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` → PASS, including the expected
+comparison codes. The head and repaired runs share the same LawPolicy, law
+surface, measurement profiles, and per-state RepairPlans under
+`examples/practical-rust-service/{law_policy,saga}/`.
 
 ## AG measurement fixtures
 
