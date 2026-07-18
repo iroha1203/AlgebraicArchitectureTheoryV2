@@ -14,10 +14,11 @@ use walkdir::WalkDir;
 use crate::{
     ArchMapAtomV2, ArchMapDocumentV2, ArchMapSource, ArchmapCandidatePacketV1,
     ArchmapCoverageLedgerV1, ArchmapExtractionConsistencyV1, ArchmapExtractionContextDiffV1,
-    ArchmapExtractionMatchCountV1, ArchmapExtractionMatchedCandidateV1,
-    ArchmapExtractionOnlyInCandidateV1, ArchmapScopeManifestExclusionV1,
-    ArchmapScopeManifestRepositoryV1, ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1,
-    ArchmapScopeManifestWorklistEntryV1, ValidationCheck, ValidationExample,
+    ArchmapExtractionKeyComparisonV1, ArchmapExtractionMatchCountV1,
+    ArchmapExtractionMatchedCandidateV1, ArchmapExtractionOnlyInCandidateV1,
+    ArchmapScopeManifestExclusionV1, ArchmapScopeManifestRepositoryV1,
+    ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1, ArchmapScopeManifestWorklistEntryV1,
+    ValidationCheck, ValidationExample,
 };
 
 pub const ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA: &str = "archmap-scope-manifest/v0.5.3";
@@ -222,8 +223,8 @@ pub fn build_extraction_consistency_v1(
         .iter()
         .map(|packet| packet.id.clone())
         .collect::<Vec<_>>();
-    let pass_a_atoms = candidate_atom_index(&pass_a);
-    let pass_b_atoms = candidate_atom_index(&pass_b);
+    let pass_a_atoms = candidate_atom_index(&pass_a, atom_match_key_v2);
+    let pass_b_atoms = candidate_atom_index(&pass_b, atom_match_key_v2);
     let matched_rows = matched_candidates(&pass_a_atoms, &pass_b_atoms);
     let matched_count = matched_rows
         .iter()
@@ -237,6 +238,17 @@ pub fn build_extraction_consistency_v1(
     } else {
         matched_count as f64 / denominator as f64
     };
+    let pass_a_atoms_v1 = candidate_atom_index(&pass_a, atom_match_key_v1);
+    let pass_b_atoms_v1 = candidate_atom_index(&pass_b, atom_match_key_v1);
+    let matched_count_v1 = matched_pair_count(&pass_a_atoms_v1, &pass_b_atoms_v1);
+    let total_a = pass_a_atoms_v1.values().map(Vec::len).sum::<usize>();
+    let total_b = pass_b_atoms_v1.values().map(Vec::len).sum::<usize>();
+    let denominator_v1 = total_a + total_b - matched_count_v1;
+    let match_rate_v1 = if denominator_v1 == 0 {
+        1.0
+    } else {
+        matched_count_v1 as f64 / denominator_v1 as f64
+    };
     let context_diff = context_diff(&pass_a, &pass_b);
 
     Ok(ArchmapExtractionConsistencyV1 {
@@ -245,7 +257,7 @@ pub fn build_extraction_consistency_v1(
         scope_manifest_ref,
         pass_a_refs,
         pass_b_refs,
-        atom_match_key_spec: "kind | NFC(trim(subject)) | axis | predicate? | object?".to_string(),
+        atom_match_key_spec: ATOM_MATCH_KEY_V2_SPEC.to_string(),
         matched: ArchmapExtractionMatchCountV1 {
             count: matched_count,
             rows: matched_rows,
@@ -253,6 +265,11 @@ pub fn build_extraction_consistency_v1(
         only_in_pass_a,
         only_in_pass_b,
         match_rate,
+        atom_match_key1_comparison: Some(ArchmapExtractionKeyComparisonV1 {
+            atom_match_key_spec: ATOM_MATCH_KEY_V1_SPEC.to_string(),
+            matched_count: matched_count_v1,
+            match_rate: match_rate_v1,
+        }),
         context_diff,
         adjudications: vec![],
     })
@@ -264,7 +281,15 @@ fn load_candidate_packets(
 ) -> Result<Vec<ArchmapCandidatePacketV1>, Box<dyn Error>> {
     let mut packets = Vec::new();
     for path in paths {
-        let packet: ArchmapCandidatePacketV1 = serde_json::from_reader(File::open(path)?)?;
+        let file = File::open(path)
+            .map_err(|error| format!("{label} candidate packet {}: {error}", path.display()))?;
+        let value: serde_json::Value = serde_json::from_reader(file).map_err(|error| {
+            format!(
+                "{label} candidate packet {} is not valid JSON: {error}",
+                path.display()
+            )
+        })?;
+        let packet = parse_candidate_packet_value(value, &format!("{label} {}", path.display()))?;
         if let Err(errors) = validate_candidate_packet_v1(&packet) {
             return Err(format!(
                 "{label} candidate packet {} failed validation: {}",
@@ -278,19 +303,84 @@ fn load_candidate_packets(
     Ok(packets)
 }
 
+/// Parse a candidate packet from a JSON value with a fail-closed
+/// required-field check that names the packet id and every defective atom.
+/// No field is auto-filled from defaults: a packet with missing atom fields
+/// is rejected with an error the author can act on.
+pub fn parse_candidate_packet_value(
+    value: serde_json::Value,
+    origin: &str,
+) -> Result<ArchmapCandidatePacketV1, Box<dyn Error>> {
+    let packet_id = value
+        .get("id")
+        .and_then(|id| id.as_str())
+        .unwrap_or("<missing packet id>")
+        .to_string();
+    let mut errors = Vec::new();
+    if let Some(atoms) = value
+        .get("candidateAtoms")
+        .and_then(|atoms| atoms.as_array())
+    {
+        for (index, atom) in atoms.iter().enumerate() {
+            let atom_id = atom
+                .get("id")
+                .and_then(|id| id.as_str())
+                .unwrap_or("<missing atom id>");
+            for field in ["id", "kind", "subject", "axis"] {
+                let present = atom
+                    .get(field)
+                    .and_then(|field_value| field_value.as_str())
+                    .is_some_and(|text| !text.trim().is_empty());
+                if !present {
+                    errors.push(format!(
+                        "candidateAtoms[{index}] {atom_id}: required field `{field}` is missing or empty"
+                    ));
+                }
+            }
+            if atom.get("refs").and_then(|refs| refs.as_array()).is_none() {
+                errors.push(format!(
+                    "candidateAtoms[{index}] {atom_id}: required field `refs` is missing or not an array"
+                ));
+            }
+        }
+    }
+    if !errors.is_empty() {
+        return Err(format!(
+            "candidate packet {packet_id} ({origin}) failed the required-field check: {}",
+            errors.join("; ")
+        )
+        .into());
+    }
+    serde_json::from_value::<ArchmapCandidatePacketV1>(value).map_err(|error| {
+        format!("candidate packet {packet_id} ({origin}) failed to parse: {error}").into()
+    })
+}
+
 fn candidate_atom_index(
     packets: &[ArchmapCandidatePacketV1],
+    match_key: fn(&ArchMapAtomV2) -> String,
 ) -> BTreeMap<String, Vec<ArchMapAtomV2>> {
     let mut index: BTreeMap<String, Vec<ArchMapAtomV2>> = BTreeMap::new();
     for packet in packets {
         for atom in &packet.candidate_atoms {
-            index
-                .entry(atom_match_key(atom))
-                .or_default()
-                .push(atom.clone());
+            index.entry(match_key(atom)).or_default().push(atom.clone());
         }
     }
     index
+}
+
+fn matched_pair_count(
+    pass_a_atoms: &BTreeMap<String, Vec<ArchMapAtomV2>>,
+    pass_b_atoms: &BTreeMap<String, Vec<ArchMapAtomV2>>,
+) -> usize {
+    pass_a_atoms
+        .iter()
+        .filter_map(|(key, atoms)| {
+            pass_b_atoms
+                .get(key)
+                .map(|other| atoms.len().min(other.len()))
+        })
+        .sum()
 }
 
 fn matched_candidates(
@@ -361,7 +451,7 @@ fn context_keys(packets: &[ArchmapCandidatePacketV1]) -> BTreeSet<String> {
         let atom_keys = packet
             .candidate_atoms
             .iter()
-            .map(|atom| (atom.id.clone(), atom_match_key(atom)))
+            .map(|atom| (atom.id.clone(), atom_match_key_v2(atom)))
             .collect::<BTreeMap<_, _>>();
         let context_members = packet
             .candidate_contexts
@@ -435,16 +525,68 @@ fn resolve_context_key(
     key
 }
 
-fn atom_match_key(atom: &ArchMapAtomV2) -> String {
+pub(crate) const ATOM_MATCH_KEY_V1_SPEC: &str =
+    "kind | NFC(trim(subject)) | axis | predicate? | object? (atom-match-key@1)";
+pub(crate) const ATOM_MATCH_KEY_V2_SPEC: &str = "kind | NFC(trim(subject) normalized to <source-dir>.<Class> from refs) | axis | predicate? | object? (atom-match-key@2)";
+
+fn atom_match_key_v1(atom: &ArchMapAtomV2) -> String {
     let normalized_subject = atom.subject.trim().nfc().collect::<String>();
+    atom_match_key_from_subject(atom, &normalized_subject)
+}
+
+/// atom-match-key@2: same literal key as @1, except that an identifier-path
+/// subject is deterministically rewritten to `<source-dir>.<Class>` using the
+/// first `src:<dir>/...` ref. This is a mechanical string mapping (no semantic
+/// comparison): free-text subjects, subjects without a resolvable source dir,
+/// and non-identifier subjects (e.g. `ctx:...`) are left as in @1.
+fn atom_match_key_v2(atom: &ArchMapAtomV2) -> String {
+    atom_match_key_from_subject(atom, &normalized_subject_v2(atom))
+}
+
+fn atom_match_key_from_subject(atom: &ArchMapAtomV2, subject: &str) -> String {
     [
         atom.kind.as_str(),
-        normalized_subject.as_str(),
+        subject,
         atom.axis.as_str(),
         atom.predicate.as_deref().unwrap_or(""),
         atom.object.as_deref().unwrap_or(""),
     ]
     .join("|")
+}
+
+fn normalized_subject_v2(atom: &ArchMapAtomV2) -> String {
+    let subject = atom.subject.trim();
+    let fallback = || subject.nfc().collect::<String>();
+    if !subject_is_identifier_path(subject) {
+        return fallback();
+    }
+    let Some(dir) = source_dir_component(&atom.refs) else {
+        return fallback();
+    };
+    let tail = subject
+        .strip_prefix(dir)
+        .map(|rest| rest.trim_start_matches('.'))
+        .unwrap_or(subject);
+    let class = tail.rsplit('.').next().unwrap_or(tail);
+    if class.is_empty() {
+        return fallback();
+    }
+    format!("{dir}.{class}").nfc().collect()
+}
+
+fn subject_is_identifier_path(subject: &str) -> bool {
+    !subject.is_empty()
+        && subject
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-' | '$'))
+}
+
+fn source_dir_component(refs: &[String]) -> Option<&str> {
+    refs.iter().find_map(|source_ref| {
+        let rest = source_ref.strip_prefix("src:")?;
+        let (first, _) = rest.split_once('/')?;
+        (!first.is_empty()).then_some(first)
+    })
 }
 
 fn reject_non_repo_relative_path(path: &str) -> Result<(), Box<dyn Error>> {
@@ -889,7 +1031,8 @@ fn check_authoring_provenance_closure(
                 "adopted ArchMap atom must be present in the coverage ledger",
             ));
         } else if !survey_atoms.contains(&atom.id)
-            && !adjudicated_keys.contains(&atom_match_key(atom))
+            && !adjudicated_keys.contains(&atom_match_key_v2(atom))
+            && !adjudicated_keys.contains(&atom_match_key_v1(atom))
         {
             examples.push(validation_example(
                 &atom.id,
@@ -1637,6 +1780,78 @@ mod tests {
     }
 
     #[test]
+    fn atom_match_key_v2_normalizes_identifier_subjects_to_source_dir_class() {
+        let make = |subject: &str, refs: Vec<&str>| ArchMapAtomV2 {
+            id: "atom:component:test".to_string(),
+            kind: "component".to_string(),
+            subject: subject.to_string(),
+            axis: "static".to_string(),
+            predicate: None,
+            object: None,
+            refs: refs.into_iter().map(str::to_string).collect(),
+            label: None,
+        };
+        let fqcn = make(
+            "cancel.service.CancelServiceImpl",
+            vec!["src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:42"],
+        );
+        let short = make(
+            "ts-cancel-service.CancelServiceImpl",
+            vec!["src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java"],
+        );
+        assert_eq!(atom_match_key_v2(&fqcn), atom_match_key_v2(&short));
+        assert!(atom_match_key_v2(&fqcn).contains("ts-cancel-service.CancelServiceImpl"));
+        assert_ne!(atom_match_key_v1(&fqcn), atom_match_key_v1(&short));
+
+        // context-id subjects and free-text subjects stay untouched (@1 == @2)
+        let ctx = make("ctx:cancel-surface", vec!["src:ts-cancel-service/a.java"]);
+        assert_eq!(atom_match_key_v1(&ctx), atom_match_key_v2(&ctx));
+        let free = make(
+            "refund amount as observed",
+            vec!["src:ts-cancel-service/a.java"],
+        );
+        assert_eq!(atom_match_key_v1(&free), atom_match_key_v2(&free));
+        // no resolvable source dir: unchanged
+        let bare = make("cancel.CancelServiceImpl", vec!["src:cover"]);
+        assert_eq!(atom_match_key_v1(&bare), atom_match_key_v2(&bare));
+    }
+
+    #[test]
+    fn candidate_packet_required_field_check_names_packet_and_atom() {
+        let value = serde_json::json!({
+            "schema": "archmap-candidate-packet/v0.5.3",
+            "id": "candidates:pass-a:chunk-99",
+            "scopeManifestRef": "scope:test",
+            "passId": "pass-a",
+            "chunk": {"worklistOrderFrom": 1, "worklistOrderTo": 20},
+            "reviewedSources": [],
+            "candidateSources": {},
+            "candidateAtoms": [
+                {"id": "atom:capability:svc-home", "kind": "capability",
+                 "subject": "svc.Home", "refs": ["src:svc/Home.java"]}
+            ],
+            "candidateContexts": [],
+            "candidateCovers": [],
+            "surveyRows": [],
+            "privateUnavailableNotes": [],
+            "selfReview": {
+                "notScriptGenerated": true,
+                "notCoarseWhenEvidenceWasRicher": true,
+                "semanticAtomsHaveUseEvidence": true,
+                "noDiagnosticShortcutAtoms": true,
+                "worklistChunkFullyRead": true,
+                "aliasPreservingSemantics": true
+            }
+        });
+        let error = parse_candidate_packet_value(value, "unit-test")
+            .expect_err("missing axis must fail closed");
+        let message = error.to_string();
+        assert!(message.contains("candidates:pass-a:chunk-99"), "{message}");
+        assert!(message.contains("atom:capability:svc-home"), "{message}");
+        assert!(message.contains("`axis`"), "{message}");
+    }
+
+    #[test]
     fn validates_extraction_consistency_match_rate_and_decision_tokens() {
         let report = ArchmapExtractionConsistencyV1 {
             schema: ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA.to_string(),
@@ -1652,6 +1867,7 @@ mod tests {
             only_in_pass_a: vec![],
             only_in_pass_b: vec![],
             match_rate: 0.5,
+            atom_match_key1_comparison: None,
             context_diff: ArchmapExtractionContextDiffV1 {
                 matched: 0,
                 only_in_pass_a: vec![],

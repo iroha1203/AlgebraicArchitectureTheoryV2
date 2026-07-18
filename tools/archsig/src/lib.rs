@@ -33,8 +33,9 @@ pub use authoring::{
     ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA, ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
     ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, AuthoringAuditInputV1, ExtractionDiffOptions,
     ScopeManifestOptions, archmap_authoring_audit_checks_v1, build_extraction_consistency_v1,
-    build_scope_manifest_v1, validate_authoring_audit_input_v1, validate_candidate_packet_v1,
-    validate_coverage_ledger_v1, validate_extraction_consistency_v1, validate_scope_manifest_v1,
+    build_scope_manifest_v1, parse_candidate_packet_value, validate_authoring_audit_input_v1,
+    validate_candidate_packet_v1, validate_coverage_ledger_v1, validate_extraction_consistency_v1,
+    validate_scope_manifest_v1,
 };
 pub use compare::{build_comparison_artifacts_v1, build_comparison_artifacts_with_refinement_v1};
 pub use gate::{build_gate_report_v1, validate_gate_policy_v1};

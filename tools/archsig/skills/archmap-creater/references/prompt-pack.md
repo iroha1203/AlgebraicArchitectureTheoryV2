@@ -118,6 +118,68 @@ The same rule applies to survey-row notes: name the branch condition the code
 takes ("the branch taken when a payment already exists"), not "the failure
 branch".
 
+## Subject Normal Form
+
+Independent passes drift most heavily on subject spelling (FQCN vs shortened
+package vs service-dir form), which alone can account for ~90% of mechanical
+mismatches. Write every atom subject as:
+
+```
+<source-dir>.<ClassName>
+```
+
+where `<source-dir>` is the first path component of the source file
+(e.g. `ts-cancel-service.CancelServiceImpl`, `ts-common.OrderStatus`).
+Configuration files use `<source-dir>.application-yml`. Do not put Java
+package segments into the subject.
+
+Bad: `cancel.service.CancelServiceImpl`, `edu.fudan.common.entity.OrderStatus`
+Good: `ts-cancel-service.CancelServiceImpl`, `ts-common.OrderStatus`
+
+The mechanical differ additionally normalizes identifier subjects to this form
+(atom-match-key@2), but write the normal form directly so ids, contexts, and
+human review converge too.
+
+## Default Granularity
+
+The same evidence read at different granularities produces unmatched
+candidates that adjudication must reconcile. Use these defaults (they are
+convergence points, not prohibitions — a reading that genuinely differs may
+still be emitted and will be adjudicated):
+
+- HTTP endpoint capability: **one atom per endpoint (verb + path)**. Do not
+  bundle multiple verbs or endpoints into one atom.
+- Cross-service call effect: **one atom per provider**. Do not bundle
+  alternative providers ("A or B") into one atom; a branch-selected provider
+  pair is two atoms (plus the branch condition as its own observation).
+- Capability subject: the **implementing class** (behavioral evidence). The
+  declaring interface is a separate `contract` observation, not the capability
+  subject.
+- Repository persistence: **one aggregate `state`/`persistsIn` atom per
+  repository** by default; add per-method atoms only when a method carries
+  behavior of its own worth citing.
+- Two-valued response envelope semantics (status 0/1 and similar): **one
+  semantic atom whose object describes both branches**, not one atom per value.
+
+## Structured Object Notation
+
+For recurring observation shapes, use these object forms so identical facts
+produce identical keys (free prose stays allowed for genuinely novel
+observations — the narration is free, the key converges):
+
+- endpoint route: `GET /api/v1/cancelservice/cancel/{orderId}/{loginId}`
+- response envelope: `status-1-on-<selected-branch>-status-0-on-<selected-branch>`
+- code vocabulary: `int-codes-0-notpaid-1-paid-2-collected-...` (list every
+  observed code in ascending order)
+- money/amount representation, one label per convention:
+  `string-passthrough-unparsed`, `string-parsed-to-double-arithmetic-decimalformat`,
+  `string-parsed-to-bigdecimal-at-use-site`, `string-parsed-to-float-at-use-site`,
+  `double-primitive-fields`, `double-arithmetic-then-string-concatenation`,
+  `double-parsed-from-text-at-init-seed`, `price-from-string-keyed-map-lookup-unparsed`
+- authority path rule: `<verb-or-all> <path-pattern> <rule>` (e.g.
+  `POST /api/v1/seatservice/seats requiresRole-ADMIN`,
+  `ALL /api/v1/basicservice/** permitsUnauthenticated`)
+
 ## Default Axis Selection
 
 Independent passes drift most on `axis`, which breaks `atom-match-key@1`

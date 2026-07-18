@@ -6,9 +6,12 @@ and pass differences auditable without turning them into semantic verdicts.
 ## Extraction Consistency
 
 `archmap-extraction-consistency/v0.5.3` is produced by `archsig extraction-diff`.
-The command compares candidate packets by atom-match-key and leaves semantic
-adjudication to the integrator. The integrator completes adjudication by
-rereading sources.
+The command compares candidate packets by atom-match-key@2 (subject normalized
+to `<source-dir>.<Class>` from refs) and reports the atom-match-key@1 matched
+count and matchRate alongside (`atomMatchKey1Comparison`) for migration
+comparison. It leaves semantic adjudication to the integrator. The integrator
+completes adjudication by rereading sources. Unmatched candidates remain a
+rereading queue, and matchRate remains a record, not a pass/fail verdict.
 
 Required shape:
 
