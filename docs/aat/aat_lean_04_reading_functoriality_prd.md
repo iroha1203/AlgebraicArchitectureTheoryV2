@@ -118,7 +118,7 @@ SDとmodule DAGを再承認する。
 | `Formal.AG.ReadingFunctoriality.Coverage` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.ExtFunctoriality`、`Formal.AG.Site.FinitePosetGeometry`、`Formal.AG.Cohomology.CechComplex`、`Mathlib.AlgebraicTopology.AlternatingFaceMapComplex`、`Mathlib.CategoryTheory.Sites.SheafCohomology.Basic`、`Mathlib.CategoryTheory.Sites.Limits`、`Mathlib.CategoryTheory.Sites.LeftExact`、`Mathlib.CategoryTheory.Sites.Abelian`、`Mathlib.CategoryTheory.Sites.Equivalence`、`Mathlib.CategoryTheory.Adjunction.Restrict`、`Mathlib.CategoryTheory.Adjunction.Limits`、`Mathlib.CategoryTheory.Whiskering`、`Mathlib.Algebra.Category.Grp.FilteredColimits`、`Mathlib.Algebra.Homology.DerivedCategory.Ext.Map` | topology refinement、canonical tuple cover、selected cover refinement、one-way cochain hom、large additive coefficientのselected Čech complex、terminal `Sheaf.H'` / `Sheaf.H` comparison、topology-change `Sheaf.H` map |
 | `Formal.AG.ReadingFunctoriality.LerayComparison` | `Formal.AG.ReadingFunctoriality.Coverage`、`Mathlib.Algebra.Category.ModuleCat.AB`、`Mathlib.Algebra.Category.Grp.Colimits`、`Mathlib.Algebra.Category.Grp.Ulift`、`Mathlib.Algebra.Category.Grp.Zero`、`Mathlib.Algebra.Homology.AlternatingConst`、`Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughInjectives`、`Mathlib.Algebra.Homology.Additive`、`Mathlib.Algebra.Homology.HomologicalBicomplex`、`Mathlib.Algebra.Homology.QuasiIso`、`Mathlib.Algebra.Homology.TotalComplex`、`Mathlib.Algebra.Homology.ShortComplex.Ab`、`Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex`、`Mathlib.Algebra.Homology.ShortComplex.PreservesHomology`、`Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Sheaf`、`Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives`、`Mathlib.CategoryTheory.Abelian.Injective.Ext`、`Mathlib.CategoryTheory.Abelian.Injective.Resolution`、`Mathlib.CategoryTheory.Adjunction.Additive`、`Mathlib.CategoryTheory.Adjunction.Whiskering`、`Mathlib.CategoryTheory.Sites.SheafCohomology.Cech`、`Mathlib.CategoryTheory.Whiskering` | cover-relative Čech complexとMathlib cochain-complex homologyの同一化、universe-lift homology bridge、sheaf categoryのinjective-resolution計算、selected injective-resolution bicomplexとcanonical edge maps、actual total complex、augmented column exactness、sheafified augmented Čech chain resolutionからのinjective-row acyclicity、両edgeのactual quasi-isomorphism、selected Čech–`Sheaf.H'` Leray comparison、bijectivity、refinement naturality |
 | `Formal.AG.ReadingFunctoriality.LargeLerayComparison` | `Formal.AG.ReadingFunctoriality.LerayComparison` | arbitrary `Sheaf S.topology AddCommGrpCat.{u + 1}`のLeray predicate、generic instance pair、selected Čech homology–actual `Sheaf.H'` comparison。R5のsmall custom Čech bridgeとrefinement APIは再定義しない |
-| `Formal.AG.ReadingFunctoriality.Coefficient` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.Derived.Intersection`、`Mathlib.Algebra.Category.ModuleCat.ChangeOfRings`、`Mathlib.Algebra.Category.ModuleCat.Descent`、`Mathlib.Algebra.Category.ModuleCat.Sheaf`、`Mathlib.Algebra.Category.Ring.Under.Basic`、`Mathlib.Algebra.Category.Ring.Under.Limits`、`Mathlib.Algebra.Module.TransferInstance`、`Mathlib.CategoryTheory.Sites.Adjunction`、`Mathlib.CategoryTheory.Sites.PreservesSheafification`、`Mathlib.CategoryTheory.Sites.Whiskering`、`Mathlib.Logic.Function.Basic`、`Mathlib.AlgebraicGeometry.Pullbacks`、`Mathlib.AlgebraicGeometry.IdealSheaf.Functorial`、`Mathlib.RingTheory.RingHom.Flat` | closed-equational geometry宣言のdirect reuse、raw quotient / sheafification scalar-extension comparison、Tor / linear Čech scalar extension / canonical coefficient base change through Hn |
+| `Formal.AG.ReadingFunctoriality.Coefficient` | `Formal.AG.ReadingFunctoriality.Core`、`Formal.AG.ReadingFunctoriality.Coverage`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.Derived.Intersection`、`Mathlib.Algebra.Category.ModuleCat.ChangeOfRings`、`Mathlib.Algebra.Category.ModuleCat.Descent`、`Mathlib.Algebra.Category.ModuleCat.Sheaf`、`Mathlib.Algebra.Category.Ring.Under.Basic`、`Mathlib.Algebra.Category.Ring.Under.Limits`、`Mathlib.Algebra.Module.TransferInstance`、`Mathlib.CategoryTheory.Sites.Adjunction`、`Mathlib.CategoryTheory.Sites.PreservesSheafification`、`Mathlib.CategoryTheory.Sites.Whiskering`、`Mathlib.Logic.Function.Basic`、`Mathlib.AlgebraicGeometry.Pullbacks`、`Mathlib.AlgebraicGeometry.IdealSheaf.Functorial`、`Mathlib.RingTheory.RingHom.Flat` | closed-equational geometry宣言のdirect reuse、raw quotient / sheafification scalar-extension comparison、canonical section mapのidentity / composition characterization、Tor / linear Čech scalar extension / canonical coefficient base change through Hn |
 | `Formal.AG.ReadingFunctoriality.LinearLerayComparison` | `Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.ReadingFunctoriality.LargeLerayComparison` | linear Čech homologyとgeneric selected additive Čech homologyのcanonical bridge、actual `Sheaf.H`へのmodule transport、coefficient base-change map / iso / class formula、identity / composition |
 | `Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient` | `Formal.AG.ReadingFunctoriality.Coefficient`、`Mathlib.AlgebraicGeometry.PullbackCarrier` | actual scheme pullback、reading decoration、全chartのpullback atlas、coverage、overlap presentation |
 | `Formal.AG.ReadingFunctoriality.CoefficientGeometry` | `Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Mathlib.AlgebraicGeometry.IdealSheaf.Functorial` | semantic-core global equationの係数変更、target closed-equational reading、per-law chart ideal、aggregate ideal comap、lawful closed geometry map |
@@ -3474,6 +3474,33 @@ theorem baseChangeSectionMap_naturality
         Ob.baseChangeSectionMap f source =
       Ob.baseChangeSectionMap f target ≫
         (Ob.baseChange f).modulePresheaf.map g.op
+
+@[reassoc] theorem baseChangeSectionMap_id
+    {R : Type u} [CommRing R]
+    (Ob : LinearCoefficientSheaf R S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (W : S.category) :
+    Ob.baseChangeSectionMap (FlatCoefficientChange.refl R) W ≫
+        (Ob.baseChangeIdIso).hom.app (op W) =
+      (ModuleCat.extendScalarsId.{u, u + 1} R).hom.app
+        (Ob.modulePresheaf.obj (op W))
+
+@[reassoc] theorem baseChangeSectionMap_comp
+    {R R' R'' : Type u}
+    [CommRing R] [CommRing R'] [CommRing R'']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    (g : FlatCoefficientChange R' R'')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (W : S.category) :
+    (ModuleCat.extendScalars g.hom).map
+          (Ob.baseChangeSectionMap f W) ≫
+        (Ob.baseChange f).baseChangeSectionMap g W ≫
+        (Ob.baseChangeCompIso f g).hom.app (op W) =
+      (ModuleCat.extendScalarsComp.{u, u + 1}
+          f.hom g.hom).symm.hom.app
+          (Ob.modulePresheaf.obj (op W)) ≫
+        Ob.baseChangeSectionMap (f.comp g) W
 
 end LinearCoefficientSheaf
 
