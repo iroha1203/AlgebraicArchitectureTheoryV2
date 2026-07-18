@@ -160,6 +160,18 @@ still be emitted and will be adjudicated):
   behavior of its own worth citing.
 - Two-valued response envelope semantics (status 0/1 and similar): **one
   semantic atom whose object describes both branches**, not one atom per value.
+- One atom per evidence site: do not combine facts observed in **different
+  methods** into one atom, and do not split a **single construct** (one
+  try/catch, one if/else, one computation) into several atoms unless the parts
+  genuinely carry different predicates.
+- Relation predicate lens: use `calls` when an **invocation site** is observed;
+  use `dependsOn` only for declaration-only dependencies (import, injected
+  field, extends/implements) with no observed invocation in the read scope.
+- Capability predicate lens for service methods: `servesQuery` when the
+  observed body only reads, `handlesCommand` when it mutates state or triggers
+  a mutating downstream call — decide from the observed body, not the name.
+  Emit one capability atom per public service method whose body you read
+  (do not skip the capability layer for a class you surveyed).
 
 ## Structured Object Notation
 
@@ -179,6 +191,15 @@ observations — the narration is free, the key converges):
 - authority path rule: `<verb-or-all> <path-pattern> <rule>` (e.g.
   `POST /api/v1/seatservice/seats requiresRole-ADMIN`,
   `ALL /api/v1/basicservice/** permitsUnauthenticated`)
+- service-method capability (`handlesCommand` / `servesQuery`): object is the
+  **verbatim method name plus `/` plus parameter count**, nothing else (e.g.
+  `cancelOrder/2`, `queryForStationId/2`). No prose, no route, no description —
+  the route belongs to the endpoint atom, the behavior to semantic atoms.
+- cross-service call effect (`callsProvider`): object is
+  `<verb> <target-service> <route>` (e.g.
+  `GET ts-order-service /api/v1/orderservice/order/{id}`).
+- repository persistence (`persistsIn`): object is the verbatim entity class
+  name (e.g. `Order`).
 
 ## Default Axis Selection
 
