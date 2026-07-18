@@ -4120,7 +4120,7 @@ theorem positiveQuery_mem :
     (positiveQuery, true) ∈ positiveCircuit.1.queries
 
 theorem positiveCircuit_queries_nonempty :
-    positiveCircuit.1.queries.Nonempty
+    positiveCircuit.1.queries ≠ []
 
 def positiveCircuit_transport :
     PositiveCircuitDatum positiveTargetCore
