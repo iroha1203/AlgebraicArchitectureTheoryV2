@@ -3807,7 +3807,24 @@ example
 
 end LinearLerayComparisonSD8d
 
-/-! ## SD9a: positive-only finite core change -/
+/-! ## SD9a: nonidentity exact finite core change -/
+
+noncomputable example : AATCorePackage FiniteModel.carrier :=
+  ReadingFunctorialityFinite.exactSourceCore
+
+noncomputable example : AATCorePackage FiniteModel.carrier :=
+  ReadingFunctorialityFinite.exactTargetCore
+
+noncomputable example :
+    SignedExactCoreReadingHom
+      ReadingFunctorialityFinite.exactSourceCore
+      ReadingFunctorialityFinite.exactTargetCore :=
+  ReadingFunctorialityFinite.nonidentityExactCoreChange
+
+example : ReadingFunctorialityFinite.nonidentityExactCoreChange.atomMap ≠ id :=
+  ReadingFunctorialityFinite.nonidentityExactCoreChange_fires
+
+/-! ## SD9b: positive-only finite core change -/
 
 noncomputable example : AATCorePackage FiniteModel.carrier :=
   ReadingFunctorialityFinite.positiveSourceCore

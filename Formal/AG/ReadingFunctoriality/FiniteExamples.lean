@@ -2177,5 +2177,322 @@ theorem positiveOnly_not_signedExact :
     ((f.matches_iff negativeCircuit
       (positiveSingletonObject FiniteModel.FiniteAtom.componentB)).mpr hA)
 
+/-! ## R9b: nonidentity exact core reading change -/
+
+private def exactAtomMap : FiniteModel.carrier.Atom → FiniteModel.carrier.Atom
+  | .componentA => .componentB
+  | .componentB => .componentA
+  | atom => atom
+
+@[simp] private theorem exactAtomMap_involutive
+    (atom : FiniteModel.carrier.Atom) :
+    exactAtomMap (exactAtomMap atom) = atom := by
+  cases atom <;> rfl
+
+private theorem exactAtomMap_injective : Function.Injective exactAtomMap :=
+  Function.LeftInverse.injective exactAtomMap_involutive
+
+private def exactExtractionDoctrine : ExtractionDoctrine FiniteModel.carrier where
+  Source := PUnit
+  Vocabulary := PUnit
+  SemanticReading := PUnit
+  Resolution := PUnit
+  vocabulary := PUnit.unit
+  semanticReading := PUnit.unit
+  resolution := PUnit.unit
+  vocabularyAllows := fun _ _ => True
+  semanticAllows := fun _ _ _ => True
+  resolutionAllows := fun _ _ _ => True
+  sourceSemantics := fun _ _ => True
+  normalize := id
+
+private def exactCompositionReading : CompositionReading FiniteModel.carrier where
+  compose family _ := {
+    family := family
+    relation := fun _ _ => False
+    identification := fun _ _ => False
+  }
+  family_eq := by intros; rfl
+  family_supported := by
+    intro family hfinite
+    exact ⟨fun h => False.elim h, fun h => False.elim h⟩
+
+private def exactLaw : Law FiniteModel.carrier where
+  holds _ := False
+
+private def exactLawUniverse : LawUniverse FiniteModel.carrier where
+  Index := PUnit
+  law _ := exactLaw
+  role _ := LawRole.required
+  witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
+  SelectedReading := PUnit
+  selectedReading := PUnit.unit
+  coverageAssumptions := True
+  exactnessAssumptions := True
+
+private def exactCircuitDatum : FiniteCircuitDatum FiniteModel.carrier where
+  queries := [(.atomPresent FiniteModel.FiniteAtom.componentC, true)]
+
+private noncomputable def exactCircuitReading :
+    CircuitReading exactLawUniverse where
+  code _ := .exact exactCircuitDatum
+  sound := by
+    intro i A Q hmatches haccepts
+    exact fun h => h
+
+private noncomputable def exactLawReading : LawReading FiniteModel.carrier where
+  lawUniverse := exactLawUniverse
+  circuits := exactCircuitReading
+
+private def exactInvariantFamily : InvariantFamily FiniteModel.carrier where
+  Index := Bool
+  invariant
+    | false => .function { Value := PUnit, evaluate := fun _ => PUnit.unit }
+    | true => .predicate { holds := fun _ => True }
+
+private def exactSignature : ArchitectureSignature FiniteModel.carrier where
+  Axis := PUnit
+  Coordinate _ := Nat
+  selected _ := True
+  coordinate _ _ := 0
+
+private noncomputable def exactCoreReading : CoreReading FiniteModel.carrier where
+  doctrine := exactExtractionDoctrine
+  source := PUnit.unit
+  family_listFinite := ⟨FiniteModel.FiniteAtom.all,
+    fun atom _ => FiniteModel.FiniteAtom.mem_all atom⟩
+  composition := exactCompositionReading
+  objectReading := FiniteModel.objectReading
+  lawReading := exactLawReading
+  invariantReading := exactInvariantFamily
+  signatureReading := exactSignature
+  operationReading := FiniteModel.operationReading
+
+/-- Source core for the nonidentity exact finite reading change. -/
+noncomputable def exactSourceCore : AATCorePackage FiniteModel.carrier :=
+  AATCorePackage.generate FiniteModel.axiomSystem exactCoreReading
+
+/-- Target core for the nonidentity exact finite reading change. -/
+noncomputable def exactTargetCore : AATCorePackage FiniteModel.carrier :=
+  AATCorePackage.generate FiniteModel.axiomSystem exactCoreReading
+
+private theorem exactSourceCore_family_mem
+    (atom : FiniteModel.carrier.Atom) : exactSourceCore.family.mem atom := by
+  rw [exactSourceCore.family_mem_iff_extracts]
+  exact ⟨trivial, trivial, trivial, trivial⟩
+
+private theorem exactTargetCore_family_mem
+    (atom : FiniteModel.carrier.Atom) : exactTargetCore.family.mem atom := by
+  rw [exactTargetCore.family_mem_iff_extracts]
+  exact ⟨trivial, trivial, trivial, trivial⟩
+
+private theorem exactFamily_transport :
+    exactTargetCore.family = exactSourceCore.family.transport exactAtomMap := by
+  ext atom
+  constructor
+  · intro _
+    exact ⟨exactAtomMap atom, exactSourceCore_family_mem _, by simp⟩
+  · intro _
+    exact exactTargetCore_family_mem atom
+
+private def exactObjectMap (A : ArchitectureObject FiniteModel.carrier) :
+    ArchitectureObject FiniteModel.carrier :=
+  FiniteModel.objectOfConfiguration (A.configuration.transport exactAtomMap)
+
+private def exactQueryMap :
+    CircuitQuery FiniteModel.carrier → CircuitQuery FiniteModel.carrier
+  | .atomPresent atom => .atomPresent (exactAtomMap atom)
+  | .relationPresent atom₁ atom₂ =>
+      .relationPresent (exactAtomMap atom₁) (exactAtomMap atom₂)
+  | .identificationPresent atom₁ atom₂ =>
+      .identificationPresent (exactAtomMap atom₁) (exactAtomMap atom₂)
+
+@[simp] private theorem exactQueryMap_involutive
+    (query : CircuitQuery FiniteModel.carrier) :
+    exactQueryMap (exactQueryMap query) = query := by
+  cases query <;> simp [exactQueryMap]
+
+private def exactDatumMap (datum : FiniteCircuitDatum FiniteModel.carrier) :
+    FiniteCircuitDatum FiniteModel.carrier where
+  queries := datum.queries.map fun pair => (exactQueryMap pair.1, pair.2)
+
+@[simp] private theorem exactDatumMap_involutive
+    (datum : FiniteCircuitDatum FiniteModel.carrier) :
+    exactDatumMap (exactDatumMap datum) = datum := by
+  cases datum with
+  | mk queries =>
+      simp [exactDatumMap, Function.comp_def]
+
+private theorem exactDatumMap_injective : Function.Injective exactDatumMap :=
+  Function.LeftInverse.injective exactDatumMap_involutive
+
+@[simp] private theorem exactDatumMap_exactCircuitDatum :
+    exactDatumMap exactCircuitDatum = exactCircuitDatum := by
+  rfl
+
+private theorem exactQueryMap_holds_iff
+    (query : CircuitQuery FiniteModel.carrier)
+    (A : ArchitectureObject FiniteModel.carrier) :
+    (exactQueryMap query).Holds (exactObjectMap A) ↔ query.Holds A := by
+  cases query with
+  | atomPresent atom =>
+      constructor
+      · rintro ⟨source, hsource, heq⟩
+        have hsource_eq : source = atom := exactAtomMap_injective heq
+        subst source
+        exact hsource
+      · intro h
+        exact ⟨atom, h, rfl⟩
+  | relationPresent atom₁ atom₂ =>
+      constructor
+      · rintro ⟨⟨source₁, hsource₁, heq₁⟩,
+          ⟨⟨source₂, hsource₂, heq₂⟩,
+            ⟨relationSource₁, relationSource₂, hrelation,
+              hrelation₁, hrelation₂⟩⟩⟩
+        have hs₁ : source₁ = atom₁ := exactAtomMap_injective heq₁
+        have hs₂ : source₂ = atom₂ := exactAtomMap_injective heq₂
+        have hr₁ : relationSource₁ = atom₁ := exactAtomMap_injective hrelation₁
+        have hr₂ : relationSource₂ = atom₂ := exactAtomMap_injective hrelation₂
+        subst source₁
+        subst source₂
+        subst relationSource₁
+        subst relationSource₂
+        exact ⟨hsource₁, hsource₂, hrelation⟩
+      · rintro ⟨h₁, h₂, hrelation⟩
+        exact ⟨⟨atom₁, h₁, rfl⟩, ⟨⟨atom₂, h₂, rfl⟩,
+          ⟨atom₁, atom₂, hrelation, rfl, rfl⟩⟩⟩
+  | identificationPresent atom₁ atom₂ =>
+      constructor
+      · rintro ⟨⟨source₁, hsource₁, heq₁⟩,
+          ⟨⟨source₂, hsource₂, heq₂⟩,
+            ⟨identificationSource₁, identificationSource₂, hidentification,
+              hidentification₁, hidentification₂⟩⟩⟩
+        have hs₁ : source₁ = atom₁ := exactAtomMap_injective heq₁
+        have hs₂ : source₂ = atom₂ := exactAtomMap_injective heq₂
+        have hi₁ : identificationSource₁ = atom₁ :=
+          exactAtomMap_injective hidentification₁
+        have hi₂ : identificationSource₂ = atom₂ :=
+          exactAtomMap_injective hidentification₂
+        subst source₁
+        subst source₂
+        subst identificationSource₁
+        subst identificationSource₂
+        exact ⟨hsource₁, hsource₂, hidentification⟩
+      · rintro ⟨h₁, h₂, hidentification⟩
+        exact ⟨⟨atom₁, h₁, rfl⟩, ⟨⟨atom₂, h₂, rfl⟩,
+          ⟨atom₁, atom₂, hidentification, rfl, rfl⟩⟩⟩
+
+private theorem exactDatumMap_matches_iff
+    (datum : FiniteCircuitDatum FiniteModel.carrier)
+    (A : ArchitectureObject FiniteModel.carrier) :
+    datum.Matches A ↔ (exactDatumMap datum).Matches (exactObjectMap A) := by
+  constructor
+  · intro hmatches query expected hmem
+    rcases List.mem_map.mp hmem with ⟨pair, hpair, hp⟩
+    cases hp
+    exact (exactQueryMap_holds_iff pair.1 A).trans
+      (hmatches pair.1 pair.2 hpair)
+  · intro hmatches query expected hmem
+    have hmapped := hmatches (exactQueryMap query) expected
+      (List.mem_map.mpr ⟨(query, expected), hmem, rfl⟩)
+    exact (exactQueryMap_holds_iff query A).symm.trans hmapped
+
+private theorem exactDatumMap_accepts_iff
+    (datum : FiniteCircuitDatum FiniteModel.carrier) :
+    exactCircuitReading.accepts PUnit.unit datum = true ↔
+      exactCircuitReading.accepts PUnit.unit (exactDatumMap datum) = true := by
+  change (CircuitDetectorCode.exact exactCircuitDatum).eval datum = true ↔
+    (CircuitDetectorCode.exact exactCircuitDatum).eval (exactDatumMap datum) = true
+  rw [CircuitDetectorCode.eval_exact_eq_true_iff,
+    CircuitDetectorCode.eval_exact_eq_true_iff]
+  constructor
+  · intro h
+    subst datum
+    rfl
+  · intro h
+    exact exactDatumMap_injective (by simpa using h)
+
+private theorem exactComposition_eq
+    (family : AtomFamily FiniteModel.carrier) (hfinite : family.ListFinite) :
+    exactTargetCore.reading.composition.compose
+        (family.transport exactAtomMap) (hfinite.transport exactAtomMap) =
+      (exactSourceCore.reading.composition.compose family hfinite).transport
+        exactAtomMap := by
+  apply AtomConfiguration.ext
+  · rfl
+  · intro atom₁ atom₂
+    constructor
+    · intro h
+      exact False.elim h
+    · rintro ⟨source₁, source₂, h, _, _⟩
+      exact False.elim h
+  · intro atom₁ atom₂
+    constructor
+    · intro h
+      exact False.elim h
+    · rintro ⟨source₁, source₂, h, _, _⟩
+      exact False.elim h
+
+private def exactOperationMap
+    {A B : ArchitectureObject FiniteModel.carrier}
+    (op : FiniteModel.operationReading.Op A B) :
+    FiniteModel.operationReading.Op (exactObjectMap A) (exactObjectMap B) where
+  atomMap atom := exactAtomMap (op.atomMap (exactAtomMap atom))
+  maps_family := by
+    rintro target ⟨source, hsource, rfl⟩
+    exact ⟨op.atomMap source, op.maps_family hsource, by simp⟩
+  maps_relation := by
+    rintro target₁ target₂ ⟨source₁, source₂, hsource, rfl, rfl⟩
+    exact ⟨op.atomMap source₁, op.atomMap source₂,
+      op.maps_relation hsource, by simp, by simp⟩
+  maps_identification := by
+    rintro target₁ target₂ ⟨source₁, source₂, hsource, rfl, rfl⟩
+    exact ⟨op.atomMap source₁, op.atomMap source₂,
+      op.maps_identification hsource, by simp, by simp⟩
+
+/-- Exact finite core change induced by the component-A/component-B involution. -/
+noncomputable def nonidentityExactCoreChange :
+    SignedExactCoreReadingHom exactSourceCore exactTargetCore where
+  atomMap := exactAtomMap
+  extraction_eq := exactFamily_transport
+  composition_eq := exactComposition_eq
+  objectMap := exactObjectMap
+  object_formation_eq := by intros; rfl
+  configurationMap A := AtomConfiguration.transportHom exactAtomMap A.configuration
+  configurationMap_atomMap := by intros; rfl
+  lawMap := id
+  required_iff := by intro i; cases i; rfl
+  law_holds_iff := by intro i A; cases i; rfl
+  queryMap := exactDatumMap
+  matches_iff := exactDatumMap_matches_iff
+  accepts_iff := by intro i datum; cases i; exact exactDatumMap_accepts_iff datum
+  operationMap := exactOperationMap
+  operation_naturality := by
+    intro A B op
+    apply ConfigurationHom.ext
+    funext atom
+    change exactAtomMap (op.atomMap (exactAtomMap (exactAtomMap atom))) =
+      exactAtomMap (op.atomMap atom)
+    rw [exactAtomMap_involutive]
+  invariantMap := id
+  invariant_transport := by
+    intro i
+    cases i
+    · exact ⟨Equiv.refl PUnit, fun _ => rfl⟩
+    · exact fun _ => Iff.rfl
+  axisMap := id
+  coordinateEquiv := fun _ => Equiv.refl Nat
+  axis_selected_iff := by intro i; cases i; rfl
+  coordinate_eq := by intro A i; cases i; rfl
+
+/-- The exact finite core change is nonidentity on primitive atoms. -/
+theorem nonidentityExactCoreChange_fires :
+    nonidentityExactCoreChange.atomMap ≠ id := by
+  intro hidentity
+  have h := congrFun hidentity FiniteModel.FiniteAtom.componentA
+  change FiniteModel.FiniteAtom.componentB =
+    FiniteModel.FiniteAtom.componentA at h
+  exact FiniteModel.FiniteAtom.noConfusion h
+
 
 end AAT.AG.ReadingFunctorialityFinite

@@ -5465,6 +5465,24 @@ def readingFunctoriality_sheafHFlatBaseChangeMap_id :=
 def readingFunctoriality_sheafHFlatBaseChangeMap_comp :=
   @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeMap_comp
 
+/-! ## Nonidentity exact finite core change -/
+
+/-- Audit alias for the exact source core. -/
+noncomputable def readingFunctoriality_exactSourceCore :=
+  AAT.AG.ReadingFunctorialityFinite.exactSourceCore
+
+/-- Audit alias for the exact target core. -/
+noncomputable def readingFunctoriality_exactTargetCore :=
+  AAT.AG.ReadingFunctorialityFinite.exactTargetCore
+
+/-- Audit alias for the nonidentity exact core change. -/
+noncomputable def readingFunctoriality_nonidentityExactCoreChange :=
+  AAT.AG.ReadingFunctorialityFinite.nonidentityExactCoreChange
+
+/-- Audit alias for nonidentity of the exact primitive atom map. -/
+def readingFunctoriality_nonidentityExactCoreChange_fires :=
+  @AAT.AG.ReadingFunctorialityFinite.nonidentityExactCoreChange_fires
+
 /-! ## Positive-only finite core change -/
 
 /-- Audit alias for the positive source core. -/
