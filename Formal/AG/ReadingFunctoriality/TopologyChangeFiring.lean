@@ -346,10 +346,26 @@ private theorem topologyCoarseHOne_eq_zero_or_eq_source
     rw [← topologyCechToCoarseHOneEquiv.apply_symm_apply y, hx]
     rfl
 
+private noncomputable def topologyFiringOverlapToLeft :
+    topologyOverlapObject ⟶ topologyLeftObject :=
+  homOfLE topologyStrictDiamond.1
+
+private noncomputable def topologyFiringOverlapToRight :
+    topologyOverlapObject ⟶ topologyRightObject :=
+  homOfLE topologyStrictDiamond.2.1
+
+private noncomputable def topologyFiringLeftToBase :
+    topologyLeftObject ⟶ topologyBase :=
+  homOfLE topologyStrictDiamond.2.2.1
+
+private noncomputable def topologyFiringRightToBase :
+    topologyRightObject ⟶ topologyBase :=
+  homOfLE topologyStrictDiamond.2.2.2.1
+
 /-- The actual pullback square carried by the selected diamond. -/
 private noncomputable def topologyDiamondSquare : Square topologySite.category :=
-  Square.mk topologyOverlapToLeft topologyOverlapToRight
-    topologyLeftToBase topologyRightToBase (Subsingleton.elim _ _)
+  Square.mk topologyFiringOverlapToLeft topologyFiringOverlapToRight
+    topologyFiringLeftToBase topologyFiringRightToBase (Subsingleton.elim _ _)
 
 private theorem topologyDiamondSquare_isPullback :
     topologyDiamondSquare.IsPullback := by
@@ -993,64 +1009,57 @@ private theorem topologyFineHOne_eq_zero_or_eq_target
     rw [← topologyCechToFineHOneEquiv.apply_symm_apply y, hx]
     rfl
 
-private theorem topologyFineComparisonHom_ne_zero :
-    topologyCechToFineHOneEquiv.toAddMonoidHom ≠ 0 := by
+private noncomputable def topologyFineMayerVietorisGlobalClass :
+    topologyCoefficient.fine.H nonzeroDegree :=
+  Cohomology.terminalHComparison topologyCoefficient.fine
+    topologyBase topologyBaseIsTerminal 1
+    (topologyFineMayerVietorisSquare.δ topologyCoefficient.fine
+      0 1 rfl topologyFineOverlapHPrimeZeroOne)
+
+private theorem topologyFineMayerVietorisGlobalClass_ne_zero :
+    topologyFineMayerVietorisGlobalClass ≠ 0 := by
   intro h
-  apply topologyTargetHOneClass_ne_zero
-  have := DFunLike.congr_fun h topologyCechOneClass
-  simpa [topologyTargetHOneClass] using this
+  let e := Cohomology.terminalHComparison topologyCoefficient.fine
+    topologyBase topologyBaseIsTerminal 1
+  change e (topologyFineMayerVietorisSquare.δ topologyCoefficient.fine
+    0 1 rfl topologyFineOverlapHPrimeZeroOne) = 0 at h
+  have hmap :
+      e (topologyFineMayerVietorisSquare.δ topologyCoefficient.fine
+        0 1 rfl topologyFineOverlapHPrimeZeroOne) = e 0 := by
+    simpa only [map_zero] using h
+  exact topologyFineMayerVietoris_delta_one_ne_zero (e.injective hmap)
 
-private theorem topologyHOneHom_eq_of_ne_zero
-    (f g :
-      (Cohomology.canonicalCechComplex topologyCoarseCover
-        topologyObstructionSheaf).AdditiveCechHn 1 →+
-          topologyCoefficient.fine.H nonzeroDegree)
-    (hf : f ≠ 0) (hg : g ≠ 0) : f = g := by
-  have hfOne : f topologyCechOneClass ≠ 0 := by
-    intro hfOne
-    apply hf
-    apply AddMonoidHom.ext
-    intro x
-    rcases topologyCechHOne_eq_zero_or_eq_one x with hx | hx
-    · rw [hx]
-      simp
-    · rw [hx, hfOne]
-      simp
-  have hgOne : g topologyCechOneClass ≠ 0 := by
-    intro hgOne
-    apply hg
-    apply AddMonoidHom.ext
-    intro x
-    rcases topologyCechHOne_eq_zero_or_eq_one x with hx | hx
-    · rw [hx]
-      simp
-    · rw [hx, hgOne]
-      simp
-  have hfTarget :
-      f topologyCechOneClass = topologyTargetHOneClass :=
-    (topologyFineHOne_eq_zero_or_eq_target
-      (f topologyCechOneClass)).resolve_left hfOne
-  have hgTarget :
-      g topologyCechOneClass = topologyTargetHOneClass :=
-    (topologyFineHOne_eq_zero_or_eq_target
-      (g topologyCechOneClass)).resolve_left hgOne
-  apply AddMonoidHom.ext
-  intro x
-  rcases topologyCechHOne_eq_zero_or_eq_one x with hx | hx
-  · rw [hx]
-    simp
-  · rw [hx, hfTarget, hgTarget]
+private theorem topologyFineMayerVietorisGlobalClass_eq_target :
+    topologyFineMayerVietorisGlobalClass = topologyTargetHOneClass :=
+  (topologyFineHOne_eq_zero_or_eq_target
+    topologyFineMayerVietorisGlobalClass).resolve_left
+      topologyFineMayerVietorisGlobalClass_ne_zero
 
-private theorem topologySheafHMapCompCech_ne_zero :
-    (coarseFineTopologyRefinement.sheafHMap topologyCoefficient
+private theorem topologyMappedImageGlobalClass_eq_target :
+    topologyMappedImageGlobalClass = topologyTargetHOneClass :=
+  (topologyFineHOne_eq_zero_or_eq_target
+    topologyMappedImageGlobalClass).resolve_left
+      topologyMappedImageGlobalClass_ne_zero
+
+private theorem topologyMappedImageGlobalClass_eq_fineMayerVietorisGlobalClass :
+    topologyMappedImageGlobalClass =
+      topologyFineMayerVietorisGlobalClass := by
+  rw [topologyMappedImageGlobalClass_eq_target,
+    topologyFineMayerVietorisGlobalClass_eq_target]
+
+private theorem topologySheafHMapCompCech_on_explicit_class :
+    ((coarseFineTopologyRefinement.sheafHMap topologyCoefficient
       nonzeroDegree).comp
         (Cohomology.cechToSheafH topologyCoarseCover
           topologyObstructionSheaf topologyBaseIsTerminal
-          topologyCoarseLerayCover nonzeroDegree) ≠ 0 := by
-  intro h
-  apply topologySheafHMap_on_sourceClass_ne_zero
-  have h' := DFunLike.congr_fun h topologyCechOneClass
-  simpa [topologySourceHOneClass] using h'
+          topologyCoarseLerayCover nonzeroDegree)) topologyCechOneClass =
+      topologyTargetHOneClass := by
+  change coarseFineTopologyRefinement.sheafHMap topologyCoefficient
+      nonzeroDegree topologySourceHOneClass = topologyTargetHOneClass
+  rw [← topologyCoarseMayerVietorisGlobalClass_eq_source,
+    topologySheafHMap_on_coarseMayerVietorisGlobalClass,
+    topologyMappedImageGlobalClass_eq_fineMayerVietorisGlobalClass,
+    topologyFineMayerVietorisGlobalClass_eq_target]
 
 /--
 The independent fine injective-resolution comparison agrees with the actual
@@ -1063,9 +1072,13 @@ theorem topologyCechToFineHOneEquiv_eq_sheafHMap_comp_cech :
         (Cohomology.cechToSheafH topologyCoarseCover
           topologyObstructionSheaf topologyBaseIsTerminal
           topologyCoarseLerayCover nonzeroDegree) := by
-  apply topologyHOneHom_eq_of_ne_zero
-  · exact topologyFineComparisonHom_ne_zero
-  · exact topologySheafHMapCompCech_ne_zero
+  apply AddMonoidHom.ext
+  intro x
+  rcases topologyCechHOne_eq_zero_or_eq_one x with hx | hx
+  · rw [hx]
+    simp
+  · rw [hx]
+    exact topologySheafHMapCompCech_on_explicit_class.symm
 
 /-- The actual topology-change map carries the explicit source class to the fine class. -/
 theorem topologySheafHMap_on_sourceClass :
@@ -1085,5 +1098,18 @@ theorem coarseFineSheafHMap_nonzero :
   apply topologySheafHMap_on_sourceClass_ne_zero
   have h' := DFunLike.congr_fun h topologySourceHOneClass
   simpa using h'
+
+/--
+The complete degree-one firing package records strictness, properness of the
+fine topology, the nonzero fine class, and the nonzero topology-change map.
+-/
+theorem topologyActualHOneFiring :
+    coarseTopology ≠ fineTopology ∧
+      fineTopology ≠ ⊤ ∧
+      topologyTargetHOneClass ≠ 0 ∧
+      coarseFineTopologyRefinement.sheafHMap
+        topologyCoefficient nonzeroDegree ≠ 0 := by
+  exact ⟨coarseFineTopology_strict, fineTopology_ne_top,
+    topologyTargetHOneClass_ne_zero, coarseFineSheafHMap_nonzero⟩
 
 end AAT.AG.ReadingFunctorialityFinite

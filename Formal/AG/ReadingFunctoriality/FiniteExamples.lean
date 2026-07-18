@@ -5564,6 +5564,10 @@ noncomputable def topologyCoefficient :
     simpa [coarseTopology] using topologyObstructionSheaf.toAddCommGrpSheaf.cond
   isSheaf_fine := topologyCoefficientPresheaf_isSheaf_fine
 
+/--
+Normalize the common coefficient to the original obstruction presheaf; the
+`simp` direction exposes the single presheaf shared by both sheaf proofs.
+-/
 @[simp] theorem topologyCoefficient_presheaf :
     topologyCoefficient.presheaf =
       topologyObstructionSheaf.toAddCommGrpSheaf.val := rfl
@@ -6027,31 +6031,12 @@ noncomputable def topologySourceHOneClass :
     topologyBaseIsTerminal topologyCoarseLerayCover nonzeroDegree
     topologyCechOneClass
 
+/-- Unfold the source class to the selected coarse Čech comparison. -/
 theorem topologySourceHOneClass_eq_cech :
     topologySourceHOneClass =
       Cohomology.cechToSheafH topologyCoarseCover topologyObstructionSheaf
         topologyBaseIsTerminal topologyCoarseLerayCover nonzeroDegree
-        topologyCechOneClass := rfl
-
-/-- The selected overlap projection to the left branch. -/
-noncomputable def topologyOverlapToLeft :
-    topologyOverlapObject ⟶ topologyLeftObject :=
-  homOfLE (topologyOverlap.left topology_left_le_base topology_right_le_base)
-
-/-- The selected overlap projection to the right branch. -/
-noncomputable def topologyOverlapToRight :
-    topologyOverlapObject ⟶ topologyRightObject :=
-  homOfLE (topologyOverlap.right topology_left_le_base topology_right_le_base)
-
-/-- The selected left-branch inclusion into the topology base. -/
-noncomputable def topologyLeftToBase :
-    topologyLeftObject ⟶ topologyBase :=
-  homOfLE topology_left_le_base
-
-/-- The selected right-branch inclusion into the topology base. -/
-noncomputable def topologyRightToBase :
-    topologyRightObject ⟶ topologyBase :=
-  homOfLE topology_right_le_base
+      topologyCechOneClass := rfl
 
 private def topologyFineSupportVisibleOn
     (W : Site.ArchCtx FiniteModel.object)

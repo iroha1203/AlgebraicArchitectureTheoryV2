@@ -4448,6 +4448,14 @@ example :
       topologyCoefficient nonzeroDegree ≠ 0 :=
   coarseFineSheafHMap_nonzero
 
+example :
+    coarseTopology ≠ fineTopology ∧
+      fineTopology ≠ ⊤ ∧
+      topologyTargetHOneClass ≠ 0 ∧
+      coarseFineTopologyRefinement.sheafHMap
+        topologyCoefficient nonzeroDegree ≠ 0 :=
+  topologyActualHOneFiring
+
 end R9d
 
 end AAT.AG.StatementContractsReadingFunctoriality

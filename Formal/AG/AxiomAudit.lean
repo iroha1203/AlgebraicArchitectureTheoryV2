@@ -5881,6 +5881,8 @@ def readingFunctoriality_topologyTargetHOneClass_ne_zero :=
   @AAT.AG.ReadingFunctorialityFinite.topologyTargetHOneClass_ne_zero
 def readingFunctoriality_coarseFineSheafHMap_nonzero :=
   @AAT.AG.ReadingFunctorialityFinite.coarseFineSheafHMap_nonzero
+def readingFunctoriality_topologyActualHOneFiring :=
+  @AAT.AG.ReadingFunctorialityFinite.topologyActualHOneFiring
 
 end AAT.AG.AxiomAudit
 
