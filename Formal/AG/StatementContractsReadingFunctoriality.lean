@@ -1,5 +1,6 @@
 import Formal.AG.ReadingFunctoriality
 import Formal.AG.ReadingFunctoriality.FiniteExamples
+import Formal.AG.ReadingFunctoriality.InfiniteProductCechFiring
 import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
 import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
 import Formal.AG.ReadingFunctoriality.LinearLerayComparison
@@ -3246,6 +3247,18 @@ example
         (Ob.baseChange f).modulePresheaf.map g.op :=
   Ob.baseChangeSectionMap_naturality f g
 
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (hraw : Presheaf.IsSheaf S.topology
+      (Ob.rawBaseChangePresheaf f ⋙
+        forget₂ (ModuleCat.{u + 1} R') AddCommGrpCat.{u + 1}))
+    (W : S.category) :
+    IsIso (Ob.baseChangeSectionMap f W) :=
+  Ob.baseChangeSectionMap_isIso_of_raw_isSheaf f hraw W
+
 /-- Fixed identity coherence for the canonical section map. -/
 example
     {R : Type u} [CommRing R]
@@ -3447,6 +3460,24 @@ noncomputable example
     ((Ob.canonicalLinearCech 𝒰).scalarExtension f).X n ⟶
       ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.X n :=
   Ob.canonicalBaseChangeCochain f 𝒰 n
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat)
+    (z : ((Ob.canonicalLinearCech 𝒰).scalarExtension f).X n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex n) :
+    (Ob.canonicalBaseChangeCochain f 𝒰 n).hom z σ =
+      (Ob.baseChangeSectionMap f
+        ((Cohomology.canonicalCoverRelative 𝒰).overlap n σ)).hom
+        (((ModuleCat.extendScalars f.hom).map
+          (ModuleCat.ofHom (LinearMap.proj σ))).hom
+          (((Ob.canonicalLinearCech 𝒰).scalarExtensionObjIso f n).hom z)) :=
+  Ob.canonicalBaseChangeCochain_apply f 𝒰 n z σ
 
 noncomputable example
     {R R' : Type u} [CommRing R] [CommRing R']
@@ -4497,5 +4528,44 @@ example :
   modTwoTorOne_baseChange_nonzero
 
 end R9g
+
+/-! R9i: infinite-product Čech incompatibility firing. -/
+
+namespace R9i
+
+open ReadingFunctorialityFinite
+
+noncomputable example : FlatCoefficientChange Int Rat :=
+  intRationalFlatChange
+
+example : intRationalFlatChange.hom = algebraMap Int Rat :=
+  intRationalFlatChange_hom
+
+noncomputable example :
+    Site.AATCoverageFamily finiteSite.requirements
+      finiteSite.overlap finiteBase :=
+  infiniteDuplicatedCover
+
+noncomputable example : infiniteDuplicatedCover.Index ≃ Nat :=
+  infiniteDuplicatedCoverIndexEquiv
+
+noncomputable example :
+    Cohomology.LinearCoefficientSheaf Int finiteSite :=
+  infiniteProductLinearCoefficientSheaf
+
+example :
+    ¬ Cohomology.LinearCoefficientSheaf.CechCoefficientBaseChangeCompatible
+      infiniteProductLinearCoefficientSheaf intRationalFlatChange
+        infiniteDuplicatedCover :=
+  infiniteProductCech_not_compatible
+
+example :
+    ¬ IsIso
+      (Cohomology.LinearCoefficientSheaf.canonicalBaseChangeCochain
+        infiniteProductLinearCoefficientSheaf intRationalFlatChange
+          infiniteDuplicatedCover 0) :=
+  infiniteProductCech_degreeZero_not_isIso
+
+end R9i
 
 end AAT.AG.StatementContractsReadingFunctoriality

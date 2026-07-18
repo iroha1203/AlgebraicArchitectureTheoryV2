@@ -1422,6 +1422,23 @@ private noncomputable def moduleSheafificationUnitIso
     NatIso.isIso_of_isIso_app (moduleSheafificationUnit P)
   exact asIso (moduleSheafificationUnit P)
 
+/-- A sectionwise base-change map is an isomorphism when the raw
+scalar-extended additive presheaf already satisfies the sheaf condition. -/
+theorem baseChangeSectionMap_isIso_of_raw_isSheaf
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (hraw : Presheaf.IsSheaf S.topology
+      (Ob.rawBaseChangePresheaf f ⋙
+        forget₂ (ModuleCat.{u + 1} R') AddCommGrpCat.{u + 1}))
+    (W : S.category) :
+    IsIso (Ob.baseChangeSectionMap f W) := by
+  let e := moduleSheafificationUnitIso
+    (Ob.rawBaseChangePresheaf f) hraw
+  change IsIso (e.hom.app (op W))
+  infer_instance
+
 private def IsLinearSheaf
     (R : Type u) [CommRing R] :
     ObjectProperty (S.categoryᵒᵖ ⥤ ModuleCat.{u + 1} R) :=
@@ -2249,6 +2266,26 @@ noncomputable def canonicalBaseChangeCochain
       ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.X n :=
   ((Ob.canonicalLinearCech 𝒰).scalarExtensionObjIso f n).hom ≫
     (linearCechBaseChangeNatTrans Ob f 𝒰).app (SimplexCategory.mk n)
+
+/-- Pointwise formula for the canonical cochain base-change map: project to
+one source section after scalar extension, then apply the sectionwise
+sheafification unit. -/
+theorem canonicalBaseChangeCochain_apply
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat)
+    (z : ((Ob.canonicalLinearCech 𝒰).scalarExtension f).X n)
+    (σ : (canonicalCoverRelative 𝒰).simplex n) :
+    (canonicalBaseChangeCochain Ob f 𝒰 n).hom z σ =
+      (Ob.baseChangeSectionMap f
+        ((canonicalCoverRelative 𝒰).overlap n σ)).hom
+        (((ModuleCat.extendScalars f.hom).map
+          (ModuleCat.ofHom (LinearMap.proj σ))).hom
+          (((Ob.canonicalLinearCech 𝒰).scalarExtensionObjIso f n).hom z)) :=
+  rfl
 
 private theorem canonicalBaseChangeCochain_comm
     {R R' : Type u} [CommRing R] [CommRing R']
