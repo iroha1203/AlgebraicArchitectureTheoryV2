@@ -4497,19 +4497,6 @@ namespace R9f
 open ReadingFunctorialityFinite
 open AlgebraicGeometry
 
-attribute [local instance]
-  finiteIntHasSheafify finitePolynomialIntHasSheafify
-
-noncomputable example :
-    CategoryTheory.HasSheafify finiteSite.topology
-      (LawAlgebra.AATCommAlgCat.{0, 0} Int) :=
-  finiteIntHasSheafify
-
-noncomputable example :
-    CategoryTheory.HasSheafify finiteSite.topology
-      (LawAlgebra.AATCommAlgCat.{0, 0} (Polynomial Int)) :=
-  finitePolynomialIntHasSheafify
-
 noncomputable example :
     finiteSite.topology.HasSheafCompose
       (intPolynomialFlatChange.coefficientExtension :
