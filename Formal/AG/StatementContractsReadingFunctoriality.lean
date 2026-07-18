@@ -1,5 +1,6 @@
 import Formal.AG.ReadingFunctoriality
 import Formal.AG.ReadingFunctoriality.FiniteExamples
+import Formal.AG.ReadingFunctoriality.LinearLerayComparison
 
 /-!
 # Reading-functoriality statement contracts
@@ -3514,5 +3515,176 @@ noncomputable example
   Ob.canonicalCechHnFlatBaseChangeIso f 𝒰 hcompat n
 
 end CoefficientChangeSD8
+
+namespace LinearLerayComparisonSD8d
+
+open CategoryTheory CategoryTheory.Limits
+open scoped ChangeOfRings
+
+variable {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {base : S.category}
+
+/-- Fixed generic Leray predicate specialized to a linear coefficient sheaf. -/
+example
+    {R : Type u} [CommRing R]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})] : Prop :=
+  Ob.IsLinearLerayFor 𝒰
+
+/-- Fixed transported module structure on actual terminal sheaf cohomology. -/
+noncomputable example
+    {R : Type u} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hbase : IsTerminal base)
+    (hLeray : Ob.IsLinearLerayFor 𝒰)
+    (n : Nat) : ModuleCat.{u + 2} R :=
+  Ob.terminalLerayHModule 𝒰 hbase hLeray n
+
+/-- Fixed carrier identity for the transported terminal cohomology module. -/
+example
+    {R : Type u} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hbase : IsTerminal base)
+    (hLeray : Ob.IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    (Ob.terminalLerayHModule 𝒰 hbase hLeray n : Type (u + 2)) =
+      (Ob.toAddCommGrpSheaf).H n :=
+  Ob.terminalLerayHModule_carrier 𝒰 hbase hLeray n
+
+/-- Fixed linear Čech-to-actual-terminal-cohomology equivalence. -/
+noncomputable example
+    {R : Type u} [CommRing R]
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (hbase : IsTerminal base)
+    (hLeray : Ob.IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    (Ob.canonicalLinearCech 𝒰).complex.homology n ≃ₗ[R]
+      Ob.terminalLerayHModule 𝒰 hbase hLeray n :=
+  Ob.cechToSheafHLinearIso 𝒰 hbase hLeray n
+
+/-- Fixed actual-`Sheaf.H` flat base-change map. -/
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hsource : Ob.IsLinearLerayFor 𝒰)
+    (htarget : (Ob.baseChange f).IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    Derived.Intersection.moduleScalarExtension.{u, u + 2} f
+        (Ob.terminalLerayHModule 𝒰 hbase hsource n) ⟶
+      (Ob.baseChange f).terminalLerayHModule 𝒰 hbase htarget n :=
+  Ob.sheafHFlatBaseChangeMap f 𝒰 hbase hsource htarget n
+
+/-- Fixed pure-tensor formula for the actual-`Sheaf.H` base-change map. -/
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hsource : Ob.IsLinearLerayFor 𝒰)
+    (htarget : (Ob.baseChange f).IsLinearLerayFor 𝒰)
+    (n : Nat) (r' : R')
+    (x : Ob.terminalLerayHModule 𝒰 hbase hsource n) :
+    Ob.sheafHFlatBaseChangeMap f 𝒰 hbase hsource htarget n
+        (r' ⊗ₜ[R, f.hom] x) =
+      (Ob.baseChange f).cechToSheafHLinearIso 𝒰 hbase htarget n
+        (Ob.canonicalCechHnBaseChangeMap f 𝒰 n
+          (r' ⊗ₜ[R, f.hom]
+            (Ob.cechToSheafHLinearIso 𝒰 hbase hsource n).symm x)) :=
+  Ob.sheafHFlatBaseChangeMap_formula f 𝒰 hbase hsource htarget n r' x
+
+/-- Fixed cohomology-class formula for the actual-`Sheaf.H` base-change map. -/
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hsource : Ob.IsLinearLerayFor 𝒰)
+    (htarget : (Ob.baseChange f).IsLinearLerayFor 𝒰)
+    (n : Nat)
+    (c : (Ob.canonicalLinearCech 𝒰).complex.cycles n) :
+    Ob.sheafHFlatBaseChangeMap f 𝒰 hbase hsource htarget n
+        (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 2} f
+          (Ob.terminalLerayHModule 𝒰 hbase hsource n)
+          (Ob.cechToSheafHLinearIso 𝒰 hbase hsource n
+            ((Ob.canonicalLinearCech 𝒰).complex.homologyπ n c))) =
+      (Ob.baseChange f).cechToSheafHLinearIso 𝒰 hbase htarget n
+        (((Ob.baseChange f).canonicalLinearCech 𝒰).complex.homologyπ n
+          (Ob.canonicalCocycleBaseChange f 𝒰 n c)) :=
+  Ob.sheafHFlatBaseChangeMap_on_class f 𝒰 hbase hsource htarget n c
+
+/-- Fixed isomorphism witness under Čech coefficient compatibility. -/
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hcompat : Ob.CechCoefficientBaseChangeCompatible f 𝒰)
+    (hsource : Ob.IsLinearLerayFor 𝒰)
+    (htarget : (Ob.baseChange f).IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    IsIso (Ob.sheafHFlatBaseChangeMap f 𝒰 hbase hsource htarget n) :=
+  Ob.sheafHFlatBaseChangeMap_isIso f 𝒰 hbase hcompat hsource htarget n
+
+/-- Fixed actual-`Sheaf.H` flat base-change isomorphism. -/
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hcompat : Ob.CechCoefficientBaseChangeCompatible f 𝒰)
+    (hsource : Ob.IsLinearLerayFor 𝒰)
+    (htarget : (Ob.baseChange f).IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    Derived.Intersection.moduleScalarExtension.{u, u + 2} f
+        (Ob.terminalLerayHModule 𝒰 hbase hsource n) ≅
+      (Ob.baseChange f).terminalLerayHModule 𝒰 hbase htarget n :=
+  Ob.sheafHFlatBaseChangeIso f 𝒰 hbase hcompat hsource htarget n
+
+/-- Fixed identification of the base-change isomorphism's hom. -/
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (hbase : IsTerminal base)
+    (hcompat : Ob.CechCoefficientBaseChangeCompatible f 𝒰)
+    (hsource : Ob.IsLinearLerayFor 𝒰)
+    (htarget : (Ob.baseChange f).IsLinearLerayFor 𝒰)
+    (n : Nat) :
+    (Ob.sheafHFlatBaseChangeIso f 𝒰 hbase hcompat hsource htarget n).hom =
+      Ob.sheafHFlatBaseChangeMap f 𝒰 hbase hsource htarget n :=
+  Ob.sheafHFlatBaseChangeIso_hom f 𝒰 hbase hcompat hsource htarget n
+
+end LinearLerayComparisonSD8d
 
 end AAT.AG.StatementContractsReadingFunctoriality

@@ -5395,6 +5395,48 @@ noncomputable def readingFunctoriality_selectedCechToSheafHAtBaseEquivForSheaf :
 def readingFunctoriality_nonLerayCover_not_isLerayForSheaf :=
   @AAT.AG.ReadingFunctorialityFinite.nonLerayCover_not_isLerayForSheaf
 
+/-! ## Linear Leray comparison and actual sheaf-cohomology base change -/
+
+/-- Audit alias for the linear Leray predicate. -/
+def readingFunctoriality_isLinearLerayFor :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.IsLinearLerayFor
+
+/-- Audit alias for the transported actual terminal cohomology module. -/
+noncomputable def readingFunctoriality_terminalLerayHModule :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.terminalLerayHModule
+
+/-- Audit alias for the transported module carrier identity. -/
+def readingFunctoriality_terminalLerayHModule_carrier :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.terminalLerayHModule_carrier
+
+/-- Audit alias for the linear Čech-to-actual-cohomology equivalence. -/
+noncomputable def readingFunctoriality_cechToSheafHLinearIso :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.cechToSheafHLinearIso
+
+/-- Audit alias for the actual sheaf-cohomology base-change map. -/
+noncomputable def readingFunctoriality_sheafHFlatBaseChangeMap :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeMap
+
+/-- Audit alias for the pure-tensor base-change formula. -/
+def readingFunctoriality_sheafHFlatBaseChangeMap_formula :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeMap_formula
+
+/-- Audit alias for the cohomology-class base-change formula. -/
+def readingFunctoriality_sheafHFlatBaseChangeMap_on_class :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeMap_on_class
+
+/-- Audit alias for invertibility under Čech coefficient compatibility. -/
+def readingFunctoriality_sheafHFlatBaseChangeMap_isIso :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeMap_isIso
+
+/-- Audit alias for the actual sheaf-cohomology base-change isomorphism. -/
+noncomputable def readingFunctoriality_sheafHFlatBaseChangeIso :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeIso
+
+/-- Audit alias for the base-change isomorphism hom identity. -/
+def readingFunctoriality_sheafHFlatBaseChangeIso_hom :=
+  @AAT.AG.Cohomology.LinearCoefficientSheaf.sheafHFlatBaseChangeIso_hom
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
