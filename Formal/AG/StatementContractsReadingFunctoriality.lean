@@ -3183,6 +3183,163 @@ example
         (Ob.baseChange f).modulePresheaf.map g.op :=
   Ob.baseChangeSectionMap_naturality f g
 
+/-! Fixed AC36 canonical linear Čech and flat homology contracts. -/
+
+example
+    {R : Type u} [CommRing R]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (K : CochainComplex (ModuleCat.{u + 1} R) Nat)
+    (e : ∀ n, K.X n ≅
+      ModuleCat.of R
+        (∀ σ : (Cohomology.canonicalCoverRelative 𝒰).simplex n,
+          Ob.modulePresheaf.obj
+            (op ((Cohomology.canonicalCoverRelative 𝒰).overlap n σ)))) :
+    Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob :=
+  ⟨K, e⟩
+
+noncomputable example
+    {R : Type u} [CommRing R]
+    {base : S.category}
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    ModuleCat.of R
+        (∀ σ : (Cohomology.canonicalCoverRelative 𝒰).simplex n,
+          Ob.modulePresheaf.obj
+            (op ((Cohomology.canonicalCoverRelative 𝒰).overlap n σ))) ⟶
+      ModuleCat.of R
+        (∀ σ : (Cohomology.canonicalCoverRelative 𝒰).simplex (n + 1),
+          Ob.modulePresheaf.obj
+            (op ((Cohomology.canonicalCoverRelative 𝒰).overlap (n + 1) σ))) :=
+  Cohomology.linearCechDifferential Ob 𝒰 n
+
+noncomputable example
+    {R : Type u} [CommRing R]
+    {base : S.category}
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
+    Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob :=
+  Ob.canonicalLinearCech 𝒰
+
+example
+    {R : Type u} [CommRing R]
+    {base : S.category}
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat) :
+    (Ob.canonicalLinearCech 𝒰).complex.d n (n + 1) =
+      ((Ob.canonicalLinearCech 𝒰).cochainIso n).hom ≫
+        Cohomology.linearCechDifferential Ob 𝒰 n ≫
+        ((Ob.canonicalLinearCech 𝒰).cochainIso (n + 1)).inv :=
+  Ob.canonicalLinearCech_d 𝒰 n
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    {base : S.category}
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : Cohomology.LinearCoefficientSheaf R S}
+    (K : Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R') :
+    CochainComplex (ModuleCat.{u + 1} R') Nat :=
+  K.scalarExtension f
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    {base : S.category}
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : Cohomology.LinearCoefficientSheaf R S}
+    (K : Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    (K.scalarExtension f).X n ≅
+      Cohomology.LinearCoefficientSheaf.moduleScalarExtension f
+        (K.complex.X n) :=
+  K.scalarExtensionObjIso f n
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    {base : S.category}
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : Cohomology.LinearCoefficientSheaf R S}
+    (K : Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    K.complex.X n ⟶
+      (ModuleCat.restrictScalars f.hom).obj ((K.scalarExtension f).X n) :=
+  K.scalarExtensionCochain f n
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    {base : S.category}
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : Cohomology.LinearCoefficientSheaf R S}
+    (K : Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    K.scalarExtensionCochain f n ≫
+        (ModuleCat.restrictScalars f.hom).map
+          (K.scalarExtensionObjIso f n).hom =
+      Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1}
+        f (K.complex.X n) :=
+  K.scalarExtensionCochain_objIso f n
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    {base : S.category}
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : Cohomology.LinearCoefficientSheaf R S}
+    (K : Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    (K.scalarExtension f).d n (n + 1) ≫
+        (K.scalarExtensionObjIso f (n + 1)).hom =
+      (K.scalarExtensionObjIso f n).hom ≫
+        (ModuleCat.extendScalars f.hom).map
+          (K.complex.d n (n + 1)) :=
+  K.scalarExtension_d f n
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    {base : S.category}
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : Cohomology.LinearCoefficientSheaf R S}
+    (K : Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    Cohomology.LinearCoefficientSheaf.moduleScalarExtension f
+        (K.complex.homology n) ≅
+      (K.scalarExtension f).homology n :=
+  K.hnFlatBaseChangeIso f n
+
+noncomputable example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    {base : S.category}
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : Cohomology.LinearCoefficientSheaf R S}
+    (K : Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat) :
+    K.complex.cycles n →
+      (K.scalarExtension f).homology n :=
+  K.classBaseChange f n
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    {base : S.category}
+    {𝒰 : Site.AATCoverageFamily S.requirements S.overlap base}
+    {Ob : Cohomology.LinearCoefficientSheaf R S}
+    (K : Cohomology.LinearCoverRelativeCechComplex R 𝒰 Ob)
+    (f : FlatCoefficientChange R R')
+    (n : Nat)
+    (c : K.complex.cycles n) :
+    (K.hnFlatBaseChangeIso f n).hom
+        (Derived.Intersection.moduleScalarExtensionUnit.{u, u + 1} f
+          (K.complex.homology n) (K.complex.homologyπ n c)) =
+      K.classBaseChange f n c :=
+  K.class_baseChange_naturality f n c
+
 end CoefficientChangeSD8
 
 end AAT.AG.StatementContractsReadingFunctoriality
