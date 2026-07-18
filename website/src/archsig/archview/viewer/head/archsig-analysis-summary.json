@@ -1,27 +1,27 @@
 {
   "assumptionSummary": {
-    "assumedCount": 7,
-    "checkedCount": 4,
+    "assumedCount": 14,
+    "checkedCount": 7,
     "violatedCount": 0
   },
   "componentFingerprints": {
-    "lawPolicy": "sha256:2a9dabb0e4d1769a7d789dd4854b40bd0067d5f7e7af97aa42ac235227c3f645",
-    "lawSurface": "sha256:05376ed80e1197e1cd323c1f02842ae918988bbf77caac6b6c2a328b5ae7badd",
+    "lawPolicy": "sha256:0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b",
+    "lawSurface": "sha256:896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed",
     "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
   },
-  "conclusion": "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+  "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
   "inputDigests": {
     "archmap": {
       "path": "input:archmap_head.json",
-      "sha256": "6eda78f325a5fb2ee660d902a03e3fbbcf6e8b9014de7e3376d372e43fcec8cb"
+      "sha256": "9d6efc75366470a5850446865e1fab26e976ab42fd0f6076e73f8f4264ae3df9"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "2a9dabb0e4d1769a7d789dd4854b40bd0067d5f7e7af97aa42ac235227c3f645"
+      "sha256": "0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b"
     },
     "lawSurface": {
-      "path": "input:law_surface_practical_v052.json",
-      "sha256": "05376ed80e1197e1cd323c1f02842ae918988bbf77caac6b6c2a328b5ae7badd"
+      "path": "input:law_surface.json",
+      "sha256": "896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
@@ -31,15 +31,19 @@
       {
         "path": "input:measurement_profile.json",
         "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      },
+      {
+        "path": "input:measurement_profile_drift.json",
+        "sha256": "22c62a5b8f1f00f3759d4d9d26905f6e63b0f3a393010ce82977a94b473ac0d3"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "2b39ae3af896d3a1db749cd9ec3a9609e3dada5f096d7859b479249b86e12b07"
+      "sha256": "f699097b54922e3f52c3465a818bb2946c2aab070e7c7195dbc3416610ad1e72"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "1a0e6eb84b839c216ea0672d4365ecc0838f05928baaa3443ed00725c8f104cf",
+      "sha256": "e3ae81e46a9aa93d0d990d4aaa9b02d86c150ff51aa24c8c5914f63e7e9bd35b",
       "status": "computed"
     }
   },
@@ -55,38 +59,44 @@
   ],
   "profileRef": "profile:commerce-fulfillment@1",
   "readThisFirst": {
-    "boundary": "Profile-relative. 7 assumptions declared. 0 non-terminal rows.",
-    "conclusion": "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+    "boundary": "Profile-relative. 14 assumptions declared. 0 non-terminal rows.",
+    "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
     "heading": "Read this first",
     "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue.",
     "whatItMeans": "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch.",
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
-  "runId": "run:f8b3d4e03ca3",
+  "runId": "run:1dce8eb8a66f",
   "schema": "archsig-analysis-summary/v0.5.3",
   "structuralVerdictSummary": {
-    "measuredNonzeroCount": 1,
+    "measuredNonzeroCount": 4,
     "nonTerminalCount": 0,
-    "rowCount": 1,
+    "rowCount": 5,
     "unmeasuredCount": 0
   },
   "toolVersion": "0.5.3",
   "translationRule": {
-    "boundary": "Supply a different selected cover, coefficient sheaf, or restriction data before changing this profile-relative reading.",
-    "conclusionCode": "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+    "boundary": "The class reading is relative to the supplied triple overlaps, additive coefficient, sheaf certificate, and gluing data.",
+    "conclusionCode": "MEASURED_NONGLUING_RESIDUAL_CLASS",
     "concreteSupportRefs": [
-      "atom:cech-money-application",
-      "atom:cech-money-infrastructure",
-      "atom:cech-money-ports",
-      "atom:cech-money-runtime",
-      "atom:cech-money-settlement",
-      "atom:cech-money-shared"
+      "overlap:application-settlement",
+      "drift:one-cent",
+      "overlap:application-ports",
+      "overlap:infrastructure-ports",
+      "drift:one-cent",
+      "overlap:infrastructure-settlement",
+      "drift:one-cent",
+      "overlap:application-domain",
+      "overlap:application-shared",
+      "overlap:domain-shared",
+      "overlap:policy-shared",
+      "overlap:runtime-application"
     ],
     "emitsLawSatisfiedWithoutLawCheck": false,
-    "generatedDiscipline": "generated Cech support detection",
-    "principalText": "The selected cover has a concrete H1 support measured by the finite F2 Cech detector.",
+    "generatedDiscipline": "generated supplied class representative detection",
+    "principalText": "The selected supplied finite complex contains a measured non-gluing residual class in Z1/B1.",
     "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
-    "theoremRef": "part4/12.3"
+    "theoremRef": "part10/4.5"
   },
   "translationRuleTable": [
     {
@@ -97,6 +107,15 @@
       "principalText": "The selected SAGA residual is measured outside B1 with concrete residual support; complete-support faithfulness is reported separately.",
       "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
       "theoremRef": "part10/3.4"
+    },
+    {
+      "boundary": "The class reading is relative to the supplied triple overlaps, additive coefficient, sheaf certificate, and gluing data.",
+      "conclusionCode": "MEASURED_NONGLUING_RESIDUAL_CLASS",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated supplied class representative detection",
+      "principalText": "The selected supplied finite complex contains a measured non-gluing residual class in Z1/B1.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": "part10/4.5"
     },
     {
       "boundary": "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",

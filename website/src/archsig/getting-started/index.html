@@ -20,7 +20,7 @@
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#agent">Supervise an agent</a></li><li><a href="#prereq">Prerequisites</a></li><li><a href="#demo">One script, four acts</a></li><li><a href="#by-hand">The same acts by hand</a></li><li><a href="#see">See it in ArchView</a></li><li><a href="#own-repo">Your own repository</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#agent">Supervise an agent</a></li><li><a href="#prereq">Prerequisites</a></li><li><a href="#demo">One script, five acts</a></li><li><a href="#by-hand">The same acts by hand</a></li><li><a href="#see">See it in ArchView</a></li><li><a href="#own-repo">Your own repository</a></li></ol></nav>
 {% include "series-nav.njk" %}
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="./" aria-current="page">Getting Started</a></li><li><a href="../concepts/">Concepts</a></li><li><a href="../contracts/">Contracts</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li><li><a href="../archview/">ArchView</a></li></ul></div>
           </aside>
@@ -46,23 +46,31 @@ Return findings with code refs and repair candidates.</code></pre>
               </ul>
             </section>
             <section id="demo" class="article-section">
-              <h2>One script, four acts</h2>
-              <p>The shipped demo is a realistic Rust commerce service where a PR makes the customer's card get charged one cent more than the checkout page displays — while every unit test stays green in every build configuration. One script runs the whole story:</p>
+              <h2>One script, five acts</h2>
+              <p>The shipped demo is a realistic Rust commerce service where a PR makes the customer's card get charged one cent more than the checkout page displays — while every unit test stays green in every build configuration. The checkout → payment → settlement flow is a saga, and the demo measures it as one: the script walks the full SAGA diagnostic staircase (grounding → descent → comparison → gate, with a harmonic-debt price on the side). One script runs the whole story:</p>
               <figure class="code-panel">
                 <figcaption>Run the demo</figcaption>
                 <pre><code>tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh</code></pre>
               </figure>
-              <p>The script walks four acts and prints one conclusion per step. This is the exact output to expect:</p>
+              <p>The script walks five acts and prints one conclusion per step. This is the exact output to expect:</p>
               <figure class="code-panel">
                 <figcaption>Expected conclusions</figcaption>
-                <pre><code>[analyze base]           NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
-[analyze head]           MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
-[compare base-&gt;head]     RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA
-[gate head]              BLOCKED_BY_GATE_POLICY
-[analyze repaired]       NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
-[compare head-&gt;repaired] MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE
-[gate repaired]          PASS_WITHIN_GATE_POLICY</code></pre>
+                <pre><code>[analyze base]            NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
+[saga base]               not_computed        (typed silence: no RepairPlan)
+[grounding head]          measured_zero       (every chart's own law holds)
+[descent head]            measured_nonzero    (residual class in Z1/B1)
+[comparison head]         established         (checked cochain-map transport)
+[harmonic debt head]      0.353553            (quarter-cent essential debt)
+[analyze head]            MEASURED_NONGLUING_RESIDUAL_CLASS
+[compare base-&gt;head]      RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA
+[gate head]               BLOCKED_BY_GATE_POLICY
+[descent repaired]        measured_zero       (residual glues)
+[harmonic debt repaired]  0.0                 (residue booked explicitly)
+[analyze repaired]        REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
+[compare head-&gt;repaired]  MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE
+[gate repaired]           PASS_WITHIN_GATE_POLICY</code></pre>
               </figure>
+              <p>Two lines carry the whole argument. <code>[grounding head] measured_zero</code> is the trap stated as a measurement: every module satisfies its own displayed money law, chart by chart. <code>[descent head] measured_nonzero</code> is the defect: the reconciliation residual has odd drift parity around the money loop, so its class in <code>Z1/B1</code> is nonzero — no assignment of per-module fixes closes the loop. The base act shows the other half of the discipline: the same LawPolicy asks the same SAGA questions, but with no RepairPlan supplied every stage stays <em>typed silence</em> (<code>silence_by_design</code>), not a conclusion.</p>
               <p>Act 1 proves the point of the demo: all three build states (base, head, repaired) compile, pass <code>cargo test</code>, and run. The head state then prints the drift itself:</p>
               <figure class="code-panel">
                 <figcaption>Act 1, head state (--features psp-compliance)</figcaption>
@@ -76,34 +84,32 @@ RECONCILIATION MISMATCH: psp captured +1 cents against the displayed total</code
             </section>
               <section id="by-hand" class="article-section">
               <h2>The same acts by hand</h2>
-              <p>Every step of the script is an ordinary CLI call over declared inputs: an evidence file (ArchMap) and a fixed policy bundle containing LawPolicy, law-equation-surface, and MeasurementProfile. Here is the head measurement, the gate, and the repair, exactly as the script runs them.</p>
-              <figure class="code-panel">
-                <figcaption>0. Fix the policy components for the run</figcaption>
-                <pre><code>mkdir -p .tmp/archsig-demo
-cargo run --manifest-path tools/archsig/Cargo.toml -- policy-bundle \
-  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_practical_v052.json \
-  --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
-  --out .tmp/archsig-demo/policy-bundle.json</code></pre>
-              </figure>
+              <p>Every step of the script is an ordinary CLI call over declared inputs: an evidence file (ArchMap), the policy components (LawPolicy, law-equation-surface, two MeasurementProfiles — the second carries the analytic cost model for harmonic debt), and a RepairPlan supplying the SAGA data. Here is the head measurement, the gate, and the repair, exactly as the script runs them.</p>
               <figure class="code-panel">
                 <figcaption>1. Measure the PR under review</figcaption>
-                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/examples/practical-rust-service/archmap/archmap_head.json \
-  --policy-bundle .tmp/archsig-demo/policy-bundle.json \
+                <pre><code>mkdir -p .tmp/archsig-demo
+demo=tools/archsig/examples/practical-rust-service
+cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
+  --archmap $demo/archmap/archmap_head.json \
+  --law-policy $demo/law_policy/law_policy.json \
+  --measurement-profile $demo/law_policy/measurement_profile.json \
+  --measurement-profile $demo/law_policy/measurement_profile_drift.json \
+  --law-surface $demo/law_policy/law_surface.json \
+  --repair-plan $demo/saga/repair_plan_head.json \
   --out-dir .tmp/archsig-demo/head</code></pre>
               </figure>
-              <p>The run directory now holds eleven artifacts — packet, summary, insight report, viewer data, validation reports, manifest. Start with the summary's <code>readThisFirst</code> block:</p>
+              <p>The run directory now holds the full artifact set — packet, summary, insight report, viewer data, validation reports, manifest. Start with the summary's <code>readThisFirst</code> block:</p>
               <figure class="code-panel">
                 <figcaption>.tmp/archsig-demo/head/archsig-analysis-summary.json (excerpt)</figcaption>
                 <pre><code>"readThisFirst": {
-  "conclusion": "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+  "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
   "whatItMeans": "Local rules are not enough to explain the selected cover;
                   ArchSig measured a cross-context glue mismatch.",
   "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence",
-  "boundary": "Profile-relative. 7 assumptions declared. 0 non-terminal rows."
+  "boundary": "Profile-relative. 14 assumptions declared. 0 non-terminal rows."
 }</code></pre>
               </figure>
+              <p>The word <em>class</em> is earned, not decorative: it only appears because the RepairPlan supplied and passed validation for the triple overlap, the F₂ coefficient, the true-sheaf certificate, and the gluing data. Remove the <code>--repair-plan</code> flag and the same command still runs — but every SAGA row degrades to <code>not_computed</code> with a <code>silence_by_design</code> boundary, exactly like the base act.</p>
               <figure class="code-panel">
                 <figcaption>2. Gate it, the way CI would</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
@@ -115,8 +121,12 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- policy-bundle \
               <figure class="code-panel">
                 <figcaption>3. Measure the repaired PR, compare, gate again</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/examples/practical-rust-service/archmap/archmap_repaired.json \
-  --policy-bundle .tmp/archsig-demo/policy-bundle.json \
+  --archmap $demo/archmap/archmap_repaired.json \
+  --law-policy $demo/law_policy/law_policy.json \
+  --measurement-profile $demo/law_policy/measurement_profile.json \
+  --measurement-profile $demo/law_policy/measurement_profile_drift.json \
+  --law-surface $demo/law_policy/law_surface.json \
+  --repair-plan $demo/saga/repair_plan_repaired.json \
   --out-dir .tmp/archsig-demo/repaired
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
@@ -130,11 +140,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
   --comparison .tmp/archsig-demo/compare/archsig-comparison-report.json \
   --out .tmp/archsig-demo/gate-repaired.json</code></pre>
               </figure>
-              <p>The repair is what payment systems actually do: designate one money authority, keep submitting PSP line items per the processor spec, and book the rounding residue as an explicit adjustment line. In the evidence file this is one shared convention on every context — the mismatch support is gone, <code>compare</code> records <code>MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE</code>, and the gate exits 0 with <code>PASS_WITHIN_GATE_POLICY</code>.</p>
+              <p>The repair is what payment systems actually do: designate one money authority, keep submitting PSP line items per the processor spec, and book the rounding residue as an explicit adjustment line. In the evidence file this is one shared convention on every context, and in the RepairPlan the residual support is empty on every overlap — the residual lies in <code>B1</code>, the summary upgrades to <code>REPAIR_GLUES_WITHIN_SELECTED_COMPLEX</code>, <code>compare</code> records <code>MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE</code>, and the gate exits 0 with <code>PASS_WITHIN_GATE_POLICY</code>. The harmonic-debt reading tells the last part of the story in cents: the head state's essential repair lower bound of <code>0.353553</code> (the quarter-cent no rounding scheme removes, under the declared cost model) drops to <code>0.0</code> once the residue is booked explicitly.</p>
             </section>
             <section id="see" class="article-section">
               <h2>See it in ArchView</h2>
-              <p>The head run's viewer data shows the eight contexts, the settlement cycle, and the mismatch seam in 3D. Copy the viewer next to the run output and serve the directory:</p>
+              <p>The head run's viewer data shows the eight contexts, the settlement cycle, and the mismatch seam in 3D — plus the SAGA diagnostic staircase scene, which renders the four stages (grounding, descent, comparison, silence) exactly as measured. Copy the viewer next to the run output and serve the directory:</p>
               <figure class="code-panel">
                 <figcaption>Open the measured geometry</figcaption>
                 <pre><code>cp tools/archview/archview.html .tmp/archsig-demo/head/

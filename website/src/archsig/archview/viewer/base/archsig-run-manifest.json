@@ -9,8 +9,8 @@
   },
   "commandName": "analyze",
   "componentFingerprints": {
-    "lawPolicy": "sha256:db369504d12e07d047d92a76cd44b28a4ba276e7506f432a482a46fbd602f87d",
-    "lawSurface": "sha256:7714a01230e75b1ed71ceb1d3c08bd24aa800417f6dd17c24baa5188d93aa7a5",
+    "lawPolicy": "sha256:cee78ff6bf5af905cee93d86a64c9c6bd76ef777a7ee4fbba454396b8a0e16a9",
+    "lawSurface": "sha256:653b7e4d4e2a77fab32d9156958b4d379a4a549373359bbc97a54f19d2ba0aba",
     "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
   },
   "conclusionCode": null,
@@ -30,15 +30,15 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap.json",
-      "sha256": "a15b66bc2ad1a73a1999e98daff923b8f7512e7bb7e0df69e325ade5726718f2"
+      "sha256": "4fa9f202742780e15175ab41a34958de8eda61555670899d066c41d6e76367c5"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "db369504d12e07d047d92a76cd44b28a4ba276e7506f432a482a46fbd602f87d"
+      "sha256": "cee78ff6bf5af905cee93d86a64c9c6bd76ef777a7ee4fbba454396b8a0e16a9"
     },
     "lawSurface": {
-      "path": "input:law_surface_practical_base_v052.json",
-      "sha256": "7714a01230e75b1ed71ceb1d3c08bd24aa800417f6dd17c24baa5188d93aa7a5"
+      "path": "input:law_surface_base.json",
+      "sha256": "653b7e4d4e2a77fab32d9156958b4d379a4a549373359bbc97a54f19d2ba0aba"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
@@ -48,23 +48,28 @@
       {
         "path": "input:measurement_profile.json",
         "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      },
+      {
+        "path": "input:measurement_profile_drift.json",
+        "sha256": "22c62a5b8f1f00f3759d4d9d26905f6e63b0f3a393010ce82977a94b473ac0d3"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "2b39ae3af896d3a1db749cd9ec3a9609e3dada5f096d7859b479249b86e12b07"
+      "sha256": "f699097b54922e3f52c3465a818bb2946c2aab070e7c7195dbc3416610ad1e72"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "e86dfe155bb6f367d5b682d5551ee8067a3df271fdaad4eae00d928cc178e9af",
+      "sha256": "41eb66211260dd7ef11cff89090f54f542f0cbde1a41e9a586923b3f95e94aef",
       "status": "computed"
     }
   },
   "lawPolicyInputPath": "input:law_policy.json",
-  "lawSurfaceInputPath": "input:law_surface_practical_base_v052.json",
+  "lawSurfaceInputPath": "input:law_surface_base.json",
   "measurementProfileInputPath": "input:measurement_profile.json",
   "measurementProfileInputPaths": [
-    "input:measurement_profile.json"
+    "input:measurement_profile.json",
+    "input:measurement_profile_drift.json"
   ],
   "mode": "measurement",
   "nonConclusions": [
@@ -75,7 +80,7 @@
   "rawArtifactPaths": null,
   "rawArtifactRetention": "omitted",
   "repairPlanInputPath": null,
-  "runId": "run:8a21e519dc8c",
+  "runId": "run:45bcb06313a1",
   "schema": "archsig-run-manifest/v0.5.3",
   "toolVersion": "0.5.3",
   "validationReports": {
