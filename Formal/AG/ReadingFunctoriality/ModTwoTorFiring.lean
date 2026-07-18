@@ -3,6 +3,30 @@ import Formal.AG.Derived.FreeResolution
 import Mathlib.RingTheory.Flat.FaithfullyFlat.Algebra
 import Mathlib.LinearAlgebra.Finsupp.VectorSpace
 
+/-!
+# Concrete mod-two Tor firing
+
+This module realizes the R9g coefficient-change firing for
+`Tor₁^ℤ(ℤ/(2), ℤ/(2))`.  It constructs the two-term principal projective
+resolution `ℤ --2→ ℤ`, computes the nonzero class represented by `[1] ⊗ 1`,
+and transports that class through the generic flat Tor base-change
+isomorphism for `ℤ → ℤ[X]`.
+
+## Implementation notes
+
+The principal resolution is built directly so that the source witness is an
+element of Mathlib's actual `CategoryTheory.Tor` object and its nonzero proof
+comes from the tensor homology calculation.  A separate finite Tor theorem or
+a caller-supplied nonzero certificate would not provide that provenance.
+
+`IntPolynomialCanonical` is a private type synonym used to separate the
+canonical algebra module structure on `Polynomial Int` from the free-module
+structure transported along `Polynomial.toFinsuppIsoLinear`.  The identity
+linear equivalence then transfers the resulting faithful-flat instance back
+to the algebra action used by `intPolynomialFlatChange`.  This avoids making
+faithful flatness an external premise of the target nonzero theorem.
+-/
+
 noncomputable section
 
 namespace AAT.AG.ReadingFunctorialityFinite
