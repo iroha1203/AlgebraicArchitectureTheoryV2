@@ -809,20 +809,6 @@ namespace Derived.Intersection
 open scoped ChangeOfRings
 open scoped MonoidalCategory
 
-/-- Proof-internal AC34 constructor from a linear equivalence to the corresponding `ModuleCat`
-isomorphism. -/
-private noncomputable def moduleCatIsoOfLinearEquiv
-    {R : Type v} [CommRing R]
-    {M N : ModuleCat.{v} R} (e : M ≃ₗ[R] N) : M ≅ N where
-  hom := ModuleCat.ofHom e.toLinearMap
-  inv := ModuleCat.ofHom e.symm.toLinearMap
-  hom_inv_id := by
-    ext x
-    exact e.symm_apply_apply x
-  inv_hom_id := by
-    ext x
-    exact e.apply_symm_apply x
-
 /-- Proof-internal AC34 tensor API: scalar extension distributes over the tensor product of two
 modules by Mathlib's canonical tower equivalence. -/
 private noncomputable def moduleTensorBaseChangeIso
@@ -833,8 +819,8 @@ private noncomputable def moduleTensorBaseChangeIso
       (ModuleCat.extendScalars f.hom).obj M ⊗
         (ModuleCat.extendScalars f.hom).obj N := by
   letI := f.hom.toAlgebra
-  exact moduleCatIsoOfLinearEquiv
-    (TensorProduct.AlgebraTensorModule.distribBaseChange R R' M N)
+  exact
+    (TensorProduct.AlgebraTensorModule.distribBaseChange R R' M N).toModuleIso
 
 /-- Proof-internal AC34 natural tensor API: extension after left tensoring is naturally
 isomorphic to left tensoring of the two scalar-extended modules. -/
@@ -888,7 +874,14 @@ private theorem extendScalars_additive
     exact TensorProduct.tmul_add _ _ _
 
 /-- Proof-internal AC34 generic theorem: flat scalar extension commutes with Mathlib's Tor object
-for arbitrary module inputs and arbitrary degree. -/
+for arbitrary module inputs and arbitrary degree.
+
+Implementation notes (SD7 / R7 / AC34): this definition computes both Tor objects from a
+projective resolution and composes flat scalar extension's homology comparison with Mathlib's
+natural tensor base-change isomorphism. This form exposes `f.flat` as the source of exactness and
+keeps every comparison internally constructed. A finite or projective specialization is rejected
+because AC34 quantifies over arbitrary ideals and degree; a supplied comparison certificate is
+rejected because it would store the conclusion instead of deriving it from flatness. -/
 private noncomputable def moduleScalarExtensionTorIso
     {R R' : Type v} [CommRing R] [CommRing R']
     (f : FlatCoefficientChange R R')
@@ -967,7 +960,9 @@ noncomputable def moduleScalarExtensionCompIso
       moduleScalarExtension (f.comp g) M :=
   (ModuleCat.extendScalarsComp f.hom g.hom).symm.app M
 
-/-- Flat scalar extension commutes with Mathlib's affine Tor object in every degree. -/
+/-- The SD7 / R7 / AC34 main declaration: flatness induces the bare affine Tor-object
+base-change isomorphism in every degree. Its proof uses the generic projective-resolution route
+documented on `moduleScalarExtensionTorIso`; it is not a finite specialization. -/
 noncomputable def mathlibTorFlatBaseChangeIso
     {R R' : Type v}
     [CommRing R] [CommRing R']
