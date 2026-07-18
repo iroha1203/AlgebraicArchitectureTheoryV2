@@ -1,10 +1,8 @@
 # SAGA's Cape of Good Hope: The One Cent That Cohomology Caught
 
-<!-- TODO: replace the previous-article link with the published Hashnode URL -->
-
 ## TL;DR
 
-- This is the sequel to [the SAGA theorem article](#). Last time, I gave the "locally correct, globally broken" phenomenon a theorem, proved in Lean 4. This time I took that theorem out into the real world.
+- This is the sequel to [the SAGA theorem article](https://blog.iroha1203.dev/the-saga-theorem). Last time, I gave the "locally correct, globally broken" phenomenon a theorem, proved in Lean 4. This time I took that theorem out into the real world.
 - In a real microservice system that nobody wrote with the theory in mind — the research benchmark [train-ticket](https://github.com/FudanSELab/train-ticket) — the exact structure required by the theorem's hypotheses turned out to exist.
 - Every service follows its own money convention perfectly. Yet a sub-cent refund remainder vanishes without being booked anywhere in the system. The measurement returns both verdicts at once, and a repair plan flips the CI gate from BLOCKED to PASS.
 - The find itself is almost comically mundane. But the value was never the find. It is the confirmation that the sea route exists.
