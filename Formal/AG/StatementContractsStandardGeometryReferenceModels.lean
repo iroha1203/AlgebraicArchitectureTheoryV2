@@ -1,7 +1,7 @@
 import Formal.AG.Examples.StandardGeometryReferenceModels
 
 /-!
-Executable statement contract for the SD0–SD4 public surface of the standard
+Executable statement contract for the SD0–SD5 public surface of the standard
 geometry reference models.
 
 Each example fixes one approved declaration type and refers directly to its
