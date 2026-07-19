@@ -786,6 +786,19 @@ noncomputable example : Site.AATCoverageFamily.Refinement coarseCover fineCover 
 example : ¬ Function.Bijective coarseToFineCover.indexMap :=
   coarseToFineCover_not_bijective
 
+/-- Fixed degree-dependent broken simplex-map contract for the R3 model. -/
+noncomputable example :
+    ∀ n,
+      (Cohomology.canonicalCoverRelative fineCover).simplex n →
+        (Cohomology.canonicalCoverRelative coarseCover).simplex n :=
+  brokenFaceMap
+
+/-- Fixed rejection contract for the R3 broken simplex data. -/
+example :
+    ¬ ∃ r : Site.AATCoverageFamily.Refinement coarseCover fineCover,
+      r.simplexMap = brokenFaceMap :=
+  brokenFaceMap_not_refinement
+
 end CoverageRefinementSD3
 
 namespace CanonicalCechFunctorialitySD4
@@ -840,7 +853,7 @@ example (n : Nat) : Type u := K.AdditiveCechHn n
 
 /-- Fixed additive-group instance contract in every cohomological degree. -/
 noncomputable example (n : Nat) : AddCommGroup (K.AdditiveCechHn n) :=
-  inferInstance
+  Cohomology.CoverRelativeCechComplex.additiveCechHnAddCommGroup K n
 
 /-- Fixed cocycle-class contract. -/
 noncomputable example (n : Nat) : K.CechCocycle n → K.AdditiveCechHn n :=

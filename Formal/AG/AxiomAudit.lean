@@ -4112,9 +4112,37 @@ def readingFunctoriality_canonicalCoverRelative_faceRestriction_twoFace :=
 def readingFunctoriality_refinement_overlapMap_face_naturality :=
   @AAT.AG.Site.AATCoverageFamily.Refinement.overlapMap_face_naturality
 
+/-- Audit alias for the finite R3 site. -/
+noncomputable def readingFunctoriality_finiteSite :=
+  AAT.AG.ReadingFunctorialityFinite.finiteSite
+
+/-- Audit alias for the finite R3 base. -/
+noncomputable def readingFunctoriality_finiteBase :=
+  AAT.AG.ReadingFunctorialityFinite.finiteBase
+
+/-- Audit alias for the coarse R3 cover. -/
+noncomputable def readingFunctoriality_coarseCover :=
+  AAT.AG.ReadingFunctorialityFinite.coarseCover
+
+/-- Audit alias for the fine R3 cover. -/
+noncomputable def readingFunctoriality_fineCover :=
+  AAT.AG.ReadingFunctorialityFinite.fineCover
+
+/-- Audit alias for the actual R3 cover refinement. -/
+noncomputable def readingFunctoriality_coarseToFineCover :=
+  AAT.AG.ReadingFunctorialityFinite.coarseToFineCover
+
 /-- Audit alias for the non-bijective finite selected-cover refinement. -/
 def readingFunctoriality_coarseToFineCover_not_bijective :=
   @AAT.AG.ReadingFunctorialityFinite.coarseToFineCover_not_bijective
+
+/-- Audit alias for the R3 degree-dependent broken simplex data. -/
+noncomputable def readingFunctoriality_brokenFaceMap :=
+  AAT.AG.ReadingFunctorialityFinite.brokenFaceMap
+
+/-- Audit alias for rejection of the R3 broken simplex data. -/
+def readingFunctoriality_brokenFaceMap_not_refinement :=
+  @AAT.AG.ReadingFunctorialityFinite.brokenFaceMap_not_refinement
 
 /-! Part 4 R4: canonical Čech refinement functoriality. -/
 
