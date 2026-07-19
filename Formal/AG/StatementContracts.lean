@@ -8,6 +8,7 @@ import Formal.AG.StatementContractsAtomToRingedSite
 import Formal.AG.StatementContractsStandardArchitectureScheme
 import Formal.AG.StatementContractsClosedEquationalGeometry
 import Formal.AG.StatementContractsReadingFunctoriality
+import Formal.AG.StatementContractsStandardGeometryReferenceModels
 
 noncomputable section
 
