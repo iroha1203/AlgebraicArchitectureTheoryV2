@@ -25,6 +25,7 @@ route の追加・削除は `website/src/**/index.html` の増減がそのまま
 | Route | Source file | Role |
 | --- | --- | --- |
 | `/` | `website/src/index.html` | Top page、著者プロフィールの短い導入、AAT / SFT / ArchSig の入口、主要 article への導線。 |
+| `/vision/` | `website/src/vision/index.html` | Research Vision。研究全体目標(`docs/research_goal.md`)の公開版。Rising Sea、なぜ代数幾何か、Atom の純粋性・可搬性、AI 読解×決定論計測、研究計画の連鎖、AAT / SFT / ArchSig への導線。 |
 | `/aat/` | `website/src/aat/index.html` | AAT landing、Atom-first の読書順、章クラスタ、Lean status / formal anchors への入口。 |
 | `/aat/atoms/` | `website/src/aat/atoms/index.html` | AAT Part I. Foundations。Atom and primitive architectural facts。 |
 | `/aat/architecture-objects/` | `website/src/aat/architecture-objects/index.html` | AAT Part I. Foundations。Molecules、ArchitectureObject、selected presentation、finite universe。 |

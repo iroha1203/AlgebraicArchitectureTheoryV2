@@ -1,0 +1,358 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Research Vision",
+  "description": "The vision behind AAT, SFT, and ArchSig: build software architecture as a geometry, and on top of it, make software evolution computable.",
+  "order": 0.5,
+  "llmsLabel": "Research Vision",
+  "navSection": "vision"
+}
+---
+        <main id="main">
+            <section class="article-hero section-band">
+                <div class="site-shell">
+                    <nav class="breadcrumb" aria-label="Breadcrumb">
+                        <a href="../">Home</a>
+                        <span>Vision</span>
+                    </nav>
+                    <p class="eyebrow">Research Vision</p>
+                    <h1>Redesign software engineering: make software evolution computable.</h1>
+                    <p class="lede">
+                        Software engineering studies software that never stops
+                        changing. Design, implementation, issues, pull requests,
+                        review, CI, operations, and AI-generated change all act
+                        on an architecture and reshape what it can become next.
+                        This research program builds software architecture as a
+                        geometry, and on that geometry, a dynamics of software
+                        evolution.
+                    </p>
+                </div>
+            </section>
+
+            <section class="section-band">
+                <div class="site-shell article-layout">
+                    <aside class="article-sidebar" aria-label="Vision page navigation">
+                        <nav class="toc-panel" aria-labelledby="toc-title">
+                            <h2 id="toc-title">On this page</h2>
+                            <ol>
+                                <li><a href="#goal">The goal</a></li>
+                                <li><a href="#rising-sea">The Rising Sea</a></li>
+                                <li><a href="#why-algebraic-geometry">Why algebraic geometry</a></li>
+                                <li><a href="#atoms">Atoms as the carrier</a></li>
+                                <li><a href="#division-of-labor">AI reading, deterministic measurement</a></li>
+                                <li><a href="#program">The research program</a></li>
+                                <li><a href="#ai-driven">AI-driven development</a></li>
+                                <li><a href="#loop">The engine</a></li>
+                                <li><a href="#reading">Where to go next</a></li>
+                            </ol>
+                        </nav>
+                        <div class="source-panel" data-sidebar-open="true">
+                            <h2>Go deeper</h2>
+                            <ul>
+                                <li><a href="../aat/">AAT — the geometry</a></li>
+                                <li><a href="../sft/">SFT — the dynamics</a></li>
+                                <li><a href="../archsig/">ArchSig — the measurement</a></li>
+                                <li><a href="../outreach/">Outreach — essays</a></li>
+                            </ul>
+                        </div>
+                    </aside>
+
+                    <div class="article-main">
+                        <section id="goal" class="article-section">
+                            <h2>The goal</h2>
+                            <p>
+                                This program treats the state of an architecture,
+                                locality, gluing, obstruction, and repair as
+                                mathematical objects, and makes the trajectory
+                                of change &mdash; branching, merging, feedback,
+                                and governance &mdash; the subject of theorems
+                                and computation.
+                            </p>
+                            <p>
+                                The vision continues the lineage of software
+                                evolution research that M.&nbsp;M.&nbsp;Lehman
+                                opened: software that keeps changing inside its
+                                operating environment. It connects that object
+                                to algebraic geometry, formalization, finite
+                                measurement, and development dynamics, toward a
+                                new computational foundation for software
+                                engineering.
+                            </p>
+                        </section>
+
+                        <section id="rising-sea" class="article-section">
+                            <h2>The Rising Sea of software engineering</h2>
+                            <p>
+                                Grothendieck, instead of prying open hard
+                                problems one at a time, raised the level of
+                                abstraction until problems dissolved naturally
+                                &mdash; <em>la mer qui monte</em>, the Rising
+                                Sea. This program applies the same method to
+                                software engineering.
+                            </p>
+                            <p>
+                                Tests, contracts, review, and CI handle local
+                                objects precisely. But the problems where every
+                                part passes and the whole still fails live in
+                                the overlaps between parts. So the program moves
+                                up from tracking code and modules directly to
+                                the level of atoms, laws, sites, sheaves,
+                                covers, and cohomology. At that level, "locally
+                                correct but globally broken" becomes an
+                                ordinary computation of gluing and obstruction
+                                classes.
+                            </p>
+                            <p>
+                                The Rising Sea keeps engineering problems at the
+                                center of the theory. E2E failures, implicit
+                                interface assumptions, shared state, and broken
+                                temporal ordering acquire coordinates. Objects
+                                with coordinates can be turned into theorems,
+                                measured, and handed to tooling.
+                            </p>
+                        </section>
+
+                        <section id="why-algebraic-geometry" class="article-section">
+                            <h2>Why algebraic geometry</h2>
+                            <p>
+                                In software architecture, several laws act at
+                                once; locally valid constructions must glue into
+                                a global whole; and the system deforms while its
+                                breaks are repaired. Algebraic geometry treats
+                                exactly this ensemble as one mathematics.
+                            </p>
+                            <figure class="code-panel">
+                                <figcaption>The correspondence</figcaption>
+                                <pre><code>several laws          -> systems of equations, ideals, lawful locus
+local context         -> sites, covers, sheaves, sections
+gluing local data     -> descent, cohomology, obstruction
+repair and change     -> deformation, singularity, cotangent complex
+higher coherence      -> derived / stacky geometry, gerbes
+time evolution        -> geometry over traces, SFT dynamics</code></pre>
+                            </figure>
+                            <p>
+                                This choice replaces the invention of a new
+                                metaphor or bespoke metric for every design
+                                problem with the use of existing mathematical
+                                structure. Interaction of laws becomes
+                                operations on ideals; globalizing local repairs
+                                becomes descent; what blocks it becomes a
+                                cohomology class. The higher the water rises,
+                                the more problems that looked separate on the
+                                ground appear as the same geometric phenomenon,
+                                with tools already built.
+                            </p>
+                        </section>
+
+                        <section id="atoms" class="article-section">
+                            <h2>Atoms carry purity and portability</h2>
+                            <p>
+                                AAT axiomatizes the atom as a primitive
+                                architectural fact. The atom axioms provide
+                                existence and finite composition of
+                                architectural facts; laws impose equations and
+                                zero conditions on top. In this order, the
+                                definitions and theorems of AAT stand as pure
+                                mathematics, free of parsers, ASTs, repository
+                                layouts, or any particular analyzer.
+                            </p>
+                            <p>
+                                Observation reads an existing atom family in a
+                                selected reading. ArchMap records finite,
+                                source-grounded atom evidence; LawPolicy records
+                                which laws are selected; ArchSig computes the
+                                mathematical measurement from both. Because
+                                existence, observation, policy selection, and
+                                computation are separate responsibilities, every
+                                conclusion can be traced to the stage of
+                                evidence it came from.
+                            </p>
+                            <p>
+                                Atoms are also a common carrier across
+                                programming languages and frameworks. Facts
+                                drawn from Rust, Java, TypeScript, different
+                                ADLs, or different repository structures become,
+                                once mapped into the same atom vocabulary,
+                                subject to the same laws, the same obstructions,
+                                and the same theorems. A polyglot system is one
+                                architecture geometry.
+                            </p>
+                        </section>
+
+                        <section id="division-of-labor" class="article-section">
+                            <h2>Probabilistic reading, deterministic measurement</h2>
+                            <p>
+                                Supplying semantic atoms takes the ability to
+                                read how source is actually used. AI agents
+                                carry this local semantic reading, and the
+                                authoring skills for ArchMap and LawPolicy fix
+                                the selected targets, vocabulary, evidence, and
+                                procedure into artifacts &mdash; turning AI
+                                reading into traceable input.
+                            </p>
+                            <p>
+                                ArchSig is the deterministic computational core
+                                that receives that input: the same input yields
+                                the same measurement, and Rust portability
+                                delivers it across operating systems and
+                                processor architectures. Chaining probabilistic
+                                generation into deterministic verification
+                                combines the reading power of AI with the
+                                reproducibility of mathematical measurement.
+                            </p>
+                        </section>
+
+                        <section id="program" class="article-section">
+                            <h2>The research program</h2>
+                            <p>
+                                The program advances one chain of work.
+                            </p>
+                            <figure class="code-panel">
+                                <figcaption>The chain</figcaption>
+                                <pre><code>put architectural facts into words
+  -> build AAT geometry from atoms and laws
+  -> formalize the mathematical claims in Lean
+  -> measure selected finite instances with ArchMap / ArchSig
+  -> connect architecture geometry to evolution dynamics with SFT
+  -> compute trajectories, reachable futures, feedback, governance</code></pre>
+                            </figure>
+                            <ul class="chapter-list">
+                                <li class="chapter-list-parent">
+                                    <a href="../aat/">AAT &mdash; architecture as geometry</a>
+                                    <span>Builds software architecture as an
+                                    algebraic geometry rising from atoms and
+                                    laws: sites, sheaves, law algebra, lawful
+                                    locus, obstruction cohomology, repair,
+                                    deformation, and derived structure.</span>
+                                </li>
+                                <li class="chapter-list-parent">
+                                    <a href="../aat/status/">Lean &mdash; claims made checkable</a>
+                                    <span>Fixes definitions, assumptions,
+                                    theorems, comparison data, and finite
+                                    witnesses as machine-checked declarations,
+                                    keeping the mathematical text and the formal
+                                    text in correspondence.</span>
+                                </li>
+                                <li class="chapter-list-parent">
+                                    <a href="../archsig/">ArchMap / ArchSig &mdash; geometry meets finite measurement</a>
+                                    <span>Records selected architecture evidence
+                                    as finite artifacts and computes lawful
+                                    locus, obstruction, coverage, and witnesses
+                                    as reverifiable measurement, visualized in
+                                    ArchView.</span>
+                                </li>
+                                <li class="chapter-list-parent">
+                                    <a href="../sft/">SFT &mdash; geometry set in motion</a>
+                                    <span>Builds the dynamics of software
+                                    evolution on AAT geometry: development
+                                    traces as time, forces from developers,
+                                    organizations, and AI, policy as governance,
+                                    and measurement along trajectories.</span>
+                                </li>
+                            </ul>
+                            <p>
+                                In one sentence: AAT geometry makes software
+                                architecture a computable object, and SFT
+                                dynamics makes the trajectories and reachable
+                                futures of software evolution computable.
+                            </p>
+                        </section>
+
+                        <section id="ai-driven" class="article-section">
+                            <h2>AI-driven development</h2>
+                            <p>
+                                AI agents generate many candidate changes in
+                                little time, expanding the speed, branching, and
+                                search range of software evolution. This program
+                                places that generative power inside architecture
+                                geometry and development dynamics.
+                            </p>
+                            <p>
+                                AAT supplies the architecture objects, laws,
+                                obstructions, and repairs that a proposal acts
+                                on. SFT places proposals as forces on the
+                                development system and studies their
+                                trajectories and mergeability. ArchSig and
+                                FieldSig measure the selected evidence; review
+                                and CI act as control based on what is observed.
+                                Together they connect AI generation to the
+                                understanding and governance of software
+                                evolution.
+                            </p>
+                        </section>
+
+                        <section id="loop" class="article-section">
+                            <h2>One loop from practice to mathematics and back</h2>
+                            <p>
+                                The program connects questions born in
+                                engineering practice vertically to mathematics,
+                                formalization, measurement, and evolution
+                                theory.
+                            </p>
+                            <figure class="code-panel">
+                                <figcaption>The engine</figcaption>
+                                <pre><code>architecture / evolution problems in practice
+  -> problem statements in atoms and laws
+  -> algebraic geometry and dynamics
+  -> theorems and Lean formalization
+  -> finite measurement with ArchSig
+  -> empirical study and engineering feedback
+  -> the next mathematical problem</code></pre>
+                            </figure>
+                            <p>
+                                Globalizing a local repair, interacting laws,
+                                merging parallel change, selecting among AI
+                                proposals, stabilizing over the long term:
+                                questions from practice produce definitions,
+                                theorems, certificates, and datasets. The
+                                results return to observation and experiment in
+                                practice and produce the next theorem candidates
+                                and evolution models. This loop is the engine of
+                                the research.
+                            </p>
+                        </section>
+
+                        <section id="reading" class="article-section">
+                            <h2>Where to go next</h2>
+                            <p>
+                                This page is the entry to the long-term vision.
+                                The primary texts carry the mathematics, the
+                                formal status, and the tooling contracts.
+                            </p>
+                            <ul class="chapter-list">
+                                <li class="chapter-list-parent">
+                                    <a href="../aat/">AAT overview</a>
+                                    <span>The web-native monograph: atoms, laws,
+                                    sites, obstruction cohomology, repair, SAGA,
+                                    and evolution geometry.</span>
+                                </li>
+                                <li class="chapter-list-parent">
+                                    <a href="../sft/">SFT overview</a>
+                                    <span>Field and force, the computation, and
+                                    software evolution as an engineered
+                                    loop.</span>
+                                </li>
+                                <li class="chapter-list-parent">
+                                    <a href="../archsig/">ArchSig</a>
+                                    <span>Skill-first measurement of gluing
+                                    defects: getting started, concepts,
+                                    contracts, analyses, and ArchView.</span>
+                                </li>
+                                <li class="chapter-list-parent">
+                                    <a href="../outreach/">Outreach</a>
+                                    <span>Essays and articles that tell the
+                                    story before the theory.</span>
+                                </li>
+                            </ul>
+                        </section>
+
+                        <nav class="page-nav" aria-label="Reading sequence">
+                            <a class="page-nav-next" href="../aat/">
+                                <span>Next</span>
+                                <strong>AAT overview</strong>
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+            </section>
+        </main>
