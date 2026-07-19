@@ -1,119 +1,60 @@
 # ArchView
 
-> **v0.5.4 気象図リニューアル進行中**(PRD: `docs/tool/archview_v0_5_4_prd_weather_renewal.md`)。
-> 現行 `archview.html` は新実装(気象図 lens)で、入力は
-> `archsig-measurement-view-model.json`(`archsig analyze` の追加出力)。
-> シーンは「基図と観測網」「天気」、既定は 3D 俯瞰+「平面」トグル。
-> smoke test は `node tools/archview/weather_browser_e2e.cjs <out-dir> weather|flat|reject-schema|missing`。
-> 旧 v0.5.3 viewer と旧 e2e は `legacy/` に暫定退避(正式な退避と本 README の全面改訂は PR-6)。
-> 以下の本文は旧 viewer の記述であり、リニューアル完了時に置き換えられる。
+**AAT ツールレイヤーの可視化担当 — 意味の測量図。** ArchSig が測量し、ArchView が地図にする。
 
-**AAT ツールレイヤーの可視化担当。** ArchSig が計測し、ArchView が見せる。
-ArchSig（計測）/ FieldSig（進化）と並ぶ、**可視化（geometry projection）**のコンポーネント。
+- **ArchSig** … ArchMap + LawPolicy + evidence contract から、選ばれた語彙内の肯定的
+  diagnostic conclusion を**計測**する(Rust)。
+- **ArchView** … その計測を表示非依存の typed view model 経由で受け取り、
+  **気象図 lens** として投影する no-build 単一 HTML viewer(Three.js)。
 
-- **ArchSig** … ArchMap + LawPolicy + evidence contract から、選ばれた語彙内の肯定的 diagnostic conclusion を **計測**する（Rust）。
-- **ArchView** … その計測 artifact を AAT 代数幾何の **幾何として投影**する no-build 単一 HTML viewer（Three.js）。
+## Identity と境界(最重要)
 
-## 役割と境界（最重要）
+ArchView は新しい structural verdict を生成しない。しかし ArchSig が生成した
+diagnostic evidence の navigator ではある — 観測範囲の把握、局所観測と大域結論の接続、
+沈黙理由の確認、support と source への到達、run 間の比較を支援する。
+恒久契約の正本は [ArchView 忠実性契約](../../docs/tool/archview_gluing_geometry_contract.md)、
+設計思想は [気象図リニューアル設計ノート](../../docs/note/archview_semantic_weather_map_design.md)。
 
-ArchView は **projection に徹し、新しい structural verdict を一切作らない**。
-ArchSig が input contract 時に一度だけ前払いした境界を、そのまま投影するだけである。
+読み方の要点:
 
-忠実性契約（ArchSig measurement-first の従属レイヤーとして）:
+- **観測所 = contract 相対性**。天気図が観測網に相対的なように、この地図は supplied
+  contract が観測した行だけを描く。「晴れ」は描かない — 語れるのは「この観測網では静穏」まで。
+- **前線 = witness が実測した規約 mismatch**。witness 未供給の道は点線の沈黙
+  (未測定 ≠ 一致)。
+- **循環警報 = 非零 H¹ 類(無向)**。F₂ から向き・強さは出ないので回転は描かない。
+- **基図の穴 = 閉路を埋める面が複体に無いこと**(structural absence)。霧(未観測)とは別語彙。
+- **雲 = section 宣言**。bridge は一致が実測された辺にだけ架かる。裂け目は bridge の不在。
 
-- **形は測定量が駆動する。底空間は代数幾何の絵そのもの。** context は開被覆の **patch**(半透明の平たい円盤)として描かれ、
-  X,Z = 実測 nerve の Laplacian スペクトル埋め込み(同一成分内の近さ ≈ 拡散距離。等長変換・固有値縮退を除いて一意)。
-  patch は**ほぼ同一平面**に置かれる(Y は常に 0)。restriction poset の深さは patch の高さではなく、
-  2つの patch を結ぶ **overlap lens**(vesica 形の重なり領域。サイズ ∝ √(実測共有 atom 数)、mismatch marker があれば amber)
-  の沈み込みとして残る — 深い重なりほど lens が低く沈む。3重 overlap は既存どおり frosted な face(存在のみ、H² 沈黙)。
-  atom は必ず自分の実測所属領域(単一 context の patch / ペア重なりの lens / 3重 overlap の face)の内側に立ち、
-  領域内の並びは family セクター + id 順リングという決定論規則(hash・乱数は一切使わない)。
-  patch 半径 ∝ |atoms| / lens サイズ ∝ √(共有 atom 数) / lens 縁太さ ∝ #mismatch markers / bead サイズ ∝ valence /
-  seam = 実測 `cocycleRibbon.supportEdges`。
-- **上空は étale space、二重被覆は文字通り2枚のシート。** Sections シーンは宣言された section 値ごとに
-  patch 上空へ半透明のシート片を浮かべ、値が一致する restriction edge 上ではシート片を連続な bridge で貼り、
-  不一致の edge では裂け目(zigzag の fault line)で明示的に切る。H¹ cocycle support 上の裂け目だけ amber + bloom
-  (bloom は測定 H¹ evidence 専用の予算のまま)。大域切断があれば teal の一枚シートが全 patch を覆う。
-  Twist view は同じ base の上に2枚のシート(±h)を重ね、cocycle support edge 上で帯(band)が他方のシートへ渡る
-  ことで、Möbius 的な捻れを見せる(連結性判定ロジック自体は従来どおり、packet との不一致時は沈黙)。
-- **色レーンを分離する。** measured_zero = teal / measured_nonzero = amber / analytic_reading = lavender / 沈黙 = grey。
-  高彩度はこの4レーンに予約し、atom family 色・section レーン色は意図的に低彩度(グレイッシュ)にする —
-  family の識別は主に **形**(FAMILY_SHAPE)が担う。hover/選択時だけ一時的に高彩度へポップしてよい。
-- **bloom は測定された H¹ evidence に予約する。** lawful / analytic は calm reflector のまま光らせない。
-- **沈黙は霧・すりガラス・非描画で表す。** 赤エラー化しない。未測定・ゼロを「flat = lawful」と読まない（near-flat ≠ lawful）。
-- **H² coherence は可視化しない**（triple-overlap face は存在のみ）。holonomy 系は restriction-path 探索であって monodromy verdict ではない。
+## 入力(ArchSig → ArchView handoff)
 
-> ArchView は語れることだけを幾何にし、語り得ない領域には沈黙する。input contract を補完・推測・拡張しない。
-
-## 分析ツールとしての3つの面
-
-- **幾何/装飾の申告(fidelity declaration)** … 要素(context / atom / strut / seam …)や insight カードをクリックすると
-  右側に詳細パネルが開き、視覚チャネルごとに `measured`(測定量駆動)/ `layout`(実測adjacencyの埋め込み。座標はverdictなし)/
-  `decoration`(bloom・pulse・アーチ等の演出)を申告する。詳細パネルは on-demand で、未選択時は完全に非表示(空パネルは出さない)。
-  × で閉じると選択状態もクリアされる。ツールバーの **Decoration** トグルをOFFにすると、演出を全て落とし測定駆動の幾何だけを描画する
-  (seamは直線実線tube、bloom/pulse/probeなし)。どちらのモードでも主張は変わらない。
-- **二層用語(Engineer terms / Math terms)** … シーン名・バッジ・legend・詳細文言はエンジニア語(デフォルト)と
-  AG数学語の2層を持ち、ツールバーのチップで切替できる。文言だけが変わり、主張・境界・conclusion codeは変わらない。
-- **legend の二段構成** … 画面左下には teal / amber / lavender / grey の4色だけを示すコンパクトな color key を常設する。
-  凡例の全文(色・形の意味の詳細)はツールバーの **How to read** ボタンで開く slide-in パネルにあり、× で閉じる。
-  常設パネル(toolbar / question band / insights / color key / status)は互いに重ならないレイアウト規律を持つ。
-- **コード到達(source landing)** … atom / amber seam / strut をクリックすると、supplied ArchMap の `sources`
-  宣言から解決された `path:line`(+symbol)が表示され、⧉ でコピーできる。amber要素では
-  「対立しているsection宣言(objectRef)+それぞれのコード位置」が並ぶので、
-  画面から実コードの改善ポイントへ直接降りられる。解決はArchSig側(`sourceRefSamples`)で行われ、
-  ArchViewは位置を発明しない。
-
-## 入力契約（ArchSig → ArchView の handoff）
-
-ArchView は自分と同じディレクトリから以下を fetch する（`archsig analyze` の出力）:
+同一ディレクトリから fetch する(file picker / drag & drop でも可):
 
 | ファイル | 必須 | 内容 |
 | --- | --- | --- |
-| `archsig-atom-viewer-data.json` | ✅ | `archsig-atom-viewer-data/v0.5.4` 投影本体（nerve / cocycleRibbon / sagaDescent / atomGlyphs / overlays / finitePosetSite / reportPane …） |
-| `archsig-analysis-summary.json` | 任意 | verdict / assumption ledger / structural verdict summary（report pane にマージ） |
-| `archsig-run-manifest.json` | 任意 | artifact パス一覧（report pane にマージ） |
-| `archsig-gate-report.json` | 任意 | `archsig-gate-report/v0.5.4` の decision / per-row action（SAGA 最終段に投影） |
+| `archsig-measurement-view-model.json` | ✅ | `archsig analyze` が出力する表示非依存 view model([契約](../../docs/tool/archsig_view_model_contract.md)) |
+| `archsig-diagnosis-dossier.json` | 任意 | `archsig dossier` が束ねた digest 整合検証済み bundle(診断階段・推移シーンの典拠) |
 
-primary が無ければ空シェル表示。**file `<input>` と drag-drop でも読める**ので、任意の `archsig-atom-viewer-data.json` を投げ込めばよい。
-gate reportは同じディレクトリに置くか、toolbarの **Open gate report…** から第二入力として指定する。packet digestが不一致の報告は反映せず、理由をstatusに表示する。
+契約外 schema は無言の空画面にせず明示拒否する。
 
-## シーン（1 シーン = 1 つの問い）
+## シーン(1シーン=1つの問い)
 
 | シーン | 問い |
 | --- | --- |
-| Nerve & Cover | どんな有限 site と cover を ArchSig は計測したか（patch の底空間 + overlap lens） |
-| **Gluing & H¹ obstruction** | 局所の一致は大域の section に貼り合うか、どこで閉じないか（headline。閉じない縫い目 = amber seam）。**Twist view** トグルで F₂ cochain をその二重被覆として描く: coboundary なら base の上に 2 枚の平行シートが浮かび、H¹≠0 なら cocycle support edge 上で帯が他方のシートへ渡って 1 枚に連結する（「閉じない」の幾何的実体） |
-| **Étale space / sections** | 宣言された section 値はどこまで延び、大域切断はあるか（値ごとのシート片が patch の上空に浮かび、一致する overlap では連続な bridge、不一致では裂け目で切れる。大域切断があれば teal の一枚シートが全体を覆う） |
-| Curvature / Hodge debt | 曲率はどこに集中するか（analytic reading、verdict ではない） |
-| Period / Stokes | クラスは cycle にどう巻きつくか（analytic reading） |
-| Forbidden support / flatness | どの atom 共起が禁止され、section はどう repair しうるか |
-| Projection boundary | 選ばれた profile は何を観測し、何が沈黙か |
+| 基図と観測網 | どんな地区・道・面があり、観測所はどこで何を観測しているか |
+| 天気 | 前線はどこに立ち、循環警報と基図の穴はどこにあるか |
+| 空(section 層) | 各地区は何を宣言し、どこで雲が繋がり、どこで裂けているか |
+| 診断階段 | dossier の frame 列は何を測り、gate は何を決めたか(provenance 常時表示) |
+| 推移 | 実測 frame の再生で天気はどう変わったか(Procrustes 整列、予報なし) |
 
-各シーン名は Engineer terms lane では平易名（Global consistency / Section lanes 等）で表示される。
-設計の正本は `docs/note/archview_measured_geometry_design.md`（計測駆動幾何）と
-`docs/tool/archview_gluing_geometry_contract.md`（忠実性契約）。
-
-## Release bundle
-
-ArchSig release archive では ArchView は `archview/` に同梱される。
-
-```text
-archview/
-  archview.html
-  README.md
-```
-
-ES module + Three.js CDN を使うので、`archview.html` はローカルサーバ経由で開く。
-`archview.html` を `archsig analyze --out-dir` の出力ディレクトリへコピーするか、
-出力ディレクトリをローカルサーバで配信して file picker / drag-drop で
-`archsig-atom-viewer-data.json` を読ませる。`archview-sequence.json` が同じ
-ディレクトリにある場合は sequence mode に入り、各 frame の実測 ArchSig packet を
-順に表示する。
+既定は **3D 俯瞰**。「平面」トグルは同一 scene graph のカメラ・投影切替であり、
+主張は変わらない。「演出」トグル OFF で発光・明滅が止まる(主張は変わらない)。
+fidelity 申告(measured / derived / layout / decoration+禁止チャネル台帳)は
+サイドパネルの HOW THIS IS DRAWN に常設。
 
 ## Repository checkout demo
 
 ```bash
-# ① ArchSig で計測 artifact を生成(archmap_head.json = 1セントのドリフトの障害あり状態)
+# ① one-cent drift head を計測(view model が同時に出力される)
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap_head.json \
   --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
@@ -123,34 +64,33 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --repair-plan tools/archsig/examples/practical-rust-service/saga/repair_plan_head.json \
   --out-dir .tmp/archview-demo
 
-# ② ArchView をその成果物の隣に置いて配信（sibling fetch が成立する）
+# ② viewer を成果物の隣に置いて配信
 cp tools/archview/archview.html .tmp/archview-demo/
 python3 -m http.server 8000 --directory .tmp/archview-demo
 # → http://localhost:8000/archview.html
 
-# ③ Chrome headless smoke test: SAGA stage ⇔ Three.js scene, HUD, and gate absence
-#    前提: Chrome/Chromium（見つからなければ CHROME_BIN で指定）と
-#    website/node_modules の ws（初回は cd website && npm install）
-node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo absent
+# ③ (任意)診断階段・推移も見る場合は repaired run と compare / gate を作り dossier を束ねる
+#    コマンドは tools/archsig/docs/commands.md の Dossier 節を参照。
+#    出力を archsig-diagnosis-dossier.json として同ディレクトリへ置く。
 
-# ④ gate reportを生成し、SAGA最終段への供給・表示を確認
-cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
-  --packet .tmp/archview-demo/archsig-measurement-packet.json \
-  --policy tools/archsig/examples/practical-rust-service/law_policy/gate_policy.json \
-  --out .tmp/archview-demo/archsig-gate-report.json
-node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo supplied
-# gate reportのschemaまたはpacket digestを壊したディレクトリでは mismatch を指定する
-node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo mismatch
-# JSON parse error と per-row boundaryOverrideApplied 欠落も明示拒否する
-node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo malformed
-node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo missing-boundary
-# sagaDescent の段形状が契約と食い違う viewer-data は、無言の空シーンにせず明示拒否する
-node tools/archview/saga_browser_e2e.cjs .tmp/archview-demo invalid-saga
+# ④ Chrome headless smoke test(前提: Chrome/Chromium と website/node_modules の ws)
+node tools/archview/weather_browser_e2e.cjs .tmp/archview-demo weather
 ```
 
-リポジトリ全体を配信して `archview.html` を開き、`archsig-atom-viewer-data.json` をドラッグしてもよい。
+e2e は10モード: `weather / flat / reject-schema / missing / sky / staircase /
+staircase-silent / decoration-off / profile-switch / transition`。
+
+## Release bundle
+
+ArchSig release archive では `archview/` に `archview.html` と本 README が同梱される。
 
 ## 依存
 
-- Three.js r0.164.1（unpkg importmap、no-build）。offline 環境では CDN 取得に失敗する。
-- ArchSig 本体・出力契約には依存するが、ArchSig を改変しない。
+- Three.js r0.164.1(unpkg importmap、no-build)。CDN 参照は設計判断であり
+  vendoring は不採用(閉域ネットワークは想定しない)。
+- ArchSig の出力契約に依存するが、ArchSig を改変しない。
+
+## 旧実装
+
+v0.5.3 の AG 語彙ネイティブ viewer(étale sheet / patch-lens 描画)と旧 e2e は
+`docs/archive/2026-07-20-archview-v053/` に退避した。現行 source of truth ではない。

@@ -32,9 +32,10 @@ Current source-of-truth boundaries:
 - FieldSig reads ArchSig measurement packets as bounded current SFT handoff
   state. Raw ArchMap files and retired raw packets are not current handoff
   inputs.
-- ArchView visualizes emitted viewer data and same-directory summary / manifest /
-  optional gate report files. It projects measured geometry and gate decisions
-  supplied by ArchSig without creating a new verdict.
+- ArchView renders the display-independent measurement view model
+  (`archsig-measurement-view-model.json`) and the optional diagnosis dossier
+  (`archsig-diagnosis-dossier.json`) as the weather-lens survey map. It never
+  creates a new verdict; weather vocabulary stays on the display side.
 
 Current entry points:
 
@@ -50,7 +51,7 @@ Current entry points:
 - [ArchMapStore Notes](archmap_store.md)
 - [LLM-Native Golden Corpus](golden_corpus.md)
 - [AG measurement evidence contract](ag_measurement_evidence_contract.md): fixtureのsource sectionと入力責務。
-- [ArchView gluing geometry contract](archview_gluing_geometry_contract.md): golden projection caseとfidelity規律。
+- [ArchView 忠実性契約(気象図 lens)](archview_gluing_geometry_contract.md): 視覚語彙・fidelity・沈黙・時間軸の恒久規律。
 - [ArchView](../../tools/archview/README.md)
 
 New implementation-facing specification documents should be added here only

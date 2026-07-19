@@ -152,13 +152,13 @@ omitted counts and reasons recorded. Viewer layout inputs are visual placement
 support, not diagnostic metrics.
 `archsig-run-manifest.json` records generated and omitted artifacts.
 
-Release archives include `archview/archview.html` as the visualization layer.
-Open it in a browser through a local HTTP server next to an
-`archsig analyze` output directory, or copy it beside
-`archsig-atom-viewer-data.json` so same-directory fetch can load the packet.
-ArchView also supports file picker / drag-and-drop and sequence mode through
-`archview-sequence/v0.5.4`. It uses CDN Three.js and projects measured AAT geometry
-without creating new structural verdicts.
+Release archives include `archview/archview.html` as the visualization layer
+(the weather-lens survey map). Open it through a local HTTP server next to an
+`archsig analyze` output directory: it reads the display-independent
+`archsig-measurement-view-model.json` (and the optional
+`archsig-diagnosis-dossier.json` for the staircase and temporal replay scenes).
+File picker / drag-and-drop are supported. It uses CDN Three.js and never
+creates a new structural verdict; weather vocabulary stays on the display side.
 
 For a production-shaped, end-to-end demonstration — a realistic Rust service
 whose PR passes every unit test in every build state yet introduces a
