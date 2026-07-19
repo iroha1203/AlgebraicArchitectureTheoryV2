@@ -1,5 +1,13 @@
 # ArchView
 
+> **v0.5.4 気象図リニューアル進行中**(PRD: `docs/tool/archview_v0_5_4_prd_weather_renewal.md`)。
+> 現行 `archview.html` は新実装(気象図 lens)で、入力は
+> `archsig-measurement-view-model.json`(`archsig analyze` の追加出力)。
+> シーンは「基図と観測網」「天気」、既定は 3D 俯瞰+「平面」トグル。
+> smoke test は `node tools/archview/weather_browser_e2e.cjs <out-dir> weather|flat|reject-schema|missing`。
+> 旧 v0.5.3 viewer と旧 e2e は `legacy/` に暫定退避(正式な退避と本 README の全面改訂は PR-6)。
+> 以下の本文は旧 viewer の記述であり、リニューアル完了時に置き換えられる。
+
 **AAT ツールレイヤーの可視化担当。** ArchSig が計測し、ArchView が見せる。
 ArchSig（計測）/ FieldSig（進化）と並ぶ、**可視化（geometry projection）**のコンポーネント。
 
