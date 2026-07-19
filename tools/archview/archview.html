@@ -69,6 +69,7 @@
       <button id="scene-weather">天気</button>
       <button id="scene-sky">空(section 層)</button>
       <button id="scene-staircase">診断階段</button>
+      <button id="scene-transition">推移</button>
       <button id="btn-flat">平面</button>
       <button id="btn-deco" class="on">演出</button>
       <button id="btn-legend">How to read</button>
@@ -86,6 +87,13 @@
       <div class="row"><span class="sw" style="border-color:var(--amber); border-top-style:dashed"></span>循環警報 = 非零 H¹ 類(<b>無向</b>・回転は描かない)</div>
       <div class="row"><span class="swbox" style="background:var(--void); border-color:#4a3a12"></span>基図の穴 = 閉路を埋める面が複体に無い</div>
       <div class="note" style="margin-top:6px">「晴れ」は描かない — 語れるのは「この観測網では静穏」まで。未測定は霧(沈黙)であり、ゼロではない。</div>
+    </div>
+    <div id="trans-hud" style="display:none; position:absolute; top:54px; left:10px; z-index:5; background:rgba(26,32,41,.94); border:1px solid #2c3542; border-radius:8px; padding:8px 12px; font-size:12px">
+      <button id="trans-prev" style="background:var(--panel2); color:var(--ink); border:1px solid #364152; border-radius:4px; cursor:pointer">◀</button>
+      <span id="trans-label" class="mono" style="margin:0 8px"></span>
+      <button id="trans-next" style="background:var(--panel2); color:var(--ink); border:1px solid #364152; border-radius:4px; cursor:pointer">▶</button>
+      <span id="trans-prov" class="chip silent" style="margin-left:10px"></span>
+      <div class="note" style="margin-top:4px">実測 frame の再生のみ — 予報・外挿はしない。frame 間の位置の動きは layout(Procrustes 整列)。</div>
     </div>
     <div id="status"></div>
     <div id="reject"><div class="card"><b>入力を拒否しました</b><br><span id="reject-reason" class="mono"></span><br><span class="note">ArchView は契約に合わない入力を無言の空画面にせず、明示的に拒否します。</span></div></div>
@@ -115,8 +123,10 @@ const FIDELITY = [
   { channel: "成分間の並び・絶対スケール", lane: "layout", source: "component packing order" },
   { channel: "雲の高さ・厚み・色の割当", lane: "layout", source: "fixed sky height; colors assigned to sorted distinct declared values" },
   { channel: "発光・明滅", lane: "decoration", source: "measured nonzero class only; OFF via 演出 toggle" },
+  { channel: "frame 間の位置の動き(推移)", lane: "layout", source: "per-frame spectral layouts Procrustes-aligned to the previous frame; motion never asserts architecture change" },
   { channel: "F₂ 類の回転・向き・強さ", lane: "forbidden", source: "no orientation exists in F2 measurement — never drawn" },
   { channel: "未測定の連続場(等値線・流線)", lane: "forbidden", source: "no per-edge/vertex field is recorded — never drawn" },
+  { channel: "未来 frame(予報・外挿)", lane: "forbidden", source: "only recorded frames replay — never synthesized" },
 ];
 
 /* ================= state ================= */
@@ -124,6 +134,7 @@ const S = {
   vm: null, scene: "basemap", flat: false, deco: true, rejected: null,
   three: null, layout: null,
   loaded: new Map(), activeKey: null, dossier: null,
+  transition: null, mainVm: null, mainLayout: null,
 };
 const TEST = { rejected: null };
 window.__ARCHVIEW_STATE__ = TEST;
@@ -431,8 +442,17 @@ function rebuild() {
   const supportSet = new Set(cycle ? cycle.edges : []);
 
   // districts
+  const appeared = new Set(S.scene === "transition" ? (S.transition?.appeared || []) : []);
   for (const vertex of S.vm.complex.vertices) {
     const p = vpos(vertex.contextRef);
+    if (appeared.has(vertex.contextRef)) {
+      // 新規 context の別表現: 破線風リング(位置の動きと区別する)
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(1.7, 0.05, 8, 40),
+        new THREE.MeshBasicMaterial({ color: 0xb7a5e8, transparent: true, opacity: 0.8 }));
+      ring.rotation.x = Math.PI / 2; ring.position.copy(p); ring.position.y = 0.35;
+      scene.add(ring);
+      scene.add(label("new", p.clone().setY(1.6), "#b7a5e8", 2.2));
+    }
     const radius = 1.15 + 0.55 * Math.sqrt((vertex.atomCount || 1)) / 6;
     const disc = new THREE.Mesh(
       new THREE.CylinderGeometry(radius, radius * 1.06, 0.3, 30),
@@ -463,7 +483,7 @@ function rebuild() {
     const witness = statusMap.get(edge.edgeRef);
     const status = witness ? witness.status : "witness_not_supplied";
     let color = 0x5c6673, radius = 0.05, opacity = 1;
-    if (S.scene === "weather") {
+    if (S.scene === "weather" || S.scene === "transition") {
       if (status === "mismatch_observed") { color = 0xf5a623; radius = 0.09; }
       else if (status === "agreement_observed") { color = 0x3f9a8a; radius = 0.06; }
       else { opacity = 0.4; }
@@ -473,7 +493,7 @@ function rebuild() {
       new THREE.MeshBasicMaterial({ color, transparent: opacity < 1, opacity }));
     tube.userData = { kind: "edge", ref: edge.edgeRef, status };
     scene.add(tube); pickables.push(tube);
-    if (S.scene === "weather" && status === "mismatch_observed") {
+    if ((S.scene === "weather" || S.scene === "transition") && status === "mismatch_observed") {
       // front teeth: alternating static triangles (undirected, no motion)
       const dir = b.clone().sub(a); const len = dir.length(); dir.normalize();
       const normal = new THREE.Vector3(-dir.z, 0, dir.x);
@@ -486,6 +506,18 @@ function rebuild() {
         tooth.rotation.y = Math.atan2(dir.x, dir.z);
         scene.add(tooth);
       }
+    }
+  }
+  // 削除 context の別表現: 前 frame の整列済み位置に ghost(推移シーンのみ)
+  if (S.scene === "transition" && S.transition && S.transition.removed?.length) {
+    const prev = S.transition.layouts[S.transition.active - 1];
+    for (const id of S.transition.removed) {
+      const p = prev.positions.get(id); if (!p) continue;
+      const ghost = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 0.1, 24),
+        new THREE.MeshBasicMaterial({ color: 0x5c6673, transparent: true, opacity: 0.15 }));
+      ghost.position.set(p.x, 0.05, p.z);
+      scene.add(ghost);
+      scene.add(label(shortId(id) + " (removed)", new THREE.Vector3(p.x, 0.9, p.z), "#5c6673", 4));
     }
   }
   // sky: one cloud per declared section value above its context; a bridge is
@@ -527,7 +559,7 @@ function rebuild() {
   }
   // circulation warning + hole (weather scene, measured nonzero class only)
   let warningRing = null;
-  if (S.scene === "weather" && cycle) {
+  if ((S.scene === "weather" || S.scene === "transition") && cycle) {
     for (const ref of cycle.edges) {
       const edge = S.vm.complex.edges.find(e => e.edgeRef === ref);
       if (!edge) continue;
@@ -603,6 +635,98 @@ function rebuild() {
   S.three = { renderer, camera, controls, dispose() { disposed = true; renderer.dispose(); } };
   publish();
 }
+/* ================= transition scene (temporal replay) =================
+   Replays the recorded dossier frames only (no forecast). Each frame's layout
+   is computed independently, then Procrustes-aligned (rotation / reflection /
+   translation over common contexts) to the previous frame so that layout
+   indeterminacy never masquerades as architecture change. */
+function procrustes2d(current, reference) {
+  // Align `current` (Map id->{x,z}) onto `reference` using common ids.
+  const common = [...current.keys()].filter(id => reference.has(id));
+  if (common.length < 2) return { aligned: current, drift: 0 };
+  const mean = (points, key) => points.reduce((s, p) => s + p[key], 0) / points.length;
+  const cur = common.map(id => current.get(id));
+  const ref = common.map(id => reference.get(id));
+  const cx = mean(cur, "x"), cz = mean(cur, "z"), rx = mean(ref, "x"), rz = mean(ref, "z");
+  // cross-covariance H = sum (cur-c)(ref-r)^T over 2D
+  let h00 = 0, h01 = 0, h10 = 0, h11 = 0;
+  for (let i = 0; i < common.length; i++) {
+    const ax = cur[i].x - cx, az = cur[i].z - cz;
+    const bx = ref[i].x - rx, bz = ref[i].z - rz;
+    h00 += ax * bx; h01 += ax * bz; h10 += az * bx; h11 += az * bz;
+  }
+  // Optimal 2D rotation (allowing reflection to kill eigen sign flips):
+  // R = V U^T from SVD of H; closed form via angle for rotation part, and we
+  // test the reflected candidate too, keeping whichever fits better.
+  const candidates = [];
+  const theta = Math.atan2(h01 - h10, h00 + h11);
+  candidates.push([[Math.cos(theta), -Math.sin(theta)], [Math.sin(theta), Math.cos(theta)]]);
+  const phi = Math.atan2(h01 + h10, h00 - h11);
+  candidates.push([[Math.cos(phi), Math.sin(phi)], [Math.sin(phi), -Math.cos(phi)]]);
+  let best = null;
+  for (const R of candidates) {
+    let err = 0;
+    for (let i = 0; i < common.length; i++) {
+      const ax = cur[i].x - cx, az = cur[i].z - cz;
+      const px = R[0][0] * ax + R[0][1] * az, pz = R[1][0] * ax + R[1][1] * az;
+      err += (px - (ref[i].x - rx)) ** 2 + (pz - (ref[i].z - rz)) ** 2;
+    }
+    if (!best || err < best.err) best = { R, err };
+  }
+  const aligned = new Map();
+  for (const [id, p] of current) {
+    const ax = p.x - cx, az = p.z - cz;
+    aligned.set(id, {
+      x: best.R[0][0] * ax + best.R[0][1] * az + rx,
+      z: best.R[1][0] * ax + best.R[1][1] * az + rz,
+    });
+  }
+  let drift = 0;
+  for (const id of common) {
+    const a = aligned.get(id), r = reference.get(id);
+    drift = Math.max(drift, Math.hypot(a.x - r.x, a.z - r.z));
+  }
+  return { aligned, drift };
+}
+function buildTransition() {
+  const frames = S.dossier.frames;
+  const layouts = []; const drifts = [];
+  const saveVm = S.vm, saveLayout = S.layout;
+  for (let i = 0; i < frames.length; i++) {
+    S.vm = frames[i].viewModel;
+    buildLayout();
+    let positions = S.layout.positions;
+    if (i > 0) {
+      const { aligned, drift } = procrustes2d(positions, layouts[i - 1].positions);
+      positions = aligned; drifts.push(drift);
+    }
+    layouts.push({ ids: S.layout.ids, idx: S.layout.idx, positions });
+  }
+  S.vm = saveVm; S.layout = saveLayout;
+  S.transition = { active: 0, layouts, drifts };
+}
+function enterTransitionFrame(index) {
+  const frames = S.dossier.frames;
+  const clamped = Math.max(0, Math.min(frames.length - 1, index));
+  S.transition.active = clamped;
+  const frame = frames[clamped];
+  S.vm = frame.viewModel;
+  const layout = S.transition.layouts[clamped];
+  const prev = clamped > 0 ? S.transition.layouts[clamped - 1] : null;
+  S.layout = layout;
+  // 新規・削除 context の別表現のための差分
+  S.transition.appeared = prev ? layout.ids.filter(id => !prev.positions.has(id)) : [];
+  S.transition.removed = prev ? prev.ids.filter(id => !layout.positions.has(id)) : [];
+  $("trans-label").textContent = `${clamped + 1}/${frames.length} ${frame.frameId} · ${frame.conclusion ?? ""}`;
+  const provClass = { "hypothetical-state": "warn" };
+  const prov = $("trans-prov");
+  prov.textContent = frame.stateProvenance;
+  prov.className = "chip " + (provClass[frame.stateProvenance] || "silent");
+  rebuild(); publish();
+}
+$("trans-prev").onclick = () => enterTransitionFrame(S.transition.active - 1);
+$("trans-next").onclick = () => enterTransitionFrame(S.transition.active + 1);
+
 /* ================= staircase scene (dossier projection) =================
    Rendered as a document panel: every row restates a digest-verified dossier
    field. State provenance badges are always visible; hypothetical and actual
@@ -746,16 +870,38 @@ function showDetail(data) {
 /* ================= toolbar ================= */
 function setStatus(text) { $("status").textContent = text; }
 function setScene(name) {
+  const leavingTransition = S.scene === "transition" && name !== "transition";
+  if (leavingTransition && S.mainVm) {
+    S.vm = S.mainVm; S.layout = S.mainLayout;
+    S.mainVm = null; S.mainLayout = null;
+  }
   S.scene = name;
-  for (const id of ["basemap", "weather", "sky", "staircase"]) {
+  for (const id of ["basemap", "weather", "sky", "staircase", "transition"]) {
     $("scene-" + id).classList.toggle("on", name === id);
   }
+  $("trans-hud").style.display = "none";
+  if (name === "transition") {
+    if (!S.dossier) { rebuildTransitionSilent(); return; }
+    if (!S.mainVm) { S.mainVm = S.vm; S.mainLayout = S.layout; }
+    if (!S.transition) buildTransition();
+    $("trans-hud").style.display = "block";
+    enterTransitionFrame(S.transition.active);
+    return;
+  }
   rebuild();
+}
+function rebuildTransitionSilent() {
+  if (S.three) { S.three.dispose(); S.three = null; }
+  $("gl").innerHTML = `<div style="padding:60px 40px; max-width:640px">
+    <div class="card note">推移は沈黙しています — dossier が供給されていません。
+    (未供給はエラーではなく沈黙。予報・外挿は供給があっても行わない)</div></div>`;
+  publish();
 }
 $("scene-basemap").onclick = () => setScene("basemap");
 $("scene-weather").onclick = () => setScene("weather");
 $("scene-sky").onclick = () => setScene("sky");
 $("scene-staircase").onclick = () => setScene("staircase");
+$("scene-transition").onclick = () => setScene("transition");
 $("btn-flat").onclick = () => {
   S.flat = !S.flat;
   $("btn-flat").classList.toggle("on", S.flat);
@@ -800,6 +946,14 @@ function publish() {
       provenances: S.dossier.frames.map(f => f.stateProvenance),
       gateDecisions: (S.dossier.gateReports || []).map(g => g.decision),
       comparisons: (S.dossier.comparisons || []).map(c => c.conclusionCode),
+    } : null,
+    transition: S.transition ? {
+      frames: S.dossier ? S.dossier.frames.length : 0,
+      active: S.transition.active,
+      drifts: S.transition.drifts,
+      appeared: S.transition.appeared || [],
+      removed: S.transition.removed || [],
+      provenanceShown: $("trans-prov").textContent || null,
     } : null,
     fidelityLanes: FIDELITY.map(f => f.lane),
   });

@@ -18112,3 +18112,120 @@ fn cli_dossier_rejects_gate_report_unbound_to_any_frame() {
     );
     assert!(!dossier_path.exists());
 }
+
+#[test]
+fn cli_dossier_one_cent_five_acts_locks_staircase_fixture() {
+    // Golden lock for the one-cent drift demo bundled as a dossier:
+    // base (typed silence) -> head (nonzero class, gate BLOCKED) ->
+    // repaired (glues, gate PASS), with the head->repaired comparison.
+    let root = practical_rust_service_root();
+    let base_out = temp_dir("dossier-five-acts-base");
+    let mut base_policy = read_json(&root.join("law_policy/law_policy.json"));
+    let base_surface = read_json(&root.join("law_policy/law_surface_base.json"));
+    base_policy["lawSurfaceRef"] = base_surface["id"].clone();
+    let base_policy_path = base_out.join("base-law-policy.json");
+    fs::write(
+        &base_policy_path,
+        serde_json::to_string_pretty(&base_policy).expect("policy serializes"),
+    )
+    .expect("policy is writable");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap/archmap.json").to_str().expect("path is utf-8"),
+        "--law-policy",
+        base_policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        root.join("law_policy/measurement_profile.json").to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        root.join("law_policy/measurement_profile_drift.json").to_str().expect("path is utf-8"),
+        "--law-surface",
+        root.join("law_policy/law_surface_base.json").to_str().expect("path is utf-8"),
+        "--out-dir",
+        base_out.to_str().expect("path is utf-8"),
+    ]);
+    let head = run_practical_saga_head_analyze("dossier-five-acts-head");
+    let repaired = run_practical_saga_repaired_analyze("dossier-five-acts-repaired");
+    let compare_out = temp_dir("dossier-five-acts-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        head.to_str().expect("path is utf-8"),
+        "--head-run",
+        repaired.to_str().expect("path is utf-8"),
+        "--out-dir",
+        compare_out.to_str().expect("path is utf-8"),
+    ]);
+    let gates = temp_dir("dossier-five-acts-gates");
+    let gate_head = gates.join("gate-head.json");
+    let gate_repaired = gates.join("gate-repaired.json");
+    let output = run_sig0_output(&[
+        "gate",
+        "--packet",
+        head.join("archsig-measurement-packet.json").to_str().expect("path is utf-8"),
+        "--policy",
+        root.join("law_policy/gate_policy.json").to_str().expect("path is utf-8"),
+        "--out",
+        gate_head.to_str().expect("path is utf-8"),
+    ]);
+    assert!(!output.status.success(), "head gate must be BLOCKED (nonzero exit)");
+    run_sig0(&[
+        "gate",
+        "--packet",
+        repaired.join("archsig-measurement-packet.json").to_str().expect("path is utf-8"),
+        "--policy",
+        root.join("law_policy/gate_policy.json").to_str().expect("path is utf-8"),
+        "--comparison",
+        compare_out.join("archsig-comparison-report.json").to_str().expect("path is utf-8"),
+        "--out",
+        gate_repaired.to_str().expect("path is utf-8"),
+    ]);
+    let dossier_path = temp_dir("dossier-five-acts-out").join("dossier.json");
+    run_sig0(&[
+        "dossier",
+        "--frame",
+        &format!("base=authored-model={}", base_out.display()),
+        "--frame",
+        &format!("head=authored-model={}", head.display()),
+        "--frame",
+        &format!("repaired=hypothetical-state={}", repaired.display()),
+        "--comparison",
+        compare_out.join("archsig-comparison-report.json").to_str().expect("path is utf-8"),
+        "--gate",
+        gate_head.to_str().expect("path is utf-8"),
+        "--gate",
+        gate_repaired.to_str().expect("path is utf-8"),
+        "--out",
+        dossier_path.to_str().expect("path is utf-8"),
+    ]);
+    let dossier = read_json(&dossier_path);
+    assert_eq!(dossier["sequence"], json!(["base", "head", "repaired"]));
+    assert_eq!(
+        dossier["frames"][0]["conclusion"],
+        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+    );
+    assert_eq!(
+        dossier["frames"][1]["conclusion"],
+        "MEASURED_NONGLUING_RESIDUAL_CLASS"
+    );
+    assert_eq!(
+        dossier["frames"][2]["conclusion"],
+        "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX"
+    );
+    assert_eq!(dossier["frames"][2]["stateProvenance"], "hypothetical-state");
+    assert_eq!(dossier["gateReports"][0]["decision"], "BLOCKED_BY_GATE_POLICY");
+    assert_eq!(dossier["gateReports"][1]["decision"], "PASS_WITHIN_GATE_POLICY");
+    assert_eq!(
+        dossier["comparisons"][0]["conclusionCode"],
+        "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE"
+    );
+    // Frame view models embed the temporal supply the viewer replays.
+    assert_eq!(
+        dossier["frames"][1]["viewModel"]["classSupport"]["classNonzero"],
+        true
+    );
+    assert_eq!(
+        dossier["frames"][2]["viewModel"]["classSupport"]["classNonzero"],
+        false
+    );
+}

@@ -11,6 +11,8 @@
 //   staircase-silent  absent dossier leaves the staircase silent, not an error
 //   decoration-off turning decoration off must not change any claim
 //   profile-switch a second view model replaces the scene; never composited
+//   transition     temporal replay: Procrustes-stable anchors, provenance HUD,
+//                  recorded frames only (no forecast)
 
 const fs = require("fs");
 const http = require("http");
@@ -95,7 +97,7 @@ async function main() {
   const expected = needsExpected
     ? JSON.parse(fs.readFileSync(path.join(serveRoot, "archsig-measurement-view-model.json"), "utf8"))
     : null;
-  const expectedDossier = mode === "staircase"
+  const expectedDossier = mode === "staircase" || mode === "transition"
     ? JSON.parse(fs.readFileSync(path.join(serveRoot, "archsig-diagnosis-dossier.json"), "utf8"))
     : null;
   const secondViewModel = mode === "profile-switch"
@@ -138,6 +140,7 @@ async function main() {
     "staircase-silent": "document.getElementById('scene-staircase').click();",
     "decoration-off": "document.getElementById('scene-weather').click(); document.getElementById('btn-deco').click();",
     "profile-switch": `window.__archviewLoadDocument(${JSON.stringify(secondViewModel)}, 'second-profile');`,
+    transition: "document.getElementById('scene-transition').click(); if ((window.__ARCHVIEW_STATE__.transition||{}).active === 0) document.getElementById('trans-next').click();",
   }[mode];
   const expression = `(() => { ${actions} return JSON.parse(JSON.stringify(window.__ARCHVIEW_STATE__ || {})); })()`;
   let value;
@@ -151,6 +154,7 @@ async function main() {
       || (mode === "missing" && value.districts === 0));
     if (settled && mode === "staircase" && !value.staircase) settled = false;
     if (settled && mode === "profile-switch" && value.loadedProfiles.length < 2) settled = false;
+    if (settled && mode === "transition" && (!value.transition || value.transition.active < 1)) settled = false;
     if (settled) break;
     await new Promise((resolve) => setTimeout(resolve, 500));
   } while (Date.now() < pageDeadline);
@@ -195,6 +199,26 @@ async function main() {
     if (value.fronts !== expectedFronts || value.districts !== expected.complex.vertices.length
       || !!(value.circulationWarning && value.circulationWarning.present) !== (expected.classSupport.classNonzero === true)) {
       throw new Error("decoration OFF changed a claim: " + JSON.stringify(value));
+    }
+  } else if (mode === "transition") {
+    if (value.rejected) throw new Error("viewer rejected valid input: " + value.rejected);
+    const t = value.transition;
+    if (!t) throw new Error("transition scene did not initialize: " + JSON.stringify(value));
+    if (t.frames !== expectedDossier.frames.length) throw new Error("transition frame count mismatch: " + JSON.stringify(t));
+    if (t.active !== 1) throw new Error("frame stepping did not advance: " + JSON.stringify(t));
+    if (t.drifts.length !== expectedDossier.frames.length - 1) {
+      throw new Error("Procrustes drift must be recorded per consecutive pair: " + JSON.stringify(t));
+    }
+    for (const drift of t.drifts) {
+      if (!(drift < 5)) throw new Error("anchor drift exceeds threshold (layout motion leak): " + JSON.stringify(t));
+    }
+    const lastDrift = t.drifts[t.drifts.length - 1];
+    if (!(lastDrift < 1e-6)) {
+      throw new Error("identical-complex frames must align to ~zero drift: " + JSON.stringify(t));
+    }
+    const expectedProv = expectedDossier.frames[t.active].stateProvenance;
+    if (t.provenanceShown !== expectedProv) {
+      throw new Error("provenance badge must always show the active frame provenance: " + JSON.stringify(t));
     }
   } else if (mode === "profile-switch") {
     if (value.rejected) throw new Error("viewer rejected valid input: " + value.rejected);
