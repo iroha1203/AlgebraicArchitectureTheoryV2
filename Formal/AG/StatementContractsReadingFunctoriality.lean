@@ -4490,6 +4490,103 @@ example :
 
 end R9d
 
+/-! R9f: finite coefficient-geometry firing. -/
+
+namespace R9f
+
+open ReadingFunctorialityFinite
+open AlgebraicGeometry
+
+noncomputable example :
+    finiteSite.topology.HasSheafCompose
+      (intPolynomialFlatChange.coefficientExtension :
+        LawAlgebra.AATCommAlgCat.{0, 0} Int ⥤
+          LawAlgebra.AATCommAlgCat.{0, 0} (Polynomial Int)) :=
+  coefficientExtension_hasSheafCompose
+
+noncomputable example :
+    LawAlgebra.architectureChartSpec
+        (coefficientRaw.baseChange intPolynomialFlatChange.hom) finiteBase ≅
+      pullback
+        (AlgebraicGeometry.Scheme.Spec.map
+          (coefficientRaw.toRingedSite.structureSheaf.val.obj
+            (Opposite.op finiteBase)).hom.op)
+        (AlgebraicGeometry.Scheme.Spec.map
+          (CommRingCat.ofHom intPolynomialFlatChange.liftedHom).op) :=
+  coefficientSectionSpecBaseChangeIso_fires
+
+noncomputable example :
+    LawAlgebra.StandardArchitectureScheme coefficientRaw :=
+  coefficientScheme
+
+noncomputable example :
+    LawAlgebra.SemanticLawEquationWitnessIdealCore finiteSite :=
+  coefficientSemanticCore
+
+noncomputable example :
+    LawAlgebra.SemanticLawEquationSchemeBridge
+      coefficientRaw coefficientSemanticCore :=
+  coefficientBridge
+
+example :
+    LawAlgebra.IsSemanticLawEquationSchemeBridge
+      coefficientRaw coefficientSemanticCore coefficientBridge :=
+  coefficientBridge_valid
+
+example :
+    LawAlgebra.SemanticCoreIdealSheafRealized
+      coefficientRaw coefficientScheme coefficientSemanticCore coefficientBridge :=
+  coefficientSemanticCore_realized
+
+example
+    (j : coefficientScheme.atlas.Index)
+    (i : finiteSite.lawUniverse.Index) :
+    let R' :=
+      LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore
+        coefficientRaw coefficientScheme coefficientSemanticCore
+          coefficientBridge intPolynomialFlatChange
+    let hR' :=
+      (LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore_valid
+        coefficientRaw coefficientScheme coefficientSemanticCore
+          coefficientBridge intPolynomialFlatChange).witness_compatible
+    let j' := cast
+      (coefficientScheme.baseChangedAtlas_Index
+        coefficientRaw intPolynomialFlatChange).symm j
+    Scheme.IdealSheafData.comap
+        (Scheme.IdealSheafData.ofIdealTop
+          (X := (coefficientScheme.atlas.chart j).domain)
+          (Ideal.map
+            (AlgebraicGeometry.Scheme.ΓSpecIso
+              (LawAlgebra.SheafifiedSectionRing coefficientRaw
+                (coefficientScheme.atlas.chart j).context)).inv.hom
+            (Ideal.map
+              (coefficientBridge.toSheafifiedSection
+                (coefficientScheme.atlas.chart j).context)
+              (coefficientSemanticCore.lawWitnessIdeal
+                (coefficientScheme.atlas.chart j).context i))))
+        (coefficientScheme.baseChangedChartMap
+          coefficientRaw intPolynomialFlatChange j) =
+      Scheme.IdealSheafData.comap
+        (LawAlgebra.lawWitnessIdealSheaf
+          (coefficientRaw.baseChange intPolynomialFlatChange.hom)
+          (coefficientScheme.baseChange
+            coefficientRaw intPolynomialFlatChange)
+          R' hR' i (Set.mem_univ i))
+        ((coefficientScheme.baseChangedAtlas
+          coefficientRaw intPolynomialFlatChange).chart j').map :=
+  coefficientSemanticCore_baseChangedChart j i
+
+example :
+    LawAlgebra.SemanticCoreIdealSheafRealized
+        coefficientRaw coefficientScheme coefficientSemanticCore coefficientBridge ∧
+    ¬ IsIso
+      (LawAlgebra.lawfulClosedSubschemeBaseChangeMap
+        coefficientRaw coefficientScheme coefficientSemanticCore
+        coefficientBridge intPolynomialFlatChange) :=
+  lawfulLocus_baseChange_fires
+
+end R9f
+
 /-! R9g: concrete `Tor₁` flat-base-change firing. -/
 
 namespace R9g
