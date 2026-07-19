@@ -1,5 +1,5 @@
 {
-  "schema": "refactor-morphism/v0.5.3",
+  "schema": "refactor-morphism/v0.5.4",
   "id": "refactor-morphism:extract-square-free-repair",
   "siteMorphism": {
     "sourceSiteRef": "archmap:/contexts",

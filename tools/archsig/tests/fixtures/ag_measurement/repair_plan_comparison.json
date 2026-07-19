@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.3",
+  "schema": "archsig-repair-plan/v0.5.4",
   "id": "repair-plan:comparison-demo",
   "residual": { "kind": "supplied" },
   "complex": {
@@ -88,7 +88,7 @@
       }
     },
     "h1ComparisonData": {
-      "schema": "h1-comparison-data/v0.5.3",
+      "schema": "h1-comparison-data/v0.5.4",
       "kind": "explicit",
       "cochainMapRef": "comparison:cochain-map",
       "sourceComplexFingerprint": "108fbdda5860ac4cebc2c9ad98df206451d3d2fe6da5b7c8b40fc4f5d4d89718",

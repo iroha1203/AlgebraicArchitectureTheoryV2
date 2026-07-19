@@ -13,7 +13,7 @@ Use this skill when asked to run ArchSig-assisted PR review.
 - Head run directory containing `archsig-measurement-packet.json`.
 - Gate policy JSON.
 - Source diff or PR checkout for human review.
-- Prefer an `archsig-policy-bundle/v0.5.3` for both base and head runs when
+- Prefer an `archsig-policy-bundle/v0.5.4` for both base and head runs when
   the policy, law surface, and profile are intended to remain fixed.
 
 ## Workflow
@@ -35,5 +35,5 @@ Report:
 
 For SAGA packets, review `lawDependent` and `lawIndependent` separately. A
 class transport finding must cite a validated refinement artifact, and a
-refactor transport finding must cite a validated `refactor-morphism/v0.5.3`
+refactor transport finding must cite a validated `refactor-morphism/v0.5.4`
 artifact plus the matching witness; neither is inferred from matching names.

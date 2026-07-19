@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.3",
+  "schema": "archsig-repair-plan/v0.5.4",
   "id": "repair-plan:complete-support-demo",
   "residual": {
     "kind": "supplied"

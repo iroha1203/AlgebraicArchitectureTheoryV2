@@ -13,7 +13,7 @@ an accepted AG axis/predicate pair changes.
 
 The manifest is the accepted Stage 2 law-surface subset. The broader AG table
 below also records evaluator-specific and later-stage vocabulary for authoring
-reference; those entries are not accepted as law-surface/v0.5.3 bindings.
+reference; those entries are not accepted as law-surface/v0.5.4 bindings.
 
 For square-free and Tor Stage 2 runs, `support` / `cooccurrence` atoms are
 observed-complex records. The law-equation-surface owns witness variables and

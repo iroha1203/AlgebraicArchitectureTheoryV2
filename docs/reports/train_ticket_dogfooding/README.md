@@ -55,6 +55,10 @@ canonical JSON digest の一致を検査する(2026-07-19 時点で全 33 検査
 
 ### 再現コマンド
 
+**注**: 証拠束は ArchSig v0.5.3 の artifact であり、schema 版数は受理完全一致のため、
+v0.5.4 以降の binary では入力が拒否される。再現は v0.5.3 時点の tree
+(2026-07-19 の main、例: PR #3626 マージコミット)を checkout して行う。
+
 すべて deterministic であり、2026-07-19 にコミット済み証拠束から再実行して確認済み:
 フルビルド・SAGA の全 run は runId・結論コード・gate 判定まで一致、試運転は runId 一致で
 結論コードは PR #3504 是正後の挙動(`evidence/trial/analyze-postfix/` と一致)になる。

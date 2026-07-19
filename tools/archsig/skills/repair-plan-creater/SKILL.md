@@ -1,11 +1,11 @@
 ---
 name: repair-plan-creater
-description: Create archsig-repair-plan/v0.5.3 artifacts for ArchSig complete-support SAGA descent runs.
+description: Create archsig-repair-plan/v0.5.4 artifacts for ArchSig complete-support SAGA descent runs.
 ---
 
 # RepairPlan Creater
 
-Use this skill to author `archsig-repair-plan/v0.5.3` artifacts for Stage 1
+Use this skill to author `archsig-repair-plan/v0.5.4` artifacts for Stage 1
 `ag.saga-descent` and Stage 2/3 supplied-data SAGA runs.
 
 ## Scope
@@ -23,7 +23,7 @@ Use this skill to author `archsig-repair-plan/v0.5.3` artifacts for Stage 1
 1. Read the selected ArchMap evidence and identify only explicit atom refs,
    contexts, overlap refs, and repair variables already present in the input
    evidence.
-2. Emit a minimal `archsig-repair-plan/v0.5.3` document with:
+2. Emit a minimal `archsig-repair-plan/v0.5.4` document with:
    - `support.kind = complete` for every primitive.
    - Complete residual support variables for the chosen finite complex.
    - `faithfulness.mode = complete-support` when the complete-support alias

@@ -64,7 +64,7 @@ fn scope_manifest_cli_is_deterministic_for_selected_sources() {
         fs::read(&first).expect("first manifest reads"),
         fs::read(&second).expect("second manifest reads")
     );
-    assert_eq!(read_json(&first)["schema"], "archmap-scope-manifest/v0.5.3");
+    assert_eq!(read_json(&first)["schema"], "archmap-scope-manifest/v0.5.4");
 }
 
 #[test]
@@ -180,7 +180,7 @@ fn archmap_cli_rejects_noncanonical_extraction_doctrine() {
 fn archmap_cli_runs_minimal_authoring_audit() {
     let out_dir = temp_dir("archmap-authoring-audit");
     let archmap = json!({
-        "schema": "archmap/v0.5.3",
+        "schema": "archmap/v0.5.4",
         "id": "archmap:authoring-audit",
         "sources": {
             "src:src/a.rs": { "kind": "file", "path": "src/a.rs" }
@@ -198,7 +198,7 @@ fn archmap_cli_runs_minimal_authoring_audit() {
         "covers": []
     });
     let scope = json!({
-        "schema": "archmap-scope-manifest/v0.5.3",
+        "schema": "archmap-scope-manifest/v0.5.4",
         "id": "scope:test",
         "repository": {
             "root": ".",
@@ -224,7 +224,7 @@ fn archmap_cli_runs_minimal_authoring_audit() {
         "exclusions": []
     });
     let candidate = json!({
-        "schema": "archmap-candidate-packet/v0.5.3",
+        "schema": "archmap-candidate-packet/v0.5.4",
         "id": "candidates:pass-a",
         "scopeManifestRef": "scope:test",
         "passId": "pass-a",
@@ -259,7 +259,7 @@ fn archmap_cli_runs_minimal_authoring_audit() {
         }
     });
     let ledger = json!({
-        "schema": "archmap-coverage-ledger/v0.5.3",
+        "schema": "archmap-coverage-ledger/v0.5.4",
         "id": "coverage:test",
         "scopeManifestRef": "scope:test",
         "archmapRef": "archmap:authoring-audit",
@@ -329,7 +329,7 @@ fn archmap_cli_accepts_line_suffixed_source_refs_in_authoring_audit() {
         "refs": ["src:src/a.rs:42"]
     });
     let archmap = json!({
-        "schema": "archmap/v0.5.3",
+        "schema": "archmap/v0.5.4",
         "id": "archmap:authoring-audit-line",
         "sources": {
             "src:src/a.rs": { "kind": "file", "path": "src/a.rs" }
@@ -339,7 +339,7 @@ fn archmap_cli_accepts_line_suffixed_source_refs_in_authoring_audit() {
         "covers": []
     });
     let scope = json!({
-        "schema": "archmap-scope-manifest/v0.5.3",
+        "schema": "archmap-scope-manifest/v0.5.4",
         "id": "scope:test",
         "repository": {
             "root": ".",
@@ -365,7 +365,7 @@ fn archmap_cli_accepts_line_suffixed_source_refs_in_authoring_audit() {
         "exclusions": []
     });
     let candidate = json!({
-        "schema": "archmap-candidate-packet/v0.5.3",
+        "schema": "archmap-candidate-packet/v0.5.4",
         "id": "candidates:pass-a",
         "scopeManifestRef": "scope:test",
         "passId": "pass-a",
@@ -395,7 +395,7 @@ fn archmap_cli_accepts_line_suffixed_source_refs_in_authoring_audit() {
         }
     });
     let ledger = json!({
-        "schema": "archmap-coverage-ledger/v0.5.3",
+        "schema": "archmap-coverage-ledger/v0.5.4",
         "id": "coverage:test",
         "scopeManifestRef": "scope:test",
         "archmapRef": "archmap:authoring-audit-line",

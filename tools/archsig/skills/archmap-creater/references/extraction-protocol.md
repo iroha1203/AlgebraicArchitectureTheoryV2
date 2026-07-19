@@ -85,7 +85,7 @@ Known repeated gap types:
 
 Pass A and Pass B read the same approved manifest and chunking independently.
 Candidate atoms from one pass are not given to the other pass. Both passes emit
-`archmap-candidate-packet/v0.5.3`.
+`archmap-candidate-packet/v0.5.4`.
 
 Allowed `surveyRows[].status` values are:
 
