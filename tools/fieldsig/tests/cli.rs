@@ -322,7 +322,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
     let estimate = out_dir.join("operation-support-estimate.json");
     let estimate_validation = out_dir.join("operation-support-estimate-validation.json");
     let packet_json = serde_json::json!({
-        "schema": "archsig-measurement-packet/v0.5.3",
+        "schema": "archsig-measurement-packet/v0.5.4",
         "packetId": "measurement:test-handoff",
         "componentFingerprints": {
             "lawPolicy": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
@@ -330,7 +330,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "measurementProfile": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
         },
         "profile": {
-            "schema": "measurement-profile/v0.5.3",
+            "schema": "measurement-profile/v0.5.4",
             "profileId": "profile:test-handoff",
             "siteRef": "archmap:/contexts",
             "coverRef": "cover:test",
@@ -440,7 +440,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "sourceArtifactRef": "input:archmap.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "archmap/v0.5.3-validation"
+                "checkRef": "archmap/v0.5.4-validation"
             }
         }, {
             "suppliedId": "supplied:law-policy",
@@ -448,7 +448,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "sourceArtifactRef": "input:law-policy.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "law-policy/v0.5.3-validation"
+                "checkRef": "law-policy/v0.5.4-validation"
             }
         }, {
             "suppliedId": "supplied:measurement-profile",
@@ -456,7 +456,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "sourceArtifactRef": "input:measurement-profile.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "measurement-profile/v0.5.3-validation"
+                "checkRef": "measurement-profile/v0.5.4-validation"
             }
         }],
         "boundaryStatements": [{
@@ -720,7 +720,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
     let packet = out_dir.join("archsig-measurement-packet.json");
     let estimate = out_dir.join("operation-support-estimate.json");
     let packet_json = serde_json::json!({
-        "schema": "archsig-measurement-packet/v0.5.3",
+        "schema": "archsig-measurement-packet/v0.5.4",
         "packetId": "measurement:capacity-not-cert",
         "componentFingerprints": {
             "lawPolicy": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
@@ -728,7 +728,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "measurementProfile": "sha256:6666666666666666666666666666666666666666666666666666666666666666"
         },
         "profile": {
-            "schema": "measurement-profile/v0.5.3",
+            "schema": "measurement-profile/v0.5.4",
             "profileId": "profile:capacity-not-cert",
             "siteRef": "archmap:/contexts",
             "coverRef": "cover:test",
@@ -796,7 +796,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "sourceArtifactRef": "input:archmap.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "archmap/v0.5.3-validation"
+                "checkRef": "archmap/v0.5.4-validation"
             }
         }],
         "boundaryStatements": [],
@@ -830,7 +830,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     fs::write(
         &schema_only,
         serde_json::to_string_pretty(&serde_json::json!({
-            "schema": "archsig-measurement-packet/v0.5.3"
+            "schema": "archsig-measurement-packet/v0.5.4"
         }))
         .expect("schema-only packet serializes"),
     )
@@ -870,7 +870,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     assert!(!rejected.status.success());
     assert!(
         String::from_utf8_lossy(&rejected.stderr)
-            .contains("requires archsig-measurement-packet/v0.5.3"),
+            .contains("requires archsig-measurement-packet/v0.5.4"),
         "raw ArchMap input must be rejected by the measurement-packet handoff"
     );
 
@@ -899,7 +899,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     assert!(!retired_rejected.status.success());
     assert!(
         String::from_utf8_lossy(&retired_rejected.stderr)
-            .contains("requires archsig-measurement-packet/v0.5.3"),
+            .contains("requires archsig-measurement-packet/v0.5.4"),
         "retired packet schema must be rejected by the measurement-packet handoff"
     );
 
@@ -921,7 +921,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     );
 
     let valid_measurement_packet = serde_json::json!({
-        "schema": "archsig-measurement-packet/v0.5.3",
+        "schema": "archsig-measurement-packet/v0.5.4",
         "packetId": "measurement:semantic-validation",
         "componentFingerprints": {
             "lawPolicy": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
@@ -929,7 +929,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "measurementProfile": "sha256:9999999999999999999999999999999999999999999999999999999999999999"
         },
         "profile": {
-            "schema": "measurement-profile/v0.5.3",
+            "schema": "measurement-profile/v0.5.4",
             "profileId": "profile:semantic-validation"
         },
         "structuralVerdict": [{
@@ -988,7 +988,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "sourceArtifactRef": "input:archmap.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "archmap/v0.5.3-validation"
+                "checkRef": "archmap/v0.5.4-validation"
             }
         }],
         "boundaryStatements": [],
