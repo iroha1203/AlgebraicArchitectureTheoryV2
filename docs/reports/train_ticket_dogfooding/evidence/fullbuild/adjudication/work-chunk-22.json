@@ -1,0 +1,740 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|verifycode.config.SecurityConfig|authority|allowsCrossOrigin|cross-origin-scope-all-origins-all-methods-all-headers-credentials-false",
+   "candidateAtomId": "atom:authority:verifycode-config-securityconfig:allows-cross-origin-all-origins",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:51",
+    "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:55"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|allowsCrossOrigin|cross-origin-scope-all-origins-all-methods-all-headers-credentials-false",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:allows-cross-origin-all-origins",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:55",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:59"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-doc-paths",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-swagger-paths",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:81"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-only-on-POST-/api/v1/orderservice/order/admin",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-only",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:78"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-only-on-PUT-/api/v1/orderservice/order/admin",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-only",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:79"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-DELETE-/api/v1/orderservice/order",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-delete-order-admin-or-user",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-POST-/api/v1/orderservice/order",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-or-user",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-PUT-/api/v1/orderservice/order",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-or-user",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "capability|user.service.impl.UserServiceImpl|capability|handlesCommand|DeleteUser",
+   "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:handles-command-delete-user",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:134"
+   ]
+  },
+  {
+   "key": "capability|user.service.impl.UserServiceImpl|capability|handlesCommand|SaveUser",
+   "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:handles-command-save-user",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:45"
+   ]
+  },
+  {
+   "key": "capability|user.service.impl.UserServiceImpl|capability|handlesCommand|UpdateUser",
+   "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:handles-command-update-user",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:152"
+   ]
+  },
+  {
+   "key": "capability|user.service.impl.UserServiceImpl|capability|servesQuery|FindByUserId",
+   "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:serves-query-find-by-user-id",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:123"
+   ]
+  },
+  {
+   "key": "capability|user.service.impl.UserServiceImpl|capability|servesQuery|FindByUserName",
+   "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:serves-query-find-by-user-name",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:113"
+   ]
+  },
+  {
+   "key": "capability|user.service.impl.UserServiceImpl|capability|servesQuery|GetAllUsers",
+   "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:serves-query-get-all-users",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:103"
+   ]
+  },
+  {
+   "key": "contract|verifycode.util.CookieUtil|specification|shapedAs|httponly-true-path-slash-root-maxage-parameterized-cookie",
+   "candidateAtomId": "atom:contract:verifycode-util-cookieutil:shaped-as-httponly-root-path-cookie",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/util/CookieUtil.java:21",
+    "src:ts-verification-code-service/src/main/java/verifycode/util/CookieUtil.java:22",
+    "src:ts-verification-code-service/src/main/java/verifycode/util/CookieUtil.java:23"
+   ]
+  },
+  {
+   "key": "effect|user.service.impl.UserServiceImpl|effect|callsProvider|DELETE http://ts-auth-service/api/v1/users/{userId}",
+   "candidateAtomId": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-delete-user",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:183"
+   ]
+  },
+  {
+   "key": "effect|user.service.impl.UserServiceImpl|effect|callsProvider|POST http://ts-auth-service/api/v1/auth",
+   "candidateAtomId": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-register",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:94"
+   ]
+  },
+  {
+   "key": "effect|waitorder.utils.PollThread|effect|callsProvider|POST http://ts-preserve-service/api/v1/contactservice/preserve",
+   "candidateAtomId": "atom:effect:waitorder-utils-pollthread:calls-provider-ts-preserve-service",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:76"
+   ]
+  },
+  {
+   "key": "relation|waitorder.service.Impl.WaitListOrderServiceImpl|relation|calls|waitorder.utils.PollThread",
+   "candidateAtomId": "atom:relation:waitorder-service-impl-waitlistorderserviceimpl:calls-pollthread",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:165",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:166"
+   ]
+  },
+  {
+   "key": "semantic|ctx:wait-order-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-field-no-parsing-observed-at-entity-and-vo-declaration-sites",
+   "candidateAtomId": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-money-amount",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33"
+   ]
+  },
+  {
+   "key": "semantic|ctx:wait-order-service-order-lifecycle|cech|sectionValue|section=order-status-code:int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-enum-backed-not-hardcoded-literal",
+   "candidateAtomId": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-order-status-code",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:60"
+   ]
+  },
+  {
+   "key": "semantic|user.service.impl.UserServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-branch",
+   "candidateAtomId": "atom:semantic:user-service-impl-userserviceimpl:status-gates-response-envelope",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:73",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:76",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:106",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:109",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:143",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:146"
+   ]
+  },
+  {
+   "key": "semantic|verifycode.controller.VerifyCodeController|semantic|meansInUse|on-ioexception-during-image-write-the-endpoint-writes-literal-error-text-bytes-to-the-response-output-stream-instead-of-image-bytes",
+   "candidateAtomId": "atom:semantic:verifycode-controller-verifycodecontroller:means-in-use-image-write-exception-writes-error-text",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:41",
+    "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:44"
+   ]
+  },
+  {
+   "key": "semantic|verifycode.controller.VerifyCodeController|semantic|meansInUse|verify-endpoint-returns-a-fixed-true-value-regardless-of-the-computed-verifycode-result-at-this-call-site",
+   "candidateAtomId": "atom:semantic:verifycode-controller-verifycodecontroller:means-in-use-verify-endpoint-fixed-true-return",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:53",
+    "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:55"
+   ]
+  },
+  {
+   "key": "semantic|verifycode.service.impl.VerifyCodeServiceImpl|semantic|meansInUse|received-code-matches-cached-code-via-case-insensitive-equalsignorecase-comparison",
+   "candidateAtomId": "atom:semantic:verifycode-service-impl-verifycodeserviceimpl:means-in-use-verifycode-case-insensitive-match",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:131"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.config.SecurityConfig|semantic|meansInUse|role-gate-and-permitall-path-matchers-name-the-order-service-route-prefix-/api/v1/orderservice/order-while-this-services-own-controller-is-mapped-under-the-/api/v1/waitorderservice-prefix",
+   "candidateAtomId": "atom:semantic:waitorder-config-securityconfig:means-in-use-path-scope-names-orderservice-prefix",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:30",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:75",
+    "src:ts-wait-order-service/src/main/java/waitorder/controller/WaitListOrderController.java:20"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|identifiedBy|int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-enum-backed",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:identified-by-int-status-codes",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:17",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:21",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:25",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:29"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|getnamebycode-resolves-display-name-via-a-different-enum-types-code-table-edu-fudan-common-entity-orderstatus-rather-than-this-enums-own-values",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:means-in-use-getnamebycode-cross-enum-lookup",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:49",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:50",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:51"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrderVO|semantic|meansInUse|date-field-stored-as-string-converted-via-stringutils-date2string-and-string2date-at-getter-setter-site",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistordervo:means-in-use-date-string-conversion",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:36",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:40"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrderVO|semantic|meansInUse|price-represented-as-string-field-carried-from-request-body-without-parsing",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistordervo:means-in-use-price-string-no-parsing",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|createdtime-traveltime-waitutiltime-stored-as-string-fields-converted-via-stringutils-at-accessor-sites",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-time-fields-string-conversion",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:90",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:94",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:96"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|gettraveltime-and-settraveltime-accessors-read-and-write-the-createdtime-field-rather-than-a-separate-traveltime-backing-field",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-settraveltime-writes-createdtime-field",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:92",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:100"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|price-represented-as-string-field-no-parsing-observed-at-declaration-site",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-price-string-no-parsing",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.service.Impl.WaitListOrderServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-branch",
+   "candidateAtomId": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:status-gates-response-envelope",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:44",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:48",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:104",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:110",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:136",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:144"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.utils.PollThread|semantic|meansInUse|accountid-value-passed-as-the-orderid-argument-at-the-modifywaitlistorderstatus-call-site",
+   "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:means-in-use-accountid-as-orderid-argument",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:64",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:116"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.utils.PollThread|semantic|statusGates|dopreserve-response-status-0-selects-retry-with-sleep-branch-other-status-values-select-collected-status-branch",
+   "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:status-gates-dopreserve-response-branch",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:55",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:58",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:64"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.utils.PollThread|semantic|statusGates|run-loops-first-branch-executes-when-waituntil-time-value-is-later-than-currenttime-and-this-branch-sets-status-to-expired-then-exits-the-loop",
+   "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:status-gates-run-loop-waituntil-branch",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:49",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:52"
+   ]
+  },
+  {
+   "key": "state|user.service.impl.UserServiceImpl|state|persistsIn|user.repository.UserRepository",
+   "candidateAtomId": "atom:state:user-service-impl-userserviceimpl:persists-in-user-repository",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:70",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:164"
+   ]
+  },
+  {
+   "key": "state|verifycode.service.impl.VerifyCodeServiceImpl|state|cachedIn|local-in-process-guava-cache-keyed-by-cookie-id-max-size-1000-expire-after-access-1000-seconds",
+   "candidateAtomId": "atom:state:verifycode-service-impl-verifycodeserviceimpl:cached-in-local-guava-cache",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:38",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:108",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:125"
+   ]
+  },
+  {
+   "key": "state|waitorder.entity.WaitListOrder|state|persistsIn|waitorder.repository.WaitListOrderRepository, jpa hibernate ddl-auto=update",
+   "candidateAtomId": "atom:state:waitorder-entity-waitlistorder:persists-in-waitlistorderrepository",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:15",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:142",
+    "src:ts-wait-order-service/src/main/resources/application.yml:19"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|verifycode.config.SecurityConfig|authority|allowsCrossOrigin|cors-all-origins-all-methods-all-headers-credentials-false",
+   "candidateAtomId": "atom:authority:verifycode-config-securityconfig:allowscrossorigin-all",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:51",
+    "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:52",
+    "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:53",
+    "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:54",
+    "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:55"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|allowsCrossOrigin|cors-all-origins-all-methods-all-headers-credentials-false",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:allowscrossorigin-all",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:55",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:56",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:57",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:58",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:59"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:permitsunauthenticated-swagger-paths",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:81",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:82"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-only-on-post-put-/api/v1/orderservice/order/admin",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requiresrole-admin-only-order-admin",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:78",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:79"
+   ]
+  },
+  {
+   "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-post-put-delete-/api/v1/orderservice/order",
+   "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requiresrole-admin-or-user-order-writes",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:75",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:76",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "capability|user.service.UserService|capability|handlesCommand|deleteUser",
+   "candidateAtomId": "atom:capability:user-service-userservice:handles-deleteuser",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/UserService.java:21"
+   ]
+  },
+  {
+   "key": "capability|user.service.UserService|capability|handlesCommand|saveUser",
+   "candidateAtomId": "atom:capability:user-service-userservice:handles-savecommand",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/UserService.java:13"
+   ]
+  },
+  {
+   "key": "capability|user.service.UserService|capability|handlesCommand|updateUser",
+   "candidateAtomId": "atom:capability:user-service-userservice:handles-updateuser",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/UserService.java:23"
+   ]
+  },
+  {
+   "key": "capability|user.service.UserService|capability|servesQuery|findByUserId",
+   "candidateAtomId": "atom:capability:user-service-userservice:serves-findbyuserid",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/UserService.java:18"
+   ]
+  },
+  {
+   "key": "capability|user.service.UserService|capability|servesQuery|findByUserName",
+   "candidateAtomId": "atom:capability:user-service-userservice:serves-findbyusername",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/UserService.java:17"
+   ]
+  },
+  {
+   "key": "capability|user.service.UserService|capability|servesQuery|getAllUsers",
+   "candidateAtomId": "atom:capability:user-service-userservice:serves-getallusers",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/UserService.java:15"
+   ]
+  },
+  {
+   "key": "capability|waitorder.service.WaitListOrderService|capability|handlesCommand|modifyWaitListOrderStatus",
+   "candidateAtomId": "atom:capability:waitorder-service-waitlistorderservice:handles-modifywaitlistorderstatus",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/WaitListOrderService.java:24"
+   ]
+  },
+  {
+   "key": "capability|waitorder.service.WaitListOrderService|capability|handlesCommand|updateOrder",
+   "candidateAtomId": "atom:capability:waitorder-service-waitlistorderservice:handles-updateorder",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/WaitListOrderService.java:19"
+   ]
+  },
+  {
+   "key": "capability|waitorder.service.WaitListOrderService|capability|servesQuery|findOrderById",
+   "candidateAtomId": "atom:capability:waitorder-service-waitlistorderservice:serves-findorderbyid",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/WaitListOrderService.java:10"
+   ]
+  },
+  {
+   "key": "effect|user.service.impl.UserServiceImpl|effect|callsProvider|ts-auth-service:create-auth-user-record",
+   "candidateAtomId": "atom:effect:user-service-impl-userserviceimpl:callsprovider-create-auth-user",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:94",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:98"
+   ]
+  },
+  {
+   "key": "effect|user.service.impl.UserServiceImpl|effect|callsProvider|ts-auth-service:delete-auth-user-record",
+   "candidateAtomId": "atom:effect:user-service-impl-userserviceimpl:callsprovider-delete-auth-user",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:183",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:186"
+   ]
+  },
+  {
+   "key": "effect|verifycode.controller.VerifyCodeController|effect|mutatesFile|writes-jpeg-image-bytes-directly-to-http-response-outputstream",
+   "candidateAtomId": "atom:effect:verifycode-controller-verifycodecontroller:mutatesfile-write-jpeg-to-response-stream",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:34",
+    "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:40",
+    "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:44"
+   ]
+  },
+  {
+   "key": "effect|waitorder.service.Impl.WaitListOrderServiceImpl|effect|enqueues|background-pollthread-for-order-preservation-retry",
+   "candidateAtomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:enqueues-pollthread",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:163",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:166"
+   ]
+  },
+  {
+   "key": "effect|waitorder.service.Impl.WaitListOrderServiceImpl|effect|writesTo|waitorder-database:insert-new-wait-list-order",
+   "candidateAtomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-insert-new-order",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:142"
+   ]
+  },
+  {
+   "key": "effect|waitorder.service.Impl.WaitListOrderServiceImpl|effect|writesTo|waitorder-database:update-existing-wait-list-order",
+   "candidateAtomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-update-order",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:108"
+   ]
+  },
+  {
+   "key": "effect|waitorder.service.Impl.WaitListOrderServiceImpl|effect|writesTo|waitorder-database:update-order-status-field",
+   "candidateAtomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-update-status",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:125"
+   ]
+  },
+  {
+   "key": "effect|waitorder.utils.PollThread|effect|callsProvider|ts-preserve-service:preserve-order-on-poll",
+   "candidateAtomId": "atom:effect:waitorder-utils-pollthread:callsprovider-preserve-on-poll",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:74",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:79"
+   ]
+  },
+  {
+   "key": "relation|user.service.impl.UserServiceImpl|relation|calls|ts-auth-service:/api/v1/auth:POST",
+   "candidateAtomId": "atom:relation:user-service-impl-userserviceimpl:calls-ts-auth-service-post-auth",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:84",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:94"
+   ]
+  },
+  {
+   "key": "relation|user.service.impl.UserServiceImpl|relation|calls|ts-auth-service:/api/v1/users/{userId}:DELETE",
+   "candidateAtomId": "atom:relation:user-service-impl-userserviceimpl:calls-ts-auth-service-delete-users",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:181",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:183"
+   ]
+  },
+  {
+   "key": "relation|verifycode.service.impl.VerifyCodeServiceImpl|relation|dependsOn|verifycode.util.CookieUtil",
+   "candidateAtomId": "atom:relation:verifycode-service-impl-verifycodeserviceimpl:depends-on-cookieutil",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:10",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:93",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:98"
+   ]
+  },
+  {
+   "key": "relation|waitorder.service.Impl.WaitListOrderServiceImpl|relation|dependsOn|waitorder.utils.PollThread",
+   "candidateAtomId": "atom:relation:waitorder-service-impl-waitlistorderserviceimpl:depends-on-pollthread",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:163",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:165",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:166"
+   ]
+  },
+  {
+   "key": "relation|waitorder.utils.PollThread|relation|calls|ts-preserve-service:/api/v1/contactservice/preserve:POST",
+   "candidateAtomId": "atom:relation:waitorder-utils-pollthread:calls-ts-preserve-service-post-preserve",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:43",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:75",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:79"
+   ]
+  },
+  {
+   "key": "relation|waitorder.utils.PollThread|relation|calls|waitorder.service.WaitListOrderService:modifyWaitListOrderStatus",
+   "candidateAtomId": "atom:relation:waitorder-utils-pollthread:calls-back-modifywaitlistorderstatus",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:64"
+   ]
+  },
+  {
+   "key": "semantic|ctx:wait-order-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-field-no-parse-or-arithmetic-observed-in-chunk",
+   "candidateAtomId": "atom:semantic:wait-order-service-order-lifecycle:cech-section-money-amount",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33"
+   ]
+  },
+  {
+   "key": "semantic|ctx:wait-order-service-order-lifecycle|cech|sectionValue|section=order-status-code:int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-local-enum-with-name-lookup-delegated-to-shared-orderstatus-enum",
+   "candidateAtomId": "atom:semantic:wait-order-service-order-lifecycle:cech-section-order-status-code",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:17",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:21",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:25",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:29",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:49",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:50",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:51"
+   ]
+  },
+  {
+   "key": "semantic|user.service.impl.UserServiceImpl|semantic|meansInUse|response-status-1-selects-result-carrying-success-branch-status-0-selects-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:user-service-impl-userserviceimpl:response-status-1-success-0-rejected-userservice",
+   "refs": [
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:73",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:76",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:106",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:109",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:116",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:119",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:126",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:129",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:143",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:146",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:165",
+    "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:168"
+   ]
+  },
+  {
+   "key": "semantic|verifycode.service.impl.VerifyCodeServiceImpl|semantic|meansInUse|captcha-expired-constant-value-1000-reused-as-cache-maximumsize-entry-count-and-as-cache-expireafteraccess-seconds-and-as-cookie-maxage-seconds",
+   "candidateAtomId": "atom:semantic:verifycode-service-impl-verifycodeserviceimpl:captcha-expired-constant-reused-three-units",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:30",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:40",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:41",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:98",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:102",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:120"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.config.SecurityConfig|semantic|meansInUse|antmatchers-target-/api/v1/orderservice/order-path-prefix-which-differs-from-this-services-own-/api/v1/waitorderservice-controller-mapping-prefix",
+   "candidateAtomId": "atom:semantic:waitorder-config-securityconfig:securityconfig-antmatchers-target-different-service-path-prefix",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:30",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:74",
+    "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:80",
+    "src:ts-wait-order-service/src/main/java/waitorder/controller/WaitListOrderController.java:20"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|getnamebycode-static-method-looks-up-display-name-from-shared-edu-fudan-common-orderstatus-enum-values-rather-than-from-local-waitlistorderstatus-entries",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:getnamebycode-delegates-to-shared-orderstatus-enum",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:49",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:50",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:51",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:52",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:53"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|local-enum-int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:waitlistorderstatus-code-vocabulary",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:17",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:21",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:25",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:29"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|status-0-notpaid-selected-as-initial-state-set-in-order-constructor",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:status-0-notpaid-initial-state",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:60",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|status-1-paid-and-not-collected-branch",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:status-1-paid-not-collected",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|price-field-declared-as-string-type-with-no-parse-or-arithmetic-observed-at-this-site",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:price-field-string-no-parse-observed",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|traveltime-named-accessor-getters-setters-read-write-the-createdtime-backing-field-not-the-traveltime-field",
+   "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:traveltime-accessor-reads-writes-createdtime-field",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:90",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:92",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:100"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.service.Impl.WaitListOrderServiceImpl|semantic|meansInUse|response-status-1-selects-result-carrying-success-branch-status-0-selects-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:response-status-1-success-0-rejected-waitorderservice",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:44",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:48",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:71",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:74",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:90",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:93",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:104",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:110",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:121",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:127",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:136",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:144",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:168",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:170"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.service.Impl.WaitListOrderServiceImpl|semantic|statusGates|status-0-notpaid-and-1-paid-selected-as-active-wait-list-entries-other-statuses-excluded-from-result",
+   "candidateAtomId": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:active-wait-list-filter-status-0-1",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:83",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:84",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:85",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:88",
+    "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:89"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.utils.PollThread|semantic|meansInUse|status-2-collected-selected-on-successful-preserve-provider-response",
+   "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:status-2-collected-on-preserve-success",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:62",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:64"
+   ]
+  },
+  {
+   "key": "semantic|waitorder.utils.PollThread|semantic|meansInUse|status-5-expired-selected-when-waituntil-time-is-still-after-current-time-in-poll-loop-branch",
+   "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:status-5-expired-on-waituntil-after-current",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:48",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:49",
+    "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51"
+   ]
+  },
+  {
+   "key": "state|verifycode.service.impl.VerifyCodeServiceImpl|state|cachedIn|guava-local-cache-key-cookieid-value-captcha-string",
+   "candidateAtomId": "atom:state:verifycode-service-impl-verifycodeserviceimpl:cachedin-guava-local-cache",
+   "refs": [
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:38",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:39",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:40",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:41",
+    "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:108"
+   ]
+  },
+  {
+   "key": "state|waitorder.entity.WaitListOrder|state|persistsIn|jpa-entity-table-with-generated-uuid-id-column-length-36",
+   "candidateAtomId": "atom:state:waitorder-entity-waitlistorder:persistsin-jpa-entity-table",
+   "refs": [
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:15",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:16",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:18",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:19",
+    "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:20"
+   ]
+  }
+ ]
+}

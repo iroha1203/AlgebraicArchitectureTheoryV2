@@ -1,0 +1,94 @@
+{
+ "schema": "law-equation-surface/v0.5.3",
+ "id": "law-surface:train-ticket-status-v053",
+ "laws": [
+  {
+   "lawId": "surface:cech-surface-v052",
+   "conditionType": "closed-equational",
+   "witnessVariables": [
+    {
+     "variable": "e_cancel_order",
+     "binding": {
+      "edge": [
+       "ctx:cancel-surface",
+       "ctx:order-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_cancel_orderother",
+     "binding": {
+      "edge": [
+       "ctx:cancel-surface",
+       "ctx:order-other-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_execute_order",
+     "binding": {
+      "edge": [
+       "ctx:execute-surface",
+       "ctx:order-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_execute_orderother",
+     "binding": {
+      "edge": [
+       "ctx:execute-surface",
+       "ctx:order-other-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_waitorder_preserve",
+     "binding": {
+      "edge": [
+       "ctx:wait-order-surface",
+       "ctx:preserve-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    }
+   ],
+   "forbiddenSupportGenerators": [
+    {
+     "support": [
+      "e_cancel_order"
+     ]
+    },
+    {
+     "support": [
+      "e_cancel_orderother"
+     ]
+    },
+    {
+     "support": [
+      "e_execute_order"
+     ]
+    },
+    {
+     "support": [
+      "e_execute_orderother"
+     ]
+    },
+    {
+     "support": [
+      "e_waitorder_preserve"
+     ]
+    }
+   ]
+  }
+ ]
+}

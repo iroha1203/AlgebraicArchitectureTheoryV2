@@ -1,0 +1,1812 @@
+{
+ "chunkId": "chunk-14",
+ "adjudications": [
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-disabled-maxage-3600",
+   "candidateAtomId": "atom:authority:com.trainticket.config.securityconfig:allows-cross-origin-all",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:51-55 - corsConfigurer registers /** with ALL origins/methods/headers, allowCredentials(false), maxAge(3600); pass-a's 'disabled' and pass-b's 'not-allowed' name the same allowCredentials(false) call, same fact.",
+   "canonicalAtom": {
+    "id": "atom:authority:com.trainticket.config.securityconfig:allows-cross-origin",
+    "kind": "authority",
+    "subject": "com.trainticket.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "all-origins-all-methods-all-headers-allowed-credentials-not-allowed-maxage-3600",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:51",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:52",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:53",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:54",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:55"
+    ]
+   }
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-not-allowed",
+   "candidateAtomId": "atom:authority:com-trainticket-config-securityconfig:allowsCrossOrigin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:51-55 - same CORS registration as pass-a's row, phrased 'not-allowed' instead of 'disabled'. Merged, refs unioned to 51-55.",
+   "canonicalAtom": {
+    "id": "atom:authority:com.trainticket.config.securityconfig:allows-cross-origin",
+    "kind": "authority",
+    "subject": "com.trainticket.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "all-origins-all-methods-all-headers-allowed-credentials-not-allowed-maxage-3600",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:51",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:52",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:53",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:54",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:55"
+    ]
+   }
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:com.trainticket.config.securityconfig:permits-unauthenticated-swagger-paths",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:72-73 - antMatchers for swagger/webjars/images/configuration/swagger-resources/v2 paths call permitAll(); same fact as pass-b's row.",
+   "canonicalAtom": {
+    "id": "atom:authority:com.trainticket.config.securityconfig:permits-unauthenticated-swagger-paths",
+    "kind": "authority",
+    "subject": "com.trainticket.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:72",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+   "candidateAtomId": "atom:authority:com-trainticket-config-securityconfig:permitsUnauthenticated",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:72-73 - same antMatchers permitAll() call as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:com.trainticket.config.securityconfig:permits-unauthenticated-swagger-paths",
+    "kind": "authority",
+    "subject": "com.trainticket.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:72",
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|requiresRole|any-of-admin-or-user-role-on-/api/v1/paymentservice/**",
+   "candidateAtomId": "atom:authority:com.trainticket.config.securityconfig:requires-role-on-paymentservice-path",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:71 - antMatchers(\"/api/v1/paymentservice/**\").hasAnyRole(\"ADMIN\",\"USER\"); identical fact to pass-b's row.",
+   "canonicalAtom": {
+    "id": "atom:authority:com.trainticket.config.securityconfig:requires-role-on-paymentservice-path",
+    "kind": "authority",
+    "subject": "com.trainticket.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "any-of-admin-or-user-role-on-/api/v1/paymentservice/**",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-on-/api/v1/paymentservice/**",
+   "candidateAtomId": "atom:authority:com-trainticket-config-securityconfig:requiresRole",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:71 - same hasAnyRole(ADMIN,USER) gate as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:com.trainticket.config.securityconfig:requires-role-on-paymentservice-path",
+    "kind": "authority",
+    "subject": "com.trainticket.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "any-of-admin-or-user-role-on-/api/v1/paymentservice/**",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|checksPermission|jwtfilter-inserted-before-usernamepasswordauthenticationfilter-in-chain",
+   "candidateAtomId": "atom:authority:com.trainticket.config.securityconfig:checks-permission-via-jwt-filter",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:76 - .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); confirmed, no pass-b counterpart exists for this filter-chain fact.",
+   "canonicalAtom": {
+    "id": "atom:authority:com.trainticket.config.securityconfig:checks-permission-via-jwt-filter",
+    "kind": "authority",
+    "subject": "com.trainticket.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "checksPermission",
+    "object": "jwtfilter-inserted-before-usernamepasswordauthenticationfilter-in-chain",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:76"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|get-/api/v1/paymentservice/payment-serves-payment-list-query",
+   "candidateAtomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-query",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:44-47 - @GetMapping(path=\"/payment\") query() delegates to service.query(headers); same endpoint as pass-b's row.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-query",
+    "kind": "capability",
+    "subject": "com.trainticket.controller.PaymentController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "get-/api/v1/paymentservice/payment-serves-payment-list-query",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:44",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:45",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:47"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|GET /api/v1/paymentservice/payment",
+   "candidateAtomId": "atom:capability:com-trainticket-controller-paymentcontroller:exposesEndpoint:query",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:44-45 - same @GetMapping(\"/payment\") query endpoint as pass-a's row. Merged, refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-query",
+    "kind": "capability",
+    "subject": "com.trainticket.controller.PaymentController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "get-/api/v1/paymentservice/payment-serves-payment-list-query",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:44",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:45",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:47"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|get-/api/v1/paymentservice/welcome",
+   "candidateAtomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:27-28 - @GetMapping(path=\"/welcome\") home() returns welcome string; same endpoint as pass-b's row.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-welcome",
+    "kind": "capability",
+    "subject": "com.trainticket.controller.PaymentController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "get-/api/v1/paymentservice/welcome",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:27",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:28"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|GET /api/v1/paymentservice/welcome",
+   "candidateAtomId": "atom:capability:com-trainticket-controller-paymentcontroller:exposesEndpoint:welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:27-28 - same welcome endpoint as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-welcome",
+    "kind": "capability",
+    "subject": "com.trainticket.controller.PaymentController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "get-/api/v1/paymentservice/welcome",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:27",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:28"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|post-/api/v1/paymentservice/payment-handles-pay-command",
+   "candidateAtomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-pay",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:32-35 - @PostMapping(path=\"/payment\") pay() delegates to service.pay(info,headers); same endpoint as pass-b's row.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-pay",
+    "kind": "capability",
+    "subject": "com.trainticket.controller.PaymentController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "post-/api/v1/paymentservice/payment-handles-pay-command",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:32",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:33",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:35"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|POST /api/v1/paymentservice/payment",
+   "candidateAtomId": "atom:capability:com-trainticket-controller-paymentcontroller:exposesEndpoint:pay",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:32-33 - same POST /payment endpoint as pass-a's row. Merged, refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-pay",
+    "kind": "capability",
+    "subject": "com.trainticket.controller.PaymentController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "post-/api/v1/paymentservice/payment-handles-pay-command",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:32",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:33",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:35"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|post-/api/v1/paymentservice/payment/money-handles-addmoney-command",
+   "candidateAtomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-add-money",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:38-41 - @PostMapping(path=\"/payment/money\") addMoney() delegates to service.addMoney(info,headers); same endpoint as pass-b's row.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-add-money",
+    "kind": "capability",
+    "subject": "com.trainticket.controller.PaymentController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "post-/api/v1/paymentservice/payment/money-handles-addmoney-command",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:38",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:39",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:41"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|POST /api/v1/paymentservice/payment/money",
+   "candidateAtomId": "atom:capability:com-trainticket-controller-paymentcontroller:exposesEndpoint:addMoney",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:38-39 - same POST /payment/money endpoint as pass-a's row. Merged, refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-add-money",
+    "kind": "capability",
+    "subject": "com.trainticket.controller.PaymentController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "post-/api/v1/paymentservice/payment/money-handles-addmoney-command",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:38",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:39",
+     "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:41"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.repository.AddMoneyRepository|capability|servesQuery|crudrepository-over-money-entity-keyed-by-string-id",
+   "candidateAtomId": "atom:capability:com.trainticket.repository.addmoneyrepository:persists-money-entities",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/repository/AddMoneyRepository.java:9 - `interface AddMoneyRepository extends CrudRepository<Money,String>`; confirmed, pass-b recorded only the component atom for this file, no capability counterpart.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.repository.addmoneyrepository:persists-money-entities",
+    "kind": "capability",
+    "subject": "com.trainticket.repository.AddMoneyRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "crudrepository-over-money-entity-keyed-by-string-id",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/repository/AddMoneyRepository.java:9"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.repository.PaymentRepository|capability|servesQuery|findByOrderId",
+   "candidateAtomId": "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-order-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:16 - `Payment findByOrderId(String orderId);` confirmed; pass-b has no capability atom for this repository.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-order-id",
+    "kind": "capability",
+    "subject": "com.trainticket.repository.PaymentRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByOrderId",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:16"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.repository.PaymentRepository|capability|servesQuery|findByUserId",
+   "candidateAtomId": "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-user-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:21 - `List<Payment> findByUserId(String userId);` confirmed; pass-b has no capability atom for this repository.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-user-id",
+    "kind": "capability",
+    "subject": "com.trainticket.repository.PaymentRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByUserId",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:21"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.service.PaymentServiceImpl|capability|handlesCommand|addmoney-creates-money-row-from-payment-price-field-unconditionally",
+   "candidateAtomId": "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-add-money",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:49-54 - addMoney() always builds a new Money from info.getPrice()/getUserId() and saves it, no existence check; confirmed, pass-b has no capability atom for this method.",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-add-money",
+    "kind": "capability",
+    "subject": "com.trainticket.service.PaymentServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "addmoney-creates-money-row-from-payment-price-field-unconditionally",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:50",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:53"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.service.PaymentServiceImpl|capability|handlesCommand|pay-creates-payment-row-only-when-no-existing-payment-found-for-order-id",
+   "candidateAtomId": "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-pay",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35-45 - pay() creates+saves a payment only when paymentRepository.findByOrderId(...) is null, else returns a failure response; this is the command-level fact and is distinct from pass-b's semantic-axis row about what the null/non-null value selects (kept separate, not a duplicate).",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-pay",
+    "kind": "capability",
+    "subject": "com.trainticket.service.PaymentServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "pay-creates-payment-row-only-when-no-existing-payment-found-for-order-id",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:40"
+    ]
+   }
+  },
+  {
+   "key": "capability|com.trainticket.service.PaymentServiceImpl|capability|servesQuery|query-returns-all-payments-or-not-found-branch-when-empty",
+   "candidateAtomId": "atom:capability:com.trainticket.service.paymentserviceimpl:serves-query-list-payments",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:58-66 - query() returns all payments via paymentRepository.findAll() or a not-content branch when the list is empty; confirmed, no pass-b capability counterpart (pass-b's statusGates row covers the status-value meaning, not the query capability itself).",
+   "canonicalAtom": {
+    "id": "atom:capability:com.trainticket.service.paymentserviceimpl:serves-query-list-payments",
+    "kind": "capability",
+    "subject": "com.trainticket.service.PaymentServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "query-returns-all-payments-or-not-found-branch-when-empty",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:59",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:65"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.repository.OrderRepository|capability|servesQuery|findByAccountId",
+   "candidateAtomId": "atom:capability:order.repository.orderrepository:serves-query-by-account-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/repository/OrderRepository.java:24 - `ArrayList<Order> findByAccountId(String accountId);` confirmed; pass-b has no capability atom for this repository.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.repository.orderrepository:serves-query-by-account-id",
+    "kind": "capability",
+    "subject": "order.repository.OrderRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByAccountId",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/repository/OrderRepository.java:24"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.repository.OrderRepository|capability|servesQuery|findByTravelDateAndTrainNumber",
+   "candidateAtomId": "atom:capability:order.repository.orderrepository:serves-query-by-travel-date-and-train-number",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/repository/OrderRepository.java:26 - `ArrayList<Order> findByTravelDateAndTrainNumber(...)` confirmed; pass-b has no capability atom for this repository.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.repository.orderrepository:serves-query-by-travel-date-and-train-number",
+    "kind": "capability",
+    "subject": "order.repository.OrderRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByTravelDateAndTrainNumber",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/repository/OrderRepository.java:26"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|handlesCommand|alter-order-cancels-old-order-then-creates-new-order-in-sequence",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:handles-command-alter-order",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:104-122 - alterOrder() sets the old order's status to CANCEL, saves it, then creates a new order; pass-b's row cites the same command via the OrderService interface declaration (ts-order-service/src/main/java/order/service/OrderService.java:28) with no behavioral detail. Kept as one canonical atom on the implementing class, refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:handles-command-alter-order",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "alter-order-cancels-old-order-then-creates-new-order-in-sequence",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:112",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:115",
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:28"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|alterOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:alterOrder",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:28 - `Response alterOrder(OrderAlterInfo oai, HttpHeaders headers);` interface declaration for the same command whose behavior pass-a captured on OrderServiceImpl. Merged into pass-a's richer canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:handles-command-alter-order",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "alter-order-cancels-old-order-then-creates-new-order-in-sequence",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:112",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:115",
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:28"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|handlesCommand|create-order-rejected-when-accountorders-already-contains-equal-order",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:handles-command-create",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:87-99 - create() rejects when accountOrders.contains(order) is true, otherwise assigns a new id and saves; pass-b's row is the same command declared at the interface level (ts-order-service/src/main/java/order/service/OrderService.java:18) without the conditional detail. Kept as one canonical atom, refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:handles-command-create",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "create-order-rejected-when-accountorders-already-contains-equal-order",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:89",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:90",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:94",
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:18"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|create",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:createOrder",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:18 - `Response create(Order newOrder, HttpHeaders headers);` interface declaration for the same create command pass-a captured with fuller behavior on OrderServiceImpl. Merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:handles-command-create",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "create-order-rejected-when-accountorders-already-contains-equal-order",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:89",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:90",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:94",
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:18"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|servesQuery|queryOrders-applies-state-boughtdate-traveldate-filters-only-when-corresponding-orderinfo-flag-enabled",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:serves-query-orders-with-filter-flags",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:126-189 - queryOrders() applies state/boughtDate/travelDate predicates only when the corresponding OrderInfo isEnable*Query() flag is true; pass-b's row is the same query declared at the interface level (ts-order-service/src/main/java/order/service/OrderService.java:24) without the filter-flag detail. Kept as one canonical atom, refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:serves-query-orders-with-filter-flags",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "queryOrders-applies-state-boughtdate-traveldate-filters-only-when-corresponding-orderinfo-flag-enabled",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:131",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:138",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:154",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:166",
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:24"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|servesQuery|queryOrders",
+   "candidateAtomId": "atom:capability:order-service-orderservice:servesQuery:queryOrders",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:24 - `Response queryOrders(OrderInfo qi, String accountId, HttpHeaders headers);` interface declaration for the same query pass-a captured with fuller filter-flag behavior on OrderServiceImpl. Merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:serves-query-orders-with-filter-flags",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "queryOrders-applies-state-boughtdate-traveldate-filters-only-when-corresponding-orderinfo-flag-enabled",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:131",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:138",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:154",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:166",
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:24"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|handlesCommand|cancel-order-sets-status-to-orderstatus-cancel-code",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:handles-command-cancel-order",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:251-264 - cancelOrder() sets the found order's status to OrderStatus.CANCEL.getCode() and saves it. Pass-b recorded the identical status-setting fact under a statusGates/semantic predicate (also citing the same cancel-write inside alterOrder at line 111); same source-grounded observation under axis drift (capability vs semantic). Kept as one canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:handles-command-cancel-order",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "cancel-order-sets-status-to-orderstatus-cancel-code",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|cancel-transition-sets-status-to-cancel-code",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:cancel-transition",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259 and ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111 - both cancelOrder() and the cancel-branch inside alterOrder() set status to OrderStatus.CANCEL.getCode(); pass-a recorded the same fact as a handlesCommand capability atom. Merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:handles-command-cancel-order",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "cancel-order-sets-status-to-orderstatus-cancel-code",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|handlesCommand|pay-order-sets-status-to-orderstatus-paid-code",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:handles-command-pay-order",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:342-355 - payOrder() sets the found order's status to OrderStatus.PAID.getCode() and saves it. Pass-b recorded the identical status-setting fact under a statusGates/semantic predicate; same observation under axis drift. Kept as one canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:handles-command-pay-order",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "pay-order-sets-status-to-orderstatus-paid-code",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|pay-transition-sets-status-to-paid-code",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:pay-transition",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350 - payOrder() sets status to OrderStatus.PAID.getCode(); pass-a recorded the same fact as a handlesCommand capability atom. Merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:handles-command-pay-order",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "pay-order-sets-status-to-orderstatus-paid-code",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-order-service.application|static||",
+   "candidateAtomId": "atom:component:ts-order-service-application-yml",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/resources/application.yml:1-25 - the application.yml config file for ts-order-service (spring.application.name: ts-order-service at line 10). Pass-a scoped the component to the yml file with subject 'ts-order-service.application'; pass-b scoped it to the bare service dir. Canonicalized to '<service-dir>.application-yml' per guideline.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-order-service.application-yml",
+    "kind": "component",
+    "subject": "ts-order-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-order-service/src/main/resources/application.yml",
+     "src:ts-order-service/src/main/resources/application.yml:10"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-order-service|static||",
+   "candidateAtomId": "atom:component:ts-order-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/resources/application.yml:10 - same application.yml file, pass-b used subject 'ts-order-service' for the whole component; pass-a's row targets the same yml artifact. Merged, subject canonicalized to 'ts-order-service.application-yml'.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-order-service.application-yml",
+    "kind": "component",
+    "subject": "ts-order-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-order-service/src/main/resources/application.yml",
+     "src:ts-order-service/src/main/resources/application.yml:10"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-payment-service.application|static||",
+   "candidateAtomId": "atom:component:ts-payment-service-application-yml",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/resources/application.yml:1-27 - the application.yml config file for ts-payment-service (spring.application.name: ts-payment-service at line 10). Canonicalized subject to '<service-dir>.application-yml' per guideline, merging pass-a's 'ts-payment-service.application' and pass-b's bare 'ts-payment-service'.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-payment-service.application-yml",
+    "kind": "component",
+    "subject": "ts-payment-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-payment-service/src/main/resources/application.yml",
+     "src:ts-payment-service/src/main/resources/application.yml:10"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-payment-service|static||",
+   "candidateAtomId": "atom:component:ts-payment-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/resources/application.yml:10 - same application.yml file as pass-a's row. Merged, subject canonicalized to 'ts-payment-service.application-yml'.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-payment-service.application-yml",
+    "kind": "component",
+    "subject": "ts-payment-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-payment-service/src/main/resources/application.yml",
+     "src:ts-payment-service/src/main/resources/application.yml:10"
+    ]
+   }
+  },
+  {
+   "key": "contract|order.entity.OrderAlterInfo|specification|shapedAs|accountid-previousorderid-logintoken-neworderinfo-dto",
+   "candidateAtomId": "atom:contract:order.entity.orderalterinfo:shaped-as-alter-request",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:17-33 - OrderAlterInfo carries accountId, previousOrderId, loginToken and a nested newOrderInfo Order; confirmed, pass-b has no atom for this file's shape at all.",
+   "canonicalAtom": {
+    "id": "atom:contract:order.entity.orderalterinfo:shaped-as-alter-request",
+    "kind": "contract",
+    "subject": "order.entity.OrderAlterInfo",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "accountid-previousorderid-logintoken-neworderinfo-dto",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:21",
+     "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:25",
+     "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:27",
+     "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:29"
+    ]
+   }
+  },
+  {
+   "key": "effect|order.service.OrderServiceImpl|effect|callsProvider|ts-station-service:/api/v1/stationservice/stations/namelist-via-resttemplate-exchange",
+   "candidateAtomId": "atom:effect:order.service.orderserviceimpl:calls-provider-station-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:208-219 - queryForStationId() builds station_service_url via getServiceUrl(\"ts-station-service\") and calls restTemplate.exchange(...+\"/api/v1/stationservice/stations/namelist\", POST, ...); same call as pass-b's row (note: its only call site at line 200 is commented out, but the method itself still performs this effect when invoked).",
+   "canonicalAtom": {
+    "id": "atom:effect:order.service.orderserviceimpl:calls-provider-station-service",
+    "kind": "effect",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "ts-station-service:/api/v1/stationservice/stations/namelist-via-resttemplate-exchange",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:211",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:212",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:213"
+    ]
+   }
+  },
+  {
+   "key": "effect|order.service.OrderServiceImpl|effect|callsProvider|ts-station-service:/api/v1/stationservice/stations/namelist",
+   "candidateAtomId": "atom:effect:order-service-orderserviceimpl:callsProvider:ts-station-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:211-213 - same RestTemplate POST to ts-station-service's namelist endpoint as pass-a's row. Merged, refs unioned to 211-213.",
+   "canonicalAtom": {
+    "id": "atom:effect:order.service.orderserviceimpl:calls-provider-station-service",
+    "kind": "effect",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "ts-station-service:/api/v1/stationservice/stations/namelist-via-resttemplate-exchange",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:211",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:212",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:213"
+    ]
+   }
+  },
+  {
+   "key": "relation|com.trainticket.init.InitData|relation|dependsOn|com.trainticket.service.PaymentService",
+   "candidateAtomId": "atom:relation:com.trainticket.init.initdata:depends-on-paymentservice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/init/InitData.java:18-32 - InitData autowires PaymentService and calls service.initPayment(payment,null) at line 32; pass-b recorded the same fact as a 'calls' relation naming the specific method. Axis/predicate drift on the same evidence, kept as one atom.",
+   "canonicalAtom": {
+    "id": "atom:relation:com.trainticket.init.initdata:depends-on-paymentservice",
+    "kind": "relation",
+    "subject": "com.trainticket.init.InitData",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "com.trainticket.service.PaymentService",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:32"
+    ]
+   }
+  },
+  {
+   "key": "relation|com.trainticket.init.InitData|relation|calls|com.trainticket.service.PaymentService:initPayment",
+   "candidateAtomId": "atom:relation:com-trainticket-init-initdata:calls:com-trainticket-service-paymentservice",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/init/InitData.java:32 - service.initPayment(payment,null) call; pass-a recorded the same dependency as a dependsOn relation. Merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:com.trainticket.init.initdata:depends-on-paymentservice",
+    "kind": "relation",
+    "subject": "com.trainticket.init.InitData",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "com.trainticket.service.PaymentService",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:32"
+    ]
+   }
+  },
+  {
+   "key": "relation|order.init.InitData|relation|dependsOn|order.service.OrderService",
+   "candidateAtomId": "atom:relation:order.init.initdata:depends-on-orderservice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/init/InitData.java:45,64,82 - InitData autowires OrderService and calls service.initOrder(...) three times for three seeded orders; pass-b recorded the same fact as a 'calls' relation naming the specific method. Axis/predicate drift, kept as one atom.",
+   "canonicalAtom": {
+    "id": "atom:relation:order.init.initdata:depends-on-orderservice",
+    "kind": "relation",
+    "subject": "order.init.InitData",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "order.service.OrderService",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/init/InitData.java:45",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:64",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:82"
+    ]
+   }
+  },
+  {
+   "key": "relation|order.init.InitData|relation|calls|order.service.OrderService:initOrder",
+   "candidateAtomId": "atom:relation:order-init-initdata:calls:order-service-orderservice",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/init/InitData.java:45,64,82 - same three service.initOrder(...) calls as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:order.init.initdata:depends-on-orderservice",
+    "kind": "relation",
+    "subject": "order.init.InitData",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "order.service.OrderService",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/init/InitData.java:45",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:64",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:82"
+    ]
+   }
+  },
+  {
+   "key": "relation|com.trainticket.service.PaymentServiceImpl|relation|dependsOn|com.trainticket.repository.PaymentRepository-and-com.trainticket.repository.AddMoneyRepository",
+   "candidateAtomId": "atom:relation:com.trainticket.service.paymentserviceimpl:depends-on-repositories",
+   "pass": "pass-a",
+   "decision": "not-adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:24-28 - PaymentServiceImpl autowires both PaymentRepository (line 25) and AddMoneyRepository (line 28) as two separate fields. Pass-a combined both into one dual-target relation atom; pass-b split them into two atoms (adopted separately, one per target), the finer per-target convention used consistently elsewhere in this chunk (e.g. PaymentController->PaymentService, OrderServiceImpl->OrderRepository). The combined row is a coarser repackaging of the same two facts already captured individually; dropped as duplicate-in-substance, no evidence lost."
+  },
+  {
+   "key": "relation|com.trainticket.service.PaymentServiceImpl|relation|dependsOn|com.trainticket.repository.PaymentRepository",
+   "candidateAtomId": "atom:relation:com-trainticket-service-paymentserviceimpl:dependsOn:com-trainticket-repository-paymentrepository",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:24-25 - @Autowired PaymentRepository paymentRepository; field confirmed.",
+   "canonicalAtom": {
+    "id": "atom:relation:com.trainticket.service.paymentserviceimpl:depends-on-paymentrepository",
+    "kind": "relation",
+    "subject": "com.trainticket.service.PaymentServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "com.trainticket.repository.PaymentRepository",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:25"
+    ]
+   }
+  },
+  {
+   "key": "relation|com.trainticket.service.PaymentServiceImpl|relation|dependsOn|com.trainticket.repository.AddMoneyRepository",
+   "candidateAtomId": "atom:relation:com-trainticket-service-paymentserviceimpl:dependsOn:com-trainticket-repository-addmoneyrepository",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:27-28 - @Autowired AddMoneyRepository addMoneyRepository; field confirmed.",
+   "canonicalAtom": {
+    "id": "atom:relation:com.trainticket.service.paymentserviceimpl:depends-on-addmoneyrepository",
+    "kind": "relation",
+    "subject": "com.trainticket.service.PaymentServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "com.trainticket.repository.AddMoneyRepository",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:28"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|servesQuery|getOrderPrice-returns-string-price-directly-or-minus-1.0-sentinel-on-not-found",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:serves-query-order-price",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:330-339 - getOrderPrice() returns \"-1.0\" when the order isn't found, else order.getPrice(); confirmed, pass-b only declared this method's interface signature without creating an atom for it.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:serves-query-order-price",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "getOrderPrice-returns-string-price-directly-or-minus-1.0-sentinel-on-not-found",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:334",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:338"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|servesQuery|getSoldTickets-aggregates-tickets-by-travel-date-and-train-number-parsing-seatnumber-to-int",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:serves-query-sold-tickets",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:54-71 - getSoldTickets() queries orderRepository.findByTravelDateAndTrainNumber(...) and builds a Ticket set via Integer.parseInt(tempOrder.getSeatNumber()); confirmed, pass-b has no atom for this method.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderserviceimpl:serves-query-sold-tickets",
+    "kind": "capability",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "getSoldTickets-aggregates-tickets-by-travel-date-and-train-number-parsing-seatnumber-to-int",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:55",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:60"
+    ]
+   }
+  },
+  {
+   "key": "semantic|com.trainticket.entity.Money|semantic|meansInUse|string-typed-money-field-annotated-nosonar-at-declaration",
+   "candidateAtomId": "atom:semantic:com.trainticket.entity.money:money-field-string-typed",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30 - `private String money; //NOSONAR` confirmed; same fact as pass-b's row, only object phrasing differs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:com.trainticket.entity.money:money-field-string-typed",
+    "kind": "semantic",
+    "subject": "com.trainticket.entity.Money",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "string-typed-money-field-annotated-nosonar-at-declaration",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30"
+    ]
+   }
+  },
+  {
+   "key": "semantic|com.trainticket.entity.Money|semantic|meansInUse|money-amount-represented-as-string-field-flagged-nosonar-in-source",
+   "candidateAtomId": "atom:semantic:com-trainticket-entity-money:meansInUse:money-string-representation",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30 - same String money field with NOSONAR suppression as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:com.trainticket.entity.money:money-field-string-typed",
+    "kind": "semantic",
+    "subject": "com.trainticket.entity.Money",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "string-typed-money-field-annotated-nosonar-at-declaration",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30"
+    ]
+   }
+  },
+  {
+   "key": "semantic|com.trainticket.entity.Payment|semantic|meansInUse|string-typed-price-field-mapped-to-payment_price-column-default-empty-string-in-constructor",
+   "candidateAtomId": "atom:semantic:com.trainticket.entity.payment:price-field-string-typed",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:37-46 - `@Column(name=\"payment_price\") private String price;` and the no-arg constructor default `this.price = \"\";` confirmed; same fact as pass-b's row (which only cites the field/column lines, not the constructor default). Refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:semantic:com.trainticket.entity.payment:price-field-string-typed",
+    "kind": "semantic",
+    "subject": "com.trainticket.entity.Payment",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "string-typed-price-field-mapped-to-payment_price-column-default-empty-string-in-constructor",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39",
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:40",
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:46"
+    ]
+   }
+  },
+  {
+   "key": "semantic|com.trainticket.entity.Payment|semantic|meansInUse|price-represented-as-string-field-column-named-payment_price",
+   "candidateAtomId": "atom:semantic:com-trainticket-entity-payment:meansInUse:price-string-representation",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39-40 - same String price field mapped to column payment_price as pass-a's row. Merged, refs unioned to include the constructor default at line 46.",
+   "canonicalAtom": {
+    "id": "atom:semantic:com.trainticket.entity.payment:price-field-string-typed",
+    "kind": "semantic",
+    "subject": "com.trainticket.entity.Payment",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "string-typed-price-field-mapped-to-payment_price-column-default-empty-string-in-constructor",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39",
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:40",
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:46"
+    ]
+   }
+  },
+  {
+   "key": "semantic|com.trainticket.init.InitData|semantic|meansInUse|string-price-literal-10000.0-assigned-with-no-parsing-at-seed-time",
+   "candidateAtomId": "atom:semantic:com.trainticket.init.initdata:price-set-via-string-literal",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/init/InitData.java:30 - `payment.setPrice(\"10000.0\");` a raw string literal with no numeric parsing; confirmed, pass-b has no semantic atom about this seed price.",
+   "canonicalAtom": {
+    "id": "atom:semantic:com.trainticket.init.initdata:price-set-via-string-literal",
+    "kind": "semantic",
+    "subject": "com.trainticket.init.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "string-price-literal-10000.0-assigned-with-no-parsing-at-seed-time",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:30"
+    ]
+   }
+  },
+  {
+   "key": "semantic|com.trainticket.service.PaymentServiceImpl|semantic|meansInUse|error-level-log-emitted-on-payment-saved-branch-info-level-log-emitted-on-already-exists-branch",
+   "candidateAtomId": "atom:semantic:com.trainticket.service.paymentserviceimpl:initpayment-log-level-per-branch",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:70-78 - initPayment() logs at LOGGER.error(...) when the payment did NOT previously exist (was just saved) and LOGGER.info(...) when it already existed, an inverted-looking log-level pairing; confirmed, pass-b has no atom for this method's log levels.",
+   "canonicalAtom": {
+    "id": "atom:semantic:com.trainticket.service.paymentserviceimpl:initpayment-log-level-per-branch",
+    "kind": "semantic",
+    "subject": "com.trainticket.service.PaymentServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "error-level-log-emitted-on-payment-saved-branch-info-level-log-emitted-on-already-exists-branch",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:73",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:74",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:76"
+    ]
+   }
+  },
+  {
+   "key": "semantic|com.trainticket.service.PaymentServiceImpl|semantic|statusGates|status-1-on-payment-created-branch-status-0-on-order-already-has-payment-branch",
+   "candidateAtomId": "atom:semantic:com.trainticket.service.paymentserviceimpl:response-envelope-status-branch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:41,44 - pay() returns Response(1,...) on success, Response(0,...) on rejection; pass-b's row is the same status-1/status-0 pattern generalized across pay() and query() (also citing lines 54,65). Same source-grounded observation, kept as one atom with refs unioned across both methods.",
+   "canonicalAtom": {
+    "id": "atom:semantic:com.trainticket.service.paymentserviceimpl:response-envelope-status-branch",
+    "kind": "semantic",
+    "subject": "com.trainticket.service.PaymentServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-selects-result-carrying-branch-status-0-selects-not-found-or-rejected-branch-across-pay-and-query",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:41",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:44",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:54",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:65"
+    ]
+   }
+  },
+  {
+   "key": "semantic|com.trainticket.service.PaymentServiceImpl|semantic|statusGates|response-status-1-selects-result-carrying-branch-status-0-selects-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:com-trainticket-service-paymentserviceimpl:statusGates:response-envelope",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:41,44,54,65 - same status-1/status-0 response envelope pattern across pay() and query() as pass-a's narrower pay()-only row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:com.trainticket.service.paymentserviceimpl:response-envelope-status-branch",
+    "kind": "semantic",
+    "subject": "com.trainticket.service.PaymentServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-selects-result-carrying-branch-status-0-selects-not-found-or-rejected-branch-across-pay-and-query",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:41",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:44",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:54",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:65"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:order-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-field-stored-and-copied-without-numeric-parsing-at-use-site",
+   "candidateAtomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/Order.java:71, ts-order-service/src/main/java/order/service/OrderServiceImpl.java:338, ts-order-service/src/main/java/order/init/InitData.java:25 - Order.price is String, getOrderPrice() returns it unparsed, and InitData seeds it as a string literal; identical evidence set to pass-b's row, only object phrasing differs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:order-service-order-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:string-price-field-stored-and-passed-through-without-numeric-parsing-at-order-service",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/Order.java:71",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:338",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:25"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:order-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-field-passed-through-without-parsing-or-arithmetic-at-order-service",
+   "candidateAtomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread the same three lines - identical cech section evidence as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:order-service-order-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:string-price-field-stored-and-passed-through-without-numeric-parsing-at-order-service",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/Order.java:71",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:338",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:25"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:order-service-order-lifecycle|cech|sectionValue|section=order-status-code:enum-code-via-orderstatus-getcode-at-service-layer-raw-int-literal-0-at-seed-layer",
+   "candidateAtomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-order-status-code",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111,259,274,350 and ts-order-service/src/main/java/order/init/InitData.java:43,62,80 - service-layer code compares/sets status via OrderStatus.*.getCode(), while InitData hardcodes status=0; pass-b's row covers the same section with three additional seed lines (62,80) and one additional service-layer comparison (274) not in pass-a's narrower ref set. Same observation, refs unioned to the fuller set.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-order-status-code",
+    "kind": "semantic",
+    "subject": "ctx:order-service-order-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=order-status-code:enum-code-via-orderstatus-getcode-comparisons-at-service-layer-raw-int-literal-0-at-seed-layer",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:274",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:43",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:62",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:80"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:order-service-order-lifecycle|cech|sectionValue|section=order-status-code:enum-code-based-comparisons-at-service-layer-with-literal-0-hardcoded-in-seed-init-data",
+   "candidateAtomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-order-status-code",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread the same evidence set (with additional lines 62,80,274 beyond pass-a's ref set) - identical cech section as pass-a's row. Merged, canonical refs use the fuller union.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-order-status-code",
+    "kind": "semantic",
+    "subject": "ctx:order-service-order-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=order-status-code:enum-code-via-orderstatus-getcode-comparisons-at-service-layer-raw-int-literal-0-at-seed-layer",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:274",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:43",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:62",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:80"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:payment-service-payment-flow|cech|sectionValue|section=money-amount:string-price-and-money-fields-copied-without-numeric-parsing-at-use-site",
+   "candidateAtomId": "atom:semantic:ctx-payment-service-payment-flow:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39, ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30, ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:38,52, ts-payment-service/src/main/java/com/trainticket/init/InitData.java:30 - Payment.price and Money.money are String, PaymentServiceImpl copies them string-to-string, InitData seeds a string literal; identical evidence set to pass-b's row.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-payment-service-payment-flow:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:payment-service-payment-flow",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:string-price-and-money-fields-passed-through-without-numeric-parsing-at-payment-service",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39",
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:38",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:52",
+     "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:30"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:payment-service-payment-flow|cech|sectionValue|section=money-amount:string-price-field-passed-through-without-parsing-or-arithmetic-at-payment-service",
+   "candidateAtomId": "atom:semantic:ctx-payment-service-payment-flow:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread the same five lines - identical cech section evidence as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-payment-service-payment-flow:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:payment-service-payment-flow",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:string-price-and-money-fields-passed-through-without-numeric-parsing-at-payment-service",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39",
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:38",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:52",
+     "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:30"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.entity.OrderInfo|semantic|meansInUse|boolean-enable-flags-gate-whether-state-boughtdate-traveldate-predicates-are-applied",
+   "candidateAtomId": "atom:semantic:order.entity.orderinfo:enable-flags-gate-query-predicates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/OrderInfo.java:51-78 - enableTravelDateQuery/enableBoughtDateQuery/enableStateQuery each flip a boolean flag consumed by OrderServiceImpl's isEnable*Query() checks; confirmed, pass-b has no atom for the enable-flag setter methods themselves (only for the disable/-1 sentinel).",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.entity.orderinfo:enable-flags-gate-query-predicates",
+    "kind": "semantic",
+    "subject": "order.entity.OrderInfo",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "boolean-enable-flags-gate-whether-state-boughtdate-traveldate-predicates-are-applied",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:51",
+     "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:63",
+     "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:75"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.entity.OrderInfo|semantic|meansInUse|state-minus-one-sentinel-set-on-disable-state-query-branch",
+   "candidateAtomId": "atom:semantic:order.entity.orderinfo:disable-state-query-sentinel",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/OrderInfo.java:80-83 - disableStateQuery() sets state = -1; same fact as pass-b's row, which additionally cites line 82 (the assignment statement itself vs pass-a's method-declaration line 80). Refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.entity.orderinfo:disable-state-query-sentinel",
+    "kind": "semantic",
+    "subject": "order.entity.OrderInfo",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "state-minus-one-sentinel-set-on-disable-state-query-branch-selects-no-state-filter-applied",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:80",
+     "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:82"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.entity.OrderInfo|semantic|meansInUse|state-negative-one-selects-no-state-filter-applied-branch",
+   "candidateAtomId": "atom:semantic:order-entity-orderinfo:meansInUse:state-negative-one-sentinel",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/OrderInfo.java:80,82 - same state=-1 sentinel assignment in disableStateQuery() as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.entity.orderinfo:disable-state-query-sentinel",
+    "kind": "semantic",
+    "subject": "order.entity.OrderInfo",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "state-minus-one-sentinel-set-on-disable-state-query-branch-selects-no-state-filter-applied",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:80",
+     "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:82"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.entity.Order|semantic|meansInUse|int-status-field-default-set-via-orderstatus-paid-getcode-in-constructor",
+   "candidateAtomId": "atom:semantic:order.entity.order:status-field-default-via-enum-code",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/Order.java:69,84 - `private int status;` field and no-arg constructor `status = OrderStatus.PAID.getCode();`; same fact as pass-b's row, which cites only the constructor line. Refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.entity.order:status-field-default-via-enum-code",
+    "kind": "semantic",
+    "subject": "order.entity.Order",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "int-status-field-default-set-via-orderstatus-paid-getcode-in-constructor",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/Order.java:69",
+     "src:ts-order-service/src/main/java/order/entity/Order.java:84"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.entity.Order|semantic|meansInUse|status-field-initialized-to-paid-code-at-default-construction",
+   "candidateAtomId": "atom:semantic:order-entity-order:meansInUse:status-default",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/Order.java:84 - same OrderStatus.PAID.getCode() default assignment as pass-a's row. Merged, refs unioned to include the field declaration at line 69.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.entity.order:status-field-default-via-enum-code",
+    "kind": "semantic",
+    "subject": "order.entity.Order",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "int-status-field-default-set-via-orderstatus-paid-getcode-in-constructor",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/Order.java:69",
+     "src:ts-order-service/src/main/java/order/entity/Order.java:84"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.entity.Order|semantic|meansInUse|string-typed-price-field-no-numeric-type-at-declaration",
+   "candidateAtomId": "atom:semantic:order.entity.order:price-field-string-typed",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/Order.java:71,85 - `private String price;` field and constructor default `price = \"0.0\";`; identical fact and refs to pass-b's row.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.entity.order:price-field-string-typed",
+    "kind": "semantic",
+    "subject": "order.entity.Order",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "string-typed-price-field-no-numeric-type-at-declaration",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/Order.java:71",
+     "src:ts-order-service/src/main/java/order/entity/Order.java:85"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.entity.Order|semantic|meansInUse|price-represented-as-string-field-no-declared-numeric-type",
+   "candidateAtomId": "atom:semantic:order-entity-order:meansInUse:price-string-representation",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/Order.java:71,85 - identical String price field and default as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.entity.order:price-field-string-typed",
+    "kind": "semantic",
+    "subject": "order.entity.Order",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "string-typed-price-field-no-numeric-type-at-declaration",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/Order.java:71",
+     "src:ts-order-service/src/main/java/order/entity/Order.java:85"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.init.InitData|semantic|meansInUse|int-literal-0-assigned-directly-to-status-field-at-seed-time-not-via-enum",
+   "candidateAtomId": "atom:semantic:order.init.initdata:status-set-via-raw-int-literal",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/init/InitData.java:43,62,80 - `order.setStatus(0);` / `orderTwo.setStatus(0);` / `orderThree.setStatus(0);` a raw int literal, not an OrderStatus.*.getCode() call; identical fact and refs to pass-b's row (recorded under a statusGates predicate there).",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.init.initdata:status-set-via-raw-int-literal",
+    "kind": "semantic",
+    "subject": "order.init.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "int-literal-0-assigned-directly-to-status-field-at-seed-time-not-via-enum",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/init/InitData.java:43",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:62",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:80"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.init.InitData|semantic|statusGates|status-0-hardcoded-integer-literal-used-for-seeded-orders-instead-of-orderstatus-enum-code",
+   "candidateAtomId": "atom:semantic:order-init-initdata:statusGates:seed-status-hardcoded-literal",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/init/InitData.java:43,62,80 - same three raw-literal setStatus(0) calls as pass-a's row, axis/predicate drift (statusGates vs meansInUse). Merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.init.initdata:status-set-via-raw-int-literal",
+    "kind": "semantic",
+    "subject": "order.init.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "int-literal-0-assigned-directly-to-status-field-at-seed-time-not-via-enum",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/init/InitData.java:43",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:62",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:80"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.init.InitData|semantic|meansInUse|string-price-literal-100.0-assigned-with-no-parsing-at-seed-time",
+   "candidateAtomId": "atom:semantic:order.init.initdata:price-set-via-string-literal",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/init/InitData.java:25,44 - `String price = \"100.0\";` field and `order.setPrice(price);`; confirmed, pass-b has no semantic atom about this seed price (only about the status literal).",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.init.initdata:price-set-via-string-literal",
+    "kind": "semantic",
+    "subject": "order.init.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "string-price-literal-100.0-assigned-with-no-parsing-at-seed-time",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/init/InitData.java:25",
+     "src:ts-order-service/src/main/java/order/init/InitData.java:44"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|meansInUse|orders-with-status-code-at-or-after-orderstatus-change-excluded-from-sold-ticket-tally",
+   "candidateAtomId": "atom:semantic:order.service.orderserviceimpl:sold-tickets-excludes-changed-orders",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:273-276 - `if (order.getStatus() >= OrderStatus.CHANGE.getCode()) continue;` inside queryAlreadySoldOrders(); pass-b's row covers the same continue-branch with two additional lines (275,276 - the braces/continue). Refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.service.orderserviceimpl:sold-tickets-excludes-changed-orders",
+    "kind": "semantic",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "orders-with-status-code-at-or-after-orderstatus-change-excluded-from-sold-ticket-tally",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:274",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:275",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:276"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|status-values-at-or-above-change-code-excluded-from-sold-ticket-count",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:sold-ticket-count-exclusion",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:274-276 - same exclusion branch as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.service.orderserviceimpl:sold-tickets-excludes-changed-orders",
+    "kind": "semantic",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "orders-with-status-code-at-or-after-orderstatus-change-excluded-from-sold-ticket-tally",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:274",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:275",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:276"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:order.service.orderserviceimpl:response-envelope-status-branch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:78,82,108,227,256,347,415,445 - the Response(1,...)/Response(0,...) envelope pattern recurs across findOrderById/create/saveChanges/payOrder/deleteOrder/updateOrder; pass-b's row cites the same pattern with an additional line (247) not in pass-a's set. Refs unioned.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.service.orderserviceimpl:response-envelope-status-branch",
+    "kind": "semantic",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:78",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:82",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:108",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:227",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:247",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:256",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:347",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:415",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:445"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|response-status-1-selects-result-carrying-branch-status-0-selects-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:response-envelope",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:78,82,227,247 - same status-1/status-0 response envelope pattern as pass-a's broader row. Merged, canonical refs use the fuller union.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.service.orderserviceimpl:response-envelope-status-branch",
+    "kind": "semantic",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:78",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:82",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:108",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:227",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:247",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:256",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:347",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:415",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:445"
+    ]
+   }
+  },
+  {
+   "key": "state|order.entity.Order|state|persistsIn|orders-table-via-jpa-entity-annotation",
+   "candidateAtomId": "atom:state:order.entity.order:persists-in-orders-table",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/Order.java:19-21 - `@Table(name=\"orders\") @Entity` on the Order class; same fact as pass-b's row, only object phrasing differs (JPA annotation detail vs bare table name).",
+   "canonicalAtom": {
+    "id": "atom:state:order.entity.order:persists-in-orders-table",
+    "kind": "state",
+    "subject": "order.entity.Order",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "orders-table-via-jpa-entity-annotation",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/Order.java:20"
+    ]
+   }
+  },
+  {
+   "key": "state|order.entity.Order|state|persistsIn|orders-table",
+   "candidateAtomId": "atom:state:order-entity-order:persistsIn",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/entity/Order.java:20 - same @Table(name=\"orders\") annotation as pass-a's row. Merged.",
+   "canonicalAtom": {
+    "id": "atom:state:order.entity.order:persists-in-orders-table",
+    "kind": "state",
+    "subject": "order.entity.Order",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "orders-table-via-jpa-entity-annotation",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/entity/Order.java:20"
+    ]
+   }
+  },
+  {
+   "key": "state|ts-order-service.application|state|persistsIn|mysql-ts-schema-via-jdbc-datasource-url",
+   "candidateAtomId": "atom:state:ts-order-service-application-yml:persists-in-mysql-ts-schema",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/resources/application.yml:13-16 - datasource.url uses ORDER_MYSQL_HOST/PORT/DATABASE env vars (defaulting to 10.176.122.1:3306/ts) plus username/password env vars; pass-b's row cites the same block with more of the env-var lines (13-16) than pass-a's single-line ref. Refs unioned, subject canonicalized to '<service-dir>.application-yml'.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-order-service.application-yml:persists-in-mysql-ts-schema",
+    "kind": "state",
+    "subject": "ts-order-service.application-yml",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "mysql-database-via-order_mysql_host-order_mysql_port-order_mysql_database-env-vars-defaulting-to-jdbc-mysql-ts-schema",
+    "refs": [
+     "src:ts-order-service/src/main/resources/application.yml:13",
+     "src:ts-order-service/src/main/resources/application.yml:14",
+     "src:ts-order-service/src/main/resources/application.yml:15",
+     "src:ts-order-service/src/main/resources/application.yml:16"
+    ]
+   }
+  },
+  {
+   "key": "state|ts-order-service|state|persistsIn|mysql-database-via-order_mysql_host-order_mysql_port-order_mysql_database-env-vars",
+   "candidateAtomId": "atom:state:ts-order-service:persistsIn",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/resources/application.yml:13-16 - same MySQL datasource env-var block as pass-a's row. Merged, subject canonicalized to 'ts-order-service.application-yml'.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-order-service.application-yml:persists-in-mysql-ts-schema",
+    "kind": "state",
+    "subject": "ts-order-service.application-yml",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "mysql-database-via-order_mysql_host-order_mysql_port-order_mysql_database-env-vars-defaulting-to-jdbc-mysql-ts-schema",
+    "refs": [
+     "src:ts-order-service/src/main/resources/application.yml:13",
+     "src:ts-order-service/src/main/resources/application.yml:14",
+     "src:ts-order-service/src/main/resources/application.yml:15",
+     "src:ts-order-service/src/main/resources/application.yml:16"
+    ]
+   }
+  },
+  {
+   "key": "state|ts-payment-service.application|state|persistsIn|mysql-ts-payment-mysql-schema-via-jdbc-datasource-url",
+   "candidateAtomId": "atom:state:ts-payment-service-application-yml:persists-in-mysql-ts-payment-schema",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/resources/application.yml:13-16 - datasource.url uses PAYMENT_MYSQL_HOST/PORT/DATABASE env vars (defaulting to ts-payment-mysql:3306/ts-payment-mysql) plus username/password env vars; pass-b's row cites the fuller 13-16 block. Refs unioned, subject canonicalized.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-payment-service.application-yml:persists-in-mysql-ts-payment-schema",
+    "kind": "state",
+    "subject": "ts-payment-service.application-yml",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "mysql-database-via-payment_mysql_host-payment_mysql_port-payment_mysql_database-env-vars-defaulting-to-jdbc-mysql-ts-payment-mysql-schema",
+    "refs": [
+     "src:ts-payment-service/src/main/resources/application.yml:13",
+     "src:ts-payment-service/src/main/resources/application.yml:14",
+     "src:ts-payment-service/src/main/resources/application.yml:15",
+     "src:ts-payment-service/src/main/resources/application.yml:16"
+    ]
+   }
+  },
+  {
+   "key": "state|ts-payment-service|state|persistsIn|mysql-database-via-payment_mysql_host-payment_mysql_port-payment_mysql_database-env-vars",
+   "candidateAtomId": "atom:state:ts-payment-service:persistsIn",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-payment-service/src/main/resources/application.yml:13-16 - same MySQL datasource env-var block as pass-a's row. Merged, subject canonicalized to 'ts-payment-service.application-yml'.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-payment-service.application-yml:persists-in-mysql-ts-payment-schema",
+    "kind": "state",
+    "subject": "ts-payment-service.application-yml",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "mysql-database-via-payment_mysql_host-payment_mysql_port-payment_mysql_database-env-vars-defaulting-to-jdbc-mysql-ts-payment-mysql-schema",
+    "refs": [
+     "src:ts-payment-service/src/main/resources/application.yml:13",
+     "src:ts-payment-service/src/main/resources/application.yml:14",
+     "src:ts-payment-service/src/main/resources/application.yml:15",
+     "src:ts-payment-service/src/main/resources/application.yml:16"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|addNewOrder-admin-path",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:addNewOrder",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:50 - `Response addNewOrder(Order order, HttpHeaders headers);` interface declaration confirmed; the corresponding OrderServiceImpl.addNewOrder() impl (lines 424-437) exists but pass-a did not create an atom for it.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderservice:handles-command-add-new-order",
+    "kind": "capability",
+    "subject": "order.service.OrderService",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "addNewOrder-admin-path",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:50"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|cancelOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:cancelOrder",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:22 - `Response cancelOrder(String accountId, String orderId, HttpHeaders headers);` interface declaration; distinct from the merged impl-level cancelOrder atom (which captures the actual status-write behavior), this is the thinner interface-declared surface fact.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderservice:handles-command-cancel-order-declared",
+    "kind": "capability",
+    "subject": "order.service.OrderService",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "cancelOrder",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:22"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|deleteOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:deleteOrder",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:46 - `Response deleteOrder(String orderId, HttpHeaders headers);` interface declaration confirmed; the corresponding impl (lines 408-422) exists but pass-a did not create an atom for it.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderservice:handles-command-delete-order",
+    "kind": "capability",
+    "subject": "order.service.OrderService",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "deleteOrder",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:46"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|modifyOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:modifyOrder",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:34 - `Response modifyOrder(String orderId, int status, HttpHeaders headers);` interface declaration confirmed; the corresponding impl (lines 314-327) exists but pass-a did not create an atom for it.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderservice:handles-command-modify-order",
+    "kind": "capability",
+    "subject": "order.service.OrderService",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "modifyOrder",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:34"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|payOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:payOrder",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:38 - `Response payOrder(String orderId, HttpHeaders headers);` interface declaration; distinct from the merged impl-level payOrder atom (which captures the actual status-write behavior), this is the thinner interface-declared surface fact.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderservice:handles-command-pay-order-declared",
+    "kind": "capability",
+    "subject": "order.service.OrderService",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "payOrder",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:38"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|updateOrder-admin-path",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:updateOrder",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:52 - `Response updateOrder(Order order, HttpHeaders headers);` interface declaration confirmed; the corresponding impl (lines 439-468) exists but pass-a did not create an atom for it.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderservice:handles-command-update-order",
+    "kind": "capability",
+    "subject": "order.service.OrderService",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "updateOrder-admin-path",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:52"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|servesQuery|findOrderById",
+   "candidateAtomId": "atom:capability:order-service-orderservice:servesQuery:findOrderById",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderService.java:16 - `Response findOrderById(String id, HttpHeaders headers);` interface declaration confirmed; the corresponding impl (lines 73-84) exists but pass-a did not create an atom for it.",
+   "canonicalAtom": {
+    "id": "atom:capability:order.service.orderservice:serves-query-find-order-by-id",
+    "kind": "capability",
+    "subject": "order.service.OrderService",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findOrderById",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderService.java:16"
+    ]
+   }
+  },
+  {
+   "key": "contract|com.trainticket.entity.Payment|specification|requires|non-null-orderId-userId-price-fields-annotated-at-entity-level",
+   "candidateAtomId": "atom:contract:com-trainticket-entity-payment:requires",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:26-40 - orderId, userId and price fields are each annotated @NotNull @Valid; confirmed, pass-a has no contract atom for this file.",
+   "canonicalAtom": {
+    "id": "atom:contract:com.trainticket.entity.payment:requires-non-null-fields",
+    "kind": "contract",
+    "subject": "com.trainticket.entity.Payment",
+    "axis": "specification",
+    "predicate": "requires",
+    "object": "non-null-orderId-userId-price-fields-annotated-at-entity-level",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:27",
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:32",
+     "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:37"
+    ]
+   }
+  },
+  {
+   "key": "semantic|com.trainticket.service.PaymentServiceImpl|semantic|meansInUse|findbyorderid-null-selects-create-and-persist-new-payment-branch-non-null-selects-existing-payment-response-branch",
+   "candidateAtomId": "atom:semantic:com-trainticket-service-paymentserviceimpl:meansInUse:pay-branch-selection",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35,42 - `if(paymentRepository.findByOrderId(...) == null)` selects the create-and-save branch, the else branch returns a failure response; confirmed as a distinct semantic-axis fact from pass-a's capability-axis handlesCommand atom on the same method (kept separate, not a duplicate).",
+   "canonicalAtom": {
+    "id": "atom:semantic:com.trainticket.service.paymentserviceimpl:pay-branch-selection",
+    "kind": "semantic",
+    "subject": "com.trainticket.service.PaymentServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "findbyorderid-null-selects-create-and-persist-new-payment-branch-non-null-selects-existing-payment-response-branch",
+    "refs": [
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35",
+     "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:42"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|status-notpaid-paid-or-collected-codes-selected-as-valid-order-for-security-count",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:valid-order-count-inclusion",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-order-service/src/main/java/order/service/OrderServiceImpl.java:392-397 - checkSecurityAboutOrder() increments countTotalValidOrder when status equals NOTPAID, PAID, or COLLECTED codes; confirmed, pass-a has no atom about this counting branch.",
+   "canonicalAtom": {
+    "id": "atom:semantic:order.service.orderserviceimpl:valid-order-count-inclusion",
+    "kind": "semantic",
+    "subject": "order.service.OrderServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-notpaid-paid-or-collected-codes-selected-as-valid-order-for-security-count",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:393",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:394",
+     "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:395"
+    ]
+   }
+  }
+ ]
+}

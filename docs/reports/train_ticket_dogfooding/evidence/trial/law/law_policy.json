@@ -1,0 +1,32 @@
+{
+  "schema": "law-policy/v0.5.3",
+  "id": "train-ticket-cancel-refund-policy",
+  "lawSurfaceRef": "law-surface:train-ticket-cancel-refund-v053",
+  "measurementProfileRef": "profile:train-ticket-cancel-refund@1",
+  "policies": [
+    {
+      "law": "surface:cech-surface-v052",
+      "evaluator": "ag.cech-obstruction",
+      "basis": [
+        "policy-basis:cancel-refund-consistency"
+      ],
+      "scope": [
+        "ts-cancel-service/",
+        "ts-order-service/",
+        "ts-order-other-service/",
+        "ts-inside-payment-service/",
+        "ts-payment-service/",
+        "ts-notification-service/"
+      ],
+      "severity": "high"
+    }
+  ],
+  "basisLedger": [
+    {
+      "basisId": "policy-basis:cancel-refund-consistency",
+      "kind": "repo-document",
+      "path": "docs/aat/algebraic_geometric_theory/README.md",
+      "revision": "aat-ag-current"
+    }
+  ]
+}

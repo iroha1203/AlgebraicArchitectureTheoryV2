@@ -1,0 +1,630 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-without-credentials-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:contacts.config.SecurityConfig:allows-cross-origin",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:51",
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:contacts.config.SecurityConfig:permits-unauthenticated",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:72",
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-on-/api/v1/contactservice/**",
+   "candidateAtomId": "atom:authority:contacts.config.SecurityConfig:requires-role",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|contacts.controller.ContactsController|authority|allowsCrossOrigin|method-level-allow-all-origins-on-contacts-crud-endpoints",
+   "candidateAtomId": "atom:authority:contacts.controller.ContactsController:allows-cross-origin",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:34",
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:41",
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:49",
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:58",
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:65",
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:72",
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:80"
+   ]
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-without-credentials-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:execute.config.SecurityConfig:allows-cross-origin",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:51",
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:execute.config.SecurityConfig:permits-unauthenticated",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:72",
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-on-/api/v1/executeservice/**",
+   "candidateAtomId": "atom:authority:execute.config.SecurityConfig:requires-role",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|execute.controller.ExecuteControlller|authority|allowsCrossOrigin|method-level-allow-all-origins-on-execute-and-collect-endpoints",
+   "candidateAtomId": "atom:authority:execute.controller.ExecuteControlller:allows-cross-origin",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:30",
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:38"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|DELETE /api/v1/contactservice/contacts/{contactsId}",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-delete-contacts-by-id",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:59"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET /api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:35"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET /api/v1/contactservice/contacts/account/{accountId}",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-account-id",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:73"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET /api/v1/contactservice/contacts/welcome",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-welcome",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:29"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET /api/v1/contactservice/contacts/{id}",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-id",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:81"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|POST /api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:42"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|POST /api/v1/contactservice/contacts/admin",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts-admin",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:50"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|PUT /api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-put-contacts",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:66"
+   ]
+  },
+  {
+   "key": "capability|delivery.mq.RabbitReceive|capability|handlesCommand|food_delivery-queue-message-consumption",
+   "candidateAtomId": "atom:capability:delivery.mq.RabbitReceive:handles-command-food-delivery-queue",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35",
+    "src:ts-delivery-service/src/main/java/delivery/config/Queues.java:10"
+   ]
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET /api/v1/executeservice/execute/collected/{orderId}",
+   "candidateAtomId": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-collect-ticket",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:39"
+   ]
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET /api/v1/executeservice/execute/execute/{orderId}",
+   "candidateAtomId": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-execute-ticket",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:31"
+   ]
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET /api/v1/executeservice/welcome",
+   "candidateAtomId": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-welcome",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:25"
+   ]
+  },
+  {
+   "key": "contract|contacts.entity.Contacts|specification|ensures|unique-combination-of-account_id-document_number-document_type-columns",
+   "candidateAtomId": "atom:contract:contacts.entity.Contacts:unique-account-document-index",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/entity/Contacts.java:21",
+    "src:ts-contacts-service/src/main/java/contacts/repository/ContactsRepository.java:49",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:50",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:63"
+   ]
+  },
+  {
+   "key": "contract|contacts.repository.ContactsRepository|specification|shapedAs|native-sql-lookup-by-account_id-document_number-document_type-triplet",
+   "candidateAtomId": "atom:contract:contacts.repository.ContactsRepository:native-lookup-shape",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/repository/ContactsRepository.java:49"
+   ]
+  },
+  {
+   "key": "contract|delivery.mq.RabbitReceive|specification|requires|json-payload-deserialized-to-delivery-entity-and-null-checked-before-repository-save",
+   "candidateAtomId": "atom:contract:delivery.mq.RabbitReceive:payload-null-checked-before-persist",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:37",
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:42"
+   ]
+  },
+  {
+   "key": "contract|delivery.repository.DeliveryRepository|specification|shapedAs|lookup-by-orderId-uuid-field-distinct-from-primary-key-id",
+   "candidateAtomId": "atom:contract:delivery.repository.DeliveryRepository:lookup-by-order-id",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/repository/DeliveryRepository.java:19"
+   ]
+  },
+  {
+   "key": "relation|contacts.controller.ContactsController|relation|dependsOn|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.controller.ContactsController:depends-on-contacts-service",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:25"
+   ]
+  },
+  {
+   "key": "relation|contacts.init.InitData|relation|dependsOn|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.init.InitData:depends-on-contacts-service",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/init/InitData.java:18",
+    "src:ts-contacts-service/src/main/java/contacts/init/InitData.java:29",
+    "src:ts-contacts-service/src/main/java/contacts/init/InitData.java:38"
+   ]
+  },
+  {
+   "key": "relation|contacts.service.ContactsServiceImpl|relation|dependsOn|contacts.repository.ContactsRepository",
+   "candidateAtomId": "atom:relation:contacts.service.ContactsServiceImpl:depends-on-contacts-repository",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:23"
+   ]
+  },
+  {
+   "key": "relation|contacts.service.ContactsServiceImpl|relation|implements|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.service.ContactsServiceImpl:implements-contacts-service",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:20"
+   ]
+  },
+  {
+   "key": "relation|delivery.mq.RabbitReceive|relation|dependsOn|delivery.config.Queues",
+   "candidateAtomId": "atom:relation:delivery.mq.RabbitReceive:depends-on-queues",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:3",
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35"
+   ]
+  },
+  {
+   "key": "relation|delivery.mq.RabbitReceive|relation|dependsOn|delivery.repository.DeliveryRepository",
+   "candidateAtomId": "atom:relation:delivery.mq.RabbitReceive:depends-on-delivery-repository",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:32",
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:50"
+   ]
+  },
+  {
+   "key": "relation|execute.controller.ExecuteControlller|relation|dependsOn|execute.serivce.ExecuteService",
+   "candidateAtomId": "atom:relation:execute.controller.ExecuteControlller:depends-on-execute-service",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:3",
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:21"
+   ]
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.ContactsServiceImpl:status-gates-response-envelope",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:34",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:37",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:53",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:56",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:67",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:71",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:81",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:84",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:96",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:104",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:112",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:115"
+   ]
+  },
+  {
+   "key": "state|contacts.entity.Contacts|state|persistsIn|contacts-repository-jpa-crud-over-ts-contacts-mysql",
+   "candidateAtomId": "atom:state:contacts.entity.Contacts:persists-in-repository",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:55",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:69",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:102",
+    "src:ts-contacts-service/src/main/resources/application.yml:11"
+   ]
+  },
+  {
+   "key": "state|delivery.entity.Delivery|state|persistsIn|delivery-repository-jpa-crud-over-ts-delivery-mysql-persisted-on-queue-message-receipt",
+   "candidateAtomId": "atom:state:delivery.entity.Delivery:persists-in-repository",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:50",
+    "src:ts-delivery-service/src/main/java/delivery/repository/DeliveryRepository.java:14",
+    "src:ts-delivery-service/src/main/resources/application.yml:11"
+   ]
+  },
+  {
+   "key": "state|ts-consign-service|state|persistsIn|ts-consign-mysql-database-via-jpa-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-consign-service:persists-in-mysql",
+   "refs": [
+    "src:ts-consign-service/src/main/resources/application.yml:8",
+    "src:ts-consign-service/src/main/resources/application.yml:14"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:contacts.config.security-config:allows-cross-origin",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:47"
+   ]
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|checksPermission|jwt-filter-added-before-username-password-authentication-filter",
+   "candidateAtomId": "atom:authority:contacts.config.security-config:checks-permission-jwt-filter",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-v2-paths",
+   "candidateAtomId": "atom:authority:contacts.config.security-config:permits-unauthenticated",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|requiresRole|hasAnyRole-ADMIN-USER-on-/api/v1/contactservice/**",
+   "candidateAtomId": "atom:authority:contacts.config.security-config:requires-role",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|contacts.controller.ContactsController|authority|allowsCrossOrigin|wildcard-origin-per-endpoint-annotation-on-all-mutating-and-lookup-endpoints-except-welcome",
+   "candidateAtomId": "atom:authority:contacts.controller.contacts-controller:allows-cross-origin",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:34"
+   ]
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:execute.config.security-config:allows-cross-origin",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:47"
+   ]
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|checksPermission|jwt-filter-added-before-username-password-authentication-filter",
+   "candidateAtomId": "atom:authority:execute.config.security-config:checks-permission-jwt-filter",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-v2-paths",
+   "candidateAtomId": "atom:authority:execute.config.security-config:permits-unauthenticated",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|requiresRole|hasAnyRole-ADMIN-USER-on-/api/v1/executeservice/**",
+   "candidateAtomId": "atom:authority:execute.config.security-config:requires-role",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|DELETE-/api/v1/contactservice/contacts/{contactsId}",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-delete-contacts-id",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:59"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET-/api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-get-contacts",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:35"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET-/api/v1/contactservice/contacts/account/{accountId}",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-get-contacts-by-account-id",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:73"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET-/api/v1/contactservice/contacts/welcome",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-get-welcome",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:29"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET-/api/v1/contactservice/contacts/{id}",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-get-contacts-by-id",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:81"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|POST-/api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-post-contacts",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:42"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|POST-/api/v1/contactservice/contacts/admin",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-post-contacts-admin",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:50"
+   ]
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|PUT-/api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-put-contacts",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:66"
+   ]
+  },
+  {
+   "key": "capability|delivery.mq.RabbitReceive|capability|servesQuery|rabbit-listener-on-queue-food_delivery",
+   "candidateAtomId": "atom:capability:delivery.mq.rabbit-receive:listens-on-queue",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35",
+    "src:ts-delivery-service/src/main/java/delivery/config/Queues.java:10"
+   ]
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET-/api/v1/executeservice/execute/collected/{orderId}",
+   "candidateAtomId": "atom:capability:execute.controller.execute-controlller:exposes-endpoint-get-collect",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:39"
+   ]
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET-/api/v1/executeservice/execute/execute/{orderId}",
+   "candidateAtomId": "atom:capability:execute.controller.execute-controlller:exposes-endpoint-get-execute",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:31"
+   ]
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET-/api/v1/executeservice/welcome",
+   "candidateAtomId": "atom:capability:execute.controller.execute-controlller:exposes-endpoint-get-welcome",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:25"
+   ]
+  },
+  {
+   "key": "effect|contacts.service.ContactsServiceImpl|effect|writesTo|contacts-repository-delete-by-id-on-delete-path",
+   "candidateAtomId": "atom:effect:contacts.service.contacts-service-impl:writes-to-contacts-store-delete",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:77"
+   ]
+  },
+  {
+   "key": "effect|contacts.service.ContactsServiceImpl|effect|writesTo|contacts-repository-save-on-create-and-create-contacts-and-modify-paths",
+   "candidateAtomId": "atom:effect:contacts.service.contacts-service-impl:writes-to-contacts-store-create",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:55",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:69",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:102"
+   ]
+  },
+  {
+   "key": "effect|delivery.mq.RabbitReceive|effect|writesTo|delivery-repository-save-on-rabbit-message-consumption",
+   "candidateAtomId": "atom:effect:delivery.mq.rabbit-receive:writes-to-delivery-store",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:50"
+   ]
+  },
+  {
+   "key": "effect|ts-delivery-service|effect|callsProvider|rabbitmq-broker-configured-host-port-for-queue-consumption",
+   "candidateAtomId": "atom:effect:ts-delivery-service:calls-provider-rabbitmq",
+   "refs": [
+    "src:ts-delivery-service/src/main/resources/application.yml:16",
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35"
+   ]
+  },
+  {
+   "key": "relation|contacts.config.SecurityConfig|restriction|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:contacts.config.security-config:depends-on:jwt-filter",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "relation|contacts.controller.ContactsController|restriction|dependsOn|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.controller.contacts-controller:depends-on:contacts.service.contacts-service",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:25"
+   ]
+  },
+  {
+   "key": "relation|contacts.init.InitData|restriction|dependsOn|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.init.init-data:depends-on:contacts.service.contacts-service",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/init/InitData.java:18"
+   ]
+  },
+  {
+   "key": "relation|contacts.service.ContactsServiceImpl|restriction|dependsOn|contacts.repository.ContactsRepository",
+   "candidateAtomId": "atom:relation:contacts.service.contacts-service-impl:depends-on:contacts.repository.contacts-repository",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:23"
+   ]
+  },
+  {
+   "key": "relation|contacts.service.ContactsServiceImpl|restriction|implements|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.service.contacts-service-impl:implements:contacts.service.contacts-service",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:20"
+   ]
+  },
+  {
+   "key": "relation|delivery.mq.RabbitReceive|restriction|dependsOn|delivery.config.Queues",
+   "candidateAtomId": "atom:relation:delivery.mq.rabbit-receive:depends-on:delivery.config.queues",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35"
+   ]
+  },
+  {
+   "key": "relation|delivery.mq.RabbitReceive|restriction|dependsOn|delivery.repository.DeliveryRepository",
+   "candidateAtomId": "atom:relation:delivery.mq.rabbit-receive:depends-on:delivery.repository.delivery-repository",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:32"
+   ]
+  },
+  {
+   "key": "relation|execute.config.SecurityConfig|restriction|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:execute.config.security-config:depends-on:jwt-filter",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "relation|execute.controller.ExecuteControlller|restriction|dependsOn|execute.serivce.ExecuteService",
+   "candidateAtomId": "atom:relation:execute.controller.execute-controlller:depends-on:execute.serivce.execute-service",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:3"
+   ]
+  },
+  {
+   "key": "semantic|contacts.entity.Contacts|semantic|identifiedBy|unique-by-account-id-document-number-document-type-tuple-not-by-name-or-phone",
+   "candidateAtomId": "atom:semantic:contacts.entity.contacts:identified-by",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/entity/Contacts.java:21",
+    "src:ts-contacts-service/src/main/java/contacts/repository/ContactsRepository.java:49"
+   ]
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-0-on-account-document-number-document-type-tuple-already-existing-branch-status-1-on-create-success-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:create-contacts-status-gates",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:51",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:56"
+   ]
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-0-on-existing-contacts-found-branch-status-1-on-create-success-with-saved-entity-returned-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:create-status-gates",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:65",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:69"
+   ]
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-0-on-existing-contacts-not-found-branch-status-1-on-modify-success-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:modify-status-gates",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:94",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:104"
+   ]
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-1-on-contacts-found-branch-status-0-on-not-found-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:find-contacts-by-id-status-gates",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:33",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:37"
+   ]
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-1-on-non-empty-contacts-list-branch-status-0-on-null-or-empty-list-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:get-all-contacts-status-gates",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:111",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:115"
+   ]
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-1-on-post-delete-lookup-empty-branch-status-0-on-post-delete-lookup-still-found-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:delete-status-gates",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:79",
+    "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:83"
+   ]
+  },
+  {
+   "key": "semantic|delivery.mq.RabbitReceive|semantic|meansInUse|no-op-return-on-null-deserialized-payload-branch-else-generates-uuid-when-incoming-id-is-absent-branch",
+   "candidateAtomId": "atom:semantic:delivery.mq.rabbit-receive:process-means-in-use",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:39",
+    "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:45"
+   ]
+  },
+  {
+   "key": "state|contacts.entity.Contacts|state|persistsIn|contacts-table-with-unique-index-on-account-id-document-number-document-type",
+   "candidateAtomId": "atom:state:contacts.entity.contacts:persists-in",
+   "refs": [
+    "src:ts-contacts-service/src/main/java/contacts/entity/Contacts.java:21"
+   ]
+  },
+  {
+   "key": "state|delivery.entity.Delivery|state|persistsIn|delivery-table-with-order-id-food-name-store-name-station-name-fields",
+   "candidateAtomId": "atom:state:delivery.entity.delivery:persists-in",
+   "refs": [
+    "src:ts-delivery-service/src/main/java/delivery/entity/Delivery.java:29"
+   ]
+  },
+  {
+   "key": "state|ts-consign-service|state|persistsIn|ts-consign-mysql-database-via-jdbc",
+   "candidateAtomId": "atom:state:ts-consign-service:persists-in",
+   "refs": [
+    "src:ts-consign-service/src/main/resources/application.yml:8"
+   ]
+  },
+  {
+   "key": "state|ts-contacts-service|state|persistsIn|ts-contacts-mysql-database-via-jdbc",
+   "candidateAtomId": "atom:state:ts-contacts-service:persists-in",
+   "refs": [
+    "src:ts-contacts-service/src/main/resources/application.yml:12"
+   ]
+  },
+  {
+   "key": "state|ts-delivery-service|state|persistsIn|ts-delivery-mysql-database-via-jdbc",
+   "candidateAtomId": "atom:state:ts-delivery-service:persists-in",
+   "refs": [
+    "src:ts-delivery-service/src/main/resources/application.yml:12"
+   ]
+  }
+ ]
+}

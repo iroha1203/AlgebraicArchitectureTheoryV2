@@ -1,0 +1,1228 @@
+{
+  "analyticReadings": [
+    {
+      "claimStatus": "candidate",
+      "evaluator": "ag.foundation",
+      "fidelity": "proxy",
+      "readingId": "candidate-regime:stability-placeholder",
+      "regime": "theorem-candidate",
+      "structuralVerdictRef": null,
+      "value": {
+        "reason": "theorem-candidate readings are analytic-only until a follow-up evaluator computes them",
+        "state": "not_evaluated"
+      }
+    }
+  ],
+  "assumptions": [
+    {
+      "assumption": "finite site",
+      "assumptionId": "assumption:part8-4-2:finite-site",
+      "checkedBy": "archmap-schema052-validation.contexts-finite",
+      "scopeRefs": [
+        "part8/4.2"
+      ],
+      "status": "checked",
+      "theoremRef": "part8/4.2"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-status-convention@1",
+      "assumption": "U-adequate cover",
+      "assumptionId": "assumption:part8-4-2:U-adequate-cover",
+      "scopeRefs": [
+        "part8/4.2"
+      ],
+      "status": "assumed",
+      "theoremRef": "part8/4.2"
+    },
+    {
+      "assumption": "F2 finite coefficient field",
+      "assumptionId": "assumption:part8-B-8-2:F2-finite-coefficient-field",
+      "checkedBy": "measurement-profile:profile:train-ticket-status-convention@1.coefficient=F2",
+      "scopeRefs": [
+        "part8/B.8.2"
+      ],
+      "status": "checked",
+      "theoremRef": "part8/B.8.2"
+    },
+    {
+      "assumption": "cover-relative Cech reading",
+      "assumptionId": "assumption:part8-B-8-2:cover-relative-Cech-reading",
+      "checkedBy": "measurement-profile:profile:train-ticket-status-convention@1.coverRef",
+      "scopeRefs": [
+        "part8/B.8.2"
+      ],
+      "status": "checked",
+      "theoremRef": "part8/B.8.2"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-status-convention@1",
+      "assumption": "Leray / acyclicity comparison to sheaf cohomology",
+      "assumptionId": "assumption:part8-B-8-2:Leray---acyclicity-comparison-to-sheaf-cohomology",
+      "scopeRefs": [
+        "part8/B.8.2"
+      ],
+      "status": "assumed",
+      "theoremRef": "part8/B.8.2"
+    },
+    {
+      "assumption": "constant coefficient nerve b1 comparison",
+      "assumptionId": "assumption:part4-12-3:constant-coefficient-nerve-b1-comparison",
+      "checkedBy": "measurement-profile:profile:train-ticket-status-convention@1.coefficient=F2",
+      "scopeRefs": [
+        "part4/12.3"
+      ],
+      "status": "checked",
+      "theoremRef": "part4/12.3"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-status-convention@1",
+      "assumption": "local lawful sections form an effective Ob_U-torsor",
+      "assumptionId": "assumption:part4-11-1:local-lawful-sections-form-an-effective-Ob-U-torsor",
+      "scopeRefs": [
+        "part4/11.1"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/11.1"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-status-convention@1",
+      "assumption": "local adjustment action is fixed and effective",
+      "assumptionId": "assumption:part4-11-1:local-adjustment-action-is-fixed-and-effective",
+      "scopeRefs": [
+        "part4/11.1"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/11.1"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-status-convention@1",
+      "assumption": "coefficient object satisfies descent",
+      "assumptionId": "assumption:part4-11-1:coefficient-object-satisfies-descent",
+      "scopeRefs": [
+        "part4/11.1"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/11.1"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-status-convention@1",
+      "assumption": "restriction maps are surjective",
+      "assumptionId": "assumption:part4-12-4:restriction-maps-are-surjective",
+      "scopeRefs": [
+        "part4/12.4"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/12.4"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-status-convention@1",
+      "assumption": "selected Cech nerve is a forest with no triple-overlap faces",
+      "assumptionId": "assumption:part4-12-4:selected-Cech-nerve-is-a-forest-with-no-triple-overlap-faces",
+      "scopeRefs": [
+        "part4/12.4"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/12.4"
+    }
+  ],
+  "boundaryStatements": [
+    {
+      "id": "boundary:silence-by-design:0",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "ArchSig v0.5.3 foundation packet is computed from input:archmap-status-variant.json and input:law-policy-status.json; it is not a Lean proof object."
+    },
+    {
+      "id": "boundary:silence-by-design:1",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Unmeasured AG evaluator rows are schema handoff rows, not measured zero."
+    },
+    {
+      "id": "boundary:silence-by-design:2",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
+    },
+    {
+      "id": "boundary:m8:higher-hn-silence",
+      "kind": "silence_by_design",
+      "reason": "higher_hn_n_ge_3_part_iv_scope_boundary",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Cohomological readings in degrees n>=3 are silent by design in this finite AG measurement packet: they are a Part IV scope boundary, not a measured zero result or a remaining task."
+    },
+    {
+      "id": "boundary:m8:non-abelian-stack-gerbe-vocabulary",
+      "kind": "out_of_selected_vocabulary",
+      "reason": "non_abelian_stack_gerbe_outside_abelian_f2_vocabulary",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Non-abelian stack/gerbe degree-2 descent data is outside the selected banded abelian F2 vocabulary; banding-violated inputs remain outside this measurement lens."
+    },
+    {
+      "id": "boundary:m8:higher-tor-unmeasured-support",
+      "kind": "unmeasured_support",
+      "reason": "higher_tor_i_ge_2_unmeasured_support",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing."
+    },
+    {
+      "id": "boundary:not-applicable:0",
+      "kind": "not_applicable",
+      "reason": "analytic_only",
+      "scopeRefs": [
+        "candidate-regime:stability-placeholder"
+      ],
+      "text": "Theorem-candidate reading is analytic-only and cannot generate a structural verdict."
+    }
+  ],
+  "componentFingerprints": {
+    "lawPolicy": "sha256:3eadf3fe287a543585b90e88e426ddee8284fee1978bffe27e8f8b919303a9de",
+    "lawSurface": "sha256:a861f2b9d4b7f5528cb5733868f185cb8cac6d6e056da28e61f8e4704a1c7be8",
+    "measurementProfile": "sha256:27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+  },
+  "computedInvariants": [
+    {
+      "archmapRef": "input:archmap-status-variant.json",
+      "atomCount": 2094,
+      "contextCount": 43,
+      "coverCount": 3,
+      "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
+      "evaluator": "ag.foundation",
+      "invariantId": "finite-poset-site-shape",
+      "kind": "measurement-invariant",
+      "representation": {
+        "archmapRef": "input:archmap-status-variant.json",
+        "atomCount": 2094,
+        "contextCount": 43,
+        "coverCount": 3,
+        "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
+        "invariantId": "finite-poset-site-shape"
+      },
+      "value": {}
+    },
+    {
+      "boundaryNote": "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION is relative to the selected abelian coefficient sheaf; non-abelian torsor, stacky descent, and gerbe obstructions are not excluded.",
+      "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
+      "classSupport": {
+        "edgeRefs": [
+          "ctx:cancel-surface->ctx:order-surface",
+          "ctx:execute-surface->ctx:order-surface",
+          "ctx:wait-order-surface->ctx:preserve-surface"
+        ],
+        "kind": "selected-cover-edge-support",
+        "supportAtomRefs": [
+          "atom:semantic:cancel-surface:cech-section-order-status-code",
+          "atom:semantic:execute-surface:cech-section-order-status-code",
+          "atom:semantic:order-surface:cech-section-order-status-code",
+          "atom:semantic:preserve-surface:cech-section-order-status-code",
+          "atom:semantic:wait-order-surface:cech-section-order-status-code"
+        ]
+      },
+      "coefficient": "F2",
+      "contextCount": 7,
+      "coverNerveProjection": {
+        "coverRef": "cover:order-status-convention-surface",
+        "edges": [
+          {
+            "edgeId": "ctx:cancel-surface->ctx:order-other-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:cancel-surface",
+            "supportAtomRefs": [],
+            "targetContextRef": "ctx:order-other-surface",
+            "value": 0
+          },
+          {
+            "edgeId": "ctx:cancel-surface->ctx:order-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:cancel-surface",
+            "supportAtomRefs": [
+              "atom:semantic:cancel-surface:cech-section-order-status-code",
+              "atom:semantic:order-surface:cech-section-order-status-code"
+            ],
+            "targetContextRef": "ctx:order-surface",
+            "value": 1
+          },
+          {
+            "edgeId": "ctx:execute-surface->ctx:order-other-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:execute-surface",
+            "supportAtomRefs": [],
+            "targetContextRef": "ctx:order-other-surface",
+            "value": 0
+          },
+          {
+            "edgeId": "ctx:execute-surface->ctx:order-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:execute-surface",
+            "supportAtomRefs": [
+              "atom:semantic:execute-surface:cech-section-order-status-code",
+              "atom:semantic:order-surface:cech-section-order-status-code"
+            ],
+            "targetContextRef": "ctx:order-surface",
+            "value": 1
+          },
+          {
+            "edgeId": "ctx:wait-order-surface->ctx:preserve-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:wait-order-surface",
+            "supportAtomRefs": [
+              "atom:semantic:preserve-surface:cech-section-order-status-code",
+              "atom:semantic:wait-order-surface:cech-section-order-status-code"
+            ],
+            "targetContextRef": "ctx:preserve-surface",
+            "value": 1
+          }
+        ],
+        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
+        "faces": [],
+        "h2CoherenceVisualized": false,
+        "vertices": [
+          {
+            "atomRefs": [
+              "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+              "atom:authority:cancel-securityconfig:allowscrossorigin",
+              "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:cancel-securityconfig:requiresrole-api",
+              "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-orderid-loginid",
+              "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-refound",
+              "atom:capability:cancel-cancelcontroller:exposesendpoint-welcome",
+              "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+              "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+              "atom:component:cancel-cancelapplication",
+              "atom:component:cancel-cancelcontroller",
+              "atom:component:cancel-cancelservice",
+              "atom:component:cancel-cancelserviceimpl",
+              "atom:component:cancel-getaccountbyidinfo",
+              "atom:component:cancel-getaccountbyidresult",
+              "atom:component:cancel-getorderbyidinfo",
+              "atom:component:cancel-securityconfig",
+              "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+              "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+              "atom:contract:cancel-cancelserviceimpl:requires-forwardedauthorizationheader",
+              "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+              "atom:contract:cancel-getaccountbyidinfo:shapedas",
+              "atom:contract:cancel-getaccountbyidresult:shapedas",
+              "atom:contract:cancel-getorderbyidinfo:shapedas"
+            ],
+            "contextRef": "ctx:cancel-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:execute.config.SecurityConfig:allows-cross-origin",
+              "atom:authority:execute.config.SecurityConfig:checks-permission-jwt-filter",
+              "atom:authority:execute.config.SecurityConfig:permits-unauthenticated",
+              "atom:authority:execute.config.SecurityConfig:requires-role",
+              "atom:authority:execute.controller.ExecuteControlller:allows-cross-origin",
+              "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-collect-ticket",
+              "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-execute-ticket",
+              "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-welcome",
+              "atom:capability:ts-execute-service-executeserviceimpl:handlescommand-ticketcollect",
+              "atom:capability:ts-execute-service-executeserviceimpl:handlescommand-ticketexecute",
+              "atom:component:execute.ExecuteApplication",
+              "atom:component:execute.config.SecurityConfig",
+              "atom:component:execute.controller.ExecuteControlller",
+              "atom:component:ts-execute-service",
+              "atom:component:ts-execute-service-executeservice",
+              "atom:component:ts-execute-service-executeserviceimpl",
+              "atom:relation:execute.config.SecurityConfig:depends-on-jwt-filter",
+              "atom:relation:execute.controller.ExecuteControlller:depends-on-execute-service",
+              "atom:relation:ts-execute-service-application-yml:dependson-nacos-discovery",
+              "atom:relation:ts-execute-service-executeserviceimpl:calls-ts-order-other-service",
+              "atom:relation:ts-execute-service-executeserviceimpl:calls-ts-order-service",
+              "atom:semantic:ts-execute-service-executeserviceimpl:meansinuse-headers-nulled",
+              "atom:semantic:ts-execute-service-executeserviceimpl:meansinuse-order-status-enum",
+              "atom:semantic:ts-execute-service-executeserviceimpl:statusgates-response-status"
+            ],
+            "contextRef": "ctx:execute-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:other.config.SecurityConfig:permitsUnauthenticated:orderOther-base",
+              "atom:authority:ts-order-other-service.securityconfig:allowscrossorigin-corsconfigurer",
+              "atom:authority:ts-order-other-service.securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:ts-order-other-service.securityconfig:requiresrole-admin-orderother-admin",
+              "atom:authority:ts-order-other-service.securityconfig:requiresrole-post-put-delete-orderother",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-create",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-update",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-calculatesold",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-create",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-delete",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-findall",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-getbyid",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-modify",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-pay",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-price",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-query",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-refresh",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-save",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-security",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-tickets",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-welcome",
+              "atom:component:other.OrderOtherApplication",
+              "atom:component:other.config.SecurityConfig",
+              "atom:component:other.controller.OrderOtherController"
+            ],
+            "contextRef": "ctx:order-other-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:order.config.SecurityConfig:permitsUnauthenticated:order-base",
+              "atom:authority:ts-order-service.ordercontroller:allowscrossorigin-endpoint-annotations",
+              "atom:authority:ts-order-service.securityconfig:allowscrossorigin-corsconfigurer",
+              "atom:authority:ts-order-service.securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:ts-order-service.securityconfig:requiresrole-admin-order-admin",
+              "atom:authority:ts-order-service.securityconfig:requiresrole-post-put-delete-order",
+              "atom:capability:order.repository.orderrepository:serves-query-by-account-id",
+              "atom:capability:order.repository.orderrepository:serves-query-by-travel-date-and-train-number",
+              "atom:capability:order.service.orderservice:handles-command-add-new-order",
+              "atom:capability:order.service.orderservice:handles-command-cancel-order-declared",
+              "atom:capability:order.service.orderservice:handles-command-delete-order",
+              "atom:capability:order.service.orderservice:handles-command-modify-order",
+              "atom:capability:order.service.orderservice:handles-command-pay-order-declared",
+              "atom:capability:order.service.orderservice:handles-command-update-order",
+              "atom:capability:order.service.orderservice:serves-query-find-order-by-id",
+              "atom:capability:order.service.orderserviceimpl:handles-command-alter-order",
+              "atom:capability:order.service.orderserviceimpl:handles-command-cancel-order",
+              "atom:capability:order.service.orderserviceimpl:handles-command-create",
+              "atom:capability:order.service.orderserviceimpl:handles-command-pay-order",
+              "atom:capability:order.service.orderserviceimpl:serves-query-order-price",
+              "atom:capability:order.service.orderserviceimpl:serves-query-orders-with-filter-flags",
+              "atom:capability:order.service.orderserviceimpl:serves-query-sold-tickets",
+              "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-create",
+              "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-update"
+            ],
+            "contextRef": "ctx:order-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:preserveother-controller:allowscrossorigin-method-level",
+              "atom:authority:preserveother-securityconfig:allowscrossorigin-global",
+              "atom:authority:preserveother-securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:preserveother-securityconfig:requiresrole-admin-user",
+              "atom:capability:preserveother-controller:exposesendpoint-preserveother",
+              "atom:capability:preserveother-controller:exposesendpoint-welcome",
+              "atom:capability:preserveother-serviceimpl:preserve-orchestration",
+              "atom:component:preserveother-application-yml",
+              "atom:component:preserveother-controller",
+              "atom:component:preserveother-queues",
+              "atom:component:preserveother-rabbitsend",
+              "atom:component:preserveother-securityconfig",
+              "atom:component:preserveother-service-iface",
+              "atom:component:preserveother-serviceimpl",
+              "atom:component:preserveother.preserveotherapplication",
+              "atom:contract:preserveother-serviceimpl:order-dto-shape",
+              "atom:effect:preserveother-rabbitsend-publishes-email-queue",
+              "atom:relation:preserveother-controller:dependson-preserveother-service",
+              "atom:relation:preserveother-rabbitsend:dependson-preserveother-queues",
+              "atom:relation:preserveother-serviceimpl:calls-assurance-service",
+              "atom:relation:preserveother-serviceimpl:calls-basic-service",
+              "atom:relation:preserveother-serviceimpl:calls-consign-service",
+              "atom:relation:preserveother-serviceimpl:calls-contacts-service",
+              "atom:relation:preserveother-serviceimpl:calls-food-service"
+            ],
+            "contextRef": "ctx:preserve-other-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:preserve-controller:allowscrossorigin-method-level",
+              "atom:authority:preserve-securityconfig:allowscrossorigin-global",
+              "atom:authority:preserve-securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:preserve-securityconfig:requiresrole-admin-user",
+              "atom:capability:preserve-controller:exposesendpoint-preserve",
+              "atom:capability:preserve-controller:exposesendpoint-welcome",
+              "atom:capability:preserve-serviceimpl:preserve-orchestration",
+              "atom:component:preserve-application",
+              "atom:component:preserve-application-yml",
+              "atom:component:preserve-controller",
+              "atom:component:preserve-queues",
+              "atom:component:preserve-rabbitsend",
+              "atom:component:preserve-securityconfig",
+              "atom:component:preserve-service-iface",
+              "atom:component:preserve-serviceimpl",
+              "atom:contract:preserve-serviceimpl:order-dto-shape",
+              "atom:effect:preserve-rabbitsend-publishes-email-queue",
+              "atom:relation:preserve-controller:dependson-preserve-service",
+              "atom:relation:preserve-rabbitsend:dependson-preserve-queues",
+              "atom:relation:preserve-serviceimpl:calls-assurance-service",
+              "atom:relation:preserve-serviceimpl:calls-basic-service",
+              "atom:relation:preserve-serviceimpl:calls-consign-service",
+              "atom:relation:preserve-serviceimpl:calls-contacts-service",
+              "atom:relation:preserve-serviceimpl:calls-food-service"
+            ],
+            "contextRef": "ctx:preserve-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:waitorder-config-securityconfig:allows-cross-origin-all-origins",
+              "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-order-wildcard",
+              "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-swagger-paths",
+              "atom:authority:waitorder-config-securityconfig:requires-role-delete-order-admin-or-user",
+              "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-only",
+              "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-or-user",
+              "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-only",
+              "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-or-user",
+              "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-orders",
+              "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-waitlistorders",
+              "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-welcome",
+              "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-post-order",
+              "atom:capability:waitorder-service-waitlistorderservice:handles-modifywaitlistorderstatus",
+              "atom:capability:waitorder-service-waitlistorderservice:handles-updateorder",
+              "atom:capability:waitorder-service-waitlistorderservice:serves-findorderbyid",
+              "atom:component:waitorder-config-securityconfig",
+              "atom:component:waitorder-controller-waitlistordercontroller",
+              "atom:component:waitorder-entity-waitlistorder",
+              "atom:component:waitorder-entity-waitlistorderstatus",
+              "atom:component:waitorder-entity-waitlistordervo",
+              "atom:component:waitorder-repository-waitlistorderrepository",
+              "atom:component:waitorder-service-impl-waitlistorderserviceimpl",
+              "atom:component:waitorder-service-waitlistorderservice",
+              "atom:component:waitorder-utils-pollthread"
+            ],
+            "contextRef": "ctx:wait-order-surface",
+            "objectKind": "nerveVertex"
+          }
+        ]
+      },
+      "dimensions": {
+        "H0": 3,
+        "H1": 1
+      },
+      "evaluator": "ag.cech-obstruction",
+      "invariantId": "cech-cohomology:profile:train-ticket-status-convention@1",
+      "kind": "cech-h1-rank",
+      "method": "finite-f2-incidence-graph-cochain@1",
+      "methodStatus": "finite_f2_cech_computed",
+      "nerveShape": {
+        "b1": 1,
+        "capacityLowerBound": 0,
+        "eulerCharacteristic": 2,
+        "isForest": false,
+        "oneSkeletonB1": 1
+      },
+      "observedCocycle": {
+        "classNonzero": false,
+        "mismatchSupportRefs": [
+          "atom:semantic:cancel-surface:cech-section-order-status-code",
+          "atom:semantic:execute-surface:cech-section-order-status-code",
+          "atom:semantic:order-surface:cech-section-order-status-code",
+          "atom:semantic:preserve-surface:cech-section-order-status-code",
+          "atom:semantic:wait-order-surface:cech-section-order-status-code"
+        ],
+        "representative": [
+          {
+            "edge": "ctx:cancel-surface->ctx:order-surface",
+            "sourceContext": "ctx:cancel-surface",
+            "supportAtomRefs": [
+              "atom:semantic:cancel-surface:cech-section-order-status-code",
+              "atom:semantic:order-surface:cech-section-order-status-code"
+            ],
+            "targetContext": "ctx:order-surface",
+            "value": 1
+          },
+          {
+            "edge": "ctx:execute-surface->ctx:order-surface",
+            "sourceContext": "ctx:execute-surface",
+            "supportAtomRefs": [
+              "atom:semantic:execute-surface:cech-section-order-status-code",
+              "atom:semantic:order-surface:cech-section-order-status-code"
+            ],
+            "targetContext": "ctx:order-surface",
+            "value": 1
+          },
+          {
+            "edge": "ctx:wait-order-surface->ctx:preserve-surface",
+            "sourceContext": "ctx:wait-order-surface",
+            "supportAtomRefs": [
+              "atom:semantic:preserve-surface:cech-section-order-status-code",
+              "atom:semantic:wait-order-surface:cech-section-order-status-code"
+            ],
+            "targetContext": "ctx:preserve-surface",
+            "value": 1
+          }
+        ]
+      },
+      "observedEdgeCount": 5,
+      "rankD0": 4,
+      "reason": "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction",
+      "representation": {
+        "boundaryNote": "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION is relative to the selected abelian coefficient sheaf; non-abelian torsor, stacky descent, and gerbe obstructions are not excluded.",
+        "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
+        "classSupport": {
+          "edgeRefs": [
+            "ctx:cancel-surface->ctx:order-surface",
+            "ctx:execute-surface->ctx:order-surface",
+            "ctx:wait-order-surface->ctx:preserve-surface"
+          ],
+          "kind": "selected-cover-edge-support",
+          "supportAtomRefs": [
+            "atom:semantic:cancel-surface:cech-section-order-status-code",
+            "atom:semantic:execute-surface:cech-section-order-status-code",
+            "atom:semantic:order-surface:cech-section-order-status-code",
+            "atom:semantic:preserve-surface:cech-section-order-status-code",
+            "atom:semantic:wait-order-surface:cech-section-order-status-code"
+          ]
+        },
+        "coefficient": "F2",
+        "contextCount": 7,
+        "coverNerveProjection": {
+          "coverRef": "cover:order-status-convention-surface",
+          "edges": [
+            {
+              "edgeId": "ctx:cancel-surface->ctx:order-other-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:cancel-surface",
+              "supportAtomRefs": [],
+              "targetContextRef": "ctx:order-other-surface",
+              "value": 0
+            },
+            {
+              "edgeId": "ctx:cancel-surface->ctx:order-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:cancel-surface",
+              "supportAtomRefs": [
+                "atom:semantic:cancel-surface:cech-section-order-status-code",
+                "atom:semantic:order-surface:cech-section-order-status-code"
+              ],
+              "targetContextRef": "ctx:order-surface",
+              "value": 1
+            },
+            {
+              "edgeId": "ctx:execute-surface->ctx:order-other-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:execute-surface",
+              "supportAtomRefs": [],
+              "targetContextRef": "ctx:order-other-surface",
+              "value": 0
+            },
+            {
+              "edgeId": "ctx:execute-surface->ctx:order-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:execute-surface",
+              "supportAtomRefs": [
+                "atom:semantic:execute-surface:cech-section-order-status-code",
+                "atom:semantic:order-surface:cech-section-order-status-code"
+              ],
+              "targetContextRef": "ctx:order-surface",
+              "value": 1
+            },
+            {
+              "edgeId": "ctx:wait-order-surface->ctx:preserve-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:wait-order-surface",
+              "supportAtomRefs": [
+                "atom:semantic:preserve-surface:cech-section-order-status-code",
+                "atom:semantic:wait-order-surface:cech-section-order-status-code"
+              ],
+              "targetContextRef": "ctx:preserve-surface",
+              "value": 1
+            }
+          ],
+          "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
+          "faces": [],
+          "h2CoherenceVisualized": false,
+          "vertices": [
+            {
+              "atomRefs": [
+                "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+                "atom:authority:cancel-securityconfig:allowscrossorigin",
+                "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:cancel-securityconfig:requiresrole-api",
+                "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-orderid-loginid",
+                "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-refound",
+                "atom:capability:cancel-cancelcontroller:exposesendpoint-welcome",
+                "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+                "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+                "atom:component:cancel-cancelapplication",
+                "atom:component:cancel-cancelcontroller",
+                "atom:component:cancel-cancelservice",
+                "atom:component:cancel-cancelserviceimpl",
+                "atom:component:cancel-getaccountbyidinfo",
+                "atom:component:cancel-getaccountbyidresult",
+                "atom:component:cancel-getorderbyidinfo",
+                "atom:component:cancel-securityconfig",
+                "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+                "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+                "atom:contract:cancel-cancelserviceimpl:requires-forwardedauthorizationheader",
+                "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+                "atom:contract:cancel-getaccountbyidinfo:shapedas",
+                "atom:contract:cancel-getaccountbyidresult:shapedas",
+                "atom:contract:cancel-getorderbyidinfo:shapedas"
+              ],
+              "contextRef": "ctx:cancel-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:execute.config.SecurityConfig:allows-cross-origin",
+                "atom:authority:execute.config.SecurityConfig:checks-permission-jwt-filter",
+                "atom:authority:execute.config.SecurityConfig:permits-unauthenticated",
+                "atom:authority:execute.config.SecurityConfig:requires-role",
+                "atom:authority:execute.controller.ExecuteControlller:allows-cross-origin",
+                "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-collect-ticket",
+                "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-execute-ticket",
+                "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-welcome",
+                "atom:capability:ts-execute-service-executeserviceimpl:handlescommand-ticketcollect",
+                "atom:capability:ts-execute-service-executeserviceimpl:handlescommand-ticketexecute",
+                "atom:component:execute.ExecuteApplication",
+                "atom:component:execute.config.SecurityConfig",
+                "atom:component:execute.controller.ExecuteControlller",
+                "atom:component:ts-execute-service",
+                "atom:component:ts-execute-service-executeservice",
+                "atom:component:ts-execute-service-executeserviceimpl",
+                "atom:relation:execute.config.SecurityConfig:depends-on-jwt-filter",
+                "atom:relation:execute.controller.ExecuteControlller:depends-on-execute-service",
+                "atom:relation:ts-execute-service-application-yml:dependson-nacos-discovery",
+                "atom:relation:ts-execute-service-executeserviceimpl:calls-ts-order-other-service",
+                "atom:relation:ts-execute-service-executeserviceimpl:calls-ts-order-service",
+                "atom:semantic:ts-execute-service-executeserviceimpl:meansinuse-headers-nulled",
+                "atom:semantic:ts-execute-service-executeserviceimpl:meansinuse-order-status-enum",
+                "atom:semantic:ts-execute-service-executeserviceimpl:statusgates-response-status"
+              ],
+              "contextRef": "ctx:execute-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:other.config.SecurityConfig:permitsUnauthenticated:orderOther-base",
+                "atom:authority:ts-order-other-service.securityconfig:allowscrossorigin-corsconfigurer",
+                "atom:authority:ts-order-other-service.securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:ts-order-other-service.securityconfig:requiresrole-admin-orderother-admin",
+                "atom:authority:ts-order-other-service.securityconfig:requiresrole-post-put-delete-orderother",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-create",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-update",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-calculatesold",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-create",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-delete",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-findall",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-getbyid",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-modify",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-pay",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-price",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-query",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-refresh",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-save",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-security",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-tickets",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-welcome",
+                "atom:component:other.OrderOtherApplication",
+                "atom:component:other.config.SecurityConfig",
+                "atom:component:other.controller.OrderOtherController"
+              ],
+              "contextRef": "ctx:order-other-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:order.config.SecurityConfig:permitsUnauthenticated:order-base",
+                "atom:authority:ts-order-service.ordercontroller:allowscrossorigin-endpoint-annotations",
+                "atom:authority:ts-order-service.securityconfig:allowscrossorigin-corsconfigurer",
+                "atom:authority:ts-order-service.securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:ts-order-service.securityconfig:requiresrole-admin-order-admin",
+                "atom:authority:ts-order-service.securityconfig:requiresrole-post-put-delete-order",
+                "atom:capability:order.repository.orderrepository:serves-query-by-account-id",
+                "atom:capability:order.repository.orderrepository:serves-query-by-travel-date-and-train-number",
+                "atom:capability:order.service.orderservice:handles-command-add-new-order",
+                "atom:capability:order.service.orderservice:handles-command-cancel-order-declared",
+                "atom:capability:order.service.orderservice:handles-command-delete-order",
+                "atom:capability:order.service.orderservice:handles-command-modify-order",
+                "atom:capability:order.service.orderservice:handles-command-pay-order-declared",
+                "atom:capability:order.service.orderservice:handles-command-update-order",
+                "atom:capability:order.service.orderservice:serves-query-find-order-by-id",
+                "atom:capability:order.service.orderserviceimpl:handles-command-alter-order",
+                "atom:capability:order.service.orderserviceimpl:handles-command-cancel-order",
+                "atom:capability:order.service.orderserviceimpl:handles-command-create",
+                "atom:capability:order.service.orderserviceimpl:handles-command-pay-order",
+                "atom:capability:order.service.orderserviceimpl:serves-query-order-price",
+                "atom:capability:order.service.orderserviceimpl:serves-query-orders-with-filter-flags",
+                "atom:capability:order.service.orderserviceimpl:serves-query-sold-tickets",
+                "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-create",
+                "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-update"
+              ],
+              "contextRef": "ctx:order-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:preserveother-controller:allowscrossorigin-method-level",
+                "atom:authority:preserveother-securityconfig:allowscrossorigin-global",
+                "atom:authority:preserveother-securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:preserveother-securityconfig:requiresrole-admin-user",
+                "atom:capability:preserveother-controller:exposesendpoint-preserveother",
+                "atom:capability:preserveother-controller:exposesendpoint-welcome",
+                "atom:capability:preserveother-serviceimpl:preserve-orchestration",
+                "atom:component:preserveother-application-yml",
+                "atom:component:preserveother-controller",
+                "atom:component:preserveother-queues",
+                "atom:component:preserveother-rabbitsend",
+                "atom:component:preserveother-securityconfig",
+                "atom:component:preserveother-service-iface",
+                "atom:component:preserveother-serviceimpl",
+                "atom:component:preserveother.preserveotherapplication",
+                "atom:contract:preserveother-serviceimpl:order-dto-shape",
+                "atom:effect:preserveother-rabbitsend-publishes-email-queue",
+                "atom:relation:preserveother-controller:dependson-preserveother-service",
+                "atom:relation:preserveother-rabbitsend:dependson-preserveother-queues",
+                "atom:relation:preserveother-serviceimpl:calls-assurance-service",
+                "atom:relation:preserveother-serviceimpl:calls-basic-service",
+                "atom:relation:preserveother-serviceimpl:calls-consign-service",
+                "atom:relation:preserveother-serviceimpl:calls-contacts-service",
+                "atom:relation:preserveother-serviceimpl:calls-food-service"
+              ],
+              "contextRef": "ctx:preserve-other-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:preserve-controller:allowscrossorigin-method-level",
+                "atom:authority:preserve-securityconfig:allowscrossorigin-global",
+                "atom:authority:preserve-securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:preserve-securityconfig:requiresrole-admin-user",
+                "atom:capability:preserve-controller:exposesendpoint-preserve",
+                "atom:capability:preserve-controller:exposesendpoint-welcome",
+                "atom:capability:preserve-serviceimpl:preserve-orchestration",
+                "atom:component:preserve-application",
+                "atom:component:preserve-application-yml",
+                "atom:component:preserve-controller",
+                "atom:component:preserve-queues",
+                "atom:component:preserve-rabbitsend",
+                "atom:component:preserve-securityconfig",
+                "atom:component:preserve-service-iface",
+                "atom:component:preserve-serviceimpl",
+                "atom:contract:preserve-serviceimpl:order-dto-shape",
+                "atom:effect:preserve-rabbitsend-publishes-email-queue",
+                "atom:relation:preserve-controller:dependson-preserve-service",
+                "atom:relation:preserve-rabbitsend:dependson-preserve-queues",
+                "atom:relation:preserve-serviceimpl:calls-assurance-service",
+                "atom:relation:preserve-serviceimpl:calls-basic-service",
+                "atom:relation:preserve-serviceimpl:calls-consign-service",
+                "atom:relation:preserve-serviceimpl:calls-contacts-service",
+                "atom:relation:preserve-serviceimpl:calls-food-service"
+              ],
+              "contextRef": "ctx:preserve-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:waitorder-config-securityconfig:allows-cross-origin-all-origins",
+                "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-order-wildcard",
+                "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-swagger-paths",
+                "atom:authority:waitorder-config-securityconfig:requires-role-delete-order-admin-or-user",
+                "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-only",
+                "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-or-user",
+                "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-only",
+                "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-or-user",
+                "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-orders",
+                "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-waitlistorders",
+                "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-welcome",
+                "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-post-order",
+                "atom:capability:waitorder-service-waitlistorderservice:handles-modifywaitlistorderstatus",
+                "atom:capability:waitorder-service-waitlistorderservice:handles-updateorder",
+                "atom:capability:waitorder-service-waitlistorderservice:serves-findorderbyid",
+                "atom:component:waitorder-config-securityconfig",
+                "atom:component:waitorder-controller-waitlistordercontroller",
+                "atom:component:waitorder-entity-waitlistorder",
+                "atom:component:waitorder-entity-waitlistorderstatus",
+                "atom:component:waitorder-entity-waitlistordervo",
+                "atom:component:waitorder-repository-waitlistorderrepository",
+                "atom:component:waitorder-service-impl-waitlistorderserviceimpl",
+                "atom:component:waitorder-service-waitlistorderservice",
+                "atom:component:waitorder-utils-pollthread"
+              ],
+              "contextRef": "ctx:wait-order-surface",
+              "objectKind": "nerveVertex"
+            }
+          ]
+        },
+        "dimensions": {
+          "H0": 3,
+          "H1": 1
+        },
+        "evaluator": "ag.cech-obstruction",
+        "invariantId": "cech-cohomology:profile:train-ticket-status-convention@1",
+        "method": "finite-f2-incidence-graph-cochain@1",
+        "methodStatus": "finite_f2_cech_computed",
+        "nerveShape": {
+          "b1": 1,
+          "capacityLowerBound": 0,
+          "eulerCharacteristic": 2,
+          "isForest": false,
+          "oneSkeletonB1": 1
+        },
+        "observedCocycle": {
+          "classNonzero": false,
+          "mismatchSupportRefs": [
+            "atom:semantic:cancel-surface:cech-section-order-status-code",
+            "atom:semantic:execute-surface:cech-section-order-status-code",
+            "atom:semantic:order-surface:cech-section-order-status-code",
+            "atom:semantic:preserve-surface:cech-section-order-status-code",
+            "atom:semantic:wait-order-surface:cech-section-order-status-code"
+          ],
+          "representative": [
+            {
+              "edge": "ctx:cancel-surface->ctx:order-surface",
+              "sourceContext": "ctx:cancel-surface",
+              "supportAtomRefs": [
+                "atom:semantic:cancel-surface:cech-section-order-status-code",
+                "atom:semantic:order-surface:cech-section-order-status-code"
+              ],
+              "targetContext": "ctx:order-surface",
+              "value": 1
+            },
+            {
+              "edge": "ctx:execute-surface->ctx:order-surface",
+              "sourceContext": "ctx:execute-surface",
+              "supportAtomRefs": [
+                "atom:semantic:execute-surface:cech-section-order-status-code",
+                "atom:semantic:order-surface:cech-section-order-status-code"
+              ],
+              "targetContext": "ctx:order-surface",
+              "value": 1
+            },
+            {
+              "edge": "ctx:wait-order-surface->ctx:preserve-surface",
+              "sourceContext": "ctx:wait-order-surface",
+              "supportAtomRefs": [
+                "atom:semantic:preserve-surface:cech-section-order-status-code",
+                "atom:semantic:wait-order-surface:cech-section-order-status-code"
+              ],
+              "targetContext": "ctx:preserve-surface",
+              "value": 1
+            }
+          ]
+        },
+        "observedEdgeCount": 5,
+        "rankD0": 4,
+        "reason": "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction",
+        "restrictionEdgeCount": 5,
+        "selectedCoverRef": "cover:order-status-convention-surface",
+        "selectedH2": {
+          "dimension": 0,
+          "reason": "no selected 2-simplices are present in the finite incidence graph complex",
+          "status": "computed_for_selected_1_skeleton"
+        },
+        "status": "computed",
+        "theorem12_4Discharge": {
+          "conclusionCode": null,
+          "coverShapeExcludesGluingObstruction": false,
+          "isForest": {
+            "checkedBy": null,
+            "holds": false,
+            "status": "not_discharged"
+          },
+          "restrictionMapsSurjective": {
+            "checkedBy": null,
+            "holds": false,
+            "status": "not_discharged"
+          },
+          "restrictionSurjectivityWitnesses": [],
+          "theoremRef": "part4/12.4",
+          "tripleOverlapsEmpty": {
+            "checkedBy": "selected cover has no projected triple-overlap faces",
+            "holds": true,
+            "status": "discharged_by_check"
+          }
+        },
+        "unobservedEdgeRefs": []
+      },
+      "restrictionEdgeCount": 5,
+      "selectedCoverRef": "cover:order-status-convention-surface",
+      "selectedH2": {
+        "dimension": 0,
+        "reason": "no selected 2-simplices are present in the finite incidence graph complex",
+        "status": "computed_for_selected_1_skeleton"
+      },
+      "status": "computed",
+      "theorem12_4Discharge": {
+        "conclusionCode": null,
+        "coverShapeExcludesGluingObstruction": false,
+        "isForest": {
+          "checkedBy": null,
+          "holds": false,
+          "status": "not_discharged"
+        },
+        "restrictionMapsSurjective": {
+          "checkedBy": null,
+          "holds": false,
+          "status": "not_discharged"
+        },
+        "restrictionSurjectivityWitnesses": [],
+        "theoremRef": "part4/12.4",
+        "tripleOverlapsEmpty": {
+          "checkedBy": "selected cover has no projected triple-overlap faces",
+          "holds": true,
+          "status": "discharged_by_check"
+        }
+      },
+      "unobservedEdgeRefs": [],
+      "value": {
+        "b1": 1,
+        "capacityLowerBound": 0,
+        "eulerCharacteristic": 2,
+        "isForest": false,
+        "oneSkeletonB1": 1
+      }
+    },
+    {
+      "b1NerveReading": {
+        "distinction": "oneSkeletonB1 counts graph cycles before selected triple-overlap faces are quotiented; nerveComplexB1 includes those faces and may be smaller.",
+        "nerveComplexB1": 1,
+        "nerveComplexMethod": "finite-f2-simplicial-homology-with-selected-2-faces@1",
+        "nonClaim": "capacityLowerBound and b1NerveReading are capacity/accounting readings, not new structural verdicts and not concrete H1 class existence claims.",
+        "oneSkeletonB1": 1,
+        "oneSkeletonMethod": "graph-cycle-rank@1"
+      },
+      "boundaryNote": "Part IV principle 11.3 is referenced only as the Cohomological Non-Claim boundary; this row does not import any Part VII numbering or create a viewer verdict.",
+      "capacityFormula": "max(0, dimC1 - dimC0 - dimC2)",
+      "capacityLowerBound": 0,
+      "coefficient": "F2",
+      "dimensions": {
+        "dimC0": 7,
+        "dimC1": 5,
+        "dimC2": 0
+      },
+      "eulerCharacteristic": 2,
+      "eulerFormula": "dimC0 - dimC1 + dimC2",
+      "evaluator": "ag.cech-obstruction",
+      "invariantId": "topological-debt-capacity:profile:train-ticket-status-convention@1",
+      "kind": "cech-h1-rank",
+      "measuredCechVerdictEcho": {
+        "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-status-convention@1",
+        "evaluator": "ag.cech-obstruction",
+        "h1ClassNonzero": false,
+        "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
+      },
+      "method": "finite-f2-rank-nullity-nerve-capacity@1",
+      "methodStatus": "finite_f2_nerve_capacity_computed",
+      "representation": {
+        "b1NerveReading": {
+          "distinction": "oneSkeletonB1 counts graph cycles before selected triple-overlap faces are quotiented; nerveComplexB1 includes those faces and may be smaller.",
+          "nerveComplexB1": 1,
+          "nerveComplexMethod": "finite-f2-simplicial-homology-with-selected-2-faces@1",
+          "nonClaim": "capacityLowerBound and b1NerveReading are capacity/accounting readings, not new structural verdicts and not concrete H1 class existence claims.",
+          "oneSkeletonB1": 1,
+          "oneSkeletonMethod": "graph-cycle-rank@1"
+        },
+        "boundaryNote": "Part IV principle 11.3 is referenced only as the Cohomological Non-Claim boundary; this row does not import any Part VII numbering or create a viewer verdict.",
+        "capacityFormula": "max(0, dimC1 - dimC0 - dimC2)",
+        "capacityLowerBound": 0,
+        "coefficient": "F2",
+        "dimensions": {
+          "dimC0": 7,
+          "dimC1": 5,
+          "dimC2": 0
+        },
+        "eulerCharacteristic": 2,
+        "eulerFormula": "dimC0 - dimC1 + dimC2",
+        "evaluator": "ag.cech-obstruction",
+        "invariantId": "topological-debt-capacity:profile:train-ticket-status-convention@1",
+        "measuredCechVerdictEcho": {
+          "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-status-convention@1",
+          "evaluator": "ag.cech-obstruction",
+          "h1ClassNonzero": false,
+          "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
+        },
+        "method": "finite-f2-rank-nullity-nerve-capacity@1",
+        "methodStatus": "finite_f2_nerve_capacity_computed",
+        "selectedCoverRef": "cover:order-status-convention-surface",
+        "status": "computed",
+        "structuralVerdictRef": null
+      },
+      "selectedCoverRef": "cover:order-status-convention-surface",
+      "status": "computed",
+      "structuralVerdictRef": null,
+      "value": {}
+    }
+  ],
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap-status-variant.json",
+      "sha256": "4b58261bbbbb2ec9e50f5baac19f8a0116497c785a8ffd6fb9b8a809fce3834b"
+    },
+    "lawPolicy": {
+      "path": "input:law-policy-status.json",
+      "sha256": "3eadf3fe287a543585b90e88e426ddee8284fee1978bffe27e8f8b919303a9de"
+    },
+    "lawSurface": {
+      "path": "input:law-surface-status.json",
+      "sha256": "a861f2b9d4b7f5528cb5733868f185cb8cac6d6e056da28e61f8e4704a1c7be8"
+    },
+    "measurementProfile": {
+      "path": "input:measurement-profile-status.json",
+      "sha256": "27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement-profile-status.json",
+        "sha256": "27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "23c50f7d2fdc1f9b7159d3184761595f018ef03cb7b6430404ddb1c1bbdb0ad6"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "4546e2c0edc04fd62bdbfd92ecb1e171670709a86146e70c582e72f2bf9e8342",
+      "status": "computed"
+    }
+  },
+  "nonConclusions": [
+    "ArchSig v0.5.3 foundation packet is computed from input:archmap-status-variant.json and input:law-policy-status.json; it is not a Lean proof object.",
+    "Unmeasured AG evaluator rows are schema handoff rows, not measured zero.",
+    "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
+  ],
+  "packetId": "measurement:archmap:train-ticket-fullbuild@1",
+  "profile": {
+    "certSelector": "finite-certificate@1",
+    "coefficient": "F2",
+    "coverRef": "cover:order-status-convention-surface",
+    "domain": "finite-poset-site",
+    "effCoeff": "finite-linear-algebra@1",
+    "finiteBounds": {
+      "maxBoundaryResidueVariables": 16,
+      "maxCoherenceContexts": 12,
+      "maxLaplacianCells": 16,
+      "maxPeriodCycles": 16,
+      "maxSquareFreeWitnessVariables": 12,
+      "maxTorWitnessVariables": 12,
+      "maxTransferTargets": 16
+    },
+    "nonZeroPredicate": "rank-positive@1",
+    "profileId": "profile:train-ticket-status-convention@1",
+    "resolutionSelector": "taylor@1",
+    "schema": "measurement-profile/v0.5.3",
+    "siteRef": "archmap:/contexts",
+    "verdictDiscipline": "five-valued-structural-verdict@1",
+    "zeroPredicate": "rank-zero@1"
+  },
+  "runId": "run:ad99b1fd221a",
+  "schema": "archsig-measurement-packet/v0.5.3",
+  "structuralVerdict": [
+    {
+      "dependsOnAssumptions": [
+        "assumption:part4-11-1:coefficient-object-satisfies-descent",
+        "assumption:part4-11-1:local-adjustment-action-is-fixed-and-effective",
+        "assumption:part4-11-1:local-lawful-sections-form-an-effective-Ob-U-torsor",
+        "assumption:part4-12-3:constant-coefficient-nerve-b1-comparison",
+        "assumption:part4-12-4:restriction-maps-are-surjective",
+        "assumption:part4-12-4:selected-Cech-nerve-is-a-forest-with-no-triple-overlap-faces",
+        "assumption:part8-B-8-2:F2-finite-coefficient-field",
+        "assumption:part8-B-8-2:Leray---acyclicity-comparison-to-sheaf-cohomology",
+        "assumption:part8-B-8-2:cover-relative-Cech-reading"
+      ],
+      "evaluator": "ag.cech-obstruction",
+      "evidence": {
+        "computedInvariantRefs": [
+          "cech-cohomology:profile:train-ticket-status-convention@1"
+        ],
+        "sourceRefs": []
+      },
+      "law": "surface:cech-surface-v052",
+      "reason": "finite F2 Cech 1-cocycle is zero or a coboundary on the selected cover",
+      "target": {
+        "classRef": "computedInvariants/cech-cohomology:profile:train-ticket-status-convention@1",
+        "coefficient": "F2",
+        "coverRef": "cover:order-status-convention-surface",
+        "kind": "cover-relative-cech-h1-class",
+        "scopeSize": {
+          "contexts": 1,
+          "edges": 1,
+          "triangles": 0
+        }
+      },
+      "verdict": "measured_zero",
+      "verdictData": {
+        "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-status-convention@1",
+        "inScope": true,
+        "methodStatus": "finite_f2_cech_computed",
+        "nonZero": false,
+        "zero": true
+      },
+      "verdictRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/finite-f2-cech-computed"
+    }
+  ],
+  "suppliedData": [
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "archmap/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "archmap",
+      "sourceArtifactRef": "input:archmap-status-variant.json",
+      "suppliedId": "supplied:archmap"
+    },
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "law-policy/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "law-policy",
+      "sourceArtifactRef": "input:law-policy-status.json",
+      "suppliedId": "supplied:law-policy"
+    },
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "measurement-profile/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "measurement-profile",
+      "sourceArtifactRef": "input:measurement-profile-status.json",
+      "suppliedId": "supplied:measurement-profile"
+    },
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "law-equation-surface/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "law-equation-surface",
+      "sourceArtifactRef": "input:law-surface-status.json",
+      "suppliedId": "supplied:law-surface"
+    }
+  ],
+  "toolVersion": "0.5.3"
+}

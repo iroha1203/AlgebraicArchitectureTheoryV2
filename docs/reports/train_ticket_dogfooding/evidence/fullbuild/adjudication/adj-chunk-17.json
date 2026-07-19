@@ -1,0 +1,2498 @@
+{
+  "chunkId": "chunk-17",
+  "adjudications": [
+    {
+      "key": "authority|seat.config.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-credentials-false-max-age-3600-on-/**",
+      "candidateAtomId": "atom:authority:seat.config.security-config:allows-cross-origin",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/config/SecurityConfig.java:46-58 -- the corsConfigurer bean registers a global CorsRegistry mapping on /** (ALL origins/methods/headers, credentials false, maxAge 3600), a declaration distinct from the per-endpoint @CrossOrigin annotations on SeatController. Kept as its own SecurityConfig-subject atom; pass-b's row-0 (all-origins... global-mapping) folds this bean together with two SeatController lines into one atom and is rejected below as a conflation of two distinct declarations.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:authority:seat.config.security-config:allows-cross-origin",
+        "kind": "authority",
+        "subject": "seat.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "wildcard-origin-methods-and-headers-credentials-false-max-age-3600-on-/**",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:52",
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:56"
+        ]
+      }
+    },
+    {
+      "key": "authority|seat.config.SecurityConfig|authority|checksPermission|jwt-filter-inserted-before-username-password-authentication-filter",
+      "candidateAtomId": "atom:authority:seat.config.security-config:checks-permission-jwt-filter",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/config/SecurityConfig.java:78 -- .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class) confirmed. Pass-b never produced a checksPermission-predicate atom for either SecurityConfig class in this chunk; kept as a pass-a-only observation.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:authority:seat.config.security-config:checks-permission-jwt-filter",
+        "kind": "authority",
+        "subject": "seat.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "checksPermission",
+        "object": "jwt-filter-inserted-before-username-password-authentication-filter",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:78"
+        ]
+      }
+    },
+    {
+      "key": "authority|seat.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-images-and-configuration-and-swagger-resources-and-v2-paths",
+      "candidateAtomId": "atom:authority:seat.config.security-config:permits-unauthenticated-swagger",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/config/SecurityConfig.java:72-75 -- antMatchers(\"/swagger-ui.html\", \"/webjars/**\", \"/images/**\", \"/configuration/**\", \"/swagger-resources/**\", \"/v2/**\").permitAll() confirmed, including /images/**. Same fact as pass-b's row 1, which omits the images token from its object text; kept using this pass's more complete object.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:authority:seat.config.security-config:permits-unauthenticated-swagger",
+        "kind": "authority",
+        "subject": "seat.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-and-webjars-and-images-and-configuration-and-swagger-resources-and-v2-paths",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:74",
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:75"
+        ]
+      }
+    },
+    {
+      "key": "authority|seat.config.SecurityConfig|authority|requiresRole|role-admin-required-on-POST-/api/v1/seatservice/seats",
+      "candidateAtomId": "atom:authority:seat.config.security-config:requires-role-on-seats-post",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/config/SecurityConfig.java:73 -- .antMatchers(HttpMethod.POST, \"/api/v1/seatservice/seats\").hasAnyRole(\"ADMIN\") confirmed. Same fact as pass-b's row 2; canonical object uses pass-b's exact-case \"ADMIN\" literal matching the source string.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:authority:seat.config.security-config:requires-role-on-seats-post",
+        "kind": "authority",
+        "subject": "seat.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "role-ADMIN-required-on-POST-/api/v1/seatservice/seats",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:73"
+        ]
+      }
+    },
+    {
+      "key": "authority|seat.controller.SeatController|authority|allowsCrossOrigin|wildcard-origin-on-/api/v1/seatservice/seats-and-left_tickets-endpoints",
+      "candidateAtomId": "atom:authority:seat.controller.seat-controller:allows-cross-origin",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:38,53 -- @CrossOrigin(origins=\"*\") sits directly on the create and getLeftTicketOfInterval handler methods, a declaration distinct from the SecurityConfig CorsRegistry bean (kept separately above). Pass-b's row 0 conflates both declarations under the SecurityConfig subject and is rejected there as a conflation, so this controller-subject atom is kept as-is.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:authority:seat.controller.seat-controller:allows-cross-origin",
+        "kind": "authority",
+        "subject": "seat.controller.SeatController",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "wildcard-origin-on-/api/v1/seatservice/seats-and-left_tickets-endpoints",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:38",
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:53"
+        ]
+      }
+    },
+    {
+      "key": "authority|security.config.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-credentials-false-max-age-3600-on-/**",
+      "candidateAtomId": "atom:authority:security.config.security-config:allows-cross-origin",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/config/SecurityConfig.java:46-59 -- same corsConfigurer bean pattern as seat service, global /** mapping. Pass-b's row 3 conflates this with two SecurityController @CrossOrigin lines; rejected there, kept here as the precise config-subject atom.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:authority:security.config.security-config:allows-cross-origin",
+        "kind": "authority",
+        "subject": "security.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "wildcard-origin-methods-and-headers-credentials-false-max-age-3600-on-/**",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:51",
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:55"
+        ]
+      }
+    },
+    {
+      "key": "authority|security.config.SecurityConfig|authority|checksPermission|jwt-filter-inserted-before-username-password-authentication-filter",
+      "candidateAtomId": "atom:authority:security.config.security-config:checks-permission-jwt-filter",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/config/SecurityConfig.java:76 -- .addFilterBefore(new JWTFilter(), ...) confirmed. No pass-b counterpart exists for this predicate on either config class.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:authority:security.config.security-config:checks-permission-jwt-filter",
+        "kind": "authority",
+        "subject": "security.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "checksPermission",
+        "object": "jwt-filter-inserted-before-username-password-authentication-filter",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:76"
+        ]
+      }
+    },
+    {
+      "key": "authority|security.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-images-and-configuration-and-swagger-resources-and-v2-paths",
+      "candidateAtomId": "atom:authority:security.config.security-config:permits-unauthenticated-swagger",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/config/SecurityConfig.java:72-73 -- antMatchers(\"/swagger-ui.html\", \"/webjars/**\", \"/images/**\", \"/configuration/**\", \"/swagger-resources/**\", \"/v2/**\").permitAll() confirmed including /images/**. Pass-b's row 4 omits images from its object text (same systematic drop seen on the seat-service pair); kept using this pass's more complete object.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:authority:security.config.security-config:permits-unauthenticated-swagger",
+        "kind": "authority",
+        "subject": "security.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-and-webjars-and-images-and-configuration-and-swagger-resources-and-v2-paths",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:72",
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:73"
+        ]
+      }
+    },
+    {
+      "key": "authority|security.config.SecurityConfig|authority|requiresRole|role-admin-or-user-required-on-/api/v1/securityservice/**",
+      "candidateAtomId": "atom:authority:security.config.security-config:requires-role-on-service-root",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/config/SecurityConfig.java:71 -- .antMatchers(\"/api/v1/securityservice/**\").hasAnyRole(\"ADMIN\", \"USER\") confirmed. Same fact as pass-b's row 5; canonical object uses pass-b's exact-case ADMIN/USER literals.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:authority:security.config.security-config:requires-role-on-service-root",
+        "kind": "authority",
+        "subject": "security.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "role-ADMIN-or-USER-required-on-/api/v1/securityservice/**",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:71"
+        ]
+      }
+    },
+    {
+      "key": "authority|security.controller.SecurityController|authority|allowsCrossOrigin|wildcard-origin-on-/api/v1/securityservice/securityConfigs-endpoints",
+      "candidateAtomId": "atom:authority:security.controller.security-controller:allows-cross-origin",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:31,38,45,52,59 -- all five securityConfigs handler methods (findAll/create/update/delete/check) each carry @CrossOrigin(origins=\"*\"). Pass-b's row 3 cites only 2 of these 5 lines and folds them into the SecurityConfig-subject bean atom; rejected there as an incomplete conflation, kept here as the complete controller-subject atom.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:authority:security.controller.security-controller:allows-cross-origin",
+        "kind": "authority",
+        "subject": "security.controller.SecurityController",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "wildcard-origin-on-/api/v1/securityservice/securityConfigs-endpoints",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:31",
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:38",
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:45",
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:52",
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:59"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.repository.RouteRepository|capability|handlesCommand|removeRouteById",
+      "candidateAtomId": "atom:capability:route.repository.route-repository:removes-route-by-id",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/repository/RouteRepository.java:47 -- void removeRouteById(String id) confirmed as a repository-level delete-by-id command. Pass-b captured no repository-level capability atoms for RouteRepository at all.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:route.repository.route-repository:removes-route-by-id",
+        "kind": "capability",
+        "subject": "route.repository.RouteRepository",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "removeRouteById",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:47"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.repository.RouteRepository|capability|servesQuery|findByIds-native-query-select-from-route-where-id-in",
+      "candidateAtomId": "atom:capability:route.repository.route-repository:finds-by-ids",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/repository/RouteRepository.java:31 -- @Query(value=\"SELECT * from route where id in ?1\", nativeQuery=true) List<Route> findByIds(...) confirmed. No pass-b repository-level counterpart.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:route.repository.route-repository:finds-by-ids",
+        "kind": "capability",
+        "subject": "route.repository.RouteRepository",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findByIds-native-query-select-from-route-where-id-in",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:31"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.repository.RouteRepository|capability|servesQuery|findByStartStationAndEndStation-derived-query",
+      "candidateAtomId": "atom:capability:route.repository.route-repository:finds-by-start-and-end-station",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/repository/RouteRepository.java:56 -- derived-query method ArrayList<Route> findByStartStationAndEndStation(...) confirmed (declared; RouteServiceImpl.getRouteByStartAndEnd instead filters findAll() in-memory in this chunk). No pass-b repository-level counterpart.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:route.repository.route-repository:finds-by-start-and-end-station",
+        "kind": "capability",
+        "subject": "route.repository.RouteRepository",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findByStartStationAndEndStation-derived-query",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:56"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.service.RouteServiceImpl|capability|handlesCommand|createAndModify",
+      "candidateAtomId": "atom:capability:route.service.route-service-impl:create-and-modify",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:67 and RouteServiceImpl.java:32 -- Response createAndModify(RouteInfo, HttpHeaders) is declared on the interface and implemented on the impl. Pass-b's row 6 states the identical capability under subject route.RouteService (interface) with the same refs; canonical subject normalized to the concrete RouteServiceImpl, matching how this pass attributes capabilities to implementation classes elsewhere in the chunk (e.g. SecurityService, where no impl exists so the interface is used instead).",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:create-and-modify",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "createAndModify",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:67",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:32"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.service.RouteServiceImpl|capability|handlesCommand|deleteRoute",
+      "candidateAtomId": "atom:capability:route.service.route-service-impl:delete-route",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:58 and RouteServiceImpl.java:69 -- deleteRoute confirmed on both interface and impl. Same fact as pass-b's row 7; canonical subject normalized to RouteServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:delete-route",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "deleteRoute",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:58",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:69"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.service.RouteServiceImpl|capability|servesQuery|getAllRoutes",
+      "candidateAtomId": "atom:capability:route.service.route-service-impl:get-all-routes",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:31 and RouteServiceImpl.java:124 -- getAllRoutes confirmed. Same fact as pass-b's row 8; canonical subject normalized to RouteServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:get-all-routes",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "getAllRoutes",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:31",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:124"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.service.RouteServiceImpl|capability|servesQuery|getRouteById",
+      "candidateAtomId": "atom:capability:route.service.route-service-impl:get-route-by-id",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:40 and RouteServiceImpl.java:81 -- getRouteById confirmed. Same fact as pass-b's row 9; canonical subject normalized to RouteServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:get-route-by-id",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "getRouteById",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:40",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:81"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.service.RouteServiceImpl|capability|servesQuery|getRouteByIds",
+      "candidateAtomId": "atom:capability:route.service.route-service-impl:get-route-by-ids",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:49 and RouteServiceImpl.java:93 -- getRouteByIds confirmed. Same fact as pass-b's row 10; canonical subject normalized to RouteServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:get-route-by-ids",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "getRouteByIds",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:49",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:93"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.service.RouteServiceImpl|capability|servesQuery|getRouteByStartAndEnd",
+      "candidateAtomId": "atom:capability:route.service.route-service-impl:get-route-by-start-and-end",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:23 and RouteServiceImpl.java:104 -- getRouteByStartAndEnd confirmed. Same fact as pass-b's row 11; canonical subject normalized to RouteServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:get-route-by-start-and-end",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "getRouteByStartAndEnd",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:23",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:104"
+        ]
+      }
+    },
+    {
+      "key": "capability|seat.controller.SeatController|capability|exposesEndpoint|GET-/api/v1/seatservice/welcome",
+      "candidateAtomId": "atom:capability:seat.controller.seat-controller:home",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:26-29 -- @GetMapping(\"/welcome\") home() confirmed. Same endpoint as pass-b's row 12; canonical predicate exposesEndpoint retained (both passes agree here).",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:seat.controller.seat-controller:home",
+        "kind": "capability",
+        "subject": "seat.controller.SeatController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/seatservice/welcome",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:26-29"
+        ]
+      }
+    },
+    {
+      "key": "capability|seat.controller.SeatController|capability|handlesCommand|POST-/api/v1/seatservice/seats",
+      "candidateAtomId": "atom:capability:seat.controller.seat-controller:create",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:38-43 -- @PostMapping(\"/seats\") create(...) confirmed as a state-mutating command (delegates to distributeSeat which allocates/persists a ticket). Same endpoint as pass-b's row 13, which labels it exposesEndpoint uniformly; this pass's finer handlesCommand predicate is kept as canonical since it captures the mutating nature pass-b's blanket exposesEndpoint label loses.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:seat.controller.seat-controller:create",
+        "kind": "capability",
+        "subject": "seat.controller.SeatController",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "POST-/api/v1/seatservice/seats",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:38-43"
+        ]
+      }
+    },
+    {
+      "key": "capability|seat.controller.SeatController|capability|servesQuery|POST-/api/v1/seatservice/seats/left_tickets",
+      "candidateAtomId": "atom:capability:seat.controller.seat-controller:get-left-ticket-of-interval",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:53-59 -- @PostMapping(\"/seats/left_tickets\") getLeftTicketOfInterval(...) confirmed as a read-only computed query despite the POST verb. Same endpoint as pass-b's row 14; this pass's servesQuery predicate is kept as canonical for the same reason as row 20.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:seat.controller.seat-controller:get-left-ticket-of-interval",
+        "kind": "capability",
+        "subject": "seat.controller.SeatController",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "POST-/api/v1/seatservice/seats/left_tickets",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:53-59"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.controller.SecurityController|capability|exposesEndpoint|GET-/api/v1/securityservice/welcome",
+      "candidateAtomId": "atom:capability:security.controller.security-controller:home",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:26-29 -- @GetMapping(\"/welcome\") home(...) confirmed. Same endpoint as pass-b's row 18.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:home",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/securityservice/welcome",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:26-29"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.controller.SecurityController|capability|handlesCommand|DELETE-/api/v1/securityservice/securityConfigs/{id}",
+      "candidateAtomId": "atom:capability:security.controller.security-controller:delete",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:52-57 -- @DeleteMapping(\"/securityConfigs/{id}\") delete(...) confirmed as a command. Same endpoint as pass-b's row 15; this pass's handlesCommand predicate kept as canonical over pass-b's blanket exposesEndpoint.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:delete",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "DELETE-/api/v1/securityservice/securityConfigs/{id}",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:52-57"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.controller.SecurityController|capability|handlesCommand|POST-/api/v1/securityservice/securityConfigs",
+      "candidateAtomId": "atom:capability:security.controller.security-controller:create",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:38-43 -- @PostMapping(\"/securityConfigs\") create(...) confirmed as a command. Same endpoint as pass-b's row 19; handlesCommand kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:create",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "POST-/api/v1/securityservice/securityConfigs",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:38-43"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.controller.SecurityController|capability|handlesCommand|PUT-/api/v1/securityservice/securityConfigs",
+      "candidateAtomId": "atom:capability:security.controller.security-controller:update",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:45-50 -- @PutMapping(\"/securityConfigs\") update(...) confirmed as a command. Same endpoint as pass-b's row 20; handlesCommand kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:update",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "PUT-/api/v1/securityservice/securityConfigs",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:45-50"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.controller.SecurityController|capability|servesQuery|GET-/api/v1/securityservice/securityConfigs",
+      "candidateAtomId": "atom:capability:security.controller.security-controller:find-all-security-config",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:32-36 -- @GetMapping(\"/securityConfigs\") findAllSecurityConfig(...) confirmed as read-only. Same endpoint as pass-b's row 16; servesQuery kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:find-all-security-config",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "GET-/api/v1/securityservice/securityConfigs",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:32-36"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.controller.SecurityController|capability|servesQuery|GET-/api/v1/securityservice/securityConfigs/{accountId}",
+      "candidateAtomId": "atom:capability:security.controller.security-controller:check",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:59-64 -- @GetMapping(\"/securityConfigs/{accountId}\") check(...) confirmed as read-only. Same endpoint as pass-b's row 17; servesQuery kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:check",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "GET-/api/v1/securityservice/securityConfigs/{accountId}",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:59-64"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.repository.SecurityRepository|capability|handlesCommand|deleteById",
+      "candidateAtomId": "atom:capability:security.repository.security-repository:delete-by-id",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/repository/SecurityRepository.java:25 -- void deleteById(String id) confirmed. Pass-b captured no repository-level capability atoms for SecurityRepository.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:security.repository.security-repository:delete-by-id",
+        "kind": "capability",
+        "subject": "security.repository.SecurityRepository",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "deleteById",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:25"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.repository.SecurityRepository|capability|servesQuery|findByName-derived-query",
+      "candidateAtomId": "atom:capability:security.repository.security-repository:find-by-name",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/repository/SecurityRepository.java:17 -- SecurityConfig findByName(String name) confirmed as a derived query. No pass-b repository-level counterpart.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:security.repository.security-repository:find-by-name",
+        "kind": "capability",
+        "subject": "security.repository.SecurityRepository",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findByName-derived-query",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:17"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.service.SecurityService|capability|handlesCommand|addNewSecurityConfig",
+      "candidateAtomId": "atom:capability:security.service.security-service:add-new-security-config",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/service/SecurityService.java:14 -- interface method Response addNewSecurityConfig(SecurityConfig, HttpHeaders) confirmed (no SecurityServiceImpl present in this chunk). Pass-b captured SecurityService only as a bare component with no capability atoms.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:security.service.security-service:add-new-security-config",
+        "kind": "capability",
+        "subject": "security.service.SecurityService",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "addNewSecurityConfig",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/service/SecurityService.java:14"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.service.SecurityService|capability|handlesCommand|deleteSecurityConfig",
+      "candidateAtomId": "atom:capability:security.service.security-service:delete-security-config",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/service/SecurityService.java:18 -- deleteSecurityConfig(String, HttpHeaders) confirmed. Pass-b has no capability atoms on this subject.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:security.service.security-service:delete-security-config",
+        "kind": "capability",
+        "subject": "security.service.SecurityService",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "deleteSecurityConfig",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/service/SecurityService.java:18"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.service.SecurityService|capability|handlesCommand|modifySecurityConfig",
+      "candidateAtomId": "atom:capability:security.service.security-service:modify-security-config",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/service/SecurityService.java:16 -- modifySecurityConfig(SecurityConfig, HttpHeaders) confirmed. Pass-b has no capability atoms on this subject.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:security.service.security-service:modify-security-config",
+        "kind": "capability",
+        "subject": "security.service.SecurityService",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "modifySecurityConfig",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/service/SecurityService.java:16"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.service.SecurityService|capability|servesQuery|check-account-id-against-security-config",
+      "candidateAtomId": "atom:capability:security.service.security-service:check",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/service/SecurityService.java:20 -- check(String accountId, HttpHeaders) confirmed as a read-only query. Pass-b has no capability atoms on this subject.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:security.service.security-service:check",
+        "kind": "capability",
+        "subject": "security.service.SecurityService",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "check-account-id-against-security-config",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/service/SecurityService.java:20"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.service.SecurityService|capability|servesQuery|findAllSecurityConfig",
+      "candidateAtomId": "atom:capability:security.service.security-service:find-all-security-config",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/service/SecurityService.java:12 -- findAllSecurityConfig(HttpHeaders) confirmed. Pass-b has no capability atoms on this subject.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:security.service.security-service:find-all-security-config",
+        "kind": "capability",
+        "subject": "security.service.SecurityService",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findAllSecurityConfig",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/service/SecurityService.java:12"
+        ]
+      }
+    },
+    {
+      "key": "capability|ts-route-service|capability|exposesEndpoint|http-port-11178",
+      "candidateAtomId": "atom:capability:ts-route-service:exposes-endpoint",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/resources/application.yml:21-22 -- server.port: 11178 confirmed. Pass-b's application.yml atoms for ts-route-service are a component plus two semantic atoms; no exposesEndpoint capability atom.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-route-service:exposes-endpoint",
+        "kind": "capability",
+        "subject": "ts-route-service",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "http-port-11178",
+        "refs": [
+          "src:ts-route-service/src/main/resources/application.yml:22"
+        ]
+      }
+    },
+    {
+      "key": "capability|ts-seat-service|capability|exposesEndpoint|http-port-18898",
+      "candidateAtomId": "atom:capability:ts-seat-service:exposes-endpoint",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/resources/application.yml:1-2 -- server.port: 18898 confirmed. Pass-b's ts-seat-service atoms are a component and a nacos-shape semantic atom; no exposesEndpoint capability atom.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-seat-service:exposes-endpoint",
+        "kind": "capability",
+        "subject": "ts-seat-service",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "http-port-18898",
+        "refs": [
+          "src:ts-seat-service/src/main/resources/application.yml:2"
+        ]
+      }
+    },
+    {
+      "key": "component|route.entity.RouteInfo|static||",
+      "candidateAtomId": "atom:component:route.entity.route-info",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/entity/RouteInfo.java:13 -- public class RouteInfo confirmed. Same component as pass-b's row 22; canonical subject normalized to the package-qualified route.entity.RouteInfo (avoids collision with any other RouteInfo-named class and matches this pass's convention).",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.entity.route-info",
+        "kind": "component",
+        "subject": "route.entity.RouteInfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/entity/RouteInfo.java:13"
+        ]
+      }
+    },
+    {
+      "key": "component|route.entity.Route|static||",
+      "candidateAtomId": "atom:component:route.entity.route",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/entity/Route.java:22 -- public class Route confirmed. Same component as pass-b's row 26; canonical subject route.entity.Route.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.entity.route",
+        "kind": "component",
+        "subject": "route.entity.Route",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/entity/Route.java:22"
+        ]
+      }
+    },
+    {
+      "key": "component|route.init.InitData|static||",
+      "candidateAtomId": "atom:component:route.init.init-data",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/init/InitData.java:13 -- public class InitData confirmed. Same component as pass-b's row 21; canonical subject route.init.InitData.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.init.init-data",
+        "kind": "component",
+        "subject": "route.init.InitData",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/init/InitData.java:13"
+        ]
+      }
+    },
+    {
+      "key": "component|route.repository.RouteRepository|static||",
+      "candidateAtomId": "atom:component:route.repository.route-repository",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/repository/RouteRepository.java:15 -- public interface RouteRepository confirmed. Same component as pass-b's row 23; canonical subject route.repository.RouteRepository.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.repository.route-repository",
+        "kind": "component",
+        "subject": "route.repository.RouteRepository",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:15"
+        ]
+      }
+    },
+    {
+      "key": "component|route.service.RouteServiceImpl|static||",
+      "candidateAtomId": "atom:component:route.service.route-service-impl",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:23 -- public class RouteServiceImpl confirmed. Same component as pass-b's row 24; canonical subject route.service.RouteServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.service.route-service-impl",
+        "kind": "component",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:23"
+        ]
+      }
+    },
+    {
+      "key": "component|route.service.RouteService|static||",
+      "candidateAtomId": "atom:component:route.service.route-service",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:13 -- public interface RouteService confirmed. Same component as pass-b's row 25; canonical subject route.service.RouteService.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.service.route-service",
+        "kind": "component",
+        "subject": "route.service.RouteService",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:13"
+        ]
+      }
+    },
+    {
+      "key": "component|seat.controller.SeatController|static||",
+      "candidateAtomId": "atom:component:seat.controller.seat-controller",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:19 -- public class SeatController confirmed. Same component as pass-b's row 27; canonical subject seat.controller.SeatController.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:seat.controller.seat-controller",
+        "kind": "component",
+        "subject": "seat.controller.SeatController",
+        "axis": "static",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:19"
+        ]
+      }
+    },
+    {
+      "key": "component|seat.service.SeatServiceImpl|static||",
+      "candidateAtomId": "atom:component:seat.service.seat-service-impl",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:27 -- public class SeatServiceImpl confirmed. Same component as pass-b's row 28; canonical subject seat.service.SeatServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:seat.service.seat-service-impl",
+        "kind": "component",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:27"
+        ]
+      }
+    },
+    {
+      "key": "component|seat.service.SeatService|static||",
+      "candidateAtomId": "atom:component:seat.service.seat-service",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatService.java:10 -- public interface SeatService confirmed. Same component as pass-b's row 29; canonical subject seat.service.SeatService.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:seat.service.seat-service",
+        "kind": "component",
+        "subject": "seat.service.SeatService",
+        "axis": "static",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatService.java:10"
+        ]
+      }
+    },
+    {
+      "key": "component|security.controller.SecurityController|static||",
+      "candidateAtomId": "atom:component:security.controller.security-controller",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:19 -- public class SecurityController confirmed. Same component as pass-b's row 31; canonical subject security.controller.SecurityController.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:security.controller.security-controller",
+        "kind": "component",
+        "subject": "security.controller.SecurityController",
+        "axis": "static",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:19"
+        ]
+      }
+    },
+    {
+      "key": "component|security.init.InitData|static||",
+      "candidateAtomId": "atom:component:security.init.init-data",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/init/InitData.java:13 -- public class InitData confirmed. Same component as pass-b's row 30; canonical subject security.init.InitData.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:security.init.init-data",
+        "kind": "component",
+        "subject": "security.init.InitData",
+        "axis": "static",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/init/InitData.java:13"
+        ]
+      }
+    },
+    {
+      "key": "component|security.repository.SecurityRepository|static||",
+      "candidateAtomId": "atom:component:security.repository.security-repository",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/repository/SecurityRepository.java:14 -- public interface SecurityRepository confirmed. Same component as pass-b's row 32; canonical subject security.repository.SecurityRepository.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:security.repository.security-repository",
+        "kind": "component",
+        "subject": "security.repository.SecurityRepository",
+        "axis": "static",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:14"
+        ]
+      }
+    },
+    {
+      "key": "contract|route.service.RouteServiceImpl|specification|ensures|ensures-new-random-uuid-assigned-when-id-null-or-shorter-than-32-chars-else-looks-up-existing-route-by-id-and-updates-in-place",
+      "candidateAtomId": "atom:contract:route.service.route-service-impl:create-and-modify-ensures",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:47-58 -- id.length()<32 branches to UUID.randomUUID(), else looks up an existing Route by id and reuses/updates it in place. Pass-b's semantic row 47 states the same branching fact under axis semantic/meansInUse rather than contract/ensures; kept as a separate contract-kind postcondition atom (that semantic atom is adopted separately below as a different catalog axis on the same underlying fact).",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:contract:route.service.route-service-impl:create-and-modify-ensures",
+        "kind": "contract",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "specification",
+        "predicate": "ensures",
+        "object": "ensures-new-random-uuid-assigned-when-id-null-or-shorter-than-32-chars-else-looks-up-existing-route-by-id-and-updates-in-place",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:47",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:49",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:52",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:56"
+        ]
+      }
+    },
+    {
+      "key": "contract|route.service.RouteServiceImpl|specification|requires|requires-station-count-equal-to-distance-count-else-returns-status-0-rejected-branch",
+      "candidateAtomId": "atom:contract:route.service.route-service-impl:create-and-modify-requires",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:39-41 -- if (stations.length != distances.length) return new Response<>(0, \"Station Number Not Equal To Distance Number\", null) confirmed. Same fact as pass-b's row 34.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:contract:route.service.route-service-impl:create-and-modify-requires",
+        "kind": "contract",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "specification",
+        "predicate": "requires",
+        "object": "requires-station-count-equal-to-distance-count-else-returns-status-0-rejected-branch",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:39",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:41"
+        ]
+      }
+    },
+    {
+      "key": "contract|seat.config.SecurityConfig|specification|ensures|ensures-stateless-session-creation-policy-no-http-session-used",
+      "candidateAtomId": "atom:contract:seat.config.security-config:stateless-session-ensures",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/config/SecurityConfig.java:69 -- .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) confirmed. Pass-b captured no contract atom for seat.config.SecurityConfig.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:contract:seat.config.security-config:stateless-session-ensures",
+        "kind": "contract",
+        "subject": "seat.config.SecurityConfig",
+        "axis": "specification",
+        "predicate": "ensures",
+        "object": "ensures-stateless-session-creation-policy-no-http-session-used",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:69"
+        ]
+      }
+    },
+    {
+      "key": "contract|seat.service.SeatServiceImpl|specification|ensures|ensures-left-ticket-count-equals-matching-sold-tickets-in-interval-plus-floor-of-total-seats-times-direct-proportion-minus-total-sold-ticket-count",
+      "candidateAtomId": "atom:contract:seat.service.seat-service-impl:unused-num-ensures",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:199-200 -- unusedNum = (int)(seatTotalNum*direstPart) - solidTicketSize; numOfLeftTicket += unusedNum confirmed as the closing formula. Distinct from pass-b's semantic atom about direstPart's parsing (adopted separately below, different aspect); no pass-b contract-kind atom states this final formula.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:contract:seat.service.seat-service-impl:unused-num-ensures",
+        "kind": "contract",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "specification",
+        "predicate": "ensures",
+        "object": "ensures-left-ticket-count-equals-matching-sold-tickets-in-interval-plus-floor-of-total-seats-times-direct-proportion-minus-total-sold-ticket-count",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:199",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:200"
+        ]
+      }
+    },
+    {
+      "key": "contract|security.config.SecurityConfig|specification|ensures|ensures-stateless-session-creation-policy-no-http-session-used",
+      "candidateAtomId": "atom:contract:security.config.security-config:stateless-session-ensures",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/config/SecurityConfig.java:68 -- .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) confirmed. Pass-b captured no contract atom for security.config.SecurityConfig.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:contract:security.config.security-config:stateless-session-ensures",
+        "kind": "contract",
+        "subject": "security.config.SecurityConfig",
+        "axis": "specification",
+        "predicate": "ensures",
+        "object": "ensures-stateless-session-creation-policy-no-http-session-used",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:68"
+        ]
+      }
+    },
+    {
+      "key": "effect|route.service.RouteServiceImpl|effect|deletesFrom|route-entity-removed-by-id",
+      "candidateAtomId": "atom:effect:route.service.route-service-impl:deletes-from-route",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:70 -- routeRepository.removeRouteById(routeId) confirmed. Pass-b captured this dependency only as a structural relation (writesTo route.RouteRepository, adopted separately below as a different catalog axis/kind); no pass-b effect-kind atom for this delete.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:effect:route.service.route-service-impl:deletes-from-route",
+        "kind": "effect",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "effect",
+        "predicate": "deletesFrom",
+        "object": "route-entity-removed-by-id",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:70"
+        ]
+      }
+    },
+    {
+      "key": "effect|route.service.RouteServiceImpl|effect|writesTo|route-entity-persisted-via-repository-save",
+      "candidateAtomId": "atom:effect:route.service.route-service-impl:writes-to-route",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:63 -- routeRepository.save(route) confirmed. Kept as a distinct effect-kind atom from pass-b's relation-kind writesTo atom (adopted separately below); the two capture the same code line under different catalog axes (effect vs relation).",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:effect:route.service.route-service-impl:writes-to-route",
+        "kind": "effect",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "effect",
+        "predicate": "writesTo",
+        "object": "route-entity-persisted-via-repository-save",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:63"
+        ]
+      }
+    },
+    {
+      "key": "effect|seat.service.SeatServiceImpl|effect|callsProvider|ts-config-service-GET-/api/v1/configservice/configs/DirectTicketAllocationProportion",
+      "candidateAtomId": "atom:effect:seat.service.seat-service-impl:calls-config-service",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:205-218 -- getDirectProportion calls restTemplate.exchange against the ts-config-service DirectTicketAllocationProportion endpoint. Same call as pass-b's row 35; refs unioned to cover the full helper method.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:effect:seat.service.seat-service-impl:calls-config-service",
+        "kind": "effect",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "ts-config-service-GET-/api/v1/configservice/configs/DirectTicketAllocationProportion",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:207-215"
+        ]
+      }
+    },
+    {
+      "key": "effect|seat.service.SeatServiceImpl|effect|callsProvider|ts-order-other-service-POST-/api/v1/orderOtherService/orderOther/tickets",
+      "candidateAtomId": "atom:effect:seat.service.seat-service-impl:calls-order-other-service",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:72-78 and 159-165 -- the else-branch (trainNumber not starting with G/D) in both distributeSeat and getLeftTicketOfInterval calls ts-order-other-service's orderOther/tickets endpoint. This pass only captured the distributeSeat occurrence (refs 72-73); pass-b's row 36 additionally captured the parallel call in getLeftTicketOfInterval (159-165). Merged using pass-b's fuller ref set as the more complete evidence for the same effect.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:effect:seat.service.seat-service-impl:calls-order-other-service",
+        "kind": "effect",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "ts-order-other-service-POST-/api/v1/orderOtherService/orderOther/tickets-on-trainNumber-not-G-or-D-branch",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:72-78",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:159-165"
+        ]
+      }
+    },
+    {
+      "key": "effect|seat.service.SeatServiceImpl|effect|callsProvider|ts-order-service-POST-/api/v1/orderservice/order/tickets",
+      "candidateAtomId": "atom:effect:seat.service.seat-service-impl:calls-order-service",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:59-65 and 143-149 -- the G/D-prefix branch in both distributeSeat and getLeftTicketOfInterval calls ts-order-service's order/tickets endpoint. This pass only captured the distributeSeat occurrence (refs 59-60); pass-b's row 37 additionally captured the parallel call in getLeftTicketOfInterval (143-149). Merged using pass-b's fuller ref set.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:effect:seat.service.seat-service-impl:calls-order-service",
+        "kind": "effect",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "ts-order-service-POST-/api/v1/orderservice/order/tickets-on-trainNumber-prefix-G-or-D-branch",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:59-65",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:143-149"
+        ]
+      }
+    },
+    {
+      "key": "relation|route.init.InitData|relation|dependsOn|route.service.RouteService",
+      "candidateAtomId": "atom:relation:route.init.init-data:depends-on",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/init/InitData.java:16,30 -- @Autowired RouteService routeService field, invoked via routeService.createAndModify(...) in run(). Same fact as pass-b's row 38; canonical axis normalized to relation (a plain @Autowired field dependency is not a cech/sheaf restriction map).",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:relation:route.init.init-data:depends-on",
+        "kind": "relation",
+        "subject": "route.init.InitData",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "route.service.RouteService",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/init/InitData.java:16",
+          "src:ts-route-service/src/main/java/route/init/InitData.java:30"
+        ]
+      }
+    },
+    {
+      "key": "relation|route.repository.RouteRepository|relation|dependsOn|route.entity.Route",
+      "candidateAtomId": "atom:relation:route.repository.route-repository:depends-on",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/repository/RouteRepository.java:15 -- interface RouteRepository extends CrudRepository<Route, String> confirmed, a generic-type dependency on the Route entity. Pass-b has no relation atom for RouteRepository at all.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:route.repository.route-repository:depends-on",
+        "kind": "relation",
+        "subject": "route.repository.RouteRepository",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "route.entity.Route",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:15"
+        ]
+      }
+    },
+    {
+      "key": "relation|route.service.RouteServiceImpl|relation|dependsOn|route.repository.RouteRepository",
+      "candidateAtomId": "atom:relation:route.service.route-service-impl:depends-on",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:26,52,63,70,82,94,105,125 -- the single @Autowired RouteRepository field is used for both reads (findById/findByIds/findAll at 52,82,94,105,125) and writes (save/removeRouteById at 63,70). Pass-b's rows 40-41 (readsFrom, writesTo) split this same dependency into the two finer, still-true relations; this generic dependsOn atom is coarser and redundant once those two finer atoms are adopted, so it is dropped in favor of the finer split rather than kept alongside it.",
+      "decision": "not-adopted"
+    },
+    {
+      "key": "relation|security.init.InitData|relation|dependsOn|security.service.SecurityService",
+      "candidateAtomId": "atom:relation:security.init.init-data:depends-on",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/init/InitData.java:16,26,31 -- @Autowired SecurityService securityService field, invoked twice via securityService.addNewSecurityConfig(...) in run(). Same fact as pass-b's row 44; canonical axis normalized to relation.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:relation:security.init.init-data:depends-on",
+        "kind": "relation",
+        "subject": "security.init.InitData",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "security.service.SecurityService",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/init/InitData.java:16",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:26",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:31"
+        ]
+      }
+    },
+    {
+      "key": "relation|security.repository.SecurityRepository|relation|dependsOn|security.entity.SecurityConfig",
+      "candidateAtomId": "atom:relation:security.repository.security-repository:depends-on",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/repository/SecurityRepository.java:14 -- interface SecurityRepository extends CrudRepository<SecurityConfig, String> confirmed. Pass-b has no relation atom for SecurityRepository at all.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:security.repository.security-repository:depends-on",
+        "kind": "relation",
+        "subject": "security.repository.SecurityRepository",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "security.entity.SecurityConfig",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:14"
+        ]
+      }
+    },
+    {
+      "key": "relation|ts-route-service|relation|dependsOn|nacos-service-discovery",
+      "candidateAtomId": "atom:relation:ts-route-service:depends-on-nacos",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/resources/application.yml:2-5 -- spring.cloud.nacos.discovery.server-addr configured (default 127.0.0.1:8848). Pass-b's application.yml atoms for ts-route-service do not include an explicit dependsOn-nacos relation atom (only a component and semantic atoms).",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-route-service:depends-on-nacos",
+        "kind": "relation",
+        "subject": "ts-route-service",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "nacos-service-discovery",
+        "refs": [
+          "src:ts-route-service/src/main/resources/application.yml:3",
+          "src:ts-route-service/src/main/resources/application.yml:5"
+        ]
+      }
+    },
+    {
+      "key": "relation|ts-seat-service|relation|dependsOn|nacos-service-discovery",
+      "candidateAtomId": "atom:relation:ts-seat-service:depends-on-nacos",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/resources/application.yml:4-8 -- spring.cloud.nacos.discovery.server-addr configured (three-node cluster default). Pass-b captured the nacos hostname-shape as a semantic atom (adopted separately below) but not as an explicit relation atom.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-seat-service:depends-on-nacos",
+        "kind": "relation",
+        "subject": "ts-seat-service",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "nacos-service-discovery",
+        "refs": [
+          "src:ts-seat-service/src/main/resources/application.yml:5",
+          "src:ts-seat-service/src/main/resources/application.yml:8"
+        ]
+      }
+    },
+    {
+      "key": "semantic|route.entity.Route|semantic|identifiedBy|application-assigned-uuid-string-not-hibernate-generated",
+      "candidateAtomId": "atom:semantic:route.entity.route:identified-by",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/entity/Route.java:21-26,40-58 -- @GenericGenerator is declared at class level but the @Id field carries no @GeneratedValue annotation; all three constructors assign id via UUID.randomUUID().toString() or take id as a parameter. Confirmed the id is application-assigned, not Hibernate-generated. Pass-b's row 55 (attached to security.entity.SecurityConfig) references these same Route.java lines only as a contrast case for SecurityConfig's own id strategy; it does not restate this fact under the route.entity.Route subject, so no duplicate exists.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:route.entity.route:identified-by",
+        "kind": "semantic",
+        "subject": "route.entity.Route",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "application-assigned-uuid-string-not-hibernate-generated",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/entity/Route.java:24",
+          "src:ts-route-service/src/main/java/route/entity/Route.java:40"
+        ]
+      }
+    },
+    {
+      "key": "semantic|route.init.InitData|semantic|meansInUse|seed-data-uses-fixed-36-char-uuid-string-literals-as-route-ids-which-are-at-or-above-the-32-char-threshold-so-createandmodify-takes-the-lookup-existing-route-by-id-branch-rather-than-the-generate-new-uuid-branch",
+      "candidateAtomId": "atom:semantic:route.init.init-data:seed-route-id-strategy",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/init/InitData.java:25,32,39,47 (and the remaining setId calls) -- all ten seeded ids are fixed 36-character UUID string literals, at or above the 32-char threshold in RouteServiceImpl.createAndModify, so each seed call takes the lookup-existing-route branch. Pass-b has no counterpart atom connecting InitData's literals to that threshold branch.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:route.init.init-data:seed-route-id-strategy",
+        "kind": "semantic",
+        "subject": "route.init.InitData",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "seed-data-uses-fixed-36-char-uuid-string-literals-as-route-ids-which-are-at-or-above-the-32-char-threshold-so-createandmodify-takes-the-lookup-existing-route-by-id-branch-rather-than-the-generate-new-uuid-branch",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/init/InitData.java:25",
+          "src:ts-route-service/src/main/java/route/init/InitData.java:32",
+          "src:ts-route-service/src/main/java/route/init/InitData.java:39",
+          "src:ts-route-service/src/main/java/route/init/InitData.java:47"
+        ]
+      }
+    },
+    {
+      "key": "semantic|route.service.RouteServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-empty-result-branch",
+      "candidateAtomId": "atom:semantic:route.service.route-service-impl:status-gates-not-found",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:80-131 -- getRouteById/getRouteByIds/getRouteByStartAndEnd/getAllRoutes each return status 1 with the found result or status 0 on a not-found/empty condition, confirmed. Pass-b's row 48 (response-envelope) merges this pattern together with createAndModify's and deleteRoute's status gating into one broader atom; that broader atom is rejected below as an over-broad conflation, and this pass's finer per-method-family split is kept.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:route.service.route-service-impl:status-gates-not-found",
+        "kind": "semantic",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-on-result-carrying-branch-status-0-on-not-found-or-empty-result-branch",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:85",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:87",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:97",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:99",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:116",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:119",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:127",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:130"
+        ]
+      }
+    },
+    {
+      "key": "semantic|route.service.RouteServiceImpl|semantic|statusGates|status-1-selected-when-route-record-is-absent-after-deletion-attempt-status-0-selected-when-record-is-still-present-after-deletion-attempt",
+      "candidateAtomId": "atom:semantic:route.service.route-service-impl:status-gates-delete-outcome",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:69-77 -- deleteRoute calls removeRouteById then re-queries findById; status 1 if absent, status 0 (with an error log) if the record is still present. Confirmed as a distinct branch family from the not-found gating above and from createAndModify's validation gating; kept separate per alias preservation.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:route.service.route-service-impl:status-gates-delete-outcome",
+        "kind": "semantic",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-selected-when-route-record-is-absent-after-deletion-attempt-status-0-selected-when-record-is-still-present-after-deletion-attempt",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:70",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:72",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:76"
+        ]
+      }
+    },
+    {
+      "key": "semantic|seat.service.SeatServiceImpl|semantic|meansInUse|config-value-DirectTicketAllocationProportion-used-directly-when-request-spans-the-full-route-station-list-otherwise-inverted-as-one-minus-value-for-a-partial-route-request",
+      "candidateAtomId": "atom:semantic:seat.service.seat-service-impl:direct-ticket-allocation-proportion",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:190-197 -- if the request's station range equals the full stationList (first/last stations match) direstPart is used as-is, else direstPart = 1.0 - direstPart. Confirmed. This is the branching-usage meaning; pass-b's row 49 instead documents the string-to-double parsing mechanism at getDirectProportion (refs 217-218), a different aspect of the same config value, kept as a separate adopted atom below rather than merged.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:seat.service.seat-service-impl:direct-ticket-allocation-proportion",
+        "kind": "semantic",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "config-value-DirectTicketAllocationProportion-used-directly-when-request-spans-the-full-route-station-list-otherwise-inverted-as-one-minus-value-for-a-partial-route-request",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:190",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:192",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:196"
+        ]
+      }
+    },
+    {
+      "key": "semantic|seat.service.SeatServiceImpl|semantic|meansInUse|sold-ticket-is-reusable-for-a-new-request-when-its-destination-station-index-precedes-the-request-start-station-index-in-the-shared-station-list",
+      "candidateAtomId": "atom:semantic:seat.service.seat-service-impl:sold-ticket-reuse-condition",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:100-107 and 179-186 -- both distributeSeat and getLeftTicketOfInterval reuse a sold ticket when stationList.indexOf(soldTicketDestStation) < stationList.indexOf(startStation). Confirmed, no pass-b counterpart exists for this reuse-condition fact.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:seat.service.seat-service-impl:sold-ticket-reuse-condition",
+        "kind": "semantic",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "sold-ticket-is-reusable-for-a-new-request-when-its-destination-station-index-precedes-the-request-start-station-index-in-the-shared-station-list",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:100",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:103",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:179",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:182"
+        ]
+      }
+    },
+    {
+      "key": "semantic|seat.service.SeatServiceImpl|semantic|meansInUse|trainnumber-startswith-g-or-d-selects-ts-order-service-branch-other-leading-capital-letter-selects-ts-order-other-service-branch",
+      "candidateAtomId": "atom:semantic:seat.service.seat-service-impl:train-number-selects-provider",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:53,68,138,153 -- trainNumber.startsWith(\"G\")||startsWith(\"D\") selects ts-order-service in both public methods, else ts-order-other-service. Identical refs to pass-b's row 51; naming/casing drift only.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:semantic:seat.service.seat-service-impl:train-number-selects-provider",
+        "kind": "semantic",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "trainnumber-startswith-g-or-d-selects-ts-order-service-branch-other-leading-capital-letter-selects-ts-order-other-service-branch",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:53",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:68",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:138",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:153"
+        ]
+      }
+    },
+    {
+      "key": "semantic|seat.service.SeatServiceImpl|semantic|statusGates|distributeSeat-and-getLeftTicketOfInterval-always-return-status-1-result-carrying-branch-no-status-0-branch-observed-in-file",
+      "candidateAtomId": "atom:semantic:seat.service.seat-service-impl:status-gates-always-carrying",
+      "pass": "pass-a",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:106,115,202 -- every observed return in distributeSeat and getLeftTicketOfInterval carries status 1; no status-0 branch present in this file. Identical refs to pass-b's row 52.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:semantic:seat.service.seat-service-impl:status-gates-always-carrying",
+        "kind": "semantic",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "distributeSeat-and-getLeftTicketOfInterval-always-return-status-1-result-carrying-branch-no-status-0-branch-observed-in-file",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:106",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:115",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:202"
+        ]
+      }
+    },
+    {
+      "key": "semantic|security.entity.SecurityConfig|semantic|identifiedBy|hibernate-generated-uuid-via-jpa-uuid-generator-strategy",
+      "candidateAtomId": "atom:semantic:security.entity.security-config:identified-by",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/entity/SecurityConfig.java:19,23-24 -- @Id @GeneratedValue(generator=\"jpa-uuid\") on the id field, with class-level @GenericGenerator(name=\"jpa-uuid\", strategy=\"org.hibernate.id.UUIDGenerator\") confirmed. This is the plain identity fact for SecurityConfig alone; pass-b's row 55 states a broader comparative fact (SecurityConfig's generated-id approach versus Route's constructor-assigned approach, citing both files) and is adopted separately below as a genuinely different cross-referencing observation, not a duplicate of this narrow fact.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:security.entity.security-config:identified-by",
+        "kind": "semantic",
+        "subject": "security.entity.SecurityConfig",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "hibernate-generated-uuid-via-jpa-uuid-generator-strategy",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:19",
+          "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:24"
+        ]
+      }
+    },
+    {
+      "key": "semantic|security.init.InitData|semantic|meansInUse|config-name-max_order_1_hour-seeded-to-integer-max-value-at-startup-representing-a-per-hour-order-count-limit-with-no-effective-cap-at-initialization",
+      "candidateAtomId": "atom:semantic:security.init.init-data:max-order-1-hour-config",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/init/InitData.java:22-26 -- info1.setName(\"max_order_1_hour\"); setValue(Integer.MAX_VALUE+\"\") confirmed. Pass-b's row 53 combines this and the max_order_not_use config into one generic pattern-level atom; that combined atom is rejected below as redundant with this and the sibling finer atom, both of which state the same content per-config with more precision.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:security.init.init-data:max-order-1-hour-config",
+        "kind": "semantic",
+        "subject": "security.init.InitData",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "config-name-max_order_1_hour-seeded-to-integer-max-value-at-startup-representing-a-per-hour-order-count-limit-with-no-effective-cap-at-initialization",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/init/InitData.java:22",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:23",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:24"
+        ]
+      }
+    },
+    {
+      "key": "semantic|security.init.InitData|semantic|meansInUse|config-name-max_order_not_use-seeded-to-integer-max-value-at-startup-representing-a-limit-on-unused-orders-with-no-effective-cap-at-initialization",
+      "candidateAtomId": "atom:semantic:security.init.init-data:max-order-not-use-config",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/init/InitData.java:27-31 -- info2.setName(\"max_order_not_use\"); setValue(Integer.MAX_VALUE+\"\") confirmed. See row 75's basis regarding pass-b's combined row 53.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:security.init.init-data:max-order-not-use-config",
+        "kind": "semantic",
+        "subject": "security.init.InitData",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "config-name-max_order_not_use-seeded-to-integer-max-value-at-startup-representing-a-limit-on-unused-orders-with-no-effective-cap-at-initialization",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/init/InitData.java:27",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:28",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:29"
+        ]
+      }
+    },
+    {
+      "key": "state|route.entity.Route|state|persistsIn|route-table-via-jpa-entity",
+      "candidateAtomId": "atom:state:route.entity.route:persists-in",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/java/route/entity/Route.java:18-19 and RouteRepository.java:15 -- @Entity class Route backed by RouteRepository extends CrudRepository<Route, String>, default table name \"route\". Same fact as pass-b's row 58; refs unioned.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:state:route.entity.route:persists-in",
+        "kind": "state",
+        "subject": "route.entity.Route",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "route-table-via-jpa-entity",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/entity/Route.java:19",
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:15",
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:31"
+        ]
+      }
+    },
+    {
+      "key": "state|security.entity.SecurityConfig|state|persistsIn|security-config-table-via-jpa-entity",
+      "candidateAtomId": "atom:state:security.entity.security-config:persists-in",
+      "pass": "pass-a",
+      "basis": "Reread ts-security-service/src/main/java/security/entity/SecurityConfig.java:17-26 -- @Entity class SecurityConfig backed by SecurityRepository extends CrudRepository<SecurityConfig, String>. Pass-b has no state-kind atom for this subject.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:state:security.entity.security-config:persists-in",
+        "kind": "state",
+        "subject": "security.entity.SecurityConfig",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "security-config-table-via-jpa-entity",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:18",
+          "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:26"
+        ]
+      }
+    },
+    {
+      "key": "state|ts-route-service.datasource|state|persistsIn|mysql-database-ts-via-jdbc",
+      "candidateAtomId": "atom:state:ts-route-service:datasource-persists-in",
+      "pass": "pass-a",
+      "basis": "Reread ts-route-service/src/main/resources/application.yml:8-12 -- spring.datasource.url: jdbc:mysql://.../ts, driver-class-name: com.mysql.cj.jdbc.Driver confirmed. Pass-b's yml atom for this file is a semantic note about the default credential values (adopted separately below), not a state/persistsIn atom.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:state:ts-route-service:datasource-persists-in",
+        "kind": "state",
+        "subject": "ts-route-service.datasource",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "mysql-database-ts-via-jdbc",
+        "refs": [
+          "src:ts-route-service/src/main/resources/application.yml:9",
+          "src:ts-route-service/src/main/resources/application.yml:12"
+        ]
+      }
+    },
+    {
+      "key": "authority|seat.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-max-age-3600-on-/**",
+      "candidateAtomId": "atom:authority:seat.config.security-config:allows-cross-origin:global-mapping",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/config/SecurityConfig.java:46-58 and SeatController.java:38,53 -- this atom combines the SecurityConfig CorsRegistry bean (global /** mapping) with two @CrossOrigin annotations that live on a different class (SeatController), and only cites 2 of the 2 controller cross-origin lines while attributing them to the SecurityConfig subject. These are two distinct declarations on two distinct subjects; kept separately as pass-a's seat.config.SecurityConfig:allows-cross-origin and seat.controller.SeatController:allows-cross-origin atoms (both adopted above) rather than conflated into one.",
+      "decision": "not-adopted"
+    },
+    {
+      "key": "authority|seat.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-configuration-and-swagger-resources-and-v2-paths",
+      "candidateAtomId": "atom:authority:seat.config.security-config:permits-unauthenticated:swagger-paths",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/config/SecurityConfig.java:72-75 -- antMatchers(...).permitAll() list confirmed, and does include \"/images/**\" which this row's object text omits. Merged with pass-a's row 2, using the more complete object text that includes images.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:authority:seat.config.security-config:permits-unauthenticated-swagger",
+        "kind": "authority",
+        "subject": "seat.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-and-webjars-and-images-and-configuration-and-swagger-resources-and-v2-paths",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:74",
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:75"
+        ]
+      }
+    },
+    {
+      "key": "authority|seat.config.SecurityConfig|authority|requiresRole|role-ADMIN-required-on-POST-/api/v1/seatservice/seats",
+      "candidateAtomId": "atom:authority:seat.config.security-config:requires-role:post-seats",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/config/SecurityConfig.java:73 -- hasAnyRole(\"ADMIN\") on POST /seats confirmed. Merged with pass-a's row 3; this row's exact-case ADMIN literal used as canonical object text.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:authority:seat.config.security-config:requires-role-on-seats-post",
+        "kind": "authority",
+        "subject": "seat.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "role-ADMIN-required-on-POST-/api/v1/seatservice/seats",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:73"
+        ]
+      }
+    },
+    {
+      "key": "authority|security.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-max-age-3600-on-/**",
+      "candidateAtomId": "atom:authority:security.config.security-config:allows-cross-origin:global-mapping",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/config/SecurityConfig.java:46-59 and SecurityController.java:31,59 -- same conflation pattern as row 0: combines the SecurityConfig CorsRegistry bean with only 2 of the 5 @CrossOrigin-annotated SecurityController methods, attributed to the SecurityConfig subject. Kept separately as pass-a's security.config.SecurityConfig:allows-cross-origin and security.controller.SecurityController:allows-cross-origin atoms (both adopted above, the latter covering all 5 lines).",
+      "decision": "not-adopted"
+    },
+    {
+      "key": "authority|security.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-configuration-and-swagger-resources-and-v2-paths",
+      "candidateAtomId": "atom:authority:security.config.security-config:permits-unauthenticated:swagger-paths",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/config/SecurityConfig.java:72-73 -- antMatchers(...).permitAll() list confirmed, does include \"/images/**\" which this row's object text omits. Merged with pass-a's row 7, using the more complete object.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:authority:security.config.security-config:permits-unauthenticated-swagger",
+        "kind": "authority",
+        "subject": "security.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-and-webjars-and-images-and-configuration-and-swagger-resources-and-v2-paths",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:72",
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:73"
+        ]
+      }
+    },
+    {
+      "key": "authority|security.config.SecurityConfig|authority|requiresRole|role-ADMIN-or-USER-required-on-/api/v1/securityservice/**",
+      "candidateAtomId": "atom:authority:security.config.security-config:requires-role:securityservice-path",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/config/SecurityConfig.java:71 -- hasAnyRole(\"ADMIN\",\"USER\") confirmed. Merged with pass-a's row 8; this row's exact-case literals used as canonical object text.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:authority:security.config.security-config:requires-role-on-service-root",
+        "kind": "authority",
+        "subject": "security.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "role-ADMIN-or-USER-required-on-/api/v1/securityservice/**",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:71"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.RouteService|capability|handlesCommand|createAndModify",
+      "candidateAtomId": "atom:capability:route.route-service:handles-command:create-and-modify",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:67 and RouteServiceImpl.java:32 -- createAndModify confirmed on both. Merged with pass-a's row 13; canonical subject normalized to the concrete RouteServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:create-and-modify",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "createAndModify",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:67",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:32"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.RouteService|capability|handlesCommand|deleteRoute",
+      "candidateAtomId": "atom:capability:route.route-service:handles-command:delete-route",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:58 and RouteServiceImpl.java:69 -- deleteRoute confirmed. Merged with pass-a's row 14.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:delete-route",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "deleteRoute",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:58",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:69"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.RouteService|capability|servesQuery|getAllRoutes",
+      "candidateAtomId": "atom:capability:route.route-service:serves-query:get-all-routes",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:31 and RouteServiceImpl.java:124 -- getAllRoutes confirmed. Merged with pass-a's row 15.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:get-all-routes",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "getAllRoutes",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:31",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:124"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.RouteService|capability|servesQuery|getRouteById",
+      "candidateAtomId": "atom:capability:route.route-service:serves-query:get-route-by-id",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:40 and RouteServiceImpl.java:81 -- getRouteById confirmed. Merged with pass-a's row 16.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:get-route-by-id",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "getRouteById",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:40",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:81"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.RouteService|capability|servesQuery|getRouteByIds",
+      "candidateAtomId": "atom:capability:route.route-service:serves-query:get-route-by-ids",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:49 and RouteServiceImpl.java:93 -- getRouteByIds confirmed. Merged with pass-a's row 17.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:get-route-by-ids",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "getRouteByIds",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:49",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:93"
+        ]
+      }
+    },
+    {
+      "key": "capability|route.RouteService|capability|servesQuery|getRouteByStartAndEnd",
+      "candidateAtomId": "atom:capability:route.route-service:serves-query:get-route-by-start-and-end",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:23 and RouteServiceImpl.java:104 -- getRouteByStartAndEnd confirmed. Merged with pass-a's row 18.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:route.service.route-service-impl:get-route-by-start-and-end",
+        "kind": "capability",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "getRouteByStartAndEnd",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:23",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:104"
+        ]
+      }
+    },
+    {
+      "key": "capability|seat.SeatController|capability|exposesEndpoint|get-/api/v1/seatservice/welcome",
+      "candidateAtomId": "atom:capability:seat.seat-controller:exposes-endpoint:welcome",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:26-29 -- home() welcome endpoint confirmed. Merged with pass-a's row 19.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:seat.controller.seat-controller:home",
+        "kind": "capability",
+        "subject": "seat.controller.SeatController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/seatservice/welcome",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:26-29"
+        ]
+      }
+    },
+    {
+      "key": "capability|seat.SeatController|capability|exposesEndpoint|post-/api/v1/seatservice/seats",
+      "candidateAtomId": "atom:capability:seat.seat-controller:exposes-endpoint:create-seat",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:38-43 -- create(...) POST /seats confirmed as state-mutating. Merged with pass-a's row 20; pass-a's finer handlesCommand predicate kept as canonical over this row's blanket exposesEndpoint.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:seat.controller.seat-controller:create",
+        "kind": "capability",
+        "subject": "seat.controller.SeatController",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "POST-/api/v1/seatservice/seats",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:38-43"
+        ]
+      }
+    },
+    {
+      "key": "capability|seat.SeatController|capability|exposesEndpoint|post-/api/v1/seatservice/seats/left_tickets",
+      "candidateAtomId": "atom:capability:seat.seat-controller:exposes-endpoint:left-tickets-of-interval",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:53-59 -- getLeftTicketOfInterval(...) confirmed as a read-only computed query. Merged with pass-a's row 21; pass-a's servesQuery predicate kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:seat.controller.seat-controller:get-left-ticket-of-interval",
+        "kind": "capability",
+        "subject": "seat.controller.SeatController",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "POST-/api/v1/seatservice/seats/left_tickets",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:53-59"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.SecurityController|capability|exposesEndpoint|delete-/api/v1/securityservice/securityConfigs/{id}",
+      "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:delete-security-config",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:52-57 -- delete(...) DELETE /securityConfigs/{id} confirmed as a command. Merged with pass-a's row 23; handlesCommand kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:delete",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "DELETE-/api/v1/securityservice/securityConfigs/{id}",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:52-57"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.SecurityController|capability|exposesEndpoint|get-/api/v1/securityservice/securityConfigs",
+      "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:find-all-security-configs",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:32-36 -- findAllSecurityConfig(...) confirmed read-only. Merged with pass-a's row 26; servesQuery kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:find-all-security-config",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "GET-/api/v1/securityservice/securityConfigs",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:32-36"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.SecurityController|capability|exposesEndpoint|get-/api/v1/securityservice/securityConfigs/{accountId}",
+      "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:check-security-config",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:59-64 -- check(...) confirmed read-only. Merged with pass-a's row 27; servesQuery kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:check",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "GET-/api/v1/securityservice/securityConfigs/{accountId}",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:59-64"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.SecurityController|capability|exposesEndpoint|get-/api/v1/securityservice/welcome",
+      "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:welcome",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:26-29 -- home() welcome endpoint confirmed. Merged with pass-a's row 22.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:home",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/securityservice/welcome",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:26-29"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.SecurityController|capability|exposesEndpoint|post-/api/v1/securityservice/securityConfigs",
+      "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:create-security-config",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:38-43 -- create(...) confirmed as a command. Merged with pass-a's row 24; handlesCommand kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:create",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "POST-/api/v1/securityservice/securityConfigs",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:38-43"
+        ]
+      }
+    },
+    {
+      "key": "capability|security.SecurityController|capability|exposesEndpoint|put-/api/v1/securityservice/securityConfigs",
+      "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:update-security-config",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:45-50 -- update(...) confirmed as a command. Merged with pass-a's row 25; handlesCommand kept as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:capability:security.controller.security-controller:update",
+        "kind": "capability",
+        "subject": "security.controller.SecurityController",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "PUT-/api/v1/securityservice/securityConfigs",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:45-50"
+        ]
+      }
+    },
+    {
+      "key": "component|route.InitData|static||",
+      "candidateAtomId": "atom:component:route.init-data",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/init/InitData.java:13 -- class InitData confirmed. Merged with pass-a's row 39; canonical subject route.init.InitData.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.init.init-data",
+        "kind": "component",
+        "subject": "route.init.InitData",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/init/InitData.java:13"
+        ]
+      }
+    },
+    {
+      "key": "component|route.RouteInfo|static||",
+      "candidateAtomId": "atom:component:route.route-info",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/entity/RouteInfo.java:13 -- class RouteInfo confirmed. Merged with pass-a's row 37; canonical subject route.entity.RouteInfo.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.entity.route-info",
+        "kind": "component",
+        "subject": "route.entity.RouteInfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/entity/RouteInfo.java:13"
+        ]
+      }
+    },
+    {
+      "key": "component|route.RouteRepository|static||",
+      "candidateAtomId": "atom:component:route.route-repository",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/repository/RouteRepository.java:15 -- interface RouteRepository confirmed. Merged with pass-a's row 40; canonical subject route.repository.RouteRepository.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.repository.route-repository",
+        "kind": "component",
+        "subject": "route.repository.RouteRepository",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:15"
+        ]
+      }
+    },
+    {
+      "key": "component|route.RouteServiceImpl|static||",
+      "candidateAtomId": "atom:component:route.route-service-impl",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:23 -- class RouteServiceImpl confirmed. Merged with pass-a's row 41; canonical subject route.service.RouteServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.service.route-service-impl",
+        "kind": "component",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:23"
+        ]
+      }
+    },
+    {
+      "key": "component|route.RouteService|static||",
+      "candidateAtomId": "atom:component:route.route-service",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteService.java:13 -- interface RouteService confirmed. Merged with pass-a's row 42; canonical subject route.service.RouteService.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.service.route-service",
+        "kind": "component",
+        "subject": "route.service.RouteService",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteService.java:13"
+        ]
+      }
+    },
+    {
+      "key": "component|route.Route|static||",
+      "candidateAtomId": "atom:component:route.route",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/entity/Route.java:22 -- class Route confirmed. Merged with pass-a's row 38; canonical subject route.entity.Route.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:route.entity.route",
+        "kind": "component",
+        "subject": "route.entity.Route",
+        "axis": "static",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/entity/Route.java:22"
+        ]
+      }
+    },
+    {
+      "key": "component|seat.SeatController|static||",
+      "candidateAtomId": "atom:component:seat.seat-controller",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:19 -- class SeatController confirmed. Merged with pass-a's row 43; canonical subject seat.controller.SeatController.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:seat.controller.seat-controller",
+        "kind": "component",
+        "subject": "seat.controller.SeatController",
+        "axis": "static",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:19"
+        ]
+      }
+    },
+    {
+      "key": "component|seat.SeatServiceImpl|static||",
+      "candidateAtomId": "atom:component:seat.seat-service-impl",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:27 -- class SeatServiceImpl confirmed. Merged with pass-a's row 44; canonical subject seat.service.SeatServiceImpl.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:seat.service.seat-service-impl",
+        "kind": "component",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:27"
+        ]
+      }
+    },
+    {
+      "key": "component|seat.SeatService|static||",
+      "candidateAtomId": "atom:component:seat.seat-service",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatService.java:10 -- interface SeatService confirmed. Merged with pass-a's row 45; canonical subject seat.service.SeatService.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:seat.service.seat-service",
+        "kind": "component",
+        "subject": "seat.service.SeatService",
+        "axis": "static",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatService.java:10"
+        ]
+      }
+    },
+    {
+      "key": "component|security.InitData|static||",
+      "candidateAtomId": "atom:component:security.init-data",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/init/InitData.java:13 -- class InitData confirmed. Merged with pass-a's row 47; canonical subject security.init.InitData.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:security.init.init-data",
+        "kind": "component",
+        "subject": "security.init.InitData",
+        "axis": "static",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/init/InitData.java:13"
+        ]
+      }
+    },
+    {
+      "key": "component|security.SecurityController|static||",
+      "candidateAtomId": "atom:component:security.security-controller",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:19 -- class SecurityController confirmed. Merged with pass-a's row 46; canonical subject security.controller.SecurityController.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:security.controller.security-controller",
+        "kind": "component",
+        "subject": "security.controller.SecurityController",
+        "axis": "static",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:19"
+        ]
+      }
+    },
+    {
+      "key": "component|security.SecurityRepository|static||",
+      "candidateAtomId": "atom:component:security.security-repository",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/repository/SecurityRepository.java:14 -- interface SecurityRepository confirmed. Merged with pass-a's row 48; canonical subject security.repository.SecurityRepository.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:component:security.repository.security-repository",
+        "kind": "component",
+        "subject": "security.repository.SecurityRepository",
+        "axis": "static",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:14"
+        ]
+      }
+    },
+    {
+      "key": "contract|route.RouteInfo|specification|shapedAs|stationList-and-distanceList-fields-are-comma-separated-strings-split-and-parsed-at-use-site",
+      "candidateAtomId": "atom:contract:route.route-info:shaped-as:comma-separated-station-and-distance-strings",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/entity/RouteInfo.java:20-22 -- stationList/distanceList declared as plain String fields, and RouteServiceImpl.java:35-36 -- info.getStationList().split(\",\") / getDistanceList().split(\",\") confirmed as the parse site. Pass-a captured no shapedAs-predicate contract atom for RouteInfo at all; genuinely new.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:contract:route.entity.route-info:shaped-as",
+        "kind": "contract",
+        "subject": "route.entity.RouteInfo",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "stationList-and-distanceList-fields-are-comma-separated-strings-split-and-parsed-at-use-site",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/entity/RouteInfo.java:20-22",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:35-36"
+        ]
+      }
+    },
+    {
+      "key": "contract|route.RouteServiceImpl|specification|requires|stations.length-equals-distances.length-else-returns-status-0-branch",
+      "candidateAtomId": "atom:contract:route.route-service-impl:requires:equal-station-and-distance-counts",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:39-41 -- stations.length != distances.length returns status 0. Same fact as pass-a's row 50.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:contract:route.service.route-service-impl:create-and-modify-requires",
+        "kind": "contract",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "specification",
+        "predicate": "requires",
+        "object": "requires-station-count-equal-to-distance-count-else-returns-status-0-rejected-branch",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:39",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:41"
+        ]
+      }
+    },
+    {
+      "key": "effect|seat.SeatServiceImpl|effect|callsProvider|get-ts-config-service/api/v1/configservice/configs/DirectTicketAllocationProportion",
+      "candidateAtomId": "atom:effect:seat.seat-service-impl:calls-provider:ts-config-service-direct-ticket-proportion",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:205-218 -- getDirectProportion calls ts-config-service. Same call as pass-a's row 56; refs unioned to the full helper method span.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:effect:seat.service.seat-service-impl:calls-config-service",
+        "kind": "effect",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "ts-config-service-GET-/api/v1/configservice/configs/DirectTicketAllocationProportion",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:207-215"
+        ]
+      }
+    },
+    {
+      "key": "effect|seat.SeatServiceImpl|effect|callsProvider|post-ts-order-other-service/api/v1/orderOtherService/orderOther/tickets-on-trainNumber-not-G-or-D-branch",
+      "candidateAtomId": "atom:effect:seat.seat-service-impl:calls-provider:ts-order-other-service-tickets",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:72-78 and 159-165 -- confirmed both distributeSeat and getLeftTicketOfInterval call ts-order-other-service on the non-G/D branch. Merged with pass-a's row 57 (which only captured the distributeSeat occurrence); this row's fuller ref set is used as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:effect:seat.service.seat-service-impl:calls-order-other-service",
+        "kind": "effect",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "ts-order-other-service-POST-/api/v1/orderOtherService/orderOther/tickets-on-trainNumber-not-G-or-D-branch",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:72-78",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:159-165"
+        ]
+      }
+    },
+    {
+      "key": "effect|seat.SeatServiceImpl|effect|callsProvider|post-ts-order-service/api/v1/orderservice/order/tickets-on-trainNumber-prefix-G-or-D-branch",
+      "candidateAtomId": "atom:effect:seat.seat-service-impl:calls-provider:ts-order-service-tickets",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:59-65 and 143-149 -- confirmed both methods call ts-order-service on the G/D branch. Merged with pass-a's row 58 (distributeSeat-only); this row's fuller ref set used as canonical.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:effect:seat.service.seat-service-impl:calls-order-service",
+        "kind": "effect",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "ts-order-service-POST-/api/v1/orderservice/order/tickets-on-trainNumber-prefix-G-or-D-branch",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:59-65",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:143-149"
+        ]
+      }
+    },
+    {
+      "key": "relation|route.InitData|restriction|dependsOn|route.RouteService",
+      "candidateAtomId": "atom:relation:route.init-data:depends-on:route.route-service",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/init/InitData.java:16,30 -- @Autowired RouteService field used via createAndModify calls. Same fact as pass-a's row 59; canonical axis normalized to relation (an @Autowired field dependency, not a cech/sheaf restriction map).",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:relation:route.init.init-data:depends-on",
+        "kind": "relation",
+        "subject": "route.init.InitData",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "route.service.RouteService",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/init/InitData.java:16",
+          "src:ts-route-service/src/main/java/route/init/InitData.java:30"
+        ]
+      }
+    },
+    {
+      "key": "relation|route.RouteServiceImpl|restriction|implements|route.RouteService",
+      "candidateAtomId": "atom:relation:route.route-service-impl:implements:route.route-service",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:23 -- public class RouteServiceImpl implements RouteService confirmed. Pass-a never asserted an implements relation for this pair (only co-existing component atoms); genuinely new. Axis normalized from pass-b's \"restriction\" label to the default \"relation\" axis, since a Java implements clause is an ordinary structural relation, not a cech-style restriction map.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:route.service.route-service-impl:implements",
+        "kind": "relation",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "relation",
+        "predicate": "implements",
+        "object": "route.service.RouteService",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:23"
+        ]
+      }
+    },
+    {
+      "key": "relation|route.RouteServiceImpl|restriction|readsFrom|route.RouteRepository",
+      "candidateAtomId": "atom:relation:route.route-service-impl:reads-from:route.route-repository",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:52,82,94,105,125 -- routeRepository.findById/findByIds/findAll calls confirmed across createAndModify/getRouteById/getRouteByIds/getRouteByStartAndEnd/getAllRoutes. This finer read-specific relation is adopted; pass-a's single generic dependsOn(RouteRepository) atom (row 61) is dropped as coarser and superseded by this pair (readsFrom + writesTo). Axis normalized to relation.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:route.service.route-service-impl:reads-from",
+        "kind": "relation",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "relation",
+        "predicate": "readsFrom",
+        "object": "route.repository.RouteRepository",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:52",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:82",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:94",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:105",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:125"
+        ]
+      }
+    },
+    {
+      "key": "relation|route.RouteServiceImpl|restriction|writesTo|route.RouteRepository",
+      "candidateAtomId": "atom:relation:route.route-service-impl:writes-to:route.route-repository",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:63,70 -- routeRepository.save(route) and routeRepository.removeRouteById(routeId) confirmed. See row 40's basis regarding pass-a's superseded generic dependsOn atom. Axis normalized to relation.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:route.service.route-service-impl:writes-to",
+        "kind": "relation",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "relation",
+        "predicate": "writesTo",
+        "object": "route.repository.RouteRepository",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:63",
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:70"
+        ]
+      }
+    },
+    {
+      "key": "relation|seat.SeatController|restriction|dependsOn|seat.SeatService",
+      "candidateAtomId": "atom:relation:seat.seat-controller:depends-on:seat.seat-service",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/controller/SeatController.java:22 -- @Autowired private SeatService seatService confirmed. Pass-a never asserted a relation atom for this dependency (only capability atoms attached to the controller); genuinely new. Axis normalized to relation.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:seat.controller.seat-controller:depends-on",
+        "kind": "relation",
+        "subject": "seat.controller.SeatController",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "seat.service.SeatService",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:22"
+        ]
+      }
+    },
+    {
+      "key": "relation|seat.SeatServiceImpl|restriction|implements|seat.SeatService",
+      "candidateAtomId": "atom:relation:seat.seat-service-impl:implements:seat.seat-service",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:27 -- public class SeatServiceImpl implements SeatService confirmed. Pass-a never asserted this relation. Axis normalized to relation.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:seat.service.seat-service-impl:implements",
+        "kind": "relation",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "relation",
+        "predicate": "implements",
+        "object": "seat.service.SeatService",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:27"
+        ]
+      }
+    },
+    {
+      "key": "relation|security.InitData|restriction|dependsOn|security.service.SecurityService",
+      "candidateAtomId": "atom:relation:security.init-data:depends-on:security.service.security-service",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/init/InitData.java:16,26,31 -- @Autowired SecurityService field used via two addNewSecurityConfig calls. Same fact as pass-a's row 62; canonical axis normalized to relation.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:relation:security.init.init-data:depends-on",
+        "kind": "relation",
+        "subject": "security.init.InitData",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "security.service.SecurityService",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/init/InitData.java:16",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:26",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:31"
+        ]
+      }
+    },
+    {
+      "key": "relation|security.SecurityController|restriction|dependsOn|security.service.SecurityService",
+      "candidateAtomId": "atom:relation:security.security-controller:depends-on:security.service.security-service",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/controller/SecurityController.java:22 -- @Autowired private SecurityService securityService confirmed. Pass-a never asserted a relation atom for this dependency. Axis normalized to relation.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:relation:security.controller.security-controller:depends-on",
+        "kind": "relation",
+        "subject": "security.controller.SecurityController",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "security.service.SecurityService",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/controller/SecurityController.java:22"
+        ]
+      }
+    },
+    {
+      "key": "semantic|route.RouteRepository|semantic|meansInUse|single-route-looked-up-by-id-via-derived-findById-batch-lookup-via-native-sql-in-clause-on-id-list",
+      "candidateAtomId": "atom:semantic:route.route-repository:means-in-use:id-lookup-contract",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/repository/RouteRepository.java:17-23 (derived findById) and 25-32 (native @Query findByIds) -- confirmed the repository mixes a derived single-id lookup with a native-SQL batch lookup. Pass-a has no semantic atom for RouteRepository at all; genuinely new.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:route.repository.route-repository:id-lookup-contract",
+        "kind": "semantic",
+        "subject": "route.repository.RouteRepository",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "single-route-looked-up-by-id-via-derived-findById-batch-lookup-via-native-sql-in-clause-on-id-list",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:23",
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:31-32"
+        ]
+      }
+    },
+    {
+      "key": "semantic|route.RouteServiceImpl|semantic|meansInUse|route-id-null-or-shorter-than-32-chars-selects-generate-new-uuid-branch-else-selects-lookup-existing-route-by-id-branch",
+      "candidateAtomId": "atom:semantic:route.route-service-impl:means-in-use:id-length-threshold",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:47-58 -- info.getId()==null || info.getId().length()<32 branches to UUID.randomUUID(), else looks up by id. Confirmed. States the same underlying branch as pass-a's contract-kind ensures atom (row 49) but under a different catalog axis (semantic/meansInUse vs specification/ensures); kept as a separate, additional atom rather than merged, since kind differs.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:route.service.route-service-impl:id-length-threshold",
+        "kind": "semantic",
+        "subject": "route.service.RouteServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "route-id-null-or-shorter-than-32-chars-selects-generate-new-uuid-branch-else-selects-lookup-existing-route-by-id-branch",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:47-58"
+        ]
+      }
+    },
+    {
+      "key": "semantic|route.RouteServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-input-invalid-branch",
+      "candidateAtomId": "atom:semantic:route.route-service-impl:status-gates:response-envelope",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/service/RouteServiceImpl.java:32-131 -- this atom's refs (41,64,73,76,85,87) span three unrelated method-level status-gate behaviors: createAndModify's station/distance validation (41), createAndModify's save-success return (64), deleteRoute's presence-check outcome (73,76), and getRouteById's not-found check (85,87). Conflating these into one statusGates atom loses the per-method distinction. Pass-a's finer atoms (row 68: status-gates-not-found, covering getRouteById/getRouteByIds/getRouteByStartAndEnd/getAllRoutes; row 69: status-gates-delete-outcome, covering deleteRoute) already capture the query and delete families with more precision; createAndModify's own status-0/1 branch is separately covered by the already-adopted contract requires atom (line 41) and its save path (line 64). Rejected as an over-broad conflation rather than merged.",
+      "decision": "not-adopted"
+    },
+    {
+      "key": "semantic|seat.SeatServiceImpl|semantic|meansInUse|config-value-DirectTicketAllocationProportion-is-a-decimal-string-parsed-to-double-and-used-as-a-proportion-to-compute-unused-seat-count",
+      "candidateAtomId": "atom:semantic:seat.seat-service-impl:means-in-use:direct-ticket-allocation-proportion",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:207-218 -- getDirectProportion fetches the Config, then Double.parseDouble(configValue.getData().getValue()) confirmed. This is the type/parsing aspect of the config value, distinct from pass-a's row 70 which documents the direct-vs-inverted branching usage of the parsed value; kept as a separate atom per alias preservation rather than merged, since the two describe different code aspects (parsing mechanism vs conditional usage) with non-overlapping refs.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:seat.service.seat-service-impl:direct-ticket-allocation-proportion-parsing",
+        "kind": "semantic",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "config-value-DirectTicketAllocationProportion-is-a-decimal-string-parsed-to-double-and-used-as-a-proportion-to-compute-unused-seat-count",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:190",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:217-218"
+        ]
+      }
+    },
+    {
+      "key": "semantic|seat.SeatServiceImpl|semantic|meansInUse|logical-service-name-string-passed-to-load-balanced-resttemplate-resolves-target-host-via-client-side-discovery",
+      "candidateAtomId": "atom:semantic:seat.seat-service-impl:means-in-use:logical-service-name-load-balanced",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/SeatApplication.java:30-34 -- @LoadBalanced @Bean RestTemplate restTemplate(...) confirmed, and SeatServiceImpl.java:36-38 -- getServiceUrl returns \"http://\"+serviceName consumed by restTemplate.exchange with a bare logical service name (e.g. \"ts-order-service\"). Confirmed the load-balanced client resolves this via client-side discovery. Pass-a's survey notes the RestTemplate bean but produced no semantic atom connecting it to this resolution mechanism; genuinely new.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:seat.service.seat-service-impl:logical-service-name-load-balanced",
+        "kind": "semantic",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "logical-service-name-string-passed-to-load-balanced-resttemplate-resolves-target-host-via-client-side-discovery",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/SeatApplication.java:30-34",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:36-38"
+        ]
+      }
+    },
+    {
+      "key": "semantic|seat.SeatServiceImpl|semantic|meansInUse|trainNumber-prefix-G-or-D-selects-ts-order-service-branch-other-leading-capital-letters-select-ts-order-other-service-branch",
+      "candidateAtomId": "atom:semantic:seat.seat-service-impl:means-in-use:train-number-prefix-routes-service",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:53,68,138,153 -- confirmed, identical refs to pass-a's row 72.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:semantic:seat.service.seat-service-impl:train-number-selects-provider",
+        "kind": "semantic",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "trainnumber-startswith-g-or-d-selects-ts-order-service-branch-other-leading-capital-letter-selects-ts-order-other-service-branch",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:53",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:68",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:138",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:153"
+        ]
+      }
+    },
+    {
+      "key": "semantic|seat.SeatServiceImpl|semantic|statusGates|status-1-on-every-observed-return-branch-of-distributeSeat-and-getLeftTicketOfInterval-no-status-0-branch-present-in-these-two-methods",
+      "candidateAtomId": "atom:semantic:seat.seat-service-impl:status-gates:always-result-carrying",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:106,115,202 -- confirmed, identical refs to pass-a's row 73.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:semantic:seat.service.seat-service-impl:status-gates-always-carrying",
+        "kind": "semantic",
+        "subject": "seat.service.SeatServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "distributeSeat-and-getLeftTicketOfInterval-always-return-status-1-result-carrying-branch-no-status-0-branch-observed-in-file",
+        "refs": [
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:106",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:115",
+          "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:202"
+        ]
+      }
+    },
+    {
+      "key": "semantic|security.InitData|semantic|meansInUse|max_order_1_hour-and-max_order_not_use-named-configs-represent-order-count-limit-business-rules-seeded-as-Integer.MAX_VALUE-string-an-effectively-unbounded-default",
+      "candidateAtomId": "atom:semantic:security.init-data:means-in-use:order-count-limit-config",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/init/InitData.java:21-31 -- both max_order_1_hour and max_order_not_use are confirmed seeded to Integer.MAX_VALUE as a string. This combined atom restates, at a coarser grain, exactly the same two facts already captured with more precision as pass-a's rows 75 and 76 (adopted above, one per config name); keeping this generalized combination alongside those two finer atoms would duplicate the same source lines without adding a distinguishable new fact.",
+      "decision": "not-adopted"
+    },
+    {
+      "key": "semantic|security.SecurityRepository|semantic|meansInUse|SecurityConfig-additionally-looked-up-by-name-via-findByName-name-functions-as-a-business-key-alongside-the-generated-id",
+      "candidateAtomId": "atom:semantic:security.security-repository:means-in-use:lookup-by-name-as-business-key",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/repository/SecurityRepository.java:17 -- SecurityConfig findByName(String name) confirmed, and InitData.java:23,28 -- seeded configs are named \"max_order_1_hour\"/\"max_order_not_use\" and looked up this way. Confirmed name functions as a business key alongside the generated id. Pass-a has no semantic atom for SecurityRepository; genuinely new.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:security.repository.security-repository:lookup-by-name-as-business-key",
+        "kind": "semantic",
+        "subject": "security.repository.SecurityRepository",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "SecurityConfig-additionally-looked-up-by-name-via-findByName-name-functions-as-a-business-key-alongside-the-generated-id",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:17",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:23",
+          "src:ts-security-service/src/main/java/security/init/InitData.java:28"
+        ]
+      }
+    },
+    {
+      "key": "semantic|security.entity.SecurityConfig|semantic|meansInUse|id-generated-via-jpa-uuid-generator-annotation-at-persistence-time-in-contrast-to-route.Route-which-assigns-a-UUID-in-application-code-constructor",
+      "candidateAtomId": "atom:semantic:security.entity.security-config:means-in-use:generated-id-strategy",
+      "pass": "pass-b",
+      "basis": "Reread ts-security-service/src/main/java/security/entity/SecurityConfig.java:19,23-24 (@GeneratedValue(generator=\"jpa-uuid\")) versus ts-route-service/src/main/java/route/entity/Route.java:40-42 (no-arg constructor sets id = UUID.randomUUID().toString() in application code) -- confirmed this is a genuine cross-file comparative observation distinct from pass-a's plain identifiedBy fact for SecurityConfig (row 74, adopted separately above); kept as an additional, broader atom rather than merged.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:security.entity.security-config:generated-id-strategy",
+        "kind": "semantic",
+        "subject": "security.entity.SecurityConfig",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "id-generated-via-jpa-uuid-generator-annotation-at-persistence-time-in-contrast-to-route.Route-which-assigns-a-UUID-in-application-code-constructor",
+        "refs": [
+          "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:19",
+          "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:23-24",
+          "src:ts-route-service/src/main/java/route/entity/Route.java:40-42"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ts-route-service|semantic|meansInUse|mysql-username-and-password-default-values-embedded-in-yaml-overridable-by-env-var",
+      "candidateAtomId": "atom:semantic:ts-route-service.application-yml:means-in-use:default-datasource-credential",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/resources/application.yml:10-11 -- username: ${ROUTE_MYSQL_USER:root}, password: ${ROUTE_MYSQL_PASSWORD:Abcd1234#} confirmed as env-var-overridable defaults embedded in the yaml. Pass-a captured only a state atom for the datasource (adopted above), not this credential-default semantic fact; genuinely new.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-route-service:default-datasource-credential",
+        "kind": "semantic",
+        "subject": "ts-route-service",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "mysql-username-and-password-default-values-embedded-in-yaml-overridable-by-env-var",
+        "refs": [
+          "src:ts-route-service/src/main/resources/application.yml:10-11"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ts-seat-service|semantic|meansInUse|nacos-discovery-server-addr-default-lists-a-three-node-cluster-hostname-set-while-route-service-config-defaults-to-a-single-localhost-address",
+      "candidateAtomId": "atom:semantic:ts-seat-service.application-yml:means-in-use:nacos-discovery-default-shape",
+      "pass": "pass-b",
+      "basis": "Reread ts-seat-service/src/main/resources/application.yml:5-8 (three nacos-N.nacos-headless hostnames) versus ts-route-service/src/main/resources/application.yml:3-5 (single 127.0.0.1:8848 default) -- confirmed the cross-service default-shape contrast. Pass-a captured only the plain dependsOn-nacos relation for each service (adopted above), not this comparative semantic fact; genuinely new.",
+      "decision": "adopted",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-seat-service:nacos-discovery-default-shape",
+        "kind": "semantic",
+        "subject": "ts-seat-service",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "nacos-discovery-server-addr-default-lists-a-three-node-cluster-hostname-set-while-route-service-config-defaults-to-a-single-localhost-address",
+        "refs": [
+          "src:ts-seat-service/src/main/resources/application.yml:5-8",
+          "src:ts-route-service/src/main/resources/application.yml:3-5"
+        ]
+      }
+    },
+    {
+      "key": "state|route.Route|state|persistsIn|jpa-entity-backed-by-crud-repository-route-table",
+      "candidateAtomId": "atom:state:route.route:persists-in:route-table",
+      "pass": "pass-b",
+      "basis": "Reread ts-route-service/src/main/java/route/entity/Route.java:18-19 and RouteRepository.java:15 -- @Entity Route backed by CrudRepository<Route,String>. Same fact as pass-a's row 77; refs unioned.",
+      "decision": "merged",
+      "canonicalAtom": {
+        "id": "atom:state:route.entity.route:persists-in",
+        "kind": "state",
+        "subject": "route.entity.Route",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "route-table-via-jpa-entity",
+        "refs": [
+          "src:ts-route-service/src/main/java/route/entity/Route.java:19",
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:15",
+          "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:31"
+        ]
+      }
+    }
+  ]
+}

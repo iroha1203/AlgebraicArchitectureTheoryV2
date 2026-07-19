@@ -1,0 +1,1486 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|notification.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:notification-securityconfig:allows-cross-origin-all",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:51",
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:52",
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:53",
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:54",
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:55",
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|notification.SecurityConfig|authority|checksPermission|any-other-request-requires-authentication",
+   "candidateAtomId": "atom:authority:notification-securityconfig:checks-permission-any-request-authenticated",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|notification.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/notifyservice/**",
+   "candidateAtomId": "atom:authority:notification-securityconfig:permits-unauthenticated-notifyservice-paths",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|notification.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:notification-securityconfig:permits-unauthenticated-swagger-paths",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:73",
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.AddMoneyRepository|capability|servesQuery|findByUserId(String):List<Money>",
+   "candidateAtomId": "atom:capability:inside-payment-addmoneyrepository:serves-query-findbyuserid",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/AddMoneyRepository.java:20"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentServiceImpl|capability|handlesCommand|addMoney",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentserviceimpl:handles-command-addmoney",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:158"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentServiceImpl|capability|handlesCommand|createAccount",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentserviceimpl:handles-command-createaccount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:142"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentServiceImpl|capability|handlesCommand|drawBack",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentserviceimpl:handles-command-drawback",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:245"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentServiceImpl|capability|handlesCommand|initPayment",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentserviceimpl:handles-command-initpayment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:361"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentServiceImpl|capability|handlesCommand|pay",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentserviceimpl:handles-command-pay",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:46"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentServiceImpl|capability|handlesCommand|payDifference",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentserviceimpl:handles-command-paydifference",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:260"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentServiceImpl|capability|servesQuery|queryAccount",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentserviceimpl:serves-query-queryaccount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:173"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentServiceImpl|capability|servesQuery|queryAddMoney",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentserviceimpl:serves-query-queryaddmoney",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:320"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentServiceImpl|capability|servesQuery|queryPayment",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentserviceimpl:serves-query-querypayment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:234"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentService|capability|handlesCommand|createAccount",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentservice:handles-command-createaccount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:30"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentService|capability|handlesCommand|initPayment",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentservice:handles-command-initpayment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:92"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentService|capability|handlesCommand|pay",
+   "candidateAtomId": "atom:capability:inside-payment-insidepaymentservice:handles-command-pay",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:21"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.PaymentRepository|capability|servesQuery|findById(String):Optional<Payment>",
+   "candidateAtomId": "atom:capability:inside-payment-paymentrepository:serves-query-findbyid",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:21"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.PaymentRepository|capability|servesQuery|findByOrderId(String):List<Payment>",
+   "candidateAtomId": "atom:capability:inside-payment-paymentrepository:serves-query-findbyorderid",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:29"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.PaymentRepository|capability|servesQuery|findByUserId(String):List<Payment>",
+   "candidateAtomId": "atom:capability:inside-payment-paymentrepository:serves-query-findbyuserid",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:45"
+   ]
+  },
+  {
+   "key": "capability|notification.NotificationController|capability|exposesEndpoint|GET /api/v1/notifyservice/test_send_mail",
+   "candidateAtomId": "atom:capability:notification-notificationcontroller:exposes-endpoint-test-send-mail",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:39",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:53"
+   ]
+  },
+  {
+   "key": "capability|notification.NotificationController|capability|exposesEndpoint|GET /api/v1/notifyservice/test_send_mq",
+   "candidateAtomId": "atom:capability:notification-notificationcontroller:exposes-endpoint-test-send-mq",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:33",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:35"
+   ]
+  },
+  {
+   "key": "capability|notification.NotificationController|capability|exposesEndpoint|GET /api/v1/notifyservice/welcome",
+   "candidateAtomId": "atom:capability:notification-notificationcontroller:exposes-endpoint-welcome",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:28",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:29"
+   ]
+  },
+  {
+   "key": "capability|notification.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/order_cancel_success",
+   "candidateAtomId": "atom:capability:notification-notificationcontroller:exposes-endpoint-order-cancel-success",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:72",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:74"
+   ]
+  },
+  {
+   "key": "capability|notification.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/order_changed_success",
+   "candidateAtomId": "atom:capability:notification-notificationcontroller:exposes-endpoint-order-changed-success",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:67",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:69"
+   ]
+  },
+  {
+   "key": "capability|notification.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/order_create_success",
+   "candidateAtomId": "atom:capability:notification-notificationcontroller:exposes-endpoint-order-create-success",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:62",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:64"
+   ]
+  },
+  {
+   "key": "capability|notification.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/preserve_success",
+   "candidateAtomId": "atom:capability:notification-notificationcontroller:exposes-endpoint-preserve-success",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:57",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:59"
+   ]
+  },
+  {
+   "key": "capability|notification.RabbitReceive|capability|handlesCommand|consume email queue message and trigger mail send",
+   "candidateAtomId": "atom:capability:notification-rabbitreceive:handles-command-consume-email-queue",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:51",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:52"
+   ]
+  },
+  {
+   "key": "component|inside_payment.AddMoneyRepository|static||",
+   "candidateAtomId": "atom:component:inside-payment-addmoneyrepository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/AddMoneyRepository.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.ApplicationConfig|static||",
+   "candidateAtomId": "atom:component:inside-payment-service-application-yml",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "component|inside_payment.CookieUtil|static||",
+   "candidateAtomId": "atom:component:inside-payment-cookieutil",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.InitData|static||",
+   "candidateAtomId": "atom:component:inside-payment-initdata",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.InsidePaymentServiceImpl|static||",
+   "candidateAtomId": "atom:component:inside-payment-insidepaymentserviceimpl",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.InsidePaymentService|static||",
+   "candidateAtomId": "atom:component:inside-payment-insidepaymentservice",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.OutsidePaymentInfo|static||",
+   "candidateAtomId": "atom:component:inside-payment-outsidepaymentinfo",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/OutsidePaymentInfo.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.PaymentInfo|static||",
+   "candidateAtomId": "atom:component:inside-payment-paymentinfo",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentInfo.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.PaymentRepository|static||",
+   "candidateAtomId": "atom:component:inside-payment-paymentrepository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.PaymentType|static||",
+   "candidateAtomId": "atom:component:inside-payment-paymenttype",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentType.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.Payment|static||",
+   "candidateAtomId": "atom:component:inside-payment-payment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java"
+   ]
+  },
+  {
+   "key": "component|notification.EmailConfig|static||",
+   "candidateAtomId": "atom:component:notification-emailconfig",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/EmailConfig.java"
+   ]
+  },
+  {
+   "key": "component|notification.EmailProperties|static||",
+   "candidateAtomId": "atom:component:notification-emailproperties",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/EmailProperties.java"
+   ]
+  },
+  {
+   "key": "component|notification.Mail|static||",
+   "candidateAtomId": "atom:component:notification-mail",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java"
+   ]
+  },
+  {
+   "key": "component|notification.NotificationController|static||",
+   "candidateAtomId": "atom:component:notification-notificationcontroller",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java"
+   ]
+  },
+  {
+   "key": "component|notification.NotifyInfo|static||",
+   "candidateAtomId": "atom:component:notification-notifyinfo",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java"
+   ]
+  },
+  {
+   "key": "component|notification.Queues|static||",
+   "candidateAtomId": "atom:component:notification-queues",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/Queues.java"
+   ]
+  },
+  {
+   "key": "component|notification.RabbitReceive|static||",
+   "candidateAtomId": "atom:component:notification-rabbitreceive",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java"
+   ]
+  },
+  {
+   "key": "component|notification.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:notification-securityconfig",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "contract|inside_payment.CookieUtil|specification|shapedAs|http-only-cookie-path-root-optional-max-age",
+   "candidateAtomId": "atom:contract:inside-payment-cookieutil:shaped-as-http-only-cookie",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:19",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:20",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:21",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:22",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:23",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:24"
+   ]
+  },
+  {
+   "key": "contract|inside_payment.OutsidePaymentInfo|specification|shapedAs|{orderId:String, price:String, userId:String}",
+   "candidateAtomId": "atom:contract:inside-payment-outsidepaymentinfo:shaped-as-outside-payment-request",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/OutsidePaymentInfo.java:14",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/OutsidePaymentInfo.java:15",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/OutsidePaymentInfo.java:16"
+   ]
+  },
+  {
+   "key": "contract|inside_payment.PaymentInfo|specification|shapedAs|{userId:String, orderId:String, tripId:String, price:String}",
+   "candidateAtomId": "atom:contract:inside-payment-paymentinfo:shaped-as-payment-info-dto",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentInfo.java:16",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentInfo.java:17",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentInfo.java:18",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentInfo.java:19"
+   ]
+  },
+  {
+   "key": "contract|notification.EmailProperties|specification|shapedAs|@ConfigurationProperties(\"email\"){host,port,username,password}",
+   "candidateAtomId": "atom:contract:notification-emailproperties:shaped-as-email-config-binding",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/EmailProperties.java:9",
+    "src:ts-notification-service/src/main/java/notification/config/EmailProperties.java:10",
+    "src:ts-notification-service/src/main/java/notification/config/EmailProperties.java:13",
+    "src:ts-notification-service/src/main/java/notification/config/EmailProperties.java:14",
+    "src:ts-notification-service/src/main/java/notification/config/EmailProperties.java:15",
+    "src:ts-notification-service/src/main/java/notification/config/EmailProperties.java:16"
+   ]
+  },
+  {
+   "key": "contract|notification.Mail|specification|shapedAs|{mailFrom,mailTo,mailCc,mailBcc,mailSubject,mailContent,contentType=text/plain-default,attachments,model}",
+   "candidateAtomId": "atom:contract:notification-mail:shaped-as-email-message-dto",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:15",
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:17",
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:19",
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:21",
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:23",
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:25",
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:27",
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:29",
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:31",
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java:34"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.InsidePaymentServiceImpl|effect|callsProvider|GET ts-order-other-service:/api/v1/orderOtherService/orderOther/status/{orderId}/{orderStatus}",
+   "candidateAtomId": "atom:effect:inside-payment-insidepaymentserviceimpl:calls-provider-order-other-service-set-status",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:348",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:350"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.InsidePaymentServiceImpl|effect|callsProvider|GET ts-order-other-service:/api/v1/orderOtherService/orderOther/{orderId}",
+   "candidateAtomId": "atom:effect:inside-payment-insidepaymentserviceimpl:calls-provider-order-other-service-get-order",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:52",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:56",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:59"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.InsidePaymentServiceImpl|effect|callsProvider|GET ts-order-service:/api/v1/orderservice/order/status/{orderId}/{orderStatus}",
+   "candidateAtomId": "atom:effect:inside-payment-insidepaymentserviceimpl:calls-provider-order-service-set-status",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:338",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:340"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.InsidePaymentServiceImpl|effect|callsProvider|GET ts-order-service:/api/v1/orderservice/order/{orderId}",
+   "candidateAtomId": "atom:effect:inside-payment-insidepaymentserviceimpl:calls-provider-order-service-get-order",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:51",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:54",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:59"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.InsidePaymentServiceImpl|effect|callsProvider|POST ts-payment-service:/api/v1/paymentservice/payment",
+   "candidateAtomId": "atom:effect:inside-payment-insidepaymentserviceimpl:calls-provider-payment-service-outside-pay",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:109",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:110",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:111"
+   ]
+  },
+  {
+   "key": "effect|notification.NotificationController|effect|publishes|RabbitSend.send(\"test\")-to-email-queue",
+   "candidateAtomId": "atom:effect:notification-notificationcontroller:publishes-test-message-to-queue",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:35"
+   ]
+  },
+  {
+   "key": "effect|notification.RabbitReceive|effect|callsProvider|MailService.sendEmail(mail,\"preserve_success.ftl\")",
+   "candidateAtomId": "atom:effect:notification-rabbitreceive:calls-provider-mailservice-sendemail",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:79"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.AddMoneyRepository|static|implements|CrudRepository<Money,String>",
+   "candidateAtomId": "atom:relation:inside-payment-addmoneyrepository:implements-crudrepository-money",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/AddMoneyRepository.java:12"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.ApplicationConfig|restriction|dependsOn|nacos-discovery-cluster",
+   "candidateAtomId": "atom:relation:inside-payment-service-application-yml:depends-on-nacos-discovery",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/resources/application.yml:6",
+    "src:ts-inside-payment-service/src/main/resources/application.yml:7",
+    "src:ts-inside-payment-service/src/main/resources/application.yml:8"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.InitData|restriction|dependsOn|inside_payment.InsidePaymentService",
+   "candidateAtomId": "atom:relation:inside-payment-initdata:depends-on-insidepaymentservice",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:16",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:17"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.InitData|restriction|dependsOn|inside_payment.PaymentRepository",
+   "candidateAtomId": "atom:relation:inside-payment-initdata:depends-on-paymentrepository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:19",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:20"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.InsidePaymentServiceImpl|restriction|dependsOn|RestTemplate",
+   "candidateAtomId": "atom:relation:inside-payment-insidepaymentserviceimpl:depends-on-resttemplate",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:36",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:37"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.InsidePaymentServiceImpl|restriction|dependsOn|inside_payment.AddMoneyRepository",
+   "candidateAtomId": "atom:relation:inside-payment-insidepaymentserviceimpl:depends-on-addmoneyrepository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:30",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:31"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.InsidePaymentServiceImpl|restriction|dependsOn|inside_payment.PaymentRepository",
+   "candidateAtomId": "atom:relation:inside-payment-insidepaymentserviceimpl:depends-on-paymentrepository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:33",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:34"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.PaymentRepository|static|implements|CrudRepository<Payment,String>",
+   "candidateAtomId": "atom:relation:inside-payment-paymentrepository:implements-crudrepository-payment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:13"
+   ]
+  },
+  {
+   "key": "relation|notification.EmailConfig|restriction|dependsOn|notification.EmailProperties",
+   "candidateAtomId": "atom:relation:notification-emailconfig:depends-on-emailproperties",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/EmailConfig.java:14",
+    "src:ts-notification-service/src/main/java/notification/config/EmailConfig.java:15"
+   ]
+  },
+  {
+   "key": "relation|notification.NotificationApplication|restriction|dependsOn|load-balanced-RestTemplate-bean",
+   "candidateAtomId": "atom:relation:notification-notificationapplication:depends-on-loadbalanced-resttemplate",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/NotificationApplication.java:23",
+    "src:ts-notification-service/src/main/java/notification/NotificationApplication.java:24",
+    "src:ts-notification-service/src/main/java/notification/NotificationApplication.java:25",
+    "src:ts-notification-service/src/main/java/notification/NotificationApplication.java:26"
+   ]
+  },
+  {
+   "key": "relation|notification.NotificationController|restriction|dependsOn|notification.mq.RabbitSend",
+   "candidateAtomId": "atom:relation:notification-notificationcontroller:depends-on-rabbitsend",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:22",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:23"
+   ]
+  },
+  {
+   "key": "relation|notification.NotificationController|restriction|dependsOn|notification.service.NotificationService",
+   "candidateAtomId": "atom:relation:notification-notificationcontroller:depends-on-notificationservice",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:19",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:20"
+   ]
+  },
+  {
+   "key": "relation|notification.RabbitReceive|restriction|dependsOn|notification.config.Queues:queueName",
+   "candidateAtomId": "atom:relation:notification-rabbitreceive:depends-on-queues-queuename",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:5",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:51"
+   ]
+  },
+  {
+   "key": "relation|notification.RabbitReceive|restriction|dependsOn|notification.repository.NotifyRepository",
+   "candidateAtomId": "atom:relation:notification-rabbitreceive:depends-on-notifyrepository",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:37",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:38"
+   ]
+  },
+  {
+   "key": "relation|notification.RabbitReceive|restriction|dependsOn|notification.service.MailService",
+   "candidateAtomId": "atom:relation:notification-rabbitreceive:depends-on-mailservice",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:31",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:32"
+   ]
+  },
+  {
+   "key": "relation|notification.SecurityConfig|restriction|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:notification-securityconfig:depends-on-jwtfilter",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-inside-payment-service-balance-account|cech|sectionValue|section=money-amount:string-price-parsed-to-bigdecimal-then-add-result-not-reassigned-at-two-call-sites",
+   "candidateAtomId": "atom:semantic:ts-inside-payment-service-balance-account:cech-section-money-amount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:218",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:221",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:227",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:275",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:278",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:280",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:285"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-inside-payment-service-pay-flow|cech|sectionValue|section=money-amount:string-price-parsed-to-bigdecimal-at-use-site",
+   "candidateAtomId": "atom:semantic:ts-inside-payment-service-pay-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:89",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:96",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:104",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:199",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:200",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:202"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-inside-payment-service-pay-flow|cech|sectionValue|section=order-status-code:int-code-1-order-paid-and-not-collected-hardcoded-write-value",
+   "candidateAtomId": "atom:semantic:ts-inside-payment-service-pay-flow:cech-section-order-status-code",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:333",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:340",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:350"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-notification-service-mail-dispatch|cech|sectionValue|section=money-amount:string-price-forwarded-unparsed-into-mail-template-model-map",
+   "candidateAtomId": "atom:semantic:ts-notification-service-mail-dispatch:cech-section-money-amount",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:49",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:75",
+    "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:49"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.CookieUtil|semantic|meansInUse|http-only-flag-restricts-cookie-access-from-client-side-script-reads",
+   "candidateAtomId": "atom:semantic:inside-payment-cookieutil:http-only-flag-restricts-script-read-access",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:20",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:21"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InitData|semantic|meansInUse|string-literal-price-100-point-0-hardcoded-seed-value",
+   "candidateAtomId": "atom:semantic:inside-payment-initdata:means-in-use-hardcoded-seed-price-literal",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:35"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InsidePaymentServiceImpl|semantic|meansInUse|empty-list-selects-create-account-branch-else-account-already-exists-branch",
+   "candidateAtomId": "atom:semantic:inside-payment-insidepaymentserviceimpl:empty-list-selects-create-account-branch",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:143",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:144"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InsidePaymentServiceImpl|semantic|meansInUse|incoming-http-headers-forwarded-unmodified-into-downstream-provider-calls",
+   "candidateAtomId": "atom:semantic:inside-payment-insidepaymentserviceimpl:headers-forwarded-unmodified-to-downstream-call",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:58",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:108",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:337",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:347"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InsidePaymentServiceImpl|semantic|meansInUse|list-result-from-repository-query-compared-to-null-as-existence-gate",
+   "candidateAtomId": "atom:semantic:inside-payment-insidepaymentserviceimpl:list-result-compared-to-null-existence-gate",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:159",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:246"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InsidePaymentServiceImpl|semantic|meansInUse|optional-result-compared-to-null-as-existence-gate-instead-of-ispresent",
+   "candidateAtomId": "atom:semantic:inside-payment-insidepaymentserviceimpl:optional-result-compared-to-null-existence-gate",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:362",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:363"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InsidePaymentServiceImpl|semantic|meansInUse|tripid-prefix-g-or-d-selects-order-service-branch-else-order-other-service-branch",
+   "candidateAtomId": "atom:semantic:inside-payment-insidepaymentserviceimpl:tripid-prefix-selects-order-service-branch",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:53",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:335"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InsidePaymentServiceImpl|semantic|statusGates|order-status-not-equal-notpaid-selects-pay-not-allowed-branch-else-proceeds-to-payment",
+   "candidateAtomId": "atom:semantic:inside-payment-insidepaymentserviceimpl:status-gates-order-not-payable-branch",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:70",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:71",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:72",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:73"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InsidePaymentServiceImpl|semantic|statusGates|status-1-selects-order-data-present-branch-else-order-not-exists-branch",
+   "candidateAtomId": "atom:semantic:inside-payment-insidepaymentserviceimpl:status-gates-order-lookup-result-branch",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:68",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:135",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:136",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:137"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InsidePaymentServiceImpl|semantic|statusGates|status-1-selects-outside-payment-recorded-branch-else-not-recorded-branch",
+   "candidateAtomId": "atom:semantic:inside-payment-insidepaymentserviceimpl:status-gates-outside-payment-result-branch",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:118",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:304"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.PaymentRepository|semantic|identifiedBy|payment-looked-up-by-primary-id-uuid-string-branch-or-by-order-id-field-branch-or-by-user-id-field-branch",
+   "candidateAtomId": "atom:semantic:inside-payment-paymentrepository:identified-by-primary-id-or-order-id",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:21",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:29",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:45"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.PaymentType|semantic|meansInUse|code-p-index-1-payment;code-d-index-2-difference;code-o-index-3-outside-payment;code-e-index-4-difference-and-outside-payment",
+   "candidateAtomId": "atom:semantic:inside-payment-paymenttype:means-in-use-payment-type-code-vocabulary",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentType.java:13",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentType.java:17",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentType.java:21",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentType.java:25"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.Payment|semantic|meansInUse|payment-type-enum-persisted-as-string-name-via-enumerated-string",
+   "candidateAtomId": "atom:semantic:inside-payment-payment:means-in-use-type-enum-persisted-as-string-name",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:42",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:43",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:44"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.Payment|semantic|meansInUse|string-price-field-no-scale-annotation-on-entity",
+   "candidateAtomId": "atom:semantic:inside-payment-payment:means-in-use-price-string-field-no-scale",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:37",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:38",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:39"
+   ]
+  },
+  {
+   "key": "semantic|notification.NotificationController|semantic|meansInUse|test-send-mail-endpoint-invokes-preservesuccess-directly-bypassing-rabbit-queue-path",
+   "candidateAtomId": "atom:semantic:notification-notificationcontroller:test-endpoint-bypasses-queue-direct-call",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:39",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:53"
+   ]
+  },
+  {
+   "key": "semantic|notification.RabbitReceive|semantic|meansInUse|exception-during-sendemail-selects-sendstatus-false-branch-else-sendstatus-true-branch",
+   "candidateAtomId": "atom:semantic:notification-rabbitreceive:exception-selects-sendstatus-false-branch",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:78",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:79",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:81",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:82",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:84"
+   ]
+  },
+  {
+   "key": "semantic|notification.RabbitReceive|semantic|meansInUse|null-deserialized-notifyinfo-selects-early-return-branch-else-processed-branch",
+   "candidateAtomId": "atom:semantic:notification-rabbitreceive:null-payload-selects-early-return-branch",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:53",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:55",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:56"
+   ]
+  },
+  {
+   "key": "state|inside_payment.ApplicationConfig|state|persistsIn|mysql-datasource=ts-inside-payment-mysql-ddl-auto-update",
+   "candidateAtomId": "atom:state:inside-payment-service-application-yml:persists-in-mysql-datasource",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/resources/application.yml:12",
+    "src:ts-inside-payment-service/src/main/resources/application.yml:13",
+    "src:ts-inside-payment-service/src/main/resources/application.yml:18",
+    "src:ts-inside-payment-service/src/main/resources/application.yml:19"
+   ]
+  },
+  {
+   "key": "state|inside_payment.InsidePaymentServiceImpl|state|persistsIn|AddMoneyRepository.save(Money)",
+   "candidateAtomId": "atom:state:inside-payment-insidepaymentserviceimpl:persists-in-addmoney-repository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:149",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:164",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:251"
+   ]
+  },
+  {
+   "key": "state|inside_payment.InsidePaymentServiceImpl|state|persistsIn|PaymentRepository.save(Payment)",
+   "candidateAtomId": "atom:state:inside-payment-insidepaymentserviceimpl:persists-in-payment-repository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:120",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:130",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:306",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:314",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:364"
+   ]
+  },
+  {
+   "key": "state|inside_payment.Payment|state|persistsIn|table=inside_payment",
+   "candidateAtomId": "atom:state:inside-payment-payment:persists-in-inside-payment-table",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:19",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:20"
+   ]
+  },
+  {
+   "key": "state|notification.NotifyInfo|state|persistsIn|jpa-entity-uuid-generator-no-explicit-table-annotation",
+   "candidateAtomId": "atom:state:notification-notifyinfo:persists-in-jpa-entity-default-table",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:24",
+    "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:25",
+    "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:33",
+    "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:36"
+   ]
+  },
+  {
+   "key": "state|notification.RabbitReceive|state|persistsIn|NotifyRepository.save(NotifyInfo)-after-mail-send-attempt",
+   "candidateAtomId": "atom:state:notification-rabbitreceive:persists-in-notifyinfo-after-processing",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:88",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:89",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:90"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|notification.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:notification-security-config:allows-cross-origin:all-origins-on-root",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:51-56"
+   ]
+  },
+  {
+   "key": "authority|notification.config.SecurityConfig|authority|checksPermission|any-remaining-request-selects-authenticated-required-branch-via-jwtfilter-before-usernamepasswordauthenticationfilter",
+   "candidateAtomId": "atom:authority:notification-security-config:checks-permission:authenticated-required-with-jwt-filter",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:75-77"
+   ]
+  },
+  {
+   "key": "authority|notification.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/notifyservice/**",
+   "candidateAtomId": "atom:authority:notification-security-config:permits-unauthenticated:notifyservice-paths",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|notification.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:notification-security-config:permits-unauthenticated:swagger-paths",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:73-74"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.service.InsidePaymentService|capability|handlesCommand|AddMoney",
+   "candidateAtomId": "atom:capability:inside-payment-service-interface:handles-command:add-money",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:40"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.service.InsidePaymentService|capability|handlesCommand|CreateAccount",
+   "candidateAtomId": "atom:capability:inside-payment-service-interface:handles-command:create-account",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:30"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.service.InsidePaymentService|capability|handlesCommand|DrawBack",
+   "candidateAtomId": "atom:capability:inside-payment-service-interface:handles-command:draw-back",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:66"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.service.InsidePaymentService|capability|handlesCommand|InitPayment",
+   "candidateAtomId": "atom:capability:inside-payment-service-interface:handles-command:init-payment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:92"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.service.InsidePaymentService|capability|handlesCommand|Pay",
+   "candidateAtomId": "atom:capability:inside-payment-service-interface:handles-command:pay",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:21"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.service.InsidePaymentService|capability|handlesCommand|PayDifference",
+   "candidateAtomId": "atom:capability:inside-payment-service-interface:handles-command:pay-difference",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:75"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.service.InsidePaymentService|capability|servesQuery|QueryAccount",
+   "candidateAtomId": "atom:capability:inside-payment-service-interface:serves-query:query-account",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:56"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.service.InsidePaymentService|capability|servesQuery|QueryAddMoney",
+   "candidateAtomId": "atom:capability:inside-payment-service-interface:serves-query:query-add-money",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:83"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.service.InsidePaymentService|capability|servesQuery|QueryPayment",
+   "candidateAtomId": "atom:capability:inside-payment-service-interface:serves-query:query-payment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:48"
+   ]
+  },
+  {
+   "key": "capability|notification.controller.NotificationController|capability|exposesEndpoint|GET /api/v1/notifyservice/test_send_mail",
+   "candidateAtomId": "atom:capability:notification-controller:exposes-endpoint:get-test-send-mail",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:39"
+   ]
+  },
+  {
+   "key": "capability|notification.controller.NotificationController|capability|exposesEndpoint|GET /api/v1/notifyservice/test_send_mq",
+   "candidateAtomId": "atom:capability:notification-controller:exposes-endpoint:get-test-send-mq",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:33"
+   ]
+  },
+  {
+   "key": "capability|notification.controller.NotificationController|capability|exposesEndpoint|GET /api/v1/notifyservice/welcome",
+   "candidateAtomId": "atom:capability:notification-controller:exposes-endpoint:get-welcome",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:28"
+   ]
+  },
+  {
+   "key": "capability|notification.controller.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/order_cancel_success",
+   "candidateAtomId": "atom:capability:notification-controller:exposes-endpoint:post-order-cancel-success",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:72"
+   ]
+  },
+  {
+   "key": "capability|notification.controller.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/order_changed_success",
+   "candidateAtomId": "atom:capability:notification-controller:exposes-endpoint:post-order-changed-success",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:67"
+   ]
+  },
+  {
+   "key": "capability|notification.controller.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/order_create_success",
+   "candidateAtomId": "atom:capability:notification-controller:exposes-endpoint:post-order-create-success",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:62"
+   ]
+  },
+  {
+   "key": "capability|notification.controller.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/preserve_success",
+   "candidateAtomId": "atom:capability:notification-controller:exposes-endpoint:post-preserve-success",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:57"
+   ]
+  },
+  {
+   "key": "capability|notification.mq.RabbitReceive|capability|handlesCommand|ProcessMailNotificationMessage on queue email",
+   "candidateAtomId": "atom:capability:notification-mq-rabbit-receive:handles-command:process-mail-notification-message",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:51",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:52"
+   ]
+  },
+  {
+   "key": "component|inside_payment.entity.OutsidePaymentInfo|static||",
+   "candidateAtomId": "atom:component:inside-payment-entity-outside-payment-info",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/OutsidePaymentInfo.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.entity.PaymentInfo|static||",
+   "candidateAtomId": "atom:component:inside-payment-entity-payment-info",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentInfo.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.entity.PaymentType|static||",
+   "candidateAtomId": "atom:component:inside-payment-entity-payment-type",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentType.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.entity.Payment|static||",
+   "candidateAtomId": "atom:component:inside-payment-entity-payment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.init.InitData|static||",
+   "candidateAtomId": "atom:component:inside-payment-init-init-data",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.repository.AddMoneyRepository|static||",
+   "candidateAtomId": "atom:component:inside-payment-repo-add-money-repository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/AddMoneyRepository.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.repository.PaymentRepository|static||",
+   "candidateAtomId": "atom:component:inside-payment-repo-payment-repository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.service.InsidePaymentServiceImpl|static||",
+   "candidateAtomId": "atom:component:inside-payment-service-impl",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.service.InsidePaymentService|static||",
+   "candidateAtomId": "atom:component:inside-payment-service-interface",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.util.CookieUtil|static||",
+   "candidateAtomId": "atom:component:inside-payment-util-cookie-util",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java"
+   ]
+  },
+  {
+   "key": "component|notification.config.EmailConfig|static||",
+   "candidateAtomId": "atom:component:notification-email-config",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/EmailConfig.java"
+   ]
+  },
+  {
+   "key": "component|notification.config.EmailProperties|static||",
+   "candidateAtomId": "atom:component:notification-email-properties",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/EmailProperties.java"
+   ]
+  },
+  {
+   "key": "component|notification.config.Queues|static||",
+   "candidateAtomId": "atom:component:notification-queues",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/Queues.java"
+   ]
+  },
+  {
+   "key": "component|notification.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:notification-security-config",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|notification.controller.NotificationController|static||",
+   "candidateAtomId": "atom:component:notification-controller",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java"
+   ]
+  },
+  {
+   "key": "component|notification.entity.Mail|static||",
+   "candidateAtomId": "atom:component:notification-entity-mail",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/entity/Mail.java"
+   ]
+  },
+  {
+   "key": "component|notification.entity.NotifyInfo|static||",
+   "candidateAtomId": "atom:component:notification-entity-notify-info",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java"
+   ]
+  },
+  {
+   "key": "component|notification.mq.RabbitReceive|static||",
+   "candidateAtomId": "atom:component:notification-mq-rabbit-receive",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.application-config|static||",
+   "candidateAtomId": "atom:component:inside-payment-app-config",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "contract|inside_payment.repository.AddMoneyRepository|specification|requires|lookup-by-userid-string-field",
+   "candidateAtomId": "atom:contract:inside-payment-repo-add-money-repository:requires:lookup-by-userid",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/AddMoneyRepository.java:20"
+   ]
+  },
+  {
+   "key": "contract|inside_payment.repository.PaymentRepository|specification|requires|lookup-by-id-or-orderid-or-userid-string-field-not-composite-key",
+   "candidateAtomId": "atom:contract:inside-payment-repo-payment-repository:requires:lookup-by-id-or-orderid-or-userid",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:21",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:29",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:45"
+   ]
+  },
+  {
+   "key": "contract|notification.mq.RabbitReceive|specification|shapedAs|mail-model-map-keys-username-startplace-endplace-starttime-date-seatclass-seatnumber-price-for-freemarker-template-preserve_success.ftl",
+   "candidateAtomId": "atom:contract:notification-mq-rabbit-receive:shaped-as:mail-model-template-keys",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:67-76"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.service.InsidePaymentServiceImpl|effect|callsProvider|setOrderStatus GET call to ts-order-service or ts-order-other-service to mark order paid-and-not-collected",
+   "candidateAtomId": "atom:effect:inside-payment-service-impl:calls-provider:order-status-update",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:330-358"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.service.InsidePaymentServiceImpl|effect|callsProvider|ts-payment-service outside payment on insufficient balance during pay()",
+   "candidateAtomId": "atom:effect:inside-payment-service-impl:calls-provider:ts-payment-service-pay-outside",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:99-115"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.service.InsidePaymentServiceImpl|effect|callsProvider|ts-payment-service outside payment on insufficient balance during payDifference()",
+   "candidateAtomId": "atom:effect:inside-payment-service-impl:calls-provider:ts-payment-service-pay-difference-outside",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:288-302"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.service.InsidePaymentServiceImpl|effect|writesTo|AddMoneyRepository.save during addMoney()",
+   "candidateAtomId": "atom:effect:inside-payment-service-impl:writes-to:add-money-repository-add-money",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:164"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.service.InsidePaymentServiceImpl|effect|writesTo|AddMoneyRepository.save during createAccount()",
+   "candidateAtomId": "atom:effect:inside-payment-service-impl:writes-to:add-money-repository-create-account",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:149"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.service.InsidePaymentServiceImpl|effect|writesTo|AddMoneyRepository.save during drawBack()",
+   "candidateAtomId": "atom:effect:inside-payment-service-impl:writes-to:add-money-repository-draw-back",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:251"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.service.InsidePaymentServiceImpl|effect|writesTo|PaymentRepository.save during initPayment(), reached on the branch where the Optional lookup result is not a null reference",
+   "candidateAtomId": "atom:effect:inside-payment-service-impl:writes-to:payment-repository-save-init-payment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:362-364"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.service.InsidePaymentServiceImpl|effect|writesTo|PaymentRepository.save during pay()",
+   "candidateAtomId": "atom:effect:inside-payment-service-impl:writes-to:payment-repository-save-pay",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:120",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:130"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.service.InsidePaymentServiceImpl|effect|writesTo|PaymentRepository.save during payDifference()",
+   "candidateAtomId": "atom:effect:inside-payment-service-impl:writes-to:payment-repository-save-pay-difference",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:306",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:314"
+   ]
+  },
+  {
+   "key": "effect|notification.controller.NotificationController|effect|enqueues|RabbitSend.send test payload onto queue email via test_send_mq endpoint",
+   "candidateAtomId": "atom:effect:notification-controller:enqueues:email-queue-test-send",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:35"
+   ]
+  },
+  {
+   "key": "effect|notification.mq.RabbitReceive|effect|callsProvider|MailService.sendEmail with template preserve_success.ftl",
+   "candidateAtomId": "atom:effect:notification-mq-rabbit-receive:calls-provider:mail-service-send-email",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:79"
+   ]
+  },
+  {
+   "key": "effect|notification.mq.RabbitReceive|effect|writesTo|NotifyRepository.save with generated UUID id and sendStatus flag",
+   "candidateAtomId": "atom:effect:notification-mq-rabbit-receive:writes-to:notify-repository-save",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:88-90"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.init.InitData|relation|dependsOn|inside_payment.service.InsidePaymentService",
+   "candidateAtomId": "atom:relation:inside-payment-init-init-data:depends-on:inside-payment-service-interface",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:17",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:30",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:38"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.repository.AddMoneyRepository|relation|implements|CrudRepository<Money,String>",
+   "candidateAtomId": "atom:relation:inside-payment-repo-add-money-repository:implements:crud-repository-money",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/AddMoneyRepository.java:12"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.repository.PaymentRepository|relation|implements|CrudRepository<Payment,String>",
+   "candidateAtomId": "atom:relation:inside-payment-repo-payment-repository:implements:crud-repository-payment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:13"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.service.InsidePaymentServiceImpl|relation|calls|GET http://ts-order-other-service/api/v1/orderOtherService/orderOther/status/{orderId}/{status}",
+   "candidateAtomId": "atom:relation:inside-payment-service-impl:calls:ts-order-other-service-set-status",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:348",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:349"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.service.InsidePaymentServiceImpl|relation|calls|GET http://ts-order-other-service/api/v1/orderOtherService/orderOther/{orderId}",
+   "candidateAtomId": "atom:relation:inside-payment-service-impl:calls:ts-order-other-service-get-order-other",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:52",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:56"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.service.InsidePaymentServiceImpl|relation|calls|GET http://ts-order-service/api/v1/orderservice/order/status/{orderId}/{status}",
+   "candidateAtomId": "atom:relation:inside-payment-service-impl:calls:ts-order-service-set-status",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:338",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:339"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.service.InsidePaymentServiceImpl|relation|calls|GET http://ts-order-service/api/v1/orderservice/order/{orderId}",
+   "candidateAtomId": "atom:relation:inside-payment-service-impl:calls:ts-order-service-get-order",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:51",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:54",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:59"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.service.InsidePaymentServiceImpl|relation|calls|POST http://ts-payment-service/api/v1/paymentservice/payment",
+   "candidateAtomId": "atom:relation:inside-payment-service-impl:calls:ts-payment-service-outside-payment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:109",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:110",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:296",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:297"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.service.InsidePaymentServiceImpl|relation|dependsOn|inside_payment.repository.AddMoneyRepository",
+   "candidateAtomId": "atom:relation:inside-payment-service-impl:depends-on:add-money-repository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:30"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.service.InsidePaymentServiceImpl|relation|dependsOn|inside_payment.repository.PaymentRepository",
+   "candidateAtomId": "atom:relation:inside-payment-service-impl:depends-on:payment-repository",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:33"
+   ]
+  },
+  {
+   "key": "relation|notification.config.EmailConfig|relation|dependsOn|notification.config.EmailProperties",
+   "candidateAtomId": "atom:relation:notification-email-config:depends-on:notification-email-properties",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/EmailConfig.java:15"
+   ]
+  },
+  {
+   "key": "relation|notification.controller.NotificationController|relation|dependsOn|notification.mq.RabbitSend",
+   "candidateAtomId": "atom:relation:notification-controller:depends-on:rabbit-send",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:23",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:35"
+   ]
+  },
+  {
+   "key": "relation|notification.controller.NotificationController|relation|dependsOn|notification.service.NotificationService",
+   "candidateAtomId": "atom:relation:notification-controller:depends-on:notification-service",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:20",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:53",
+    "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:59"
+   ]
+  },
+  {
+   "key": "relation|notification.mq.RabbitReceive|relation|dependsOn|notification.config.Queues.queueName",
+   "candidateAtomId": "atom:relation:notification-mq-rabbit-receive:depends-on:notification-queues",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:51"
+   ]
+  },
+  {
+   "key": "relation|notification.mq.RabbitReceive|relation|dependsOn|notification.repository.NotifyRepository",
+   "candidateAtomId": "atom:relation:notification-mq-rabbit-receive:depends-on:notify-repository",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:38",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:90"
+   ]
+  },
+  {
+   "key": "relation|notification.mq.RabbitReceive|relation|dependsOn|notification.service.MailService",
+   "candidateAtomId": "atom:relation:notification-mq-rabbit-receive:depends-on:mail-service",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:32",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:79"
+   ]
+  },
+  {
+   "key": "semantic|ctx:inside-payment-balance-query|cech|sectionValue|section=money-amount:string-price-parsed-to-bigdecimal-via-constructor-then-accumulated-by-reassignment-at-use-site",
+   "candidateAtomId": "atom:semantic:inside-payment-balance-query:cech-section-money-amount-reassigned",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:196-202"
+   ]
+  },
+  {
+   "key": "semantic|ctx:inside-payment-balance-query|cech|sectionValue|section=money-amount:string-price-parsed-to-bigdecimal-via-constructor-then-add-result-not-reassigned-at-use-site",
+   "candidateAtomId": "atom:semantic:inside-payment-balance-query:cech-section-money-amount-discarded",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:218-230"
+   ]
+  },
+  {
+   "key": "semantic|ctx:inside-payment-difference-flow|cech|sectionValue|section=money-amount:string-price-parsed-to-bigdecimal-via-constructor-then-add-result-not-reassigned-at-use-site",
+   "candidateAtomId": "atom:semantic:inside-payment-difference-flow:cech-section-money-amount-discarded",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:275-286"
+   ]
+  },
+  {
+   "key": "semantic|ctx:inside-payment-pay-flow|cech|sectionValue|section=money-amount:string-price-parsed-to-bigdecimal-via-constructor-then-accumulated-by-reassignment-at-use-site",
+   "candidateAtomId": "atom:semantic:inside-payment-pay-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:86-97"
+   ]
+  },
+  {
+   "key": "semantic|ctx:inside-payment-pay-flow|cech|sectionValue|section=order-status-code:enum-notpaid-code-compared-not-equal-selects-pay-not-allowed-branch",
+   "candidateAtomId": "atom:semantic:inside-payment-pay-flow:cech-section-order-status-code-gate",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:70"
+   ]
+  },
+  {
+   "key": "semantic|ctx:inside-payment-pay-flow|cech|sectionValue|section=order-status-code:int-literal-1-set-via-get-request-to-order-status-endpoint-labeled-paid-and-not-collected-in-source-comment",
+   "candidateAtomId": "atom:semantic:inside-payment-pay-flow:cech-section-order-status-code-set-status",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:332-333"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.entity.PaymentType|semantic|meansInUse|index-1-payment-2-difference-3-outside-payment-4-difference-and-outside-payment-classifies-a-payment-record",
+   "candidateAtomId": "atom:semantic:inside-payment-entity-payment-type:means-in-use:index-to-name-payment-classification",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentType.java:13-25"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.service.InsidePaymentServiceImpl|semantic|meansInUse|price-and-money-fields-are-string-type-parsed-via-bigdecimal-constructor-at-each-arithmetic-use-site",
+   "candidateAtomId": "atom:semantic:inside-payment-service-impl:means-in-use:price-string-parsed-bigdecimal",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:86-97",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:39"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.service.InsidePaymentServiceImpl|semantic|statusGates|optional-lookup-result-from-findbyid-compared-to-null-in-initpayment-selects-already-exists-log-branch-when-the-optional-reference-itself-is-non-null",
+   "candidateAtomId": "atom:semantic:inside-payment-service-impl:status-gates:init-payment-optional-null-check-branch",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:362-367"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.service.InsidePaymentServiceImpl|semantic|statusGates|order-status-not-equal-to-notpaid-code-selects-pay-not-allowed-error-branch-equal-selects-pay-allowed-branch",
+   "candidateAtomId": "atom:semantic:inside-payment-service-impl:status-gates:order-status-notpaid-gate",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:70-73"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.service.InsidePaymentServiceImpl|semantic|statusGates|response-status-1-selects-success-data-carrying-branch-status-0-selects-error-message-branch",
+   "candidateAtomId": "atom:semantic:inside-payment-service-impl:status-gates:response-envelope-status-1-0",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:68",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:118",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:133-137",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:150-153"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.util.CookieUtil|semantic|meansInUse|http-only-cookie-flag-set-true-to-restrict-script-access-to-cookie-value",
+   "candidateAtomId": "atom:semantic:inside-payment-util-cookie-util:means-in-use:http-only-flag",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:20-21"
+   ]
+  },
+  {
+   "key": "semantic|notification.config.Queues|semantic|identifiedBy|queue-name-literal-email-shared-identifier-between-message-producer-and-rabbitreceive-consumer",
+   "candidateAtomId": "atom:semantic:notification-queues:identified-by:queue-name-email",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/config/Queues.java:10",
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:51"
+   ]
+  },
+  {
+   "key": "semantic|notification.entity.NotifyInfo|semantic|statusGates|sendstatus-true-selects-mail-dispatched-branch-false-selects-sendemail-exception-caught-branch",
+   "candidateAtomId": "atom:semantic:notification-entity-notify-info:status-gates:send-status-branch",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:78-85",
+    "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:38"
+   ]
+  },
+  {
+   "key": "state|inside_payment.entity.Payment|state|persistsIn|table-inside_payment-with-jpa-uuid-generated-id",
+   "candidateAtomId": "atom:state:inside-payment-entity-payment:persists-in:inside-payment-table",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:19",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:24"
+   ]
+  },
+  {
+   "key": "state|ts-inside-payment-service.application-config|state|persistsIn|hibernate-ddl-auto-update-schema-management",
+   "candidateAtomId": "atom:state:inside-payment-app-config:persists-in:hibernate-ddl-auto-update",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/resources/application.yml:18-19"
+   ]
+  },
+  {
+   "key": "state|ts-inside-payment-service.application-config|state|persistsIn|mysql-database-ts-inside-payment-mysql-via-env-configurable-host-and-port",
+   "candidateAtomId": "atom:state:inside-payment-app-config:persists-in:mysql-database",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/resources/application.yml:13"
+   ]
+  }
+ ]
+}

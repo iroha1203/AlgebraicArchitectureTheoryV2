@@ -1,0 +1,1072 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|seat.config.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:seat.config.security-config:allows-cross-origin",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:52",
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|seat.config.SecurityConfig|authority|checksPermission|jwt-filter-inserted-before-username-password-authentication-filter",
+   "candidateAtomId": "atom:authority:seat.config.security-config:checks-permission-jwt-filter",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:78"
+   ]
+  },
+  {
+   "key": "authority|seat.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-images-and-configuration-and-swagger-resources-and-v2-paths",
+   "candidateAtomId": "atom:authority:seat.config.security-config:permits-unauthenticated-swagger",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:74",
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|seat.config.SecurityConfig|authority|requiresRole|role-admin-required-on-POST-/api/v1/seatservice/seats",
+   "candidateAtomId": "atom:authority:seat.config.security-config:requires-role-on-seats-post",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|seat.controller.SeatController|authority|allowsCrossOrigin|wildcard-origin-on-/api/v1/seatservice/seats-and-left_tickets-endpoints",
+   "candidateAtomId": "atom:authority:seat.controller.seat-controller:allows-cross-origin",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:38",
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:53"
+   ]
+  },
+  {
+   "key": "authority|security.config.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:security.config.security-config:allows-cross-origin",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:51",
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:55"
+   ]
+  },
+  {
+   "key": "authority|security.config.SecurityConfig|authority|checksPermission|jwt-filter-inserted-before-username-password-authentication-filter",
+   "candidateAtomId": "atom:authority:security.config.security-config:checks-permission-jwt-filter",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|security.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-images-and-configuration-and-swagger-resources-and-v2-paths",
+   "candidateAtomId": "atom:authority:security.config.security-config:permits-unauthenticated-swagger",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:72",
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|security.config.SecurityConfig|authority|requiresRole|role-admin-or-user-required-on-/api/v1/securityservice/**",
+   "candidateAtomId": "atom:authority:security.config.security-config:requires-role-on-service-root",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|security.controller.SecurityController|authority|allowsCrossOrigin|wildcard-origin-on-/api/v1/securityservice/securityConfigs-endpoints",
+   "candidateAtomId": "atom:authority:security.controller.security-controller:allows-cross-origin",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:31",
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:38",
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:45",
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:52",
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:59"
+   ]
+  },
+  {
+   "key": "capability|route.repository.RouteRepository|capability|handlesCommand|removeRouteById",
+   "candidateAtomId": "atom:capability:route.repository.route-repository:removes-route-by-id",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:47"
+   ]
+  },
+  {
+   "key": "capability|route.repository.RouteRepository|capability|servesQuery|findByIds-native-query-select-from-route-where-id-in",
+   "candidateAtomId": "atom:capability:route.repository.route-repository:finds-by-ids",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:31"
+   ]
+  },
+  {
+   "key": "capability|route.repository.RouteRepository|capability|servesQuery|findByStartStationAndEndStation-derived-query",
+   "candidateAtomId": "atom:capability:route.repository.route-repository:finds-by-start-and-end-station",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:56"
+   ]
+  },
+  {
+   "key": "capability|route.service.RouteServiceImpl|capability|handlesCommand|createAndModify",
+   "candidateAtomId": "atom:capability:route.service.route-service-impl:create-and-modify",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:32"
+   ]
+  },
+  {
+   "key": "capability|route.service.RouteServiceImpl|capability|handlesCommand|deleteRoute",
+   "candidateAtomId": "atom:capability:route.service.route-service-impl:delete-route",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:69"
+   ]
+  },
+  {
+   "key": "capability|route.service.RouteServiceImpl|capability|servesQuery|getAllRoutes",
+   "candidateAtomId": "atom:capability:route.service.route-service-impl:get-all-routes",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:124"
+   ]
+  },
+  {
+   "key": "capability|route.service.RouteServiceImpl|capability|servesQuery|getRouteById",
+   "candidateAtomId": "atom:capability:route.service.route-service-impl:get-route-by-id",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:81"
+   ]
+  },
+  {
+   "key": "capability|route.service.RouteServiceImpl|capability|servesQuery|getRouteByIds",
+   "candidateAtomId": "atom:capability:route.service.route-service-impl:get-route-by-ids",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:93"
+   ]
+  },
+  {
+   "key": "capability|route.service.RouteServiceImpl|capability|servesQuery|getRouteByStartAndEnd",
+   "candidateAtomId": "atom:capability:route.service.route-service-impl:get-route-by-start-and-end",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:104"
+   ]
+  },
+  {
+   "key": "capability|seat.controller.SeatController|capability|exposesEndpoint|GET-/api/v1/seatservice/welcome",
+   "candidateAtomId": "atom:capability:seat.controller.seat-controller:home",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:26"
+   ]
+  },
+  {
+   "key": "capability|seat.controller.SeatController|capability|handlesCommand|POST-/api/v1/seatservice/seats",
+   "candidateAtomId": "atom:capability:seat.controller.seat-controller:create",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:39"
+   ]
+  },
+  {
+   "key": "capability|seat.controller.SeatController|capability|servesQuery|POST-/api/v1/seatservice/seats/left_tickets",
+   "candidateAtomId": "atom:capability:seat.controller.seat-controller:get-left-ticket-of-interval",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:54"
+   ]
+  },
+  {
+   "key": "capability|security.controller.SecurityController|capability|exposesEndpoint|GET-/api/v1/securityservice/welcome",
+   "candidateAtomId": "atom:capability:security.controller.security-controller:home",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:26"
+   ]
+  },
+  {
+   "key": "capability|security.controller.SecurityController|capability|handlesCommand|DELETE-/api/v1/securityservice/securityConfigs/{id}",
+   "candidateAtomId": "atom:capability:security.controller.security-controller:delete",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:53"
+   ]
+  },
+  {
+   "key": "capability|security.controller.SecurityController|capability|handlesCommand|POST-/api/v1/securityservice/securityConfigs",
+   "candidateAtomId": "atom:capability:security.controller.security-controller:create",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:39"
+   ]
+  },
+  {
+   "key": "capability|security.controller.SecurityController|capability|handlesCommand|PUT-/api/v1/securityservice/securityConfigs",
+   "candidateAtomId": "atom:capability:security.controller.security-controller:update",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:46"
+   ]
+  },
+  {
+   "key": "capability|security.controller.SecurityController|capability|servesQuery|GET-/api/v1/securityservice/securityConfigs",
+   "candidateAtomId": "atom:capability:security.controller.security-controller:find-all-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:32"
+   ]
+  },
+  {
+   "key": "capability|security.controller.SecurityController|capability|servesQuery|GET-/api/v1/securityservice/securityConfigs/{accountId}",
+   "candidateAtomId": "atom:capability:security.controller.security-controller:check",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:60"
+   ]
+  },
+  {
+   "key": "capability|security.repository.SecurityRepository|capability|handlesCommand|deleteById",
+   "candidateAtomId": "atom:capability:security.repository.security-repository:delete-by-id",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:25"
+   ]
+  },
+  {
+   "key": "capability|security.repository.SecurityRepository|capability|servesQuery|findByName-derived-query",
+   "candidateAtomId": "atom:capability:security.repository.security-repository:find-by-name",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:17"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityService|capability|handlesCommand|addNewSecurityConfig",
+   "candidateAtomId": "atom:capability:security.service.security-service:add-new-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityService.java:14"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityService|capability|handlesCommand|deleteSecurityConfig",
+   "candidateAtomId": "atom:capability:security.service.security-service:delete-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityService.java:18"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityService|capability|handlesCommand|modifySecurityConfig",
+   "candidateAtomId": "atom:capability:security.service.security-service:modify-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityService.java:16"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityService|capability|servesQuery|check-account-id-against-security-config",
+   "candidateAtomId": "atom:capability:security.service.security-service:check",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityService.java:20"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityService|capability|servesQuery|findAllSecurityConfig",
+   "candidateAtomId": "atom:capability:security.service.security-service:find-all-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityService.java:12"
+   ]
+  },
+  {
+   "key": "capability|ts-route-service|capability|exposesEndpoint|http-port-11178",
+   "candidateAtomId": "atom:capability:ts-route-service:exposes-endpoint",
+   "refs": [
+    "src:ts-route-service/src/main/resources/application.yml:22"
+   ]
+  },
+  {
+   "key": "capability|ts-seat-service|capability|exposesEndpoint|http-port-18898",
+   "candidateAtomId": "atom:capability:ts-seat-service:exposes-endpoint",
+   "refs": [
+    "src:ts-seat-service/src/main/resources/application.yml:2"
+   ]
+  },
+  {
+   "key": "component|route.entity.RouteInfo|static||",
+   "candidateAtomId": "atom:component:route.entity.route-info",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/entity/RouteInfo.java:13"
+   ]
+  },
+  {
+   "key": "component|route.entity.Route|static||",
+   "candidateAtomId": "atom:component:route.entity.route",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/entity/Route.java:22"
+   ]
+  },
+  {
+   "key": "component|route.init.InitData|static||",
+   "candidateAtomId": "atom:component:route.init.init-data",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/init/InitData.java:13"
+   ]
+  },
+  {
+   "key": "component|route.repository.RouteRepository|static||",
+   "candidateAtomId": "atom:component:route.repository.route-repository",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:15"
+   ]
+  },
+  {
+   "key": "component|route.service.RouteServiceImpl|static||",
+   "candidateAtomId": "atom:component:route.service.route-service-impl",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:23"
+   ]
+  },
+  {
+   "key": "component|route.service.RouteService|static||",
+   "candidateAtomId": "atom:component:route.service.route-service",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteService.java:13"
+   ]
+  },
+  {
+   "key": "component|seat.controller.SeatController|static||",
+   "candidateAtomId": "atom:component:seat.controller.seat-controller",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:19"
+   ]
+  },
+  {
+   "key": "component|seat.service.SeatServiceImpl|static||",
+   "candidateAtomId": "atom:component:seat.service.seat-service-impl",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:27"
+   ]
+  },
+  {
+   "key": "component|seat.service.SeatService|static||",
+   "candidateAtomId": "atom:component:seat.service.seat-service",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatService.java:10"
+   ]
+  },
+  {
+   "key": "component|security.controller.SecurityController|static||",
+   "candidateAtomId": "atom:component:security.controller.security-controller",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:19"
+   ]
+  },
+  {
+   "key": "component|security.init.InitData|static||",
+   "candidateAtomId": "atom:component:security.init.init-data",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/init/InitData.java:13"
+   ]
+  },
+  {
+   "key": "component|security.repository.SecurityRepository|static||",
+   "candidateAtomId": "atom:component:security.repository.security-repository",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:14"
+   ]
+  },
+  {
+   "key": "contract|route.service.RouteServiceImpl|specification|ensures|ensures-new-random-uuid-assigned-when-id-null-or-shorter-than-32-chars-else-looks-up-existing-route-by-id-and-updates-in-place",
+   "candidateAtomId": "atom:contract:route.service.route-service-impl:create-and-modify-ensures",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:47",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:49",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:52",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:56"
+   ]
+  },
+  {
+   "key": "contract|route.service.RouteServiceImpl|specification|requires|requires-station-count-equal-to-distance-count-else-returns-status-0-rejected-branch",
+   "candidateAtomId": "atom:contract:route.service.route-service-impl:create-and-modify-requires",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:39",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:41"
+   ]
+  },
+  {
+   "key": "contract|seat.config.SecurityConfig|specification|ensures|ensures-stateless-session-creation-policy-no-http-session-used",
+   "candidateAtomId": "atom:contract:seat.config.security-config:stateless-session-ensures",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:69"
+   ]
+  },
+  {
+   "key": "contract|seat.service.SeatServiceImpl|specification|ensures|ensures-left-ticket-count-equals-matching-sold-tickets-in-interval-plus-floor-of-total-seats-times-direct-proportion-minus-total-sold-ticket-count",
+   "candidateAtomId": "atom:contract:seat.service.seat-service-impl:unused-num-ensures",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:199",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:200"
+   ]
+  },
+  {
+   "key": "contract|security.config.SecurityConfig|specification|ensures|ensures-stateless-session-creation-policy-no-http-session-used",
+   "candidateAtomId": "atom:contract:security.config.security-config:stateless-session-ensures",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:68"
+   ]
+  },
+  {
+   "key": "effect|route.service.RouteServiceImpl|effect|deletesFrom|route-entity-removed-by-id",
+   "candidateAtomId": "atom:effect:route.service.route-service-impl:deletes-from-route",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:70"
+   ]
+  },
+  {
+   "key": "effect|route.service.RouteServiceImpl|effect|writesTo|route-entity-persisted-via-repository-save",
+   "candidateAtomId": "atom:effect:route.service.route-service-impl:writes-to-route",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:63"
+   ]
+  },
+  {
+   "key": "effect|seat.service.SeatServiceImpl|effect|callsProvider|ts-config-service-GET-/api/v1/configservice/configs/DirectTicketAllocationProportion",
+   "candidateAtomId": "atom:effect:seat.service.seat-service-impl:calls-config-service",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:209",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:211"
+   ]
+  },
+  {
+   "key": "effect|seat.service.SeatServiceImpl|effect|callsProvider|ts-order-other-service-POST-/api/v1/orderOtherService/orderOther/tickets",
+   "candidateAtomId": "atom:effect:seat.service.seat-service-impl:calls-order-other-service",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:72",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:73"
+   ]
+  },
+  {
+   "key": "effect|seat.service.SeatServiceImpl|effect|callsProvider|ts-order-service-POST-/api/v1/orderservice/order/tickets",
+   "candidateAtomId": "atom:effect:seat.service.seat-service-impl:calls-order-service",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:59",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:60"
+   ]
+  },
+  {
+   "key": "relation|route.init.InitData|relation|dependsOn|route.service.RouteService",
+   "candidateAtomId": "atom:relation:route.init.init-data:depends-on",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/init/InitData.java:16",
+    "src:ts-route-service/src/main/java/route/init/InitData.java:30"
+   ]
+  },
+  {
+   "key": "relation|route.repository.RouteRepository|relation|dependsOn|route.entity.Route",
+   "candidateAtomId": "atom:relation:route.repository.route-repository:depends-on",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:15"
+   ]
+  },
+  {
+   "key": "relation|route.service.RouteServiceImpl|relation|dependsOn|route.repository.RouteRepository",
+   "candidateAtomId": "atom:relation:route.service.route-service-impl:depends-on",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:26"
+   ]
+  },
+  {
+   "key": "relation|security.init.InitData|relation|dependsOn|security.service.SecurityService",
+   "candidateAtomId": "atom:relation:security.init.init-data:depends-on",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/init/InitData.java:16",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:26",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:31"
+   ]
+  },
+  {
+   "key": "relation|security.repository.SecurityRepository|relation|dependsOn|security.entity.SecurityConfig",
+   "candidateAtomId": "atom:relation:security.repository.security-repository:depends-on",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:14"
+   ]
+  },
+  {
+   "key": "relation|ts-route-service|relation|dependsOn|nacos-service-discovery",
+   "candidateAtomId": "atom:relation:ts-route-service:depends-on-nacos",
+   "refs": [
+    "src:ts-route-service/src/main/resources/application.yml:3",
+    "src:ts-route-service/src/main/resources/application.yml:5"
+   ]
+  },
+  {
+   "key": "relation|ts-seat-service|relation|dependsOn|nacos-service-discovery",
+   "candidateAtomId": "atom:relation:ts-seat-service:depends-on-nacos",
+   "refs": [
+    "src:ts-seat-service/src/main/resources/application.yml:5",
+    "src:ts-seat-service/src/main/resources/application.yml:8"
+   ]
+  },
+  {
+   "key": "semantic|route.entity.Route|semantic|identifiedBy|application-assigned-uuid-string-not-hibernate-generated",
+   "candidateAtomId": "atom:semantic:route.entity.route:identified-by",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/entity/Route.java:24",
+    "src:ts-route-service/src/main/java/route/entity/Route.java:40"
+   ]
+  },
+  {
+   "key": "semantic|route.init.InitData|semantic|meansInUse|seed-data-uses-fixed-36-char-uuid-string-literals-as-route-ids-which-are-at-or-above-the-32-char-threshold-so-createandmodify-takes-the-lookup-existing-route-by-id-branch-rather-than-the-generate-new-uuid-branch",
+   "candidateAtomId": "atom:semantic:route.init.init-data:seed-route-id-strategy",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/init/InitData.java:25",
+    "src:ts-route-service/src/main/java/route/init/InitData.java:32",
+    "src:ts-route-service/src/main/java/route/init/InitData.java:39",
+    "src:ts-route-service/src/main/java/route/init/InitData.java:47"
+   ]
+  },
+  {
+   "key": "semantic|route.service.RouteServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-empty-result-branch",
+   "candidateAtomId": "atom:semantic:route.service.route-service-impl:status-gates-not-found",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:85",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:87",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:97",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:99",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:116",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:119",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:127",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:130"
+   ]
+  },
+  {
+   "key": "semantic|route.service.RouteServiceImpl|semantic|statusGates|status-1-selected-when-route-record-is-absent-after-deletion-attempt-status-0-selected-when-record-is-still-present-after-deletion-attempt",
+   "candidateAtomId": "atom:semantic:route.service.route-service-impl:status-gates-delete-outcome",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:70",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:72",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:76"
+   ]
+  },
+  {
+   "key": "semantic|seat.service.SeatServiceImpl|semantic|meansInUse|config-value-DirectTicketAllocationProportion-used-directly-when-request-spans-the-full-route-station-list-otherwise-inverted-as-one-minus-value-for-a-partial-route-request",
+   "candidateAtomId": "atom:semantic:seat.service.seat-service-impl:direct-ticket-allocation-proportion",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:190",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:192",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:196"
+   ]
+  },
+  {
+   "key": "semantic|seat.service.SeatServiceImpl|semantic|meansInUse|sold-ticket-is-reusable-for-a-new-request-when-its-destination-station-index-precedes-the-request-start-station-index-in-the-shared-station-list",
+   "candidateAtomId": "atom:semantic:seat.service.seat-service-impl:sold-ticket-reuse-condition",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:100",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:103",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:179",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:182"
+   ]
+  },
+  {
+   "key": "semantic|seat.service.SeatServiceImpl|semantic|meansInUse|trainnumber-startswith-g-or-d-selects-ts-order-service-branch-other-leading-capital-letter-selects-ts-order-other-service-branch",
+   "candidateAtomId": "atom:semantic:seat.service.seat-service-impl:train-number-selects-provider",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:53",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:68",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:138",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:153"
+   ]
+  },
+  {
+   "key": "semantic|seat.service.SeatServiceImpl|semantic|statusGates|distributeSeat-and-getLeftTicketOfInterval-always-return-status-1-result-carrying-branch-no-status-0-branch-observed-in-file",
+   "candidateAtomId": "atom:semantic:seat.service.seat-service-impl:status-gates-always-carrying",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:106",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:115",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:202"
+   ]
+  },
+  {
+   "key": "semantic|security.entity.SecurityConfig|semantic|identifiedBy|hibernate-generated-uuid-via-jpa-uuid-generator-strategy",
+   "candidateAtomId": "atom:semantic:security.entity.security-config:identified-by",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:19",
+    "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:24"
+   ]
+  },
+  {
+   "key": "semantic|security.init.InitData|semantic|meansInUse|config-name-max_order_1_hour-seeded-to-integer-max-value-at-startup-representing-a-per-hour-order-count-limit-with-no-effective-cap-at-initialization",
+   "candidateAtomId": "atom:semantic:security.init.init-data:max-order-1-hour-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/init/InitData.java:22",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:23",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:24"
+   ]
+  },
+  {
+   "key": "semantic|security.init.InitData|semantic|meansInUse|config-name-max_order_not_use-seeded-to-integer-max-value-at-startup-representing-a-limit-on-unused-orders-with-no-effective-cap-at-initialization",
+   "candidateAtomId": "atom:semantic:security.init.init-data:max-order-not-use-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/init/InitData.java:27",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:28",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:29"
+   ]
+  },
+  {
+   "key": "state|route.entity.Route|state|persistsIn|route-table-via-jpa-entity",
+   "candidateAtomId": "atom:state:route.entity.route:persists-in",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/entity/Route.java:19",
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:31"
+   ]
+  },
+  {
+   "key": "state|security.entity.SecurityConfig|state|persistsIn|security-config-table-via-jpa-entity",
+   "candidateAtomId": "atom:state:security.entity.security-config:persists-in",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:18",
+    "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:26"
+   ]
+  },
+  {
+   "key": "state|ts-route-service.datasource|state|persistsIn|mysql-database-ts-via-jdbc",
+   "candidateAtomId": "atom:state:ts-route-service:datasource-persists-in",
+   "refs": [
+    "src:ts-route-service/src/main/resources/application.yml:9",
+    "src:ts-route-service/src/main/resources/application.yml:12"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|seat.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:seat.config.security-config:allows-cross-origin:global-mapping",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:52-57",
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:38",
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:53"
+   ]
+  },
+  {
+   "key": "authority|seat.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-configuration-and-swagger-resources-and-v2-paths",
+   "candidateAtomId": "atom:authority:seat.config.security-config:permits-unauthenticated:swagger-paths",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:74-75"
+   ]
+  },
+  {
+   "key": "authority|seat.config.SecurityConfig|authority|requiresRole|role-ADMIN-required-on-POST-/api/v1/seatservice/seats",
+   "candidateAtomId": "atom:authority:seat.config.security-config:requires-role:post-seats",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|security.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:security.config.security-config:allows-cross-origin:global-mapping",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:51-56",
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:31",
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:59"
+   ]
+  },
+  {
+   "key": "authority|security.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-configuration-and-swagger-resources-and-v2-paths",
+   "candidateAtomId": "atom:authority:security.config.security-config:permits-unauthenticated:swagger-paths",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "authority|security.config.SecurityConfig|authority|requiresRole|role-ADMIN-or-USER-required-on-/api/v1/securityservice/**",
+   "candidateAtomId": "atom:authority:security.config.security-config:requires-role:securityservice-path",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|route.RouteService|capability|handlesCommand|createAndModify",
+   "candidateAtomId": "atom:capability:route.route-service:handles-command:create-and-modify",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteService.java:67",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:32"
+   ]
+  },
+  {
+   "key": "capability|route.RouteService|capability|handlesCommand|deleteRoute",
+   "candidateAtomId": "atom:capability:route.route-service:handles-command:delete-route",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteService.java:58",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:69"
+   ]
+  },
+  {
+   "key": "capability|route.RouteService|capability|servesQuery|getAllRoutes",
+   "candidateAtomId": "atom:capability:route.route-service:serves-query:get-all-routes",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteService.java:31",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:124"
+   ]
+  },
+  {
+   "key": "capability|route.RouteService|capability|servesQuery|getRouteById",
+   "candidateAtomId": "atom:capability:route.route-service:serves-query:get-route-by-id",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteService.java:40",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:81"
+   ]
+  },
+  {
+   "key": "capability|route.RouteService|capability|servesQuery|getRouteByIds",
+   "candidateAtomId": "atom:capability:route.route-service:serves-query:get-route-by-ids",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteService.java:49",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:93"
+   ]
+  },
+  {
+   "key": "capability|route.RouteService|capability|servesQuery|getRouteByStartAndEnd",
+   "candidateAtomId": "atom:capability:route.route-service:serves-query:get-route-by-start-and-end",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteService.java:23",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:104"
+   ]
+  },
+  {
+   "key": "capability|seat.SeatController|capability|exposesEndpoint|get-/api/v1/seatservice/welcome",
+   "candidateAtomId": "atom:capability:seat.seat-controller:exposes-endpoint:welcome",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:26-29"
+   ]
+  },
+  {
+   "key": "capability|seat.SeatController|capability|exposesEndpoint|post-/api/v1/seatservice/seats",
+   "candidateAtomId": "atom:capability:seat.seat-controller:exposes-endpoint:create-seat",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:38-43"
+   ]
+  },
+  {
+   "key": "capability|seat.SeatController|capability|exposesEndpoint|post-/api/v1/seatservice/seats/left_tickets",
+   "candidateAtomId": "atom:capability:seat.seat-controller:exposes-endpoint:left-tickets-of-interval",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:53-59"
+   ]
+  },
+  {
+   "key": "capability|security.SecurityController|capability|exposesEndpoint|delete-/api/v1/securityservice/securityConfigs/{id}",
+   "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:delete-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:52-57"
+   ]
+  },
+  {
+   "key": "capability|security.SecurityController|capability|exposesEndpoint|get-/api/v1/securityservice/securityConfigs",
+   "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:find-all-security-configs",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:32-36"
+   ]
+  },
+  {
+   "key": "capability|security.SecurityController|capability|exposesEndpoint|get-/api/v1/securityservice/securityConfigs/{accountId}",
+   "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:check-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:59-64"
+   ]
+  },
+  {
+   "key": "capability|security.SecurityController|capability|exposesEndpoint|get-/api/v1/securityservice/welcome",
+   "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:welcome",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:26-29"
+   ]
+  },
+  {
+   "key": "capability|security.SecurityController|capability|exposesEndpoint|post-/api/v1/securityservice/securityConfigs",
+   "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:create-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:38-43"
+   ]
+  },
+  {
+   "key": "capability|security.SecurityController|capability|exposesEndpoint|put-/api/v1/securityservice/securityConfigs",
+   "candidateAtomId": "atom:capability:security.security-controller:exposes-endpoint:update-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:45-50"
+   ]
+  },
+  {
+   "key": "component|route.InitData|static||",
+   "candidateAtomId": "atom:component:route.init-data",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/init/InitData.java:13"
+   ]
+  },
+  {
+   "key": "component|route.RouteInfo|static||",
+   "candidateAtomId": "atom:component:route.route-info",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/entity/RouteInfo.java:13"
+   ]
+  },
+  {
+   "key": "component|route.RouteRepository|static||",
+   "candidateAtomId": "atom:component:route.route-repository",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:15"
+   ]
+  },
+  {
+   "key": "component|route.RouteServiceImpl|static||",
+   "candidateAtomId": "atom:component:route.route-service-impl",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:23"
+   ]
+  },
+  {
+   "key": "component|route.RouteService|static||",
+   "candidateAtomId": "atom:component:route.route-service",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteService.java:13"
+   ]
+  },
+  {
+   "key": "component|route.Route|static||",
+   "candidateAtomId": "atom:component:route.route",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/entity/Route.java:22"
+   ]
+  },
+  {
+   "key": "component|seat.SeatController|static||",
+   "candidateAtomId": "atom:component:seat.seat-controller",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:19"
+   ]
+  },
+  {
+   "key": "component|seat.SeatServiceImpl|static||",
+   "candidateAtomId": "atom:component:seat.seat-service-impl",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:27"
+   ]
+  },
+  {
+   "key": "component|seat.SeatService|static||",
+   "candidateAtomId": "atom:component:seat.seat-service",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatService.java:10"
+   ]
+  },
+  {
+   "key": "component|security.InitData|static||",
+   "candidateAtomId": "atom:component:security.init-data",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/init/InitData.java:13"
+   ]
+  },
+  {
+   "key": "component|security.SecurityController|static||",
+   "candidateAtomId": "atom:component:security.security-controller",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:19"
+   ]
+  },
+  {
+   "key": "component|security.SecurityRepository|static||",
+   "candidateAtomId": "atom:component:security.security-repository",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:14"
+   ]
+  },
+  {
+   "key": "contract|route.RouteInfo|specification|shapedAs|stationList-and-distanceList-fields-are-comma-separated-strings-split-and-parsed-at-use-site",
+   "candidateAtomId": "atom:contract:route.route-info:shaped-as:comma-separated-station-and-distance-strings",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/entity/RouteInfo.java:20-22",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:35-36"
+   ]
+  },
+  {
+   "key": "contract|route.RouteServiceImpl|specification|requires|stations.length-equals-distances.length-else-returns-status-0-branch",
+   "candidateAtomId": "atom:contract:route.route-service-impl:requires:equal-station-and-distance-counts",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:39-41"
+   ]
+  },
+  {
+   "key": "effect|seat.SeatServiceImpl|effect|callsProvider|get-ts-config-service/api/v1/configservice/configs/DirectTicketAllocationProportion",
+   "candidateAtomId": "atom:effect:seat.seat-service-impl:calls-provider:ts-config-service-direct-ticket-proportion",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:207-215"
+   ]
+  },
+  {
+   "key": "effect|seat.SeatServiceImpl|effect|callsProvider|post-ts-order-other-service/api/v1/orderOtherService/orderOther/tickets-on-trainNumber-not-G-or-D-branch",
+   "candidateAtomId": "atom:effect:seat.seat-service-impl:calls-provider:ts-order-other-service-tickets",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:72-78",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:159-165"
+   ]
+  },
+  {
+   "key": "effect|seat.SeatServiceImpl|effect|callsProvider|post-ts-order-service/api/v1/orderservice/order/tickets-on-trainNumber-prefix-G-or-D-branch",
+   "candidateAtomId": "atom:effect:seat.seat-service-impl:calls-provider:ts-order-service-tickets",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:59-65",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:143-149"
+   ]
+  },
+  {
+   "key": "relation|route.InitData|restriction|dependsOn|route.RouteService",
+   "candidateAtomId": "atom:relation:route.init-data:depends-on:route.route-service",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/init/InitData.java:16",
+    "src:ts-route-service/src/main/java/route/init/InitData.java:30"
+   ]
+  },
+  {
+   "key": "relation|route.RouteServiceImpl|restriction|implements|route.RouteService",
+   "candidateAtomId": "atom:relation:route.route-service-impl:implements:route.route-service",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:23"
+   ]
+  },
+  {
+   "key": "relation|route.RouteServiceImpl|restriction|readsFrom|route.RouteRepository",
+   "candidateAtomId": "atom:relation:route.route-service-impl:reads-from:route.route-repository",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:52",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:82",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:94",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:105",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:125"
+   ]
+  },
+  {
+   "key": "relation|route.RouteServiceImpl|restriction|writesTo|route.RouteRepository",
+   "candidateAtomId": "atom:relation:route.route-service-impl:writes-to:route.route-repository",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:63",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:70"
+   ]
+  },
+  {
+   "key": "relation|seat.SeatController|restriction|dependsOn|seat.SeatService",
+   "candidateAtomId": "atom:relation:seat.seat-controller:depends-on:seat.seat-service",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/controller/SeatController.java:22"
+   ]
+  },
+  {
+   "key": "relation|seat.SeatServiceImpl|restriction|implements|seat.SeatService",
+   "candidateAtomId": "atom:relation:seat.seat-service-impl:implements:seat.seat-service",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:27"
+   ]
+  },
+  {
+   "key": "relation|security.InitData|restriction|dependsOn|security.service.SecurityService",
+   "candidateAtomId": "atom:relation:security.init-data:depends-on:security.service.security-service",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/init/InitData.java:16",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:26",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:31"
+   ]
+  },
+  {
+   "key": "relation|security.SecurityController|restriction|dependsOn|security.service.SecurityService",
+   "candidateAtomId": "atom:relation:security.security-controller:depends-on:security.service.security-service",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/controller/SecurityController.java:22"
+   ]
+  },
+  {
+   "key": "semantic|route.RouteRepository|semantic|meansInUse|single-route-looked-up-by-id-via-derived-findById-batch-lookup-via-native-sql-in-clause-on-id-list",
+   "candidateAtomId": "atom:semantic:route.route-repository:means-in-use:id-lookup-contract",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:23",
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:31-32"
+   ]
+  },
+  {
+   "key": "semantic|route.RouteServiceImpl|semantic|meansInUse|route-id-null-or-shorter-than-32-chars-selects-generate-new-uuid-branch-else-selects-lookup-existing-route-by-id-branch",
+   "candidateAtomId": "atom:semantic:route.route-service-impl:means-in-use:id-length-threshold",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:47-58"
+   ]
+  },
+  {
+   "key": "semantic|route.RouteServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-input-invalid-branch",
+   "candidateAtomId": "atom:semantic:route.route-service-impl:status-gates:response-envelope",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:41",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:64",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:73",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:76",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:85",
+    "src:ts-route-service/src/main/java/route/service/RouteServiceImpl.java:87"
+   ]
+  },
+  {
+   "key": "semantic|seat.SeatServiceImpl|semantic|meansInUse|config-value-DirectTicketAllocationProportion-is-a-decimal-string-parsed-to-double-and-used-as-a-proportion-to-compute-unused-seat-count",
+   "candidateAtomId": "atom:semantic:seat.seat-service-impl:means-in-use:direct-ticket-allocation-proportion",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:190",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:217-218"
+   ]
+  },
+  {
+   "key": "semantic|seat.SeatServiceImpl|semantic|meansInUse|logical-service-name-string-passed-to-load-balanced-resttemplate-resolves-target-host-via-client-side-discovery",
+   "candidateAtomId": "atom:semantic:seat.seat-service-impl:means-in-use:logical-service-name-load-balanced",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/SeatApplication.java:30-34",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:36-38"
+   ]
+  },
+  {
+   "key": "semantic|seat.SeatServiceImpl|semantic|meansInUse|trainNumber-prefix-G-or-D-selects-ts-order-service-branch-other-leading-capital-letters-select-ts-order-other-service-branch",
+   "candidateAtomId": "atom:semantic:seat.seat-service-impl:means-in-use:train-number-prefix-routes-service",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:53",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:68",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:138",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:153"
+   ]
+  },
+  {
+   "key": "semantic|seat.SeatServiceImpl|semantic|statusGates|status-1-on-every-observed-return-branch-of-distributeSeat-and-getLeftTicketOfInterval-no-status-0-branch-present-in-these-two-methods",
+   "candidateAtomId": "atom:semantic:seat.seat-service-impl:status-gates:always-result-carrying",
+   "refs": [
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:106",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:115",
+    "src:ts-seat-service/src/main/java/seat/service/SeatServiceImpl.java:202"
+   ]
+  },
+  {
+   "key": "semantic|security.InitData|semantic|meansInUse|max_order_1_hour-and-max_order_not_use-named-configs-represent-order-count-limit-business-rules-seeded-as-Integer.MAX_VALUE-string-an-effectively-unbounded-default",
+   "candidateAtomId": "atom:semantic:security.init-data:means-in-use:order-count-limit-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/init/InitData.java:21-31"
+   ]
+  },
+  {
+   "key": "semantic|security.SecurityRepository|semantic|meansInUse|SecurityConfig-additionally-looked-up-by-name-via-findByName-name-functions-as-a-business-key-alongside-the-generated-id",
+   "candidateAtomId": "atom:semantic:security.security-repository:means-in-use:lookup-by-name-as-business-key",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/repository/SecurityRepository.java:17",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:23",
+    "src:ts-security-service/src/main/java/security/init/InitData.java:28"
+   ]
+  },
+  {
+   "key": "semantic|security.entity.SecurityConfig|semantic|meansInUse|id-generated-via-jpa-uuid-generator-annotation-at-persistence-time-in-contrast-to-route.Route-which-assigns-a-UUID-in-application-code-constructor",
+   "candidateAtomId": "atom:semantic:security.entity.security-config:means-in-use:generated-id-strategy",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:19",
+    "src:ts-security-service/src/main/java/security/entity/SecurityConfig.java:23-24",
+    "src:ts-route-service/src/main/java/route/entity/Route.java:40-42"
+   ]
+  },
+  {
+   "key": "semantic|ts-route-service|semantic|meansInUse|mysql-username-and-password-default-values-embedded-in-yaml-overridable-by-env-var",
+   "candidateAtomId": "atom:semantic:ts-route-service.application-yml:means-in-use:default-datasource-credential",
+   "refs": [
+    "src:ts-route-service/src/main/resources/application.yml:10-11"
+   ]
+  },
+  {
+   "key": "semantic|ts-seat-service|semantic|meansInUse|nacos-discovery-server-addr-default-lists-a-three-node-cluster-hostname-set-while-route-service-config-defaults-to-a-single-localhost-address",
+   "candidateAtomId": "atom:semantic:ts-seat-service.application-yml:means-in-use:nacos-discovery-default-shape",
+   "refs": [
+    "src:ts-seat-service/src/main/resources/application.yml:5-8",
+    "src:ts-route-service/src/main/resources/application.yml:3-5"
+   ]
+  },
+  {
+   "key": "state|route.Route|state|persistsIn|jpa-entity-backed-by-crud-repository-route-table",
+   "candidateAtomId": "atom:state:route.route:persists-in:route-table",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/entity/Route.java:19",
+    "src:ts-route-service/src/main/java/route/repository/RouteRepository.java:15"
+   ]
+  }
+ ]
+}

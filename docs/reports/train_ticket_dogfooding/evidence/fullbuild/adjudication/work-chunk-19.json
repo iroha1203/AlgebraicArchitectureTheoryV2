@@ -1,0 +1,743 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|train.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origin-method-header-scope-with-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:allows-cross-origin",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:51-56"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/trainservice/**",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:permits-unauthenticated-trainservice-api",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-docs-paths",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:permits-unauthenticated-swagger-paths",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:75-76"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-delete-/api/v1/trainservice/trains/*",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requires-role-admin-delete-trains",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-post-/api/v1/trainservice/trains",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requires-role-admin-post-trains",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-put-/api/v1/trainservice/trains",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requires-role-admin-put-trains",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|train.controller.TrainController|authority|allowsCrossOrigin|cross-origin-any-origin-on-trains-crud-endpoints",
+   "candidateAtomId": "atom:authority:train-controller-traincontroller:allows-cross-origin",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:33",
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:45",
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:57"
+   ]
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origin-method-header-scope-with-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:allows-cross-origin",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:44-49"
+   ]
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-docs-paths",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:permits-unauthenticated-swagger-paths",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:65-66"
+   ]
+  },
+  {
+   "key": "authority|trainFood.controller.TrainFoodController|authority|allowsCrossOrigin|cross-origin-any-origin-on-trainfoods-list-and-by-trip-endpoints",
+   "candidateAtomId": "atom:authority:trainfood-controller-trainfoodcontroller:allows-cross-origin",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27",
+    "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:34"
+   ]
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origin-method-header-scope-with-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:allows-cross-origin",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:47-56"
+   ]
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-docs-paths",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:permits-unauthenticated-swagger-paths",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|DELETE /api/v1/trainservice/trains/{id}",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-delete-trains-by-id",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:94-103"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-get-trains-query",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:106-115"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains/byName/{name}",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-get-trains-by-name",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:58-67"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains/{id}",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-get-trains-by-id",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:46-55"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|POST /api/v1/trainservice/trains",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-post-trains",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:34-43"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|POST /api/v1/trainservice/trains/byNames",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-post-trains-by-names",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:70-79"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|PUT /api/v1/trainservice/trains",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-put-trains",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:82-91"
+   ]
+  },
+  {
+   "key": "capability|train.repository.TrainTypeRepository|capability|servesQuery|native-query-select-star-from-train_type-where-name-in-?1",
+   "candidateAtomId": "atom:capability:train-repository-traintyperepository:serves-query-find-by-names",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:20-21"
+   ]
+  },
+  {
+   "key": "capability|trainFood.controller.TrainFoodController|capability|exposesEndpoint|GET /api/v1/trainfoodservice/trainfoods",
+   "candidateAtomId": "atom:capability:trainfood-controller-trainfoodcontroller:exposes-endpoint-get-trainfoods",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:28-32"
+   ]
+  },
+  {
+   "key": "capability|trainFood.controller.TrainFoodController|capability|exposesEndpoint|GET /api/v1/trainfoodservice/trainfoods/{tripId}",
+   "candidateAtomId": "atom:capability:trainfood-controller-trainfoodcontroller:exposes-endpoint-get-trainfoods-by-tripid",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:35-39"
+   ]
+  },
+  {
+   "key": "component|train.ApplicationYml|static||",
+   "candidateAtomId": "atom:component:train-applicationyml",
+   "refs": [
+    "src:ts-train-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "component|trainFood.ApplicationYml|static||",
+   "candidateAtomId": "atom:component:trainfood-applicationyml",
+   "refs": [
+    "src:ts-train-food-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "contract|train.entity.TrainType|specification|ensures|name-column-is-notnull-and-unique",
+   "candidateAtomId": "atom:contract:train-entity-traintype:ensures-name-unique",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/entity/TrainType.java:25-27"
+   ]
+  },
+  {
+   "key": "contract|train.service.TrainService|specification|shapedAs|create/retrieve/retrieveByName/retrieveByNames/update/delete/query-signatures-over-traintype",
+   "candidateAtomId": "atom:contract:train-service-trainservice:shaped-as-crud",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/service/TrainService.java:8-23"
+   ]
+  },
+  {
+   "key": "contract|trainFood.entity.TrainFood|specification|ensures|tripId-column-is-notnull-and-unique",
+   "candidateAtomId": "atom:contract:trainfood-entity-trainfood:ensures-tripid-unique",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:25-27"
+   ]
+  },
+  {
+   "key": "contract|trainFood.service.TrainFoodService|specification|shapedAs|createTrainFood/listTrainFood/listTrainFoodByTripId-signatures-over-trainfood-and-response-envelope",
+   "candidateAtomId": "atom:contract:trainfood-service-trainfoodservice:shaped-as-crud",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodService.java:7-13"
+   ]
+  },
+  {
+   "key": "effect|train.service.TrainServiceImpl|effect|writesTo|traintype-row-persisted-via-repository-save-on-create-or-update",
+   "candidateAtomId": "atom:effect:train-service-trainserviceimpl:writes-to-traintyperepository",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:32",
+    "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:80"
+   ]
+  },
+  {
+   "key": "effect|train.service.TrainServiceImpl|effect|writesTo|traintype-row-removed-via-repository-deletebyid-on-delete",
+   "candidateAtomId": "atom:effect:train-service-trainserviceimpl:removes-traintype-row",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:93"
+   ]
+  },
+  {
+   "key": "effect|trainFood.service.TrainFoodServiceImpl|effect|writesTo|trainfood-row-or-updated-foodlist-persisted-via-repository-save",
+   "candidateAtomId": "atom:effect:trainfood-service-trainfoodserviceimpl:writes-to-trainfoodrepository",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:33",
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:36"
+   ]
+  },
+  {
+   "key": "relation|train.ApplicationYml|relation|dependsOn|nacos-discovery-server-addr-cluster-endpoints",
+   "candidateAtomId": "atom:relation:train-applicationyml:depends-on-nacos-discovery",
+   "refs": [
+    "src:ts-train-service/src/main/resources/application.yml:2-5"
+   ]
+  },
+  {
+   "key": "relation|train.config.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:train-config-securityconfig:depends-on-jwtfilter",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:79"
+   ]
+  },
+  {
+   "key": "relation|train.repository.TrainTypeRepository|relation|dependsOn|org.springframework.data.repository.CrudRepository<TrainType,String>",
+   "candidateAtomId": "atom:relation:train-repository-traintyperepository:extends-crudrepository",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:12"
+   ]
+  },
+  {
+   "key": "relation|trainFood.ApplicationYml|relation|dependsOn|nacos-discovery-server-addr-cluster-endpoints",
+   "candidateAtomId": "atom:relation:trainfood-applicationyml:depends-on-nacos-discovery",
+   "refs": [
+    "src:ts-train-food-service/src/main/resources/application.yml:5-8"
+   ]
+  },
+  {
+   "key": "relation|trainFood.config.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:trainfood-config-securityconfig:depends-on-jwtfilter",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:69"
+   ]
+  },
+  {
+   "key": "relation|trainFood.init.InitData|relation|readsFrom|classpath-resource-/trainfood.txt-read-at-startup",
+   "candidateAtomId": "atom:relation:trainfood-init-initdata:reads-from-trainfood-resource",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:29"
+   ]
+  },
+  {
+   "key": "relation|trainFood.repository.TrainFoodRepository|relation|dependsOn|org.springframework.data.repository.CrudRepository<TrainFood,String>",
+   "candidateAtomId": "atom:relation:trainfood-repository-trainfoodrepository:extends-crudrepository",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:11"
+   ]
+  },
+  {
+   "key": "relation|travelplan.config.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:travelplan-config-securityconfig:depends-on-jwtfilter",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "semantic|ctx:train-food-service-listing-flow|cech|sectionValue|section=money-amount:double-price-parsed-from-string-at-init-time",
+   "candidateAtomId": "atom:semantic:ctx-train-food-service-listing-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:61"
+   ]
+  },
+  {
+   "key": "semantic|train.ApplicationYml|semantic|meansInUse|default-mysql-database-name-literal-configured-as-s-train-mysql",
+   "candidateAtomId": "atom:semantic:train-applicationyml:default-database-name-literal",
+   "refs": [
+    "src:ts-train-service/src/main/resources/application.yml:9"
+   ]
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-created-branch-status-0-on-already-exists-branch",
+   "candidateAtomId": "atom:semantic:train-controller-traincontroller:response-status-branch-create",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:38-42"
+   ]
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-found-or-succeeded-branch-status-0-on-not-found-branch",
+   "candidateAtomId": "atom:semantic:train-controller-traincontroller:response-status-branch-lookup",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:50-54",
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:62-66",
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:86-90",
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:98-102"
+   ]
+  },
+  {
+   "key": "semantic|train.entity.TrainType|semantic|meansInUse|averageSpeed-seed-values-differentiate-train-type-tier-250-200-180-120-120-90",
+   "candidateAtomId": "atom:semantic:train-entity-traintype:averagespeed-selects-tier",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/init/InitData.java:20-59"
+   ]
+  },
+  {
+   "key": "semantic|train.service.TrainServiceImpl|semantic|meansInUse|traintype-name-must-be-non-empty-and-unique-to-create-branch",
+   "candidateAtomId": "atom:semantic:train-service-trainserviceimpl:name-is-unique-create-key",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:25-37"
+   ]
+  },
+  {
+   "key": "semantic|trainFood.entity.TrainFood|semantic|identifiedBy|tripId-uniquely-identifies-trainfood-record-for-lookup-and-upsert",
+   "candidateAtomId": "atom:semantic:trainfood-entity-trainfood:tripid-identifies-record",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:27",
+    "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:19",
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:27"
+   ]
+  },
+  {
+   "key": "semantic|trainFood.init.InitData|semantic|meansInUse|double-price-parsed-from-string-token-at-init-time-via-double-parsedouble",
+   "candidateAtomId": "atom:semantic:trainfood-init-initdata:money-amount-representation",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:61"
+   ]
+  },
+  {
+   "key": "semantic|trainFood.service.TrainFoodServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:trainfood-service-trainfoodserviceimpl:response-status-branch",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:45",
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:48",
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:56",
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:58"
+   ]
+  },
+  {
+   "key": "state|train.ApplicationYml|state|persistsIn|s-train-mysql-database-default-via-jpa-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:train-applicationyml:persists-in-mysql",
+   "refs": [
+    "src:ts-train-service/src/main/resources/application.yml:6-15"
+   ]
+  },
+  {
+   "key": "state|train.entity.TrainType|state|persistsIn|train_type-table-columns-name-economy_class-confort_class-average_speed",
+   "candidateAtomId": "atom:state:train-entity-traintype:persists-in-train-type-table",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/entity/TrainType.java:19-36"
+   ]
+  },
+  {
+   "key": "state|trainFood.ApplicationYml|state|persistsIn|ts-train-food-mysql-database-via-jpa-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:trainfood-applicationyml:persists-in-mysql",
+   "refs": [
+    "src:ts-train-food-service/src/main/resources/application.yml:11-19"
+   ]
+  },
+  {
+   "key": "state|trainFood.entity.TrainFood|state|persistsIn|train_food_list-join-table-holds-foodlist-elementcollection-keyed-by-trip-id",
+   "candidateAtomId": "atom:state:trainfood-entity-trainfood:persists-in-train-food-list-table",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:29-31"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|train.config.SecurityConfig|authority|allowsCrossOrigin|cors-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:allowsCrossOrigin:global-cors",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:46-59"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|checksPermission|JWTFilter inserted before UsernamePasswordAuthenticationFilter validates bearer token on paths not covered by permitAll matchers",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:checksPermission:jwt-filter",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:79"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/trainservice/**-matcher-listed-before-the-narrower-post-put-delete-trains-matchers-in-the-same-authorizeRequests-chain",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:permitsUnauthenticated:base-path",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:permitsUnauthenticated:swagger-paths",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:75-76"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-delete-/api/v1/trainservice/trains/*-matcher-listed-after-the-broader-permit-all-matcher-for-the-same-base-path",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requiresRole:delete-trains",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-post-/api/v1/trainservice/trains-matcher-listed-after-the-broader-permit-all-matcher-for-the-same-base-path",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requiresRole:post-trains",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-put-/api/v1/trainservice/trains-matcher-listed-after-the-broader-permit-all-matcher-for-the-same-base-path",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requiresRole:put-trains",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|train.controller.TrainController|authority|allowsCrossOrigin|@CrossOrigin(origins=\"*\") declared per-endpoint on all seven data endpoints (create/retrieve/retrieveByName/retrieveByNames/update/delete/query) in addition to service-level CORS config",
+   "candidateAtomId": "atom:authority:train-traincontroller:allowsCrossOrigin:endpoint-level",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:33",
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:81",
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:93"
+   ]
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|allowsCrossOrigin|cors-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:allowsCrossOrigin:global-cors",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:39-52"
+   ]
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|checksPermission|JWTFilter inserted before UsernamePasswordAuthenticationFilter validates bearer token on paths not covered by permitAll matchers",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:checksPermission:jwt-filter",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:69"
+   ]
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:permitsUnauthenticated:swagger-paths",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:65-66"
+   ]
+  },
+  {
+   "key": "authority|trainFood.controller.TrainFoodController|authority|allowsCrossOrigin|@CrossOrigin(origins=\"*\") declared per-endpoint on getAllTrainFood and getTrainFoodOfTrip in addition to service-level CORS config",
+   "candidateAtomId": "atom:authority:trainfood-trainfoodcontroller:allowsCrossOrigin:endpoint-level",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27",
+    "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:34"
+   ]
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|allowsCrossOrigin|cors-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:allowsCrossOrigin:global-cors",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:46-59"
+   ]
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|checksPermission|JWTFilter inserted before UsernamePasswordAuthenticationFilter validates bearer token on paths not covered by permitAll matchers",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:checksPermission:jwt-filter",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:permitsUnauthenticated:swagger-paths",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|DELETE /api/v1/trainservice/trains/{id} calls trainService.delete(id, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:delete-trains-by-id",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:94-103"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains calls trainService.query(headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:get-trains-query",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:106-115"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains/byName/{name} calls trainService.retrieveByName(name, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:get-trains-by-name",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:58-67"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains/{id} calls trainService.retrieve(id, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:get-trains-by-id",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:46-55"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|POST /api/v1/trainservice/trains calls trainService.create(trainType, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:post-trains-create",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:34-43"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|POST /api/v1/trainservice/trains/byNames calls trainService.retrieveByNames(names, headers), overloads retrieveByName method name on controller",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:post-trains-by-names",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:70-79"
+   ]
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|PUT /api/v1/trainservice/trains calls trainService.update(trainType, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:put-trains-update",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:82-91"
+   ]
+  },
+  {
+   "key": "capability|train.repository.TrainTypeRepository|capability|servesQuery|findByNames(List<String> names) backed by @Query nativeQuery=true \"SELECT * from train_type where name in ?1\"",
+   "candidateAtomId": "atom:capability:train-traintyperepository:servesQuery:findByNamesNativeQuery",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:20-21"
+   ]
+  },
+  {
+   "key": "capability|trainFood.controller.TrainFoodController|capability|exposesEndpoint|GET /api/v1/trainfoodservice/trainfoods returns Response wrapping trainFoodService.listTrainFood(headers)",
+   "candidateAtomId": "atom:capability:trainfood-trainfoodcontroller:exposesEndpoint:get-trainfoods",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27-32"
+   ]
+  },
+  {
+   "key": "capability|trainFood.controller.TrainFoodController|capability|exposesEndpoint|GET /api/v1/trainfoodservice/trainfoods/{tripId} returns Response wrapping trainFoodService.listTrainFoodByTripId",
+   "candidateAtomId": "atom:capability:trainfood-trainfoodcontroller:exposesEndpoint:get-trainfoods-by-tripid",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:34-39"
+   ]
+  },
+  {
+   "key": "capability|trainFood.repository.TrainFoodRepository|capability|servesQuery|findById(UUID id) and deleteById(UUID id) declared as additional derived-query methods alongside inherited CrudRepository<TrainFood,String>",
+   "candidateAtomId": "atom:capability:trainfood-trainfoodrepository:servesQuery:findByIdUuidParam",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:13",
+    "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:21"
+   ]
+  },
+  {
+   "key": "effect|train.service.TrainServiceImpl|effect|writesTo|train.repository.TrainTypeRepository save()/deleteById() called from create/update/delete flows guarded by prior findByName or findById presence checks",
+   "candidateAtomId": "atom:effect:train-trainserviceimpl:writesTo:traintyperepository",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:29-39",
+    "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:77-100"
+   ]
+  },
+  {
+   "key": "effect|trainFood.service.TrainFoodServiceImpl|effect|writesTo|trainFood.repository.TrainFoodRepository save() called on new-or-updated TrainFood keyed by tripId lookup",
+   "candidateAtomId": "atom:effect:trainfood-trainfoodserviceimpl:writesTo:trainfoodrepository",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:26-39"
+   ]
+  },
+  {
+   "key": "relation|train.service.TrainServiceImpl|relation|implements|train.service.TrainService",
+   "candidateAtomId": "atom:relation:train-trainserviceimpl:implements",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:15"
+   ]
+  },
+  {
+   "key": "relation|trainFood.service.TrainFoodServiceImpl|relation|implements|trainFood.service.TrainFoodService",
+   "candidateAtomId": "atom:relation:trainfood-trainfoodserviceimpl:implements",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:15"
+   ]
+  },
+  {
+   "key": "semantic|ctx:train-food-service-bootstrap|cech|sectionValue|section=money-amount:double-price-parsed-from-string-at-bootstrap-init-site",
+   "candidateAtomId": "atom:semantic:trainfood-bootstrap:cech-section-money-amount",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:61"
+   ]
+  },
+  {
+   "key": "semantic|train.config.SecurityConfig|semantic|meansInUse|authorizeRequests chain lists the broad permit-all matcher for /api/v1/trainservice/** first, then lists the narrower admin-role-gated POST/PUT/DELETE trains matchers second, within a single antMatchers list evaluated in declaration order",
+   "candidateAtomId": "atom:semantic:train-config-securityconfig:matcherOrder",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/config/SecurityConfig.java:71-74"
+   ]
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-create-success-branch-status-0-on-train-type-already-exists-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:create:statusGates",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:37-42"
+   ]
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-delete-success-branch-status-0-on-no-train-according-to-id-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:delete:statusGates",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:97-102"
+   ]
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-result-carrying-branch-found-by-id-status-0-on-not-found-by-id-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:retrieve:statusGates",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:49-54"
+   ]
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-result-carrying-branch-found-by-name-status-0-on-not-found-by-name-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:retrieveByName:statusGates",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:61-66"
+   ]
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-result-carrying-branch-found-by-names-status-0-on-not-found-by-names-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:retrieveByNames:statusGates",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:73-78"
+   ]
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-result-carrying-branch-when-trainTypes-non-empty-status-0-on-no-content-branch-when-list-null-or-empty",
+   "candidateAtomId": "atom:semantic:train-traincontroller:query:statusGates",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:109-114"
+   ]
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-update-success-branch-status-0-on-no-traintype-with-given-id-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:update:statusGates",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/controller/TrainController.java:85-90"
+   ]
+  },
+  {
+   "key": "semantic|train.init.InitData|semantic|meansInUse|bootstrap-seeds-six-named-train-types-gaotieone-250-gaotietwo-200-dongcheone-180-zhida-120-tekuai-120-kuaisu-90-average-speed-km-h-with-economy-and-confort-class-capacity-set-to-integer-max-value",
+   "candidateAtomId": "atom:semantic:train-initdata:trainTypeSpeedVocabulary",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/init/InitData.java:18-59"
+   ]
+  },
+  {
+   "key": "semantic|train.repository.TrainTypeRepository|semantic|identifiedBy|findbyid-and-deleteby-id-parameter-and-repository-generic-type-both-typed-string-consistent-with-entity-id-column",
+   "candidateAtomId": "atom:semantic:train-traintyperepository:idLookupParamType",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:12",
+    "src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:14",
+    "src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:17"
+   ]
+  },
+  {
+   "key": "semantic|trainFood.init.InitData|semantic|meansInUse|food-price-field-populated-via-double-parsedouble-from-second-comma-delimited-token-of-each-underscore-separated-bootstrap-file-entry",
+   "candidateAtomId": "atom:semantic:trainfood-initdata:moneyAmountRepresentation",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:52-64"
+   ]
+  },
+  {
+   "key": "semantic|trainFood.repository.TrainFoodRepository|semantic|identifiedBy|uuid-typed-id-parameter-declared-on-findbyid-and-deleteby-id-methods-while-entity-id-column-and-repository-generic-type-are-string",
+   "candidateAtomId": "atom:semantic:trainfood-trainfoodrepository:idLookupParamType",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:11",
+    "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:13",
+    "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:21",
+    "src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:20-23"
+   ]
+  },
+  {
+   "key": "semantic|trainFood.service.TrainFoodServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-when-found-by-tripid-status-0-on-no-content-branch-when-not-found",
+   "candidateAtomId": "atom:semantic:trainfood-trainfoodserviceimpl:listTrainFoodByTripId:statusGates",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:53-60"
+   ]
+  },
+  {
+   "key": "semantic|trainFood.service.TrainFoodServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-when-trainFoodList-non-empty-status-0-on-no-content-branch-when-list-null-or-empty",
+   "candidateAtomId": "atom:semantic:trainfood-trainfoodserviceimpl:listTrainFood:statusGates",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:42-50"
+   ]
+  },
+  {
+   "key": "state|train.entity.TrainType|state|persistsIn|default JPA entity table with jpa-uuid GenericGenerator id and unique name column",
+   "candidateAtomId": "atom:state:train-entity-traintype:persistsIn:default-table",
+   "refs": [
+    "src:ts-train-service/src/main/java/train/entity/TrainType.java:16-27"
+   ]
+  },
+  {
+   "key": "state|train.service.TrainServiceImpl|state|persistsIn|mysql database with default literal value s-train-mysql for TRAIN_MYSQL_DATABASE env var and default literal credential Abcd1234# for TRAIN_MYSQL_PASSWORD, reached via hibernate ddl-auto update",
+   "candidateAtomId": "atom:state:train-trainserviceimpl:persistsIn:mysql-datasource",
+   "refs": [
+    "src:ts-train-service/src/main/resources/application.yml:8-15"
+   ]
+  },
+  {
+   "key": "state|trainFood.entity.TrainFood|state|persistsIn|default JPA entity table with jpa-uuid GenericGenerator id and unique tripId column",
+   "candidateAtomId": "atom:state:trainfood-entity-trainfood:persistsIn:default-table",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:16-27"
+   ]
+  },
+  {
+   "key": "state|trainFood.entity.TrainFood|state|persistsIn|foodList persisted via @ElementCollection into train_food_list collection table joined on trip_id column",
+   "candidateAtomId": "atom:state:trainfood-entity-trainfood:persistsIn:train-food-list-table",
+   "refs": [
+    "src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:29-31"
+   ]
+  },
+  {
+   "key": "state|trainFood.service.TrainFoodServiceImpl|state|persistsIn|mysql database ts-train-food-mysql (default) reached via spring.datasource url with hibernate ddl-auto update",
+   "candidateAtomId": "atom:state:trainfood-trainfoodserviceimpl:persistsIn:mysql-datasource",
+   "refs": [
+    "src:ts-train-food-service/src/main/resources/application.yml:11-19"
+   ]
+  }
+ ]
+}

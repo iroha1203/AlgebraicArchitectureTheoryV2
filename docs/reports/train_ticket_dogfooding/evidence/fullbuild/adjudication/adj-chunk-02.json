@@ -1,0 +1,2743 @@
+{
+ "chunkId": "chunk-02",
+ "adjudications": [
+  {
+   "key": "authority|admintravel.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:51-56 — corsConfigurer() maps /** with ALL origins/methods/headers, allowCredentials(false), maxAge(3600). Same bean as the pass-b row (identical candidateAtomId, different subject dotting/object wording); kept the fuller maxAge-inclusive wording.",
+   "canonicalAtom": {
+    "subject": "admintravel.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:admintravel-securityconfig:allows-cross-origin",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:51-56"
+    ]
+   }
+  },
+  {
+   "key": "authority|admintravel.config.SecurityConfig|authority|allowsCrossOrigin|cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:allows-cross-origin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:51-56 — same CORS bean pass-a captured under a shorter subject path; merged into one canonical atom.",
+   "canonicalAtom": {
+    "subject": "admintravel.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:admintravel-securityconfig:allows-cross-origin",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:51-56"
+    ]
+   }
+  },
+  {
+   "key": "authority|admintravel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:permits-unauthenticated",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:72-73 — antMatchers for swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/** are permitAll(). Same fact as pass-b's differently-slugged row; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:admintravel-securityconfig:permits-unauthenticated",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:72-73"
+    ]
+   }
+  },
+  {
+   "key": "authority|admintravel.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:permits-unauthenticated-swagger",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:72-73 — same swagger permitAll antMatcher pass-a captured; merged into one canonical atom.",
+   "canonicalAtom": {
+    "subject": "admintravel.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:admintravel-securityconfig:permits-unauthenticated",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:72-73"
+    ]
+   }
+  },
+  {
+   "key": "authority|admintravel.SecurityConfig|authority|requiresRole|ADMIN-on-/api/v1/admintravelservice/**",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:requires-role",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:71 — antMatcher gated with hasRole(\"ADMIN\") confirmed. Same fact as pass-b's differently-slugged row; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:admintravel-securityconfig:requires-role",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-on-/api/v1/admintravelservice/**",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "authority|admintravel.config.SecurityConfig|authority|requiresRole|ADMIN-role-required-on-/api/v1/admintravelservice/**",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:requires-role-admin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:71 — same role gate pass-a captured; merged into one canonical atom.",
+   "canonicalAtom": {
+    "subject": "admintravel.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:admintravel-securityconfig:requires-role",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-on-/api/v1/admintravelservice/**",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "authority|adminuser.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:51-56 — corsConfigurer() maps /** with ALL origins/methods/headers, allowCredentials(false), maxAge(3600). Same bean as the pass-b row (identical candidateAtomId, different subject dotting/object wording); kept the fuller maxAge-inclusive wording.",
+   "canonicalAtom": {
+    "subject": "adminuser.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:adminuser-securityconfig:allows-cross-origin",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:51-56"
+    ]
+   }
+  },
+  {
+   "key": "authority|adminuser.config.SecurityConfig|authority|allowsCrossOrigin|cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:allows-cross-origin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:51-56 — same CORS bean pass-a captured under a shorter subject path; merged into one canonical atom.",
+   "canonicalAtom": {
+    "subject": "adminuser.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:adminuser-securityconfig:allows-cross-origin",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:51-56"
+    ]
+   }
+  },
+  {
+   "key": "authority|adminuser.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:permits-unauthenticated",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:71-72 — antMatchers for swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/** are permitAll(). Same fact as pass-b's differently-slugged row; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:adminuser-securityconfig:permits-unauthenticated",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:71-72"
+    ]
+   }
+  },
+  {
+   "key": "authority|adminuser.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:permits-unauthenticated-swagger",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:71-72 — same swagger permitAll antMatcher pass-a captured; merged into one canonical atom.",
+   "canonicalAtom": {
+    "subject": "adminuser.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:adminuser-securityconfig:permits-unauthenticated",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:71-72"
+    ]
+   }
+  },
+  {
+   "key": "authority|adminuser.SecurityConfig|authority|requiresRole|ADMIN-on-/api/v1/adminuserservice/users/**",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:requires-role",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:73 — antMatcher gated with hasRole(\"ADMIN\") confirmed. Same fact as pass-b's differently-slugged row; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:adminuser-securityconfig:requires-role",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-on-/api/v1/adminuserservice/users/**",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|adminuser.config.SecurityConfig|authority|requiresRole|ADMIN-role-required-on-/api/v1/adminuserservice/users/**",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:requires-role-admin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:73 — same role gate pass-a captured; merged into one canonical atom.",
+   "canonicalAtom": {
+    "subject": "adminuser.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:adminuser-securityconfig:requires-role",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-on-/api/v1/adminuserservice/users/**",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|assurance.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:51-56 — corsConfigurer() maps /** with ALL origins/methods/headers, allowCredentials(false), maxAge(3600). Same bean as the pass-b row (identical candidateAtomId, different subject dotting/object wording); kept the fuller maxAge-inclusive wording.",
+   "canonicalAtom": {
+    "subject": "assurance.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:assurance-securityconfig:allows-cross-origin",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:51-56"
+    ]
+   }
+  },
+  {
+   "key": "authority|assurance.config.SecurityConfig|authority|allowsCrossOrigin|cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:allows-cross-origin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:51-56 — same CORS bean pass-a captured under a shorter subject path; merged into one canonical atom.",
+   "canonicalAtom": {
+    "subject": "assurance.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:assurance-securityconfig:allows-cross-origin",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:51-56"
+    ]
+   }
+  },
+  {
+   "key": "authority|assurance.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:permits-unauthenticated",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:72-73 — antMatchers for swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/** are permitAll(). Same fact as pass-b's differently-slugged row; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:assurance-securityconfig:permits-unauthenticated",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:72-73"
+    ]
+   }
+  },
+  {
+   "key": "authority|assurance.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:permits-unauthenticated-swagger",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:72-73 — same swagger permitAll antMatcher pass-a captured; merged into one canonical atom.",
+   "canonicalAtom": {
+    "subject": "assurance.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:assurance-securityconfig:permits-unauthenticated",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:72-73"
+    ]
+   }
+  },
+  {
+   "key": "authority|assurance.SecurityConfig|authority|requiresRole|USER-on-/api/v1/assuranceservice/**",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:requires-role",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:71 — antMatcher gated with hasRole(\"USER\") confirmed. Same fact as pass-b's differently-slugged row; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:assurance-securityconfig:requires-role",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "USER-on-/api/v1/assuranceservice/**",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "authority|assurance.config.SecurityConfig|authority|requiresRole|USER-role-required-on-/api/v1/assuranceservice/**",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:requires-role-user",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:71 — same role gate pass-a captured; merged into one canonical atom.",
+   "canonicalAtom": {
+    "subject": "assurance.SecurityConfig",
+    "kind": "authority",
+    "id": "atom:authority:assurance-securityconfig:requires-role",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "USER-on-/api/v1/assuranceservice/**",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "component|admintravel.AdminTravelController|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelcontroller",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:19 — class declaration confirmed. Same class as pass-b's whole-file-ref row; kept the more precise line citation.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "component",
+    "id": "atom:component:admintravel-admintravelcontroller",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:19"
+    ]
+   }
+  },
+  {
+   "key": "component|admintravel.controller.AdminTravelController|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelcontroller",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java — same class pass-a cited at a specific declaration line; merged, keeping pass-a's precise line ref.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "component",
+    "id": "atom:component:admintravel-admintravelcontroller",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:19"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|GET-/api/v1/admintravelservice/welcome",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:25-28 — @GetMapping(\"/welcome\") home() confirmed. Same endpoint as pass-b's row; merged, kept broader line range.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:welcome",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/admintravelservice/welcome",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:25-28"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|GET-/api/v1/admintravelservice/welcome",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:25 — same welcome endpoint pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:welcome",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/admintravelservice/welcome",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:25-28"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|GET-/api/v1/admintravelservice/admintravel-cross-origin-star",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:get-all-travels",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:30-35 — @GetMapping endpoint confirmed. Pass-a's object baked a '-cross-origin-star' suffix into the endpoint object from the method's @CrossOrigin annotation; dropped that suffix here since pass-b split the CrossOrigin fact into its own authority atom (see adopted row), keeping this capability atom's object as plain METHOD-PATH consistent with its sibling capability atoms.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:get-all-travels",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/admintravelservice/admintravel",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:30-35"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|GET-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:get-all-travels",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:31 — same endpoint, clean METHOD-PATH object; merged (pass-a's embedded cross-origin-star suffix moved to a separate authority atom).",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:get-all-travels",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/admintravelservice/admintravel",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:30-35"
+    ]
+   }
+  },
+  {
+   "key": "authority|admintravel.controller.AdminTravelController|authority|allowsCrossOrigin|endpoint-level-cross-origin-origins-star-on-get-all-travels",
+   "candidateAtomId": "atom:authority:admintravel-admintravelcontroller:allows-cross-origin-get-all-travels",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:30 — @CrossOrigin(origins=\"*\") annotates only this method, not the sibling welcome/add/update/delete endpoints on the same controller; genuine pass-b-only observation, confirmed.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "authority",
+    "id": "atom:authority:admintravel-admintravelcontroller:allows-cross-origin-get-all-travels",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "endpoint-level-crossorigin-origins-star-on-get-all-travels-method-in-addition-to-global-cors-mapping",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|POST-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:add-travel",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:37-42 — mapping annotation confirmed. Same endpoint as pass-b's row; merged, kept broader line range.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:add-travel",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/admintravelservice/admintravel",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:37-42"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|POST-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:add-travel",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:37 — same endpoint pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:add-travel",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/admintravelservice/admintravel",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:37-42"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|PUT-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:update-travel",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:44-49 — mapping annotation confirmed. Same endpoint as pass-b's row; merged, kept broader line range.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:update-travel",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT-/api/v1/admintravelservice/admintravel",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:44-49"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|PUT-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:update-travel",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:44 — same endpoint pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:update-travel",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT-/api/v1/admintravelservice/admintravel",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:44-49"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|DELETE-/api/v1/admintravelservice/admintravel/{tripId}",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:delete-travel",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:51-55 — mapping annotation confirmed. Same endpoint as pass-b's row; merged, kept broader line range.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:delete-travel",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/admintravelservice/admintravel/{tripId}",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:51-55"
+    ]
+   }
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|DELETE-/api/v1/admintravelservice/admintravel/{tripId}",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:delete-travel",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:51 — same endpoint pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "capability",
+    "id": "atom:capability:admintravel-admintravelcontroller:delete-travel",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/admintravelservice/admintravel/{tripId}",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:51-55"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.AdminTravelController|relation|dependsOn|admintravel.AdminTravelService",
+   "candidateAtomId": "atom:relation:admintravel-admintravelcontroller:depends-on",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:20-21 — @Autowired field injects admintravel.AdminTravelService. Pass-b's candidate packet has no dependsOn atom for this controller at all (not a naming-drift miss, a genuine pass-a-only observation); confirmed and adopted.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelController",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelcontroller:depends-on",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "admintravel.AdminTravelService",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:20-21"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.AdminUserController|static||",
+   "candidateAtomId": "atom:component:adminuser-adminusercontroller",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:19 — class declaration confirmed. Same class as pass-b's whole-file-ref row; kept the more precise line citation.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "component",
+    "id": "atom:component:adminuser-adminusercontroller",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:19"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.controller.AdminUserController|static||",
+   "candidateAtomId": "atom:component:adminuser-adminusercontroller",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java — same class pass-a cited at a specific declaration line; merged, keeping pass-a's precise line ref.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "component",
+    "id": "atom:component:adminuser-adminusercontroller",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:19"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|GET-/api/v1/adminuserservice/users/welcome",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:25-28 — @GetMapping(\"/welcome\") home() confirmed. Same endpoint as pass-b's row; merged, kept broader line range.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:welcome",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/adminuserservice/users/welcome",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:25-28"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|GET-/api/v1/adminuserservice/users/welcome",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:25 — same welcome endpoint pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:welcome",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/adminuserservice/users/welcome",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:25-28"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|GET-/api/v1/adminuserservice/users-cross-origin-star",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:get-all-users",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:30-35 — @GetMapping endpoint confirmed. Pass-a's object baked a '-cross-origin-star' suffix into the endpoint object from the method's @CrossOrigin annotation; dropped that suffix here since pass-b split the CrossOrigin fact into its own authority atom (see adopted row), keeping this capability atom's object as plain METHOD-PATH consistent with its sibling capability atoms.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:get-all-users",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/adminuserservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:30-35"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|GET-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:get-all-users",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:31 — same endpoint, clean METHOD-PATH object; merged (pass-a's embedded cross-origin-star suffix moved to a separate authority atom).",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:get-all-users",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/adminuserservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:30-35"
+    ]
+   }
+  },
+  {
+   "key": "authority|adminuser.controller.AdminUserController|authority|allowsCrossOrigin|endpoint-level-cross-origin-origins-star-on-get-all-users",
+   "candidateAtomId": "atom:authority:adminuser-adminusercontroller:allows-cross-origin-get-all-users",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:30 — @CrossOrigin(origins=\"*\") annotates only this method, not the sibling welcome/add/update/delete endpoints on the same controller; genuine pass-b-only observation, confirmed.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "authority",
+    "id": "atom:authority:adminuser-adminusercontroller:allows-cross-origin-get-all-users",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "endpoint-level-crossorigin-origins-star-on-get-all-users-method-in-addition-to-global-cors-mapping",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|POST-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:add-user",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:44-48 — mapping annotation confirmed. Same endpoint as pass-b's row; merged, kept broader line range.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:add-user",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/adminuserservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:44-48"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|POST-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:add-user",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:44 — same endpoint pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:add-user",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/adminuserservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:44-48"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|PUT-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:update-user",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:37-41 — mapping annotation confirmed. Same endpoint as pass-b's row; merged, kept broader line range.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:update-user",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT-/api/v1/adminuserservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:37-41"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|PUT-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:update-user",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:37 — same endpoint pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:update-user",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT-/api/v1/adminuserservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:37-41"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|DELETE-/api/v1/adminuserservice/users/{userId}",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:delete-user",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:50-54 — mapping annotation confirmed. Same endpoint as pass-b's row; merged, kept broader line range.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:delete-user",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/adminuserservice/users/{userId}",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:50-54"
+    ]
+   }
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|DELETE-/api/v1/adminuserservice/users/{userId}",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:delete-user",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:50 — same endpoint pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "capability",
+    "id": "atom:capability:adminuser-adminusercontroller:delete-user",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/adminuserservice/users/{userId}",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:50-54"
+    ]
+   }
+  },
+  {
+   "key": "relation|adminuser.AdminUserController|relation|dependsOn|adminuser.AdminUserService",
+   "candidateAtomId": "atom:relation:adminuser-adminusercontroller:depends-on",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:21-22 — @Autowired field injects adminuser.AdminUserService. Pass-b's candidate packet has no dependsOn atom for this controller at all (not a naming-drift miss, a genuine pass-a-only observation); confirmed and adopted.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserController",
+    "kind": "relation",
+    "id": "atom:relation:adminuser-adminusercontroller:depends-on",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "adminuser.AdminUserService",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:21-22"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.AssuranceController|static||",
+   "candidateAtomId": "atom:component:assurance-assurancecontroller",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:20 — class declaration confirmed. Same class as pass-b's whole-file-ref row; kept the precise line citation.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "component",
+    "id": "atom:component:assurance-assurancecontroller",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:20"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.controller.AssuranceController|static||",
+   "candidateAtomId": "atom:component:assurance-assurancecontroller",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java — same class pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "component",
+    "id": "atom:component:assurance-assurancecontroller",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:20"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/welcome",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:27-30 — @GetMapping(\"/welcome\") confirmed, no CrossOrigin on this one method. Same endpoint as pass-b's row; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:welcome",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/welcome",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:27-30"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/welcome",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:27 — same welcome endpoint; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:welcome",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/welcome",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:27-30"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances-cross-origin-star",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-all-assurances",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:32-37 — mapping annotation confirmed. Pass-a's object embedded a '-cross-origin-star' suffix for get-all-assurances/get-all-assurance-type only (inconsistently, since 6 of the other 7 data endpoints also carry @CrossOrigin but weren't suffixed); dropped the suffix for a clean METHOD-PATH object, since pass-b's broader CrossOrigin authority atom (adopted below) covers this more completely and consistently.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:get-all-assurances",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurances",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:32-37"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-all-assurances",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:33 — same endpoint, clean METHOD-PATH object; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:get-all-assurances",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurances",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:32-37"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/types-cross-origin-star",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-all-assurance-type",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:39-44 — mapping annotation confirmed. Pass-a's object embedded a '-cross-origin-star' suffix for get-all-assurances/get-all-assurance-type only (inconsistently, since 6 of the other 7 data endpoints also carry @CrossOrigin but weren't suffixed); dropped the suffix for a clean METHOD-PATH object, since pass-b's broader CrossOrigin authority atom (adopted below) covers this more completely and consistently.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:get-all-assurance-types",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurances/types",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:39-44"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/types",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-all-assurance-types",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:40 — same endpoint, clean METHOD-PATH object; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:get-all-assurance-types",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurances/types",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:39-44"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|DELETE-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:delete-assurance",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:46-51 — mapping annotation confirmed. Pass-a's object embedded a '-cross-origin-star' suffix for get-all-assurances/get-all-assurance-type only (inconsistently, since 6 of the other 7 data endpoints also carry @CrossOrigin but weren't suffixed); dropped the suffix for a clean METHOD-PATH object, since pass-b's broader CrossOrigin authority atom (adopted below) covers this more completely and consistently.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:delete-assurance",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:46-51"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|DELETE-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:delete-assurance",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:47 — same endpoint, clean METHOD-PATH object; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:delete-assurance",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:46-51"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|DELETE-/api/v1/assuranceservice/assurances/orderid/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:delete-assurance-by-order-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:53-58 — mapping annotation confirmed. Pass-a's object embedded a '-cross-origin-star' suffix for get-all-assurances/get-all-assurance-type only (inconsistently, since 6 of the other 7 data endpoints also carry @CrossOrigin but weren't suffixed); dropped the suffix for a clean METHOD-PATH object, since pass-b's broader CrossOrigin authority atom (adopted below) covers this more completely and consistently.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:delete-assurance-by-order-id",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/assuranceservice/assurances/orderid/{orderId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:53-58"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|DELETE-/api/v1/assuranceservice/assurances/orderid/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:delete-assurance-by-order-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:54 — same endpoint, clean METHOD-PATH object; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:delete-assurance-by-order-id",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/assuranceservice/assurances/orderid/{orderId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:53-58"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|PATCH-/api/v1/assuranceservice/assurances/{assuranceId}/{orderId}/{typeIndex}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:modify-assurance",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:60-68 — mapping annotation confirmed. Pass-a's object embedded a '-cross-origin-star' suffix for get-all-assurances/get-all-assurance-type only (inconsistently, since 6 of the other 7 data endpoints also carry @CrossOrigin but weren't suffixed); dropped the suffix for a clean METHOD-PATH object, since pass-b's broader CrossOrigin authority atom (adopted below) covers this more completely and consistently.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:modify-assurance",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PATCH-/api/v1/assuranceservice/assurances/{assuranceId}/{orderId}/{typeIndex}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:60-68"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|PATCH-/api/v1/assuranceservice/assurances/{assuranceId}/{orderId}/{typeIndex}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:modify-assurance",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:61 — same endpoint, clean METHOD-PATH object; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:modify-assurance",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PATCH-/api/v1/assuranceservice/assurances/{assuranceId}/{orderId}/{typeIndex}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:60-68"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/{typeIndex}/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:create-new-assurance",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:71-77 — mapping annotation confirmed. Pass-a's object embedded a '-cross-origin-star' suffix for get-all-assurances/get-all-assurance-type only (inconsistently, since 6 of the other 7 data endpoints also carry @CrossOrigin but weren't suffixed); dropped the suffix for a clean METHOD-PATH object, since pass-b's broader CrossOrigin authority atom (adopted below) covers this more completely and consistently.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:create-new-assurance",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurances/{typeIndex}/{orderId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:71-77"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/{typeIndex}/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:create-new-assurance",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:72 — same endpoint, clean METHOD-PATH object; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:create-new-assurance",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurances/{typeIndex}/{orderId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:71-77"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-assurance-by-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:79-84 — mapping annotation confirmed. Pass-a's object embedded a '-cross-origin-star' suffix for get-all-assurances/get-all-assurance-type only (inconsistently, since 6 of the other 7 data endpoints also carry @CrossOrigin but weren't suffixed); dropped the suffix for a clean METHOD-PATH object, since pass-b's broader CrossOrigin authority atom (adopted below) covers this more completely and consistently.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:get-assurance-by-id",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:79-84"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-assurance-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:80 — same endpoint, clean METHOD-PATH object; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:get-assurance-by-id",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:79-84"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurance/orderid/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:find-assurance-by-order-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:86-91 — mapping annotation confirmed. Pass-a's object embedded a '-cross-origin-star' suffix for get-all-assurances/get-all-assurance-type only (inconsistently, since 6 of the other 7 data endpoints also carry @CrossOrigin but weren't suffixed); dropped the suffix for a clean METHOD-PATH object, since pass-b's broader CrossOrigin authority atom (adopted below) covers this more completely and consistently.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:find-assurance-by-order-id",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurance/orderid/{orderId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:86-91"
+    ]
+   }
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurance/orderid/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:find-assurance-by-order-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:87 — same endpoint, clean METHOD-PATH object; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "capability",
+    "id": "atom:capability:assurance-assurancecontroller:find-assurance-by-order-id",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/assuranceservice/assurance/orderid/{orderId}",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:86-91"
+    ]
+   }
+  },
+  {
+   "key": "relation|assurance.AssuranceController|relation|dependsOn|assurance.AssuranceService",
+   "candidateAtomId": "atom:relation:assurance-assurancecontroller:depends-on",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:22-23 — @Autowired private AssuranceService assuranceService confirmed. Pass-b's candidate packet has no dependsOn atom for this controller; genuine pass-a-only observation, confirmed and adopted.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "relation",
+    "id": "atom:relation:assurance-assurancecontroller:depends-on",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "assurance.AssuranceService",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:22-23"
+    ]
+   }
+  },
+  {
+   "key": "authority|assurance.controller.AssuranceController|authority|allowsCrossOrigin|every-controller-method-annotated-crossorigin-origins-star-in-addition-to-global-cors-mapping",
+   "candidateAtomId": "atom:authority:assurance-assurancecontroller:allows-cross-origin-all-endpoints",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:32,39,46,53,60,71,79,86 — all 8 data-bearing methods (getAllAssurances, getAllAssuranceType, deleteAssurance, deleteAssuranceByOrderId, modifyAssurance, createNewAssurance, getAssuranceById, findAssuranceByOrderId) carry @CrossOrigin(origins=\"*\"); only home()/welcome at line 27 lacks it. Pass-b's original wording said 'every controller method', which is not literally true (welcome is excluded); reworded to 'every method except welcome' and expanded refs to all 8 sites for accuracy. Genuine pass-b-only observation (pass-a only flagged 2 of the 8 sites, folded into capability objects) — adopted with corrected wording.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "authority",
+    "id": "atom:authority:assurance-assurancecontroller:allows-cross-origin-all-endpoints",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "every-controller-method-except-welcome-is-individually-annotated-crossorigin-origins-star-in-addition-to-global-cors-mapping",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:32",
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:39",
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:46",
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:53",
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:60",
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:71",
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:79",
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:86"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.controller.AssuranceController|semantic|meansInUse|get-http-verb-selected-for-create-new-assurance-capability-at-/assurances/{typeindex}/{orderid}-rather-than-post",
+   "candidateAtomId": "atom:semantic:assurance-assurancecontroller:create-new-assurance-http-verb",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:71,76 — createNewAssurance is mapped with @GetMapping and calls assuranceService.create(...), a resource-creating operation exposed over GET rather than POST. Genuine pass-b-only observation, confirmed.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-assurancecontroller:create-new-assurance-http-verb",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "get-http-verb-selected-for-create-new-assurance-capability-at-/assurances/{typeindex}/{orderid}-rather-than-post",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:71",
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:76"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.controller.AssuranceController|semantic|meansInUse|find-assurance-by-order-id-endpoint-mounted-under-singular-assurance-orderid-segment-while-other-endpoints-on-this-controller-use-plural-assurances-segment",
+   "candidateAtomId": "atom:semantic:assurance-assurancecontroller:find-by-order-id-path-naming",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:19,87 — @RequestMapping(\"/api/v1/assuranceservice\") plus @GetMapping(\"/assurance/orderid/{orderId}\") confirmed: this is the only endpoint on the controller using the singular '/assurance/' segment instead of '/assurances/'. Genuine pass-b-only observation, confirmed.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceController",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-assurancecontroller:find-by-order-id-path-naming",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "find-assurance-by-order-id-endpoint-mounted-under-singular-assurance-orderid-segment-while-other-endpoints-on-this-controller-use-plural-assurances-segment",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:19",
+     "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:87"
+    ]
+   }
+  },
+  {
+   "key": "component|admintravel.AdminTravelService|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelservice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelService.java:10 — interface declaration confirmed. Same interface as pass-b's whole-file-ref row; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelService",
+    "kind": "component",
+    "id": "atom:component:admintravel-admintravelservice",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelService.java:10"
+    ]
+   }
+  },
+  {
+   "key": "component|admintravel.service.AdminTravelService|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelservice",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelService.java — same interface pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelService",
+    "kind": "component",
+    "id": "atom:component:admintravel-admintravelservice",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelService.java:10"
+    ]
+   }
+  },
+  {
+   "key": "component|admintravel.AdminTravelServiceImpl|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelserviceimpl",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:29 — class declaration confirmed. Same class as pass-b's whole-file-ref row; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "component",
+    "id": "atom:component:admintravel-admintravelserviceimpl",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:29"
+    ]
+   }
+  },
+  {
+   "key": "component|admintravel.service.AdminTravelServiceImpl|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelserviceimpl",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java — same class pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "component",
+    "id": "atom:component:admintravel-admintravelserviceimpl",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:29"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|GET-http://ts-travel-service/api/v1/travelservice/admin_trip",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-admin-trip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:48-54 — call to http://ts-travel-service/api/v1/travelservice/admin_trip confirmed. getAllTravels calls this unconditionally (no branch/restriction) every invocation, alongside the travel2-service admin_trip call below; used 'relation' axis (default table) rather than pass-b's uniform 'restriction' axis, since no conditional branch selects among alternatives for this particular call. Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-admin-trip",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-travel-service/api/v1/travelservice/admin_trip",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:48-54"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-travel-service:/api/v1/travelservice/admin_trip",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-travel-service-admin-trip",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:48,50 — same call pass-a captured with a wider line range; merged. Axis corrected from pass-b's 'restriction' to 'relation' since this call has no branch/restriction evidence (see basis on pass-a row).",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-admin-trip",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-travel-service/api/v1/travelservice/admin_trip",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:48-54"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|GET-http://ts-travel2-service/api/v1/travel2service/admin_trip",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-admin-trip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:66-72 — call to http://ts-travel2-service/api/v1/travel2service/admin_trip confirmed. getAllTravels calls this unconditionally every invocation, alongside the travel-service admin_trip call above; used 'relation' axis (default table) rather than pass-b's uniform 'restriction' axis, since no conditional branch selects among alternatives for this particular call. Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-admin-trip",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-travel2-service/api/v1/travel2service/admin_trip",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:66-72"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-travel2-service:/api/v1/travel2service/admin_trip",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-travel2-service-admin-trip",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:66,68 — same call pass-a captured with a wider line range; merged. Axis corrected from pass-b's 'restriction' to 'relation' since this call has no branch/restriction evidence (see basis on pass-a row).",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-admin-trip",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-travel2-service/api/v1/travel2service/admin_trip",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:66-72"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|POST-http://ts-station-service/api/v1/stationservice/stations/idlist",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-station-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:229-237 — call to http://ts-station-service/api/v1/stationservice/stations/idlist confirmed. checkStationsExists calls this unconditionally, no branch selects among alternative station services; used 'relation' axis (default table) rather than pass-b's uniform 'restriction' axis, since no conditional branch selects among alternatives for this particular call. Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-station-service",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "POST-http://ts-station-service/api/v1/stationservice/stations/idlist",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:229-237"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-station-service:/api/v1/stationservice/stations/idlist",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-station-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:232,234 — same call pass-a captured with a wider line range; merged. Axis corrected from pass-b's 'restriction' to 'relation' since this call has no branch/restriction evidence (see basis on pass-a row).",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-station-service",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "POST-http://ts-station-service/api/v1/stationservice/stations/idlist",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:229-237"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|GET-http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-train-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:256-264 — call to http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName} confirmed. queryTrainTypeByName calls this unconditionally; used 'relation' axis (default table) rather than pass-b's uniform 'restriction' axis, since no conditional branch selects among alternatives for this particular call. Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-train-service",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:256-264"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-train-service:/api/v1/trainservice/trains/byName/{name}",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-train-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:259,261 — same call pass-a captured with a wider line range; merged. Axis corrected from pass-b's 'restriction' to 'relation' since this call has no branch/restriction evidence (see basis on pass-a row).",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-train-service",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:256-264"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|GET-http://ts-route-service/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-route-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:270-278 — call to http://ts-route-service/api/v1/routeservice/routes/{routeId} confirmed. getRouteByRouteId calls this unconditionally; used 'relation' axis (default table) rather than pass-b's uniform 'restriction' axis, since no conditional branch selects among alternatives for this particular call. Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-route-service",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-route-service/api/v1/routeservice/routes/{routeId}",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:270-278"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-route-service:/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-route-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:273,275 — same call pass-a captured with a wider line range; merged. Axis corrected from pass-b's 'restriction' to 'relation' since this call has no branch/restriction evidence (see basis on pass-a row).",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-route-service",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-route-service/api/v1/routeservice/routes/{routeId}",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:270-278"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|POST-PUT-DELETE-http://ts-travel-service/api/v1/travelservice/trips-on-tripid-starting-with-g-or-d",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-trips",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101,136,165 — addTravel/updateTravel/deleteTravel each branch on tripId.charAt(0)=='G'||'D' to pick this service; genuinely conditional, so kept 'restriction' axis (matches pass-b's classification here, unlike the unconditional admin_trip/station/train/route calls above). Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-trips",
+    "axis": "restriction",
+    "predicate": "calls",
+    "object": "POST-PUT-DELETE-http://ts-travel-service/api/v1/travelservice/trips-on-tripid-starting-with-g-or-d",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101-112",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136-147",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165-176"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-travel-service:/api/v1/travelservice/trips",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-travel-service-trips",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:102,137,166 — same conditional call pass-a captured with wider line ranges across the three branch sites; merged, restriction axis confirmed correct for this one.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-trips",
+    "axis": "restriction",
+    "predicate": "calls",
+    "object": "POST-PUT-DELETE-http://ts-travel-service/api/v1/travelservice/trips-on-tripid-starting-with-g-or-d",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101-112",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136-147",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165-176"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|POST-PUT-DELETE-http://ts-travel2-service/api/v1/travel2service/trips-on-tripid-not-starting-with-g-or-d",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-trips",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101,136,165 — addTravel/updateTravel/deleteTravel each branch on tripId.charAt(0)=='G'||'D' to pick this service; genuinely conditional, so kept 'restriction' axis (matches pass-b's classification here, unlike the unconditional admin_trip/station/train/route calls above). Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-trips",
+    "axis": "restriction",
+    "predicate": "calls",
+    "object": "POST-PUT-DELETE-http://ts-travel2-service/api/v1/travel2service/trips-on-tripid-not-starting-with-g-or-d",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101-112",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136-147",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165-176"
+    ]
+   }
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-travel2-service:/api/v1/travel2service/trips",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-travel2-service-trips",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:104,139,168 — same conditional call pass-a captured with wider line ranges across the three branch sites; merged, restriction axis confirmed correct for this one.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-trips",
+    "axis": "restriction",
+    "predicate": "calls",
+    "object": "POST-PUT-DELETE-http://ts-travel2-service/api/v1/travel2service/trips-on-tripid-not-starting-with-g-or-d",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101-112",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136-147",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165-176"
+    ]
+   }
+  },
+  {
+   "key": "semantic|admintravel.AdminTravelServiceImpl|semantic|meansInUse|tripid-first-character-g-or-d-selects-ts-travel-service-branch-otherwise-ts-travel2-service-branch",
+   "candidateAtomId": "atom:semantic:admintravel-admintravelserviceimpl:tripid-routing",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101,136,165 — tripId.charAt(0)=='G'||'D' branch confirmed at all three sites (addTravel/updateTravel/deleteTravel). Same fact as pass-b's differently-worded row; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "semantic",
+    "id": "atom:semantic:admintravel-admintravelserviceimpl:tripid-routing",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "tripid-first-character-g-or-d-selects-ts-travel-service-branch-otherwise-ts-travel2-service-branch",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165"
+    ]
+   }
+  },
+  {
+   "key": "semantic|admintravel.service.AdminTravelServiceImpl|semantic|meansInUse|tripid-first-char-g-or-d-selects-ts-travel-service-route-else-ts-travel2-service-route",
+   "candidateAtomId": "atom:semantic:admintravel-admintravelserviceimpl:tripid-prefix-routing",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101,136,165 — same branch pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "semantic",
+    "id": "atom:semantic:admintravel-admintravelserviceimpl:tripid-routing",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "tripid-first-character-g-or-d-selects-ts-travel-service-branch-otherwise-ts-travel2-service-branch",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165"
+    ]
+   }
+  },
+  {
+   "key": "semantic|admintravel.AdminTravelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:admintravel-admintravelserviceimpl:status-gates",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:57,114,149,178 — result.getStatus()==1 gates the success path in getAllTravels/addTravel/updateTravel/deleteTravel; addTravel/updateTravel/deleteTravel explicitly return status 0 on the failure branch, getAllTravels(57) checks the same status but only logs on failure without re-wrapping status 0 (minor imprecision in the generalized 'status 0' claim for that one site, but the status==1 gate itself is accurate at all four). Same pattern as pass-b's row; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "semantic",
+    "id": "atom:semantic:admintravel-admintravelserviceimpl:status-gates",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch-of-downstream-response",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:57",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:114",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:149",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:178"
+    ]
+   }
+  },
+  {
+   "key": "semantic|admintravel.service.AdminTravelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch-of-downstream-response",
+   "candidateAtomId": "atom:semantic:admintravel-admintravelserviceimpl:response-status-envelope",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:57,114,149,178 — same status-gate pattern pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "semantic",
+    "id": "atom:semantic:admintravel-admintravelserviceimpl:status-gates",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch-of-downstream-response",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:57",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:114",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:149",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:178"
+    ]
+   }
+  },
+  {
+   "key": "contract|admintravel.service.AdminTravelServiceImpl|specification|ensures|start-and-end-station-must-both-exist-and-both-be-listed-on-route-with-start-index-before-end-index",
+   "candidateAtomId": "atom:contract:admintravel-admintravelserviceimpl:check-travel-info",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:187-227, specifically 218 — checkTravelInfo requires both start/end stations to exist (checkStationsExists), the named train type to exist, the route to exist, and route.getStations() to contain both start and end with start's index before end's index, else returns status 0. Genuine pass-b-only observation, confirmed.",
+   "canonicalAtom": {
+    "subject": "admintravel.AdminTravelServiceImpl",
+    "kind": "contract",
+    "id": "atom:contract:admintravel-admintravelserviceimpl:check-travel-info",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "start-and-end-station-must-both-exist-and-both-be-listed-on-route-with-start-index-before-end-index",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:187",
+     "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:218"
+    ]
+   }
+  },
+  {
+   "key": "component|admintravel.application.yml|static||",
+   "candidateAtomId": "atom:component:admintravel-application-yml",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-travel-service/src/main/resources/application.yml:1-14 — full config file confirmed (server.port, nacos discovery, spring.application.name, swagger.controllerPackage). Pass-b's candidate packet has no 'component' kind atom for this file (only a 'semantic' service-identity atom, adopted separately below) — different kind, genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "admintravel.application-yml",
+    "kind": "component",
+    "id": "atom:component:admintravel-application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/resources/application.yml:1-14"
+    ]
+   }
+  },
+  {
+   "key": "semantic|admintravel.resources.application-yml|semantic|meansInUse|service-name-ts-admin-travel-service-registered-in-nacos-discovery-on-port-16114",
+   "candidateAtomId": "atom:semantic:admintravel-application-yml:service-identity",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-travel-service/src/main/resources/application.yml:2 (server.port: 16114) and :10 (spring.application.name: ts-admin-travel-service) — confirmed; corrected refs from pass-b's cited lines 1/10 to 1-2/9-10 since the port value itself sits on line 2, not line 1 (line 1 is the 'server:' header). Genuine pass-b-only semantic observation, adopted with corrected line refs.",
+   "canonicalAtom": {
+    "subject": "admintravel.application-yml",
+    "kind": "semantic",
+    "id": "atom:semantic:admintravel-application-yml:service-identity",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "service-name-ts-admin-travel-service-registered-in-nacos-discovery-on-port-16114",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/resources/application.yml:1-2",
+     "src:ts-admin-travel-service/src/main/resources/application.yml:9-10"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.application.yml|static||",
+   "candidateAtomId": "atom:component:adminuser-application-yml",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-user-service/src/main/resources/application.yml:1-13 — full config file confirmed. Pass-b has no 'component' kind atom for this file (only 'semantic', adopted separately below) — different kind, genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "adminuser.application-yml",
+    "kind": "component",
+    "id": "atom:component:adminuser-application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/resources/application.yml:1-13"
+    ]
+   }
+  },
+  {
+   "key": "semantic|adminuser.resources.application-yml|semantic|meansInUse|service-name-ts-admin-user-service-registered-in-nacos-discovery-on-port-16115",
+   "candidateAtomId": "atom:semantic:adminuser-application-yml:service-identity",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-user-service/src/main/resources/application.yml:2 (server.port: 16115) and :10 (spring.application.name: ts-admin-user-service) — confirmed; corrected refs from pass-b's cited lines 1/10 to 1-2/9-10 for the same line-1-vs-2 reason as the admintravel yml. Genuine pass-b-only semantic observation, adopted with corrected line refs.",
+   "canonicalAtom": {
+    "subject": "adminuser.application-yml",
+    "kind": "semantic",
+    "id": "atom:semantic:adminuser-application-yml:service-identity",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "service-name-ts-admin-user-service-registered-in-nacos-discovery-on-port-16115",
+    "refs": [
+     "src:ts-admin-user-service/src/main/resources/application.yml:1-2",
+     "src:ts-admin-user-service/src/main/resources/application.yml:9-10"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.AdminUserService|static||",
+   "candidateAtomId": "atom:component:adminuser-adminuserservice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserService.java:10 — interface declaration confirmed. Same interface as pass-b's whole-file-ref row; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserService",
+    "kind": "component",
+    "id": "atom:component:adminuser-adminuserservice",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserService.java:10"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.service.AdminUserService|static||",
+   "candidateAtomId": "atom:component:adminuser-adminuserservice",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserService.java — same interface pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserService",
+    "kind": "component",
+    "id": "atom:component:adminuser-adminuserservice",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserService.java:10"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.AdminUserServiceImpl|static||",
+   "candidateAtomId": "atom:component:adminuser-adminuserserviceimpl",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:25 — class declaration confirmed. Same class as pass-b's whole-file-ref row; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "component",
+    "id": "atom:component:adminuser-adminuserserviceimpl",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:25"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.service.AdminUserServiceImpl|static||",
+   "candidateAtomId": "atom:component:adminuser-adminuserserviceimpl",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java — same class pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "component",
+    "id": "atom:component:adminuser-adminuserserviceimpl",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:25"
+    ]
+   }
+  },
+  {
+   "key": "relation|adminuser.AdminUserServiceImpl|relation|calls|GET-http://ts-user-service/api/v1/userservice/users",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-get-users",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:43-50 — call to http://ts-user-service/api/v1/userservice/users confirmed. Each AdminUserServiceImpl method makes exactly one fixed downstream call with no branch/restriction; used 'relation' axis (default table) rather than pass-b's uniform 'restriction' axis, since there is no conditional dispatch here. Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-get-users",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-user-service/api/v1/userservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:43-50"
+    ]
+   }
+  },
+  {
+   "key": "relation|adminuser.service.AdminUserServiceImpl|restriction|calls|ts-user-service:/api/v1/userservice/users",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-user-service-get-all",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:43,45 — same call pass-a captured with a wider line range; merged. Axis corrected from pass-b's 'restriction' to 'relation' (no branch evidence — see basis on pass-a row).",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-get-users",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "GET-http://ts-user-service/api/v1/userservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:43-50"
+    ]
+   }
+  },
+  {
+   "key": "relation|adminuser.AdminUserServiceImpl|relation|calls|DELETE-http://ts-user-service/api/v1/userservice/users/{userId}",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-delete-user",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:69-74 — call to http://ts-user-service/api/v1/userservice/users/{userId} confirmed. Each AdminUserServiceImpl method makes exactly one fixed downstream call with no branch/restriction; used 'relation' axis (default table) rather than pass-b's uniform 'restriction' axis, since there is no conditional dispatch here. Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-delete-user",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "DELETE-http://ts-user-service/api/v1/userservice/users/{userId}",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:69-74"
+    ]
+   }
+  },
+  {
+   "key": "relation|adminuser.service.AdminUserServiceImpl|restriction|calls|ts-user-service:/api/v1/userservice/users/{userId}",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-user-service-delete",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:69,71 — same call pass-a captured with a wider line range; merged. Axis corrected from pass-b's 'restriction' to 'relation' (no branch evidence — see basis on pass-a row).",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-delete-user",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "DELETE-http://ts-user-service/api/v1/userservice/users/{userId}",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:69-74"
+    ]
+   }
+  },
+  {
+   "key": "relation|adminuser.AdminUserServiceImpl|relation|calls|PUT-http://ts-user-service/api/v1/userservice/users",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-put-users",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:93-98 — call to http://ts-user-service/api/v1/userservice/users confirmed. Each AdminUserServiceImpl method makes exactly one fixed downstream call with no branch/restriction; used 'relation' axis (default table) rather than pass-b's uniform 'restriction' axis, since there is no conditional dispatch here. Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-put-users",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "PUT-http://ts-user-service/api/v1/userservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:93-98"
+    ]
+   }
+  },
+  {
+   "key": "relation|adminuser.service.AdminUserServiceImpl|restriction|calls|ts-user-service:/api/v1/userservice/users(PUT)",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-user-service-update",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:93,95 — same call pass-a captured with a wider line range; merged. Axis corrected from pass-b's 'restriction' to 'relation' (no branch evidence — see basis on pass-a row).",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-put-users",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "PUT-http://ts-user-service/api/v1/userservice/users",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:93-98"
+    ]
+   }
+  },
+  {
+   "key": "relation|adminuser.AdminUserServiceImpl|relation|calls|POST-http://ts-user-service/api/v1/userservice/users/register",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-register",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:113-120 — call to http://ts-user-service/api/v1/userservice/users/register confirmed. Each AdminUserServiceImpl method makes exactly one fixed downstream call with no branch/restriction; used 'relation' axis (default table) rather than pass-b's uniform 'restriction' axis, since there is no conditional dispatch here. Merged with pass-b's row.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-register",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "POST-http://ts-user-service/api/v1/userservice/users/register",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:113-120"
+    ]
+   }
+  },
+  {
+   "key": "relation|adminuser.service.AdminUserServiceImpl|restriction|calls|ts-user-service:/api/v1/userservice/users/register",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-user-service-register",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:114,116 — same call pass-a captured with a wider line range; merged. Axis corrected from pass-b's 'restriction' to 'relation' (no branch evidence — see basis on pass-a row).",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "relation",
+    "id": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-register",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "POST-http://ts-user-service/api/v1/userservice/users/register",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:113-120"
+    ]
+   }
+  },
+  {
+   "key": "semantic|adminuser.AdminUserServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-any-other-value-or-null-body-on-error-branch",
+   "candidateAtomId": "atom:semantic:adminuser-adminuserserviceimpl:status-gates",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:51,75,101,123 — each method checks `re.getBody() == null || re.getBody().getStatus() != 1` before treating the downstream response as an error; pass-a's wording (adopted here) explicitly captures the null-body case that pass-b's 'status not 1' phrasing omits. Same underlying fact as pass-b's row; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "semantic",
+    "id": "atom:semantic:adminuser-adminuserserviceimpl:status-gates",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-result-carrying-branch-any-other-value-or-null-body-on-error-branch",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:51",
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:75",
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:101",
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:123"
+    ]
+   }
+  },
+  {
+   "key": "semantic|adminuser.service.AdminUserServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-not-1-on-not-found-or-rejected-branch-of-downstream-response",
+   "candidateAtomId": "atom:semantic:adminuser-adminuserserviceimpl:response-status-envelope",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:51,75,101,123 — same status-gate pattern pass-a captured with a more complete object description (adopted as canonical wording); merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "semantic",
+    "id": "atom:semantic:adminuser-adminuserserviceimpl:status-gates",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-result-carrying-branch-any-other-value-or-null-body-on-error-branch",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:51",
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:75",
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:101",
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:123"
+    ]
+   }
+  },
+  {
+   "key": "authority|adminuser.service.AdminUserServiceImpl|authority|forwardsAuthorizationHeader|updateuser-and-deleteuser-extract-and-forward-authorization-header-to-ts-user-service-getallusers-and-adduser-call-downstream-with-null-headers",
+   "candidateAtomId": "atom:authority:adminuser-adminuserserviceimpl:forwards-authorization-header",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:62-64 (deleteUser) and 87-89 (updateUser) — both extract headers.getFirst(AUTHORIZATION) and set it on newHeaders passed downstream; 42 (getAllUsers) and 112 (addUser) construct HttpEntity with null headers instead. Genuine pass-b-only observation, confirmed.",
+   "canonicalAtom": {
+    "subject": "adminuser.AdminUserServiceImpl",
+    "kind": "authority",
+    "id": "atom:authority:adminuser-adminuserserviceimpl:forwards-authorization-header",
+    "axis": "authority",
+    "predicate": "forwardsAuthorizationHeader",
+    "object": "updateuser-and-deleteuser-extract-and-forward-authorization-header-to-ts-user-service-getallusers-and-adduser-call-downstream-with-null-headers",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:62",
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:87",
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:42",
+     "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:112"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.UserDto|static||",
+   "candidateAtomId": "atom:component:adminuser-userdto",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:13 — class declaration confirmed. Same class as pass-b's whole-file-ref row; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.UserDto",
+    "kind": "component",
+    "id": "atom:component:adminuser-userdto",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:13"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.dto.UserDto|static||",
+   "candidateAtomId": "atom:component:adminuser-userdto",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java — same class pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.UserDto",
+    "kind": "component",
+    "id": "atom:component:adminuser-userdto",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:13"
+    ]
+   }
+  },
+  {
+   "key": "contract|adminuser.UserDto|specification|shapedAs|fields-userid-username-password-gender-int-documenttype-int-documentnum-email",
+   "candidateAtomId": "atom:contract:adminuser-userdto:shaped-as",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:14-27 — fields userId, userName, password, gender(int), documentType(int), documentNum, email confirmed. Same shape as pass-b's differently-slugged row; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.UserDto",
+    "kind": "contract",
+    "id": "atom:contract:adminuser-userdto:shaped-as",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "fields-userid-username-password-gender-int-documenttype-int-documentnum-email",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:14-27"
+    ]
+   }
+  },
+  {
+   "key": "contract|adminuser.dto.UserDto|specification|shapedAs|userid-username-password-gender-int-documenttype-int-documentnum-email-fields",
+   "candidateAtomId": "atom:contract:adminuser-userdto:shape",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:14,26 — same field shape pass-a captured with a fuller line range; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.UserDto",
+    "kind": "contract",
+    "id": "atom:contract:adminuser-userdto:shaped-as",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "fields-userid-username-password-gender-int-documenttype-int-documentnum-email",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:14-27"
+    ]
+   }
+  },
+  {
+   "key": "semantic|adminuser.UserDto|semantic|meansInUse|gender-represented-as-int-field-in-transfer-dto-not-as-named-enum",
+   "candidateAtomId": "atom:semantic:adminuser-userdto:gender-int",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:20 — `private int gender;` confirmed, no enum type. Pass-b's candidate packet has no per-field semantic atom for this DTO (only the bundled shapedAs contract); genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "adminuser.UserDto",
+    "kind": "semantic",
+    "id": "atom:semantic:adminuser-userdto:gender-int",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "gender-represented-as-int-field-in-transfer-dto-not-as-named-enum",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:20"
+    ]
+   }
+  },
+  {
+   "key": "semantic|adminuser.UserDto|semantic|meansInUse|documenttype-represented-as-int-field-in-transfer-dto-not-as-named-enum",
+   "candidateAtomId": "atom:semantic:adminuser-userdto:documenttype-int",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:22 — `private int documentType;` confirmed, no enum type. Genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "adminuser.UserDto",
+    "kind": "semantic",
+    "id": "atom:semantic:adminuser-userdto:documenttype-int",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "documenttype-represented-as-int-field-in-transfer-dto-not-as-named-enum",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:22"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.Assurance|static||",
+   "candidateAtomId": "atom:component:assurance-assurance",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:17 — class declaration confirmed. Same class as pass-b's whole-file-ref row; merged, using the short (package-free) subject convention consistent with the rest of this chunk's atoms.",
+   "canonicalAtom": {
+    "subject": "assurance.Assurance",
+    "kind": "component",
+    "id": "atom:component:assurance-assurance",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:17"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.entity.Assurance|static||",
+   "candidateAtomId": "atom:component:assurance-assurance-entity",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java — same class pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.Assurance",
+    "kind": "component",
+    "id": "atom:component:assurance-assurance",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:17"
+    ]
+   }
+  },
+  {
+   "key": "state|assurance.Assurance|state|persistsIn|jpa-entity-primary-key-column-assurance_id",
+   "candidateAtomId": "atom:state:assurance-assurance:persists-in",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:19-21 (@Id @Column(name=\"assurance_id\") private String id) and 26-27 (@NotNull private String orderId) — confirmed. Pass-b's row bundled this PK/NotNull fact together with the assurance_type enum-column fact (kept separate below as pass-a's finer-grained enum-column atom, to avoid duplicating that fact in this canonical atom's object); merged the PK+NotNull portion here.",
+   "canonicalAtom": {
+    "subject": "assurance.Assurance",
+    "kind": "state",
+    "id": "atom:state:assurance-assurance:persists-in",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "jpa-entity-primary-key-column-assurance_id-with-orderid-field-marked-notnull",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:15-21",
+     "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:26-27"
+    ]
+   }
+  },
+  {
+   "key": "state|assurance.entity.Assurance|state|persistsIn|jpa-entity-assurance-id-primary-key-column-orderid-not-null-assurance-type-enum-stored-as-string-in-assurance-type-column",
+   "candidateAtomId": "atom:state:assurance-assurance-entity:persists-in-assurance-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:19,26 — PK and orderId NotNull confirmed; the assurance_type @Enumerated(STRING) portion of this row's object is kept as pass-a's separate 'enum-column' atom (not duplicated here) since it is a distinct column-mapping fact; merged the PK+NotNull portion.",
+   "canonicalAtom": {
+    "subject": "assurance.Assurance",
+    "kind": "state",
+    "id": "atom:state:assurance-assurance:persists-in",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "jpa-entity-primary-key-column-assurance_id-with-orderid-field-marked-notnull",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:15-21",
+     "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:26-27"
+    ]
+   }
+  },
+  {
+   "key": "state|assurance.Assurance|state|persistsIn|assurance_type-column-stores-enum-name-as-string-via-enumerated-string",
+   "candidateAtomId": "atom:state:assurance-assurance:enum-column",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:32-34 — @Enumerated(EnumType.STRING) @Column(name=\"assurance_type\") private AssuranceType type confirmed. Kept as its own finer-grained atom distinct from the PK/NotNull canonical atom above (pass-b's row bundled all three facts into one object; this atom isolates the enum-storage-mechanism fact specifically). Confirmed and adopted.",
+   "canonicalAtom": {
+    "subject": "assurance.Assurance",
+    "kind": "state",
+    "id": "atom:state:assurance-assurance:enum-column",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "assurance_type-column-stores-enum-name-as-string-via-enumerated-string",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:32-34"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.Assurance|semantic|meansInUse|no-arg-constructor-assigns-a-random-uuid-to-orderid-field-at-construction",
+   "candidateAtomId": "atom:semantic:assurance-assurance:default-ctor-orderid",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:36-38 — `public Assurance(){ this.orderId = UUID.randomUUID().toString(); }` confirmed. Pass-b has no counterpart atom for this constructor behavior; genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "assurance.Assurance",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-assurance:default-ctor-orderid",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "no-arg-constructor-assigns-a-random-uuid-to-orderid-field-at-construction",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:36-38"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.AssuranceType|static||",
+   "candidateAtomId": "atom:component:assurance-assurancetype",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:8 — enum declaration confirmed. Same enum as pass-b's whole-file-ref row; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceType",
+    "kind": "component",
+    "id": "atom:component:assurance-assurancetype",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:8"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.entity.AssuranceType|static||",
+   "candidateAtomId": "atom:component:assurance-assurancetype-entity",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java — same enum pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceType",
+    "kind": "component",
+    "id": "atom:component:assurance-assurancetype",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:8"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.AssuranceType|semantic|meansInUse|index-value-1-selects-traffic-accident-assurance-type-via-gettypebyindex-lookup",
+   "candidateAtomId": "atom:semantic:assurance-assurancetype:index-selects-type",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13 (TRAFFIC_ACCIDENT(1, ...)) and 60-68 (getTypeByIndex loops values() matching getIndex()==index) — confirmed. Pass-b has no counterpart atom for this lookup behavior; genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceType",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-assurancetype:index-selects-type",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "index-value-1-selects-traffic-accident-assurance-type-via-gettypebyindex-lookup",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:60-68"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.AssuranceType|semantic|meansInUse|price-field-typed-as-java-double-hardcoded-literal-3.0-in-enum-constant-constructor",
+   "candidateAtomId": "atom:semantic:assurance-assurancetype:price-double",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13 (TRAFFIC_ACCIDENT(1,\"Traffic Accident Assurance\",3.0)), 28 (private double price), 52 (setPrice(double)) — confirmed double-typed, single hardcoded 3.0 literal. Same fact as pass-b's row; merged, kept pass-a's fuller ref set including the setter.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceType",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-assurancetype:price-double",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "price-field-typed-as-java-double-hardcoded-literal-3.0-in-enum-constant-constructor",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:28",
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:52"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.entity.AssuranceType|semantic|meansInUse|price-represented-as-java-primitive-double-hardcoded-enum-literal-3.0-for-traffic-accident-assurance-type",
+   "candidateAtomId": "atom:semantic:assurance-assurancetype-entity:price-representation",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13,28 — same double/3.0 fact pass-a captured with an additional setter ref; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceType",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-assurancetype:price-double",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "price-field-typed-as-java-double-hardcoded-literal-3.0-in-enum-constant-constructor",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:28",
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:52"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.AssuranceTypeBean|static||",
+   "candidateAtomId": "atom:component:assurance-assurancetypebean",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:15 — class declaration confirmed. Same class as pass-b's whole-file-ref row; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceTypeBean",
+    "kind": "component",
+    "id": "atom:component:assurance-assurancetypebean",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:15"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.entity.AssuranceTypeBean|static||",
+   "candidateAtomId": "atom:component:assurance-assurancetypebean-entity",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java — same class pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceTypeBean",
+    "kind": "component",
+    "id": "atom:component:assurance-assurancetypebean",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:15"
+    ]
+   }
+  },
+  {
+   "key": "contract|assurance.AssuranceTypeBean|specification|shapedAs|fields-index-int-name-string-price-double",
+   "candidateAtomId": "atom:contract:assurance-assurancetypebean:shaped-as",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:17-30 — fields index(int), name(String), price(double) confirmed. Pass-b has no shapedAs contract atom for this bean (only the semantic price-representation atom, merged separately below); genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceTypeBean",
+    "kind": "contract",
+    "id": "atom:contract:assurance-assurancetypebean:shaped-as",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "fields-index-int-name-string-price-double",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:17-30"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.AssuranceTypeBean|semantic|meansInUse|price-field-typed-as-java-double-in-transfer-bean-mirroring-assurancetype-price",
+   "candidateAtomId": "atom:semantic:assurance-assurancetypebean:price-double",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30 — `private double price;` confirmed, mirroring AssuranceType.price's type. Same fact as pass-b's row; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceTypeBean",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-assurancetypebean:price-double",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "price-field-typed-as-java-double-in-transfer-bean-mirroring-assurancetype-price",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.entity.AssuranceTypeBean|semantic|meansInUse|price-field-typed-double-on-flattened-dto-mirroring-assurancetype-enum-price",
+   "candidateAtomId": "atom:semantic:assurance-assurancetypebean-entity:price-representation",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30 — same double-typed price field pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.AssuranceTypeBean",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-assurancetypebean:price-double",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "price-field-typed-as-java-double-in-transfer-bean-mirroring-assurancetype-price",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.PlainAssurance|static||",
+   "candidateAtomId": "atom:component:assurance-plainassurance",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:15 — class declaration confirmed. Same class as pass-b's whole-file-ref row; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.PlainAssurance",
+    "kind": "component",
+    "id": "atom:component:assurance-plainassurance",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:15"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.entity.PlainAssurance|static||",
+   "candidateAtomId": "atom:component:assurance-plainassurance-entity",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java — same class pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.PlainAssurance",
+    "kind": "component",
+    "id": "atom:component:assurance-plainassurance",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:15"
+    ]
+   }
+  },
+  {
+   "key": "contract|assurance.PlainAssurance|specification|shapedAs|fields-id-orderid-typeindex-int-typename-string-typeprice-double-flattened-from-assurance-plus-assurancetype",
+   "candidateAtomId": "atom:contract:assurance-plainassurance:shaped-as",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:17-25 — fields id, orderId, typeIndex(int), typeName(String), typePrice(double) confirmed, a flattened read model combining Assurance and AssuranceType fields. Pass-b has no shapedAs contract atom for this class; genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "assurance.PlainAssurance",
+    "kind": "contract",
+    "id": "atom:contract:assurance-plainassurance:shaped-as",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "fields-id-orderid-typeindex-int-typename-string-typeprice-double-flattened-from-assurance-plus-assurancetype",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:17-25"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.PlainAssurance|semantic|meansInUse|typeprice-field-typed-as-java-double-in-flattened-transfer-dto",
+   "candidateAtomId": "atom:semantic:assurance-plainassurance:typeprice-double",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25 — `private double typePrice;` confirmed. Same fact as pass-b's row; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.PlainAssurance",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-plainassurance:typeprice-double",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "typeprice-field-typed-as-java-double-in-flattened-transfer-dto",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.entity.PlainAssurance|semantic|meansInUse|typeprice-field-typed-double-on-flattened-read-model-combining-assurance-and-assurancetype-fields",
+   "candidateAtomId": "atom:semantic:assurance-plainassurance-entity:type-price-representation",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25 — same double-typed typePrice field pass-a captured; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.PlainAssurance",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-plainassurance:typeprice-double",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "typeprice-field-typed-as-java-double-in-flattened-transfer-dto",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:assurance-pricing-surface|cech|sectionValue|section=money-amount:double-typed-price-fields-across-assurancetype-assurancetypebean-plainassurance-no-string-parsing-observed-in-chunk",
+   "candidateAtomId": "atom:semantic:assurance-pricing-surface:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13,28, src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30, src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25 — all four sites use Java double for the money amount, no string parsing/BigDecimal anywhere in this chunk. Pass-b's row cites the identical four refs but claims the value is 'propagated unchanged' from AssuranceType through the other two classes — that equality/propagation is not actually shown by any code in this chunk (the mapping code between AssuranceType and the transfer beans is outside these files); kept pass-a's more epistemically scoped wording ('no string parsing observed in chunk') as canonical and treated the two rows as the same underlying section observation under pass-a's proposed context id.",
+   "canonicalAtom": {
+    "subject": "ctx:assurance-pricing-surface",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-pricing-surface:cech-section-money-amount",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:double-typed-price-fields-across-assurancetype-assurancetypebean-plainassurance-no-string-parsing-observed-in-chunk",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:28",
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30",
+     "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:assurance-state-and-pricing|cech|sectionValue|section=money-amount:double-typed-price-literal-on-assurancetype-enum-propagated-unchanged-through-assurancetypebean-and-plainassurance-typeprice",
+   "candidateAtomId": "atom:semantic:assurance-state-and-pricing:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13,28, src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30, src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25 — same four double-typed price sites pass-a captured; merged under pass-a's context id, with pass-b's 'propagated unchanged' framing dropped as unevidenced within this chunk's files (see pass-a row basis) in favor of pass-a's scoped wording.",
+   "canonicalAtom": {
+    "subject": "ctx:assurance-pricing-surface",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-pricing-surface:cech-section-money-amount",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:double-typed-price-fields-across-assurancetype-assurancetypebean-plainassurance-no-string-parsing-observed-in-chunk",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:28",
+     "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30",
+     "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.InitData|static||",
+   "candidateAtomId": "atom:component:assurance-initdata",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/init/InitData.java:21 — class declaration confirmed. Same class as pass-b's whole-file-ref row; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.InitData",
+    "kind": "component",
+    "id": "atom:component:assurance-initdata",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:21"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.init.InitData|static||",
+   "candidateAtomId": "atom:component:assurance-initdata",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/init/InitData.java — same class pass-a cited at a specific line; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.InitData",
+    "kind": "component",
+    "id": "atom:component:assurance-initdata",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:21"
+    ]
+   }
+  },
+  {
+   "key": "relation|assurance.InitData|relation|dependsOn|assurance.AssuranceService",
+   "candidateAtomId": "atom:relation:assurance-initdata:depends-on-service",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/init/InitData.java:22-23 — @Autowired AssuranceService service confirmed. Pass-b has no relation atoms for this class at all; genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "assurance.InitData",
+    "kind": "relation",
+    "id": "atom:relation:assurance-initdata:depends-on-service",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "assurance.AssuranceService",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:22-23"
+    ]
+   }
+  },
+  {
+   "key": "relation|assurance.InitData|relation|dependsOn|assurance.AssuranceRepository",
+   "candidateAtomId": "atom:relation:assurance-initdata:depends-on-repository",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/init/InitData.java:25-26 — @Autowired AssuranceRepository repository confirmed. Pass-b has no relation atoms for this class; genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "subject": "assurance.InitData",
+    "kind": "relation",
+    "id": "atom:relation:assurance-initdata:depends-on-repository",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "assurance.AssuranceRepository",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:25-26"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.InitData|semantic|meansInUse|commandlinerunner-run-method-body-fully-commented-out-so-startup-seed-and-service-exercise-code-does-not-execute",
+   "candidateAtomId": "atom:semantic:assurance-initdata:inert-seed-routine",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/init/InitData.java:28-79 — run() body is `//do nothing` followed by a block comment (lines 32-78, closed at 78) demonstrating repository saves/finds and service create/find/modify/delete calls; none of it executes. Same fact as pass-b's row; merged, kept the fuller line range covering the whole commented block.",
+   "canonicalAtom": {
+    "subject": "assurance.InitData",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-initdata:inert-seed-routine",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "commandlinerunner-run-method-body-fully-commented-out-so-startup-seed-and-service-exercise-code-does-not-execute",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:28-79"
+    ]
+   }
+  },
+  {
+   "key": "semantic|assurance.init.InitData|semantic|meansInUse|commandlinerunner-run-method-body-fully-commented-out-startup-seeding-not-executed-at-boot",
+   "candidateAtomId": "atom:semantic:assurance-initdata:seed-behavior",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/init/InitData.java:29,79 — same fully-commented-out run() body pass-a captured with a wider line range; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.InitData",
+    "kind": "semantic",
+    "id": "atom:semantic:assurance-initdata:inert-seed-routine",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "commandlinerunner-run-method-body-fully-commented-out-so-startup-seed-and-service-exercise-code-does-not-execute",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:28-79"
+    ]
+   }
+  },
+  {
+   "key": "component|admintravel.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:admintravel-securityconfig",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:26 — `public class SecurityConfig extends WebSecurityConfigurerAdapter` declaration confirmed. Same class as pass-b's whole-file-ref row; merged, keeping pass-a's precise line ref.",
+   "canonicalAtom": {
+    "subject": "admintravel.SecurityConfig",
+    "kind": "component",
+    "id": "atom:component:admintravel-securityconfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:26"
+    ]
+   }
+  },
+  {
+   "key": "component|admintravel.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:admintravel-securityconfig",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java — same class pass-a cited at a specific declaration line; merged.",
+   "canonicalAtom": {
+    "subject": "admintravel.SecurityConfig",
+    "kind": "component",
+    "id": "atom:component:admintravel-securityconfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:26"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:adminuser-securityconfig",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:26 — `public class SecurityConfig extends WebSecurityConfigurerAdapter` declaration confirmed. Same class as pass-b's whole-file-ref row; merged, keeping pass-a's precise line ref.",
+   "canonicalAtom": {
+    "subject": "adminuser.SecurityConfig",
+    "kind": "component",
+    "id": "atom:component:adminuser-securityconfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:26"
+    ]
+   }
+  },
+  {
+   "key": "component|adminuser.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:adminuser-securityconfig",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java — same class pass-a cited at a specific declaration line; merged.",
+   "canonicalAtom": {
+    "subject": "adminuser.SecurityConfig",
+    "kind": "component",
+    "id": "atom:component:adminuser-securityconfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:26"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:assurance-securityconfig",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:26 — `public class SecurityConfig extends WebSecurityConfigurerAdapter` declaration confirmed. Same class as pass-b's whole-file-ref row; merged, keeping pass-a's precise line ref.",
+   "canonicalAtom": {
+    "subject": "assurance.SecurityConfig",
+    "kind": "component",
+    "id": "atom:component:assurance-securityconfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:26"
+    ]
+   }
+  },
+  {
+   "key": "component|assurance.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:assurance-securityconfig",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java — same class pass-a cited at a specific declaration line; merged.",
+   "canonicalAtom": {
+    "subject": "assurance.SecurityConfig",
+    "kind": "component",
+    "id": "atom:component:assurance-securityconfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:26"
+    ]
+   }
+  }
+ ]
+}

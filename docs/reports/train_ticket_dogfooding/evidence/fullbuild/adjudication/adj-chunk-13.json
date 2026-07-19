@@ -1,0 +1,2882 @@
+{
+ "chunkId": "chunk-13",
+ "adjudications": [
+  {
+   "key": "authority|order.config.SecurityConfig|authority|allowsCrossOrigin|cors registry allows all origins/methods/headers, credentials false, maxAge 3600, on /**",
+   "candidateAtomId": "atom:authority:order.config.SecurityConfig:allowsCrossOrigin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-service/src/main/java/order/config/SecurityConfig.java:54-60 -- corsConfigurer() bean registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials(false), maxAge(3600). Kept: same corsConfigurer bean as pass-b, union refs.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-service.securityconfig:allowscrossorigin-corsconfigurer",
+    "kind": "authority",
+    "subject": "ts-order-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "corsConfigurer WebMvcConfigurer bean registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials=false, maxAge=3600",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:55",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:56",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:57",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:58",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:59",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:60"
+    ]
+   }
+  },
+  {
+   "key": "authority|order.config.SecurityConfig|authority|allowsCrossOrigin|corsConfigurer-bean-allowedOrigins-ALL-allowCredentials-false",
+   "candidateAtomId": "atom:authority:order-config-securityconfig:allowscrossorigin-corsconfigurer",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same lines -- pass-a's fuller 6-line ref span covers the identical bean; kept as canonical with the richer ref set.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-service.securityconfig:allowscrossorigin-corsconfigurer",
+    "kind": "authority",
+    "subject": "ts-order-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "corsConfigurer WebMvcConfigurer bean registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials=false, maxAge=3600",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:55",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:56",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:57",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:58",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:59",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:60"
+    ]
+   }
+  },
+  {
+   "key": "authority|order.config.SecurityConfig|authority|requiresRole|POST-PUT-DELETE-on-/api/v1/orderservice/order-requires-role-ADMIN-or-USER",
+   "candidateAtomId": "atom:authority:order.config.SecurityConfig:requiresRole:order-write",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:75-77 -- antMatchers(POST/PUT/DELETE, order).hasAnyRole(admin,\"USER\"). Same matcher as pass-b's row; kept as canonical.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-service.securityconfig:requiresrole-post-put-delete-order",
+    "kind": "authority",
+    "subject": "ts-order-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "POST/PUT/DELETE on /api/v1/orderservice/order require ADMIN or USER role",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:75",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:76",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:77"
+    ]
+   }
+  },
+  {
+   "key": "authority|order.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-on-POST-PUT-DELETE-/api/v1/orderservice/order",
+   "candidateAtomId": "atom:authority:order-config-securityconfig:requiresrole-post-put-delete-order",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same lines -- identical matcher observation phrased with role-first wording; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-service.securityconfig:requiresrole-post-put-delete-order",
+    "kind": "authority",
+    "subject": "ts-order-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "POST/PUT/DELETE on /api/v1/orderservice/order require ADMIN or USER role",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:75",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:76",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:77"
+    ]
+   }
+  },
+  {
+   "key": "authority|order.config.SecurityConfig|authority|requiresRole|POST-PUT-on-/api/v1/orderservice/order/admin-requires-role-ADMIN",
+   "candidateAtomId": "atom:authority:order.config.SecurityConfig:requiresRole:order-admin-write",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:78-79 -- antMatchers(POST/PUT, .../order/admin).hasAnyRole(admin). Same matcher as pass-b's row; kept as canonical.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-service.securityconfig:requiresrole-admin-order-admin",
+    "kind": "authority",
+    "subject": "ts-order-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "POST/PUT on /api/v1/orderservice/order/admin require ADMIN role only",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:78",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:79"
+    ]
+   }
+  },
+  {
+   "key": "authority|order.config.SecurityConfig|authority|requiresRole|ADMIN-only-on-POST-PUT-/api/v1/orderservice/order/admin",
+   "candidateAtomId": "atom:authority:order-config-securityconfig:requiresrole-admin-order-admin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same lines -- identical ADMIN-only matcher; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-service.securityconfig:requiresrole-admin-order-admin",
+    "kind": "authority",
+    "subject": "ts-order-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "POST/PUT on /api/v1/orderservice/order/admin require ADMIN role only",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:78",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:79"
+    ]
+   }
+  },
+  {
+   "key": "authority|other.config.SecurityConfig|authority|allowsCrossOrigin|cors registry allows all origins/methods/headers, credentials false, maxAge 3600, on /**",
+   "candidateAtomId": "atom:authority:other.config.SecurityConfig:allowsCrossOrigin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-order-other-service/src/main/java/other/config/SecurityConfig.java:54-59 -- corsConfigurer() bean, same shape as ts-order-service's. Kept canonical with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-other-service.securityconfig:allowscrossorigin-corsconfigurer",
+    "kind": "authority",
+    "subject": "ts-order-other-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "corsConfigurer WebMvcConfigurer bean registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials=false, maxAge=3600",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:54",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:55",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:56",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:57",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:58",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:59"
+    ]
+   }
+  },
+  {
+   "key": "authority|other.config.SecurityConfig|authority|allowsCrossOrigin|corsConfigurer-bean-allowedOrigins-ALL-allowCredentials-false",
+   "candidateAtomId": "atom:authority:other-config-securityconfig:allowscrossorigin-corsconfigurer",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same lines -- identical bean; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-other-service.securityconfig:allowscrossorigin-corsconfigurer",
+    "kind": "authority",
+    "subject": "ts-order-other-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "corsConfigurer WebMvcConfigurer bean registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials=false, maxAge=3600",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:54",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:55",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:56",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:57",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:58",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:59"
+    ]
+   }
+  },
+  {
+   "key": "authority|other.config.SecurityConfig|authority|requiresRole|POST-PUT-DELETE-on-/api/v1/orderOtherService/orderOther-requires-role-ADMIN-or-USER",
+   "candidateAtomId": "atom:authority:other.config.SecurityConfig:requiresRole:orderOther-write",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:75-77 -- antMatchers(POST/PUT/DELETE, orderOther).hasAnyRole(admin,\"USER\"). Same matcher as pass-b's row; kept canonical.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-other-service.securityconfig:requiresrole-post-put-delete-orderother",
+    "kind": "authority",
+    "subject": "ts-order-other-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "POST/PUT/DELETE on /api/v1/orderOtherService/orderOther require ADMIN or USER role",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:75",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:76",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:77"
+    ]
+   }
+  },
+  {
+   "key": "authority|other.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-on-POST-PUT-DELETE-/api/v1/orderOtherService/orderOther",
+   "candidateAtomId": "atom:authority:other-config-securityconfig:requiresrole-post-put-delete-orderother",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same lines -- identical matcher; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-other-service.securityconfig:requiresrole-post-put-delete-orderother",
+    "kind": "authority",
+    "subject": "ts-order-other-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "POST/PUT/DELETE on /api/v1/orderOtherService/orderOther require ADMIN or USER role",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:75",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:76",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:77"
+    ]
+   }
+  },
+  {
+   "key": "authority|other.config.SecurityConfig|authority|requiresRole|POST-PUT-on-/api/v1/orderOtherService/orderOther/admin-requires-role-ADMIN",
+   "candidateAtomId": "atom:authority:other.config.SecurityConfig:requiresRole:orderOther-admin-write",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:78-79 -- antMatchers(POST/PUT, .../orderOther/admin).hasAnyRole(admin). Same matcher as pass-b's row; kept canonical.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-other-service.securityconfig:requiresrole-admin-orderother-admin",
+    "kind": "authority",
+    "subject": "ts-order-other-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "POST/PUT on /api/v1/orderOtherService/orderOther/admin require ADMIN role only",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:78",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:79"
+    ]
+   }
+  },
+  {
+   "key": "authority|other.config.SecurityConfig|authority|requiresRole|ADMIN-only-on-POST-PUT-/api/v1/orderOtherService/orderOther/admin",
+   "candidateAtomId": "atom:authority:other-config-securityconfig:requiresrole-admin-orderother-admin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same lines -- identical ADMIN-only matcher; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-other-service.securityconfig:requiresrole-admin-orderother-admin",
+    "kind": "authority",
+    "subject": "ts-order-other-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "POST/PUT on /api/v1/orderOtherService/orderOther/admin require ADMIN role only",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:78",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:79"
+    ]
+   }
+  },
+  {
+   "key": "authority|order.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+   "candidateAtomId": "atom:authority:order.config.SecurityConfig:permitsUnauthenticated:swagger",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:81-82 -- antMatchers(swagger paths...).permitAll(). Genuine pass-a-only observation, not extracted by pass-b at all; kept.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-service.securityconfig:permitsunauthenticated-swagger",
+    "kind": "authority",
+    "subject": "ts-order-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all on /swagger-ui.html, /webjars/**, /images/**, /configuration/**, /swagger-resources/**, /v2/**",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:81",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:82"
+    ]
+   }
+  },
+  {
+   "key": "authority|other.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+   "candidateAtomId": "atom:authority:other.config.SecurityConfig:permitsUnauthenticated:swagger",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:81-82 -- antMatchers(swagger paths...).permitAll(). Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-other-service.securityconfig:permitsunauthenticated-swagger",
+    "kind": "authority",
+    "subject": "ts-order-other-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all on /swagger-ui.html, /webjars/**, /images/**, /configuration/**, /swagger-resources/**, /v2/**",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:81",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:82"
+    ]
+   }
+  },
+  {
+   "key": "authority|order.controller.OrderController|authority|allowsCrossOrigin|per-endpoint-@CrossOrigin-origins-star-on-14-of-16-mapped-methods",
+   "candidateAtomId": "atom:authority:order-controller-ordercontroller:allowscrossorigin-endpoint-annotations",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread OrderController.java -- grep confirms 14 @CrossOrigin annotations across 16 mapped methods (home@30 and getTicketListByDateAndTripId@37 lack it). Count in the candidate is accurate; genuine pass-b-only observation, kept.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-order-service.ordercontroller:allowscrossorigin-endpoint-annotations",
+    "kind": "authority",
+    "subject": "ts-order-service.OrderController",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "14 of 16 mapped methods carry @CrossOrigin(origins=\"*\"); home and getTicketListByDateAndTripId do not",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:43",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:50"
+    ]
+   }
+  },
+  {
+   "key": "authority|other.controller.OrderOtherController|authority|allowsCrossOrigin|per-endpoint-@CrossOrigin-origins-star-on-13-of-16-mapped-methods",
+   "candidateAtomId": "atom:authority:other-controller-orderothercontroller:allowscrossorigin-endpoint-annotations",
+   "pass": "pass-b",
+   "decision": "not-adopted",
+   "basis": "Reread OrderOtherController.java -- grep for @CrossOrigin finds 14 occurrences across 16 mapped methods (only home@33 and getTicketListByDateAndTripId@40 lack it), not 13. The candidate's specific count is not supported by the source (off by one); dropped rather than silently recounted."
+  },
+  {
+   "key": "capability|notification.service.NotificationServiceImpl|capability|handlesCommand|OrderCancelSuccess",
+   "candidateAtomId": "atom:capability:notification.service.NotificationServiceImpl:handlesCommand:OrderCancelSuccess",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread NotificationService.java and NotificationServiceImpl.java at the cited lines -- interface declares the method, impl executes the mail dispatch for OrderCancelSuccess. Kept subject on the Impl (the class that actually performs the handling); same fact as pass-b's interface-subject row.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercancelsuccess",
+    "kind": "capability",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "OrderCancelSuccess",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:46",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:118"
+    ]
+   }
+  },
+  {
+   "key": "capability|notification.service.NotificationService|capability|handlesCommand|OrderCancelSuccessNotification",
+   "candidateAtomId": "atom:capability:notification-service-notificationservice:handlescommand-ordercancelsuccess",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same two files/lines -- identical method pair, pass-b used the interface as subject and an -Notification-suffixed object name; merged into pass-a's Impl-subject canonical, same underlying observation.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercancelsuccess",
+    "kind": "capability",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "OrderCancelSuccess",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:46",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:118"
+    ]
+   }
+  },
+  {
+   "key": "capability|notification.service.NotificationServiceImpl|capability|handlesCommand|OrderChangedSuccess",
+   "candidateAtomId": "atom:capability:notification.service.NotificationServiceImpl:handlesCommand:OrderChangedSuccess",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread NotificationService.java and NotificationServiceImpl.java at the cited lines -- interface declares the method, impl executes the mail dispatch for OrderChangedSuccess. Kept subject on the Impl (the class that actually performs the handling); same fact as pass-b's interface-subject row.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-orderchangedsuccess",
+    "kind": "capability",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "OrderChangedSuccess",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:37",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:91"
+    ]
+   }
+  },
+  {
+   "key": "capability|notification.service.NotificationService|capability|handlesCommand|OrderChangedSuccessNotification",
+   "candidateAtomId": "atom:capability:notification-service-notificationservice:handlescommand-orderchangedsuccess",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same two files/lines -- identical method pair, pass-b used the interface as subject and an -Notification-suffixed object name; merged into pass-a's Impl-subject canonical, same underlying observation.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-orderchangedsuccess",
+    "kind": "capability",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "OrderChangedSuccess",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:37",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:91"
+    ]
+   }
+  },
+  {
+   "key": "capability|notification.service.NotificationServiceImpl|capability|handlesCommand|OrderCreateSuccess",
+   "candidateAtomId": "atom:capability:notification.service.NotificationServiceImpl:handlesCommand:OrderCreateSuccess",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread NotificationService.java and NotificationServiceImpl.java at the cited lines -- interface declares the method, impl executes the mail dispatch for OrderCreateSuccess. Kept subject on the Impl (the class that actually performs the handling); same fact as pass-b's interface-subject row.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercreatesuccess",
+    "kind": "capability",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "OrderCreateSuccess",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:28",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:64"
+    ]
+   }
+  },
+  {
+   "key": "capability|notification.service.NotificationService|capability|handlesCommand|OrderCreateSuccessNotification",
+   "candidateAtomId": "atom:capability:notification-service-notificationservice:handlescommand-ordercreatesuccess",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same two files/lines -- identical method pair, pass-b used the interface as subject and an -Notification-suffixed object name; merged into pass-a's Impl-subject canonical, same underlying observation.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercreatesuccess",
+    "kind": "capability",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "OrderCreateSuccess",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:28",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:64"
+    ]
+   }
+  },
+  {
+   "key": "capability|notification.service.NotificationServiceImpl|capability|handlesCommand|PreserveSuccess",
+   "candidateAtomId": "atom:capability:notification.service.NotificationServiceImpl:handlesCommand:PreserveSuccess",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread NotificationService.java and NotificationServiceImpl.java at the cited lines -- interface declares the method, impl executes the mail dispatch for PreserveSuccess. Kept subject on the Impl (the class that actually performs the handling); same fact as pass-b's interface-subject row.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-preservesuccess",
+    "kind": "capability",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "PreserveSuccess",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:19",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:37"
+    ]
+   }
+  },
+  {
+   "key": "capability|notification.service.NotificationService|capability|handlesCommand|PreserveSuccessNotification",
+   "candidateAtomId": "atom:capability:notification-service-notificationservice:handlescommand-preservesuccess",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same two files/lines -- identical method pair, pass-b used the interface as subject and an -Notification-suffixed object name; merged into pass-a's Impl-subject canonical, same underlying observation.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-preservesuccess",
+    "kind": "capability",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "PreserveSuccess",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:19",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:37"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|DELETE /api/v1/orderservice/order/{orderId}",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:deleteOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:141-142 -- DELETE mapping on /api/v1/orderservice/order/{orderId} implemented by deleteOrder(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-delete",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE /api/v1/orderservice/order/{orderId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:141",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:142"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|DELETE-/api/v1/orderservice/order/{orderId}",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-delete",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:141 -- same DELETE /api/v1/orderservice/order/{orderId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-delete",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE /api/v1/orderservice/order/{orderId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:141",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:142"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:findAllOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:151-152 -- GET mapping on /api/v1/orderservice/order implemented by findAllOrder(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-findall",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:151",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:152"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET-/api/v1/orderservice/order",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-findall",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:151 -- same GET /api/v1/orderservice/order mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-findall",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:151",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:152"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/orderPay/{orderId}",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:payOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:89-90 -- GET mapping on /api/v1/orderservice/order/orderPay/{orderId} implemented by payOrder(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-pay",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/orderPay/{orderId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:89",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:90"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET-/api/v1/orderservice/order/orderPay/{orderId}",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-pay",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:89 -- same GET /api/v1/orderservice/order/orderPay/{orderId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-pay",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/orderPay/{orderId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:89",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:90"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/price/{orderId}",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:getOrderPrice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:80-81 -- GET mapping on /api/v1/orderservice/order/price/{orderId} implemented by getOrderPrice(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-price",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/price/{orderId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:80",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:81"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET-/api/v1/orderservice/order/price/{orderId}",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-price",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:80 -- same GET /api/v1/orderservice/order/price/{orderId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-price",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/price/{orderId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:80",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:81"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/security/{checkDate}/{accountId}",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:securityInfoCheck",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:114-115 -- GET mapping on /api/v1/orderservice/order/security/{checkDate}/{accountId} implemented by securityInfoCheck(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-security",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/security/{checkDate}/{accountId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:114",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:115"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET-/api/v1/orderservice/order/security/{checkDate}/{accountId}",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-security",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:114 -- same GET /api/v1/orderservice/order/security/{checkDate}/{accountId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-security",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/security/{checkDate}/{accountId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:114",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:115"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/status/{orderId}/{status}",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:modifyOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:105-106 -- GET mapping on /api/v1/orderservice/order/status/{orderId}/{status} implemented by modifyOrder(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-modify",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/status/{orderId}/{status}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:105",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:106"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET-/api/v1/orderservice/order/status/{orderId}/{status}",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-modify",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:105 -- same GET /api/v1/orderservice/order/status/{orderId}/{status} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-modify",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/status/{orderId}/{status}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:105",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:106"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{orderId}",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:getOrderById",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:97-98 -- GET mapping on /api/v1/orderservice/order/{orderId} implemented by getOrderById(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-getbyid",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/{orderId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:97",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:98"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET-/api/v1/orderservice/order/{orderId}",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-getbyid",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:97 -- same GET /api/v1/orderservice/order/{orderId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-getbyid",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/{orderId}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:97",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:98"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{travelDate}/{trainNumber}",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:calculateSoldTicket",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:72-73 -- GET mapping on /api/v1/orderservice/order/{travelDate}/{trainNumber} implemented by calculateSoldTicket(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-calculatesold",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/{travelDate}/{trainNumber}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:72",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:73"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET-/api/v1/orderservice/order/{travelDate}/{trainNumber}",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-calculatesold",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:72 -- same GET /api/v1/orderservice/order/{travelDate}/{trainNumber} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-calculatesold",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/order/{travelDate}/{trainNumber}",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:72",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:73"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/welcome",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:home",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:30-30 -- GET mapping on /api/v1/orderservice/welcome implemented by home(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-welcome",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/welcome",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|GET-/api/v1/orderservice/welcome",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:30 -- same GET /api/v1/orderservice/welcome mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-welcome",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderservice/welcome",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:createNewOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:43-44 -- POST mapping on /api/v1/orderservice/order implemented by createNewOrder(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-create",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:43",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:44"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST-/api/v1/orderservice/order",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-create",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:43 -- same POST /api/v1/orderservice/order mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-create",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:43",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:44"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/admin",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:addcreateNewOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:50-51 -- POST mapping on /api/v1/orderservice/order/admin implemented by addcreateNewOrder(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-create",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order/admin",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:50",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:51"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST-/api/v1/orderservice/order/admin",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-admin-create",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:50 -- same POST /api/v1/orderservice/order/admin mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-create",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order/admin",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:50",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:51"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/query",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:queryOrders",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:56-57 -- POST mapping on /api/v1/orderservice/order/query implemented by queryOrders(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-query",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order/query",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:56",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:57"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST-/api/v1/orderservice/order/query",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-query",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:56 -- same POST /api/v1/orderservice/order/query mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-query",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order/query",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:56",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:57"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/refresh",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:queryOrdersForRefresh",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:64-65 -- POST mapping on /api/v1/orderservice/order/refresh implemented by queryOrdersForRefresh(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-refresh",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order/refresh",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:64",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:65"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST-/api/v1/orderservice/order/refresh",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-refresh",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:64 -- same POST /api/v1/orderservice/order/refresh mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-refresh",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order/refresh",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:64",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:65"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/tickets",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:getTicketListByDateAndTripId",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:37-37 -- POST mapping on /api/v1/orderservice/order/tickets implemented by getTicketListByDateAndTripId(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-tickets",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order/tickets",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:37"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|POST-/api/v1/orderservice/order/tickets",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-tickets",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:37 -- same POST /api/v1/orderservice/order/tickets mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-tickets",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderservice/order/tickets",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:37"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:saveOrderInfo",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:123-124 -- PUT mapping on /api/v1/orderservice/order implemented by saveOrderInfo(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-save",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/orderservice/order",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:123",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:124"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|PUT-/api/v1/orderservice/order",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-save",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:123 -- same PUT /api/v1/orderservice/order mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-save",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/orderservice/order",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:123",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:124"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order/admin",
+   "candidateAtomId": "atom:capability:order.controller.OrderController:exposesEndpoint:updateOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:132-133 -- PUT mapping on /api/v1/orderservice/order/admin implemented by updateOrder(). Same endpoint as pass-b's row; kept with fuller (annotation+signature) ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-update",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/orderservice/order/admin",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:132",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:133"
+    ]
+   }
+  },
+  {
+   "key": "capability|order.controller.OrderController|capability|exposesEndpoint|PUT-/api/v1/orderservice/order/admin",
+   "candidateAtomId": "atom:capability:order-controller-ordercontroller:exposesendpoint-admin-update",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:132 -- same PUT /api/v1/orderservice/order/admin mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-update",
+    "kind": "capability",
+    "subject": "ts-order-service.OrderController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/orderservice/order/admin",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:132",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:133"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|DELETE /api/v1/orderOtherService/orderOther/{orderId}",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:deleteOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:138-139 -- DELETE mapping on /api/v1/orderOtherService/orderOther/{orderId} implemented by deleteOrder(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-delete",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE /api/v1/orderOtherService/orderOther/{orderId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:138",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:139"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|DELETE-/api/v1/orderOtherService/orderOther/{orderId}",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-delete",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:138 -- same DELETE /api/v1/orderOtherService/orderOther/{orderId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-delete",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE /api/v1/orderOtherService/orderOther/{orderId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:138",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:139"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:findAllOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:147-148 -- GET mapping on /api/v1/orderOtherService/orderOther implemented by findAllOrder(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-findall",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:147",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:148"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET-/api/v1/orderOtherService/orderOther",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-findall",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:147 -- same GET /api/v1/orderOtherService/orderOther mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-findall",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:147",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:148"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/orderPay/{orderId}",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:payOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:93-94 -- GET mapping on /api/v1/orderOtherService/orderOther/orderPay/{orderId} implemented by payOrder(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-pay",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/orderPay/{orderId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:93",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:94"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET-/api/v1/orderOtherService/orderOther/orderPay/{orderId}",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-pay",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:93 -- same GET /api/v1/orderOtherService/orderOther/orderPay/{orderId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-pay",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/orderPay/{orderId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:93",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:94"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/price/{orderId}",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:getOrderPrice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:86-87 -- GET mapping on /api/v1/orderOtherService/orderOther/price/{orderId} implemented by getOrderPrice(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-price",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/price/{orderId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:86",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:87"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET-/api/v1/orderOtherService/orderOther/price/{orderId}",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-price",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:86 -- same GET /api/v1/orderOtherService/orderOther/price/{orderId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-price",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/price/{orderId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:86",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:87"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:securityInfoCheck",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:114-115 -- GET mapping on /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId} implemented by securityInfoCheck(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-security",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:114",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:115"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET-/api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-security",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:114 -- same GET /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-security",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:114",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:115"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/status/{orderId}/{status}",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:modifyOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:107-108 -- GET mapping on /api/v1/orderOtherService/orderOther/status/{orderId}/{status} implemented by modifyOrder(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-modify",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/status/{orderId}/{status}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:107",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:108"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET-/api/v1/orderOtherService/orderOther/status/{orderId}/{status}",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-modify",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:107 -- same GET /api/v1/orderOtherService/orderOther/status/{orderId}/{status} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-modify",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/status/{orderId}/{status}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:107",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:108"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/{orderId}",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:getOrderById",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:100-101 -- GET mapping on /api/v1/orderOtherService/orderOther/{orderId} implemented by getOrderById(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-getbyid",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/{orderId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:100",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:101"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET-/api/v1/orderOtherService/orderOther/{orderId}",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-getbyid",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:100 -- same GET /api/v1/orderOtherService/orderOther/{orderId} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-getbyid",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/{orderId}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:100",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:101"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:calculateSoldTicket",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:78-79 -- GET mapping on /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber} implemented by calculateSoldTicket(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-calculatesold",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:78",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:79"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET-/api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-calculatesold",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:78 -- same GET /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber} mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-calculatesold",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:78",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:79"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/welcome",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:home",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:33-33 -- GET mapping on /api/v1/orderOtherService/welcome implemented by home(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-welcome",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/welcome",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:33"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|GET-/api/v1/orderOtherService/welcome",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:33 -- same GET /api/v1/orderOtherService/welcome mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-welcome",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/orderOtherService/welcome",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:33"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:createNewOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:46-47 -- POST mapping on /api/v1/orderOtherService/orderOther implemented by createNewOrder(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-create",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:46",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:47"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST-/api/v1/orderOtherService/orderOther",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-create",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:46 -- same POST /api/v1/orderOtherService/orderOther mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-create",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:46",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:47"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/admin",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:addcreateNewOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:53-54 -- POST mapping on /api/v1/orderOtherService/orderOther/admin implemented by addcreateNewOrder(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-create",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther/admin",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:53",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:54"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST-/api/v1/orderOtherService/orderOther/admin",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-admin-create",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:53 -- same POST /api/v1/orderOtherService/orderOther/admin mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-create",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther/admin",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:53",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:54"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/query",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:queryOrders",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:60-61 -- POST mapping on /api/v1/orderOtherService/orderOther/query implemented by queryOrders(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-query",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther/query",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:60",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:61"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST-/api/v1/orderOtherService/orderOther/query",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-query",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:60 -- same POST /api/v1/orderOtherService/orderOther/query mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-query",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther/query",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:60",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:61"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/refresh",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:queryOrdersForRefresh",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:69-70 -- POST mapping on /api/v1/orderOtherService/orderOther/refresh implemented by queryOrdersForRefresh(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-refresh",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther/refresh",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:69",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:70"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST-/api/v1/orderOtherService/orderOther/refresh",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-refresh",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:69 -- same POST /api/v1/orderOtherService/orderOther/refresh mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-refresh",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther/refresh",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:69",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:70"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/tickets",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:getTicketListByDateAndTripId",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:40-40 -- POST mapping on /api/v1/orderOtherService/orderOther/tickets implemented by getTicketListByDateAndTripId(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-tickets",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther/tickets",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:40"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|POST-/api/v1/orderOtherService/orderOther/tickets",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-tickets",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:40 -- same POST /api/v1/orderOtherService/orderOther/tickets mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-tickets",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/orderOtherService/orderOther/tickets",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:40"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|PUT /api/v1/orderOtherService/orderOther",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:saveOrderInfo",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:122-123 -- PUT mapping on /api/v1/orderOtherService/orderOther implemented by saveOrderInfo(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-save",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/orderOtherService/orderOther",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:122",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:123"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|PUT-/api/v1/orderOtherService/orderOther",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-save",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:122 -- same PUT /api/v1/orderOtherService/orderOther mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-save",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/orderOtherService/orderOther",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:122",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:123"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|PUT /api/v1/orderOtherService/orderOther/admin",
+   "candidateAtomId": "atom:capability:other.controller.OrderOtherController:exposesEndpoint:updateOrder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:131-132 -- PUT mapping on /api/v1/orderOtherService/orderOther/admin implemented by updateOrder(). Same endpoint as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-update",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/orderOtherService/orderOther/admin",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:131",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:132"
+    ]
+   }
+  },
+  {
+   "key": "capability|other.controller.OrderOtherController|capability|exposesEndpoint|PUT-/api/v1/orderOtherService/orderOther/admin",
+   "candidateAtomId": "atom:capability:other-controller-orderothercontroller:exposesendpoint-admin-update",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderOtherController.java:131 -- same PUT /api/v1/orderOtherService/orderOther/admin mapping; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-update",
+    "kind": "capability",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/orderOtherService/orderOther/admin",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:131",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:132"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-notification-service|static||",
+   "candidateAtomId": "atom:component:ts-notification-service",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-notification-service/src/main/resources/application.yml -- spring.application.name: ts-notification-service names the deployable service; genuine pass-a-only whole-service component, not duplicated by any pass-b class-level atom. Kept.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-notification-service",
+    "kind": "component",
+    "subject": "ts-notification-service",
+    "axis": "static",
+    "refs": [
+     "src:ts-notification-service/src/main/resources/application.yml"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-order-other-service|static||",
+   "candidateAtomId": "atom:component:ts-order-other-service",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-order-other-service/src/main/resources/application.yml -- spring.application.name: ts-order-other-service names the deployable service; genuine pass-a-only whole-service component. Kept.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-order-other-service",
+    "kind": "component",
+    "subject": "ts-order-other-service",
+    "axis": "static",
+    "refs": [
+     "src:ts-order-other-service/src/main/resources/application.yml"
+    ]
+   }
+  },
+  {
+   "key": "contract|other.entity.Order|specification|shapedAs|equals compares own getBoughtDate() against both other.getBoughtDate() and other.getTravelDate() (own getTravelDate() is not compared to other.getTravelDate()), plus accountId, contactsName, contactsDocumentNumber, documentType, trainNumber, coachNumber, seatClass, seatNumber, from, to, status, price",
+   "candidateAtomId": "atom:contract:other.entity.Order:equals-field-comparison-set",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread Order.java:94-109 -- equals() line95 compares getBoughtDate() to other.getBoughtDate(), line96 compares getBoughtDate() to other.getTravelDate() (the mismatched-field pattern the candidate names), then line97 compares getTravelTime() to other.getTravelTime() -- a field the candidate's object omitted even though its own refs already include line97. Kept as adopted, canonical object corrected to include the getTravelTime() comparison so the field list matches all cited lines exactly.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-order-other-service.order:equals-field-comparison-set",
+    "kind": "contract",
+    "subject": "ts-order-other-service.Order",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "equals() compares own getBoughtDate() against both other.getBoughtDate() and other.getTravelDate() (own getTravelDate() is compared only to other.getTravelTime(), never to other.getTravelDate()), plus getTravelTime() vs other.getTravelTime(), accountId, contactsName, contactsDocumentNumber, documentType, trainNumber, coachNumber, seatClass, seatNumber, from, to, status, price",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:94",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:95",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:96",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:97",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:98",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:99",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:100",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:101",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:102",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:103",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:104",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:105",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:106",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:107",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:108",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:109"
+    ]
+   }
+  },
+  {
+   "key": "contract|other.entity.QueryInfo|specification|ensures|enableTravelDateQuery/enableBoughtDateQuery/enableStateQuery booleans gate which date-range/state fields OrderOtherServiceImpl.queryOrders reads",
+   "candidateAtomId": "atom:contract:other.entity.QueryInfo:date-range-and-state-query-flags",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread QueryInfo.java:39-68 -- each enable*/disable* method pair sets its boolean plus the associated fields; OrderOtherServiceImpl.java:148 (qi.isEnableStateQuery() || qi.isEnableBoughtDateQuery() || qi.isEnableTravelDateQuery()) confirms queryOrders reads exactly those flags. Genuine pass-a-only contract; kept, added the queryOrders line to refs since the object cites that usage.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-order-other-service.queryinfo:date-range-and-state-query-flags",
+    "kind": "contract",
+    "subject": "ts-order-other-service.QueryInfo",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "enableTravelDateQuery/enableBoughtDateQuery/enableStateQuery booleans and their paired date-range/state fields are set together by the enable*/disable* methods, and OrderOtherServiceImpl.queryOrders reads the three enable flags to decide which comparisons to run",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:39",
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:45",
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:51",
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:57",
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:63",
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:68",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:148"
+    ]
+   }
+  },
+  {
+   "key": "contract|other.service.OrderOtherServiceImpl|specification|requires|create() and addNewOrder() reject (Response status 0) when accountOrders.contains(order) is true via Order.equals, else assign a new random UUID id before saving",
+   "candidateAtomId": "atom:contract:other.service.OrderOtherServiceImpl:create-duplicate-check",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread OrderOtherServiceImpl.java:93-98 (create) and 433-438 (addNewOrder) -- both check accountOrders.contains(order), return status 0 on duplicate, else set a random UUID id and save. Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-order-other-service.orderotherserviceimpl:create-duplicate-check",
+    "kind": "contract",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "specification",
+    "predicate": "requires",
+    "object": "create() and addNewOrder() reject (Response status 0) when accountOrders.contains(order) is true via Order.equals, else assign a new random UUID id before saving",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:93",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:94",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:98",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:433",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:434",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:438"
+    ]
+   }
+  },
+  {
+   "key": "contract|other.entity.OrderAlterInfo|specification|shapedAs|accountId-previousOrderId-loginToken-newOrderInfo-composite-alter-request",
+   "candidateAtomId": "atom:contract:other-entity-orderalterinfo:shapedas",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread OrderAlterInfo.java:17-33 -- class declares exactly accountId, previousOrderId, loginToken, newOrderInfo fields. Genuine pass-b-only contract (pass-a only captured the dependsOn relation for this class, not its shape); kept.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-order-other-service.orderalterinfo:shapedas",
+    "kind": "contract",
+    "subject": "ts-order-other-service.OrderAlterInfo",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "accountId, previousOrderId, loginToken, newOrderInfo composite alter-order request",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:17"
+    ]
+   }
+  },
+  {
+   "key": "effect|notification.mq.RabbitSend|effect|publishes|queue=Queues.queueName via AmqpTemplate.convertAndSend, val logged before send",
+   "candidateAtomId": "atom:effect:notification.mq.RabbitSend:publishes",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread RabbitSend.java:18-21 -- send(val) logs then calls rabbitTemplate.convertAndSend(Queues.queueName, val). Same fact as pass-b's row; kept with the fuller (log+send) description.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-notification-service.rabbitsend:publishes",
+    "kind": "effect",
+    "subject": "ts-notification-service.RabbitSend",
+    "axis": "effect",
+    "predicate": "publishes",
+    "object": "AMQP queue notification.config.Queues.queueName via AmqpTemplate.convertAndSend, val logged before send",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/mq/RabbitSend.java:20"
+    ]
+   }
+  },
+  {
+   "key": "effect|notification.mq.RabbitSend|effect|publishes|amqp-queue-notification.config.Queues.queueName",
+   "candidateAtomId": "atom:effect:notification-mq-rabbitsend:publishes",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same lines -- identical publish call; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-notification-service.rabbitsend:publishes",
+    "kind": "effect",
+    "subject": "ts-notification-service.RabbitSend",
+    "axis": "effect",
+    "predicate": "publishes",
+    "object": "AMQP queue notification.config.Queues.queueName via AmqpTemplate.convertAndSend, val logged before send",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/mq/RabbitSend.java:20"
+    ]
+   }
+  },
+  {
+   "key": "effect|notification.service.MailService|effect|callsProvider|JavaMailSender.send with freemarker-rendered MimeMessage body loaded from classpath /templates",
+   "candidateAtomId": "atom:effect:notification.service.MailService:callsProvider",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread MailService.java:36-46 (freemarker template load/render, sender.send) and application.yml:13 (spring.mail.host: smtp.163.com) -- both passes describe the same external call (JavaMailSender.send to the configured SMTP provider), pass-a emphasizing the freemarker rendering, pass-b the SMTP host config. Merged, union of both evidence sets.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-notification-service.mailservice:callsprovider-smtp",
+    "kind": "effect",
+    "subject": "ts-notification-service.MailService",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "JavaMailSender.send() delivers to the configured SMTP provider (smtp.163.com per application.yml), body rendered from a freemarker template loaded from classpath /templates",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/MailService.java:36",
+     "src:ts-notification-service/src/main/java/notification/service/MailService.java:38",
+     "src:ts-notification-service/src/main/java/notification/service/MailService.java:39",
+     "src:ts-notification-service/src/main/java/notification/service/MailService.java:46",
+     "src:ts-notification-service/src/main/resources/application.yml:13"
+    ]
+   }
+  },
+  {
+   "key": "effect|notification.service.MailService|effect|callsProvider|smtp-mail-server-via-javamailsender-send",
+   "candidateAtomId": "atom:effect:notification-service-mailservice:callsprovider-smtp",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread application.yml:13 and MailService.java:46 -- same sendEmail()/sender.send() provider call as pass-a's row; merged into one canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-notification-service.mailservice:callsprovider-smtp",
+    "kind": "effect",
+    "subject": "ts-notification-service.MailService",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "JavaMailSender.send() delivers to the configured SMTP provider (smtp.163.com per application.yml), body rendered from a freemarker template loaded from classpath /templates",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/MailService.java:36",
+     "src:ts-notification-service/src/main/java/notification/service/MailService.java:38",
+     "src:ts-notification-service/src/main/java/notification/service/MailService.java:39",
+     "src:ts-notification-service/src/main/java/notification/service/MailService.java:46",
+     "src:ts-notification-service/src/main/resources/application.yml:13"
+    ]
+   }
+  },
+  {
+   "key": "effect|other.service.OrderOtherServiceImpl|effect|callsProvider|POST http://ts-station-service/api/v1/stationservice/stations/namelist via RestTemplate.exchange, host resolved by literal string concatenation with the Nacos-registered service name",
+   "candidateAtomId": "atom:effect:other.service.OrderOtherServiceImpl:callsProvider:ts-station-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherServiceImpl.java:223-233 -- queryForStationId() builds \"http://\"+serviceName then restTemplate.exchange(url+\"/api/v1/stationservice/stations/namelist\", POST, ...). Same call as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-order-other-service.orderotherserviceimpl:callsprovider-ts-station-service",
+    "kind": "effect",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST http://ts-station-service/api/v1/stationservice/stations/namelist via RestTemplate.exchange, host built by string concatenation with the Nacos-registered service name",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:223",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:226",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:227",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:233"
+    ]
+   }
+  },
+  {
+   "key": "effect|other.service.OrderOtherServiceImpl|effect|callsProvider|ts-station-service-POST-/api/v1/stationservice/stations/namelist",
+   "candidateAtomId": "atom:effect:other-service-orderotherserviceimpl:callsprovider-station-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread lines 226-227 -- same POST call; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-order-other-service.orderotherserviceimpl:callsprovider-ts-station-service",
+    "kind": "effect",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST http://ts-station-service/api/v1/stationservice/stations/namelist via RestTemplate.exchange, host built by string concatenation with the Nacos-registered service name",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:223",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:226",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:227",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:233"
+    ]
+   }
+  },
+  {
+   "key": "effect|other.init.InitData|effect|writesTo|seeds orders_other via OrderOtherService.create with a fixed order1 (price=100, status=OrderStatus.PAID) on application startup (CommandLineRunner.run)",
+   "candidateAtomId": "atom:effect:other.init.InitData:writesTo",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread InitData.java:27-44 -- run() builds order1 with setPrice(\"100\") and setStatus(OrderStatus.PAID.getCode()), then service.create(order1,null). Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-order-other-service.initdata:writesto",
+    "kind": "effect",
+    "subject": "ts-order-other-service.InitData",
+    "axis": "effect",
+    "predicate": "writesTo",
+    "object": "seeds orders_other via OrderOtherService.create with a fixed order1 (price=\"100\", status=OrderStatus.PAID.getCode()) on application startup (CommandLineRunner.run)",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/init/InitData.java:27",
+     "src:ts-order-other-service/src/main/java/other/init/InitData.java:36",
+     "src:ts-order-other-service/src/main/java/other/init/InitData.java:39",
+     "src:ts-order-other-service/src/main/java/other/init/InitData.java:44"
+    ]
+   }
+  },
+  {
+   "key": "relation|order.controller.OrderController|static|dependsOn|autowired OrderService, interface/impl not in this chunk's assigned files",
+   "candidateAtomId": "atom:relation:order.controller.OrderController:dependsOn:order.service.OrderService",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:6 (import order.service.OrderService) and :26 (@Autowired private OrderService orderService). Same dependency as pass-b's row; kept with the import-line ref added.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-order-service.ordercontroller:dependson-orderservice",
+    "kind": "relation",
+    "subject": "ts-order-service.OrderController",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-order-service.OrderService",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:6",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:26"
+    ]
+   }
+  },
+  {
+   "key": "relation|order.controller.OrderController|relation|dependsOn|order.service.OrderService",
+   "candidateAtomId": "atom:relation:order-controller-ordercontroller:dependson-orderservice",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread OrderController.java:26 -- same @Autowired field; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-order-service.ordercontroller:dependson-orderservice",
+    "kind": "relation",
+    "subject": "ts-order-service.OrderController",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-order-service.OrderService",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:6",
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:26"
+    ]
+   }
+  },
+  {
+   "key": "relation|other.service.OrderOtherServiceImpl|static|dependsOn|autowired OrderOtherRepository used by all persistence-touching methods",
+   "candidateAtomId": "atom:relation:other.service.OrderOtherServiceImpl:dependsOn:other.repository.OrderOtherRepository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherServiceImpl.java:31 -- @Autowired private OrderOtherRepository orderOtherRepository, used across all persistence-touching methods. Same fact as pass-b's row; kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-order-other-service.orderotherserviceimpl:dependson-orderotherrepository",
+    "kind": "relation",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-order-other-service.OrderOtherRepository",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:31"
+    ]
+   }
+  },
+  {
+   "key": "relation|other.service.OrderOtherServiceImpl|relation|dependsOn|other.repository.OrderOtherRepository",
+   "candidateAtomId": "atom:relation:other-service-orderotherserviceimpl:dependson-orderotherrepository",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same line -- identical field; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-order-other-service.orderotherserviceimpl:dependson-orderotherrepository",
+    "kind": "relation",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-order-other-service.OrderOtherRepository",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:31"
+    ]
+   }
+  },
+  {
+   "key": "relation|other.entity.OrderAlterInfo|static|dependsOn|wraps newOrderInfo:Order, defaulted to new Order() in the no-arg constructor",
+   "candidateAtomId": "atom:relation:other.entity.OrderAlterInfo:dependsOn:other.entity.Order",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread OrderAlterInfo.java:29 (private Order newOrderInfo) and :32 (no-arg constructor sets newOrderInfo = new Order()). Genuine pass-a-only observation, distinct from pass-b's shapedAs contract row for the same class; kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-order-other-service.orderalterinfo:dependson-order",
+    "kind": "relation",
+    "subject": "ts-order-other-service.OrderAlterInfo",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-order-other-service.Order",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:29",
+     "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:32"
+    ]
+   }
+  },
+  {
+   "key": "relation|ts-notification-service|static|dependsOn|nacos discovery server-addr list, default headless nacos-0..2 cluster hosts",
+   "candidateAtomId": "atom:relation:ts-notification-service:dependsOn:nacos-discovery",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread application.yml:6-9 -- spring.cloud.nacos.discovery.server-addr defaults to the nacos-0/1/2 headless cluster hosts. Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-notification-service:dependson-nacos-discovery",
+    "kind": "relation",
+    "subject": "ts-notification-service",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "Nacos discovery server-addr list, default headless nacos-0..2 cluster hosts",
+    "refs": [
+     "src:ts-notification-service/src/main/resources/application.yml:6",
+     "src:ts-notification-service/src/main/resources/application.yml:9"
+    ]
+   }
+  },
+  {
+   "key": "relation|notification.service.NotificationServiceImpl|relation|dependsOn|notification.service.MailService",
+   "candidateAtomId": "atom:relation:notification-service-notificationserviceimpl:dependson-mailservice",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread NotificationServiceImpl.java:23-24 -- @Autowired MailService mailService. Genuine pass-b-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-notification-service.notificationserviceimpl:dependson-mailservice",
+    "kind": "relation",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-notification-service.MailService",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:24"
+    ]
+   }
+  },
+  {
+   "key": "relation|other.controller.OrderOtherController|relation|calls|other.service.OrderOtherService",
+   "candidateAtomId": "atom:relation:other-controller-orderothercontroller:calls-orderotherservice",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread OrderOtherController.java:28-29 -- @Autowired private OrderOtherService orderService. Genuine pass-b-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-order-other-service.orderothercontroller:calls-orderotherservice",
+    "kind": "relation",
+    "subject": "ts-order-other-service.OrderOtherController",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-order-other-service.OrderOtherService",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:29"
+    ]
+   }
+  },
+  {
+   "key": "relation|other.init.InitData|relation|calls|other.service.OrderOtherService:create",
+   "candidateAtomId": "atom:relation:other-init-initdata:calls-orderotherservice-create",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread InitData.java:44 -- service.create(order1, null) inside CommandLineRunner.run(). Genuine pass-b-only observation, distinct axis (call site) from pass-a's writesTo effect row for the same method; kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-order-other-service.initdata:calls-orderotherservice-create",
+    "kind": "relation",
+    "subject": "ts-order-other-service.InitData",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-order-other-service.OrderOtherService:create",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/init/InitData.java:44"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:order-other-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-passthrough-no-parsing-no-arithmetic-at-use-site-default-0.0-notfound-sentinel-neg1.0",
+   "candidateAtomId": "atom:semantic:ctx-order-other-service-order-lifecycle:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Order.java:68/80 (price field, default \"0.0\"), InitData.java:36 (setPrice(\"100\")), OrderOtherServiceImpl.java:352/356 (not-found sentinel \"-1.0\", success passthrough order.getPrice()) -- price is always a String moved verbatim, never parsed or computed on. Same Cech section as pass-b's row; kept pass-a's fuller wording (default/sentinel detail) with union refs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-order-other-service-order-lifecycle.cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:order-other-service-order-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount: String price field is passed through with no parsing or arithmetic at any use site in this chunk; constructor default is literal \"0.0\", getOrderPrice's not-found branch returns literal \"-1.0\"",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:68",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:80",
+     "src:ts-order-other-service/src/main/java/other/init/InitData.java:36",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:352",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:355",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:356"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:order-other-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-field-no-parsing-or-arithmetic-observed-at-this-site",
+   "candidateAtomId": "atom:semantic:ctx-order-other-service-order-lifecycle:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same Order.java/InitData.java/OrderOtherServiceImpl.java lines -- same no-parsing-no-arithmetic observation; merged into pass-a's canonical, which additionally grounds the 0.0 default and -1.0 sentinel already covered by the cited lines.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-order-other-service-order-lifecycle.cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:order-other-service-order-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount: String price field is passed through with no parsing or arithmetic at any use site in this chunk; constructor default is literal \"0.0\", getOrderPrice's not-found branch returns literal \"-1.0\"",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:68",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:80",
+     "src:ts-order-other-service/src/main/java/other/init/InitData.java:36",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:352",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:355",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:356"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:order-other-service-order-lifecycle|cech|sectionValue|section=order-status-code:int-status-set-via-OrderStatus-enum-getCode-accessors-no-raw-numeric-literals-in-this-chunk-except-modifyOrder-path-variable-passthrough-and-QueryInfo-sentinel-negative-one-for-no-filter",
+   "candidateAtomId": "atom:semantic:ctx-order-other-service-order-lifecycle:cech-section-order-status-code",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Order.java:79 (PAID default), OrderOtherServiceImpl.java:128/277/292/368/400 (all enum-getCode gated writes/comparisons), OrderOtherController.java:106-109 and OrderOtherServiceImpl.java:333-340 (modifyOrder(int status) passes the raw path-variable int through, bypassing the enum). Pass-a's extra clause about a QueryInfo state=-1 'sentinel for no filter' is NOT supported: grep shows qi.getState() is read exactly once (service:156), gated by the isEnableStateQuery() boolean, and state is never compared to -1 anywhere in the reviewed files, so -1 has no downstream gating effect. Merged pass-a+pass-b into one canonical atom that keeps the modifyOrder passthrough exception (true, grounded in controller.java:109) and drops the unsupported QueryInfo -1 claim; QueryInfo.java:70 ref dropped accordingly.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-order-other-service-order-lifecycle.cech-section-order-status-code",
+    "kind": "semantic",
+    "subject": "ctx:order-other-service-order-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=order-status-code: int status is set via OrderStatus enum getCode() accessors (PAID/CANCEL/CHANGE/NOTPAID/COLLECTED) at every gated write site in this chunk, except modifyOrder (controller+service), which passes an arbitrary caller-supplied int status straight through with no enum validation",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:79",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:277",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:292",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:368",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:109"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:order-other-service-order-lifecycle|cech|sectionValue|section=order-status-code:enum-codes-via-orderstatus-getcode-paid-cancel-change-notpaid-collected-no-raw-int-literals-used-for-gating-at-this-site",
+   "candidateAtomId": "atom:semantic:ctx-order-other-service-order-lifecycle:cech-section-order-status-code",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same OrderOtherServiceImpl.java lines -- same enum-getCode convention; pass-b's phrasing is accurate but omits the modifyOrder passthrough exception that pass-a's (partially inaccurate) row raised. Merged into the corrected canonical atom above, which keeps the true parts of both.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-order-other-service-order-lifecycle.cech-section-order-status-code",
+    "kind": "semantic",
+    "subject": "ctx:order-other-service-order-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=order-status-code: int status is set via OrderStatus enum getCode() accessors (PAID/CANCEL/CHANGE/NOTPAID/COLLECTED) at every gated write site in this chunk, except modifyOrder (controller+service), which passes an arbitrary caller-supplied int status straight through with no enum validation",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:79",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:277",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:292",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:368",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400",
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:109"
+    ]
+   }
+  },
+  {
+   "key": "semantic|notification.service.NotificationServiceImpl|semantic|meansInUse|boolean-true-selects-mail-sent-branch-false-selects-exception-caught-branch-with-error-log",
+   "candidateAtomId": "atom:semantic:notification.service.NotificationServiceImpl:meansInUse:boolean-return-branch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread NotificationServiceImpl.java -- all four methods (preserveSuccess:56-59, orderCreateSuccess:83-86, orderChangedSuccess:110-113, orderCancelSuccess:129-132) share the identical try{return true}catch{LOGGER.error;return false} shape. Pass-b's row cited only the first instance (lines 56-58); kept pass-a's canonical covering all four occurrences with union refs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-boolean-return-branch",
+    "kind": "semantic",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "boolean true selects the mail-dispatch-attempted branch (sendEmail did not throw), false selects the caught-exception branch with an error log, symmetric across all four notify methods",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:56",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:58",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:59",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:83",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:85",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:86",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:110",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:112",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:113",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:129",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:131",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:132"
+    ]
+   }
+  },
+  {
+   "key": "semantic|notification.service.NotificationServiceImpl|semantic|meansInUse|boolean-return-true-on-mail-dispatch-attempted-branch-false-on-caught-exception-branch",
+   "candidateAtomId": "atom:semantic:notification-service-notificationserviceimpl:boolean-return-branches",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread lines 56-58 -- same true/false branch meaning as pass-a's row, just the preserveSuccess instance; merged into pass-a's fuller canonical.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-boolean-return-branch",
+    "kind": "semantic",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "boolean true selects the mail-dispatch-attempted branch (sendEmail did not throw), false selects the caught-exception branch with an error log, symmetric across all four notify methods",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:56",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:58",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:59",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:83",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:85",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:86",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:110",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:112",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:113",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:129",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:131",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:132"
+    ]
+   }
+  },
+  {
+   "key": "semantic|notification.service.NotificationServiceImpl|semantic|meansInUse|template=order_cancel_success.ftl selected for OrderCancelSuccess notification, model reduced to username and price only (no trip fields)",
+   "candidateAtomId": "atom:semantic:notification.service.NotificationServiceImpl:meansInUse:order-cancel-success-template",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread NotificationServiceImpl.java:117-136 -- orderCancelSuccess() model.put only username(124) and price(126), then sendEmail(mail,\"order_cancel_success.ftl\") at 130. Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-cancel-success-template",
+    "kind": "semantic",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "template=order_cancel_success.ftl selected for orderCancelSuccess; model reduced to username and price only (no startPlace/endPlace/startTime/date/seatClass/seatNumber)",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:122",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:124",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:126",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:130"
+    ]
+   }
+  },
+  {
+   "key": "semantic|notification.service.NotificationServiceImpl|semantic|meansInUse|template=order_changed_success.ftl selected for OrderChangedSuccess notification, same model shape as OrderCreateSuccess",
+   "candidateAtomId": "atom:semantic:notification.service.NotificationServiceImpl:meansInUse:order-changed-success-template",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread NotificationServiceImpl.java:90-115 -- orderChangedSuccess() model matches orderCreateSuccess's field set exactly, sendEmail(mail,\"order_changed_success.ftl\") at 109. Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-changed-success-template",
+    "kind": "semantic",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "template=order_changed_success.ftl selected for orderChangedSuccess; model shape (username/startPlace/endPlace/startTime/date/seatClass/seatNumber/orderNumber) identical to orderCreateSuccess",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:95",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:105",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:109"
+    ]
+   }
+  },
+  {
+   "key": "semantic|notification.service.NotificationServiceImpl|semantic|meansInUse|template=order_create_success.ftl selected for OrderCreateSuccess notification, model adds orderNumber in place of price",
+   "candidateAtomId": "atom:semantic:notification.service.NotificationServiceImpl:meansInUse:order-create-success-template",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread NotificationServiceImpl.java:63-88 -- orderCreateSuccess() model has orderNumber(78) but no price field, sendEmail(mail,\"order_create_success.ftl\") at 82. Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-create-success-template",
+    "kind": "semantic",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "template=order_create_success.ftl selected for orderCreateSuccess; model adds orderNumber in place of preserveSuccess's price field",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:68",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:78",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:82"
+    ]
+   }
+  },
+  {
+   "key": "semantic|notification.service.NotificationServiceImpl|semantic|meansInUse|template=preserve_success.ftl selected for PreserveSuccess notification, model carries username/startPlace/endPlace/startTime/date/seatClass/seatNumber/price",
+   "candidateAtomId": "atom:semantic:notification.service.NotificationServiceImpl:meansInUse:preserve-success-template",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread NotificationServiceImpl.java:36-61 -- preserveSuccess() model.put for all eight listed keys (43-51), sendEmail(mail,\"preserve_success.ftl\") at 55. Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-preserve-success-template",
+    "kind": "semantic",
+    "subject": "ts-notification-service.NotificationServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "template=preserve_success.ftl selected for preserveSuccess; model carries username/startPlace/endPlace/startTime/date/seatClass/seatNumber/price",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:41",
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:55"
+    ]
+   }
+  },
+  {
+   "key": "semantic|order.config.SecurityConfig|semantic|meansInUse|method-restricted matchers for POST-PUT-DELETE on /api/v1/orderservice/order and /admin are declared before the broad permit-all matcher for /api/v1/orderservice/order/**",
+   "candidateAtomId": "atom:semantic:order.config.SecurityConfig:meansInUse:matcher-declaration-order",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:75-80 -- the four role-restricted antMatchers precede the permitAll() on order/** in the fluent chain, so Spring Security's first-match-wins ordering applies the roles before the broad grant. Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-service.securityconfig:meansinuse-matcher-declaration-order",
+    "kind": "semantic",
+    "subject": "ts-order-service.SecurityConfig",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "method-restricted matchers for POST/PUT/DELETE on /api/v1/orderservice/order and /admin (lines 75-79) are declared before the broad permit-all matcher for /api/v1/orderservice/order/** (line 80)",
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:75",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:76",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:77",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:78",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:79",
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:80"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.config.SecurityConfig|semantic|meansInUse|permit-all matcher for /api/v1/orderOtherService/orderOther/** is declared before the method-restricted matchers for the same base path",
+   "candidateAtomId": "atom:semantic:other.config.SecurityConfig:meansInUse:matcher-declaration-order",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:74-79 -- antMatchers(orderOther/**).permitAll() at line 74 precedes the role-restricted matchers at 75-79, the reverse ordering from the sibling ts-order-service config. Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.securityconfig:meansinuse-matcher-declaration-order",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.SecurityConfig",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "the broad permit-all matcher for /api/v1/orderOtherService/orderOther/** (line 74) is declared before the method-restricted matchers for the same base path (lines 75-79) -- opposite declaration order from ts-order-service.SecurityConfig",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:74",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:75",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:76",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:77",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:78",
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:79"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.entity.Order|semantic|meansInUse|String price field defaults to literal 0.0 in the no-arg constructor",
+   "candidateAtomId": "atom:semantic:other.entity.Order:meansInUse:price-string-default",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread Order.java:68 (private String price) and :80 (price = \"0.0\" in the no-arg constructor). Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.order:meansinuse-price-string-default",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.Order",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "String price field defaults to the literal \"0.0\" in the no-arg constructor",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:68",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:80"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.entity.Order|semantic|meansInUse|int status field defaults to OrderStatus.PAID.getCode() in the no-arg constructor",
+   "candidateAtomId": "atom:semantic:other.entity.Order:meansInUse:status-int-default-paid",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Order.java:66 (private int status) and :79 (status = OrderStatus.PAID.getCode()). Same fact as pass-b's statusGates-predicate row; kept as meansInUse with union refs (pass-a also cites the field declaration).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.order:meansinuse-status-default-paid",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.Order",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "int status field defaults to OrderStatus.PAID.getCode() in the no-arg constructor",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:66",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:79"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.entity.Order|semantic|statusGates|no-arg-constructor-defaults-status-to-orderstatus-paid-code",
+   "candidateAtomId": "atom:semantic:other-entity-order:defaultstatus",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Order.java:79 -- same PAID default; merged into pass-a's canonical, predicate normalized to meansInUse since this is a default-value observation rather than a downstream branch gate.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.order:meansinuse-status-default-paid",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.Order",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "int status field defaults to OrderStatus.PAID.getCode() in the no-arg constructor",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:66",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:79"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.entity.QueryInfo|semantic|meansInUse|int state field set to -1 by disableStateQuery to select the no-state-filter branch downstream",
+   "candidateAtomId": "atom:semantic:other.entity.QueryInfo:meansInUse:disable-state-query-sentinel",
+   "pass": "pass-a",
+   "decision": "not-adopted",
+   "basis": "Reread QueryInfo.java:68-71 (disableStateQuery sets state=-1) and grep for getState() usage: the only read is OrderOtherServiceImpl.java:156, gated entirely by qi.isEnableStateQuery() (never by comparing state to -1). No code in the reviewed files branches on state==-1, so the claimed downstream 'selects the no-state-filter branch' effect does not exist; the actual no-filter gate is the (separately buggy, see pass-b's disablestatequery-also-clears-traveldateflag row) enableStateQuery boolean, not the state value. Dropped as an unsupported causal claim."
+  },
+  {
+   "key": "semantic|other.service.OrderOtherServiceImpl|semantic|meansInUse|int 0 selects the not-found-or-rejected branch of the Response envelope, data is typically null or a sentinel value",
+   "candidateAtomId": "atom:semantic:other.service.OrderOtherServiceImpl:meansInUse:response-status-0",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread OrderOtherServiceImpl.java:69-242 (status-0 sites) -- lines 73/82/96/125/138/242 all `new Response<>(0,...,null-or-echoed-input)` on not-found/duplicate/rejected paths. Pass-a split this into a separate status-0 atom; the status-1 half (next row) and pass-b's combined row describe the same bivalent envelope convention, so merged into one atom covering both branches, matching how the analogous NotificationServiceImpl boolean-branch atom was already kept as one fact.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-envelope-status-branches",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "Response envelope status=1 selects the result-carrying success branch, status=0 selects the not-found-or-rejected branch (data typically null or a sentinel), consistently across getSoldTickets/findOrderById/create/alterOrder/saveChanges",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:69",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:73",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:82",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:86",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:96",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:101",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:125",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:135",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:138",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:201",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:220",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:242"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.service.OrderOtherServiceImpl|semantic|meansInUse|int 1 selects the result-carrying success branch of the Response envelope",
+   "candidateAtomId": "atom:semantic:other.service.OrderOtherServiceImpl:meansInUse:response-status-1",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread lines 69/86/101/135/201/220 (status-1 sites) -- all `new Response<>(1, success-or-message, data)` on success paths. Same envelope convention as the status-0 half above and as pass-b's combined row; merged into the single canonical atom with union refs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-envelope-status-branches",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "Response envelope status=1 selects the result-carrying success branch, status=0 selects the not-found-or-rejected branch (data typically null or a sentinel), consistently across getSoldTickets/findOrderById/create/alterOrder/saveChanges",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:69",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:73",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:82",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:86",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:96",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:101",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:125",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:135",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:138",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:201",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:220",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:242"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.service.OrderOtherServiceImpl|semantic|meansInUse|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:other-service-orderotherserviceimpl:envelope-status-branches",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread lines 69/73/82/242 -- same envelope 0/1 convention pass-a described across a larger citation set; merged into the canonical atom above with union refs from all three rows.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-envelope-status-branches",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "Response envelope status=1 selects the result-carrying success branch, status=0 selects the not-found-or-rejected branch (data typically null or a sentinel), consistently across getSoldTickets/findOrderById/create/alterOrder/saveChanges",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:69",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:73",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:82",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:86",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:96",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:101",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:125",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:135",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:138",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:201",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:220",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:242"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.service.OrderOtherServiceImpl|semantic|meansInUse|order.getPrice() String value is returned as-is in Response data with no parsing or arithmetic in this service; the not-found branch of getOrderPrice returns the literal string -1.0",
+   "candidateAtomId": "atom:semantic:other.service.OrderOtherServiceImpl:meansInUse:price-string-passthrough",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread getOrderPrice():348-357 -- not-found branch returns literal \"-1.0\" (352), success branch returns order.getPrice() untouched (356). Genuine pass-a-only observation; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-price-string-passthrough",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "order.getPrice() String value is returned as-is in Response data with no parsing or arithmetic; getOrderPrice's not-found branch returns the literal string \"-1.0\"",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:348",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:352",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:355",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:356"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.service.OrderOtherServiceImpl|semantic|meansInUse|orders with getStatus() >= OrderStatus.CHANGE.getCode() are excluded (continue) from the sold-ticket seat-class tally",
+   "candidateAtomId": "atom:semantic:other.service.OrderOtherServiceImpl:meansInUse:queryAlreadySoldOrders-status-threshold",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread queryAlreadySoldOrders():292-294 -- if (order.getStatus() >= OrderStatus.CHANGE.getCode()) { continue; }. Same fact as pass-b's row; kept with pass-a's fuller 3-line ref span.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-excluded-from-sold-tally",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "orders with getStatus() >= OrderStatus.CHANGE.getCode() are excluded (continue) from the sold-ticket seat-class tally in queryAlreadySoldOrders",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:292",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:293",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:294"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.service.OrderOtherServiceImpl|semantic|statusGates|order-status-code-at-or-above-orderstatus-change-code-selects-excluded-from-sold-ticket-tally-branch",
+   "candidateAtomId": "atom:semantic:other-service-orderotherserviceimpl:excluded-from-sold-tally-branch",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread line 292 -- same threshold check; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-excluded-from-sold-tally",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "orders with getStatus() >= OrderStatus.CHANGE.getCode() are excluded (continue) from the sold-ticket seat-class tally in queryAlreadySoldOrders",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:292",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:293",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:294"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.service.OrderOtherServiceImpl|semantic|meansInUse|when qi.isEnableStateQuery() is true, tempOrder.getStatus() is compared for exact equality against qi.getState() to select the passing branch",
+   "candidateAtomId": "atom:semantic:other.service.OrderOtherServiceImpl:meansInUse:queryOrders-status-filter",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread queryOrders():155-159 -- if (qi.isEnableStateQuery()) { if (tempOrder.getStatus() != qi.getState()) statePassFlag=false; else statePassFlag=true; }. Genuine pass-a-only observation, distinct from the checkSecurityAboutOrder valid-status-set fact below; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-queryorders-status-filter",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "when qi.isEnableStateQuery() is true, tempOrder.getStatus() is compared for exact equality against qi.getState() to select the statePassFlag-passing branch in queryOrders",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:155",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:156",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:159"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.service.OrderOtherServiceImpl|semantic|meansInUse|order counted as valid when status equals OrderStatus.NOTPAID, PAID, or COLLECTED code",
+   "candidateAtomId": "atom:semantic:other.service.OrderOtherServiceImpl:meansInUse:checkSecurityAboutOrder-valid-status-set",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread checkSecurityAboutOrder():400-402 -- the three-way OR against NOTPAID/PAID/COLLECTED getCode(). Same fact as pass-b's row; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-valid-order-for-security-check",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "in checkSecurityAboutOrder, an order is counted as valid (countTotalValidOrder incremented) when its status equals OrderStatus.NOTPAID, PAID, or COLLECTED code",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:401",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:402"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.service.OrderOtherServiceImpl|semantic|statusGates|status-in-notpaid-paid-collected-set-selects-counted-as-valid-order-for-security-check-branch",
+   "candidateAtomId": "atom:semantic:other-service-orderotherserviceimpl:valid-order-for-security-check-branch",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread same lines -- identical three-status check; merged into pass-a's canonical.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-valid-order-for-security-check",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "in checkSecurityAboutOrder, an order is counted as valid (countTotalValidOrder incremented) when its status equals OrderStatus.NOTPAID, PAID, or COLLECTED code",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:401",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:402"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ts-notification-service.application.yml|semantic|identifiedBy|email_password property falls back to a literal default value when the env var is unset",
+   "candidateAtomId": "atom:semantic:ts-notification-service.application.yml:identifiedBy:mail-password-fallback",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread application.yml:16 -- password: ${email_password:GZKSCXHBOLKMCLDQ}. Genuine pass-a-only observation; kept, subject normalized to the <service-dir>.application-yml convention.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-notification-service.application-yml:identifiedby-mail-password-fallback",
+    "kind": "semantic",
+    "subject": "ts-notification-service.application-yml",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "spring.mail.password falls back to the literal default GZKSCXHBOLKMCLDQ when the email_password env var is unset",
+    "refs": [
+     "src:ts-notification-service/src/main/resources/application.yml:16"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ts-order-other-service.application.yml|semantic|identifiedBy|ORDER_OTHER_MYSQL_PASSWORD property falls back to the literal value root when unset",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.application.yml:identifiedBy:datasource-password-fallback",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread application.yml:16 -- password: ${ORDER_OTHER_MYSQL_PASSWORD:root}. Genuine pass-a-only observation; kept, subject normalized to the <service-dir>.application-yml convention.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.application-yml:identifiedby-datasource-password-fallback",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.application-yml",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "spring.datasource.password falls back to the literal default root when the ORDER_OTHER_MYSQL_PASSWORD env var is unset",
+    "refs": [
+     "src:ts-order-other-service/src/main/resources/application.yml:16"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.config.SecurityConfig|semantic|meansInUse|order-other-service-application-yml-shows-mysql-datasource-active-and-rabbitmq-stream-binding-block-fully-commented-out",
+   "candidateAtomId": "atom:semantic:other-config-securityconfig:orderother-application.yml-active-datasource-no-active-rabbit-binding",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread application.yml:12-49 -- datasource.url is live at line 14, while rabbitmq: and cloud.stream.bindings: (lines 27-49) are entirely '#'-commented. Genuine pass-b-only observation; kept, subject corrected from other.config.SecurityConfig (not the actual evidence file) to ts-order-other-service.application-yml per the yml-subject convention.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.application-yml:meansinuse-active-datasource-no-active-rabbit-binding",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.application-yml",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "the MySQL datasource block is active (uncommented) while the rabbitmq host/listener and cloud.stream binding block is fully commented out",
+    "refs": [
+     "src:ts-order-other-service/src/main/resources/application.yml:14",
+     "src:ts-order-other-service/src/main/resources/application.yml:27"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.entity.QueryInfo|semantic|meansInUse|disablestatequery-method-sets-enabletraveldatequery-false-and-state-minus-1-does-not-touch-enablestatequery-flag",
+   "candidateAtomId": "atom:semantic:other-entity-queryinfo:disablestatequery-also-clears-traveldateflag",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread QueryInfo.java:68-71 -- disableStateQuery(){ enableTravelDateQuery=false; state=-1; } touches the wrong boolean and never clears enableStateQuery. Genuine pass-b-only observation (a real flag-mixup); kept as-is.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.queryinfo:meansinuse-disablestatequery-clears-traveldateflag",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.QueryInfo",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "disableStateQuery() sets enableTravelDateQuery=false and state=-1, but never sets enableStateQuery=false",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:68",
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:69",
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:70"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.entity.QueryInfo|semantic|meansInUse|enablestatequery-int-parameter-becomes-state-field-used-as-order-status-filter-target",
+   "candidateAtomId": "atom:semantic:other-entity-queryinfo:enablestatequery-selects-target-status",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread QueryInfo.java:63-66 (enableStateQuery sets state=targetStatus) and OrderOtherServiceImpl.java:156 (tempOrder.getStatus() != qi.getState()). Genuine pass-b-only observation, distinct from the flag-mixup bug above; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.queryinfo:meansinuse-enablestatequery-target-status",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.QueryInfo",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "enableStateQuery(int targetStatus) stores the argument in the state field, later read by OrderOtherServiceImpl.queryOrders as the order-status filter target",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:63",
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:156"
+    ]
+   }
+  },
+  {
+   "key": "semantic|other.repository.OrderOtherRepository|semantic|identifiedBy|order-looked-up-by-primary-key-id-or-by-accountid-or-by-traveldate-plus-trainnumber-composite",
+   "candidateAtomId": "atom:semantic:other-repository-orderotherrepository:identifiedby",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread OrderOtherRepository.java:26 (findById), :43 (findByAccountId), :53 (findByTravelDateAndTrainNumber). Genuine pass-b-only observation, distinct axis (lookup key semantics) from pass-a's CRUD-surface state row for the same interface; kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-order-other-service.orderotherrepository:identifiedby",
+    "kind": "semantic",
+    "subject": "ts-order-other-service.OrderOtherRepository",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "Order rows are looked up by primary key id, by accountId, or by the travelDate+trainNumber composite",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:26",
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:43",
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:53"
+    ]
+   }
+  },
+  {
+   "key": "state|notification.repository.NotifyRepository|state|persistsIn|NotifyInfo rows keyed by String id via CrudRepository (findById, findAll, deleteById)",
+   "candidateAtomId": "atom:state:notification.repository.NotifyRepository:persistsIn",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread NotifyRepository.java:11-20 -- interface extends CrudRepository<NotifyInfo,String>, declares findById/findAll/deleteById. Same fact as pass-b's row; kept with fuller ref span.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-notification-service.notifyrepository:persistsin",
+    "kind": "state",
+    "subject": "ts-notification-service.NotifyRepository",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "NotifyInfo rows keyed by String id via CrudRepository, exposing findById, findAll, deleteById",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java:12",
+     "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java:17",
+     "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java:19"
+    ]
+   }
+  },
+  {
+   "key": "state|notification.repository.NotifyRepository|state|persistsIn|notifyinfo-store-via-crudrepository",
+   "candidateAtomId": "atom:state:notification-repository-notifyrepository:persistsin-notifyinfo",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread line 12 -- same CrudRepository<NotifyInfo,String> declaration; merged into pass-a's canonical with union refs.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-notification-service.notifyrepository:persistsin",
+    "kind": "state",
+    "subject": "ts-notification-service.NotifyRepository",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "NotifyInfo rows keyed by String id via CrudRepository, exposing findById, findAll, deleteById",
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java:12",
+     "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java:17",
+     "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java:19"
+    ]
+   }
+  },
+  {
+   "key": "state|other.entity.Order|state|persistsIn|orders_other table row identified by uuid id (jpa-uuid GenericGenerator)",
+   "candidateAtomId": "atom:state:other.entity.Order:persistsIn",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread Order.java:18 (@Table(name=\"orders_other\")), :24 (@Id), :26 (@GeneratedValue(generator=\"jpa-uuid\")). Genuine pass-a-only observation (entity-side table binding), distinct subject from pass-b's repository-side row; kept.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-order-other-service.order:persistsin",
+    "kind": "state",
+    "subject": "ts-order-other-service.Order",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "orders_other table row identified by a uuid id generated via the jpa-uuid GenericGenerator",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:18",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:24",
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:26"
+    ]
+   }
+  },
+  {
+   "key": "state|other.repository.OrderOtherRepository|state|persistsIn|CrudRepository<Order,String> exposing findById, findAll, findByAccountId, findByTravelDateAndTrainNumber, deleteById",
+   "candidateAtomId": "atom:state:other.repository.OrderOtherRepository:persistsIn",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread OrderOtherRepository.java:16-62 -- interface declaration plus all five listed methods. Genuine pass-a-only granularity (full CRUD method surface), distinct from pass-b's table-binding-focused row for the same interface; kept.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-order-other-service.orderotherrepository:persistsin-crud-surface",
+    "kind": "state",
+    "subject": "ts-order-other-service.OrderOtherRepository",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "CrudRepository<Order,String> exposing findById, findAll, findByAccountId, findByTravelDateAndTrainNumber, deleteById",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:16",
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:26",
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:34",
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:43",
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:53",
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:62"
+    ]
+   }
+  },
+  {
+   "key": "state|other.repository.OrderOtherRepository|state|persistsIn|orders_other-table-via-other.entity.Order",
+   "candidateAtomId": "atom:state:other-repository-orderotherrepository:persistsin-orders-other",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread Order.java:18 (@Table(name=\"orders_other\")) and OrderOtherRepository.java:16 (extends CrudRepository<Order,String>). Genuine pass-b-only observation, distinct axis (table binding) from pass-a's CRUD-surface row for the same interface; kept.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-order-other-service.orderotherrepository:persistsin-orders-other-table",
+    "kind": "state",
+    "subject": "ts-order-other-service.OrderOtherRepository",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "backs the orders_other table via the ts-order-other-service.Order @Table(name=\"orders_other\") entity",
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java:18",
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:16"
+    ]
+   }
+  }
+ ]
+}

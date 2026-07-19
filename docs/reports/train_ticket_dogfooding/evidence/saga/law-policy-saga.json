@@ -1,0 +1,61 @@
+{
+ "schema": "law-policy/v0.5.3",
+ "id": "train-ticket-money-saga-policy",
+ "lawSurfaceRef": "law-surface:train-ticket-money-saga-v053",
+ "measurementProfileRef": "profile:train-ticket-money-saga@1",
+ "policies": [
+  {
+   "law": "surface:cech-surface-v052",
+   "evaluator": "ag.cech-obstruction",
+   "basis": [
+    "policy-basis:shared-convention-consistency"
+   ],
+   "scope": [
+    "ts-cancel-service/",
+    "ts-inside-payment-service/",
+    "ts-order-service/",
+    "ts-consign-service/",
+    "ts-consign-price-service/"
+   ],
+   "severity": "high"
+  },
+  {
+   "law": "law:money-settlement-convention",
+   "evaluator": "ag.saga-grounded",
+   "basis": [
+    "policy-basis:shared-convention-consistency"
+   ],
+   "scope": [
+    "ts-cancel-service/",
+    "ts-inside-payment-service/",
+    "ts-order-service/",
+    "ts-consign-service/",
+    "ts-consign-price-service/"
+   ],
+   "severity": "high"
+  },
+  {
+   "law": "law:money-repair-descent",
+   "evaluator": "ag.saga-descent",
+   "basis": [
+    "policy-basis:shared-convention-consistency"
+   ],
+   "scope": [
+    "ts-cancel-service/",
+    "ts-inside-payment-service/",
+    "ts-order-service/",
+    "ts-consign-service/",
+    "ts-consign-price-service/"
+   ],
+   "severity": "high"
+  }
+ ],
+ "basisLedger": [
+  {
+   "basisId": "policy-basis:shared-convention-consistency",
+   "kind": "repo-document",
+   "path": "docs/aat/algebraic_geometric_theory/README.md",
+   "revision": "aat-ag-current"
+  }
+ ]
+}

@@ -1,0 +1,759 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-disabled-maxage-3600",
+   "candidateAtomId": "atom:authority:com.trainticket.config.securityconfig:allows-cross-origin-all",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:51",
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:52",
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:55"
+   ]
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|checksPermission|jwtfilter-inserted-before-usernamepasswordauthenticationfilter-in-chain",
+   "candidateAtomId": "atom:authority:com.trainticket.config.securityconfig:checks-permission-via-jwt-filter",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:com.trainticket.config.securityconfig:permits-unauthenticated-swagger-paths",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:72",
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|requiresRole|any-of-admin-or-user-role-on-/api/v1/paymentservice/**",
+   "candidateAtomId": "atom:authority:com.trainticket.config.securityconfig:requires-role-on-paymentservice-path",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|get-/api/v1/paymentservice/payment-serves-payment-list-query",
+   "candidateAtomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-query",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:44",
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:47"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|get-/api/v1/paymentservice/welcome",
+   "candidateAtomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-welcome",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:27"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|post-/api/v1/paymentservice/payment-handles-pay-command",
+   "candidateAtomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-pay",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:32",
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:35"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|post-/api/v1/paymentservice/payment/money-handles-addmoney-command",
+   "candidateAtomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-add-money",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:38",
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:41"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.repository.AddMoneyRepository|capability|servesQuery|crudrepository-over-money-entity-keyed-by-string-id",
+   "candidateAtomId": "atom:capability:com.trainticket.repository.addmoneyrepository:persists-money-entities",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/repository/AddMoneyRepository.java:9"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.repository.PaymentRepository|capability|servesQuery|findByOrderId",
+   "candidateAtomId": "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-order-id",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:16"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.repository.PaymentRepository|capability|servesQuery|findByUserId",
+   "candidateAtomId": "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-user-id",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:21"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.service.PaymentServiceImpl|capability|handlesCommand|addmoney-creates-money-row-from-payment-price-field-unconditionally",
+   "candidateAtomId": "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-add-money",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:50",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:53"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.service.PaymentServiceImpl|capability|handlesCommand|pay-creates-payment-row-only-when-no-existing-payment-found-for-order-id",
+   "candidateAtomId": "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-pay",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:40"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.service.PaymentServiceImpl|capability|servesQuery|query-returns-all-payments-or-not-found-branch-when-empty",
+   "candidateAtomId": "atom:capability:com.trainticket.service.paymentserviceimpl:serves-query-list-payments",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:59",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:65"
+   ]
+  },
+  {
+   "key": "capability|order.repository.OrderRepository|capability|servesQuery|findByAccountId",
+   "candidateAtomId": "atom:capability:order.repository.orderrepository:serves-query-by-account-id",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/repository/OrderRepository.java:24"
+   ]
+  },
+  {
+   "key": "capability|order.repository.OrderRepository|capability|servesQuery|findByTravelDateAndTrainNumber",
+   "candidateAtomId": "atom:capability:order.repository.orderrepository:serves-query-by-travel-date-and-train-number",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/repository/OrderRepository.java:26"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|handlesCommand|alter-order-cancels-old-order-then-creates-new-order-in-sequence",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:handles-command-alter-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:112",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:115"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|handlesCommand|cancel-order-sets-status-to-orderstatus-cancel-code",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:handles-command-cancel-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|handlesCommand|create-order-rejected-when-accountorders-already-contains-equal-order",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:handles-command-create",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:89",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:90",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:94"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|handlesCommand|pay-order-sets-status-to-orderstatus-paid-code",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:handles-command-pay-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|servesQuery|getOrderPrice-returns-string-price-directly-or-minus-1.0-sentinel-on-not-found",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:serves-query-order-price",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:334",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:338"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|servesQuery|getSoldTickets-aggregates-tickets-by-travel-date-and-train-number-parsing-seatnumber-to-int",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:serves-query-sold-tickets",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:55",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:60"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderServiceImpl|capability|servesQuery|queryOrders-applies-state-boughtdate-traveldate-filters-only-when-corresponding-orderinfo-flag-enabled",
+   "candidateAtomId": "atom:capability:order.service.orderserviceimpl:serves-query-orders-with-filter-flags",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:131",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:138",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:154",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:166"
+   ]
+  },
+  {
+   "key": "component|ts-order-service.application|static||",
+   "candidateAtomId": "atom:component:ts-order-service-application-yml",
+   "refs": [
+    "src:ts-order-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "component|ts-payment-service.application|static||",
+   "candidateAtomId": "atom:component:ts-payment-service-application-yml",
+   "refs": [
+    "src:ts-payment-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "contract|order.entity.OrderAlterInfo|specification|shapedAs|accountid-previousorderid-logintoken-neworderinfo-dto",
+   "candidateAtomId": "atom:contract:order.entity.orderalterinfo:shaped-as-alter-request",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:21",
+    "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:25",
+    "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:27",
+    "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:29"
+   ]
+  },
+  {
+   "key": "effect|order.service.OrderServiceImpl|effect|callsProvider|ts-station-service:/api/v1/stationservice/stations/namelist-via-resttemplate-exchange",
+   "candidateAtomId": "atom:effect:order.service.orderserviceimpl:calls-provider-station-service",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:211",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:212"
+   ]
+  },
+  {
+   "key": "relation|com.trainticket.init.InitData|relation|dependsOn|com.trainticket.service.PaymentService",
+   "candidateAtomId": "atom:relation:com.trainticket.init.initdata:depends-on-paymentservice",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:32"
+   ]
+  },
+  {
+   "key": "relation|com.trainticket.service.PaymentServiceImpl|relation|dependsOn|com.trainticket.repository.PaymentRepository-and-com.trainticket.repository.AddMoneyRepository",
+   "candidateAtomId": "atom:relation:com.trainticket.service.paymentserviceimpl:depends-on-repositories",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:25",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:28"
+   ]
+  },
+  {
+   "key": "relation|order.init.InitData|relation|dependsOn|order.service.OrderService",
+   "candidateAtomId": "atom:relation:order.init.initdata:depends-on-orderservice",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/init/InitData.java:45",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:64",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:82"
+   ]
+  },
+  {
+   "key": "semantic|com.trainticket.entity.Money|semantic|meansInUse|string-typed-money-field-annotated-nosonar-at-declaration",
+   "candidateAtomId": "atom:semantic:com.trainticket.entity.money:money-field-string-typed",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30"
+   ]
+  },
+  {
+   "key": "semantic|com.trainticket.entity.Payment|semantic|meansInUse|string-typed-price-field-mapped-to-payment_price-column-default-empty-string-in-constructor",
+   "candidateAtomId": "atom:semantic:com.trainticket.entity.payment:price-field-string-typed",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39",
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:46"
+   ]
+  },
+  {
+   "key": "semantic|com.trainticket.init.InitData|semantic|meansInUse|string-price-literal-10000.0-assigned-with-no-parsing-at-seed-time",
+   "candidateAtomId": "atom:semantic:com.trainticket.init.initdata:price-set-via-string-literal",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:30"
+   ]
+  },
+  {
+   "key": "semantic|com.trainticket.service.PaymentServiceImpl|semantic|meansInUse|error-level-log-emitted-on-payment-saved-branch-info-level-log-emitted-on-already-exists-branch",
+   "candidateAtomId": "atom:semantic:com.trainticket.service.paymentserviceimpl:initpayment-log-level-per-branch",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:73",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:74",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:76"
+   ]
+  },
+  {
+   "key": "semantic|com.trainticket.service.PaymentServiceImpl|semantic|statusGates|status-1-on-payment-created-branch-status-0-on-order-already-has-payment-branch",
+   "candidateAtomId": "atom:semantic:com.trainticket.service.paymentserviceimpl:response-envelope-status-branch",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:41",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:44"
+   ]
+  },
+  {
+   "key": "semantic|ctx:order-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-field-stored-and-copied-without-numeric-parsing-at-use-site",
+   "candidateAtomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-money-amount",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/Order.java:71",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:338",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:25"
+   ]
+  },
+  {
+   "key": "semantic|ctx:order-service-order-lifecycle|cech|sectionValue|section=order-status-code:enum-code-via-orderstatus-getcode-at-service-layer-raw-int-literal-0-at-seed-layer",
+   "candidateAtomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-order-status-code",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:43"
+   ]
+  },
+  {
+   "key": "semantic|ctx:payment-service-payment-flow|cech|sectionValue|section=money-amount:string-price-and-money-fields-copied-without-numeric-parsing-at-use-site",
+   "candidateAtomId": "atom:semantic:ctx-payment-service-payment-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39",
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:38",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:52",
+    "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:30"
+   ]
+  },
+  {
+   "key": "semantic|order.entity.OrderInfo|semantic|meansInUse|boolean-enable-flags-gate-whether-state-boughtdate-traveldate-predicates-are-applied",
+   "candidateAtomId": "atom:semantic:order.entity.orderinfo:enable-flags-gate-query-predicates",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:51",
+    "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:63",
+    "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:75"
+   ]
+  },
+  {
+   "key": "semantic|order.entity.OrderInfo|semantic|meansInUse|state-minus-one-sentinel-set-on-disable-state-query-branch",
+   "candidateAtomId": "atom:semantic:order.entity.orderinfo:disable-state-query-sentinel",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:80"
+   ]
+  },
+  {
+   "key": "semantic|order.entity.Order|semantic|meansInUse|int-status-field-default-set-via-orderstatus-paid-getcode-in-constructor",
+   "candidateAtomId": "atom:semantic:order.entity.order:status-field-default-via-enum-code",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/Order.java:69",
+    "src:ts-order-service/src/main/java/order/entity/Order.java:84"
+   ]
+  },
+  {
+   "key": "semantic|order.entity.Order|semantic|meansInUse|string-typed-price-field-no-numeric-type-at-declaration",
+   "candidateAtomId": "atom:semantic:order.entity.order:price-field-string-typed",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/Order.java:71",
+    "src:ts-order-service/src/main/java/order/entity/Order.java:85"
+   ]
+  },
+  {
+   "key": "semantic|order.init.InitData|semantic|meansInUse|int-literal-0-assigned-directly-to-status-field-at-seed-time-not-via-enum",
+   "candidateAtomId": "atom:semantic:order.init.initdata:status-set-via-raw-int-literal",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/init/InitData.java:43",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:62",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:80"
+   ]
+  },
+  {
+   "key": "semantic|order.init.InitData|semantic|meansInUse|string-price-literal-100.0-assigned-with-no-parsing-at-seed-time",
+   "candidateAtomId": "atom:semantic:order.init.initdata:price-set-via-string-literal",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/init/InitData.java:25",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:44"
+   ]
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|meansInUse|orders-with-status-code-at-or-after-orderstatus-change-excluded-from-sold-ticket-tally",
+   "candidateAtomId": "atom:semantic:order.service.orderserviceimpl:sold-tickets-excludes-changed-orders",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:274"
+   ]
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:order.service.orderserviceimpl:response-envelope-status-branch",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:78",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:82",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:108",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:227",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:256",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:347",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:415",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:445"
+   ]
+  },
+  {
+   "key": "state|order.entity.Order|state|persistsIn|orders-table-via-jpa-entity-annotation",
+   "candidateAtomId": "atom:state:order.entity.order:persists-in-orders-table",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/Order.java:20"
+   ]
+  },
+  {
+   "key": "state|ts-order-service.application|state|persistsIn|mysql-ts-schema-via-jdbc-datasource-url",
+   "candidateAtomId": "atom:state:ts-order-service-application-yml:persists-in-mysql-ts-schema",
+   "refs": [
+    "src:ts-order-service/src/main/resources/application.yml:13"
+   ]
+  },
+  {
+   "key": "state|ts-payment-service.application|state|persistsIn|mysql-ts-payment-mysql-schema-via-jdbc-datasource-url",
+   "candidateAtomId": "atom:state:ts-payment-service-application-yml:persists-in-mysql-ts-payment-schema",
+   "refs": [
+    "src:ts-payment-service/src/main/resources/application.yml:13"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-not-allowed",
+   "candidateAtomId": "atom:authority:com-trainticket-config-securityconfig:allowsCrossOrigin",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:51",
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:52",
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:53",
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:54",
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:55"
+   ]
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+   "candidateAtomId": "atom:authority:com-trainticket-config-securityconfig:permitsUnauthenticated",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:72",
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|com.trainticket.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-on-/api/v1/paymentservice/**",
+   "candidateAtomId": "atom:authority:com-trainticket-config-securityconfig:requiresRole",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|GET /api/v1/paymentservice/payment",
+   "candidateAtomId": "atom:capability:com-trainticket-controller-paymentcontroller:exposesEndpoint:query",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:44",
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:45"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|GET /api/v1/paymentservice/welcome",
+   "candidateAtomId": "atom:capability:com-trainticket-controller-paymentcontroller:exposesEndpoint:welcome",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:27",
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:28"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|POST /api/v1/paymentservice/payment",
+   "candidateAtomId": "atom:capability:com-trainticket-controller-paymentcontroller:exposesEndpoint:pay",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:32",
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:33"
+   ]
+  },
+  {
+   "key": "capability|com.trainticket.controller.PaymentController|capability|exposesEndpoint|POST /api/v1/paymentservice/payment/money",
+   "candidateAtomId": "atom:capability:com-trainticket-controller-paymentcontroller:exposesEndpoint:addMoney",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:38",
+    "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:39"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|addNewOrder-admin-path",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:addNewOrder",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:50"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|alterOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:alterOrder",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:28"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|cancelOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:cancelOrder",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:22"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|create",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:createOrder",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:18"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|deleteOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:deleteOrder",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:46"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|modifyOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:modifyOrder",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:34"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|payOrder",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:payOrder",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:38"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|handlesCommand|updateOrder-admin-path",
+   "candidateAtomId": "atom:capability:order-service-orderservice:handlesCommand:updateOrder",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:52"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|servesQuery|findOrderById",
+   "candidateAtomId": "atom:capability:order-service-orderservice:servesQuery:findOrderById",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:16"
+   ]
+  },
+  {
+   "key": "capability|order.service.OrderService|capability|servesQuery|queryOrders",
+   "candidateAtomId": "atom:capability:order-service-orderservice:servesQuery:queryOrders",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderService.java:24"
+   ]
+  },
+  {
+   "key": "component|ts-order-service|static||",
+   "candidateAtomId": "atom:component:ts-order-service",
+   "refs": [
+    "src:ts-order-service/src/main/resources/application.yml:10"
+   ]
+  },
+  {
+   "key": "component|ts-payment-service|static||",
+   "candidateAtomId": "atom:component:ts-payment-service",
+   "refs": [
+    "src:ts-payment-service/src/main/resources/application.yml:10"
+   ]
+  },
+  {
+   "key": "contract|com.trainticket.entity.Payment|specification|requires|non-null-orderId-userId-price-fields-annotated-at-entity-level",
+   "candidateAtomId": "atom:contract:com-trainticket-entity-payment:requires",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:27",
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:32",
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:37"
+   ]
+  },
+  {
+   "key": "effect|order.service.OrderServiceImpl|effect|callsProvider|ts-station-service:/api/v1/stationservice/stations/namelist",
+   "candidateAtomId": "atom:effect:order-service-orderserviceimpl:callsProvider:ts-station-service",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:211",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:212",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:213"
+   ]
+  },
+  {
+   "key": "relation|com.trainticket.init.InitData|relation|calls|com.trainticket.service.PaymentService:initPayment",
+   "candidateAtomId": "atom:relation:com-trainticket-init-initdata:calls:com-trainticket-service-paymentservice",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:32"
+   ]
+  },
+  {
+   "key": "relation|com.trainticket.service.PaymentServiceImpl|relation|dependsOn|com.trainticket.repository.AddMoneyRepository",
+   "candidateAtomId": "atom:relation:com-trainticket-service-paymentserviceimpl:dependsOn:com-trainticket-repository-addmoneyrepository",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:28"
+   ]
+  },
+  {
+   "key": "relation|com.trainticket.service.PaymentServiceImpl|relation|dependsOn|com.trainticket.repository.PaymentRepository",
+   "candidateAtomId": "atom:relation:com-trainticket-service-paymentserviceimpl:dependsOn:com-trainticket-repository-paymentrepository",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:25"
+   ]
+  },
+  {
+   "key": "relation|order.init.InitData|relation|calls|order.service.OrderService:initOrder",
+   "candidateAtomId": "atom:relation:order-init-initdata:calls:order-service-orderservice",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/init/InitData.java:45",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:64",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:82"
+   ]
+  },
+  {
+   "key": "semantic|com.trainticket.entity.Money|semantic|meansInUse|money-amount-represented-as-string-field-flagged-nosonar-in-source",
+   "candidateAtomId": "atom:semantic:com-trainticket-entity-money:meansInUse:money-string-representation",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30"
+   ]
+  },
+  {
+   "key": "semantic|com.trainticket.entity.Payment|semantic|meansInUse|price-represented-as-string-field-column-named-payment_price",
+   "candidateAtomId": "atom:semantic:com-trainticket-entity-payment:meansInUse:price-string-representation",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39",
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:40"
+   ]
+  },
+  {
+   "key": "semantic|com.trainticket.service.PaymentServiceImpl|semantic|meansInUse|findbyorderid-null-selects-create-and-persist-new-payment-branch-non-null-selects-existing-payment-response-branch",
+   "candidateAtomId": "atom:semantic:com-trainticket-service-paymentserviceimpl:meansInUse:pay-branch-selection",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:42"
+   ]
+  },
+  {
+   "key": "semantic|com.trainticket.service.PaymentServiceImpl|semantic|statusGates|response-status-1-selects-result-carrying-branch-status-0-selects-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:com-trainticket-service-paymentserviceimpl:statusGates:response-envelope",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:41",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:44",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:54",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:65"
+   ]
+  },
+  {
+   "key": "semantic|ctx:order-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-field-passed-through-without-parsing-or-arithmetic-at-order-service",
+   "candidateAtomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-money-amount",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/Order.java:71",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:338",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:25"
+   ]
+  },
+  {
+   "key": "semantic|ctx:order-service-order-lifecycle|cech|sectionValue|section=order-status-code:enum-code-based-comparisons-at-service-layer-with-literal-0-hardcoded-in-seed-init-data",
+   "candidateAtomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-order-status-code",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:274",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:43",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:62",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:80"
+   ]
+  },
+  {
+   "key": "semantic|ctx:payment-service-payment-flow|cech|sectionValue|section=money-amount:string-price-field-passed-through-without-parsing-or-arithmetic-at-payment-service",
+   "candidateAtomId": "atom:semantic:ctx-payment-service-payment-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:39",
+    "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:38",
+    "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:52",
+    "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:30"
+   ]
+  },
+  {
+   "key": "semantic|order.entity.OrderInfo|semantic|meansInUse|state-negative-one-selects-no-state-filter-applied-branch",
+   "candidateAtomId": "atom:semantic:order-entity-orderinfo:meansInUse:state-negative-one-sentinel",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:80",
+    "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:82"
+   ]
+  },
+  {
+   "key": "semantic|order.entity.Order|semantic|meansInUse|price-represented-as-string-field-no-declared-numeric-type",
+   "candidateAtomId": "atom:semantic:order-entity-order:meansInUse:price-string-representation",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/Order.java:71",
+    "src:ts-order-service/src/main/java/order/entity/Order.java:85"
+   ]
+  },
+  {
+   "key": "semantic|order.entity.Order|semantic|meansInUse|status-field-initialized-to-paid-code-at-default-construction",
+   "candidateAtomId": "atom:semantic:order-entity-order:meansInUse:status-default",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/Order.java:84"
+   ]
+  },
+  {
+   "key": "semantic|order.init.InitData|semantic|statusGates|status-0-hardcoded-integer-literal-used-for-seeded-orders-instead-of-orderstatus-enum-code",
+   "candidateAtomId": "atom:semantic:order-init-initdata:statusGates:seed-status-hardcoded-literal",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/init/InitData.java:43",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:62",
+    "src:ts-order-service/src/main/java/order/init/InitData.java:80"
+   ]
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|cancel-transition-sets-status-to-cancel-code",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:cancel-transition",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111"
+   ]
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|pay-transition-sets-status-to-paid-code",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:pay-transition",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350"
+   ]
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|response-status-1-selects-result-carrying-branch-status-0-selects-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:response-envelope",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:78",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:82",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:227",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:247"
+   ]
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|status-notpaid-paid-or-collected-codes-selected-as-valid-order-for-security-count",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:valid-order-count-inclusion",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:393",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:394",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:395"
+   ]
+  },
+  {
+   "key": "semantic|order.service.OrderServiceImpl|semantic|statusGates|status-values-at-or-above-change-code-excluded-from-sold-ticket-count",
+   "candidateAtomId": "atom:semantic:order-service-orderserviceimpl:statusGates:sold-ticket-count-exclusion",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:274",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:275",
+    "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:276"
+   ]
+  },
+  {
+   "key": "state|order.entity.Order|state|persistsIn|orders-table",
+   "candidateAtomId": "atom:state:order-entity-order:persistsIn",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/entity/Order.java:20"
+   ]
+  },
+  {
+   "key": "state|ts-order-service|state|persistsIn|mysql-database-via-order_mysql_host-order_mysql_port-order_mysql_database-env-vars",
+   "candidateAtomId": "atom:state:ts-order-service:persistsIn",
+   "refs": [
+    "src:ts-order-service/src/main/resources/application.yml:13",
+    "src:ts-order-service/src/main/resources/application.yml:14",
+    "src:ts-order-service/src/main/resources/application.yml:15",
+    "src:ts-order-service/src/main/resources/application.yml:16"
+   ]
+  },
+  {
+   "key": "state|ts-payment-service|state|persistsIn|mysql-database-via-payment_mysql_host-payment_mysql_port-payment_mysql_database-env-vars",
+   "candidateAtomId": "atom:state:ts-payment-service:persistsIn",
+   "refs": [
+    "src:ts-payment-service/src/main/resources/application.yml:13",
+    "src:ts-payment-service/src/main/resources/application.yml:14",
+    "src:ts-payment-service/src/main/resources/application.yml:15",
+    "src:ts-payment-service/src/main/resources/application.yml:16"
+   ]
+  }
+ ]
+}

@@ -65,6 +65,12 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 - [AAT Tooling Documentation](tool/README.md): AIR、claim discipline、signature artifact、report、extractor、workflow、schema compatibility の tool 側総合入口。
 
+## Reports
+
+- [実験報告の正本](reports/README.md): 外部文書(論文・記事)から引用する前提で数値・結論・
+  claim boundary・証拠束を凍結した実験報告。`docs/note/`(探索メモ)と区別する。
+  現行: [train-ticket ドッグフーディング系列](reports/train_ticket_dogfooding/README.md)。
+
 ## Website
 
 - [Website operations](website/README.md): `website/` 公開ディレクトリには置かない運用メモ、route 索引、設計文書、sitemap 方針。

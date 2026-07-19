@@ -1,0 +1,2467 @@
+{
+ "chunkId": "chunk-18",
+ "adjudications": [
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:allows-cross-origin-global",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:47-60 - the single corsConfigurer bean registers one CORS mapping for /** with all origins/methods/headers, credentials=false, maxAge=3600. The other pass captured the identical bean under a slightly different ref-line grouping (whole block vs each chained line); same fact, kept as one canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:authority:fdse-microservice-config-securityconfig:allows-cross-origin-global",
+    "kind": "authority",
+    "subject": "fdse.microservice.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:52-58"
+    ]
+   }
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/stationservice/**-for-requests-not-matched-by-the-earlier-role-gated-rules",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:permits-unauthenticated-stationservice-paths",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:75 - a single antMatchers(\"/api/v1/stationservice/**\").permitAll() rule following the ADMIN-gated matchers. Both passes captured this exact line as one fact; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:fdse-microservice-config-securityconfig:permits-unauthenticated-stationservice-paths",
+    "kind": "authority",
+    "subject": "fdse.microservice.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/api/v1/stationservice/**-for-requests-not-matched-by-the-earlier-role-gated-rules",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:75"
+    ]
+   }
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|requiresRole|role-ADMIN-required-for-DELETE-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-delete-stations",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:74 - antMatchers(HttpMethod.DELETE, stations).hasAnyRole(admin) is a distinct matcher rule from the POST/PUT rules on lines 72-73. Kept separate per-method since the source expresses three independent security rules, not one combined statement.",
+   "canonicalAtom": {
+    "id": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-delete-stations",
+    "kind": "authority",
+    "subject": "fdse.microservice.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "role-ADMIN-required-for-DELETE-/api/v1/stationservice/stations",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:74"
+    ]
+   }
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|requiresRole|role-ADMIN-required-for-POST-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-post-stations",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:72 - antMatchers(HttpMethod.POST, stations).hasAnyRole(admin) is an independent matcher rule distinct from PUT/DELETE. Kept separate.",
+   "canonicalAtom": {
+    "id": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-post-stations",
+    "kind": "authority",
+    "subject": "fdse.microservice.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "role-ADMIN-required-for-POST-/api/v1/stationservice/stations",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72"
+    ]
+   }
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|requiresRole|role-ADMIN-required-for-PUT-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-put-stations",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:73 - antMatchers(HttpMethod.PUT, stations).hasAnyRole(admin) is an independent matcher rule distinct from POST/DELETE. Kept separate.",
+   "canonicalAtom": {
+    "id": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-put-stations",
+    "kind": "authority",
+    "subject": "fdse.microservice.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "role-ADMIN-required-for-PUT-/api/v1/stationservice/stations",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|fdse.microservice.controller.StationController|authority|allowsCrossOrigin|cross-origin-star-annotation-on-query-for-id-batch-query-by-id-and-query-for-name-batch-endpoints-not-on-other-endpoints",
+   "candidateAtomId": "atom:authority:fdse-microservice-controller-stationcontroller:allows-cross-origin-per-endpoint",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationController.java:68,76,86 - @CrossOrigin(origins=\"*\") appears only on queryForIdBatch, queryById, queryForNameBatch, not on the other five endpoints. Genuine per-endpoint observation, no counterpart atom in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:authority:fdse-microservice-controller-stationcontroller:allows-cross-origin-per-endpoint",
+    "kind": "authority",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cross-origin-star-annotation-on-query-for-id-batch-query-by-id-and-query-for-name-batch-endpoints-not-on-other-endpoints",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:68",
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:76",
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:86"
+    ]
+   }
+  },
+  {
+   "key": "authority|food.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:food-config-securityconfig:allows-cross-origin-global",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-station-food-service/src/main/java/food/config/SecurityConfig.java:39-52 - single corsConfigurer bean, identical CORS policy to the station-service one. Both passes captured this one bean; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:food-config-securityconfig:allows-cross-origin-global",
+    "kind": "authority",
+    "subject": "food.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:44-49"
+    ]
+   }
+  },
+  {
+   "key": "authority|food.config.SecurityConfig|authority|requiresAuthentication|any-request-not-matched-by-permitall-rules-requires-authentication",
+   "candidateAtomId": "atom:authority:food-config-securityconfig:requires-authentication-fallback",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/config/SecurityConfig.java:67 - .anyRequest().authenticated() fallback rule after the two permitAll() matcher blocks. No counterpart atom in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:authority:food-config-securityconfig:requires-authentication-fallback",
+    "kind": "authority",
+    "subject": "food.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresAuthentication",
+    "object": "any-request-not-matched-by-permitall-rules-requires-authentication",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:67"
+    ]
+   }
+  },
+  {
+   "key": "authority|food.controller.StationFoodController|authority|allowsCrossOrigin|cross-origin-star-annotation-on-get-all-food-stores-get-food-stores-of-station-and-get-food-stores-by-station-names-endpoints-not-on-welcome-or-bystoreid-endpoints",
+   "candidateAtomId": "atom:authority:food-controller-stationfoodcontroller:allows-cross-origin-per-endpoint",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/controller/StationFoodController.java:29,36,43 - @CrossOrigin(origins=\"*\") present on getAllFoodStores, getFoodStoresOfStation, getFoodStoresByStationNames but absent on home() and getFoodListByStationFoodStoreId. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:authority:food-controller-stationfoodcontroller:allows-cross-origin-per-endpoint",
+    "kind": "authority",
+    "subject": "food.controller.StationFoodController",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cross-origin-star-annotation-on-get-all-food-stores-get-food-stores-of-station-and-get-food-stores-by-station-names-endpoints-not-on-welcome-or-bystoreid-endpoints",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:29",
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:36",
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:43"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|DELETE-/api/v1/stationservice/stations/{stationsId}",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-delete-station",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationController.java:50-54 - @DeleteMapping(\"/stations/{stationsId}\") delete endpoint. Same endpoint captured by both passes with dash- vs space-joined object text; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-delete-station",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/stationservice/stations/{stationsId}",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:50-54"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-stations",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationController.java:33-36 - @GetMapping(\"/stations\") query endpoint captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-stations",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationservice/stations",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:33-36"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET-/api/v1/stationservice/stations/id/{stationNameForId}",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-station-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationController.java:59-65 - @GetMapping(\"/stations/id/{stationNameForId}\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-station-id",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationservice/stations/id/{stationNameForId}",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:59-65"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET-/api/v1/stationservice/stations/name/{stationIdForName}",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-by-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationController.java:76-83 - @GetMapping(\"/stations/name/{stationIdForName}\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-by-id",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationservice/stations/name/{stationIdForName}",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:76-83"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET-/api/v1/stationservice/welcome",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationController.java:28-31 - @GetMapping(\"/welcome\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-welcome",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationservice/welcome",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:28-31"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-create-station",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationController.java:38-42 - @PostMapping(\"/stations\") create endpoint captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-create-station",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/stationservice/stations",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:38-42"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST-/api/v1/stationservice/stations/idlist",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-id-batch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationController.java:68-73 - @PostMapping(\"/stations/idlist\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-id-batch",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/stationservice/stations/idlist",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:68-73"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST-/api/v1/stationservice/stations/namelist",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-name-batch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationController.java:86-91 - @PostMapping(\"/stations/namelist\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-name-batch",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/stationservice/stations/namelist",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:86-91"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|PUT-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-update-station",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationController.java:44-48 - @PutMapping(\"/stations\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-update-station",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT-/api/v1/stationservice/stations",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:44-48"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.repository.StationRepository|capability|servesQuery|findByName",
+   "candidateAtomId": "atom:capability:fdse-microservice-repository-stationrepository:serves-query-find-by-name",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:14 - Station findByName(String name) derived query. No capability-axis counterpart atom in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-repository-stationrepository:serves-query-find-by-name",
+    "kind": "capability",
+    "subject": "fdse.microservice.repository.StationRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByName",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:14"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.repository.StationRepository|capability|servesQuery|findByNames",
+   "candidateAtomId": "atom:capability:fdse-microservice-repository-stationrepository:serves-query-find-by-names",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationRepository.java:16-17 - @Query native findByNames(List<String>) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-repository-stationrepository:serves-query-find-by-names",
+    "kind": "capability",
+    "subject": "fdse.microservice.repository.StationRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByNames",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:16-17"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|handlesCommand|create",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-create",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:26 - create(Station,HttpHeaders) method. No capability-axis counterpart atom in the other pass (which only captured a combined statusGates observation).",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-create",
+    "kind": "capability",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "create",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:26"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|handlesCommand|delete",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-delete",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:67 - delete(String,HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-delete",
+    "kind": "capability",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "delete",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:67"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|handlesCommand|update",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-update",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:51 - update(Station,HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-update",
+    "kind": "capability",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "update",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:51"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|exist",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-exist",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:42 - exist(String,HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-exist",
+    "kind": "capability",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "exist",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:42"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|query",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:79 - query(HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query",
+    "kind": "capability",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "query",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:79"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|queryById",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-by-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:125 - queryById(String,HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-by-id",
+    "kind": "capability",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "queryById",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:125"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|queryByIdBatch",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-by-id-batch",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:136 - queryByIdBatch(List,HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-by-id-batch",
+    "kind": "capability",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "queryByIdBatch",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:136"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|queryForId",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-for-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:90 - queryForId(String,HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-for-id",
+    "kind": "capability",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "queryForId",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:90"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|queryForIdBatch",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-for-id-batch",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:103 - queryForIdBatch(List,HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-for-id-batch",
+    "kind": "capability",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "queryForIdBatch",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:103"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET-/api/v1/stationfoodservice/stationfoodstores",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-all-food-stores",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread food/controller/StationFoodController.java:30-34 - @GetMapping(\"/stationfoodstores\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-all-food-stores",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationfoodservice/stationfoodstores",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:30-34"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET-/api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-list-by-store-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:49-53 - @GetMapping(\"/stationfoodstores/bystoreid/{stationFoodStoreId}\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-list-by-store-id",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:49-53"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET-/api/v1/stationfoodservice/stationfoodstores/welcome",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:24-27 - @GetMapping(\"/stationfoodstores/welcome\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-welcome",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationfoodservice/stationfoodstores/welcome",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:24-27"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET-/api/v1/stationfoodservice/stationfoodstores/{stationId}",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-of-station",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:37-41 - @GetMapping(\"/stationfoodstores/{stationId}\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-of-station",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationfoodservice/stationfoodstores/{stationId}",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:37-41"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|POST-/api/v1/stationfoodservice/stationfoodstores",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-by-station-names",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:44-48 - @PostMapping(\"/stationfoodstores\") captured identically by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-by-station-names",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/stationfoodservice/stationfoodstores",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:44-48"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.repository.StationFoodRepository|capability|servesQuery|findByStationName",
+   "candidateAtomId": "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/repository/StationFoodRepository.java:17 - findByStationName derived query. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name",
+    "kind": "capability",
+    "subject": "food.repository.StationFoodRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByStationName",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/repository/StationFoodRepository.java:17"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.repository.StationFoodRepository|capability|servesQuery|findByStationNameIn",
+   "candidateAtomId": "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name-in",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodRepository.java:18 - findByStationNameIn derived query. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name-in",
+    "kind": "capability",
+    "subject": "food.repository.StationFoodRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByStationNameIn",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/repository/StationFoodRepository.java:18"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|handlesCommand|createFoodStore",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:handles-command-create-food-store",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/service/StationFoodServiceImpl.java:30 - createFoodStore(StationFoodStore,HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-service-stationfoodserviceimpl:handles-command-create-food-store",
+    "kind": "capability",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "createFoodStore",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|servesQuery|getFoodStoresByStationNames",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-food-stores-by-station-names",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodServiceImpl.java:101 - getFoodStoresByStationNames(List) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-food-stores-by-station-names",
+    "kind": "capability",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "getFoodStoresByStationNames",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:101"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|servesQuery|getStaionFoodStoreById",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-station-food-store-by-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodServiceImpl.java:112 - getStaionFoodStoreById(String) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-station-food-store-by-id",
+    "kind": "capability",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "getStaionFoodStoreById",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:112"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|servesQuery|listFoodStores",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodServiceImpl.java:57 - listFoodStores(HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores",
+    "kind": "capability",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "listFoodStores",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:57"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|servesQuery|listFoodStoresByStationName",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores-by-station-name",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodServiceImpl.java:79 - listFoodStoresByStationName(String,HttpHeaders) method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores-by-station-name",
+    "kind": "capability",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "listFoodStoresByStationName",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:79"
+    ]
+   }
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|handlesCommand|addNewSecurityConfig",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:handles-command-add-new-security-config",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:63 - addNewSecurityConfig method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:security-service-securityserviceimpl:handles-command-add-new-security-config",
+    "kind": "capability",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "addNewSecurityConfig",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:63"
+    ]
+   }
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|handlesCommand|deleteSecurityConfig",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:handles-command-delete-security-config",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityServiceImpl.java:96 - deleteSecurityConfig method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:security-service-securityserviceimpl:handles-command-delete-security-config",
+    "kind": "capability",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "deleteSecurityConfig",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:96"
+    ]
+   }
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|handlesCommand|modifySecurityConfig",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:handles-command-modify-security-config",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityServiceImpl.java:80 - modifySecurityConfig method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:security-service-securityserviceimpl:handles-command-modify-security-config",
+    "kind": "capability",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "modifySecurityConfig",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:80"
+    ]
+   }
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|servesQuery|check",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:serves-query-check",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityServiceImpl.java:107-127 - the check(String,HttpHeaders) method (queries order counts, compares to configured thresholds). Same method captured by both passes: pass-a as method-name object, pass-b as a descriptive object citing the internal decision lines; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:security-service-securityserviceimpl:serves-query-check",
+    "kind": "capability",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "check",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:107-108",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:122",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:127"
+    ]
+   }
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|servesQuery|findAllSecurityConfig",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:serves-query-find-all-security-config",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityServiceImpl.java:53 - findAllSecurityConfig method. No capability-axis counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:capability:security-service-securityserviceimpl:serves-query-find-all-security-config",
+    "kind": "capability",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findAllSecurityConfig",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:53"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-security-service|static||",
+   "candidateAtomId": "atom:component:ts-security-service-application-config",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-security-service/src/main/resources/application.yml:6-7 - spring.application.name: ts-security-service. No counterpart component atom for the yml config in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-security-service-application-config",
+    "kind": "component",
+    "subject": "ts-security-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-security-service/src/main/resources/application.yml:6-7"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-station-food-service|static||",
+   "candidateAtomId": "atom:component:ts-station-food-service-application-config",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-station-food-service/src/main/resources/application.yml:9-10 - spring.application.name: ts-station-food-service. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-station-food-service-application-config",
+    "kind": "component",
+    "subject": "ts-station-food-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-station-food-service/src/main/resources/application.yml:9-10"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-station-service|static||",
+   "candidateAtomId": "atom:component:ts-station-service-application-config",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-station-service/src/main/resources/application.yml:6-7 - spring.application.name: ts-station-service. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-station-service-application-config",
+    "kind": "component",
+    "subject": "ts-station-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-station-service/src/main/resources/application.yml:6-7"
+    ]
+   }
+  },
+  {
+   "key": "contract|fdse.microservice.controller.StationController|specification|ensures|http-status-201-created-returned-on-station-create-endpoint-independent-of-the-inner-response-envelope-status-field-value",
+   "candidateAtomId": "atom:contract:fdse-microservice-controller-stationcontroller:create-station-ensures-http-201",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationController.java:39-42 - create() wraps the Response in new ResponseEntity<>(..., HttpStatus.CREATED), so HTTP 201 is returned regardless of the inner Response.status field value. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:contract:fdse-microservice-controller-stationcontroller:create-station-ensures-http-201",
+    "kind": "contract",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "http-status-201-created-returned-on-station-create-endpoint-independent-of-the-inner-response-envelope-status-field-value",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:39-42"
+    ]
+   }
+  },
+  {
+   "key": "contract|fdse.microservice.repository.StationRepository|specification|shapedAs|native-sql-select-star-from-station-where-name-in-question-mark-1-list-parameter",
+   "candidateAtomId": "atom:contract:fdse-microservice-repository-stationrepository:find-by-names-shaped-as-native-query",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationRepository.java:16 - @Query(value=\"SELECT * from station where name in ?1\", nativeQuery=true). No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:contract:fdse-microservice-repository-stationrepository:find-by-names-shaped-as-native-query",
+    "kind": "contract",
+    "subject": "fdse.microservice.repository.StationRepository",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "native-sql-select-star-from-station-where-name-in-question-mark-1-list-parameter",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:16"
+    ]
+   }
+  },
+  {
+   "key": "contract|food.init.InitData|specification|shapedAs|six-line-record-per-store-stationname-storename-telephone-businesstime-deliveryfee-then-foodlist-with-items-underscore-separated-name-comma-price",
+   "candidateAtomId": "atom:contract:food-init-initdata:foodstores-txt-record-shaped-as",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/init/InitData.java:37-54 - each store record is read as six sequential lines (stationName, storeName, telephone, businessTime, deliveryFee, foodList). No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:contract:food-init-initdata:foodstores-txt-record-shaped-as",
+    "kind": "contract",
+    "subject": "food.init.InitData",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "six-line-record-per-store-stationname-storename-telephone-businesstime-deliveryfee-then-foodlist-with-items-underscore-separated-name-comma-price",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:37-54"
+    ]
+   }
+  },
+  {
+   "key": "effect|security.service.SecurityServiceImpl|effect|callsProvider|GET-/api/v1/orderOtherService/orderOther/security/{date}/{accountId}-on-ts-order-other-service",
+   "candidateAtomId": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-other-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityServiceImpl.java:145-149 - getSecurityOrderOtherInfoFromOrder builds the URL from getServiceUrl(\"ts-order-other-service\") and calls GET .../orderOther/security/{date}/{accountId}. Pass-a captured this as an effect:callsProvider atom citing the specific endpoint; pass-b captured the same call site as a relation:calls atom citing only the target service name (axis drift on the same call site, refs 147-149 in both). Merged, kept the more specific effect form as canonical.",
+   "canonicalAtom": {
+    "id": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-other-service",
+    "kind": "effect",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET-/api/v1/orderOtherService/orderOther/security/{date}/{accountId}-on-ts-order-other-service",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:147-149"
+    ]
+   }
+  },
+  {
+   "key": "effect|security.service.SecurityServiceImpl|effect|callsProvider|GET-/api/v1/orderservice/order/security/{date}/{accountId}-on-ts-order-service",
+   "candidateAtomId": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityServiceImpl.java:130-134 - getSecurityOrderInfoFromOrder builds the URL from getServiceUrl(\"ts-order-service\") and calls GET .../order/security/{date}/{accountId}. Same call site captured by pass-a as effect:callsProvider (endpoint-specific) and by pass-b as relation:calls (service-name only), refs 132-134 in both; merged, effect form kept as canonical.",
+   "canonicalAtom": {
+    "id": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-service",
+    "kind": "effect",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET-/api/v1/orderservice/order/security/{date}/{accountId}-on-ts-order-service",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:132-134"
+    ]
+   }
+  },
+  {
+   "key": "relation|fdse.microservice.init.InitData|relation|dependsOn|fdse.microservice.service.StationService",
+   "candidateAtomId": "atom:relation:fdse-microservice-init-initdata:depends-on-station-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-station-service/src/main/java/fdse/microservice/init/InitData.java:12-20 - @Autowired StationService service (line 13) is invoked via service.create(info,null) starting at line 20 (repeated for all 13 seed stations). Pass-a captured this as dependsOn (field-level), pass-b as calls (invocation-level) citing the same lines; merged as one dependsOn fact.",
+   "canonicalAtom": {
+    "id": "atom:relation:fdse-microservice-init-initdata:depends-on-station-service",
+    "kind": "relation",
+    "subject": "fdse.microservice.init.InitData",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "fdse.microservice.service.StationService",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:12-13",
+     "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:20"
+    ]
+   }
+  },
+  {
+   "key": "relation|food.init.InitData|relation|dependsOn|food.service.StationFoodService",
+   "candidateAtomId": "atom:relation:food-init-initdata:depends-on-station-food-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread food/init/InitData.java:21-22,55 - @Autowired StationFoodService service (line 22) is invoked via service.createFoodStore(fs,null) at line 55. Pass-a captured dependsOn, pass-b captured calls citing the same field+call-site lines; merged as one dependsOn fact.",
+   "canonicalAtom": {
+    "id": "atom:relation:food-init-initdata:depends-on-station-food-service",
+    "kind": "relation",
+    "subject": "food.init.InitData",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "food.service.StationFoodService",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:21-22",
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:55"
+    ]
+   }
+  },
+  {
+   "key": "relation|security.service.SecurityServiceImpl|relation|dependsOn|security.repository.SecurityRepository",
+   "candidateAtomId": "atom:relation:security-service-securityserviceimpl:depends-on-security-repository",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityServiceImpl.java:36,54,117-118 - @Autowired SecurityRepository securityRepository field used across findAllSecurityConfig/addNewSecurityConfig/check. No counterpart relation atom for SecurityRepository in the other pass (which does not model this class at all).",
+   "canonicalAtom": {
+    "id": "atom:relation:security-service-securityserviceimpl:depends-on-security-repository",
+    "kind": "relation",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "security.repository.SecurityRepository",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:36",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:54",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:117-118"
+    ]
+   }
+  },
+  {
+   "key": "relation|ts-security-service|relation|dependsOn|ts-order-other-service",
+   "candidateAtomId": "atom:relation:ts-security-service:depends-on-ts-order-other-service",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-security-service/src/main/resources/application.yml:32-33 and SecurityServiceImpl.java:147 - order-other-service.url property plus the getServiceUrl(\"ts-order-other-service\") call site; a service-level dependency distinct from the class-level relation/effect atoms already adjudicated separately.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-security-service:depends-on-ts-order-other-service",
+    "kind": "relation",
+    "subject": "ts-security-service",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-order-other-service",
+    "refs": [
+     "src:ts-security-service/src/main/resources/application.yml:32-33",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:147"
+    ]
+   }
+  },
+  {
+   "key": "relation|ts-security-service|relation|dependsOn|ts-order-service",
+   "candidateAtomId": "atom:relation:ts-security-service:depends-on-ts-order-service",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread application.yml:29-30 and SecurityServiceImpl.java:132 - order-service.url property plus the getServiceUrl(\"ts-order-service\") call site; service-level dependency, distinct subject from the class-level atoms.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-security-service:depends-on-ts-order-service",
+    "kind": "relation",
+    "subject": "ts-security-service",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-order-service",
+    "refs": [
+     "src:ts-security-service/src/main/resources/application.yml:29-30",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:132"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:station-food-service-init-seed-flow|cech|sectionValue|section=money-amount:double-parsed-from-string-at-use-site-for-delivery-fee-and-food-price-no-explicit-rounding-or-currency-unit-recorded",
+   "candidateAtomId": "atom:semantic:station-food-service-init-seed-flow:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/entity/StationFoodStore.java:36 and food/init/InitData.java:50,98 - deliveryFee and food price are both parsed via Double.parseDouble with no explicit rounding or currency unit. Per cech sectionValue handling, kept under the pass's own proposed context id rather than merged with the other pass's differently-scoped context row (integrator remaps context ids later).",
+   "canonicalAtom": {
+    "id": "atom:semantic:station-food-service-init-seed-flow:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:station-food-service-init-seed-flow",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:double-parsed-from-string-at-use-site-for-delivery-fee-and-food-price-no-explicit-rounding-or-currency-unit-recorded",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:36",
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:50",
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:98"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.entity.Station|semantic|meansInUse|station-name-identity-is-normalized-by-removing-spaces-and-lowercasing-with-locale-root-inside-the-setter-and-both-parameterized-constructors-before-persistence",
+   "candidateAtomId": "atom:semantic:fdse-microservice-entity-station:name-means-in-use",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-station-service/src/main/java/fdse/microservice/entity/Station.java:35-46 - setName and both parameterized constructors normalize by name.replace(\" \",\"\").toLowerCase(Locale.ROOT). Same normalization rule captured by both passes (meansInUse vs identifiedBy predicate label); merged, kept meansInUse phrasing which matches this packet's established convention for value-semantics observations.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-entity-station:name-means-in-use",
+    "kind": "semantic",
+    "subject": "fdse.microservice.entity.Station",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "station-name-identity-is-normalized-by-removing-spaces-and-lowercasing-with-locale-root-inside-the-setter-and-both-parameterized-constructors-before-persistence",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:35-46"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.init.InitData|semantic|meansInUse|thirteen-seed-station-names-supplied-in-mixed-case-space-separated-form-that-are-normalized-at-write-time-by-station-setname",
+   "candidateAtomId": "atom:semantic:fdse-microservice-init-initdata:seed-station-names-means-in-use",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread InitData.java:18,23,28 (and repeated pattern) - 13 seed station names supplied in mixed-case space-separated form (e.g. \"Shang Hai\", \"Tai Yuan\"), normalized only when Station.setName runs. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-init-initdata:seed-station-names-means-in-use",
+    "kind": "semantic",
+    "subject": "fdse.microservice.init.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "thirteen-seed-station-names-supplied-in-mixed-case-space-separated-form-that-are-normalized-at-write-time-by-station-setname",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:18",
+     "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:23",
+     "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:28"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-0-on-empty-name-or-name-already-exists-by-normalized-lookup-status-1-on-created",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:create-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:26-38 - create() returns status 0 on empty name or existing normalized name, status 1 on created. No per-method counterpart in the other pass (which only has a combined response-branch generalization).",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-service-stationserviceimpl:create-status-gates",
+    "kind": "semantic",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-0-on-empty-name-or-name-already-exists-by-normalized-lookup-status-1-on-created",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:26-38"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-0-on-id-not-found-status-1-on-deleted",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:delete-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:67-76 - delete() returns status 0 on id not found, status 1 on deleted. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-service-stationserviceimpl:delete-status-gates",
+    "kind": "semantic",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-0-on-id-not-found-status-1-on-deleted",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:67-76"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-0-on-id-not-found-status-1-on-updated",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:update-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:51-64 - update() returns status 0 on id not found, status 1 on updated. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-service-stationserviceimpl:update-status-gates",
+    "kind": "semantic",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-0-on-id-not-found-status-1-on-updated",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:51-64"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-nonempty-id-to-name-list-status-0-on-empty-list-when-none-of-the-requested-ids-are-found",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-by-id-batch-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:136-153 - queryByIdBatch() returns status 1 on nonempty id-to-name list, status 0 when none of the requested ids are found. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-by-id-batch-status-gates",
+    "kind": "semantic",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-nonempty-id-to-name-list-status-0-on-empty-list-when-none-of-the-requested-ids-are-found",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:136-153"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-nonempty-name-to-id-map-status-0-on-empty-map-when-none-of-the-requested-names-are-found",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-for-id-batch-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:103-121 - queryForIdBatch() returns status 1 on nonempty name-to-id map, status 0 when none of the requested names are found. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-for-id-batch-status-gates",
+    "kind": "semantic",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-nonempty-name-to-id-map-status-0-on-empty-map-when-none-of-the-requested-names-are-found",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:103-121"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-nonempty-station-list-status-0-on-empty-list",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:79-87 - query() returns status 1 on nonempty station list, status 0 on empty list. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-status-gates",
+    "kind": "semantic",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-nonempty-station-list-status-0-on-empty-list",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:79-87"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-station-found-by-id-returning-name-status-0-on-not-found",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-by-id-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:125-133 - queryById() returns status 1 with the station name on found, status 0 on not found. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-by-id-status-gates",
+    "kind": "semantic",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-station-found-by-id-returning-name-status-0-on-not-found",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:125-133"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-station-found-by-name-returning-id-status-0-on-not-found",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-for-id-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationServiceImpl.java:90-99 - queryForId() returns status 1 with the station id on found, status 0 on not found. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-for-id-status-gates",
+    "kind": "semantic",
+    "subject": "fdse.microservice.service.StationServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-station-found-by-name-returning-id-status-0-on-not-found",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:90-99"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.controller.StationFoodController|semantic|identifiedBy|path-placeholder-token-stationid-bound-to-method-parameter-named-stationname-and-used-as-a-station-name-lookup-key",
+   "candidateAtomId": "atom:semantic:food-controller-stationfoodcontroller:get-food-stores-of-station-path-binding-means-in-use",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread food/controller/StationFoodController.java:37-40 - route template segment {stationId} is bound to @PathVariable String stationName with no explicit name argument, so binding is positional not name-matched. Same divergence captured by both passes under different predicate labels (identifiedBy vs meansInUse); merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-controller-stationfoodcontroller:path-variable-name-divergence-means-in-use",
+    "kind": "semantic",
+    "subject": "food.controller.StationFoodController",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "the-route-template-segment-for-this-handler-is-named-{stationId}-but-the-bound-handler-parameter-is-named-stationName-with-no-explicit-pathvariable-value-so-the-path-segment-is-bound-positionally-rather-than-by-matching-name",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:37-40"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.entity.StationFoodStore|semantic|meansInUse|delivery-fee-amount-stored-as-java-double-field-no-currency-unit-recorded",
+   "candidateAtomId": "atom:semantic:food-entity-stationfoodstore:delivery-fee-means-in-use",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/entity/StationFoodStore.java:36 - private double deliveryFee; no currency unit or scale annotation. Distinct fact from pass-b's identifiedBy:lookup-contract atom (about id/name lookup, not the fee field); no counterpart.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-entity-stationfoodstore:delivery-fee-means-in-use",
+    "kind": "semantic",
+    "subject": "food.entity.StationFoodStore",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "delivery-fee-amount-stored-as-java-double-field-no-currency-unit-recorded",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:36"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.init.InitData|semantic|meansInUse|delivery-fee-string-field-from-bundled-foodstores-txt-parsed-with-double-parsedouble-at-use-site",
+   "candidateAtomId": "atom:semantic:food-init-initdata:delivery-fee-seed-means-in-use",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/init/InitData.java:50 - fs.setDeliveryFee(Double.parseDouble(lineTemp[1])) reading the seed text file. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-init-initdata:delivery-fee-seed-means-in-use",
+    "kind": "semantic",
+    "subject": "food.init.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "delivery-fee-string-field-from-bundled-foodstores-txt-parsed-with-double-parsedouble-at-use-site",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:50"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.init.InitData|semantic|meansInUse|food-price-string-token-from-embedded-foodlist-field-parsed-with-double-parsedouble-at-use-site",
+   "candidateAtomId": "atom:semantic:food-init-initdata:food-price-seed-means-in-use",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/init/InitData.java:98 - food.setPrice(Double.parseDouble(foodTemp[1])) reading the embedded foodList token. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-init-initdata:food-price-seed-means-in-use",
+    "kind": "semantic",
+    "subject": "food.init.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "food-price-string-token-from-embedded-foodlist-field-parsed-with-double-parsedouble-at-use-site",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:98"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-non-null-result-list-status-0-on-null-result-list-branch-uses-a-null-check-not-an-empty-check",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:get-food-stores-by-station-names-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodServiceImpl.java:101-109 - getFoodStoresByStationNames() branches on a null check (stationFoodStoreList != null), not an emptiness check, unlike the sibling methods. No per-method counterpart in the other pass (which only has a combined response-branch generalization).",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-service-stationfoodserviceimpl:get-food-stores-by-station-names-status-gates",
+    "kind": "semantic",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-non-null-result-list-status-0-on-null-result-list-branch-uses-a-null-check-not-an-empty-check",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:101-109"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-nonempty-result-for-station-name-status-0-on-empty-result",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:list-food-stores-by-station-name-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodServiceImpl.java:79-87 - listFoodStoresByStationName() returns status 1 on nonempty result, status 0 on empty result for the given station name. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-service-stationfoodserviceimpl:list-food-stores-by-station-name-status-gates",
+    "kind": "semantic",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-nonempty-result-for-station-name-status-0-on-empty-result",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:79-87"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-nonempty-store-list-status-0-on-empty-store-list",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:list-food-stores-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodServiceImpl.java:57-65 - listFoodStores() returns status 1 on nonempty store list, status 0 on empty. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-service-stationfoodserviceimpl:list-food-stores-status-gates",
+    "kind": "semantic",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-nonempty-store-list-status-0-on-empty-store-list",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:57-65"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-save-success-status-0-on-id-already-exists-or-save-exception-message-returned-as-data",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:create-food-store-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodServiceImpl.java:30-43 - createFoodStore() returns status 0 when the id already exists or on a save exception (exception message returned as data), status 1 on save success. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-service-stationfoodserviceimpl:create-food-store-status-gates",
+    "kind": "semantic",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-save-success-status-0-on-id-already-exists-or-save-exception-message-returned-as-data",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:30-43"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-store-found-by-id-status-0-on-store-not-found",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:get-station-food-store-by-id-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread StationFoodServiceImpl.java:112-120 - getStaionFoodStoreById() returns status 1 when the store is found, status 0 when not found. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-service-stationfoodserviceimpl:get-station-food-store-by-id-status-gates",
+    "kind": "semantic",
+    "subject": "food.service.StationFoodServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-store-found-by-id-status-0-on-store-not-found",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:112-120"
+    ]
+   }
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|meansInUse|security-threshold-config-values-named-max_order_1_hour-and-max_order_not_use-stored-as-string-and-parsed-with-integer-parseint-at-use-site",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:check-threshold-config-means-in-use",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityServiceImpl.java:117-122 - configMaxInHour/configMaxNotUse are looked up as SecurityConfig string values named max_order_1_hour/max_order_not_use and parsed via Integer.parseInt to gate order-rate checks. Same fact captured by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:security-service-securityserviceimpl:check-threshold-config-means-in-use",
+    "kind": "semantic",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "security-threshold-config-values-named-max_order_1_hour-and-max_order_not_use-stored-as-string-and-parsed-with-integer-parseint-at-use-site-gating-whether-an-account-may-keep-placing-orders",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:117-122"
+    ]
+   }
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-created-status-0-on-name-already-exists",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:add-new-security-config-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityServiceImpl.java:63-77 - addNewSecurityConfig() returns status 0 when a config with that name already exists, status 1 on created. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:security-service-securityserviceimpl:add-new-security-config-status-gates",
+    "kind": "semantic",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-created-status-0-on-name-already-exists",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:63-77"
+    ]
+   }
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-nonempty-security-config-list-status-0-on-no-content",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:find-all-security-config-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityServiceImpl.java:55-59 - findAllSecurityConfig() returns status 1 on nonempty list, status 0 (\"No Content\") on empty. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:security-service-securityserviceimpl:find-all-security-config-status-gates",
+    "kind": "semantic",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-nonempty-security-config-list-status-0-on-no-content",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:55-59"
+    ]
+   }
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-order-counts-within-configured-thresholds-status-0-on-either-threshold-exceeded",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:check-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityServiceImpl.java:108-127 - check() returns status 0 when either threshold is exceeded, status 1 otherwise. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:security-service-securityserviceimpl:check-status-gates",
+    "kind": "semantic",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-order-counts-within-configured-thresholds-status-0-on-either-threshold-exceeded",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:108-127"
+    ]
+   }
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-post-delete-lookup-returns-empty-status-0-on-post-delete-lookup-still-present",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:delete-security-config-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityServiceImpl.java:96-105 - deleteSecurityConfig() returns status 1 when the post-delete lookup finds nothing, status 0 when the record is still present (\"Reason Not clear\"). No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:security-service-securityserviceimpl:delete-security-config-status-gates",
+    "kind": "semantic",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-post-delete-lookup-returns-empty-status-0-on-post-delete-lookup-still-present",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:96-105"
+    ]
+   }
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-updated-status-0-on-id-not-found",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:modify-security-config-status-gates",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread SecurityServiceImpl.java:80-92 - modifySecurityConfig() returns status 0 when the id is not found, status 1 on updated. No per-method counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:security-service-securityserviceimpl:modify-security-config-status-gates",
+    "kind": "semantic",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-updated-status-0-on-id-not-found",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:80-92"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ts-station-food-service|semantic|meansInUse|mysql-host-env-var-default-value-is-a-literal-ip-address-differing-from-sibling-station-service-default-kubernetes-style-service-name",
+   "candidateAtomId": "atom:semantic:ts-station-food-service:datasource-host-config-means-in-use",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-station-food-service/src/main/resources/application.yml:13 vs ts-station-service/src/main/resources/application.yml:9 - the food service's MySQL host env-var defaults to the literal IP 10.176.122.1 while the sibling station service defaults to the k8s-style name ts-station-mysql. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-station-food-service:datasource-host-config-means-in-use",
+    "kind": "semantic",
+    "subject": "ts-station-food-service",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "mysql-host-env-var-default-value-is-a-literal-ip-address-differing-from-sibling-station-service-default-kubernetes-style-service-name",
+    "refs": [
+     "src:ts-station-food-service/src/main/resources/application.yml:13",
+     "src:ts-station-service/src/main/resources/application.yml:9"
+    ]
+   }
+  },
+  {
+   "key": "state|fdse.microservice.entity.Station|state|persistsIn|unique-name-column-with-generated-uuid-id-and-int-staytime-field",
+   "candidateAtomId": "atom:state:fdse-microservice-entity-station:persists-in-unique-name-column",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Station.java:16,19-29 - @Table Station entity: @Id generated-UUID id, @Column(unique=true) name, int stayTime. Pass-a captured the fuller fact (id generation + stayTime + unique name); pass-b captured a subset (just the unique name table fact) citing overlapping lines; merged, kept the richer pass-a phrasing as canonical.",
+   "canonicalAtom": {
+    "id": "atom:state:fdse-microservice-entity-station:persists-in-unique-name-column",
+    "kind": "state",
+    "subject": "fdse.microservice.entity.Station",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "unique-name-column-with-generated-uuid-id-and-int-staytime-field",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:16",
+     "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:19-29"
+    ]
+   }
+  },
+  {
+   "key": "state|food.entity.StationFoodStore|state|persistsIn|station_food_list-join-table-keyed-on-store_id-eager-fetch-element-collection",
+   "candidateAtomId": "atom:state:food-entity-stationfoodstore:persists-in-food-list-join-table",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread food/entity/StationFoodStore.java:38-40 - @ElementCollection foodList mapped through a station_food_list join table keyed on store_id with EAGER fetch. Distinct fact from the unique-index atom (which is merged separately); no counterpart for the join-table fact in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:state:food-entity-stationfoodstore:persists-in-food-list-join-table",
+    "kind": "state",
+    "subject": "food.entity.StationFoodStore",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "station_food_list-join-table-keyed-on-store_id-eager-fetch-element-collection",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:38-40"
+    ]
+   }
+  },
+  {
+   "key": "state|food.entity.StationFoodStore|state|persistsIn|unique-index-station_store_idx-on-station_name-and-store_name-columns",
+   "candidateAtomId": "atom:state:food-entity-stationfoodstore:persists-in-unique-station-store-index",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread food/entity/StationFoodStore.java:18 - @Table(indexes={@Index(name=\"station_store_idx\", columnList=\"station_name, store_name\", unique=true)}). Same table-index fact captured by both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:state:food-entity-stationfoodstore:persists-in-unique-station-store-index",
+    "kind": "state",
+    "subject": "food.entity.StationFoodStore",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "unique-index-station_store_idx-on-station_name-and-store_name-columns",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:18-19"
+    ]
+   }
+  },
+  {
+   "key": "state|ts-security-service|state|persistsIn|ts-security-mysql-datasource-jdbc-mysql-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-security-service:persists-in-security-mysql",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-security-service/src/main/resources/application.yml:9-20 - datasource url/username/password plus jpa.hibernate.ddl-auto: update for the security-service's own MySQL instance. No counterpart state atom in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-security-service:persists-in-security-mysql",
+    "kind": "state",
+    "subject": "ts-security-service",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "ts-security-mysql-datasource-jdbc-mysql-ddl-auto-update",
+    "refs": [
+     "src:ts-security-service/src/main/resources/application.yml:9-20"
+    ]
+   }
+  },
+  {
+   "key": "state|ts-station-food-service|state|persistsIn|mysql-datasource-default-host-literal-ip-default-schema-ts-default-non-root-password",
+   "candidateAtomId": "atom:state:ts-station-food-service:persists-in-mysql-datasource",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-station-food-service/src/main/resources/application.yml:11-16 - datasource defaults to literal-IP host, schema \"ts\" (not food-specific), non-root password Abcd1234#. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-station-food-service:persists-in-mysql-datasource",
+    "kind": "state",
+    "subject": "ts-station-food-service",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "mysql-datasource-default-host-literal-ip-default-schema-ts-default-non-root-password",
+    "refs": [
+     "src:ts-station-food-service/src/main/resources/application.yml:11-16"
+    ]
+   }
+  },
+  {
+   "key": "state|ts-station-service|state|persistsIn|ts-station-mysql-datasource-hostname-defaults-to-a-kubernetes-style-service-name-jdbc-mysql-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-station-service:persists-in-mysql-datasource",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-station-service/src/main/resources/application.yml:8-15 - datasource hostname defaults to k8s-style service name ts-station-mysql, ddl-auto: update. No counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-station-service:persists-in-mysql-datasource",
+    "kind": "state",
+    "subject": "ts-station-service",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "ts-station-mysql-datasource-hostname-defaults-to-a-kubernetes-style-service-name-jdbc-mysql-ddl-auto-update",
+    "refs": [
+     "src:ts-station-service/src/main/resources/application.yml:8-15"
+    ]
+   }
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|allowsCrossOrigin|cross-origin-all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:fdse.microservice.config.SecurityConfig:allowsCrossOrigin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:47-60 (ts-station-service) - same corsConfigurer bean as the pass-a row; merged into one canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:authority:fdse-microservice-config-securityconfig:allows-cross-origin-global",
+    "kind": "authority",
+    "subject": "fdse.microservice.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:52-58"
+    ]
+   }
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/stationservice/**-for-paths-not-already-gated-by-the-preceding-admin-role-rule",
+   "candidateAtomId": "atom:authority:fdse.microservice.config.SecurityConfig:permitsUnauthenticated:stationservice",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:75 - same permitAll matcher line as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:fdse-microservice-config-securityconfig:permits-unauthenticated-stationservice-paths",
+    "kind": "authority",
+    "subject": "fdse.microservice.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/api/v1/stationservice/**-for-requests-not-matched-by-the-earlier-role-gated-rules",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:75"
+    ]
+   }
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|requiresRole|ADMIN role required on POST, PUT, DELETE /api/v1/stationservice/stations",
+   "candidateAtomId": "atom:authority:fdse.microservice.config.SecurityConfig:requiresRole:admin-station-mutations",
+   "pass": "pass-b",
+   "decision": "not-adopted",
+   "basis": "Reread SecurityConfig.java:72-74 - these are three independent antMatchers rules (POST, PUT, DELETE each separately gated to ADMIN via hasAnyRole), not one combined statement. The other pass already captures each rule as its own adopted atom (requires-role-admin-post/put/delete-stations); collapsing them into one combined atom here would restate the same three facts at a coarser, less precise granularity than the source actually expresses, so this row is not adopted."
+  },
+  {
+   "key": "authority|food.config.SecurityConfig|authority|allowsCrossOrigin|cross-origin-all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:food.config.SecurityConfig:allowsCrossOrigin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread food/config/SecurityConfig.java:39-52 - same corsConfigurer bean as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:food-config-securityconfig:allows-cross-origin-global",
+    "kind": "authority",
+    "subject": "food.config.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:44-49"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|DELETE /api/v1/stationservice/stations/{stationsId}",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:delete-stations-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationController.java:50-54 - same @DeleteMapping endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-delete-station",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE-/api/v1/stationservice/stations/{stationsId}",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:50-54"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET /api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:get-stations",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationController.java:33-36 - same @GetMapping(\"/stations\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-stations",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationservice/stations",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:33-36"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET /api/v1/stationservice/stations/id/{stationNameForId}",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:get-stations-id-by-name",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationController.java:59-65 - same @GetMapping(\"/stations/id/{stationNameForId}\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-station-id",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationservice/stations/id/{stationNameForId}",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:59-65"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET /api/v1/stationservice/stations/name/{stationIdForName}",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:get-stations-name-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationController.java:76-83 - same @GetMapping(\"/stations/name/{stationIdForName}\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-by-id",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationservice/stations/name/{stationIdForName}",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:76-83"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET /api/v1/stationservice/welcome",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:get-welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationController.java:28-31 - same @GetMapping(\"/welcome\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-welcome",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationservice/welcome",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:28-31"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST /api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:post-stations",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationController.java:38-42 - same @PostMapping(\"/stations\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-create-station",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/stationservice/stations",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:38-42"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST /api/v1/stationservice/stations/idlist",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:post-stations-idlist",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationController.java:68-73 - same @PostMapping(\"/stations/idlist\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-id-batch",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/stationservice/stations/idlist",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:68-73"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST /api/v1/stationservice/stations/namelist",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:post-stations-namelist",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationController.java:86-91 - same @PostMapping(\"/stations/namelist\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-name-batch",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/stationservice/stations/namelist",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:86-91"
+    ]
+   }
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|PUT /api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:put-stations",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationController.java:44-48 - same @PutMapping(\"/stations\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-update-station",
+    "kind": "capability",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT-/api/v1/stationservice/stations",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:44-48"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET /api/v1/stationfoodservice/stationfoodstores",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:get-stationfoodstores",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:30-34 - same @GetMapping(\"/stationfoodstores\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-all-food-stores",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationfoodservice/stationfoodstores",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:30-34"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET /api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:get-stationfoodstores-bystoreid",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:49-53 - same @GetMapping(\"/stationfoodstores/bystoreid/{stationFoodStoreId}\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-list-by-store-id",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:49-53"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET /api/v1/stationfoodservice/stationfoodstores/welcome",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:get-stationfoodstores-welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:24-27 - same @GetMapping(\"/stationfoodstores/welcome\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-welcome",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationfoodservice/stationfoodstores/welcome",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:24-27"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET /api/v1/stationfoodservice/stationfoodstores/{stationId}",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:get-stationfoodstores-by-path-stationid",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:37-41 - same @GetMapping(\"/stationfoodstores/{stationId}\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-of-station",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET-/api/v1/stationfoodservice/stationfoodstores/{stationId}",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:37-41"
+    ]
+   }
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|POST /api/v1/stationfoodservice/stationfoodstores",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:post-stationfoodstores",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:44-48 - same @PostMapping(\"/stationfoodstores\") endpoint as the pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-by-station-names",
+    "kind": "capability",
+    "subject": "food.controller.StationFoodController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST-/api/v1/stationfoodservice/stationfoodstores",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:44-48"
+    ]
+   }
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|servesQuery|check account order count in last hour and total valid orders against configured thresholds",
+   "candidateAtomId": "atom:capability:security.service.SecurityServiceImpl:servesQuery:account-order-rate-eligibility",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityServiceImpl.java:107-127 - same check() method as the pass-a row; merged, kept as capability servesQuery \"check\".",
+   "canonicalAtom": {
+    "id": "atom:capability:security-service-securityserviceimpl:serves-query-check",
+    "kind": "capability",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "check",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:107-108",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:122",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:127"
+    ]
+   }
+  },
+  {
+   "key": "component|fdse.microservice.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:fdse.microservice.config.SecurityConfig",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:21-24 (ts-station-service) - @Configuration @EnableWebSecurity public class SecurityConfig. No component atom for this class exists in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:component:fdse.microservice.config.SecurityConfig",
+    "kind": "component",
+    "subject": "fdse.microservice.config.SecurityConfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:24"
+    ]
+   }
+  },
+  {
+   "key": "component|fdse.microservice.controller.StationController|static||",
+   "candidateAtomId": "atom:component:fdse.microservice.controller.StationController",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread StationController.java:19-21 - @RestController @RequestMapping(\"/api/v1/stationservice\") public class StationController. No component atom for this class exists in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:component:fdse.microservice.controller.StationController",
+    "kind": "component",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "static",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:21"
+    ]
+   }
+  },
+  {
+   "key": "component|fdse.microservice.init.InitData|static||",
+   "candidateAtomId": "atom:component:fdse.microservice.init.InitData",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-station-service/src/main/java/fdse/microservice/init/InitData.java:9-10 - @Component public class InitData implements CommandLineRunner. No component atom for this class exists in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:component:fdse.microservice.init.InitData",
+    "kind": "component",
+    "subject": "fdse.microservice.init.InitData",
+    "axis": "static",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:10"
+    ]
+   }
+  },
+  {
+   "key": "component|food.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:food.config.SecurityConfig",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread food/config/SecurityConfig.java:20-23 - @Configuration @EnableWebSecurity public class SecurityConfig. No component atom for this class exists in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:component:food.config.SecurityConfig",
+    "kind": "component",
+    "subject": "food.config.SecurityConfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:23"
+    ]
+   }
+  },
+  {
+   "key": "component|food.controller.StationFoodController|static||",
+   "candidateAtomId": "atom:component:food.controller.StationFoodController",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread food/controller/StationFoodController.java:15-17 - @RestController @RequestMapping(\"/api/v1/stationfoodservice\") public class StationFoodController. No component atom for this class exists in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:component:food.controller.StationFoodController",
+    "kind": "component",
+    "subject": "food.controller.StationFoodController",
+    "axis": "static",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:17"
+    ]
+   }
+  },
+  {
+   "key": "component|food.init.InitData|static||",
+   "candidateAtomId": "atom:component:food.init.InitData",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread food/init/InitData.java:18-19 - @Component public class InitData implements CommandLineRunner. No component atom for this class exists in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:component:food.init.InitData",
+    "kind": "component",
+    "subject": "food.init.InitData",
+    "axis": "static",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:19"
+    ]
+   }
+  },
+  {
+   "key": "contract|fdse.microservice.entity.Station|specification|ensures|normalized station name unique, enforced by column constraint and by service-level findByName check before create",
+   "candidateAtomId": "atom:contract:fdse.microservice.entity.Station:ensures",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread Station.java:26-27 (@Column(unique=true) name) and StationServiceImpl.java:31,36-37 (repository.findByName(...) == null check before save, else \"Already exists\"). Combines a column-level constraint with a service-level pre-check into one contract fact not previously captured as its own contract atom by the other pass.",
+   "canonicalAtom": {
+    "id": "atom:contract:fdse.microservice.entity.Station:ensures",
+    "kind": "contract",
+    "subject": "fdse.microservice.entity.Station",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "normalized-station-name-unique-enforced-by-column-constraint-and-by-service-level-findbyname-check-before-create",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:26-27",
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:31",
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:36-37"
+    ]
+   }
+  },
+  {
+   "key": "contract|food.entity.StationFoodStore|specification|ensures|non-null station_name and unique (station_name, store_name) pair enforced by table index",
+   "candidateAtomId": "atom:contract:food.entity.StationFoodStore:ensures",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread StationFoodStore.java:18 (@Index(..., unique=true) on station_name+store_name) and lines 25-27 (@NotNull stationName). New contract-axis fact not previously captured by the other pass.",
+   "canonicalAtom": {
+    "id": "atom:contract:food.entity.StationFoodStore:ensures",
+    "kind": "contract",
+    "subject": "food.entity.StationFoodStore",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "non-null-station_name-and-unique-station_name-store_name-pair-enforced-by-table-index",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:18",
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:25-27"
+    ]
+   }
+  },
+  {
+   "key": "effect|food.init.InitData|effect|haltsProcess|exits process with status 1 when the foodstores resource file has an unexpected line format during startup seeding",
+   "candidateAtomId": "atom:effect:food.init.InitData:haltsProcess",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread food/init/InitData.java:60-63 - catch(Exception e) block logs \"the foodstores.txt has format error!\" and calls System.exit(1). No effect atom for InitData exists in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:effect:food.init.InitData:haltsProcess",
+    "kind": "effect",
+    "subject": "food.init.InitData",
+    "axis": "effect",
+    "predicate": "haltsProcess",
+    "object": "exits-process-with-status-1-when-the-foodstores-resource-file-has-an-unexpected-line-format-during-startup-seeding",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:60-63"
+    ]
+   }
+  },
+  {
+   "key": "relation|fdse.microservice.controller.StationController|relation|dependsOn|fdse.microservice.service.StationService",
+   "candidateAtomId": "atom:relation:fdse.microservice.controller.StationController:dependsOn:fdse.microservice.service.StationService",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread StationController.java:23-24 - @Autowired private StationService stationService field. No dependsOn relation atom from the controller to the service exists in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:relation:fdse.microservice.controller.StationController:dependsOn:fdse.microservice.service.StationService",
+    "kind": "relation",
+    "subject": "fdse.microservice.controller.StationController",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "fdse.microservice.service.StationService",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:23-24"
+    ]
+   }
+  },
+  {
+   "key": "relation|fdse.microservice.init.InitData|relation|calls|create",
+   "candidateAtomId": "atom:relation:fdse.microservice.init.InitData:calls:fdse.microservice.service.StationService",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread InitData.java:12-13,20 - same @Autowired field + service.create(...) call site as the pass-a dependsOn row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:fdse-microservice-init-initdata:depends-on-station-service",
+    "kind": "relation",
+    "subject": "fdse.microservice.init.InitData",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "fdse.microservice.service.StationService",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:12-13",
+     "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:20"
+    ]
+   }
+  },
+  {
+   "key": "relation|food.controller.StationFoodController|relation|dependsOn|food.service.StationFoodService",
+   "candidateAtomId": "atom:relation:food.controller.StationFoodController:dependsOn:food.service.StationFoodService",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread food/controller/StationFoodController.java:19-20 - @Autowired StationFoodService stationFoodService field. No dependsOn relation atom from the controller to the service exists in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:relation:food.controller.StationFoodController:dependsOn:food.service.StationFoodService",
+    "kind": "relation",
+    "subject": "food.controller.StationFoodController",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "food.service.StationFoodService",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:19-20"
+    ]
+   }
+  },
+  {
+   "key": "relation|food.init.InitData|relation|calls|createFoodStore",
+   "candidateAtomId": "atom:relation:food.init.InitData:calls:food.service.StationFoodService",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread food/init/InitData.java:21-22,55 - same @Autowired field + service.createFoodStore(...) call site as the pass-a dependsOn row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:food-init-initdata:depends-on-station-food-service",
+    "kind": "relation",
+    "subject": "food.init.InitData",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "food.service.StationFoodService",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:21-22",
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:55"
+    ]
+   }
+  },
+  {
+   "key": "relation|security.service.SecurityServiceImpl|relation|calls|ts-order-other-service",
+   "candidateAtomId": "atom:relation:security.service.SecurityServiceImpl:calls:ts-order-other-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityServiceImpl.java:145-149 - same ts-order-other-service call site as the pass-a effect row; merged into the effect:callsProvider canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-other-service",
+    "kind": "effect",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET-/api/v1/orderOtherService/orderOther/security/{date}/{accountId}-on-ts-order-other-service",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:147-149"
+    ]
+   }
+  },
+  {
+   "key": "relation|security.service.SecurityServiceImpl|relation|calls|ts-order-service",
+   "candidateAtomId": "atom:relation:security.service.SecurityServiceImpl:calls:ts-order-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityServiceImpl.java:130-134 - same ts-order-service call site as the pass-a effect row; merged into the effect:callsProvider canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-service",
+    "kind": "effect",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET-/api/v1/orderservice/order/security/{date}/{accountId}-on-ts-order-service",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:132-134"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:station-food-catalog-surface|cech|sectionValue|section=money-amount:double-parsed-from-text-init-file-for-food-price-and-store-deliveryFee-and-stored-as-primitive-double-entity-field",
+   "candidateAtomId": "atom:semantic:ctx-station-food-catalog-surface:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread food/init/InitData.java:50,98 and food/entity/StationFoodStore.java:36 - same money-amount parsing fact as the pass-a cech row, kept under this pass's own proposed context id (ctx:station-food-catalog-surface) per the cech sectionValue handling instructions rather than merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-station-food-catalog-surface:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:station-food-catalog-surface",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:double-parsed-from-text-init-file-for-food-price-and-store-deliveryFee-and-stored-as-primitive-double-entity-field",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:50",
+     "src:ts-station-food-service/src/main/java/food/init/InitData.java:98",
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:36"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.entity.Station|semantic|identifiedBy|looked up by generated UUID id, or by normalized unique name including a native SQL IN-clause batch lookup",
+   "candidateAtomId": "atom:semantic:fdse.microservice.entity.Station:identifiedBy:lookup-contract",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread StationRepository.java:14,16-17,19 and StationServiceImpl.java:31,53,105 - a synthesized semantic fact (looked up by generated UUID id, or by normalized unique name, including the native IN-clause batch lookup) not previously captured as its own semantic-axis atom by the other pass (which only had the underlying capability/contract atoms separately).",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse.microservice.entity.Station:identifiedBy:lookup-contract",
+    "kind": "semantic",
+    "subject": "fdse.microservice.entity.Station",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "looked-up-by-generated-uuid-id-or-by-normalized-unique-name-including-a-native-sql-in-clause-batch-lookup",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:14",
+     "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:16-17",
+     "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:19",
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:31",
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:53",
+     "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:105"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.entity.Station|semantic|identifiedBy|station name identity is normalized by stripping spaces and lowercasing with Locale.ROOT before it is stored or compared, in every constructor and setter path",
+   "candidateAtomId": "atom:semantic:fdse.microservice.entity.Station:identifiedBy:name-normalization",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Station.java:35-46 - same name-normalization rule as the pass-a meansInUse row; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:fdse-microservice-entity-station:name-means-in-use",
+    "kind": "semantic",
+    "subject": "fdse.microservice.entity.Station",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "station-name-identity-is-normalized-by-removing-spaces-and-lowercasing-with-locale-root-inside-the-setter-and-both-parameterized-constructors-before-persistence",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:35-46"
+    ]
+   }
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-empty-or-already-exists-branch",
+   "candidateAtomId": "atom:semantic:fdse.microservice.service.StationServiceImpl:statusGates:response-branch",
+   "pass": "pass-b",
+   "decision": "not-adopted",
+   "basis": "Reread StationServiceImpl.java:26-153 - the cited lines span eight distinct methods (create/update/delete/query/queryForId/queryForIdBatch/queryById/queryByIdBatch), each with its own status-0/status-1 condition tied to a different operation. The other pass already captures each of these eight as its own adopted statusGates atom; collapsing them into one \"response-branch\" generalization here restates the same eight facts at a coarser granularity than the source expresses (each method has a distinct not-found/empty/already-exists condition), so this row is not adopted."
+  },
+  {
+   "key": "semantic|food.controller.StationFoodController|semantic|meansInUse|the route template segment for this handler is named {stationId}, but the bound handler parameter is named stationName with no explicit @PathVariable value, so the path segment is bound positionally rather than by matching name",
+   "candidateAtomId": "atom:semantic:food.controller.StationFoodController:meansInUse:path-variable-name-divergence",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationFoodController.java:37-38 - same {stationId}/stationName binding divergence as the pass-a identifiedBy row; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food-controller-stationfoodcontroller:path-variable-name-divergence-means-in-use",
+    "kind": "semantic",
+    "subject": "food.controller.StationFoodController",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "the-route-template-segment-for-this-handler-is-named-{stationId}-but-the-bound-handler-parameter-is-named-stationName-with-no-explicit-pathvariable-value-so-the-path-segment-is-bound-positionally-rather-than-by-matching-name",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:37-40"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.entity.StationFoodStore|semantic|identifiedBy|looked up by generated UUID store_id, or by station_name which is only guaranteed unique in combination with store_name",
+   "candidateAtomId": "atom:semantic:food.entity.StationFoodStore:identifiedBy:lookup-contract",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread StationFoodStore.java:21-23,26-27 and StationFoodRepository.java:14,17-18, cross-checked against food/init/InitData.java:36 (fs.setId(UUID.randomUUID().toString())) - a synthesized semantic fact about the store's lookup keys not previously captured as its own semantic-axis atom by the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:food.entity.StationFoodStore:identifiedBy:lookup-contract",
+    "kind": "semantic",
+    "subject": "food.entity.StationFoodStore",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "looked-up-by-generated-uuid-store_id-assigned-at-seed-time-or-by-station_name-which-is-only-guaranteed-unique-in-combination-with-store_name",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:21-23",
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:26-27",
+     "src:ts-station-food-service/src/main/java/food/repository/StationFoodRepository.java:14",
+     "src:ts-station-food-service/src/main/java/food/repository/StationFoodRepository.java:17-18"
+    ]
+   }
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-empty-or-already-exists-branch",
+   "candidateAtomId": "atom:semantic:food.service.StationFoodServiceImpl:statusGates:response-branch",
+   "pass": "pass-b",
+   "decision": "not-adopted",
+   "basis": "Reread StationFoodServiceImpl.java:30-120 - the cited lines span five distinct methods (createFoodStore/listFoodStores/listFoodStoresByStationName/getFoodStoresByStationNames/getStaionFoodStoreById), each with its own status-0/status-1 condition (including one method that uses a null-check rather than an empty-check, per the pass-a atom already adopted separately). The other pass already captures each of these five individually; this combined row restates them at a coarser granularity and is not adopted."
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|meansInUse|application.yml declares order-service.url and order-other-service.url properties, but the service URL actually used at the call site is built in code from a hardcoded service name with an http prefix rather than injected via @Value from those properties",
+   "candidateAtomId": "atom:semantic:security.service.SecurityServiceImpl:meansInUse:order-service-url-config-vs-code",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-security-service/src/main/resources/application.yml:29-33 (order-service.url / order-other-service.url properties) versus SecurityServiceImpl.java:46-47,132,147 (getServiceUrl builds \"http://\"+serviceName from a hardcoded literal, no @Value injection present anywhere in the file). Genuine config-vs-code divergence fact with no counterpart in the other pass.",
+   "canonicalAtom": {
+    "id": "atom:semantic:security.service.SecurityServiceImpl:meansInUse:order-service-url-config-vs-code",
+    "kind": "semantic",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "application.yml-declares-order-service.url-and-order-other-service.url-properties-but-the-service-url-actually-used-at-the-call-site-is-built-in-code-from-a-hardcoded-service-name-with-an-http-prefix-rather-than-injected-via-value-from-those-properties",
+    "refs": [
+     "src:ts-security-service/src/main/resources/application.yml:29-30",
+     "src:ts-security-service/src/main/resources/application.yml:32-33",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:46-47",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:132",
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:147"
+    ]
+   }
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|meansInUse|named security config entries max_order_1_hour and max_order_not_use are read and parsed as integer thresholds that gate whether an account may keep placing orders",
+   "candidateAtomId": "atom:semantic:security.service.SecurityServiceImpl:meansInUse:order-rate-config-gate",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityServiceImpl.java:117-122 - same max_order_1_hour/max_order_not_use threshold-parsing fact as the pass-a meansInUse row; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:security-service-securityserviceimpl:check-threshold-config-means-in-use",
+    "kind": "semantic",
+    "subject": "security.service.SecurityServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "security-threshold-config-values-named-max_order_1_hour-and-max_order_not_use-stored-as-string-and-parsed-with-integer-parseint-at-use-site-gating-whether-an-account-may-keep-placing-orders",
+    "refs": [
+     "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:117-122"
+    ]
+   }
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-result-carrying-or-accepted-branch-status-0-on-not-found-or-threshold-exceeded-branch",
+   "candidateAtomId": "atom:semantic:security.service.SecurityServiceImpl:statusGates:response-branch",
+   "pass": "pass-b",
+   "decision": "not-adopted",
+   "basis": "Reread SecurityServiceImpl.java:53-127 - the cited lines span four distinct methods (findAllSecurityConfig/addNewSecurityConfig/modifySecurityConfig/deleteSecurityConfig) plus check(), each with its own status-0/status-1 condition tied to a different operation (no-content vs already-exists vs not-found vs still-present-after-delete vs threshold-exceeded). The other pass already captures each of these individually; this combined row restates them at a coarser granularity and is not adopted."
+  },
+  {
+   "key": "state|fdse.microservice.entity.Station|state|persistsIn|station table with unique name column",
+   "candidateAtomId": "atom:state:fdse.microservice.entity.Station:persistsIn",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Station.java:16,26-27 - same unique-name-column persistence fact as the pass-a state row (pass-a additionally captured the id-generation and stayTime details from the same class); merged, richer pass-a phrasing kept as canonical.",
+   "canonicalAtom": {
+    "id": "atom:state:fdse-microservice-entity-station:persists-in-unique-name-column",
+    "kind": "state",
+    "subject": "fdse.microservice.entity.Station",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "unique-name-column-with-generated-uuid-id-and-int-staytime-field",
+    "refs": [
+     "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:16",
+     "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:19-29"
+    ]
+   }
+  },
+  {
+   "key": "state|food.entity.StationFoodStore|state|persistsIn|station_food_store table with unique index station_store_idx on (station_name, store_name)",
+   "candidateAtomId": "atom:state:food.entity.StationFoodStore:persistsIn",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread StationFoodStore.java:18-19 - same station_store_idx unique-index persistence fact as the pass-a state row; merged.",
+   "canonicalAtom": {
+    "id": "atom:state:food-entity-stationfoodstore:persists-in-unique-station-store-index",
+    "kind": "state",
+    "subject": "food.entity.StationFoodStore",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "unique-index-station_store_idx-on-station_name-and-store_name-columns",
+    "refs": [
+     "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:18-19"
+    ]
+   }
+  }
+ ]
+}

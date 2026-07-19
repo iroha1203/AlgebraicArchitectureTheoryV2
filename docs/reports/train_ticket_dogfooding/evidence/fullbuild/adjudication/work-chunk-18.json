@@ -1,0 +1,1084 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:allows-cross-origin-global",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:52-58"
+   ]
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/stationservice/**-for-requests-not-matched-by-the-earlier-role-gated-rules",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:permits-unauthenticated-stationservice-paths",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|requiresRole|role-ADMIN-required-for-DELETE-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-delete-stations",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|requiresRole|role-ADMIN-required-for-POST-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-post-stations",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|requiresRole|role-ADMIN-required-for-PUT-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-put-stations",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|fdse.microservice.controller.StationController|authority|allowsCrossOrigin|cross-origin-star-annotation-on-query-for-id-batch-query-by-id-and-query-for-name-batch-endpoints-not-on-other-endpoints",
+   "candidateAtomId": "atom:authority:fdse-microservice-controller-stationcontroller:allows-cross-origin-per-endpoint",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:68",
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:76",
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:86"
+   ]
+  },
+  {
+   "key": "authority|food.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:food-config-securityconfig:allows-cross-origin-global",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:44-49"
+   ]
+  },
+  {
+   "key": "authority|food.config.SecurityConfig|authority|requiresAuthentication|any-request-not-matched-by-permitall-rules-requires-authentication",
+   "candidateAtomId": "atom:authority:food-config-securityconfig:requires-authentication-fallback",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:67"
+   ]
+  },
+  {
+   "key": "authority|food.controller.StationFoodController|authority|allowsCrossOrigin|cross-origin-star-annotation-on-get-all-food-stores-get-food-stores-of-station-and-get-food-stores-by-station-names-endpoints-not-on-welcome-or-bystoreid-endpoints",
+   "candidateAtomId": "atom:authority:food-controller-stationfoodcontroller:allows-cross-origin-per-endpoint",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:29",
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:36",
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:43"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|DELETE-/api/v1/stationservice/stations/{stationsId}",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-delete-station",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:50-54"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-stations",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:33-36"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET-/api/v1/stationservice/stations/id/{stationNameForId}",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-station-id",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:59-65"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET-/api/v1/stationservice/stations/name/{stationIdForName}",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-by-id",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:76-83"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET-/api/v1/stationservice/welcome",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-welcome",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:28-31"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-create-station",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:38-42"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST-/api/v1/stationservice/stations/idlist",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-id-batch",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:68-73"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST-/api/v1/stationservice/stations/namelist",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-name-batch",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:86-91"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|PUT-/api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-update-station",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:44-48"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.repository.StationRepository|capability|servesQuery|findByName",
+   "candidateAtomId": "atom:capability:fdse-microservice-repository-stationrepository:serves-query-find-by-name",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:14"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.repository.StationRepository|capability|servesQuery|findByNames",
+   "candidateAtomId": "atom:capability:fdse-microservice-repository-stationrepository:serves-query-find-by-names",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:16-17"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|handlesCommand|create",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-create",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:26"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|handlesCommand|delete",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-delete",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:67"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|handlesCommand|update",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-update",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:51"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|exist",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-exist",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:42"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|query",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:79"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|queryById",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-by-id",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:125"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|queryByIdBatch",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-by-id-batch",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:136"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|queryForId",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-for-id",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:90"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.service.StationServiceImpl|capability|servesQuery|queryForIdBatch",
+   "candidateAtomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-for-id-batch",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:103"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET-/api/v1/stationfoodservice/stationfoodstores",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-all-food-stores",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:30-34"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET-/api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-list-by-store-id",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:49-53"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET-/api/v1/stationfoodservice/stationfoodstores/welcome",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-welcome",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:24-27"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET-/api/v1/stationfoodservice/stationfoodstores/{stationId}",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-of-station",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:37-41"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|POST-/api/v1/stationfoodservice/stationfoodstores",
+   "candidateAtomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-by-station-names",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:44-48"
+   ]
+  },
+  {
+   "key": "capability|food.repository.StationFoodRepository|capability|servesQuery|findByStationName",
+   "candidateAtomId": "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/repository/StationFoodRepository.java:17"
+   ]
+  },
+  {
+   "key": "capability|food.repository.StationFoodRepository|capability|servesQuery|findByStationNameIn",
+   "candidateAtomId": "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name-in",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/repository/StationFoodRepository.java:18"
+   ]
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|handlesCommand|createFoodStore",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:handles-command-create-food-store",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:30"
+   ]
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|servesQuery|getFoodStoresByStationNames",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-food-stores-by-station-names",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:101"
+   ]
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|servesQuery|getStaionFoodStoreById",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-station-food-store-by-id",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:112"
+   ]
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|servesQuery|listFoodStores",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:57"
+   ]
+  },
+  {
+   "key": "capability|food.service.StationFoodServiceImpl|capability|servesQuery|listFoodStoresByStationName",
+   "candidateAtomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores-by-station-name",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:79"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|handlesCommand|addNewSecurityConfig",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:handles-command-add-new-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:63"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|handlesCommand|deleteSecurityConfig",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:handles-command-delete-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:96"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|handlesCommand|modifySecurityConfig",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:handles-command-modify-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:80"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|servesQuery|check",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:serves-query-check",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:108"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|servesQuery|findAllSecurityConfig",
+   "candidateAtomId": "atom:capability:security-service-securityserviceimpl:serves-query-find-all-security-config",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:53"
+   ]
+  },
+  {
+   "key": "component|ts-security-service|static||",
+   "candidateAtomId": "atom:component:ts-security-service-application-config",
+   "refs": [
+    "src:ts-security-service/src/main/resources/application.yml:6-7"
+   ]
+  },
+  {
+   "key": "component|ts-station-food-service|static||",
+   "candidateAtomId": "atom:component:ts-station-food-service-application-config",
+   "refs": [
+    "src:ts-station-food-service/src/main/resources/application.yml:9-10"
+   ]
+  },
+  {
+   "key": "component|ts-station-service|static||",
+   "candidateAtomId": "atom:component:ts-station-service-application-config",
+   "refs": [
+    "src:ts-station-service/src/main/resources/application.yml:6-7"
+   ]
+  },
+  {
+   "key": "contract|fdse.microservice.controller.StationController|specification|ensures|http-status-201-created-returned-on-station-create-endpoint-independent-of-the-inner-response-envelope-status-field-value",
+   "candidateAtomId": "atom:contract:fdse-microservice-controller-stationcontroller:create-station-ensures-http-201",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:39-42"
+   ]
+  },
+  {
+   "key": "contract|fdse.microservice.repository.StationRepository|specification|shapedAs|native-sql-select-star-from-station-where-name-in-question-mark-1-list-parameter",
+   "candidateAtomId": "atom:contract:fdse-microservice-repository-stationrepository:find-by-names-shaped-as-native-query",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:16"
+   ]
+  },
+  {
+   "key": "contract|food.init.InitData|specification|shapedAs|six-line-record-per-store-stationname-storename-telephone-businesstime-deliveryfee-then-foodlist-with-items-underscore-separated-name-comma-price",
+   "candidateAtomId": "atom:contract:food-init-initdata:foodstores-txt-record-shaped-as",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:37-54"
+   ]
+  },
+  {
+   "key": "effect|security.service.SecurityServiceImpl|effect|callsProvider|GET-/api/v1/orderOtherService/orderOther/security/{date}/{accountId}-on-ts-order-other-service",
+   "candidateAtomId": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-other-service",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:147-149"
+   ]
+  },
+  {
+   "key": "effect|security.service.SecurityServiceImpl|effect|callsProvider|GET-/api/v1/orderservice/order/security/{date}/{accountId}-on-ts-order-service",
+   "candidateAtomId": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-service",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:132-134"
+   ]
+  },
+  {
+   "key": "relation|fdse.microservice.init.InitData|relation|dependsOn|fdse.microservice.service.StationService",
+   "candidateAtomId": "atom:relation:fdse-microservice-init-initdata:depends-on-station-service",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:13",
+    "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:20"
+   ]
+  },
+  {
+   "key": "relation|food.init.InitData|relation|dependsOn|food.service.StationFoodService",
+   "candidateAtomId": "atom:relation:food-init-initdata:depends-on-station-food-service",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:22",
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:55"
+   ]
+  },
+  {
+   "key": "relation|security.service.SecurityServiceImpl|relation|dependsOn|security.repository.SecurityRepository",
+   "candidateAtomId": "atom:relation:security-service-securityserviceimpl:depends-on-security-repository",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:36",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:54",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:117-118"
+   ]
+  },
+  {
+   "key": "relation|ts-security-service|relation|dependsOn|ts-order-other-service",
+   "candidateAtomId": "atom:relation:ts-security-service:depends-on-ts-order-other-service",
+   "refs": [
+    "src:ts-security-service/src/main/resources/application.yml:32-33",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:147"
+   ]
+  },
+  {
+   "key": "relation|ts-security-service|relation|dependsOn|ts-order-service",
+   "candidateAtomId": "atom:relation:ts-security-service:depends-on-ts-order-service",
+   "refs": [
+    "src:ts-security-service/src/main/resources/application.yml:29-30",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:132"
+   ]
+  },
+  {
+   "key": "semantic|ctx:station-food-service-init-seed-flow|cech|sectionValue|section=money-amount:double-parsed-from-string-at-use-site-for-delivery-fee-and-food-price-no-explicit-rounding-or-currency-unit-recorded",
+   "candidateAtomId": "atom:semantic:station-food-service-init-seed-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:36",
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:50",
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:98"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.entity.Station|semantic|meansInUse|station-name-identity-is-normalized-by-removing-spaces-and-lowercasing-with-locale-root-inside-the-setter-and-both-parameterized-constructors-before-persistence",
+   "candidateAtomId": "atom:semantic:fdse-microservice-entity-station:name-means-in-use",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:35-46"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.init.InitData|semantic|meansInUse|thirteen-seed-station-names-supplied-in-mixed-case-space-separated-form-that-are-normalized-at-write-time-by-station-setname",
+   "candidateAtomId": "atom:semantic:fdse-microservice-init-initdata:seed-station-names-means-in-use",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:18",
+    "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:23",
+    "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:28"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-0-on-empty-name-or-name-already-exists-by-normalized-lookup-status-1-on-created",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:create-status-gates",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:26-38"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-0-on-id-not-found-status-1-on-deleted",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:delete-status-gates",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:67-76"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-0-on-id-not-found-status-1-on-updated",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:update-status-gates",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:51-64"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-nonempty-id-to-name-list-status-0-on-empty-list-when-none-of-the-requested-ids-are-found",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-by-id-batch-status-gates",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:136-153"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-nonempty-name-to-id-map-status-0-on-empty-map-when-none-of-the-requested-names-are-found",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-for-id-batch-status-gates",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:103-121"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-nonempty-station-list-status-0-on-empty-list",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-status-gates",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:79-87"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-station-found-by-id-returning-name-status-0-on-not-found",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-by-id-status-gates",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:125-133"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-station-found-by-name-returning-id-status-0-on-not-found",
+   "candidateAtomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-for-id-status-gates",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:90-99"
+   ]
+  },
+  {
+   "key": "semantic|food.controller.StationFoodController|semantic|identifiedBy|path-placeholder-token-stationid-bound-to-method-parameter-named-stationname-and-used-as-a-station-name-lookup-key",
+   "candidateAtomId": "atom:semantic:food-controller-stationfoodcontroller:get-food-stores-of-station-path-binding-means-in-use",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:37-40"
+   ]
+  },
+  {
+   "key": "semantic|food.entity.StationFoodStore|semantic|meansInUse|delivery-fee-amount-stored-as-java-double-field-no-currency-unit-recorded",
+   "candidateAtomId": "atom:semantic:food-entity-stationfoodstore:delivery-fee-means-in-use",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:36"
+   ]
+  },
+  {
+   "key": "semantic|food.init.InitData|semantic|meansInUse|delivery-fee-string-field-from-bundled-foodstores-txt-parsed-with-double-parsedouble-at-use-site",
+   "candidateAtomId": "atom:semantic:food-init-initdata:delivery-fee-seed-means-in-use",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:50"
+   ]
+  },
+  {
+   "key": "semantic|food.init.InitData|semantic|meansInUse|food-price-string-token-from-embedded-foodlist-field-parsed-with-double-parsedouble-at-use-site",
+   "candidateAtomId": "atom:semantic:food-init-initdata:food-price-seed-means-in-use",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:98"
+   ]
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-non-null-result-list-status-0-on-null-result-list-branch-uses-a-null-check-not-an-empty-check",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:get-food-stores-by-station-names-status-gates",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:101-109"
+   ]
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-nonempty-result-for-station-name-status-0-on-empty-result",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:list-food-stores-by-station-name-status-gates",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:79-87"
+   ]
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-nonempty-store-list-status-0-on-empty-store-list",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:list-food-stores-status-gates",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:57-65"
+   ]
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-save-success-status-0-on-id-already-exists-or-save-exception-message-returned-as-data",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:create-food-store-status-gates",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:30-43"
+   ]
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-store-found-by-id-status-0-on-store-not-found",
+   "candidateAtomId": "atom:semantic:food-service-stationfoodserviceimpl:get-station-food-store-by-id-status-gates",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:112-120"
+   ]
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|meansInUse|security-threshold-config-values-named-max_order_1_hour-and-max_order_not_use-stored-as-string-and-parsed-with-integer-parseint-at-use-site",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:check-threshold-config-means-in-use",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:117-121"
+   ]
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-created-status-0-on-name-already-exists",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:add-new-security-config-status-gates",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:63-77"
+   ]
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-nonempty-security-config-list-status-0-on-no-content",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:find-all-security-config-status-gates",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:55-59"
+   ]
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-order-counts-within-configured-thresholds-status-0-on-either-threshold-exceeded",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:check-status-gates",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:108-127"
+   ]
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-post-delete-lookup-returns-empty-status-0-on-post-delete-lookup-still-present",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:delete-security-config-status-gates",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:96-105"
+   ]
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-updated-status-0-on-id-not-found",
+   "candidateAtomId": "atom:semantic:security-service-securityserviceimpl:modify-security-config-status-gates",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:80-92"
+   ]
+  },
+  {
+   "key": "semantic|ts-station-food-service|semantic|meansInUse|mysql-host-env-var-default-value-is-a-literal-ip-address-differing-from-sibling-station-service-default-kubernetes-style-service-name",
+   "candidateAtomId": "atom:semantic:ts-station-food-service:datasource-host-config-means-in-use",
+   "refs": [
+    "src:ts-station-food-service/src/main/resources/application.yml:13",
+    "src:ts-station-service/src/main/resources/application.yml:9"
+   ]
+  },
+  {
+   "key": "state|fdse.microservice.entity.Station|state|persistsIn|unique-name-column-with-generated-uuid-id-and-int-staytime-field",
+   "candidateAtomId": "atom:state:fdse-microservice-entity-station:persists-in-unique-name-column",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:19-29"
+   ]
+  },
+  {
+   "key": "state|food.entity.StationFoodStore|state|persistsIn|station_food_list-join-table-keyed-on-store_id-eager-fetch-element-collection",
+   "candidateAtomId": "atom:state:food-entity-stationfoodstore:persists-in-food-list-join-table",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:38-40"
+   ]
+  },
+  {
+   "key": "state|food.entity.StationFoodStore|state|persistsIn|unique-index-station_store_idx-on-station_name-and-store_name-columns",
+   "candidateAtomId": "atom:state:food-entity-stationfoodstore:persists-in-unique-station-store-index",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:18"
+   ]
+  },
+  {
+   "key": "state|ts-security-service|state|persistsIn|ts-security-mysql-datasource-jdbc-mysql-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-security-service:persists-in-security-mysql",
+   "refs": [
+    "src:ts-security-service/src/main/resources/application.yml:9-20"
+   ]
+  },
+  {
+   "key": "state|ts-station-food-service|state|persistsIn|mysql-datasource-default-host-literal-ip-default-schema-ts-default-non-root-password",
+   "candidateAtomId": "atom:state:ts-station-food-service:persists-in-mysql-datasource",
+   "refs": [
+    "src:ts-station-food-service/src/main/resources/application.yml:11-16"
+   ]
+  },
+  {
+   "key": "state|ts-station-service|state|persistsIn|ts-station-mysql-datasource-hostname-defaults-to-a-kubernetes-style-service-name-jdbc-mysql-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-station-service:persists-in-mysql-datasource",
+   "refs": [
+    "src:ts-station-service/src/main/resources/application.yml:8-15"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|allowsCrossOrigin|cross-origin-all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:fdse.microservice.config.SecurityConfig:allowsCrossOrigin",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:52",
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:53",
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:54",
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:55",
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:56",
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:57"
+   ]
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/stationservice/**-for-paths-not-already-gated-by-the-preceding-admin-role-rule",
+   "candidateAtomId": "atom:authority:fdse.microservice.config.SecurityConfig:permitsUnauthenticated:stationservice",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|fdse.microservice.config.SecurityConfig|authority|requiresRole|ADMIN role required on POST, PUT, DELETE /api/v1/stationservice/stations",
+   "candidateAtomId": "atom:authority:fdse.microservice.config.SecurityConfig:requiresRole:admin-station-mutations",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72",
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:73",
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|food.config.SecurityConfig|authority|allowsCrossOrigin|cross-origin-all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:food.config.SecurityConfig:allowsCrossOrigin",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:44",
+    "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:45",
+    "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:46",
+    "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:47",
+    "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:48",
+    "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:49"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|DELETE /api/v1/stationservice/stations/{stationsId}",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:delete-stations-by-id",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:50"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET /api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:get-stations",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:33"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET /api/v1/stationservice/stations/id/{stationNameForId}",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:get-stations-id-by-name",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:59",
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:60"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET /api/v1/stationservice/stations/name/{stationIdForName}",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:get-stations-name-by-id",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:76",
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:77"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|GET /api/v1/stationservice/welcome",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:get-welcome",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:28"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST /api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:post-stations",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:38",
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:41"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST /api/v1/stationservice/stations/idlist",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:post-stations-idlist",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:68",
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:69"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|POST /api/v1/stationservice/stations/namelist",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:post-stations-namelist",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:86",
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:87"
+   ]
+  },
+  {
+   "key": "capability|fdse.microservice.controller.StationController|capability|exposesEndpoint|PUT /api/v1/stationservice/stations",
+   "candidateAtomId": "atom:capability:fdse.microservice.controller.StationController:exposesEndpoint:put-stations",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:44"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET /api/v1/stationfoodservice/stationfoodstores",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:get-stationfoodstores",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:29",
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:30"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET /api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:get-stationfoodstores-bystoreid",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:49",
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:50"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET /api/v1/stationfoodservice/stationfoodstores/welcome",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:get-stationfoodstores-welcome",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:24",
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:25"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|GET /api/v1/stationfoodservice/stationfoodstores/{stationId}",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:get-stationfoodstores-by-path-stationid",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:36",
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:37"
+   ]
+  },
+  {
+   "key": "capability|food.controller.StationFoodController|capability|exposesEndpoint|POST /api/v1/stationfoodservice/stationfoodstores",
+   "candidateAtomId": "atom:capability:food.controller.StationFoodController:exposesEndpoint:post-stationfoodstores",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:43",
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:44"
+   ]
+  },
+  {
+   "key": "capability|security.service.SecurityServiceImpl|capability|servesQuery|check account order count in last hour and total valid orders against configured thresholds",
+   "candidateAtomId": "atom:capability:security.service.SecurityServiceImpl:servesQuery:account-order-rate-eligibility",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:107",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:122",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:127"
+   ]
+  },
+  {
+   "key": "component|fdse.microservice.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:fdse.microservice.config.SecurityConfig",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/config/SecurityConfig.java:24"
+   ]
+  },
+  {
+   "key": "component|fdse.microservice.controller.StationController|static||",
+   "candidateAtomId": "atom:component:fdse.microservice.controller.StationController",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:21"
+   ]
+  },
+  {
+   "key": "component|fdse.microservice.init.InitData|static||",
+   "candidateAtomId": "atom:component:fdse.microservice.init.InitData",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:10"
+   ]
+  },
+  {
+   "key": "component|food.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:food.config.SecurityConfig",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/config/SecurityConfig.java:23"
+   ]
+  },
+  {
+   "key": "component|food.controller.StationFoodController|static||",
+   "candidateAtomId": "atom:component:food.controller.StationFoodController",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:17"
+   ]
+  },
+  {
+   "key": "component|food.init.InitData|static||",
+   "candidateAtomId": "atom:component:food.init.InitData",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:19"
+   ]
+  },
+  {
+   "key": "contract|fdse.microservice.entity.Station|specification|ensures|normalized station name unique, enforced by column constraint and by service-level findByName check before create",
+   "candidateAtomId": "atom:contract:fdse.microservice.entity.Station:ensures",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:26",
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:27",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:31",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:36",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:37"
+   ]
+  },
+  {
+   "key": "contract|food.entity.StationFoodStore|specification|ensures|non-null station_name and unique (station_name, store_name) pair enforced by table index",
+   "candidateAtomId": "atom:contract:food.entity.StationFoodStore:ensures",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:18",
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:25",
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:26",
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:27"
+   ]
+  },
+  {
+   "key": "effect|food.init.InitData|effect|haltsProcess|exits process with status 1 when the foodstores resource file has an unexpected line format during startup seeding",
+   "candidateAtomId": "atom:effect:food.init.InitData:haltsProcess",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:60",
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:61",
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:62",
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:63"
+   ]
+  },
+  {
+   "key": "relation|fdse.microservice.controller.StationController|relation|dependsOn|fdse.microservice.service.StationService",
+   "candidateAtomId": "atom:relation:fdse.microservice.controller.StationController:dependsOn:fdse.microservice.service.StationService",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:23",
+    "src:ts-station-service/src/main/java/fdse/microservice/controller/StationController.java:24"
+   ]
+  },
+  {
+   "key": "relation|fdse.microservice.init.InitData|relation|calls|create",
+   "candidateAtomId": "atom:relation:fdse.microservice.init.InitData:calls:fdse.microservice.service.StationService",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:12",
+    "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:13",
+    "src:ts-station-service/src/main/java/fdse/microservice/init/InitData.java:20"
+   ]
+  },
+  {
+   "key": "relation|food.controller.StationFoodController|relation|dependsOn|food.service.StationFoodService",
+   "candidateAtomId": "atom:relation:food.controller.StationFoodController:dependsOn:food.service.StationFoodService",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:19",
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:20"
+   ]
+  },
+  {
+   "key": "relation|food.init.InitData|relation|calls|createFoodStore",
+   "candidateAtomId": "atom:relation:food.init.InitData:calls:food.service.StationFoodService",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:21",
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:22",
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:55"
+   ]
+  },
+  {
+   "key": "relation|security.service.SecurityServiceImpl|relation|calls|ts-order-other-service",
+   "candidateAtomId": "atom:relation:security.service.SecurityServiceImpl:calls:ts-order-other-service",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:147",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:148",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:149"
+   ]
+  },
+  {
+   "key": "relation|security.service.SecurityServiceImpl|relation|calls|ts-order-service",
+   "candidateAtomId": "atom:relation:security.service.SecurityServiceImpl:calls:ts-order-service",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:132",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:133",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:134"
+   ]
+  },
+  {
+   "key": "semantic|ctx:station-food-catalog-surface|cech|sectionValue|section=money-amount:double-parsed-from-text-init-file-for-food-price-and-store-deliveryFee-and-stored-as-primitive-double-entity-field",
+   "candidateAtomId": "atom:semantic:ctx-station-food-catalog-surface:cech-section-money-amount",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:50",
+    "src:ts-station-food-service/src/main/java/food/init/InitData.java:98",
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:36"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.entity.Station|semantic|identifiedBy|looked up by generated UUID id, or by normalized unique name including a native SQL IN-clause batch lookup",
+   "candidateAtomId": "atom:semantic:fdse.microservice.entity.Station:identifiedBy:lookup-contract",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:14",
+    "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:16",
+    "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:17",
+    "src:ts-station-service/src/main/java/fdse/microservice/repository/StationRepository.java:19",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:31",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:53",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:105"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.entity.Station|semantic|identifiedBy|station name identity is normalized by stripping spaces and lowercasing with Locale.ROOT before it is stored or compared, in every constructor and setter path",
+   "candidateAtomId": "atom:semantic:fdse.microservice.entity.Station:identifiedBy:name-normalization",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:35",
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:36",
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:39",
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:40",
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:44",
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:45"
+   ]
+  },
+  {
+   "key": "semantic|fdse.microservice.service.StationServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-empty-or-already-exists-branch",
+   "candidateAtomId": "atom:semantic:fdse.microservice.service.StationServiceImpl:statusGates:response-branch",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:29",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:34",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:37",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:56",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:62",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:72",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:75",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:82",
+    "src:ts-station-service/src/main/java/fdse/microservice/service/StationServiceImpl.java:85"
+   ]
+  },
+  {
+   "key": "semantic|food.controller.StationFoodController|semantic|meansInUse|the route template segment for this handler is named {stationId}, but the bound handler parameter is named stationName with no explicit @PathVariable value, so the path segment is bound positionally rather than by matching name",
+   "candidateAtomId": "atom:semantic:food.controller.StationFoodController:meansInUse:path-variable-name-divergence",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:37",
+    "src:ts-station-food-service/src/main/java/food/controller/StationFoodController.java:38"
+   ]
+  },
+  {
+   "key": "semantic|food.entity.StationFoodStore|semantic|identifiedBy|looked up by generated UUID store_id, or by station_name which is only guaranteed unique in combination with store_name",
+   "candidateAtomId": "atom:semantic:food.entity.StationFoodStore:identifiedBy:lookup-contract",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:21",
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:22",
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:23",
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:26",
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:27",
+    "src:ts-station-food-service/src/main/java/food/repository/StationFoodRepository.java:14",
+    "src:ts-station-food-service/src/main/java/food/repository/StationFoodRepository.java:17",
+    "src:ts-station-food-service/src/main/java/food/repository/StationFoodRepository.java:18"
+   ]
+  },
+  {
+   "key": "semantic|food.service.StationFoodServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-empty-or-already-exists-branch",
+   "candidateAtomId": "atom:semantic:food.service.StationFoodServiceImpl:statusGates:response-branch",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:33",
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:38",
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:60",
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:63",
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:81",
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:85",
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:103",
+    "src:ts-station-food-service/src/main/java/food/service/StationFoodServiceImpl.java:118"
+   ]
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|meansInUse|application.yml declares order-service.url and order-other-service.url properties, but the service URL actually used at the call site is built in code from a hardcoded service name with an http prefix rather than injected via @Value from those properties",
+   "candidateAtomId": "atom:semantic:security.service.SecurityServiceImpl:meansInUse:order-service-url-config-vs-code",
+   "refs": [
+    "src:ts-security-service/src/main/resources/application.yml:29",
+    "src:ts-security-service/src/main/resources/application.yml:30",
+    "src:ts-security-service/src/main/resources/application.yml:32",
+    "src:ts-security-service/src/main/resources/application.yml:33",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:46",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:47",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:132",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:147"
+   ]
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|meansInUse|named security config entries max_order_1_hour and max_order_not_use are read and parsed as integer thresholds that gate whether an account may keep placing orders",
+   "candidateAtomId": "atom:semantic:security.service.SecurityServiceImpl:meansInUse:order-rate-config-gate",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:117",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:118",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:120",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:121",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:122"
+   ]
+  },
+  {
+   "key": "semantic|security.service.SecurityServiceImpl|semantic|statusGates|status-1-on-result-carrying-or-accepted-branch-status-0-on-not-found-or-threshold-exceeded-branch",
+   "candidateAtomId": "atom:semantic:security.service.SecurityServiceImpl:statusGates:response-branch",
+   "refs": [
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:56",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:59",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:124",
+    "src:ts-security-service/src/main/java/security/service/SecurityServiceImpl.java:126"
+   ]
+  },
+  {
+   "key": "state|fdse.microservice.entity.Station|state|persistsIn|station table with unique name column",
+   "candidateAtomId": "atom:state:fdse.microservice.entity.Station:persistsIn",
+   "refs": [
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:16",
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:26",
+    "src:ts-station-service/src/main/java/fdse/microservice/entity/Station.java:27"
+   ]
+  },
+  {
+   "key": "state|food.entity.StationFoodStore|state|persistsIn|station_food_store table with unique index station_store_idx on (station_name, store_name)",
+   "candidateAtomId": "atom:state:food.entity.StationFoodStore:persistsIn",
+   "refs": [
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:18",
+    "src:ts-station-food-service/src/main/java/food/entity/StationFoodStore.java:19"
+   ]
+  }
+ ]
+}

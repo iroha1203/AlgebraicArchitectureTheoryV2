@@ -1,0 +1,4377 @@
+[
+ {
+  "atomId": "atom:authority:basic-securityconfig:permitsunauthenticated-api",
+  "from": "basic.SecurityConfig",
+  "to": "ts-basic-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:config-securityconfig:permits-unauthenticated-configservice-base",
+  "from": "config.SecurityConfig",
+  "to": "ts-config-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:config-securityconfig:permits-unauthenticated-swagger-paths",
+  "from": "config.SecurityConfig",
+  "to": "ts-config-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:fdse-microservice-config-securityconfig:permits-unauthenticated-swagger-paths",
+  "from": "fdse.microservice.config.SecurityConfig",
+  "to": "ts-station-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:food-config-securityconfig:permits-unauthenticated-stationfoodservice-paths",
+  "from": "food.config.SecurityConfig",
+  "to": "ts-station-food-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:food-config-securityconfig:permits-unauthenticated-swagger-paths",
+  "from": "food.config.SecurityConfig",
+  "to": "ts-station-food-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:order.config.SecurityConfig:permitsUnauthenticated:order-base",
+  "from": "order.config.SecurityConfig",
+  "to": "ts-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:other.config.SecurityConfig:permitsUnauthenticated:orderOther-base",
+  "from": "other.config.SecurityConfig",
+  "to": "ts-order-other-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:seat.config.security-config:permits-unauthenticated-service-root",
+  "from": "seat.config.SecurityConfig",
+  "to": "ts-seat-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:trainfood-config-securityconfig:permits-unauthenticated-trainfoodservice-api",
+  "from": "trainFood.config.SecurityConfig",
+  "to": "ts-train-food-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:travelplan-config-securityconfig:permits-unauthenticated-travelplanservice-api",
+  "from": "travelplan.config.SecurityConfig",
+  "to": "ts-travel-plan-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:verifycode-config-securityconfig:permits-unauthenticated-verifycode-paths",
+  "from": "verifycode.config.SecurityConfig",
+  "to": "ts-verification-code-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-order-wildcard",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-stationname",
+  "from": "basic.BasicController",
+  "to": "ts-basic-service.BasicController"
+ },
+ {
+  "atomId": "atom:capability:basic-basiccontroller:exposesendpoint-welcome",
+  "from": "basic.BasicController",
+  "to": "ts-basic-service.BasicController"
+ },
+ {
+  "atomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-travel",
+  "from": "basic.BasicController",
+  "to": "ts-basic-service.BasicController"
+ },
+ {
+  "atomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-travels",
+  "from": "basic.BasicController",
+  "to": "ts-basic-service.BasicController"
+ },
+ {
+  "atomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-refound",
+  "from": "cancel.CancelController",
+  "to": "ts-cancel-service.CancelController"
+ },
+ {
+  "atomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-orderid-loginid",
+  "from": "cancel.CancelController",
+  "to": "ts-cancel-service.CancelController"
+ },
+ {
+  "atomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-welcome",
+  "from": "cancel.CancelController",
+  "to": "ts-cancel-service.CancelController"
+ },
+ {
+  "atomId": "atom:capability:config-controller-configcontroller:delete-config-by-name",
+  "from": "config.controller.ConfigController",
+  "to": "ts-config-service.ConfigController"
+ },
+ {
+  "atomId": "atom:capability:config-controller-configcontroller:get-configs",
+  "from": "config.controller.ConfigController",
+  "to": "ts-config-service.ConfigController"
+ },
+ {
+  "atomId": "atom:capability:config-controller-configcontroller:get-config-by-name",
+  "from": "config.controller.ConfigController",
+  "to": "ts-config-service.ConfigController"
+ },
+ {
+  "atomId": "atom:capability:config-controller-configcontroller:get-welcome",
+  "from": "config.controller.ConfigController",
+  "to": "ts-config-service.ConfigController"
+ },
+ {
+  "atomId": "atom:capability:config-controller-configcontroller:post-configs",
+  "from": "config.controller.ConfigController",
+  "to": "ts-config-service.ConfigController"
+ },
+ {
+  "atomId": "atom:capability:config-controller-configcontroller:put-configs",
+  "from": "config.controller.ConfigController",
+  "to": "ts-config-service.ConfigController"
+ },
+ {
+  "atomId": "atom:capability:price.PriceConfigRepository:findByRouteIdAndTrainType",
+  "from": "price.PriceConfigRepository",
+  "to": "ts-price-service.PriceConfigRepository"
+ },
+ {
+  "atomId": "atom:capability:price.PriceServiceImpl:deletePriceConfig",
+  "from": "price.PriceServiceImpl",
+  "to": "ts-price-service.PriceServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:price.PriceServiceImpl:updatePriceConfig",
+  "from": "price.PriceServiceImpl",
+  "to": "ts-price-service.PriceServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-get-trains-welcome",
+  "from": "train.controller.TrainController",
+  "to": "ts-train-service.TrainController"
+ },
+ {
+  "atomId": "atom:capability:train-repository-traintyperepository:serves-query-find-by-name",
+  "from": "train.repository.TrainTypeRepository",
+  "to": "ts-train-service.TrainTypeRepository"
+ },
+ {
+  "atomId": "atom:capability:trainfood-controller-trainfoodcontroller:exposes-endpoint-get-trainfoods-welcome",
+  "from": "trainFood.controller.TrainFoodController",
+  "to": "ts-train-food-service.TrainFoodController"
+ },
+ {
+  "atomId": "atom:capability:trainfood-repository-trainfoodrepository:serves-query-find-by-trip-id",
+  "from": "trainFood.repository.TrainFoodRepository",
+  "to": "ts-train-food-service.TrainFoodRepository"
+ },
+ {
+  "atomId": "atom:capability:verifycode-controller-verifycodecontroller:exposes-endpoint-get-generate",
+  "from": "verifycode.controller.VerifyCodeController",
+  "to": "ts-verification-code-service.VerifyCodeController"
+ },
+ {
+  "atomId": "atom:capability:verifycode-controller-verifycodecontroller:exposes-endpoint-get-verify",
+  "from": "verifycode.controller.VerifyCodeController",
+  "to": "ts-verification-code-service.VerifyCodeController"
+ },
+ {
+  "atomId": "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-orders",
+  "from": "waitorder.controller.WaitListOrderController",
+  "to": "ts-wait-order-service.WaitListOrderController"
+ },
+ {
+  "atomId": "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-waitlistorders",
+  "from": "waitorder.controller.WaitListOrderController",
+  "to": "ts-wait-order-service.WaitListOrderController"
+ },
+ {
+  "atomId": "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-welcome",
+  "from": "waitorder.controller.WaitListOrderController",
+  "to": "ts-wait-order-service.WaitListOrderController"
+ },
+ {
+  "atomId": "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-post-order",
+  "from": "waitorder.controller.WaitListOrderController",
+  "to": "ts-wait-order-service.WaitListOrderController"
+ },
+ {
+  "atomId": "atom:component:adminbasic-application",
+  "from": "adminbasic.AdminBasicInfoApplication",
+  "to": "ts-admin-basic-info-service.AdminBasicInfoApplication"
+ },
+ {
+  "atomId": "atom:component:adminbasic-securityconfig",
+  "from": "adminbasic.config.SecurityConfig",
+  "to": "ts-admin-basic-info-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:adminbasic-controller",
+  "from": "adminbasic.controller.AdminBasicInfoController",
+  "to": "ts-admin-basic-info-service.AdminBasicInfoController"
+ },
+ {
+  "atomId": "atom:component:adminbasic-priceinfo",
+  "from": "adminbasic.entity.PriceInfo",
+  "to": "ts-admin-basic-info-service.PriceInfo"
+ },
+ {
+  "atomId": "atom:component:adminbasic-service-impl",
+  "from": "adminbasic.service.AdminBasicInfoServiceImpl",
+  "to": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl"
+ },
+ {
+  "atomId": "atom:component:adminbasic-service-iface",
+  "from": "adminbasic.service.AdminBasicInfoService",
+  "to": "ts-admin-basic-info-service.AdminBasicInfoService"
+ },
+ {
+  "atomId": "atom:component:adminorder-application",
+  "from": "adminorder.AdminOrderApplication",
+  "to": "ts-admin-order-service.AdminOrderApplication"
+ },
+ {
+  "atomId": "atom:component:adminorder-securityconfig",
+  "from": "adminorder.config.SecurityConfig",
+  "to": "ts-admin-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:adminorder-controller",
+  "from": "adminorder.controller.AdminOrderController",
+  "to": "ts-admin-order-service.AdminOrderController"
+ },
+ {
+  "atomId": "atom:component:adminorder-service-impl",
+  "from": "adminorder.service.AdminOrderServiceImpl",
+  "to": "ts-admin-order-service.AdminOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:component:adminorder-service-iface",
+  "from": "adminorder.service.AdminOrderService",
+  "to": "ts-admin-order-service.AdminOrderService"
+ },
+ {
+  "atomId": "atom:component:adminroute-application",
+  "from": "adminroute.AdminRouteApplication",
+  "to": "ts-admin-route-service.AdminRouteApplication"
+ },
+ {
+  "atomId": "atom:component:adminroute-securityconfig",
+  "from": "adminroute.config.SecurityConfig",
+  "to": "ts-admin-route-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:adminroute-controller",
+  "from": "adminroute.controller.AdminRouteController",
+  "to": "ts-admin-route-service.AdminRouteController"
+ },
+ {
+  "atomId": "atom:component:adminroute-service-impl",
+  "from": "adminroute.service.AdminRouteServiceImpl",
+  "to": "ts-admin-route-service.AdminRouteServiceImpl"
+ },
+ {
+  "atomId": "atom:component:adminroute-service-iface",
+  "from": "adminroute.service.AdminRouteService",
+  "to": "ts-admin-route-service.AdminRouteService"
+ },
+ {
+  "atomId": "atom:component:admintravel-application",
+  "from": "admintravel.AdminTravelApplication",
+  "to": "ts-admin-travel-service.AdminTravelApplication"
+ },
+ {
+  "atomId": "atom:component:adminuser-adminuserapplication",
+  "from": "adminuser.AdminUserApplication",
+  "to": "ts-admin-user-service.AdminUserApplication"
+ },
+ {
+  "atomId": "atom:component:assurance-assuranceapplication",
+  "from": "assurance.AssuranceApplication",
+  "to": "ts-assurance-service.AssuranceApplication"
+ },
+ {
+  "atomId": "atom:component:auth-authapplication",
+  "from": "auth.AuthApplication",
+  "to": "ts-auth-service.AuthApplication"
+ },
+ {
+  "atomId": "atom:component:auth-tokenserviceimpl",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:component:auth-tokenservice",
+  "from": "auth.TokenService",
+  "to": "ts-auth-service.TokenService"
+ },
+ {
+  "atomId": "atom:component:auth-userserviceimpl",
+  "from": "auth.UserServiceImpl",
+  "to": "ts-auth-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:component:auth-userservice",
+  "from": "auth.UserService",
+  "to": "ts-auth-service.UserService"
+ },
+ {
+  "atomId": "atom:component:basic-basicapplication",
+  "from": "basic.BasicApplication",
+  "to": "ts-basic-service.BasicApplication"
+ },
+ {
+  "atomId": "atom:component:basic-basiccontroller",
+  "from": "basic.BasicController",
+  "to": "ts-basic-service.BasicController"
+ },
+ {
+  "atomId": "atom:component:basic-basicserviceimpl",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:component:basic-basicservice",
+  "from": "basic.BasicService",
+  "to": "ts-basic-service.BasicService"
+ },
+ {
+  "atomId": "atom:component:basic-securityconfig",
+  "from": "basic.SecurityConfig",
+  "to": "ts-basic-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:cancel-cancelapplication",
+  "from": "cancel.CancelApplication",
+  "to": "ts-cancel-service.CancelApplication"
+ },
+ {
+  "atomId": "atom:component:cancel-cancelcontroller",
+  "from": "cancel.CancelController",
+  "to": "ts-cancel-service.CancelController"
+ },
+ {
+  "atomId": "atom:component:cancel-cancelserviceimpl",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:component:cancel-cancelservice",
+  "from": "cancel.CancelService",
+  "to": "ts-cancel-service.CancelService"
+ },
+ {
+  "atomId": "atom:component:cancel-securityconfig",
+  "from": "cancel.SecurityConfig",
+  "to": "ts-cancel-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.paymentapplication",
+  "from": "com.trainticket.PaymentApplication",
+  "to": "ts-payment-service.PaymentApplication"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.config.securityconfig",
+  "from": "com.trainticket.config.SecurityConfig",
+  "to": "ts-payment-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.controller.paymentcontroller",
+  "from": "com.trainticket.controller.PaymentController",
+  "to": "ts-payment-service.PaymentController"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.entity.money",
+  "from": "com.trainticket.entity.Money",
+  "to": "ts-payment-service.Money"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.entity.payment",
+  "from": "com.trainticket.entity.Payment",
+  "to": "ts-payment-service.Payment"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.init.initdata",
+  "from": "com.trainticket.init.InitData",
+  "to": "ts-payment-service.InitData"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.repository.addmoneyrepository",
+  "from": "com.trainticket.repository.AddMoneyRepository",
+  "to": "ts-payment-service.AddMoneyRepository"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.repository.paymentrepository",
+  "from": "com.trainticket.repository.PaymentRepository",
+  "to": "ts-payment-service.PaymentRepository"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.service.paymentserviceimpl",
+  "from": "com.trainticket.service.PaymentServiceImpl",
+  "to": "ts-payment-service.PaymentServiceImpl"
+ },
+ {
+  "atomId": "atom:component:com.trainticket.service.paymentservice",
+  "from": "com.trainticket.service.PaymentService",
+  "to": "ts-payment-service.PaymentService"
+ },
+ {
+  "atomId": "atom:component:common.Account",
+  "from": "common.Account",
+  "to": "ts-common.Account"
+ },
+ {
+  "atomId": "atom:component:common.AdminTrip",
+  "from": "common.AdminTrip",
+  "to": "ts-common.AdminTrip"
+ },
+ {
+  "atomId": "atom:component:common.AssuranceType",
+  "from": "common.AssuranceType",
+  "to": "ts-common.AssuranceType"
+ },
+ {
+  "atomId": "atom:component:common.Assurance",
+  "from": "common.Assurance",
+  "to": "ts-common.Assurance"
+ },
+ {
+  "atomId": "atom:component:common.Config",
+  "from": "common.Config",
+  "to": "ts-common.Config"
+ },
+ {
+  "atomId": "atom:component:common.Consign",
+  "from": "common.Consign",
+  "to": "ts-common.Consign"
+ },
+ {
+  "atomId": "atom:component:common.Contacts",
+  "from": "common.Contacts",
+  "to": "ts-common.Contacts"
+ },
+ {
+  "atomId": "atom:component:common.DocumentType",
+  "from": "common.DocumentType",
+  "to": "ts-common.DocumentType"
+ },
+ {
+  "atomId": "atom:component:common.FoodOrder",
+  "from": "common.FoodOrder",
+  "to": "ts-common.FoodOrder"
+ },
+ {
+  "atomId": "atom:component:common.Food",
+  "from": "common.Food",
+  "to": "ts-common.Food"
+ },
+ {
+  "atomId": "atom:component:common.Gender",
+  "from": "common.Gender",
+  "to": "ts-common.Gender"
+ },
+ {
+  "atomId": "atom:component:common.LeftTicketInfo",
+  "from": "common.LeftTicketInfo",
+  "to": "ts-common.LeftTicketInfo"
+ },
+ {
+  "atomId": "atom:component:common.NotifyInfo",
+  "from": "common.NotifyInfo",
+  "to": "ts-common.NotifyInfo"
+ },
+ {
+  "atomId": "atom:component:common.OrderAlterInfo",
+  "from": "common.OrderAlterInfo",
+  "to": "ts-common.OrderAlterInfo"
+ },
+ {
+  "atomId": "atom:component:common.OrderSecurity",
+  "from": "common.OrderSecurity",
+  "to": "ts-common.OrderSecurity"
+ },
+ {
+  "atomId": "atom:component:common.OrderStatus",
+  "from": "common.OrderStatus",
+  "to": "ts-common.OrderStatus"
+ },
+ {
+  "atomId": "atom:component:common.OrderTicketsInfo",
+  "from": "common.OrderTicketsInfo",
+  "to": "ts-common.OrderTicketsInfo"
+ },
+ {
+  "atomId": "atom:component:common.Order",
+  "from": "common.Order",
+  "to": "ts-common.Order"
+ },
+ {
+  "atomId": "atom:component:common.PaymentDifferenceInfo",
+  "from": "common.PaymentDifferenceInfo",
+  "to": "ts-common.PaymentDifferenceInfo"
+ },
+ {
+  "atomId": "atom:component:common.PriceConfig",
+  "from": "common.PriceConfig",
+  "to": "ts-common.PriceConfig"
+ },
+ {
+  "atomId": "atom:component:common-routeinfo",
+  "from": "common.RouteInfo",
+  "to": "ts-common.RouteInfo"
+ },
+ {
+  "atomId": "atom:component:common-routeplaninfo",
+  "from": "common.RoutePlanInfo",
+  "to": "ts-common.RoutePlanInfo"
+ },
+ {
+  "atomId": "atom:component:common-routeplanresultunit",
+  "from": "common.RoutePlanResultUnit",
+  "to": "ts-common.RoutePlanResultUnit"
+ },
+ {
+  "atomId": "atom:component:common-route",
+  "from": "common.Route",
+  "to": "ts-common.Route"
+ },
+ {
+  "atomId": "atom:component:common-seatclass",
+  "from": "common.SeatClass",
+  "to": "ts-common.SeatClass"
+ },
+ {
+  "atomId": "atom:component:common-seat",
+  "from": "common.Seat",
+  "to": "ts-common.Seat"
+ },
+ {
+  "atomId": "atom:component:common-soldticket",
+  "from": "common.SoldTicket",
+  "to": "ts-common.SoldTicket"
+ },
+ {
+  "atomId": "atom:component:common-stationfoodstore",
+  "from": "common.StationFoodStore",
+  "to": "ts-common.StationFoodStore"
+ },
+ {
+  "atomId": "atom:component:common-station",
+  "from": "common.Station",
+  "to": "ts-common.Station"
+ },
+ {
+  "atomId": "atom:component:common-swaggerconfig",
+  "from": "common.SwaggerConfig",
+  "to": "ts-common.SwaggerConfig"
+ },
+ {
+  "atomId": "atom:component:common-ticket",
+  "from": "common.Ticket",
+  "to": "ts-common.Ticket"
+ },
+ {
+  "atomId": "atom:component:common-trainfood",
+  "from": "common.TrainFood",
+  "to": "ts-common.TrainFood"
+ },
+ {
+  "atomId": "atom:component:common-traintype",
+  "from": "common.TrainType",
+  "to": "ts-common.TrainType"
+ },
+ {
+  "atomId": "atom:component:common-travelinfo",
+  "from": "common.TravelInfo",
+  "to": "ts-common.TravelInfo"
+ },
+ {
+  "atomId": "atom:component:common-travelresult",
+  "from": "common.TravelResult",
+  "to": "ts-common.TravelResult"
+ },
+ {
+  "atomId": "atom:component:common-travel",
+  "from": "common.Travel",
+  "to": "ts-common.Travel"
+ },
+ {
+  "atomId": "atom:component:common-tripalldetailinfo",
+  "from": "common.TripAllDetailInfo",
+  "to": "ts-common.TripAllDetailInfo"
+ },
+ {
+  "atomId": "atom:component:common-tripalldetail",
+  "from": "common.TripAllDetail",
+  "to": "ts-common.TripAllDetail"
+ },
+ {
+  "atomId": "atom:component:common-tripid",
+  "from": "common.TripId",
+  "to": "ts-common.TripId"
+ },
+ {
+  "atomId": "atom:component:common-tripinfo",
+  "from": "common.TripInfo",
+  "to": "ts-common.TripInfo"
+ },
+ {
+  "atomId": "atom:component:common-trip",
+  "from": "common.Trip",
+  "to": "ts-common.Trip"
+ },
+ {
+  "atomId": "atom:component:config-configapplication",
+  "from": "config.ConfigApplication",
+  "to": "ts-config-service.ConfigApplication"
+ },
+ {
+  "atomId": "atom:component:config-securityconfig",
+  "from": "config.SecurityConfig",
+  "to": "ts-config-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:config-controller-configcontroller",
+  "from": "config.controller.ConfigController",
+  "to": "ts-config-service.ConfigController"
+ },
+ {
+  "atomId": "atom:component:config-entity-config",
+  "from": "config.entity.Config",
+  "to": "ts-config-service.Config"
+ },
+ {
+  "atomId": "atom:component:config-init-initdata",
+  "from": "config.init.InitData",
+  "to": "ts-config-service.InitData"
+ },
+ {
+  "atomId": "atom:component:config-repository-configrepository",
+  "from": "config.repository.ConfigRepository",
+  "to": "ts-config-service.ConfigRepository"
+ },
+ {
+  "atomId": "atom:component:config-service-configserviceimpl",
+  "from": "config.service.ConfigServiceImpl",
+  "to": "ts-config-service.ConfigServiceImpl"
+ },
+ {
+  "atomId": "atom:component:config-service-configservice",
+  "from": "config.service.ConfigService",
+  "to": "ts-config-service.ConfigService"
+ },
+ {
+  "atomId": "atom:component:consign-consign-application",
+  "from": "consign.ConsignApplication",
+  "to": "ts-consign-service.ConsignApplication"
+ },
+ {
+  "atomId": "atom:component:consign-security-config",
+  "from": "consign.config.SecurityConfig",
+  "to": "ts-consign-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:consign-consign-controller",
+  "from": "consign.controller.ConsignController",
+  "to": "ts-consign-service.ConsignController"
+ },
+ {
+  "atomId": "atom:component:consign-consign-record-entity",
+  "from": "consign.entity.ConsignRecord",
+  "to": "ts-consign-service.ConsignRecord"
+ },
+ {
+  "atomId": "atom:component:consign-consign-entity",
+  "from": "consign.entity.Consign",
+  "to": "ts-consign-service.Consign"
+ },
+ {
+  "atomId": "atom:component:consign-get-price-domain",
+  "from": "consign.entity.GetPriceDomain",
+  "to": "ts-consign-service.GetPriceDomain"
+ },
+ {
+  "atomId": "atom:component:consign-insert-consign-record-result",
+  "from": "consign.entity.InsertConsignRecordResult",
+  "to": "ts-consign-service.InsertConsignRecordResult"
+ },
+ {
+  "atomId": "atom:component:consign-init-data",
+  "from": "consign.init.InitData",
+  "to": "ts-consign-service.InitData"
+ },
+ {
+  "atomId": "atom:component:consign-consign-repository",
+  "from": "consign.repository.ConsignRepository",
+  "to": "ts-consign-service.ConsignRepository"
+ },
+ {
+  "atomId": "atom:component:consign-consign-service-impl",
+  "from": "consign.service.ConsignServiceImpl",
+  "to": "ts-consign-service.ConsignServiceImpl"
+ },
+ {
+  "atomId": "atom:component:consign-consign-service",
+  "from": "consign.service.ConsignService",
+  "to": "ts-consign-service.ConsignService"
+ },
+ {
+  "atomId": "atom:component:consignprice-consign-price-application",
+  "from": "consignprice.ConsignPriceApplication",
+  "to": "ts-consign-price-service.ConsignPriceApplication"
+ },
+ {
+  "atomId": "atom:component:consignprice-security-config",
+  "from": "consignprice.config.SecurityConfig",
+  "to": "ts-consign-price-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:consignprice-consign-price-controller",
+  "from": "consignprice.controller.ConsignPriceController",
+  "to": "ts-consign-price-service.ConsignPriceController"
+ },
+ {
+  "atomId": "atom:component:consignprice-consign-price-entity",
+  "from": "consignprice.entity.ConsignPrice",
+  "to": "ts-consign-price-service.ConsignPrice"
+ },
+ {
+  "atomId": "atom:component:consignprice-init-data",
+  "from": "consignprice.init.InitData",
+  "to": "ts-consign-price-service.InitData"
+ },
+ {
+  "atomId": "atom:component:consignprice-consign-price-config-repository",
+  "from": "consignprice.repository.ConsignPriceConfigRepository",
+  "to": "ts-consign-price-service.ConsignPriceConfigRepository"
+ },
+ {
+  "atomId": "atom:component:consignprice-consign-price-service-impl",
+  "from": "consignprice.service.ConsignPriceServiceImpl",
+  "to": "ts-consign-price-service.ConsignPriceServiceImpl"
+ },
+ {
+  "atomId": "atom:component:consignprice-consign-price-service",
+  "from": "consignprice.service.ConsignPriceService",
+  "to": "ts-consign-price-service.ConsignPriceService"
+ },
+ {
+  "atomId": "atom:component:contacts.ContactsApplication",
+  "from": "contacts.ContactsApplication",
+  "to": "ts-contacts-service.ContactsApplication"
+ },
+ {
+  "atomId": "atom:component:contacts.config.SecurityConfig",
+  "from": "contacts.config.SecurityConfig",
+  "to": "ts-contacts-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:contacts.controller.ContactsController",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:component:contacts.entity.Contacts",
+  "from": "contacts.entity.Contacts",
+  "to": "ts-contacts-service.Contacts"
+ },
+ {
+  "atomId": "atom:component:contacts.entity.DocumentType",
+  "from": "contacts.entity.DocumentType",
+  "to": "ts-contacts-service.DocumentType"
+ },
+ {
+  "atomId": "atom:component:contacts.init.InitData",
+  "from": "contacts.init.InitData",
+  "to": "ts-contacts-service.InitData"
+ },
+ {
+  "atomId": "atom:component:contacts.repository.ContactsRepository",
+  "from": "contacts.repository.ContactsRepository",
+  "to": "ts-contacts-service.ContactsRepository"
+ },
+ {
+  "atomId": "atom:component:contacts.service.ContactsServiceImpl",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:component:contacts.service.ContactsService",
+  "from": "contacts.service.ContactsService",
+  "to": "ts-contacts-service.ContactsService"
+ },
+ {
+  "atomId": "atom:component:delivery.DeliveryApplication",
+  "from": "delivery.DeliveryApplication",
+  "to": "ts-delivery-service.DeliveryApplication"
+ },
+ {
+  "atomId": "atom:component:delivery.config.Queues",
+  "from": "delivery.config.Queues",
+  "to": "ts-delivery-service.Queues"
+ },
+ {
+  "atomId": "atom:component:delivery.entity.Delivery",
+  "from": "delivery.entity.Delivery",
+  "to": "ts-delivery-service.Delivery"
+ },
+ {
+  "atomId": "atom:component:delivery.mq.RabbitReceive",
+  "from": "delivery.mq.RabbitReceive",
+  "to": "ts-delivery-service.RabbitReceive"
+ },
+ {
+  "atomId": "atom:component:delivery.repository.DeliveryRepository",
+  "from": "delivery.repository.DeliveryRepository",
+  "to": "ts-delivery-service.DeliveryRepository"
+ },
+ {
+  "atomId": "atom:component:execute.ExecuteApplication",
+  "from": "execute.ExecuteApplication",
+  "to": "ts-execute-service.ExecuteApplication"
+ },
+ {
+  "atomId": "atom:component:execute.config.SecurityConfig",
+  "from": "execute.config.SecurityConfig",
+  "to": "ts-execute-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:execute.controller.ExecuteControlller",
+  "from": "execute.controller.ExecuteControlller",
+  "to": "ts-execute-service.ExecuteControlller"
+ },
+ {
+  "atomId": "atom:component:fdse-microservice-stationapplication",
+  "from": "fdse.microservice.StationApplication",
+  "to": "ts-station-service.StationApplication"
+ },
+ {
+  "atomId": "atom:component:fdse-microservice-entity-station",
+  "from": "fdse.microservice.entity.Station",
+  "to": "ts-station-service.Station"
+ },
+ {
+  "atomId": "atom:component:fdse-microservice-repository-stationrepository",
+  "from": "fdse.microservice.repository.StationRepository",
+  "to": "ts-station-service.StationRepository"
+ },
+ {
+  "atomId": "atom:component:fdse-microservice-service-stationserviceimpl",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:component:fdse-microservice-service-stationservice",
+  "from": "fdse.microservice.service.StationService",
+  "to": "ts-station-service.StationService"
+ },
+ {
+  "atomId": "atom:component:food-stationfoodapplication",
+  "from": "food.StationFoodApplication",
+  "to": "ts-station-food-service.StationFoodApplication"
+ },
+ {
+  "atomId": "atom:component:food-entity-stationfoodstore",
+  "from": "food.entity.StationFoodStore",
+  "to": "ts-station-food-service.StationFoodStore"
+ },
+ {
+  "atomId": "atom:component:food-repository-stationfoodrepository",
+  "from": "food.repository.StationFoodRepository",
+  "to": "ts-station-food-service.StationFoodRepository"
+ },
+ {
+  "atomId": "atom:component:food-service-stationfoodserviceimpl",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:component:food-service-stationfoodservice",
+  "from": "food.service.StationFoodService",
+  "to": "ts-station-food-service.StationFoodService"
+ },
+ {
+  "atomId": "atom:component:food-delivery-fooddeliveryapplication",
+  "from": "food_delivery.FoodDeliveryApplication",
+  "to": "ts-food-delivery-service.FoodDeliveryApplication"
+ },
+ {
+  "atomId": "atom:component:foodsearch-foodapplication",
+  "from": "foodsearch.FoodApplication",
+  "to": "ts-food-service.FoodApplication"
+ },
+ {
+  "atomId": "atom:component:notification-notificationapplication",
+  "from": "notification.NotificationApplication",
+  "to": "ts-notification-service.NotificationApplication"
+ },
+ {
+  "atomId": "atom:component:notification.mq.RabbitSend",
+  "from": "notification.mq.RabbitSend",
+  "to": "ts-notification-service.RabbitSend"
+ },
+ {
+  "atomId": "atom:component:notification.repository.NotifyRepository",
+  "from": "notification.repository.NotifyRepository",
+  "to": "ts-notification-service.NotifyRepository"
+ },
+ {
+  "atomId": "atom:component:notification.service.MailService",
+  "from": "notification.service.MailService",
+  "to": "ts-notification-service.MailService"
+ },
+ {
+  "atomId": "atom:component:notification.service.NotificationServiceImpl",
+  "from": "notification.service.NotificationServiceImpl",
+  "to": "ts-notification-service.NotificationServiceImpl"
+ },
+ {
+  "atomId": "atom:component:notification.service.NotificationService",
+  "from": "notification.service.NotificationService",
+  "to": "ts-notification-service.NotificationService"
+ },
+ {
+  "atomId": "atom:component:order.OrderApplication",
+  "from": "order.OrderApplication",
+  "to": "ts-order-service.OrderApplication"
+ },
+ {
+  "atomId": "atom:component:order.config.SecurityConfig",
+  "from": "order.config.SecurityConfig",
+  "to": "ts-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:order.controller.OrderController",
+  "from": "order.controller.OrderController",
+  "to": "ts-order-service.OrderController"
+ },
+ {
+  "atomId": "atom:component:order.entity.orderalterinfo",
+  "from": "order.entity.OrderAlterInfo",
+  "to": "ts-order-service.OrderAlterInfo"
+ },
+ {
+  "atomId": "atom:component:order.entity.orderinfo",
+  "from": "order.entity.OrderInfo",
+  "to": "ts-order-service.OrderInfo"
+ },
+ {
+  "atomId": "atom:component:order.entity.order",
+  "from": "order.entity.Order",
+  "to": "ts-order-service.Order"
+ },
+ {
+  "atomId": "atom:component:order.init.initdata",
+  "from": "order.init.InitData",
+  "to": "ts-order-service.InitData"
+ },
+ {
+  "atomId": "atom:component:order.repository.orderrepository",
+  "from": "order.repository.OrderRepository",
+  "to": "ts-order-service.OrderRepository"
+ },
+ {
+  "atomId": "atom:component:order.service.orderserviceimpl",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:component:order.service.orderservice",
+  "from": "order.service.OrderService",
+  "to": "ts-order-service.OrderService"
+ },
+ {
+  "atomId": "atom:component:other.OrderOtherApplication",
+  "from": "other.OrderOtherApplication",
+  "to": "ts-order-other-service.OrderOtherApplication"
+ },
+ {
+  "atomId": "atom:component:other.config.SecurityConfig",
+  "from": "other.config.SecurityConfig",
+  "to": "ts-order-other-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:other.controller.OrderOtherController",
+  "from": "other.controller.OrderOtherController",
+  "to": "ts-order-other-service.OrderOtherController"
+ },
+ {
+  "atomId": "atom:component:other.entity.OrderAlterInfo",
+  "from": "other.entity.OrderAlterInfo",
+  "to": "ts-order-other-service.OrderAlterInfo"
+ },
+ {
+  "atomId": "atom:component:other.entity.Order",
+  "from": "other.entity.Order",
+  "to": "ts-order-other-service.Order"
+ },
+ {
+  "atomId": "atom:component:other.entity.QueryInfo",
+  "from": "other.entity.QueryInfo",
+  "to": "ts-order-other-service.QueryInfo"
+ },
+ {
+  "atomId": "atom:component:other.init.InitData",
+  "from": "other.init.InitData",
+  "to": "ts-order-other-service.InitData"
+ },
+ {
+  "atomId": "atom:component:other.repository.OrderOtherRepository",
+  "from": "other.repository.OrderOtherRepository",
+  "to": "ts-order-other-service.OrderOtherRepository"
+ },
+ {
+  "atomId": "atom:component:other.service.OrderOtherServiceImpl",
+  "from": "other.service.OrderOtherServiceImpl",
+  "to": "ts-order-other-service.OrderOtherServiceImpl"
+ },
+ {
+  "atomId": "atom:component:other.service.OrderOtherService",
+  "from": "other.service.OrderOtherService",
+  "to": "ts-order-other-service.OrderOtherService"
+ },
+ {
+  "atomId": "atom:component:plan.RoutePlanApplication",
+  "from": "plan.RoutePlanApplication",
+  "to": "ts-route-plan-service.RoutePlanApplication"
+ },
+ {
+  "atomId": "atom:component:preserve-application",
+  "from": "preserve.PreserveApplication",
+  "to": "ts-preserve-service.PreserveApplication"
+ },
+ {
+  "atomId": "atom:component:preserveother.preserveotherapplication",
+  "from": "preserveOther.PreserveOtherApplication",
+  "to": "ts-preserve-other-service.PreserveOtherApplication"
+ },
+ {
+  "atomId": "atom:component:price-application",
+  "from": "price.PriceApplication",
+  "to": "ts-price-service.PriceApplication"
+ },
+ {
+  "atomId": "atom:component:price.PriceConfigRepository",
+  "from": "price.PriceConfigRepository",
+  "to": "ts-price-service.PriceConfigRepository"
+ },
+ {
+  "atomId": "atom:component:price.PriceServiceImpl",
+  "from": "price.PriceServiceImpl",
+  "to": "ts-price-service.PriceServiceImpl"
+ },
+ {
+  "atomId": "atom:component:rebook.RebookApplication",
+  "from": "rebook.RebookApplication",
+  "to": "ts-rebook-service.RebookApplication"
+ },
+ {
+  "atomId": "atom:component:rebook-entity-verifyresult",
+  "from": "rebook.entity.VerifyResult",
+  "to": "ts-common.VerifyResult"
+ },
+ {
+  "atomId": "atom:component:route.RouteApplication",
+  "from": "route.RouteApplication",
+  "to": "ts-route-service.RouteApplication"
+ },
+ {
+  "atomId": "atom:component:seat.seat-application",
+  "from": "seat.SeatApplication",
+  "to": "ts-seat-service.SeatApplication"
+ },
+ {
+  "atomId": "atom:component:seat.config.security-config",
+  "from": "seat.config.SecurityConfig",
+  "to": "ts-seat-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:security.security-application",
+  "from": "security.SecurityApplication",
+  "to": "ts-security-service.SecurityApplication"
+ },
+ {
+  "atomId": "atom:component:security.config.security-config",
+  "from": "security.config.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:security.entity.security-config",
+  "from": "security.entity.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:security-service-securityserviceimpl",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:component:security.service.security-service",
+  "from": "security.service.SecurityService",
+  "to": "ts-security-service.SecurityService"
+ },
+ {
+  "atomId": "atom:component:train-trainapplication",
+  "from": "train.TrainApplication",
+  "to": "ts-train-service.TrainApplication"
+ },
+ {
+  "atomId": "atom:component:train-config-securityconfig",
+  "from": "train.config.SecurityConfig",
+  "to": "ts-train-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:train-controller-traincontroller",
+  "from": "train.controller.TrainController",
+  "to": "ts-train-service.TrainController"
+ },
+ {
+  "atomId": "atom:component:train-entity-traintype",
+  "from": "train.entity.TrainType",
+  "to": "ts-train-service.TrainType"
+ },
+ {
+  "atomId": "atom:component:train-init-initdata",
+  "from": "train.init.InitData",
+  "to": "ts-train-service.InitData"
+ },
+ {
+  "atomId": "atom:component:train-repository-traintyperepository",
+  "from": "train.repository.TrainTypeRepository",
+  "to": "ts-train-service.TrainTypeRepository"
+ },
+ {
+  "atomId": "atom:component:train-service-trainserviceimpl",
+  "from": "train.service.TrainServiceImpl",
+  "to": "ts-train-service.TrainServiceImpl"
+ },
+ {
+  "atomId": "atom:component:train-service-trainservice",
+  "from": "train.service.TrainService",
+  "to": "ts-train-service.TrainService"
+ },
+ {
+  "atomId": "atom:component:trainfood-trainfoodapplication",
+  "from": "trainFood.TrainFoodApplication",
+  "to": "ts-train-food-service.TrainFoodApplication"
+ },
+ {
+  "atomId": "atom:component:trainfood-config-securityconfig",
+  "from": "trainFood.config.SecurityConfig",
+  "to": "ts-train-food-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:trainfood-controller-trainfoodcontroller",
+  "from": "trainFood.controller.TrainFoodController",
+  "to": "ts-train-food-service.TrainFoodController"
+ },
+ {
+  "atomId": "atom:component:trainfood-entity-trainfood",
+  "from": "trainFood.entity.TrainFood",
+  "to": "ts-train-food-service.TrainFood"
+ },
+ {
+  "atomId": "atom:component:trainfood-init-initdata",
+  "from": "trainFood.init.InitData",
+  "to": "ts-train-food-service.InitData"
+ },
+ {
+  "atomId": "atom:component:trainfood-repository-trainfoodrepository",
+  "from": "trainFood.repository.TrainFoodRepository",
+  "to": "ts-train-food-service.TrainFoodRepository"
+ },
+ {
+  "atomId": "atom:component:trainfood-service-trainfoodserviceimpl",
+  "from": "trainFood.service.TrainFoodServiceImpl",
+  "to": "ts-train-food-service.TrainFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:component:trainfood-service-trainfoodservice",
+  "from": "trainFood.service.TrainFoodService",
+  "to": "ts-train-food-service.TrainFoodService"
+ },
+ {
+  "atomId": "atom:component:travel-travelapplication",
+  "from": "travel.TravelApplication",
+  "to": "ts-travel-service.TravelApplication"
+ },
+ {
+  "atomId": "atom:component:travel2-travel2application",
+  "from": "travel2.Travel2Application",
+  "to": "ts-travel2-service.Travel2Application"
+ },
+ {
+  "atomId": "atom:component:travelplan-travelplanapplication",
+  "from": "travelplan.TravelPlanApplication",
+  "to": "ts-travel-plan-service.TravelPlanApplication"
+ },
+ {
+  "atomId": "atom:component:travelplan-config-securityconfig",
+  "from": "travelplan.config.SecurityConfig",
+  "to": "ts-travel-plan-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:ts-consign-service",
+  "from": "ts-consign-service",
+  "to": "ts-consign-service.ts-consign-service"
+ },
+ {
+  "atomId": "atom:component:ts-contacts-service",
+  "from": "ts-contacts-service",
+  "to": "ts-contacts-service.ts-contacts-service"
+ },
+ {
+  "atomId": "atom:component:ts-delivery-service",
+  "from": "ts-delivery-service",
+  "to": "ts-delivery-service.ts-delivery-service"
+ },
+ {
+  "atomId": "atom:component:ts-execute-service",
+  "from": "ts-execute-service",
+  "to": "ts-execute-service.ts-execute-service"
+ },
+ {
+  "atomId": "atom:component:ts-food-delivery-service",
+  "from": "ts-food-delivery-service",
+  "to": "ts-food-delivery-service.ts-food-delivery-service"
+ },
+ {
+  "atomId": "atom:component:ts-route-service:runtime",
+  "from": "ts-route-service",
+  "to": "ts-route-service.ts-route-service"
+ },
+ {
+  "atomId": "atom:component:ts-seat-service:runtime",
+  "from": "ts-seat-service",
+  "to": "ts-seat-service.ts-seat-service"
+ },
+ {
+  "atomId": "atom:component:user-userapplication",
+  "from": "user.UserApplication",
+  "to": "ts-user-service.UserApplication"
+ },
+ {
+  "atomId": "atom:component:user-service-userservice",
+  "from": "user.service.UserService",
+  "to": "ts-user-service.UserService"
+ },
+ {
+  "atomId": "atom:component:user-service-impl-userserviceimpl",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:component:verifycode-verifycodeapplication",
+  "from": "verifycode.VerifyCodeApplication",
+  "to": "ts-verification-code-service.VerifyCodeApplication"
+ },
+ {
+  "atomId": "atom:component:verifycode-config-securityconfig",
+  "from": "verifycode.config.SecurityConfig",
+  "to": "ts-verification-code-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:verifycode-controller-verifycodecontroller",
+  "from": "verifycode.controller.VerifyCodeController",
+  "to": "ts-verification-code-service.VerifyCodeController"
+ },
+ {
+  "atomId": "atom:component:verifycode-service-verifycodeservice",
+  "from": "verifycode.service.VerifyCodeService",
+  "to": "ts-verification-code-service.VerifyCodeService"
+ },
+ {
+  "atomId": "atom:component:verifycode-service-impl-verifycodeserviceimpl",
+  "from": "verifycode.service.impl.VerifyCodeServiceImpl",
+  "to": "ts-verification-code-service.VerifyCodeServiceImpl"
+ },
+ {
+  "atomId": "atom:component:verifycode-util-cookieutil",
+  "from": "verifycode.util.CookieUtil",
+  "to": "ts-verification-code-service.CookieUtil"
+ },
+ {
+  "atomId": "atom:component:waitorder-waitorderapplication",
+  "from": "waitorder.WaitOrderApplication",
+  "to": "ts-wait-order-service.WaitOrderApplication"
+ },
+ {
+  "atomId": "atom:component:waitorder-config-securityconfig",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:waitorder-controller-waitlistordercontroller",
+  "from": "waitorder.controller.WaitListOrderController",
+  "to": "ts-wait-order-service.WaitListOrderController"
+ },
+ {
+  "atomId": "atom:component:waitorder-entity-waitlistorderstatus",
+  "from": "waitorder.entity.WaitListOrderStatus",
+  "to": "ts-wait-order-service.WaitListOrderStatus"
+ },
+ {
+  "atomId": "atom:component:waitorder-entity-waitlistordervo",
+  "from": "waitorder.entity.WaitListOrderVO",
+  "to": "ts-wait-order-service.WaitListOrderVO"
+ },
+ {
+  "atomId": "atom:component:waitorder-entity-waitlistorder",
+  "from": "waitorder.entity.WaitListOrder",
+  "to": "ts-wait-order-service.WaitListOrder"
+ },
+ {
+  "atomId": "atom:component:waitorder-repository-waitlistorderrepository",
+  "from": "waitorder.repository.WaitListOrderRepository",
+  "to": "ts-wait-order-service.WaitListOrderRepository"
+ },
+ {
+  "atomId": "atom:component:waitorder-service-impl-waitlistorderserviceimpl",
+  "from": "waitorder.service.Impl.WaitListOrderServiceImpl",
+  "to": "ts-wait-order-service.WaitListOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:component:waitorder-service-waitlistorderservice",
+  "from": "waitorder.service.WaitListOrderService",
+  "to": "ts-wait-order-service.WaitListOrderService"
+ },
+ {
+  "atomId": "atom:component:waitorder-utils-pollthread",
+  "from": "waitorder.utils.PollThread",
+  "to": "ts-wait-order-service.PollThread"
+ },
+ {
+  "atomId": "atom:relation:com.trainticket.controller.paymentcontroller:depends-on-paymentservice",
+  "from": "com.trainticket.controller.PaymentController",
+  "to": "ts-payment-service.PaymentController"
+ },
+ {
+  "atomId": "atom:relation:common.AdminTrip:dependsOn:Route",
+  "from": "common.AdminTrip",
+  "to": "ts-common.AdminTrip"
+ },
+ {
+  "atomId": "atom:relation:common.AdminTrip:dependsOn:TrainType",
+  "from": "common.AdminTrip",
+  "to": "ts-common.AdminTrip"
+ },
+ {
+  "atomId": "atom:relation:common.AdminTrip:dependsOn:Trip",
+  "from": "common.AdminTrip",
+  "to": "ts-common.AdminTrip"
+ },
+ {
+  "atomId": "atom:relation:common.Assurance:dependsOn:AssuranceType",
+  "from": "common.Assurance",
+  "to": "ts-common.Assurance"
+ },
+ {
+  "atomId": "atom:relation:common.LeftTicketInfo:dependsOn:Ticket",
+  "from": "common.LeftTicketInfo",
+  "to": "ts-common.LeftTicketInfo"
+ },
+ {
+  "atomId": "atom:relation:common.OrderAlterInfo:dependsOn:Order",
+  "from": "common.OrderAlterInfo",
+  "to": "ts-common.OrderAlterInfo"
+ },
+ {
+  "atomId": "atom:relation:config-controller-configcontroller:depends-on-configservice",
+  "from": "config.controller.ConfigController",
+  "to": "ts-config-service.ConfigController"
+ },
+ {
+  "atomId": "atom:relation:config-service-configserviceimpl:depends-on-configrepository",
+  "from": "config.service.ConfigServiceImpl",
+  "to": "ts-config-service.ConfigServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:config-service-configserviceimpl:implements-configservice",
+  "from": "config.service.ConfigServiceImpl",
+  "to": "ts-config-service.ConfigServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:config-service-configserviceimpl:writes-to-config",
+  "from": "config.service.ConfigServiceImpl",
+  "to": "ts-config-service.ConfigServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:consignprice-consign-price-controller:depends-on-consign-price-service-impl",
+  "from": "consignprice.controller.ConsignPriceController",
+  "to": "ts-consign-price-service.ConsignPriceController"
+ },
+ {
+  "atomId": "atom:relation:fdse-microservice-service-stationserviceimpl:depends-on-station-repository",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:food-service-stationfoodserviceimpl:depends-on-station-food-repository",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:order.service.orderserviceimpl:depends-on-orderrepository",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:train-controller-traincontroller:depends-on-trainservice",
+  "from": "train.controller.TrainController",
+  "to": "ts-train-service.TrainController"
+ },
+ {
+  "atomId": "atom:relation:train-init-initdata:depends-on-trainservice",
+  "from": "train.init.InitData",
+  "to": "ts-train-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:train-service-trainserviceimpl:depends-on-traintyperepository",
+  "from": "train.service.TrainServiceImpl",
+  "to": "ts-train-service.TrainServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:trainfood-controller-trainfoodcontroller:depends-on-trainfoodservice",
+  "from": "trainFood.controller.TrainFoodController",
+  "to": "ts-train-food-service.TrainFoodController"
+ },
+ {
+  "atomId": "atom:relation:trainfood-init-initdata:depends-on-trainfoodservice",
+  "from": "trainFood.init.InitData",
+  "to": "ts-train-food-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:trainfood-service-trainfoodserviceimpl:depends-on-trainfoodrepository",
+  "from": "trainFood.service.TrainFoodServiceImpl",
+  "to": "ts-train-food-service.TrainFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:user-service-impl-userserviceimpl:depends-on-user-repository",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:verifycode-controller-verifycodecontroller:depends-on-verifycodeservice",
+  "from": "verifycode.controller.VerifyCodeController",
+  "to": "ts-verification-code-service.VerifyCodeController"
+ },
+ {
+  "atomId": "atom:relation:waitorder-controller-waitlistordercontroller:depends-on-waitlistorderservice",
+  "from": "waitorder.controller.WaitListOrderController",
+  "to": "ts-wait-order-service.WaitListOrderController"
+ },
+ {
+  "atomId": "atom:relation:waitorder-service-impl-waitlistorderserviceimpl:depends-on-waitlistorderrepository",
+  "from": "waitorder.service.Impl.WaitListOrderServiceImpl",
+  "to": "ts-wait-order-service.WaitListOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:contacts.entity.DocumentType:identified-by-code",
+  "from": "contacts.entity.DocumentType",
+  "to": "ts-contacts-service.DocumentType"
+ },
+ {
+  "atomId": "atom:semantic:ctx-adminbasic-service-proxy-flow:cech-section-money-amount",
+  "from": "ctx:adminbasic-service-proxy-flow",
+  "to": "ts-admin-basic-info-service.ctx:adminbasic-service-proxy-flow"
+ },
+ {
+  "atomId": "atom:component:ts-admin-basic-info-service",
+  "from": "ts-admin-basic-info-service",
+  "to": "ts-admin-basic-info-service.ts-admin-basic-info-service"
+ },
+ {
+  "atomId": "atom:component:ts-admin-order-service",
+  "from": "ts-admin-order-service",
+  "to": "ts-admin-order-service.ts-admin-order-service"
+ },
+ {
+  "atomId": "atom:component:ts-admin-route-service",
+  "from": "ts-admin-route-service",
+  "to": "ts-admin-route-service.ts-admin-route-service"
+ },
+ {
+  "atomId": "atom:relation:ts-admin-basic-info-service:depends-on-nacos-discovery",
+  "from": "ts-admin-basic-info-service",
+  "to": "ts-admin-basic-info-service.ts-admin-basic-info-service"
+ },
+ {
+  "atomId": "atom:relation:ts-admin-order-service:depends-on-nacos-discovery",
+  "from": "ts-admin-order-service",
+  "to": "ts-admin-order-service.ts-admin-order-service"
+ },
+ {
+  "atomId": "atom:relation:ts-admin-route-service:depends-on-nacos-discovery",
+  "from": "ts-admin-route-service",
+  "to": "ts-admin-route-service.ts-admin-route-service"
+ },
+ {
+  "atomId": "atom:authority:admintravel-securityconfig:allows-cross-origin",
+  "from": "admintravel.SecurityConfig",
+  "to": "ts-admin-travel-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:admintravel-securityconfig:permits-unauthenticated",
+  "from": "admintravel.SecurityConfig",
+  "to": "ts-admin-travel-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:admintravel-securityconfig:requires-role",
+  "from": "admintravel.SecurityConfig",
+  "to": "ts-admin-travel-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:adminuser-securityconfig:allows-cross-origin",
+  "from": "adminuser.SecurityConfig",
+  "to": "ts-admin-user-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:adminuser-securityconfig:permits-unauthenticated",
+  "from": "adminuser.SecurityConfig",
+  "to": "ts-admin-user-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:adminuser-securityconfig:requires-role",
+  "from": "adminuser.SecurityConfig",
+  "to": "ts-admin-user-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:assurance-securityconfig:allows-cross-origin",
+  "from": "assurance.SecurityConfig",
+  "to": "ts-assurance-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:assurance-securityconfig:permits-unauthenticated",
+  "from": "assurance.SecurityConfig",
+  "to": "ts-assurance-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:assurance-securityconfig:requires-role",
+  "from": "assurance.SecurityConfig",
+  "to": "ts-assurance-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:admintravel-admintravelcontroller",
+  "from": "admintravel.AdminTravelController",
+  "to": "ts-admin-travel-service.AdminTravelController"
+ },
+ {
+  "atomId": "atom:capability:admintravel-admintravelcontroller:welcome",
+  "from": "admintravel.AdminTravelController",
+  "to": "ts-admin-travel-service.AdminTravelController"
+ },
+ {
+  "atomId": "atom:capability:admintravel-admintravelcontroller:get-all-travels",
+  "from": "admintravel.AdminTravelController",
+  "to": "ts-admin-travel-service.AdminTravelController"
+ },
+ {
+  "atomId": "atom:authority:admintravel-admintravelcontroller:allows-cross-origin-get-all-travels",
+  "from": "admintravel.AdminTravelController",
+  "to": "ts-admin-travel-service.AdminTravelController"
+ },
+ {
+  "atomId": "atom:capability:admintravel-admintravelcontroller:add-travel",
+  "from": "admintravel.AdminTravelController",
+  "to": "ts-admin-travel-service.AdminTravelController"
+ },
+ {
+  "atomId": "atom:capability:admintravel-admintravelcontroller:update-travel",
+  "from": "admintravel.AdminTravelController",
+  "to": "ts-admin-travel-service.AdminTravelController"
+ },
+ {
+  "atomId": "atom:capability:admintravel-admintravelcontroller:delete-travel",
+  "from": "admintravel.AdminTravelController",
+  "to": "ts-admin-travel-service.AdminTravelController"
+ },
+ {
+  "atomId": "atom:relation:admintravel-admintravelcontroller:depends-on",
+  "from": "admintravel.AdminTravelController",
+  "to": "ts-admin-travel-service.AdminTravelController"
+ },
+ {
+  "atomId": "atom:component:adminuser-adminusercontroller",
+  "from": "adminuser.AdminUserController",
+  "to": "ts-admin-user-service.AdminUserController"
+ },
+ {
+  "atomId": "atom:capability:adminuser-adminusercontroller:welcome",
+  "from": "adminuser.AdminUserController",
+  "to": "ts-admin-user-service.AdminUserController"
+ },
+ {
+  "atomId": "atom:capability:adminuser-adminusercontroller:get-all-users",
+  "from": "adminuser.AdminUserController",
+  "to": "ts-admin-user-service.AdminUserController"
+ },
+ {
+  "atomId": "atom:authority:adminuser-adminusercontroller:allows-cross-origin-get-all-users",
+  "from": "adminuser.AdminUserController",
+  "to": "ts-admin-user-service.AdminUserController"
+ },
+ {
+  "atomId": "atom:capability:adminuser-adminusercontroller:add-user",
+  "from": "adminuser.AdminUserController",
+  "to": "ts-admin-user-service.AdminUserController"
+ },
+ {
+  "atomId": "atom:capability:adminuser-adminusercontroller:update-user",
+  "from": "adminuser.AdminUserController",
+  "to": "ts-admin-user-service.AdminUserController"
+ },
+ {
+  "atomId": "atom:capability:adminuser-adminusercontroller:delete-user",
+  "from": "adminuser.AdminUserController",
+  "to": "ts-admin-user-service.AdminUserController"
+ },
+ {
+  "atomId": "atom:relation:adminuser-adminusercontroller:depends-on",
+  "from": "adminuser.AdminUserController",
+  "to": "ts-admin-user-service.AdminUserController"
+ },
+ {
+  "atomId": "atom:component:assurance-assurancecontroller",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:capability:assurance-assurancecontroller:welcome",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:capability:assurance-assurancecontroller:get-all-assurances",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:capability:assurance-assurancecontroller:get-all-assurance-types",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:capability:assurance-assurancecontroller:delete-assurance",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:capability:assurance-assurancecontroller:delete-assurance-by-order-id",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:capability:assurance-assurancecontroller:modify-assurance",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:capability:assurance-assurancecontroller:create-new-assurance",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:capability:assurance-assurancecontroller:get-assurance-by-id",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:capability:assurance-assurancecontroller:find-assurance-by-order-id",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:relation:assurance-assurancecontroller:depends-on",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:authority:assurance-assurancecontroller:allows-cross-origin-all-endpoints",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:semantic:assurance-assurancecontroller:create-new-assurance-http-verb",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:semantic:assurance-assurancecontroller:find-by-order-id-path-naming",
+  "from": "assurance.AssuranceController",
+  "to": "ts-assurance-service.AssuranceController"
+ },
+ {
+  "atomId": "atom:component:admintravel-admintravelservice",
+  "from": "admintravel.AdminTravelService",
+  "to": "ts-admin-travel-service.AdminTravelService"
+ },
+ {
+  "atomId": "atom:component:admintravel-admintravelserviceimpl",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-admin-trip",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-admin-trip",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-station-service",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-train-service",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-route-service",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-trips",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-trips",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:admintravel-admintravelserviceimpl:tripid-routing",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:admintravel-admintravelserviceimpl:status-gates",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:admintravel-admintravelserviceimpl:check-travel-info",
+  "from": "admintravel.AdminTravelServiceImpl",
+  "to": "ts-admin-travel-service.AdminTravelServiceImpl"
+ },
+ {
+  "atomId": "atom:component:admintravel-application-yml",
+  "from": "admintravel.application-yml",
+  "to": "ts-admin-travel-service.application-yml"
+ },
+ {
+  "atomId": "atom:semantic:admintravel-application-yml:service-identity",
+  "from": "admintravel.application-yml",
+  "to": "ts-admin-travel-service.application-yml"
+ },
+ {
+  "atomId": "atom:component:adminuser-application-yml",
+  "from": "adminuser.application-yml",
+  "to": "ts-admin-user-service.application-yml"
+ },
+ {
+  "atomId": "atom:semantic:adminuser-application-yml:service-identity",
+  "from": "adminuser.application-yml",
+  "to": "ts-admin-user-service.application-yml"
+ },
+ {
+  "atomId": "atom:component:adminuser-adminuserservice",
+  "from": "adminuser.AdminUserService",
+  "to": "ts-admin-user-service.AdminUserService"
+ },
+ {
+  "atomId": "atom:component:adminuser-adminuserserviceimpl",
+  "from": "adminuser.AdminUserServiceImpl",
+  "to": "ts-admin-user-service.AdminUserServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-get-users",
+  "from": "adminuser.AdminUserServiceImpl",
+  "to": "ts-admin-user-service.AdminUserServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-delete-user",
+  "from": "adminuser.AdminUserServiceImpl",
+  "to": "ts-admin-user-service.AdminUserServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-put-users",
+  "from": "adminuser.AdminUserServiceImpl",
+  "to": "ts-admin-user-service.AdminUserServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-register",
+  "from": "adminuser.AdminUserServiceImpl",
+  "to": "ts-admin-user-service.AdminUserServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:adminuser-adminuserserviceimpl:status-gates",
+  "from": "adminuser.AdminUserServiceImpl",
+  "to": "ts-admin-user-service.AdminUserServiceImpl"
+ },
+ {
+  "atomId": "atom:authority:adminuser-adminuserserviceimpl:forwards-authorization-header",
+  "from": "adminuser.AdminUserServiceImpl",
+  "to": "ts-admin-user-service.AdminUserServiceImpl"
+ },
+ {
+  "atomId": "atom:component:adminuser-userdto",
+  "from": "adminuser.UserDto",
+  "to": "ts-admin-user-service.UserDto"
+ },
+ {
+  "atomId": "atom:contract:adminuser-userdto:shaped-as",
+  "from": "adminuser.UserDto",
+  "to": "ts-admin-user-service.UserDto"
+ },
+ {
+  "atomId": "atom:semantic:adminuser-userdto:gender-int",
+  "from": "adminuser.UserDto",
+  "to": "ts-admin-user-service.UserDto"
+ },
+ {
+  "atomId": "atom:semantic:adminuser-userdto:documenttype-int",
+  "from": "adminuser.UserDto",
+  "to": "ts-admin-user-service.UserDto"
+ },
+ {
+  "atomId": "atom:component:assurance-assurance",
+  "from": "assurance.Assurance",
+  "to": "ts-assurance-service.Assurance"
+ },
+ {
+  "atomId": "atom:state:assurance-assurance:persists-in",
+  "from": "assurance.Assurance",
+  "to": "ts-assurance-service.Assurance"
+ },
+ {
+  "atomId": "atom:state:assurance-assurance:enum-column",
+  "from": "assurance.Assurance",
+  "to": "ts-assurance-service.Assurance"
+ },
+ {
+  "atomId": "atom:semantic:assurance-assurance:default-ctor-orderid",
+  "from": "assurance.Assurance",
+  "to": "ts-assurance-service.Assurance"
+ },
+ {
+  "atomId": "atom:component:assurance-assurancetype",
+  "from": "assurance.AssuranceType",
+  "to": "ts-assurance-service.AssuranceType"
+ },
+ {
+  "atomId": "atom:semantic:assurance-assurancetype:index-selects-type",
+  "from": "assurance.AssuranceType",
+  "to": "ts-assurance-service.AssuranceType"
+ },
+ {
+  "atomId": "atom:semantic:assurance-assurancetype:price-double",
+  "from": "assurance.AssuranceType",
+  "to": "ts-assurance-service.AssuranceType"
+ },
+ {
+  "atomId": "atom:component:assurance-assurancetypebean",
+  "from": "assurance.AssuranceTypeBean",
+  "to": "ts-assurance-service.AssuranceTypeBean"
+ },
+ {
+  "atomId": "atom:contract:assurance-assurancetypebean:shaped-as",
+  "from": "assurance.AssuranceTypeBean",
+  "to": "ts-assurance-service.AssuranceTypeBean"
+ },
+ {
+  "atomId": "atom:semantic:assurance-assurancetypebean:price-double",
+  "from": "assurance.AssuranceTypeBean",
+  "to": "ts-assurance-service.AssuranceTypeBean"
+ },
+ {
+  "atomId": "atom:component:assurance-plainassurance",
+  "from": "assurance.PlainAssurance",
+  "to": "ts-assurance-service.PlainAssurance"
+ },
+ {
+  "atomId": "atom:contract:assurance-plainassurance:shaped-as",
+  "from": "assurance.PlainAssurance",
+  "to": "ts-assurance-service.PlainAssurance"
+ },
+ {
+  "atomId": "atom:semantic:assurance-plainassurance:typeprice-double",
+  "from": "assurance.PlainAssurance",
+  "to": "ts-assurance-service.PlainAssurance"
+ },
+ {
+  "atomId": "atom:semantic:assurance-pricing-surface:cech-section-money-amount",
+  "from": "ctx:assurance-pricing-surface",
+  "to": "ts-assurance-service.ctx:assurance-pricing-surface"
+ },
+ {
+  "atomId": "atom:component:assurance-initdata",
+  "from": "assurance.InitData",
+  "to": "ts-assurance-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:assurance-initdata:depends-on-service",
+  "from": "assurance.InitData",
+  "to": "ts-assurance-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:assurance-initdata:depends-on-repository",
+  "from": "assurance.InitData",
+  "to": "ts-assurance-service.InitData"
+ },
+ {
+  "atomId": "atom:semantic:assurance-initdata:inert-seed-routine",
+  "from": "assurance.InitData",
+  "to": "ts-assurance-service.InitData"
+ },
+ {
+  "atomId": "atom:component:admintravel-securityconfig",
+  "from": "admintravel.SecurityConfig",
+  "to": "ts-admin-travel-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:adminuser-securityconfig",
+  "from": "adminuser.SecurityConfig",
+  "to": "ts-admin-user-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:assurance-securityconfig",
+  "from": "assurance.SecurityConfig",
+  "to": "ts-assurance-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:basic-securityconfig:allowscrossorigin",
+  "from": "basic.SecurityConfig",
+  "to": "ts-basic-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+  "from": "basic.SecurityConfig",
+  "to": "ts-basic-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+  "from": "cancel.CancelController",
+  "to": "ts-cancel-service.CancelController"
+ },
+ {
+  "atomId": "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+  "from": "cancel.SecurityConfig",
+  "to": "ts-cancel-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:cancel-securityconfig:requiresrole-api",
+  "from": "cancel.SecurityConfig",
+  "to": "ts-cancel-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:capability:auth-tokenserviceimpl:handlescommand-issuetoken",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:auth-userserviceimpl:handlescommand-createdefaultauthuser",
+  "from": "auth.UserServiceImpl",
+  "to": "ts-auth-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:auth-userserviceimpl:handlescommand-deletebyuserid",
+  "from": "auth.UserServiceImpl",
+  "to": "ts-auth-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:auth-tokenserviceimpl:ensures-tokendto",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:auth-tokenserviceimpl:requires-verificationcode",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:cancel-getaccountbyidinfo:shapedas",
+  "from": "cancel.GetAccountByIdInfo",
+  "to": "ts-cancel-service.GetAccountByIdInfo"
+ },
+ {
+  "atomId": "atom:contract:cancel-getaccountbyidresult:shapedas",
+  "from": "cancel.GetAccountByIdResult",
+  "to": "ts-cancel-service.GetAccountByIdResult"
+ },
+ {
+  "atomId": "atom:contract:cancel-getorderbyidinfo:shapedas",
+  "from": "cancel.GetOrderByIdInfo",
+  "to": "ts-cancel-service.GetOrderByIdInfo"
+ },
+ {
+  "atomId": "atom:contract:common-swaggerconfig:requires-controllerpackage",
+  "from": "common.SwaggerConfig",
+  "to": "ts-common.SwaggerConfig"
+ },
+ {
+  "atomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-drawbackmoney",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-sendemail",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromotherorder",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromorder",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:auth-tokenserviceimpl:calls-jwtprovider-createtoken",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:auth-tokenserviceimpl:calls-userrepository-findbyusername",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:auth-tokenserviceimpl:calls-verificationcodeservice",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:auth-userserviceimpl:dependson-passwordencoder",
+  "from": "auth.UserServiceImpl",
+  "to": "ts-auth-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:basic-basicserviceimpl:calls-priceservice",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:basic-basicserviceimpl:calls-routeservice",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:basic-basicserviceimpl:calls-stationservice",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:basic-basicserviceimpl:calls-trainservice",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:cancel-cancelserviceimpl:calls-insidepaymentservice",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:cancel-cancelserviceimpl:calls-notificationservice",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:cancel-cancelserviceimpl:calls-orderotherservice",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:cancel-cancelserviceimpl:calls-orderservice",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:cancel-cancelserviceimpl:calls-userservice",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:auth-tokenserviceimpl:statusgates-responseenvelope",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:basic-basicserviceimpl:identifiedby-stationlookup",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:basic-basicserviceimpl:statusgates-responseenvelope",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:cancel-cancelserviceimpl:meansinuse-orderidparamcarriesaccountid",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:cancel-cancelserviceimpl:identifiedby-orderlookupfallback",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:cancel-cancelserviceimpl:statusgates-responseenvelope",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:ctx-basic-service-travel-query:cech-section-moneyamount",
+  "from": "ctx:basic-service-travel-query",
+  "to": "ts-basic-service.ctx:basic-service-travel-query"
+ },
+ {
+  "atomId": "atom:semantic:ctx-cancel-service-order-cancellation-flow:cech-section-moneyamount",
+  "from": "ctx:cancel-service-order-cancellation-flow",
+  "to": "ts-cancel-service.ctx:cancel-service-order-cancellation-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-cancel-service-order-cancellation-flow:cech-section-orderstatuscode",
+  "from": "ctx:cancel-service-order-cancellation-flow",
+  "to": "ts-cancel-service.ctx:cancel-service-order-cancellation-flow"
+ },
+ {
+  "atomId": "atom:state:cancel-order:transitionsto-cancel",
+  "from": "cancel.Order",
+  "to": "ts-cancel-service.Order"
+ },
+ {
+  "atomId": "atom:authority:cancel-securityconfig:allowscrossorigin",
+  "from": "cancel.SecurityConfig",
+  "to": "ts-cancel-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:capability:auth-userserviceimpl:servesquery-getalluser",
+  "from": "auth.UserServiceImpl",
+  "to": "ts-auth-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:basic-basicserviceimpl:servesquery-queryforstationid",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:basic-basicserviceimpl:servesquery-queryfortravel",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:basic-basicserviceimpl:servesquery-queryfortravels",
+  "from": "basic.BasicServiceImpl",
+  "to": "ts-basic-service.BasicServiceImpl"
+ },
+ {
+  "atomId": "atom:component:cancel-getaccountbyidinfo",
+  "from": "cancel.GetAccountByIdInfo",
+  "to": "ts-cancel-service.GetAccountByIdInfo"
+ },
+ {
+  "atomId": "atom:component:cancel-getaccountbyidresult",
+  "from": "cancel.GetAccountByIdResult",
+  "to": "ts-cancel-service.GetAccountByIdResult"
+ },
+ {
+  "atomId": "atom:component:cancel-getorderbyidinfo",
+  "from": "cancel.GetOrderByIdInfo",
+  "to": "ts-cancel-service.GetOrderByIdInfo"
+ },
+ {
+  "atomId": "atom:contract:cancel-cancelserviceimpl:requires-forwardedauthorizationheader",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:auth-tokenserviceimpl:calls-authenticationmanager-authenticate",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:auth-tokenserviceimpl:dependson-jwtprovider",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:auth-tokenserviceimpl:meansinuse-credentialvalueinlog",
+  "from": "auth.TokenServiceImpl",
+  "to": "ts-auth-service.TokenServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:auth-userserviceimpl:meansinuse-saveusernoop",
+  "from": "auth.UserServiceImpl",
+  "to": "ts-auth-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:cancel-cancelcontroller:statusgates-divergingbranch",
+  "from": "cancel.CancelController",
+  "to": "ts-cancel-service.CancelController"
+ },
+ {
+  "atomId": "atom:semantic:cancel-cancelserviceimpl:meansinuse-notifyinfobuiltbutsendnotinvoked",
+  "from": "cancel.CancelServiceImpl",
+  "to": "ts-cancel-service.CancelServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:ctx-cancel-service-refund-calculation:cech-section-moneyamount",
+  "from": "ctx:cancel-service-refund-calculation",
+  "to": "ts-cancel-service.ctx:cancel-service-refund-calculation"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-order-status-vocabulary:cech-section-order-status-code-enum-definition",
+  "from": "ctx:ts-common-order-status-vocabulary",
+  "to": "ts-common.ctx:ts-common-order-status-vocabulary"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-id-key-representation:identified-by-consign-keys-string",
+  "from": "ctx:ts-common-id-key-representation",
+  "to": "ts-common.ctx:ts-common-id-key-representation"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-id-key-representation:identified-by-contacts-price-config-keys-uuid",
+  "from": "ctx:ts-common-id-key-representation",
+  "to": "ts-common.ctx:ts-common-id-key-representation"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-id-key-representation:identified-by-food-order-keys-string",
+  "from": "ctx:ts-common-id-key-representation",
+  "to": "ts-common.ctx:ts-common-id-key-representation"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-id-key-representation:identified-by-payment-difference-info-order-id-string",
+  "from": "ctx:ts-common-id-key-representation",
+  "to": "ts-common.ctx:ts-common-id-key-representation"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-double-hardcoded-literal",
+  "from": "ctx:ts-common-money-amount-representation",
+  "to": "ts-common.ctx:ts-common-money-amount-representation"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-double-runtime-field",
+  "from": "ctx:ts-common-money-amount-representation",
+  "to": "ts-common.ctx:ts-common-money-amount-representation"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-string-order-price",
+  "from": "ctx:ts-common-money-amount-representation",
+  "to": "ts-common.ctx:ts-common-money-amount-representation"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-string-no-default",
+  "from": "ctx:ts-common-money-amount-representation",
+  "to": "ts-common.ctx:ts-common-money-amount-representation"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-order-status-vocabulary:cech-section-order-status-code-default-assignment",
+  "from": "ctx:ts-common-order-status-vocabulary",
+  "to": "ts-common.ctx:ts-common-order-status-vocabulary"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-entity-price-double-convention:cech-section-money-amount",
+  "from": "ctx:ts-common-entity-price-double-convention",
+  "to": "ts-common.ctx:ts-common-entity-price-double-convention"
+ },
+ {
+  "atomId": "atom:semantic:ts-common-entity-price-string-convention:cech-section-money-amount",
+  "from": "ctx:ts-common-entity-price-string-convention",
+  "to": "ts-common.ctx:ts-common-entity-price-string-convention"
+ },
+ {
+  "atomId": "atom:semantic:common-entity-price-as-string:cech-section-money-amount",
+  "from": "ctx:common-entity-price-as-string",
+  "to": "ts-common.ctx:common-entity-price-as-string"
+ },
+ {
+  "atomId": "atom:semantic:common-entity-price-as-double:cech-section-money-amount",
+  "from": "ctx:common-entity-price-as-double",
+  "to": "ts-common.ctx:common-entity-price-as-double"
+ },
+ {
+  "atomId": "atom:semantic:ctx-ts-common-shared-entities:cech-section-money-amount",
+  "from": "ctx:ts-common-shared-entities",
+  "to": "ts-common.ctx:ts-common-shared-entities"
+ },
+ {
+  "atomId": "atom:semantic:consign-price-config-crud:cech-section-money-amount",
+  "from": "ctx:consign-price-config-crud",
+  "to": "ts-consign-price-service.ctx:consign-price-config-crud"
+ },
+ {
+  "atomId": "atom:semantic:consign-record-lifecycle:cech-section-money-amount",
+  "from": "ctx:consign-record-lifecycle",
+  "to": "ts-consign-service.ctx:consign-record-lifecycle"
+ },
+ {
+  "atomId": "atom:semantic:ctx-consignprice-price-quote-computation:cech-section-money-amount",
+  "from": "ctx:consignprice-price-quote-computation",
+  "to": "ts-consign-price-service.ctx:consignprice-price-quote-computation"
+ },
+ {
+  "atomId": "atom:authority:contacts.config.SecurityConfig:allows-cross-origin",
+  "from": "contacts.config.SecurityConfig",
+  "to": "ts-contacts-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:contacts.config.SecurityConfig:permits-unauthenticated",
+  "from": "contacts.config.SecurityConfig",
+  "to": "ts-contacts-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:contacts.config.SecurityConfig:requires-role",
+  "from": "contacts.config.SecurityConfig",
+  "to": "ts-contacts-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:contacts.controller.ContactsController:allows-cross-origin",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:authority:execute.config.SecurityConfig:allows-cross-origin",
+  "from": "execute.config.SecurityConfig",
+  "to": "ts-execute-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:execute.config.SecurityConfig:permits-unauthenticated",
+  "from": "execute.config.SecurityConfig",
+  "to": "ts-execute-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:execute.config.SecurityConfig:requires-role",
+  "from": "execute.config.SecurityConfig",
+  "to": "ts-execute-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:execute.controller.ExecuteControlller:allows-cross-origin",
+  "from": "execute.controller.ExecuteControlller",
+  "to": "ts-execute-service.ExecuteControlller"
+ },
+ {
+  "atomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-delete-contacts-by-id",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-account-id",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-welcome",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-id",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts-admin",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-put-contacts",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:capability:delivery.mq.RabbitReceive:handles-command-food-delivery-queue",
+  "from": "delivery.mq.RabbitReceive",
+  "to": "ts-delivery-service.RabbitReceive"
+ },
+ {
+  "atomId": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-collect-ticket",
+  "from": "execute.controller.ExecuteControlller",
+  "to": "ts-execute-service.ExecuteControlller"
+ },
+ {
+  "atomId": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-execute-ticket",
+  "from": "execute.controller.ExecuteControlller",
+  "to": "ts-execute-service.ExecuteControlller"
+ },
+ {
+  "atomId": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-welcome",
+  "from": "execute.controller.ExecuteControlller",
+  "to": "ts-execute-service.ExecuteControlller"
+ },
+ {
+  "atomId": "atom:contract:contacts.entity.Contacts:unique-account-document-index",
+  "from": "contacts.entity.Contacts",
+  "to": "ts-contacts-service.Contacts"
+ },
+ {
+  "atomId": "atom:contract:contacts.repository.ContactsRepository:native-lookup-shape",
+  "from": "contacts.repository.ContactsRepository",
+  "to": "ts-contacts-service.ContactsRepository"
+ },
+ {
+  "atomId": "atom:contract:delivery.mq.RabbitReceive:payload-null-checked-before-persist",
+  "from": "delivery.mq.RabbitReceive",
+  "to": "ts-delivery-service.RabbitReceive"
+ },
+ {
+  "atomId": "atom:contract:delivery.repository.DeliveryRepository:lookup-by-order-id",
+  "from": "delivery.repository.DeliveryRepository",
+  "to": "ts-delivery-service.DeliveryRepository"
+ },
+ {
+  "atomId": "atom:relation:contacts.controller.ContactsController:depends-on-contacts-service",
+  "from": "contacts.controller.ContactsController",
+  "to": "ts-contacts-service.ContactsController"
+ },
+ {
+  "atomId": "atom:relation:contacts.init.InitData:depends-on-contacts-service",
+  "from": "contacts.init.InitData",
+  "to": "ts-contacts-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:contacts.service.ContactsServiceImpl:depends-on-contacts-repository",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:contacts.service.ContactsServiceImpl:implements-contacts-service",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:delivery.mq.RabbitReceive:depends-on-queues",
+  "from": "delivery.mq.RabbitReceive",
+  "to": "ts-delivery-service.RabbitReceive"
+ },
+ {
+  "atomId": "atom:relation:delivery.mq.RabbitReceive:depends-on-delivery-repository",
+  "from": "delivery.mq.RabbitReceive",
+  "to": "ts-delivery-service.RabbitReceive"
+ },
+ {
+  "atomId": "atom:relation:execute.controller.ExecuteControlller:depends-on-execute-service",
+  "from": "execute.controller.ExecuteControlller",
+  "to": "ts-execute-service.ExecuteControlller"
+ },
+ {
+  "atomId": "atom:state:contacts.entity.Contacts:persists-in-repository",
+  "from": "contacts.entity.Contacts",
+  "to": "ts-contacts-service.Contacts"
+ },
+ {
+  "atomId": "atom:state:delivery.entity.Delivery:persists-in-repository",
+  "from": "delivery.entity.Delivery",
+  "to": "ts-delivery-service.Delivery"
+ },
+ {
+  "atomId": "atom:state:ts-consign-service:persists-in-mysql",
+  "from": "ts-consign-service",
+  "to": "ts-consign-service.ts-consign-service"
+ },
+ {
+  "atomId": "atom:authority:contacts.config.SecurityConfig:checks-permission-jwt-filter",
+  "from": "contacts.config.SecurityConfig",
+  "to": "ts-contacts-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:execute.config.SecurityConfig:checks-permission-jwt-filter",
+  "from": "execute.config.SecurityConfig",
+  "to": "ts-execute-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:effect:contacts.service.ContactsServiceImpl:writes-to-contacts-store-delete",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:contacts.service.ContactsServiceImpl:writes-to-contacts-store-create",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:delivery.mq.RabbitReceive:writes-to-delivery-store",
+  "from": "delivery.mq.RabbitReceive",
+  "to": "ts-delivery-service.RabbitReceive"
+ },
+ {
+  "atomId": "atom:effect:ts-delivery-service:calls-provider-rabbitmq",
+  "from": "ts-delivery-service",
+  "to": "ts-delivery-service.ts-delivery-service"
+ },
+ {
+  "atomId": "atom:relation:contacts.config.SecurityConfig:depends-on-jwt-filter",
+  "from": "contacts.config.SecurityConfig",
+  "to": "ts-contacts-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:relation:execute.config.SecurityConfig:depends-on-jwt-filter",
+  "from": "execute.config.SecurityConfig",
+  "to": "ts-execute-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:semantic:contacts.service.ContactsServiceImpl:create-contacts-status-gates",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:contacts.service.ContactsServiceImpl:create-status-gates",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:contacts.service.ContactsServiceImpl:modify-status-gates",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:contacts.service.ContactsServiceImpl:find-contacts-by-id-status-gates",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:contacts.service.ContactsServiceImpl:get-all-contacts-status-gates",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:contacts.service.ContactsServiceImpl:delete-status-gates",
+  "from": "contacts.service.ContactsServiceImpl",
+  "to": "ts-contacts-service.ContactsServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:delivery.mq.RabbitReceive:process-means-in-use",
+  "from": "delivery.mq.RabbitReceive",
+  "to": "ts-delivery-service.RabbitReceive"
+ },
+ {
+  "atomId": "atom:state:ts-contacts-service:persists-in-mysql",
+  "from": "ts-contacts-service",
+  "to": "ts-contacts-service.ts-contacts-service"
+ },
+ {
+  "atomId": "atom:state:ts-delivery-service:persists-in-mysql",
+  "from": "ts-delivery-service",
+  "to": "ts-delivery-service.ts-delivery-service"
+ },
+ {
+  "atomId": "atom:semantic:ctx-execute-service-ticket-flow:cech-section-order-status-code",
+  "from": "ctx:execute-service-ticket-flow",
+  "to": "ts-execute-service.ctx:execute-service-ticket-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-food-delivery-order-lifecycle:cech-section-money-amount",
+  "from": "ctx:food-delivery-order-lifecycle",
+  "to": "ts-food-delivery-service.ctx:food-delivery-order-lifecycle"
+ },
+ {
+  "atomId": "atom:semantic:ts-food-service-order-lifecycle-cech-section-money-amount",
+  "from": "ctx:ts-food-service-order-lifecycle",
+  "to": "ts-food-service.ctx:ts-food-service-order-lifecycle"
+ },
+ {
+  "atomId": "atom:semantic:ts-inside-payment-money-boundary-cech-section-money-amount",
+  "from": "ctx:ts-inside-payment-money-boundary",
+  "to": "ts-inside-payment-service.ctx:ts-inside-payment-money-boundary"
+ },
+ {
+  "atomId": "atom:semantic:ts-inside-payment-service-pay-flow:cech-section-order-status-code-literal",
+  "from": "ctx:ts-inside-payment-service-pay-flow",
+  "to": "ts-inside-payment-service.ctx:ts-inside-payment-service-pay-flow"
+ },
+ {
+  "atomId": "atom:semantic:ts-inside-payment-service-balance-account:cech-section-money-amount",
+  "from": "ctx:ts-inside-payment-service-balance-account",
+  "to": "ts-inside-payment-service.ctx:ts-inside-payment-service-balance-account"
+ },
+ {
+  "atomId": "atom:semantic:ts-inside-payment-service-pay-flow:cech-section-money-amount",
+  "from": "ctx:ts-inside-payment-service-pay-flow",
+  "to": "ts-inside-payment-service.ctx:ts-inside-payment-service-pay-flow"
+ },
+ {
+  "atomId": "atom:semantic:ts-notification-service-mail-dispatch:cech-section-money-amount",
+  "from": "ctx:ts-notification-service-mail-dispatch",
+  "to": "ts-notification-service.ctx:ts-notification-service-mail-dispatch"
+ },
+ {
+  "atomId": "atom:semantic:inside-payment-balance-query:cech-section-money-amount-reassigned",
+  "from": "ctx:inside-payment-balance-query",
+  "to": "ts-inside-payment-service.ctx:inside-payment-balance-query"
+ },
+ {
+  "atomId": "atom:semantic:inside-payment-balance-query:cech-section-money-amount-discarded",
+  "from": "ctx:inside-payment-balance-query",
+  "to": "ts-inside-payment-service.ctx:inside-payment-balance-query"
+ },
+ {
+  "atomId": "atom:semantic:inside-payment-difference-flow:cech-section-money-amount-discarded",
+  "from": "ctx:inside-payment-difference-flow",
+  "to": "ts-inside-payment-service.ctx:inside-payment-difference-flow"
+ },
+ {
+  "atomId": "atom:semantic:inside-payment-pay-flow:cech-section-money-amount",
+  "from": "ctx:inside-payment-pay-flow",
+  "to": "ts-inside-payment-service.ctx:inside-payment-pay-flow"
+ },
+ {
+  "atomId": "atom:semantic:inside-payment-pay-flow:cech-section-order-status-code-gate",
+  "from": "ctx:inside-payment-pay-flow",
+  "to": "ts-inside-payment-service.ctx:inside-payment-pay-flow"
+ },
+ {
+  "atomId": "atom:component:ts-notification-service",
+  "from": "ts-notification-service",
+  "to": "ts-notification-service.ts-notification-service"
+ },
+ {
+  "atomId": "atom:component:ts-order-other-service",
+  "from": "ts-order-other-service",
+  "to": "ts-order-other-service.ts-order-other-service"
+ },
+ {
+  "atomId": "atom:relation:ts-notification-service:dependson-nacos-discovery",
+  "from": "ts-notification-service",
+  "to": "ts-notification-service.ts-notification-service"
+ },
+ {
+  "atomId": "atom:semantic:ctx-order-other-service-order-lifecycle.cech-section-money-amount",
+  "from": "ctx:order-other-service-order-lifecycle",
+  "to": "ts-order-other-service.ctx:order-other-service-order-lifecycle"
+ },
+ {
+  "atomId": "atom:semantic:ctx-order-other-service-order-lifecycle.cech-section-order-status-code",
+  "from": "ctx:order-other-service-order-lifecycle",
+  "to": "ts-order-other-service.ctx:order-other-service-order-lifecycle"
+ },
+ {
+  "atomId": "atom:authority:com.trainticket.config.securityconfig:allows-cross-origin",
+  "from": "com.trainticket.config.SecurityConfig",
+  "to": "ts-payment-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:com.trainticket.config.securityconfig:permits-unauthenticated-swagger-paths",
+  "from": "com.trainticket.config.SecurityConfig",
+  "to": "ts-payment-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:com.trainticket.config.securityconfig:requires-role-on-paymentservice-path",
+  "from": "com.trainticket.config.SecurityConfig",
+  "to": "ts-payment-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:com.trainticket.config.securityconfig:checks-permission-via-jwt-filter",
+  "from": "com.trainticket.config.SecurityConfig",
+  "to": "ts-payment-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-query",
+  "from": "com.trainticket.controller.PaymentController",
+  "to": "ts-payment-service.PaymentController"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-welcome",
+  "from": "com.trainticket.controller.PaymentController",
+  "to": "ts-payment-service.PaymentController"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-pay",
+  "from": "com.trainticket.controller.PaymentController",
+  "to": "ts-payment-service.PaymentController"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-add-money",
+  "from": "com.trainticket.controller.PaymentController",
+  "to": "ts-payment-service.PaymentController"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.repository.addmoneyrepository:persists-money-entities",
+  "from": "com.trainticket.repository.AddMoneyRepository",
+  "to": "ts-payment-service.AddMoneyRepository"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-order-id",
+  "from": "com.trainticket.repository.PaymentRepository",
+  "to": "ts-payment-service.PaymentRepository"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-user-id",
+  "from": "com.trainticket.repository.PaymentRepository",
+  "to": "ts-payment-service.PaymentRepository"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-add-money",
+  "from": "com.trainticket.service.PaymentServiceImpl",
+  "to": "ts-payment-service.PaymentServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-pay",
+  "from": "com.trainticket.service.PaymentServiceImpl",
+  "to": "ts-payment-service.PaymentServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:com.trainticket.service.paymentserviceimpl:serves-query-list-payments",
+  "from": "com.trainticket.service.PaymentServiceImpl",
+  "to": "ts-payment-service.PaymentServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:order.repository.orderrepository:serves-query-by-account-id",
+  "from": "order.repository.OrderRepository",
+  "to": "ts-order-service.OrderRepository"
+ },
+ {
+  "atomId": "atom:capability:order.repository.orderrepository:serves-query-by-travel-date-and-train-number",
+  "from": "order.repository.OrderRepository",
+  "to": "ts-order-service.OrderRepository"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderserviceimpl:handles-command-alter-order",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderserviceimpl:handles-command-create",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderserviceimpl:serves-query-orders-with-filter-flags",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderserviceimpl:handles-command-cancel-order",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderserviceimpl:handles-command-pay-order",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:order.entity.orderalterinfo:shaped-as-alter-request",
+  "from": "order.entity.OrderAlterInfo",
+  "to": "ts-order-service.OrderAlterInfo"
+ },
+ {
+  "atomId": "atom:effect:order.service.orderserviceimpl:calls-provider-station-service",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:com.trainticket.init.initdata:depends-on-paymentservice",
+  "from": "com.trainticket.init.InitData",
+  "to": "ts-payment-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:order.init.initdata:depends-on-orderservice",
+  "from": "order.init.InitData",
+  "to": "ts-order-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:com.trainticket.service.paymentserviceimpl:depends-on-paymentrepository",
+  "from": "com.trainticket.service.PaymentServiceImpl",
+  "to": "ts-payment-service.PaymentServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:com.trainticket.service.paymentserviceimpl:depends-on-addmoneyrepository",
+  "from": "com.trainticket.service.PaymentServiceImpl",
+  "to": "ts-payment-service.PaymentServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderserviceimpl:serves-query-order-price",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderserviceimpl:serves-query-sold-tickets",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:com.trainticket.entity.money:money-field-string-typed",
+  "from": "com.trainticket.entity.Money",
+  "to": "ts-payment-service.Money"
+ },
+ {
+  "atomId": "atom:semantic:com.trainticket.entity.payment:price-field-string-typed",
+  "from": "com.trainticket.entity.Payment",
+  "to": "ts-payment-service.Payment"
+ },
+ {
+  "atomId": "atom:semantic:com.trainticket.init.initdata:price-set-via-string-literal",
+  "from": "com.trainticket.init.InitData",
+  "to": "ts-payment-service.InitData"
+ },
+ {
+  "atomId": "atom:semantic:com.trainticket.service.paymentserviceimpl:initpayment-log-level-per-branch",
+  "from": "com.trainticket.service.PaymentServiceImpl",
+  "to": "ts-payment-service.PaymentServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:com.trainticket.service.paymentserviceimpl:response-envelope-status-branch",
+  "from": "com.trainticket.service.PaymentServiceImpl",
+  "to": "ts-payment-service.PaymentServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-money-amount",
+  "from": "ctx:order-service-order-lifecycle",
+  "to": "ts-order-service.ctx:order-service-order-lifecycle"
+ },
+ {
+  "atomId": "atom:semantic:ctx-order-service-order-lifecycle:cech-section-order-status-code",
+  "from": "ctx:order-service-order-lifecycle",
+  "to": "ts-order-service.ctx:order-service-order-lifecycle"
+ },
+ {
+  "atomId": "atom:semantic:ctx-payment-service-payment-flow:cech-section-money-amount",
+  "from": "ctx:payment-service-payment-flow",
+  "to": "ts-payment-service.ctx:payment-service-payment-flow"
+ },
+ {
+  "atomId": "atom:semantic:order.entity.orderinfo:enable-flags-gate-query-predicates",
+  "from": "order.entity.OrderInfo",
+  "to": "ts-order-service.OrderInfo"
+ },
+ {
+  "atomId": "atom:semantic:order.entity.orderinfo:disable-state-query-sentinel",
+  "from": "order.entity.OrderInfo",
+  "to": "ts-order-service.OrderInfo"
+ },
+ {
+  "atomId": "atom:semantic:order.entity.order:status-field-default-via-enum-code",
+  "from": "order.entity.Order",
+  "to": "ts-order-service.Order"
+ },
+ {
+  "atomId": "atom:semantic:order.entity.order:price-field-string-typed",
+  "from": "order.entity.Order",
+  "to": "ts-order-service.Order"
+ },
+ {
+  "atomId": "atom:semantic:order.init.initdata:status-set-via-raw-int-literal",
+  "from": "order.init.InitData",
+  "to": "ts-order-service.InitData"
+ },
+ {
+  "atomId": "atom:semantic:order.init.initdata:price-set-via-string-literal",
+  "from": "order.init.InitData",
+  "to": "ts-order-service.InitData"
+ },
+ {
+  "atomId": "atom:semantic:order.service.orderserviceimpl:sold-tickets-excludes-changed-orders",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:order.service.orderserviceimpl:response-envelope-status-branch",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:state:order.entity.order:persists-in-orders-table",
+  "from": "order.entity.Order",
+  "to": "ts-order-service.Order"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderservice:handles-command-add-new-order",
+  "from": "order.service.OrderService",
+  "to": "ts-order-service.OrderService"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderservice:handles-command-cancel-order-declared",
+  "from": "order.service.OrderService",
+  "to": "ts-order-service.OrderService"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderservice:handles-command-delete-order",
+  "from": "order.service.OrderService",
+  "to": "ts-order-service.OrderService"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderservice:handles-command-modify-order",
+  "from": "order.service.OrderService",
+  "to": "ts-order-service.OrderService"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderservice:handles-command-pay-order-declared",
+  "from": "order.service.OrderService",
+  "to": "ts-order-service.OrderService"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderservice:handles-command-update-order",
+  "from": "order.service.OrderService",
+  "to": "ts-order-service.OrderService"
+ },
+ {
+  "atomId": "atom:capability:order.service.orderservice:serves-query-find-order-by-id",
+  "from": "order.service.OrderService",
+  "to": "ts-order-service.OrderService"
+ },
+ {
+  "atomId": "atom:contract:com.trainticket.entity.payment:requires-non-null-fields",
+  "from": "com.trainticket.entity.Payment",
+  "to": "ts-payment-service.Payment"
+ },
+ {
+  "atomId": "atom:semantic:com.trainticket.service.paymentserviceimpl:pay-branch-selection",
+  "from": "com.trainticket.service.PaymentServiceImpl",
+  "to": "ts-payment-service.PaymentServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:order.service.orderserviceimpl:valid-order-count-inclusion",
+  "from": "order.service.OrderServiceImpl",
+  "to": "ts-order-service.OrderServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:ctx-ts-preserve-other-service-preserve-flow:cech-section-order-status-code",
+  "from": "ctx:ts-preserve-other-service-preserve-flow",
+  "to": "ts-preserve-other-service.ctx:ts-preserve-other-service-preserve-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-ts-preserve-service-preserve-flow:cech-section-order-status-code",
+  "from": "ctx:ts-preserve-service-preserve-flow",
+  "to": "ts-preserve-service.ctx:ts-preserve-service-preserve-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-ts-price-service-price-management:cech-section-money-amount",
+  "from": "ctx:ts-price-service-price-management",
+  "to": "ts-price-service.ctx:ts-price-service-price-management"
+ },
+ {
+  "atomId": "atom:semantic:common-orderticketsinfo:meansinuse-assurance-gates-purchase",
+  "from": "ts-common.OrderTicketsInfo",
+  "to": "ts-preserve-other-service.OrderTicketsInfo"
+ },
+ {
+  "atomId": "atom:semantic:common-orderticketsinfo:meansinuse-foodtype-gates-order",
+  "from": "ts-common.OrderTicketsInfo",
+  "to": "ts-preserve-other-service.OrderTicketsInfo"
+ },
+ {
+  "atomId": "atom:semantic:common-orderticketsinfo:meansinuse-consigneename-gates-consign",
+  "from": "ts-common.OrderTicketsInfo",
+  "to": "ts-preserve-other-service.OrderTicketsInfo"
+ },
+ {
+  "atomId": "atom:semantic:common-order:statusgates-notpaid-enum-code-at-creation",
+  "from": "ts-common.Order",
+  "to": "ts-preserve-other-service.Order"
+ },
+ {
+  "atomId": "atom:semantic:common-response:statusgates-early-return-branch",
+  "from": "ts-common.Response",
+  "to": "ts-preserve-other-service.Response"
+ },
+ {
+  "atomId": "atom:semantic:common-response:statusgates-secondary-success-branch",
+  "from": "ts-common.Response",
+  "to": "ts-preserve-other-service.Response"
+ },
+ {
+  "atomId": "atom:semantic:common-seatclass:statusgates-seat-allocation-branch",
+  "from": "ts-common.SeatClass",
+  "to": "ts-preserve-other-service.SeatClass"
+ },
+ {
+  "atomId": "atom:semantic:common-travelresult:meansinuse-price-map-lookup-by-seatclass-label",
+  "from": "ts-common.TravelResult",
+  "to": "ts-preserve-other-service.TravelResult"
+ },
+ {
+  "atomId": "atom:semantic:ctx-preserve-other-service-order-flow:cech-section-money-amount",
+  "from": "ctx:preserve-other-service-order-flow",
+  "to": "ts-preserve-other-service.ctx:preserve-other-service-order-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-preserve-service-order-flow:cech-section-money-amount",
+  "from": "ctx:preserve-service-order-flow",
+  "to": "ts-preserve-service.ctx:preserve-service-order-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-rebook-rebook-flow:cech-section-money-amount",
+  "from": "ctx:rebook-rebook-flow",
+  "to": "ts-rebook-service.ctx:rebook-rebook-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-rebook-rebook-flow:cech-section-order-status-code",
+  "from": "ctx:rebook-rebook-flow",
+  "to": "ts-rebook-service.ctx:rebook-rebook-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-route-plan-search-flow:cech-section-money-amount",
+  "from": "ctx:route-plan-search-flow",
+  "to": "ts-route-plan-service.ctx:route-plan-search-flow"
+ },
+ {
+  "atomId": "atom:authority:seat.config.security-config:allows-cross-origin",
+  "from": "seat.config.SecurityConfig",
+  "to": "ts-seat-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:seat.config.security-config:checks-permission-jwt-filter",
+  "from": "seat.config.SecurityConfig",
+  "to": "ts-seat-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:seat.config.security-config:permits-unauthenticated-swagger",
+  "from": "seat.config.SecurityConfig",
+  "to": "ts-seat-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:seat.config.security-config:requires-role-on-seats-post",
+  "from": "seat.config.SecurityConfig",
+  "to": "ts-seat-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:seat.controller.seat-controller:allows-cross-origin",
+  "from": "seat.controller.SeatController",
+  "to": "ts-seat-service.SeatController"
+ },
+ {
+  "atomId": "atom:authority:security.config.security-config:allows-cross-origin",
+  "from": "security.config.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:security.config.security-config:checks-permission-jwt-filter",
+  "from": "security.config.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:security.config.security-config:permits-unauthenticated-swagger",
+  "from": "security.config.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:security.config.security-config:requires-role-on-service-root",
+  "from": "security.config.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:security.controller.security-controller:allows-cross-origin",
+  "from": "security.controller.SecurityController",
+  "to": "ts-security-service.SecurityController"
+ },
+ {
+  "atomId": "atom:capability:route.repository.route-repository:removes-route-by-id",
+  "from": "route.repository.RouteRepository",
+  "to": "ts-route-service.RouteRepository"
+ },
+ {
+  "atomId": "atom:capability:route.repository.route-repository:finds-by-ids",
+  "from": "route.repository.RouteRepository",
+  "to": "ts-route-service.RouteRepository"
+ },
+ {
+  "atomId": "atom:capability:route.repository.route-repository:finds-by-start-and-end-station",
+  "from": "route.repository.RouteRepository",
+  "to": "ts-route-service.RouteRepository"
+ },
+ {
+  "atomId": "atom:capability:route.service.route-service-impl:create-and-modify",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:route.service.route-service-impl:delete-route",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:route.service.route-service-impl:get-all-routes",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:route.service.route-service-impl:get-route-by-id",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:route.service.route-service-impl:get-route-by-ids",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:route.service.route-service-impl:get-route-by-start-and-end",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:seat.controller.seat-controller:home",
+  "from": "seat.controller.SeatController",
+  "to": "ts-seat-service.SeatController"
+ },
+ {
+  "atomId": "atom:capability:seat.controller.seat-controller:create",
+  "from": "seat.controller.SeatController",
+  "to": "ts-seat-service.SeatController"
+ },
+ {
+  "atomId": "atom:capability:seat.controller.seat-controller:get-left-ticket-of-interval",
+  "from": "seat.controller.SeatController",
+  "to": "ts-seat-service.SeatController"
+ },
+ {
+  "atomId": "atom:capability:security.controller.security-controller:home",
+  "from": "security.controller.SecurityController",
+  "to": "ts-security-service.SecurityController"
+ },
+ {
+  "atomId": "atom:capability:security.controller.security-controller:delete",
+  "from": "security.controller.SecurityController",
+  "to": "ts-security-service.SecurityController"
+ },
+ {
+  "atomId": "atom:capability:security.controller.security-controller:create",
+  "from": "security.controller.SecurityController",
+  "to": "ts-security-service.SecurityController"
+ },
+ {
+  "atomId": "atom:capability:security.controller.security-controller:update",
+  "from": "security.controller.SecurityController",
+  "to": "ts-security-service.SecurityController"
+ },
+ {
+  "atomId": "atom:capability:security.controller.security-controller:find-all-security-config",
+  "from": "security.controller.SecurityController",
+  "to": "ts-security-service.SecurityController"
+ },
+ {
+  "atomId": "atom:capability:security.controller.security-controller:check",
+  "from": "security.controller.SecurityController",
+  "to": "ts-security-service.SecurityController"
+ },
+ {
+  "atomId": "atom:capability:security.repository.security-repository:delete-by-id",
+  "from": "security.repository.SecurityRepository",
+  "to": "ts-security-service.SecurityRepository"
+ },
+ {
+  "atomId": "atom:capability:security.repository.security-repository:find-by-name",
+  "from": "security.repository.SecurityRepository",
+  "to": "ts-security-service.SecurityRepository"
+ },
+ {
+  "atomId": "atom:capability:security.service.security-service:add-new-security-config",
+  "from": "security.service.SecurityService",
+  "to": "ts-security-service.SecurityService"
+ },
+ {
+  "atomId": "atom:capability:security.service.security-service:delete-security-config",
+  "from": "security.service.SecurityService",
+  "to": "ts-security-service.SecurityService"
+ },
+ {
+  "atomId": "atom:capability:security.service.security-service:modify-security-config",
+  "from": "security.service.SecurityService",
+  "to": "ts-security-service.SecurityService"
+ },
+ {
+  "atomId": "atom:capability:security.service.security-service:check",
+  "from": "security.service.SecurityService",
+  "to": "ts-security-service.SecurityService"
+ },
+ {
+  "atomId": "atom:capability:security.service.security-service:find-all-security-config",
+  "from": "security.service.SecurityService",
+  "to": "ts-security-service.SecurityService"
+ },
+ {
+  "atomId": "atom:capability:ts-route-service:exposes-endpoint",
+  "from": "ts-route-service",
+  "to": "ts-route-service.ts-route-service"
+ },
+ {
+  "atomId": "atom:capability:ts-seat-service:exposes-endpoint",
+  "from": "ts-seat-service",
+  "to": "ts-seat-service.ts-seat-service"
+ },
+ {
+  "atomId": "atom:component:route.entity.route-info",
+  "from": "route.entity.RouteInfo",
+  "to": "ts-route-service.RouteInfo"
+ },
+ {
+  "atomId": "atom:component:route.entity.route",
+  "from": "route.entity.Route",
+  "to": "ts-route-service.Route"
+ },
+ {
+  "atomId": "atom:component:route.init.init-data",
+  "from": "route.init.InitData",
+  "to": "ts-route-service.InitData"
+ },
+ {
+  "atomId": "atom:component:route.repository.route-repository",
+  "from": "route.repository.RouteRepository",
+  "to": "ts-route-service.RouteRepository"
+ },
+ {
+  "atomId": "atom:component:route.service.route-service-impl",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:component:route.service.route-service",
+  "from": "route.service.RouteService",
+  "to": "ts-route-service.RouteService"
+ },
+ {
+  "atomId": "atom:component:seat.controller.seat-controller",
+  "from": "seat.controller.SeatController",
+  "to": "ts-seat-service.SeatController"
+ },
+ {
+  "atomId": "atom:component:seat.service.seat-service-impl",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:component:seat.service.seat-service",
+  "from": "seat.service.SeatService",
+  "to": "ts-seat-service.SeatService"
+ },
+ {
+  "atomId": "atom:component:security.controller.security-controller",
+  "from": "security.controller.SecurityController",
+  "to": "ts-security-service.SecurityController"
+ },
+ {
+  "atomId": "atom:component:security.init.init-data",
+  "from": "security.init.InitData",
+  "to": "ts-security-service.InitData"
+ },
+ {
+  "atomId": "atom:component:security.repository.security-repository",
+  "from": "security.repository.SecurityRepository",
+  "to": "ts-security-service.SecurityRepository"
+ },
+ {
+  "atomId": "atom:contract:route.service.route-service-impl:create-and-modify-ensures",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:route.service.route-service-impl:create-and-modify-requires",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:seat.config.security-config:stateless-session-ensures",
+  "from": "seat.config.SecurityConfig",
+  "to": "ts-seat-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:contract:seat.service.seat-service-impl:unused-num-ensures",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:security.config.security-config:stateless-session-ensures",
+  "from": "security.config.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:effect:route.service.route-service-impl:deletes-from-route",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:route.service.route-service-impl:writes-to-route",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:seat.service.seat-service-impl:calls-config-service",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:seat.service.seat-service-impl:calls-order-other-service",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:seat.service.seat-service-impl:calls-order-service",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:route.init.init-data:depends-on",
+  "from": "route.init.InitData",
+  "to": "ts-route-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:route.repository.route-repository:depends-on",
+  "from": "route.repository.RouteRepository",
+  "to": "ts-route-service.RouteRepository"
+ },
+ {
+  "atomId": "atom:relation:security.init.init-data:depends-on",
+  "from": "security.init.InitData",
+  "to": "ts-security-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:security.repository.security-repository:depends-on",
+  "from": "security.repository.SecurityRepository",
+  "to": "ts-security-service.SecurityRepository"
+ },
+ {
+  "atomId": "atom:relation:ts-route-service:depends-on-nacos",
+  "from": "ts-route-service",
+  "to": "ts-route-service.ts-route-service"
+ },
+ {
+  "atomId": "atom:relation:ts-seat-service:depends-on-nacos",
+  "from": "ts-seat-service",
+  "to": "ts-seat-service.ts-seat-service"
+ },
+ {
+  "atomId": "atom:semantic:route.entity.route:identified-by",
+  "from": "route.entity.Route",
+  "to": "ts-route-service.Route"
+ },
+ {
+  "atomId": "atom:semantic:route.init.init-data:seed-route-id-strategy",
+  "from": "route.init.InitData",
+  "to": "ts-route-service.InitData"
+ },
+ {
+  "atomId": "atom:semantic:route.service.route-service-impl:status-gates-not-found",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:route.service.route-service-impl:status-gates-delete-outcome",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:seat.service.seat-service-impl:direct-ticket-allocation-proportion",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:seat.service.seat-service-impl:sold-ticket-reuse-condition",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:seat.service.seat-service-impl:train-number-selects-provider",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:seat.service.seat-service-impl:status-gates-always-carrying",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:security.entity.security-config:identified-by",
+  "from": "security.entity.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:semantic:security.init.init-data:max-order-1-hour-config",
+  "from": "security.init.InitData",
+  "to": "ts-security-service.InitData"
+ },
+ {
+  "atomId": "atom:semantic:security.init.init-data:max-order-not-use-config",
+  "from": "security.init.InitData",
+  "to": "ts-security-service.InitData"
+ },
+ {
+  "atomId": "atom:state:route.entity.route:persists-in",
+  "from": "route.entity.Route",
+  "to": "ts-route-service.Route"
+ },
+ {
+  "atomId": "atom:state:security.entity.security-config:persists-in",
+  "from": "security.entity.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:contract:route.entity.route-info:shaped-as",
+  "from": "route.entity.RouteInfo",
+  "to": "ts-route-service.RouteInfo"
+ },
+ {
+  "atomId": "atom:relation:route.service.route-service-impl:implements",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:route.service.route-service-impl:reads-from",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:route.service.route-service-impl:writes-to",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:seat.controller.seat-controller:depends-on",
+  "from": "seat.controller.SeatController",
+  "to": "ts-seat-service.SeatController"
+ },
+ {
+  "atomId": "atom:relation:seat.service.seat-service-impl:implements",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:security.controller.security-controller:depends-on",
+  "from": "security.controller.SecurityController",
+  "to": "ts-security-service.SecurityController"
+ },
+ {
+  "atomId": "atom:semantic:route.repository.route-repository:id-lookup-contract",
+  "from": "route.repository.RouteRepository",
+  "to": "ts-route-service.RouteRepository"
+ },
+ {
+  "atomId": "atom:semantic:route.service.route-service-impl:id-length-threshold",
+  "from": "route.service.RouteServiceImpl",
+  "to": "ts-route-service.RouteServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:seat.service.seat-service-impl:direct-ticket-allocation-proportion-parsing",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:seat.service.seat-service-impl:logical-service-name-load-balanced",
+  "from": "seat.service.SeatServiceImpl",
+  "to": "ts-seat-service.SeatServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:security.repository.security-repository:lookup-by-name-as-business-key",
+  "from": "security.repository.SecurityRepository",
+  "to": "ts-security-service.SecurityRepository"
+ },
+ {
+  "atomId": "atom:semantic:security.entity.security-config:generated-id-strategy",
+  "from": "security.entity.SecurityConfig",
+  "to": "ts-security-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:semantic:ts-route-service:default-datasource-credential",
+  "from": "ts-route-service",
+  "to": "ts-route-service.ts-route-service"
+ },
+ {
+  "atomId": "atom:semantic:ts-seat-service:nacos-discovery-default-shape",
+  "from": "ts-seat-service",
+  "to": "ts-seat-service.ts-seat-service"
+ },
+ {
+  "atomId": "atom:authority:fdse-microservice-config-securityconfig:allows-cross-origin-global",
+  "from": "fdse.microservice.config.SecurityConfig",
+  "to": "ts-station-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:fdse-microservice-config-securityconfig:permits-unauthenticated-stationservice-paths",
+  "from": "fdse.microservice.config.SecurityConfig",
+  "to": "ts-station-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-delete-stations",
+  "from": "fdse.microservice.config.SecurityConfig",
+  "to": "ts-station-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-post-stations",
+  "from": "fdse.microservice.config.SecurityConfig",
+  "to": "ts-station-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:fdse-microservice-config-securityconfig:requires-role-admin-put-stations",
+  "from": "fdse.microservice.config.SecurityConfig",
+  "to": "ts-station-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:fdse-microservice-controller-stationcontroller:allows-cross-origin-per-endpoint",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:authority:food-config-securityconfig:allows-cross-origin-global",
+  "from": "food.config.SecurityConfig",
+  "to": "ts-station-food-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:food-config-securityconfig:requires-authentication-fallback",
+  "from": "food.config.SecurityConfig",
+  "to": "ts-station-food-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:food-controller-stationfoodcontroller:allows-cross-origin-per-endpoint",
+  "from": "food.controller.StationFoodController",
+  "to": "ts-station-food-service.StationFoodController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-delete-station",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-stations",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-station-id",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-by-id",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-welcome",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-create-station",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-id-batch",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-query-for-name-batch",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-controller-stationcontroller:exposes-endpoint-update-station",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-repository-stationrepository:serves-query-find-by-name",
+  "from": "fdse.microservice.repository.StationRepository",
+  "to": "ts-station-service.StationRepository"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-repository-stationrepository:serves-query-find-by-names",
+  "from": "fdse.microservice.repository.StationRepository",
+  "to": "ts-station-service.StationRepository"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-create",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-delete",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-service-stationserviceimpl:handles-command-update",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-exist",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-by-id",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-by-id-batch",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-for-id",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:fdse-microservice-service-stationserviceimpl:serves-query-query-for-id-batch",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-all-food-stores",
+  "from": "food.controller.StationFoodController",
+  "to": "ts-station-food-service.StationFoodController"
+ },
+ {
+  "atomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-list-by-store-id",
+  "from": "food.controller.StationFoodController",
+  "to": "ts-station-food-service.StationFoodController"
+ },
+ {
+  "atomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-welcome",
+  "from": "food.controller.StationFoodController",
+  "to": "ts-station-food-service.StationFoodController"
+ },
+ {
+  "atomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-of-station",
+  "from": "food.controller.StationFoodController",
+  "to": "ts-station-food-service.StationFoodController"
+ },
+ {
+  "atomId": "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-by-station-names",
+  "from": "food.controller.StationFoodController",
+  "to": "ts-station-food-service.StationFoodController"
+ },
+ {
+  "atomId": "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name",
+  "from": "food.repository.StationFoodRepository",
+  "to": "ts-station-food-service.StationFoodRepository"
+ },
+ {
+  "atomId": "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name-in",
+  "from": "food.repository.StationFoodRepository",
+  "to": "ts-station-food-service.StationFoodRepository"
+ },
+ {
+  "atomId": "atom:capability:food-service-stationfoodserviceimpl:handles-command-create-food-store",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-food-stores-by-station-names",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-station-food-store-by-id",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores-by-station-name",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:security-service-securityserviceimpl:handles-command-add-new-security-config",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:security-service-securityserviceimpl:handles-command-delete-security-config",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:security-service-securityserviceimpl:handles-command-modify-security-config",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:security-service-securityserviceimpl:serves-query-check",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:security-service-securityserviceimpl:serves-query-find-all-security-config",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:contract:fdse-microservice-controller-stationcontroller:create-station-ensures-http-201",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:contract:fdse-microservice-repository-stationrepository:find-by-names-shaped-as-native-query",
+  "from": "fdse.microservice.repository.StationRepository",
+  "to": "ts-station-service.StationRepository"
+ },
+ {
+  "atomId": "atom:contract:food-init-initdata:foodstores-txt-record-shaped-as",
+  "from": "food.init.InitData",
+  "to": "ts-station-food-service.InitData"
+ },
+ {
+  "atomId": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-other-service",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:security-service-securityserviceimpl:calls-provider-ts-order-service",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:fdse-microservice-init-initdata:depends-on-station-service",
+  "from": "fdse.microservice.init.InitData",
+  "to": "ts-station-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:food-init-initdata:depends-on-station-food-service",
+  "from": "food.init.InitData",
+  "to": "ts-station-food-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:security-service-securityserviceimpl:depends-on-security-repository",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:ts-security-service:depends-on-ts-order-other-service",
+  "from": "ts-security-service",
+  "to": "ts-security-service.ts-security-service"
+ },
+ {
+  "atomId": "atom:relation:ts-security-service:depends-on-ts-order-service",
+  "from": "ts-security-service",
+  "to": "ts-security-service.ts-security-service"
+ },
+ {
+  "atomId": "atom:semantic:station-food-service-init-seed-flow:cech-section-money-amount",
+  "from": "ctx:station-food-service-init-seed-flow",
+  "to": "ts-station-food-service.ctx:station-food-service-init-seed-flow"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-entity-station:name-means-in-use",
+  "from": "fdse.microservice.entity.Station",
+  "to": "ts-station-service.Station"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-init-initdata:seed-station-names-means-in-use",
+  "from": "fdse.microservice.init.InitData",
+  "to": "ts-station-service.InitData"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:create-status-gates",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:delete-status-gates",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:update-status-gates",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-by-id-batch-status-gates",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-for-id-batch-status-gates",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-status-gates",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-by-id-status-gates",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:fdse-microservice-service-stationserviceimpl:query-for-id-status-gates",
+  "from": "fdse.microservice.service.StationServiceImpl",
+  "to": "ts-station-service.StationServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:food-controller-stationfoodcontroller:path-variable-name-divergence-means-in-use",
+  "from": "food.controller.StationFoodController",
+  "to": "ts-station-food-service.StationFoodController"
+ },
+ {
+  "atomId": "atom:semantic:food-entity-stationfoodstore:delivery-fee-means-in-use",
+  "from": "food.entity.StationFoodStore",
+  "to": "ts-station-food-service.StationFoodStore"
+ },
+ {
+  "atomId": "atom:semantic:food-init-initdata:delivery-fee-seed-means-in-use",
+  "from": "food.init.InitData",
+  "to": "ts-station-food-service.InitData"
+ },
+ {
+  "atomId": "atom:semantic:food-init-initdata:food-price-seed-means-in-use",
+  "from": "food.init.InitData",
+  "to": "ts-station-food-service.InitData"
+ },
+ {
+  "atomId": "atom:semantic:food-service-stationfoodserviceimpl:get-food-stores-by-station-names-status-gates",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:food-service-stationfoodserviceimpl:list-food-stores-by-station-name-status-gates",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:food-service-stationfoodserviceimpl:list-food-stores-status-gates",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:food-service-stationfoodserviceimpl:create-food-store-status-gates",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:food-service-stationfoodserviceimpl:get-station-food-store-by-id-status-gates",
+  "from": "food.service.StationFoodServiceImpl",
+  "to": "ts-station-food-service.StationFoodServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:security-service-securityserviceimpl:check-threshold-config-means-in-use",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:security-service-securityserviceimpl:add-new-security-config-status-gates",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:security-service-securityserviceimpl:find-all-security-config-status-gates",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:security-service-securityserviceimpl:check-status-gates",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:security-service-securityserviceimpl:delete-security-config-status-gates",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:security-service-securityserviceimpl:modify-security-config-status-gates",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:ts-station-food-service:datasource-host-config-means-in-use",
+  "from": "ts-station-food-service",
+  "to": "ts-station-food-service.ts-station-food-service"
+ },
+ {
+  "atomId": "atom:state:fdse-microservice-entity-station:persists-in-unique-name-column",
+  "from": "fdse.microservice.entity.Station",
+  "to": "ts-station-service.Station"
+ },
+ {
+  "atomId": "atom:state:food-entity-stationfoodstore:persists-in-food-list-join-table",
+  "from": "food.entity.StationFoodStore",
+  "to": "ts-station-food-service.StationFoodStore"
+ },
+ {
+  "atomId": "atom:state:food-entity-stationfoodstore:persists-in-unique-station-store-index",
+  "from": "food.entity.StationFoodStore",
+  "to": "ts-station-food-service.StationFoodStore"
+ },
+ {
+  "atomId": "atom:state:ts-security-service:persists-in-security-mysql",
+  "from": "ts-security-service",
+  "to": "ts-security-service.ts-security-service"
+ },
+ {
+  "atomId": "atom:state:ts-station-food-service:persists-in-mysql-datasource",
+  "from": "ts-station-food-service",
+  "to": "ts-station-food-service.ts-station-food-service"
+ },
+ {
+  "atomId": "atom:state:ts-station-service:persists-in-mysql-datasource",
+  "from": "ts-station-service",
+  "to": "ts-station-service.ts-station-service"
+ },
+ {
+  "atomId": "atom:component:fdse.microservice.config.SecurityConfig",
+  "from": "fdse.microservice.config.SecurityConfig",
+  "to": "ts-station-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:fdse.microservice.controller.StationController",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:component:fdse.microservice.init.InitData",
+  "from": "fdse.microservice.init.InitData",
+  "to": "ts-station-service.InitData"
+ },
+ {
+  "atomId": "atom:component:food.config.SecurityConfig",
+  "from": "food.config.SecurityConfig",
+  "to": "ts-station-food-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:component:food.controller.StationFoodController",
+  "from": "food.controller.StationFoodController",
+  "to": "ts-station-food-service.StationFoodController"
+ },
+ {
+  "atomId": "atom:component:food.init.InitData",
+  "from": "food.init.InitData",
+  "to": "ts-station-food-service.InitData"
+ },
+ {
+  "atomId": "atom:contract:fdse.microservice.entity.Station:ensures",
+  "from": "fdse.microservice.entity.Station",
+  "to": "ts-station-service.Station"
+ },
+ {
+  "atomId": "atom:contract:food.entity.StationFoodStore:ensures",
+  "from": "food.entity.StationFoodStore",
+  "to": "ts-station-food-service.StationFoodStore"
+ },
+ {
+  "atomId": "atom:effect:food.init.InitData:haltsProcess",
+  "from": "food.init.InitData",
+  "to": "ts-station-food-service.InitData"
+ },
+ {
+  "atomId": "atom:relation:fdse.microservice.controller.StationController:dependsOn:fdse.microservice.service.StationService",
+  "from": "fdse.microservice.controller.StationController",
+  "to": "ts-station-service.StationController"
+ },
+ {
+  "atomId": "atom:relation:food.controller.StationFoodController:dependsOn:food.service.StationFoodService",
+  "from": "food.controller.StationFoodController",
+  "to": "ts-station-food-service.StationFoodController"
+ },
+ {
+  "atomId": "atom:semantic:ctx-station-food-catalog-surface:cech-section-money-amount",
+  "from": "ctx:station-food-catalog-surface",
+  "to": "ts-station-food-service.ctx:station-food-catalog-surface"
+ },
+ {
+  "atomId": "atom:semantic:fdse.microservice.entity.Station:identifiedBy:lookup-contract",
+  "from": "fdse.microservice.entity.Station",
+  "to": "ts-station-service.Station"
+ },
+ {
+  "atomId": "atom:semantic:food.entity.StationFoodStore:identifiedBy:lookup-contract",
+  "from": "food.entity.StationFoodStore",
+  "to": "ts-station-food-service.StationFoodStore"
+ },
+ {
+  "atomId": "atom:semantic:security.service.SecurityServiceImpl:meansInUse:order-service-url-config-vs-code",
+  "from": "security.service.SecurityServiceImpl",
+  "to": "ts-security-service.SecurityServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:ctx-train-food-service-listing-flow:cech-section-money-amount",
+  "from": "ctx:train-food-service-listing-flow",
+  "to": "ts-train-food-service.ctx:train-food-service-listing-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-travel-service-ticket-pricing-flow:cech-section-money-amount",
+  "from": "ctx:travel-service-ticket-pricing-flow",
+  "to": "ts-travel-service.ctx:travel-service-ticket-pricing-flow"
+ },
+ {
+  "atomId": "atom:semantic:ctx-travel-plan-advance-search-flow:cech-section-money-amount",
+  "from": "ctx:travel-plan-advance-search-flow",
+  "to": "ts-travel-plan-service.ctx:travel-plan-advance-search-flow"
+ },
+ {
+  "atomId": "atom:semantic:travel2-ticket-pricing-flow:cech-section-money-amount",
+  "from": "ctx:travel2-ticket-pricing-flow",
+  "to": "ts-travel2-service.ctx:travel2-ticket-pricing-flow"
+ },
+ {
+  "atomId": "atom:authority:verifycode-config-securityconfig:allows-cross-origin-all-origins",
+  "from": "verifycode.config.SecurityConfig",
+  "to": "ts-verification-code-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:waitorder-config-securityconfig:allows-cross-origin-all-origins",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-swagger-paths",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-only",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-only",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-or-user",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-or-user",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:authority:waitorder-config-securityconfig:requires-role-delete-order-admin-or-user",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:capability:user-service-impl-userserviceimpl:handles-command-delete-user",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:user-service-impl-userserviceimpl:handles-command-save-user",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:user-service-impl-userserviceimpl:handles-command-update-user",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:user-service-impl-userserviceimpl:serves-query-find-by-user-id",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:user-service-impl-userserviceimpl:serves-query-find-by-user-name",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:user-service-impl-userserviceimpl:serves-query-get-all-users",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:capability:user-service-userservice:handles-deleteuser",
+  "from": "user.service.UserService",
+  "to": "ts-user-service.UserService"
+ },
+ {
+  "atomId": "atom:capability:user-service-userservice:handles-savecommand",
+  "from": "user.service.UserService",
+  "to": "ts-user-service.UserService"
+ },
+ {
+  "atomId": "atom:capability:user-service-userservice:handles-updateuser",
+  "from": "user.service.UserService",
+  "to": "ts-user-service.UserService"
+ },
+ {
+  "atomId": "atom:capability:user-service-userservice:serves-findbyuserid",
+  "from": "user.service.UserService",
+  "to": "ts-user-service.UserService"
+ },
+ {
+  "atomId": "atom:capability:user-service-userservice:serves-findbyusername",
+  "from": "user.service.UserService",
+  "to": "ts-user-service.UserService"
+ },
+ {
+  "atomId": "atom:capability:user-service-userservice:serves-getallusers",
+  "from": "user.service.UserService",
+  "to": "ts-user-service.UserService"
+ },
+ {
+  "atomId": "atom:capability:waitorder-service-waitlistorderservice:handles-modifywaitlistorderstatus",
+  "from": "waitorder.service.WaitListOrderService",
+  "to": "ts-wait-order-service.WaitListOrderService"
+ },
+ {
+  "atomId": "atom:capability:waitorder-service-waitlistorderservice:handles-updateorder",
+  "from": "waitorder.service.WaitListOrderService",
+  "to": "ts-wait-order-service.WaitListOrderService"
+ },
+ {
+  "atomId": "atom:capability:waitorder-service-waitlistorderservice:serves-findorderbyid",
+  "from": "waitorder.service.WaitListOrderService",
+  "to": "ts-wait-order-service.WaitListOrderService"
+ },
+ {
+  "atomId": "atom:contract:verifycode-util-cookieutil:shaped-as-httponly-root-path-cookie",
+  "from": "verifycode.util.CookieUtil",
+  "to": "ts-verification-code-service.CookieUtil"
+ },
+ {
+  "atomId": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-delete-user",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-register",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:waitorder-utils-pollthread:calls-provider-ts-preserve-service",
+  "from": "waitorder.utils.PollThread",
+  "to": "ts-wait-order-service.PollThread"
+ },
+ {
+  "atomId": "atom:effect:verifycode-controller-verifycodecontroller:mutatesfile-write-jpeg-to-response-stream",
+  "from": "verifycode.controller.VerifyCodeController",
+  "to": "ts-verification-code-service.VerifyCodeController"
+ },
+ {
+  "atomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:enqueues-pollthread",
+  "from": "waitorder.service.Impl.WaitListOrderServiceImpl",
+  "to": "ts-wait-order-service.WaitListOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-insert-new-order",
+  "from": "waitorder.service.Impl.WaitListOrderServiceImpl",
+  "to": "ts-wait-order-service.WaitListOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-update-order",
+  "from": "waitorder.service.Impl.WaitListOrderServiceImpl",
+  "to": "ts-wait-order-service.WaitListOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-update-status",
+  "from": "waitorder.service.Impl.WaitListOrderServiceImpl",
+  "to": "ts-wait-order-service.WaitListOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:waitorder-service-impl-waitlistorderserviceimpl:calls-pollthread",
+  "from": "waitorder.service.Impl.WaitListOrderServiceImpl",
+  "to": "ts-wait-order-service.WaitListOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:user-service-impl-userserviceimpl:calls-ts-auth-service-post-auth",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:user-service-impl-userserviceimpl:calls-ts-auth-service-delete-users",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:verifycode-service-impl-verifycodeserviceimpl:depends-on-cookieutil",
+  "from": "verifycode.service.impl.VerifyCodeServiceImpl",
+  "to": "ts-verification-code-service.VerifyCodeServiceImpl"
+ },
+ {
+  "atomId": "atom:relation:waitorder-utils-pollthread:calls-ts-preserve-service-post-preserve",
+  "from": "waitorder.utils.PollThread",
+  "to": "ts-wait-order-service.PollThread"
+ },
+ {
+  "atomId": "atom:relation:waitorder-utils-pollthread:calls-back-modifywaitlistorderstatus",
+  "from": "waitorder.utils.PollThread",
+  "to": "ts-wait-order-service.PollThread"
+ },
+ {
+  "atomId": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-money-amount",
+  "from": "ctx:wait-order-service-order-lifecycle",
+  "to": "ts-wait-order-service.ctx:wait-order-service-order-lifecycle"
+ },
+ {
+  "atomId": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-order-status-code",
+  "from": "ctx:wait-order-service-order-lifecycle",
+  "to": "ts-wait-order-service.ctx:wait-order-service-order-lifecycle"
+ },
+ {
+  "atomId": "atom:semantic:user-service-impl-userserviceimpl:status-gates-response-envelope",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:verifycode-controller-verifycodecontroller:means-in-use-image-write-exception-writes-error-text",
+  "from": "verifycode.controller.VerifyCodeController",
+  "to": "ts-verification-code-service.VerifyCodeController"
+ },
+ {
+  "atomId": "atom:semantic:verifycode-controller-verifycodecontroller:means-in-use-verify-endpoint-fixed-true-return",
+  "from": "verifycode.controller.VerifyCodeController",
+  "to": "ts-verification-code-service.VerifyCodeController"
+ },
+ {
+  "atomId": "atom:semantic:verifycode-service-impl-verifycodeserviceimpl:means-in-use-verifycode-case-insensitive-match",
+  "from": "verifycode.service.impl.VerifyCodeServiceImpl",
+  "to": "ts-verification-code-service.VerifyCodeServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-config-securityconfig:means-in-use-path-scope-names-orderservice-prefix",
+  "from": "waitorder.config.SecurityConfig",
+  "to": "ts-wait-order-service.SecurityConfig"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-entity-waitlistorderstatus:identified-by-int-status-codes",
+  "from": "waitorder.entity.WaitListOrderStatus",
+  "to": "ts-wait-order-service.WaitListOrderStatus"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-entity-waitlistorderstatus:means-in-use-getnamebycode-cross-enum-lookup",
+  "from": "waitorder.entity.WaitListOrderStatus",
+  "to": "ts-wait-order-service.WaitListOrderStatus"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-entity-waitlistordervo:means-in-use-date-string-conversion",
+  "from": "waitorder.entity.WaitListOrderVO",
+  "to": "ts-wait-order-service.WaitListOrderVO"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-entity-waitlistordervo:means-in-use-price-string-no-parsing",
+  "from": "waitorder.entity.WaitListOrderVO",
+  "to": "ts-wait-order-service.WaitListOrderVO"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-time-fields-string-conversion",
+  "from": "waitorder.entity.WaitListOrder",
+  "to": "ts-wait-order-service.WaitListOrder"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-settraveltime-writes-createdtime-field",
+  "from": "waitorder.entity.WaitListOrder",
+  "to": "ts-wait-order-service.WaitListOrder"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-price-string-no-parsing",
+  "from": "waitorder.entity.WaitListOrder",
+  "to": "ts-wait-order-service.WaitListOrder"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:status-gates-response-envelope",
+  "from": "waitorder.service.Impl.WaitListOrderServiceImpl",
+  "to": "ts-wait-order-service.WaitListOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-utils-pollthread:means-in-use-accountid-as-orderid-argument",
+  "from": "waitorder.utils.PollThread",
+  "to": "ts-wait-order-service.PollThread"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-utils-pollthread:status-gates-dopreserve-response-branch",
+  "from": "waitorder.utils.PollThread",
+  "to": "ts-wait-order-service.PollThread"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-utils-pollthread:status-gates-run-loop-waituntil-branch",
+  "from": "waitorder.utils.PollThread",
+  "to": "ts-wait-order-service.PollThread"
+ },
+ {
+  "atomId": "atom:semantic:verifycode-service-impl-verifycodeserviceimpl:captcha-expired-constant-reused-three-units",
+  "from": "verifycode.service.impl.VerifyCodeServiceImpl",
+  "to": "ts-verification-code-service.VerifyCodeServiceImpl"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-entity-waitlistorderstatus:status-0-notpaid-initial-state",
+  "from": "waitorder.entity.WaitListOrderStatus",
+  "to": "ts-wait-order-service.WaitListOrderStatus"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-entity-waitlistorderstatus:status-1-paid-not-collected",
+  "from": "waitorder.entity.WaitListOrderStatus",
+  "to": "ts-wait-order-service.WaitListOrderStatus"
+ },
+ {
+  "atomId": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:active-wait-list-filter-status-0-1",
+  "from": "waitorder.service.Impl.WaitListOrderServiceImpl",
+  "to": "ts-wait-order-service.WaitListOrderServiceImpl"
+ },
+ {
+  "atomId": "atom:state:user-service-impl-userserviceimpl:persists-in-user-repository",
+  "from": "user.service.impl.UserServiceImpl",
+  "to": "ts-user-service.UserServiceImpl"
+ },
+ {
+  "atomId": "atom:state:verifycode-service-impl-verifycodeserviceimpl:cached-in-local-guava-cache",
+  "from": "verifycode.service.impl.VerifyCodeServiceImpl",
+  "to": "ts-verification-code-service.VerifyCodeServiceImpl"
+ },
+ {
+  "atomId": "atom:state:waitorder-entity-waitlistorder:persists-in-waitlistorderrepository",
+  "from": "waitorder.entity.WaitListOrder",
+  "to": "ts-wait-order-service.WaitListOrder"
+ },
+ {
+  "atomId": "atom:state:waitorder-entity-waitlistorder:persistsin-jpa-entity-table",
+  "from": "waitorder.entity.WaitListOrder",
+  "to": "ts-wait-order-service.WaitListOrder"
+ }
+]

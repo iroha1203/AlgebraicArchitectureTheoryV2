@@ -1,0 +1,1704 @@
+{
+  "chunkId": "chunk-22",
+  "adjudications": [
+    {
+      "key": "authority|verifycode.config.SecurityConfig|authority|allowsCrossOrigin|cross-origin-scope-all-origins-all-methods-all-headers-credentials-false",
+      "candidateAtomId": "atom:authority:verifycode-config-securityconfig:allows-cross-origin-all-origins",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:51-55 -- addCorsMappings registers allowedOrigins/allowedMethods/allowedHeaders as ALL with allowCredentials(false). Same CORS fact as pass-b's allowscrossorigin-all row; kept as one canonical atom with refs unioned.",
+      "canonicalAtom": {
+        "id": "atom:authority:verifycode-config-securityconfig:allows-cross-origin-all-origins",
+        "kind": "authority",
+        "subject": "verifycode.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "cross-origin-scope-all-origins-all-methods-all-headers-credentials-false",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:51",
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:52",
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:53",
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:54",
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:55"
+        ]
+      }
+    },
+    {
+      "key": "authority|verifycode.config.SecurityConfig|authority|allowsCrossOrigin|cors-all-origins-all-methods-all-headers-credentials-false",
+      "candidateAtomId": "atom:authority:verifycode-config-securityconfig:allowscrossorigin-all",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:51-55 -- same addCorsMappings block as pass-a's allows-cross-origin-all-origins row; same observation, canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:authority:verifycode-config-securityconfig:allows-cross-origin-all-origins",
+        "kind": "authority",
+        "subject": "verifycode.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "cross-origin-scope-all-origins-all-methods-all-headers-credentials-false",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:51",
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:52",
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:53",
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:54",
+          "src:ts-verification-code-service/src/main/java/verifycode/config/SecurityConfig.java:55"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|allowsCrossOrigin|cross-origin-scope-all-origins-all-methods-all-headers-credentials-false",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:allows-cross-origin-all-origins",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:55-59 -- addCorsMappings registers allowedOrigins/allowedMethods/allowedHeaders ALL, allowCredentials(false). Same fact as pass-b's allowscrossorigin-all row.",
+      "canonicalAtom": {
+        "id": "atom:authority:waitorder-config-securityconfig:allows-cross-origin-all-origins",
+        "kind": "authority",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "cross-origin-scope-all-origins-all-methods-all-headers-credentials-false",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:55",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:56",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:57",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:58",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:59"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|allowsCrossOrigin|cors-all-origins-all-methods-all-headers-credentials-false",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:allowscrossorigin-all",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:55-59 -- same addCorsMappings block as pass-a's allows-cross-origin-all-origins row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:authority:waitorder-config-securityconfig:allows-cross-origin-all-origins",
+        "kind": "authority",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "cross-origin-scope-all-origins-all-methods-all-headers-credentials-false",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:55",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:56",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:57",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:58",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:59"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-doc-paths",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-swagger-paths",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:81-82 -- antMatchers(\"/swagger-ui.html\",\"/webjars/**\",...,\"/v2/**\").permitAll() spans both lines; same fact as pass-b's permitsunauthenticated-swagger-paths row.",
+      "canonicalAtom": {
+        "id": "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-swagger-paths",
+        "kind": "authority",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-and-api-doc-paths",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:81",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:82"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:permitsunauthenticated-swagger-paths",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:81-82 -- same antMatchers(...).permitAll() block as pass-a's permits-unauthenticated-swagger-paths row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-swagger-paths",
+        "kind": "authority",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-and-api-doc-paths",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:81",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:82"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-only-on-POST-/api/v1/orderservice/order/admin",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-only",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:78 -- antMatchers(HttpMethod.POST, \"/api/v1/orderservice/order/admin\").hasAnyRole(admin) is a distinct antMatchers line, kept per-verb (finer grained than pass-b's combined row, which is dropped separately as a coarser duplicate).",
+      "canonicalAtom": {
+        "id": "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-only",
+        "kind": "authority",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "role-admin-only-on-POST-/api/v1/orderservice/order/admin",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:78"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-only-on-PUT-/api/v1/orderservice/order/admin",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-only",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:79 -- antMatchers(HttpMethod.PUT, \"/api/v1/orderservice/order/admin\").hasAnyRole(admin) is a distinct antMatchers line, kept per-verb (finer grained than pass-b's combined row, which is dropped separately as a coarser duplicate).",
+      "canonicalAtom": {
+        "id": "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-only",
+        "kind": "authority",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "role-admin-only-on-PUT-/api/v1/orderservice/order/admin",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:79"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-POST-/api/v1/orderservice/order",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-or-user",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:75 -- antMatchers(HttpMethod.POST, order).hasAnyRole(admin,\"USER\") is a distinct antMatchers line, kept per-verb (pass-b's combined row for the same three lines is dropped separately as a coarser duplicate).",
+      "canonicalAtom": {
+        "id": "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-or-user",
+        "kind": "authority",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "role-admin-or-user-on-POST-/api/v1/orderservice/order",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:75"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-PUT-/api/v1/orderservice/order",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-or-user",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:76 -- antMatchers(HttpMethod.PUT, order).hasAnyRole(admin,\"USER\") is a distinct antMatchers line, kept per-verb (pass-b's combined row for the same three lines is dropped separately as a coarser duplicate).",
+      "canonicalAtom": {
+        "id": "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-or-user",
+        "kind": "authority",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "role-admin-or-user-on-PUT-/api/v1/orderservice/order",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:76"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-DELETE-/api/v1/orderservice/order",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requires-role-delete-order-admin-or-user",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:77 -- antMatchers(HttpMethod.DELETE, order).hasAnyRole(admin,\"USER\") is a distinct antMatchers line, kept per-verb (pass-b's combined row for the same three lines is dropped separately as a coarser duplicate).",
+      "canonicalAtom": {
+        "id": "atom:authority:waitorder-config-securityconfig:requires-role-delete-order-admin-or-user",
+        "kind": "authority",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "role-admin-or-user-on-DELETE-/api/v1/orderservice/order",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:77"
+        ]
+      }
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-only-on-post-put-/api/v1/orderservice/order/admin",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requiresrole-admin-only-order-admin",
+      "pass": "pass-b",
+      "decision": "not-adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:78-79 -- two separate antMatchers lines (POST line78, PUT line79) each independently gate the /admin path; pass-a's finer per-verb atoms (adopted) already capture both lines without loss, so this combined-verb restatement is dropped as a coarser duplicate of already-adopted facts."
+    },
+    {
+      "key": "authority|waitorder.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-post-put-delete-/api/v1/orderservice/order",
+      "candidateAtomId": "atom:authority:waitorder-config-securityconfig:requiresrole-admin-or-user-order-writes",
+      "pass": "pass-b",
+      "decision": "not-adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:75-77 -- three separate antMatchers lines (POST/PUT/DELETE) each independently gate the order path; pass-a's finer per-verb atoms (adopted) already capture all three lines without loss, so this combined-verb restatement is dropped as a coarser duplicate."
+    },
+    {
+      "key": "capability|user.service.impl.UserServiceImpl|capability|handlesCommand|DeleteUser",
+      "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:handles-command-delete-user",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:134 -- concrete DeleteUser method body with observable branching logic; kept on the implementing class distinct from pass-b's interface-declaration atoms on user.service.UserService (different subject, not a duplicate).",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-impl-userserviceimpl:handles-command-delete-user",
+        "kind": "capability",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "DeleteUser",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:134"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.impl.UserServiceImpl|capability|handlesCommand|SaveUser",
+      "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:handles-command-save-user",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:45 -- concrete SaveUser method body with observable branching logic; kept on the implementing class distinct from pass-b's interface-declaration atoms on user.service.UserService (different subject, not a duplicate).",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-impl-userserviceimpl:handles-command-save-user",
+        "kind": "capability",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "SaveUser",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:45"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.impl.UserServiceImpl|capability|handlesCommand|UpdateUser",
+      "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:handles-command-update-user",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:152 -- concrete UpdateUser method body with observable branching logic; kept on the implementing class distinct from pass-b's interface-declaration atoms on user.service.UserService (different subject, not a duplicate).",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-impl-userserviceimpl:handles-command-update-user",
+        "kind": "capability",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "UpdateUser",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:152"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.impl.UserServiceImpl|capability|servesQuery|FindByUserId",
+      "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:serves-query-find-by-user-id",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:123 -- concrete FindByUserId method body with observable branching logic; kept on the implementing class distinct from pass-b's interface-declaration atoms on user.service.UserService (different subject, not a duplicate).",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-impl-userserviceimpl:serves-query-find-by-user-id",
+        "kind": "capability",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "FindByUserId",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:123"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.impl.UserServiceImpl|capability|servesQuery|FindByUserName",
+      "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:serves-query-find-by-user-name",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:113 -- concrete FindByUserName method body with observable branching logic; kept on the implementing class distinct from pass-b's interface-declaration atoms on user.service.UserService (different subject, not a duplicate).",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-impl-userserviceimpl:serves-query-find-by-user-name",
+        "kind": "capability",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "FindByUserName",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:113"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.impl.UserServiceImpl|capability|servesQuery|GetAllUsers",
+      "candidateAtomId": "atom:capability:user-service-impl-userserviceimpl:serves-query-get-all-users",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:103 -- concrete GetAllUsers method body with observable branching logic; kept on the implementing class distinct from pass-b's interface-declaration atoms on user.service.UserService (different subject, not a duplicate).",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-impl-userserviceimpl:serves-query-get-all-users",
+        "kind": "capability",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "GetAllUsers",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:103"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.UserService|capability|handlesCommand|deleteUser",
+      "candidateAtomId": "atom:capability:user-service-userservice:handles-deleteuser",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/UserService.java:21 -- interface declares deleteUser(...) as a genuine contract fact distinct from the implementing class (UserServiceImpl); kept as its own subject/atom, not merged with pass-a's Impl-attributed capability atoms.",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-userservice:handles-deleteuser",
+        "kind": "capability",
+        "subject": "user.service.UserService",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "deleteUser",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/UserService.java:21"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.UserService|capability|handlesCommand|saveUser",
+      "candidateAtomId": "atom:capability:user-service-userservice:handles-savecommand",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/UserService.java:13 -- interface declares saveUser(...) as a genuine contract fact distinct from the implementing class (UserServiceImpl); kept as its own subject/atom, not merged with pass-a's Impl-attributed capability atoms.",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-userservice:handles-savecommand",
+        "kind": "capability",
+        "subject": "user.service.UserService",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "saveUser",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/UserService.java:13"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.UserService|capability|handlesCommand|updateUser",
+      "candidateAtomId": "atom:capability:user-service-userservice:handles-updateuser",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/UserService.java:23 -- interface declares updateUser(...) as a genuine contract fact distinct from the implementing class (UserServiceImpl); kept as its own subject/atom, not merged with pass-a's Impl-attributed capability atoms.",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-userservice:handles-updateuser",
+        "kind": "capability",
+        "subject": "user.service.UserService",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "updateUser",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/UserService.java:23"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.UserService|capability|servesQuery|findByUserId",
+      "candidateAtomId": "atom:capability:user-service-userservice:serves-findbyuserid",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/UserService.java:18 -- interface declares findByUserId(...) as a genuine contract fact distinct from the implementing class (UserServiceImpl); kept as its own subject/atom, not merged with pass-a's Impl-attributed capability atoms.",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-userservice:serves-findbyuserid",
+        "kind": "capability",
+        "subject": "user.service.UserService",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findByUserId",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/UserService.java:18"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.UserService|capability|servesQuery|findByUserName",
+      "candidateAtomId": "atom:capability:user-service-userservice:serves-findbyusername",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/UserService.java:17 -- interface declares findByUserName(...) as a genuine contract fact distinct from the implementing class (UserServiceImpl); kept as its own subject/atom, not merged with pass-a's Impl-attributed capability atoms.",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-userservice:serves-findbyusername",
+        "kind": "capability",
+        "subject": "user.service.UserService",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findByUserName",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/UserService.java:17"
+        ]
+      }
+    },
+    {
+      "key": "capability|user.service.UserService|capability|servesQuery|getAllUsers",
+      "candidateAtomId": "atom:capability:user-service-userservice:serves-getallusers",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/UserService.java:15 -- interface declares getAllUsers(...) as a genuine contract fact distinct from the implementing class (UserServiceImpl); kept as its own subject/atom, not merged with pass-a's Impl-attributed capability atoms.",
+      "canonicalAtom": {
+        "id": "atom:capability:user-service-userservice:serves-getallusers",
+        "kind": "capability",
+        "subject": "user.service.UserService",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "getAllUsers",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/UserService.java:15"
+        ]
+      }
+    },
+    {
+      "key": "capability|waitorder.service.WaitListOrderService|capability|handlesCommand|modifyWaitListOrderStatus",
+      "candidateAtomId": "atom:capability:waitorder-service-waitlistorderservice:handles-modifywaitlistorderstatus",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/WaitListOrderService.java:24 -- interface declares modifyWaitListOrderStatus(...); pass-a has no counterpart atom at all for WaitListOrderService (interface or impl) in this chunk, so this is a genuine pass-b-only finding.",
+      "canonicalAtom": {
+        "id": "atom:capability:waitorder-service-waitlistorderservice:handles-modifywaitlistorderstatus",
+        "kind": "capability",
+        "subject": "waitorder.service.WaitListOrderService",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "modifyWaitListOrderStatus",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/WaitListOrderService.java:24"
+        ]
+      }
+    },
+    {
+      "key": "capability|waitorder.service.WaitListOrderService|capability|handlesCommand|updateOrder",
+      "candidateAtomId": "atom:capability:waitorder-service-waitlistorderservice:handles-updateorder",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/WaitListOrderService.java:19 -- interface declares updateOrder(...); pass-a has no counterpart atom at all for WaitListOrderService (interface or impl) in this chunk, so this is a genuine pass-b-only finding.",
+      "canonicalAtom": {
+        "id": "atom:capability:waitorder-service-waitlistorderservice:handles-updateorder",
+        "kind": "capability",
+        "subject": "waitorder.service.WaitListOrderService",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "updateOrder",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/WaitListOrderService.java:19"
+        ]
+      }
+    },
+    {
+      "key": "capability|waitorder.service.WaitListOrderService|capability|servesQuery|findOrderById",
+      "candidateAtomId": "atom:capability:waitorder-service-waitlistorderservice:serves-findorderbyid",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/WaitListOrderService.java:10 -- interface declares findOrderById(...); pass-a has no counterpart atom at all for WaitListOrderService (interface or impl) in this chunk, so this is a genuine pass-b-only finding.",
+      "canonicalAtom": {
+        "id": "atom:capability:waitorder-service-waitlistorderservice:serves-findorderbyid",
+        "kind": "capability",
+        "subject": "waitorder.service.WaitListOrderService",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findOrderById",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/WaitListOrderService.java:10"
+        ]
+      }
+    },
+    {
+      "key": "contract|verifycode.util.CookieUtil|specification|shapedAs|httponly-true-path-slash-root-maxage-parameterized-cookie",
+      "candidateAtomId": "atom:contract:verifycode-util-cookieutil:shaped-as-httponly-root-path-cookie",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/util/CookieUtil.java:21-23 -- addCookie sets cookie.setHttpOnly(true), cookie.setPath(\"/\"), and conditionally cookie.setMaxAge(maxAge); pass-b has no contract-kind atom for CookieUtil at all in this chunk.",
+      "canonicalAtom": {
+        "id": "atom:contract:verifycode-util-cookieutil:shaped-as-httponly-root-path-cookie",
+        "kind": "contract",
+        "subject": "verifycode.util.CookieUtil",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "httponly-true-path-slash-root-maxage-parameterized-cookie",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/util/CookieUtil.java:21",
+          "src:ts-verification-code-service/src/main/java/verifycode/util/CookieUtil.java:22",
+          "src:ts-verification-code-service/src/main/java/verifycode/util/CookieUtil.java:23"
+        ]
+      }
+    },
+    {
+      "key": "effect|user.service.impl.UserServiceImpl|effect|callsProvider|DELETE http://ts-auth-service/api/v1/users/{userId}",
+      "candidateAtomId": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-delete-user",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:183-186 -- restTemplate.exchange(...+\"/users/\"+userId, HttpMethod.DELETE, ...) is the same call as pass-b's callsprovider-delete-auth-user row.",
+      "canonicalAtom": {
+        "id": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-delete-user",
+        "kind": "effect",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "DELETE http://ts-auth-service/api/v1/users/{userId}",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:183",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:184",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:185",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:186"
+        ]
+      }
+    },
+    {
+      "key": "effect|user.service.impl.UserServiceImpl|effect|callsProvider|ts-auth-service:delete-auth-user-record",
+      "candidateAtomId": "atom:effect:user-service-impl-userserviceimpl:callsprovider-delete-auth-user",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:183-186 -- same restTemplate.exchange DELETE call as pass-a's calls-provider-ts-auth-service-delete-user row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-delete-user",
+        "kind": "effect",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "DELETE http://ts-auth-service/api/v1/users/{userId}",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:183",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:184",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:185",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:186"
+        ]
+      }
+    },
+    {
+      "key": "effect|user.service.impl.UserServiceImpl|effect|callsProvider|POST http://ts-auth-service/api/v1/auth",
+      "candidateAtomId": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-register",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:94-98 -- restTemplate.exchange(auth_service_url+\"/api/v1/auth\", HttpMethod.POST, ...) is the same call as pass-b's callsprovider-create-auth-user row.",
+      "canonicalAtom": {
+        "id": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-register",
+        "kind": "effect",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST http://ts-auth-service/api/v1/auth",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:94",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:95",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:96",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:97",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:98"
+        ]
+      }
+    },
+    {
+      "key": "effect|user.service.impl.UserServiceImpl|effect|callsProvider|ts-auth-service:create-auth-user-record",
+      "candidateAtomId": "atom:effect:user-service-impl-userserviceimpl:callsprovider-create-auth-user",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:94-98 -- same restTemplate.exchange POST call as pass-a's calls-provider-ts-auth-service-register row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:effect:user-service-impl-userserviceimpl:calls-provider-ts-auth-service-register",
+        "kind": "effect",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST http://ts-auth-service/api/v1/auth",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:94",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:95",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:96",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:97",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:98"
+        ]
+      }
+    },
+    {
+      "key": "effect|waitorder.utils.PollThread|effect|callsProvider|POST http://ts-preserve-service/api/v1/contactservice/preserve",
+      "candidateAtomId": "atom:effect:waitorder-utils-pollthread:calls-provider-ts-preserve-service",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:74-79 -- doPreserve() calls restTemplate.exchange(url+\"/api/v1/contactservice/preserve\", HttpMethod.POST, ...); same call as pass-b's callsprovider-preserve-on-poll row.",
+      "canonicalAtom": {
+        "id": "atom:effect:waitorder-utils-pollthread:calls-provider-ts-preserve-service",
+        "kind": "effect",
+        "subject": "waitorder.utils.PollThread",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST http://ts-preserve-service/api/v1/contactservice/preserve",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:74",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:75",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:76",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:77",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:79"
+        ]
+      }
+    },
+    {
+      "key": "effect|waitorder.utils.PollThread|effect|callsProvider|ts-preserve-service:preserve-order-on-poll",
+      "candidateAtomId": "atom:effect:waitorder-utils-pollthread:callsprovider-preserve-on-poll",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:74-79 -- same doPreserve()/restTemplate.exchange POST call as pass-a's calls-provider-ts-preserve-service row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:effect:waitorder-utils-pollthread:calls-provider-ts-preserve-service",
+        "kind": "effect",
+        "subject": "waitorder.utils.PollThread",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST http://ts-preserve-service/api/v1/contactservice/preserve",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:74",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:75",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:76",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:77",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:79"
+        ]
+      }
+    },
+    {
+      "key": "effect|verifycode.controller.VerifyCodeController|effect|mutatesFile|writes-jpeg-image-bytes-directly-to-http-response-outputstream",
+      "candidateAtomId": "atom:effect:verifycode-controller-verifycodecontroller:mutatesfile-write-jpeg-to-response-stream",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:34,40,44 -- imageCode() gets response.getOutputStream(), then ImageIO.write(...,\"JPEG\",os) or on exception os.write(error.getBytes()); pass-a has no effect-kind atom for this controller in this chunk.",
+      "canonicalAtom": {
+        "id": "atom:effect:verifycode-controller-verifycodecontroller:mutatesfile-write-jpeg-to-response-stream",
+        "kind": "effect",
+        "subject": "verifycode.controller.VerifyCodeController",
+        "axis": "effect",
+        "predicate": "mutatesFile",
+        "object": "writes-jpeg-image-bytes-directly-to-http-response-outputstream",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:34",
+          "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:40",
+          "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:44"
+        ]
+      }
+    },
+    {
+      "key": "effect|waitorder.service.Impl.WaitListOrderServiceImpl|effect|enqueues|background-pollthread-for-order-preservation-retry",
+      "candidateAtomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:enqueues-pollthread",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:163,166 -- triggerThread() constructs a PollThread and calls pollThread.start(); pass-a captured only a relation edge to PollThread (merged separately), not this behavioral enqueue effect.",
+      "canonicalAtom": {
+        "id": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:enqueues-pollthread",
+        "kind": "effect",
+        "subject": "waitorder.service.Impl.WaitListOrderServiceImpl",
+        "axis": "effect",
+        "predicate": "enqueues",
+        "object": "background-pollthread-for-order-preservation-retry",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:163",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:166"
+        ]
+      }
+    },
+    {
+      "key": "effect|waitorder.service.Impl.WaitListOrderServiceImpl|effect|writesTo|waitorder-database:insert-new-wait-list-order",
+      "candidateAtomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-insert-new-order",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:142 -- saveNewOrder() calls waitListOrderRepository.save(newWaitListOrder) on a newly constructed order; pass-a has no writesTo effect atom for this in the chunk.",
+      "canonicalAtom": {
+        "id": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-insert-new-order",
+        "kind": "effect",
+        "subject": "waitorder.service.Impl.WaitListOrderServiceImpl",
+        "axis": "effect",
+        "predicate": "writesTo",
+        "object": "waitorder-database:insert-new-wait-list-order",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:142"
+        ]
+      }
+    },
+    {
+      "key": "effect|waitorder.service.Impl.WaitListOrderServiceImpl|effect|writesTo|waitorder-database:update-existing-wait-list-order",
+      "candidateAtomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-update-order",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:108 -- updateOrder() calls waitListOrderRepository.save(old) after BeanUtils.copyProperties; pass-a has no writesTo effect atom for this update path.",
+      "canonicalAtom": {
+        "id": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-update-order",
+        "kind": "effect",
+        "subject": "waitorder.service.Impl.WaitListOrderServiceImpl",
+        "axis": "effect",
+        "predicate": "writesTo",
+        "object": "waitorder-database:update-existing-wait-list-order",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:108"
+        ]
+      }
+    },
+    {
+      "key": "effect|waitorder.service.Impl.WaitListOrderServiceImpl|effect|writesTo|waitorder-database:update-order-status-field",
+      "candidateAtomId": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-update-status",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:124-125 -- modifyWaitListOrderStatus() calls old.setStatus(status) then waitListOrderRepository.save(old); pass-a has no writesTo effect atom for this status-write path.",
+      "canonicalAtom": {
+        "id": "atom:effect:waitorder-service-impl-waitlistorderserviceimpl:writesto-update-status",
+        "kind": "effect",
+        "subject": "waitorder.service.Impl.WaitListOrderServiceImpl",
+        "axis": "effect",
+        "predicate": "writesTo",
+        "object": "waitorder-database:update-order-status-field",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:125"
+        ]
+      }
+    },
+    {
+      "key": "relation|waitorder.service.Impl.WaitListOrderServiceImpl|relation|calls|waitorder.utils.PollThread",
+      "candidateAtomId": "atom:relation:waitorder-service-impl-waitlistorderserviceimpl:calls-pollthread",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:163-166 -- triggerThread() constructs `new PollThread(...)` and calls pollThread.start(); same edge as pass-b's dependsOn-pollthread row, canonicalized under predicate calls since .start() is an actual method invocation.",
+      "canonicalAtom": {
+        "id": "atom:relation:waitorder-service-impl-waitlistorderserviceimpl:calls-pollthread",
+        "kind": "relation",
+        "subject": "waitorder.service.Impl.WaitListOrderServiceImpl",
+        "axis": "relation",
+        "predicate": "calls",
+        "object": "waitorder.utils.PollThread",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:163",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:165",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:166"
+        ]
+      }
+    },
+    {
+      "key": "relation|waitorder.service.Impl.WaitListOrderServiceImpl|relation|dependsOn|waitorder.utils.PollThread",
+      "candidateAtomId": "atom:relation:waitorder-service-impl-waitlistorderserviceimpl:depends-on-pollthread",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:163-166 -- same triggerThread()/PollThread construct-and-start edge as pass-a's calls-pollthread row; canonical atom shared under predicate calls.",
+      "canonicalAtom": {
+        "id": "atom:relation:waitorder-service-impl-waitlistorderserviceimpl:calls-pollthread",
+        "kind": "relation",
+        "subject": "waitorder.service.Impl.WaitListOrderServiceImpl",
+        "axis": "relation",
+        "predicate": "calls",
+        "object": "waitorder.utils.PollThread",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:163",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:165",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:166"
+        ]
+      }
+    },
+    {
+      "key": "relation|user.service.impl.UserServiceImpl|relation|calls|ts-auth-service:/api/v1/auth:POST",
+      "candidateAtomId": "atom:relation:user-service-impl-userserviceimpl:calls-ts-auth-service-post-auth",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:84,94 -- getServiceUrl(\"ts-auth-service\") then restTemplate.exchange(...+\"/api/v1/auth\", HttpMethod.POST, ...); pass-a captured only the effect-kind atom for this call, not a relation edge.",
+      "canonicalAtom": {
+        "id": "atom:relation:user-service-impl-userserviceimpl:calls-ts-auth-service-post-auth",
+        "kind": "relation",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "relation",
+        "predicate": "calls",
+        "object": "ts-auth-service:/api/v1/auth:POST",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:84",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:94"
+        ]
+      }
+    },
+    {
+      "key": "relation|user.service.impl.UserServiceImpl|relation|calls|ts-auth-service:/api/v1/users/{userId}:DELETE",
+      "candidateAtomId": "atom:relation:user-service-impl-userserviceimpl:calls-ts-auth-service-delete-users",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:181,183 -- deleteUserAuth() builds auth_service_url then restTemplate.exchange(...+\"/users/\"+userId, HttpMethod.DELETE, ...); pass-a captured only the effect-kind atom, not a relation edge.",
+      "canonicalAtom": {
+        "id": "atom:relation:user-service-impl-userserviceimpl:calls-ts-auth-service-delete-users",
+        "kind": "relation",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "relation",
+        "predicate": "calls",
+        "object": "ts-auth-service:/api/v1/users/{userId}:DELETE",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:181",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:183"
+        ]
+      }
+    },
+    {
+      "key": "relation|verifycode.service.impl.VerifyCodeServiceImpl|relation|dependsOn|verifycode.util.CookieUtil",
+      "candidateAtomId": "atom:relation:verifycode-service-impl-verifycodeserviceimpl:depends-on-cookieutil",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:10,93,98 -- imports CookieUtil and calls CookieUtil.getCookieByName/CookieUtil.addCookie; pass-a has no relation atom to CookieUtil in this chunk.",
+      "canonicalAtom": {
+        "id": "atom:relation:verifycode-service-impl-verifycodeserviceimpl:depends-on-cookieutil",
+        "kind": "relation",
+        "subject": "verifycode.service.impl.VerifyCodeServiceImpl",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "verifycode.util.CookieUtil",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:10",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:93",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:98"
+        ]
+      }
+    },
+    {
+      "key": "relation|waitorder.utils.PollThread|relation|calls|ts-preserve-service:/api/v1/contactservice/preserve:POST",
+      "candidateAtomId": "atom:relation:waitorder-utils-pollthread:calls-ts-preserve-service-post-preserve",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:43,75,79 -- getServiceUrl(\"ts-preserve-service\") then restTemplate.exchange(url+\"/api/v1/contactservice/preserve\", HttpMethod.POST, ...); pass-a captured only the effect-kind atom, not a relation edge.",
+      "canonicalAtom": {
+        "id": "atom:relation:waitorder-utils-pollthread:calls-ts-preserve-service-post-preserve",
+        "kind": "relation",
+        "subject": "waitorder.utils.PollThread",
+        "axis": "relation",
+        "predicate": "calls",
+        "object": "ts-preserve-service:/api/v1/contactservice/preserve:POST",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:43",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:75",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:79"
+        ]
+      }
+    },
+    {
+      "key": "relation|waitorder.utils.PollThread|relation|calls|waitorder.service.WaitListOrderService:modifyWaitListOrderStatus",
+      "candidateAtomId": "atom:relation:waitorder-utils-pollthread:calls-back-modifywaitlistorderstatus",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51,64 -- run() calls waitListOrderService.modifyWaitListOrderStatus(...) on both the expired and collected paths; pass-a only captured this call site as a semantic accountId-as-orderId observation, not a relation edge.",
+      "canonicalAtom": {
+        "id": "atom:relation:waitorder-utils-pollthread:calls-back-modifywaitlistorderstatus",
+        "kind": "relation",
+        "subject": "waitorder.utils.PollThread",
+        "axis": "relation",
+        "predicate": "calls",
+        "object": "waitorder.service.WaitListOrderService:modifyWaitListOrderStatus",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:64"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:wait-order-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-field-no-parsing-observed-at-entity-and-vo-declaration-sites",
+      "candidateAtomId": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-money-amount",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40 and ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33 -- both declare `private String price;` with no parse/arithmetic in this chunk; same cech observation as pass-b's cech-section-money-amount row.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-money-amount",
+        "kind": "semantic",
+        "subject": "ctx:wait-order-service-order-lifecycle",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:string-price-field-declared-with-no-parsing-or-arithmetic-observed-at-entity-and-vo-declaration-sites",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:wait-order-service-order-lifecycle|cech|sectionValue|section=money-amount:string-price-field-no-parse-or-arithmetic-observed-in-chunk",
+      "candidateAtomId": "atom:semantic:wait-order-service-order-lifecycle:cech-section-money-amount",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40 and ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33 -- same string price field declarations as pass-a's cech-section-money-amount row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-money-amount",
+        "kind": "semantic",
+        "subject": "ctx:wait-order-service-order-lifecycle",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:string-price-field-declared-with-no-parsing-or-arithmetic-observed-at-entity-and-vo-declaration-sites",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:wait-order-service-order-lifecycle|cech|sectionValue|section=order-status-code:int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-enum-backed-not-hardcoded-literal",
+      "candidateAtomId": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-order-status-code",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9-29 (enum constants) and :49-51 (getNameByCode) and ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:60 (constructor sets NOTPAID) -- enum-backed status vocabulary with cross-enum name lookup; same cech observation as pass-b's cech-section-order-status-code row, which additionally notes the getNameByCode delegation.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-order-status-code",
+        "kind": "semantic",
+        "subject": "ctx:wait-order-service-order-lifecycle",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=order-status-code:int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-enum-backed-with-getnamebycode-name-lookup-delegated-to-shared-orderstatus-enum",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:17",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:21",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:25",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:29",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:49",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:50",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:51",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:60"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:wait-order-service-order-lifecycle|cech|sectionValue|section=order-status-code:int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-local-enum-with-name-lookup-delegated-to-shared-orderstatus-enum",
+      "candidateAtomId": "atom:semantic:wait-order-service-order-lifecycle:cech-section-order-status-code",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9-29,49-51 -- same enum-backed status vocabulary and getNameByCode delegation as pass-a's cech-section-order-status-code row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ctx-wait-order-service-order-lifecycle:cech-section-order-status-code",
+        "kind": "semantic",
+        "subject": "ctx:wait-order-service-order-lifecycle",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=order-status-code:int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-enum-backed-with-getnamebycode-name-lookup-delegated-to-shared-orderstatus-enum",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:17",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:21",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:25",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:29",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:49",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:50",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:51",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:60"
+        ]
+      }
+    },
+    {
+      "key": "semantic|user.service.impl.UserServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-branch",
+      "candidateAtomId": "atom:semantic:user-service-impl-userserviceimpl:status-gates-response-envelope",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:73,76,106,109,143,146 -- Response(1,...) on success branches, Response(0,...) on not-found/already-exists branches; pass-b's row cites the same pattern plus findByUserName/findByUserId/updateUser sites (116,119,126,129,165,168), richer evidence for the same fact, so the union is kept as canonical.",
+      "canonicalAtom": {
+        "id": "atom:semantic:user-service-impl-userserviceimpl:status-gates-response-envelope",
+        "kind": "semantic",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-selects-result-carrying-success-branch-status-0-selects-not-found-or-already-exists-or-rejected-branch",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:73",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:76",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:106",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:109",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:116",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:119",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:126",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:129",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:143",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:146",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:165",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:168"
+        ]
+      }
+    },
+    {
+      "key": "semantic|user.service.impl.UserServiceImpl|semantic|meansInUse|response-status-1-selects-result-carrying-success-branch-status-0-selects-not-found-or-rejected-branch",
+      "candidateAtomId": "atom:semantic:user-service-impl-userserviceimpl:response-status-1-success-0-rejected-userservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:73-168 -- confirms the status-1/status-0 response envelope across all six methods; same fact as pass-a's status-gates-response-envelope row, canonicalized under predicate statusGates with the fuller (pass-b) ref set.",
+      "canonicalAtom": {
+        "id": "atom:semantic:user-service-impl-userserviceimpl:status-gates-response-envelope",
+        "kind": "semantic",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-selects-result-carrying-success-branch-status-0-selects-not-found-or-already-exists-or-rejected-branch",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:73",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:76",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:106",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:109",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:116",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:119",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:126",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:129",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:143",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:146",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:165",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:168"
+        ]
+      }
+    },
+    {
+      "key": "semantic|verifycode.controller.VerifyCodeController|semantic|meansInUse|on-ioexception-during-image-write-the-endpoint-writes-literal-error-text-bytes-to-the-response-output-stream-instead-of-image-bytes",
+      "candidateAtomId": "atom:semantic:verifycode-controller-verifycodecontroller:means-in-use-image-write-exception-writes-error-text",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:41,44 -- catch(IOException e) branch writes os.write(error.getBytes()) instead of the image bytes written at line 40; pass-b has no meansInUse atom for this branch (only a separate mutatesFile effect atom for the write mechanism).",
+      "canonicalAtom": {
+        "id": "atom:semantic:verifycode-controller-verifycodecontroller:means-in-use-image-write-exception-writes-error-text",
+        "kind": "semantic",
+        "subject": "verifycode.controller.VerifyCodeController",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "on-ioexception-during-image-write-the-endpoint-writes-literal-error-text-bytes-to-the-response-output-stream-instead-of-image-bytes",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:41",
+          "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:44"
+        ]
+      }
+    },
+    {
+      "key": "semantic|verifycode.controller.VerifyCodeController|semantic|meansInUse|verify-endpoint-returns-a-fixed-true-value-regardless-of-the-computed-verifycode-result-at-this-call-site",
+      "candidateAtomId": "atom:semantic:verifycode-controller-verifycodecontroller:means-in-use-verify-endpoint-fixed-true-return",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:53,55 -- `boolean result = verifyCodeService.verifyCode(...)` is computed but the method unconditionally `return true;`; pass-b has no atom for this in the chunk.",
+      "canonicalAtom": {
+        "id": "atom:semantic:verifycode-controller-verifycodecontroller:means-in-use-verify-endpoint-fixed-true-return",
+        "kind": "semantic",
+        "subject": "verifycode.controller.VerifyCodeController",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "verify-endpoint-returns-a-fixed-true-value-regardless-of-the-computed-verifycode-result-at-this-call-site",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:53",
+          "src:ts-verification-code-service/src/main/java/verifycode/controller/VerifyCodeController.java:55"
+        ]
+      }
+    },
+    {
+      "key": "semantic|verifycode.service.impl.VerifyCodeServiceImpl|semantic|meansInUse|received-code-matches-cached-code-via-case-insensitive-equalsignorecase-comparison",
+      "candidateAtomId": "atom:semantic:verifycode-service-impl-verifycodeserviceimpl:means-in-use-verifycode-case-insensitive-match",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:131 -- `if (code.equalsIgnoreCase(receivedCode))`; pass-b has no atom for this comparison in the chunk.",
+      "canonicalAtom": {
+        "id": "atom:semantic:verifycode-service-impl-verifycodeserviceimpl:means-in-use-verifycode-case-insensitive-match",
+        "kind": "semantic",
+        "subject": "verifycode.service.impl.VerifyCodeServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "received-code-matches-cached-code-via-case-insensitive-equalsignorecase-comparison",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:131"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.config.SecurityConfig|semantic|meansInUse|role-gate-and-permitall-path-matchers-name-the-order-service-route-prefix-/api/v1/orderservice/order-while-this-services-own-controller-is-mapped-under-the-/api/v1/waitorderservice-prefix",
+      "candidateAtomId": "atom:semantic:waitorder-config-securityconfig:means-in-use-path-scope-names-orderservice-prefix",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:30,74-80 and ts-wait-order-service/src/main/java/waitorder/controller/WaitListOrderController.java:20 -- SecurityConfig's `order` field/antMatchers target /api/v1/orderservice/order while @RequestMapping on the controller is /api/v1/waitorderservice; same observation as pass-b's antmatchers-target-different-service-path-prefix row.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-config-securityconfig:means-in-use-path-scope-names-orderservice-prefix",
+        "kind": "semantic",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "role-gate-and-permitall-path-matchers-target-the-order-service-route-prefix-/api/v1/orderservice/order-while-this-services-own-controller-is-mapped-under-the-/api/v1/waitorderservice-prefix",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:30",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:74",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:75",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:80",
+          "src:ts-wait-order-service/src/main/java/waitorder/controller/WaitListOrderController.java:20"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.config.SecurityConfig|semantic|meansInUse|antmatchers-target-/api/v1/orderservice/order-path-prefix-which-differs-from-this-services-own-/api/v1/waitorderservice-controller-mapping-prefix",
+      "candidateAtomId": "atom:semantic:waitorder-config-securityconfig:securityconfig-antmatchers-target-different-service-path-prefix",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:30,74,80 and ts-wait-order-service/src/main/java/waitorder/controller/WaitListOrderController.java:20 -- same path-prefix mismatch as pass-a's means-in-use-path-scope-names-orderservice-prefix row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-config-securityconfig:means-in-use-path-scope-names-orderservice-prefix",
+        "kind": "semantic",
+        "subject": "waitorder.config.SecurityConfig",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "role-gate-and-permitall-path-matchers-target-the-order-service-route-prefix-/api/v1/orderservice/order-while-this-services-own-controller-is-mapped-under-the-/api/v1/waitorderservice-prefix",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:30",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:74",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:75",
+          "src:ts-wait-order-service/src/main/java/waitorder/config/SecurityConfig.java:80",
+          "src:ts-wait-order-service/src/main/java/waitorder/controller/WaitListOrderController.java:20"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|identifiedBy|int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-enum-backed",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:identified-by-int-status-codes",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9,13,17,21,25,29 -- enum constants NOTPAID(0)..EXPIRED(5); same code-vocabulary fact as pass-b's waitlistorderstatus-code-vocabulary row.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorderstatus:identified-by-int-status-codes",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrderStatus",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-enum-backed",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:17",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:21",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:25",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:29"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|local-enum-int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:waitlistorderstatus-code-vocabulary",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9,13,17,21,25,29 -- same enum constant vocabulary as pass-a's identified-by-int-status-codes row; canonical atom shared under predicate identifiedBy.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorderstatus:identified-by-int-status-codes",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrderStatus",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "int-codes-0-notpaid-1-paid-2-collected-3-cancel-4-refunds-5-expired-enum-backed",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:17",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:21",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:25",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:29"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|getnamebycode-resolves-display-name-via-a-different-enum-types-code-table-edu-fudan-common-entity-orderstatus-rather-than-this-enums-own-values",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:means-in-use-getnamebycode-cross-enum-lookup",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:49-53 -- getNameByCode(int code) iterates edu.fudan.common.entity.OrderStatus.values(), not WaitListOrderStatus's own enum constants; same observation as pass-b's getnamebycode-delegates-to-shared-orderstatus-enum row.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorderstatus:means-in-use-getnamebycode-cross-enum-lookup",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrderStatus",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "getnamebycode-resolves-display-name-via-a-different-enum-types-code-table-edu-fudan-common-entity-orderstatus-rather-than-this-enums-own-values",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:49",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:50",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:51",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:52",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:53"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|getnamebycode-static-method-looks-up-display-name-from-shared-edu-fudan-common-orderstatus-enum-values-rather-than-from-local-waitlistorderstatus-entries",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:getnamebycode-delegates-to-shared-orderstatus-enum",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:49-53 -- same getNameByCode delegation to OrderStatus.values() as pass-a's means-in-use-getnamebycode-cross-enum-lookup row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorderstatus:means-in-use-getnamebycode-cross-enum-lookup",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrderStatus",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "getnamebycode-resolves-display-name-via-a-different-enum-types-code-table-edu-fudan-common-entity-orderstatus-rather-than-this-enums-own-values",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:49",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:50",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:51",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:52",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:53"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrderVO|semantic|meansInUse|date-field-stored-as-string-converted-via-stringutils-date2string-and-string2date-at-getter-setter-site",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistordervo:means-in-use-date-string-conversion",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:36-41 -- getDate()/setDate(Date) convert via StringUtils.String2Date/Date2String around the `date` string field; pass-b has no atom for this VO date accessor in the chunk.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistordervo:means-in-use-date-string-conversion",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrderVO",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "date-field-stored-as-string-converted-via-stringutils-date2string-and-string2date-at-getter-setter-site",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:36",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:37",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:40",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:41"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrderVO|semantic|meansInUse|price-represented-as-string-field-carried-from-request-body-without-parsing",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistordervo:means-in-use-price-string-no-parsing",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33 -- `private String price;` with no parse/arithmetic in this chunk; kept as its own per-class atom (subject WaitListOrderVO), distinct from the WaitListOrder-subject atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistordervo:means-in-use-price-string-no-parsing",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrderVO",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "price-represented-as-string-field-carried-from-request-body-without-parsing",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|createdtime-traveltime-waitutiltime-stored-as-string-fields-converted-via-stringutils-at-accessor-sites",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-time-fields-string-conversion",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:90,94,96 -- getCreatedTime/getWaitUtilTime/setCreatedTime all convert via StringUtils around string-typed time fields; pass-b has no combined atom covering all three time fields together.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-time-fields-string-conversion",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrder",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "createdtime-traveltime-waitutiltime-stored-as-string-fields-converted-via-stringutils-at-accessor-sites",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:90",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:94",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:96"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|gettraveltime-and-settraveltime-accessors-read-and-write-the-createdtime-field-rather-than-a-separate-traveltime-backing-field",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-settraveltime-writes-createdtime-field",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:92,100 -- getTravelTime() returns String2Date(createdTime) and setTravelTime(Date) assigns this.createdTime, not the travelTime field; same observation as pass-b's traveltime-accessor-reads-writes-createdtime-field row.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-settraveltime-writes-createdtime-field",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrder",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "gettraveltime-and-settraveltime-accessors-read-and-write-the-createdtime-field-rather-than-a-separate-traveltime-backing-field",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:90",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:92",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:100"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|traveltime-named-accessor-getters-setters-read-write-the-createdtime-backing-field-not-the-traveltime-field",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:traveltime-accessor-reads-writes-createdtime-field",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:90,92,100 -- same getTravelTime/setTravelTime-write-createdTime observation as pass-a's means-in-use-settraveltime-writes-createdtime-field row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-settraveltime-writes-createdtime-field",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrder",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "gettraveltime-and-settraveltime-accessors-read-and-write-the-createdtime-field-rather-than-a-separate-traveltime-backing-field",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:90",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:92",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:100"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|price-represented-as-string-field-no-parsing-observed-at-declaration-site",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-price-string-no-parsing",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40 -- `private String price;` with no parse/arithmetic in this chunk; kept as its own per-class atom (subject WaitListOrder).",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorder:means-in-use-price-string-no-parsing",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrder",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "price-represented-as-string-field-no-parsing-observed-at-declaration-site",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.service.Impl.WaitListOrderServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-branch",
+      "candidateAtomId": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:status-gates-response-envelope",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:44,48,104,110,136,144 -- Response(1,...) on success, Response(0,...) on not-found/already-exists branches; pass-b's row cites the same pattern plus getAllOrders/getAllWaitListOrders/modifyWaitListOrderStatus/triggerThread sites, richer evidence for the same fact, kept as canonical.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:status-gates-response-envelope",
+        "kind": "semantic",
+        "subject": "waitorder.service.Impl.WaitListOrderServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-selects-result-carrying-success-branch-status-0-selects-not-found-or-already-exists-or-rejected-branch",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:44",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:48",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:71",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:74",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:90",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:93",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:104",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:110",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:121",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:127",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:136",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:144",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:168",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:170"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.service.Impl.WaitListOrderServiceImpl|semantic|meansInUse|response-status-1-selects-result-carrying-success-branch-status-0-selects-not-found-or-rejected-branch",
+      "candidateAtomId": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:response-status-1-success-0-rejected-waitorderservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:44-170 -- confirms the status-1/status-0 response envelope across findOrderById/getAllOrders/getAllWaitListOrders/updateOrder/modifyWaitListOrderStatus/saveNewOrder/triggerThread; same fact as pass-a's status-gates-response-envelope row, canonicalized with the fuller ref set.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:status-gates-response-envelope",
+        "kind": "semantic",
+        "subject": "waitorder.service.Impl.WaitListOrderServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-selects-result-carrying-success-branch-status-0-selects-not-found-or-already-exists-or-rejected-branch",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:44",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:48",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:71",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:74",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:90",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:93",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:104",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:110",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:121",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:127",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:136",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:144",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:168",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:170"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.utils.PollThread|semantic|meansInUse|accountid-value-passed-as-the-orderid-argument-at-the-modifywaitlistorderstatus-call-site",
+      "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:means-in-use-accountid-as-orderid-argument",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51,64 and ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:116 -- both call sites pass waitListOrderVO.getAccountId() into the method's `orderId` parameter (per the modifyWaitListOrderStatus(int status, String orderId) signature); pass-b has no atom for this in the chunk.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-utils-pollthread:means-in-use-accountid-as-orderid-argument",
+        "kind": "semantic",
+        "subject": "waitorder.utils.PollThread",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "accountid-value-passed-as-the-orderid-argument-at-the-modifywaitlistorderstatus-call-site",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:64",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:116"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.utils.PollThread|semantic|statusGates|dopreserve-response-status-0-selects-retry-with-sleep-branch-other-status-values-select-collected-status-branch",
+      "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:status-gates-dopreserve-response-branch",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:54-66 -- if(postResult.getStatus()==0) sleeps and retries; else sets status COLLECTED and breaks; pass-b's status-2-collected-on-preserve-success row covers only the else branch with the specific COLLECTED code, so it is folded into this fuller two-branch description.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-utils-pollthread:status-gates-dopreserve-response-branch",
+        "kind": "semantic",
+        "subject": "waitorder.utils.PollThread",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "dopreserve-response-status-0-selects-retry-with-sleep-branch-status-2-collected-selected-on-successful-preserve-provider-response-branch",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:55",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:58",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:62",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:64"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.utils.PollThread|semantic|meansInUse|status-2-collected-selected-on-successful-preserve-provider-response",
+      "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:status-2-collected-on-preserve-success",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:62,64 -- else branch of the postResult.getStatus() gate sets status COLLECTED; this is the success half of the same if/else construct as pass-a's status-gates-dopreserve-response-branch row, folded into that fuller two-branch canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-utils-pollthread:status-gates-dopreserve-response-branch",
+        "kind": "semantic",
+        "subject": "waitorder.utils.PollThread",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "dopreserve-response-status-0-selects-retry-with-sleep-branch-status-2-collected-selected-on-successful-preserve-provider-response-branch",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:55",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:58",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:62",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:64"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.utils.PollThread|semantic|statusGates|run-loops-first-branch-executes-when-waituntil-time-value-is-later-than-currenttime-and-this-branch-sets-status-to-expired-then-exits-the-loop",
+      "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:status-gates-run-loop-waituntil-branch",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:48-52 -- `if(waitUntil.getTime()>currentTime)` sets status EXPIRED via modifyWaitListOrderStatus and breaks; same branch as pass-b's status-5-expired-on-waituntil-after-current row.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-utils-pollthread:status-gates-run-loop-waituntil-branch",
+        "kind": "semantic",
+        "subject": "waitorder.utils.PollThread",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "run-loops-first-branch-executes-when-waituntil-time-value-is-still-later-than-currenttime-and-this-branch-sets-status-5-expired-then-exits-the-loop",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:48",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:49",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:52"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.utils.PollThread|semantic|meansInUse|status-5-expired-selected-when-waituntil-time-is-still-after-current-time-in-poll-loop-branch",
+      "candidateAtomId": "atom:semantic:waitorder-utils-pollthread:status-5-expired-on-waituntil-after-current",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:48,49,51 -- same waitUntil>currentTime branch as pass-a's status-gates-run-loop-waituntil-branch row; canonical atom shared.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-utils-pollthread:status-gates-run-loop-waituntil-branch",
+        "kind": "semantic",
+        "subject": "waitorder.utils.PollThread",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "run-loops-first-branch-executes-when-waituntil-time-value-is-still-later-than-currenttime-and-this-branch-sets-status-5-expired-then-exits-the-loop",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:48",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:49",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:51",
+          "src:ts-wait-order-service/src/main/java/waitorder/utils/PollThread.java:52"
+        ]
+      }
+    },
+    {
+      "key": "semantic|verifycode.service.impl.VerifyCodeServiceImpl|semantic|meansInUse|captcha-expired-constant-value-1000-reused-as-cache-maximumsize-entry-count-and-as-cache-expireafteraccess-seconds-and-as-cookie-maxage-seconds",
+      "candidateAtomId": "atom:semantic:verifycode-service-impl-verifycodeserviceimpl:captcha-expired-constant-reused-three-units",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:30,40,41,98,102,120 -- CAPTCHA_EXPIRED=1000 is reused as cacheCode's maximumSize, expireAfterAccess seconds, and CookieUtil.addCookie's maxAge argument at three call sites; pass-a has no atom for this constant-reuse observation.",
+      "canonicalAtom": {
+        "id": "atom:semantic:verifycode-service-impl-verifycodeserviceimpl:captcha-expired-constant-reused-three-units",
+        "kind": "semantic",
+        "subject": "verifycode.service.impl.VerifyCodeServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "captcha-expired-constant-value-1000-reused-as-cache-maximumsize-entry-count-and-as-cache-expireafteraccess-seconds-and-as-cookie-maxage-seconds",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:30",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:40",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:41",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:98",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:102",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:120"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|status-0-notpaid-selected-as-initial-state-set-in-order-constructor",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:status-0-notpaid-initial-state",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:60 -- no-arg constructor sets `status = WaitListOrderStatus.NOTPAID.getCode();`; pass-a has no atom for this specific initial-state observation.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorderstatus:status-0-notpaid-initial-state",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrderStatus",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "status-0-notpaid-selected-as-initial-state-set-in-order-constructor",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:60",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:9"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrderStatus|semantic|meansInUse|status-1-paid-and-not-collected-branch",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorderstatus:status-1-paid-not-collected",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13 -- PAID(1,\"Paid & Not Collected\") is a specific enum entry's business meaning, distinct from the whole-vocabulary identifiedBy atom already adopted; kept as its own finer-grained observation.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-entity-waitlistorderstatus:status-1-paid-not-collected",
+        "kind": "semantic",
+        "subject": "waitorder.entity.WaitListOrderStatus",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "status-1-paid-and-not-collected-branch",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderStatus.java:13"
+        ]
+      }
+    },
+    {
+      "key": "semantic|waitorder.entity.WaitListOrder|semantic|meansInUse|price-field-declared-as-string-type-with-no-parse-or-arithmetic-observed-at-this-site",
+      "candidateAtomId": "atom:semantic:waitorder-entity-waitlistorder:price-field-string-no-parse-observed",
+      "pass": "pass-b",
+      "decision": "not-adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:40 (`private String price;`) and ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrderVO.java:33 (`private String price;`) -- this row attributes both declaration sites to a single WaitListOrder-subject atom, conflating two distinct classes' evidence under one subject. The already-adopted per-class atoms (means-in-use-price-string-no-parsing on WaitListOrder, and means-in-use-price-string-no-parsing on WaitListOrderVO) capture the same two facts precisely per their actual declaring class, so this conflated atom is dropped."
+    },
+    {
+      "key": "semantic|waitorder.service.Impl.WaitListOrderServiceImpl|semantic|statusGates|status-0-notpaid-and-1-paid-selected-as-active-wait-list-entries-other-statuses-excluded-from-result",
+      "candidateAtomId": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:active-wait-list-filter-status-0-1",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:83-89 -- getAllWaitListOrders() builds filterList=[NOTPAID.getCode(), PAID.getCode()] and filters orderList by `filterList.contains(WaitListOrder.getStatus())`; pass-a has no atom for this filter in the chunk.",
+      "canonicalAtom": {
+        "id": "atom:semantic:waitorder-service-impl-waitlistorderserviceimpl:active-wait-list-filter-status-0-1",
+        "kind": "semantic",
+        "subject": "waitorder.service.Impl.WaitListOrderServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-0-notpaid-and-1-paid-selected-as-active-wait-list-entries-other-statuses-excluded-from-result",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:83",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:84",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:85",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:88",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:89"
+        ]
+      }
+    },
+    {
+      "key": "state|user.service.impl.UserServiceImpl|state|persistsIn|user.repository.UserRepository",
+      "candidateAtomId": "atom:state:user-service-impl-userserviceimpl:persists-in-user-repository",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:70,164 -- userRepository.save(user) in saveUser and userRepository.save(newUser) in updateUser; pass-b has no state-kind atom for UserServiceImpl in this chunk at all.",
+      "canonicalAtom": {
+        "id": "atom:state:user-service-impl-userserviceimpl:persists-in-user-repository",
+        "kind": "state",
+        "subject": "user.service.impl.UserServiceImpl",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "user.repository.UserRepository",
+        "refs": [
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:70",
+          "src:ts-user-service/src/main/java/user/service/impl/UserServiceImpl.java:164"
+        ]
+      }
+    },
+    {
+      "key": "state|verifycode.service.impl.VerifyCodeServiceImpl|state|cachedIn|local-in-process-guava-cache-keyed-by-cookie-id-max-size-1000-expire-after-access-1000-seconds",
+      "candidateAtomId": "atom:state:verifycode-service-impl-verifycodeserviceimpl:cached-in-local-guava-cache",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:38-41,108,125 -- cacheCode is a Guava Cache with maximumSize/expireAfterAccess bound to CAPTCHA_EXPIRED, written via cacheCode.put(cookieId,strEnsure) and read via cacheCode.getIfPresent(cookieId); same cache as pass-b's cachedin-guava-local-cache row, which covers the definition+write but not the read at line 125.",
+      "canonicalAtom": {
+        "id": "atom:state:verifycode-service-impl-verifycodeserviceimpl:cached-in-local-guava-cache",
+        "kind": "state",
+        "subject": "verifycode.service.impl.VerifyCodeServiceImpl",
+        "axis": "state",
+        "predicate": "cachedIn",
+        "object": "local-in-process-guava-cache-keyed-by-cookie-id-max-size-1000-expire-after-access-1000-seconds",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:38",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:39",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:40",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:41",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:108",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:125"
+        ]
+      }
+    },
+    {
+      "key": "state|verifycode.service.impl.VerifyCodeServiceImpl|state|cachedIn|guava-local-cache-key-cookieid-value-captcha-string",
+      "candidateAtomId": "atom:state:verifycode-service-impl-verifycodeserviceimpl:cachedin-guava-local-cache",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:38-41,108 -- same Guava cacheCode definition and write as pass-a's cached-in-local-guava-cache row; canonical atom shared with the fuller (pass-a) ref set including the read at line 125.",
+      "canonicalAtom": {
+        "id": "atom:state:verifycode-service-impl-verifycodeserviceimpl:cached-in-local-guava-cache",
+        "kind": "state",
+        "subject": "verifycode.service.impl.VerifyCodeServiceImpl",
+        "axis": "state",
+        "predicate": "cachedIn",
+        "object": "local-in-process-guava-cache-keyed-by-cookie-id-max-size-1000-expire-after-access-1000-seconds",
+        "refs": [
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:38",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:39",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:40",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:41",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:108",
+          "src:ts-verification-code-service/src/main/java/verifycode/service/impl/VerifyCodeServiceImpl.java:125"
+        ]
+      }
+    },
+    {
+      "key": "state|waitorder.entity.WaitListOrder|state|persistsIn|waitorder.repository.WaitListOrderRepository, jpa hibernate ddl-auto=update",
+      "candidateAtomId": "atom:state:waitorder-entity-waitlistorder:persists-in-waitlistorderrepository",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:15 (@Entity), ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:142 (waitListOrderRepository.save), and application.yml:19 (spring.jpa.hibernate.ddl-auto: update) -- describes WHERE/how schema is managed, a different aspect from pass-b's entity-id-column-shape atom on the same subject; kept as a separate atom per alias-preservation.",
+      "canonicalAtom": {
+        "id": "atom:state:waitorder-entity-waitlistorder:persists-in-waitlistorderrepository",
+        "kind": "state",
+        "subject": "waitorder.entity.WaitListOrder",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "waitorder.repository.WaitListOrderRepository, jpa hibernate ddl-auto=update",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:15",
+          "src:ts-wait-order-service/src/main/java/waitorder/service/Impl/WaitListOrderServiceImpl.java:142",
+          "src:ts-wait-order-service/src/main/resources/application.yml:19"
+        ]
+      }
+    },
+    {
+      "key": "state|waitorder.entity.WaitListOrder|state|persistsIn|jpa-entity-table-with-generated-uuid-id-column-length-36",
+      "candidateAtomId": "atom:state:waitorder-entity-waitlistorder:persistsin-jpa-entity-table",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:15-20 -- @Entity, @GenericGenerator(name=\"jpa-uuid\",strategy=\"uuid\"), @Id, @GeneratedValue(generator=\"jpa-uuid\"), @Column(length=36) on the id field; describes the entity/id-column shape, a different aspect from pass-a's repository+ddl-auto atom on the same subject; kept as a separate atom.",
+      "canonicalAtom": {
+        "id": "atom:state:waitorder-entity-waitlistorder:persistsin-jpa-entity-table",
+        "kind": "state",
+        "subject": "waitorder.entity.WaitListOrder",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "jpa-entity-table-with-generated-uuid-id-column-length-36",
+        "refs": [
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:15",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:16",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:18",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:19",
+          "src:ts-wait-order-service/src/main/java/waitorder/entity/WaitListOrder.java:20"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+ "schema": "law-equation-surface/v0.5.3",
+ "id": "law-surface:train-ticket-money-v053",
+ "laws": [
+  {
+   "lawId": "surface:cech-surface-v052",
+   "conditionType": "closed-equational",
+   "witnessVariables": [
+    {
+     "variable": "e_cancel_insidepay",
+     "binding": {
+      "edge": [
+       "ctx:cancel-surface",
+       "ctx:inside-payment-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_insidepay_payment",
+     "binding": {
+      "edge": [
+       "ctx:inside-payment-surface",
+       "ctx:payment-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_cancel_order",
+     "binding": {
+      "edge": [
+       "ctx:cancel-surface",
+       "ctx:order-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_travel_basic",
+     "binding": {
+      "edge": [
+       "ctx:travel-surface",
+       "ctx:basic-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_consign_consignprice",
+     "binding": {
+      "edge": [
+       "ctx:consign-surface",
+       "ctx:consign-price-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_preserve_basic",
+     "binding": {
+      "edge": [
+       "ctx:preserve-surface",
+       "ctx:basic-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    }
+   ],
+   "forbiddenSupportGenerators": [
+    {
+     "support": [
+      "e_cancel_insidepay"
+     ]
+    },
+    {
+     "support": [
+      "e_insidepay_payment"
+     ]
+    },
+    {
+     "support": [
+      "e_cancel_order"
+     ]
+    },
+    {
+     "support": [
+      "e_travel_basic"
+     ]
+    },
+    {
+     "support": [
+      "e_consign_consignprice"
+     ]
+    },
+    {
+     "support": [
+      "e_preserve_basic"
+     ]
+    }
+   ]
+  }
+ ]
+}

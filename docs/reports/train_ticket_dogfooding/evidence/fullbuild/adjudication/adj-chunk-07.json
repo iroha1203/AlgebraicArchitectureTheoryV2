@@ -1,0 +1,1623 @@
+{
+ "chunkId": "chunk-07",
+ "adjudications": [
+  {
+   "key": "authority|config.SecurityConfig|authority|allowsCrossOrigin|origin-all-methods-all-headers-all-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:config-securityconfig:allows-cross-origin-all",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:54-59 — corsConfigurer registers addMapping(\"/**\") with allowedOrigins(ALL), allowedMethods(ALL), allowedHeaders(ALL), allowCredentials(false), maxAge(3600). Both passes describe the same CORS rule with wording drift; merged into one canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-securityconfig:allows-cross-origin-all",
+    "kind": "authority",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "wildcard-origin-all-methods-all-headers-allow-credentials-false-max-age-3600-on-/**",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:54",
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:58",
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:59"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-allow-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:config.SecurityConfig:allowsCrossOrigin:global-cors-config",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:54-59 — corsConfigurer registers addMapping(\"/**\") with allowedOrigins(ALL), allowedMethods(ALL), allowedHeaders(ALL), allowCredentials(false), maxAge(3600). Both passes describe the same CORS rule with wording drift; merged into one canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-securityconfig:allows-cross-origin-all",
+    "kind": "authority",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "wildcard-origin-all-methods-all-headers-allow-credentials-false-max-age-3600-on-/**",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:54",
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:58",
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:59"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|role-admin-required-for-delete-/api/v1/configservice/configs/*",
+   "candidateAtomId": "atom:authority:config-securityconfig:requires-role-admin-delete-configs",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:77 — antMatchers(DELETE, \"/api/v1/configservice/configs/*\").hasAnyRole(admin). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-securityconfig:requires-role-admin-delete-configs",
+    "kind": "authority",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "role-admin-required-for-delete-/api/v1/configservice/configs/*",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:77"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|ADMIN-role-on-delete-/api/v1/configservice/configs/*",
+   "candidateAtomId": "atom:authority:config.SecurityConfig:requiresRole:delete-configs-admin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:77 — antMatchers(DELETE, \"/api/v1/configservice/configs/*\").hasAnyRole(admin). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-securityconfig:requires-role-admin-delete-configs",
+    "kind": "authority",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "role-admin-required-for-delete-/api/v1/configservice/configs/*",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:77"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|role-admin-required-for-post-/api/v1/configservice/configs",
+   "candidateAtomId": "atom:authority:config-securityconfig:requires-role-admin-post-configs",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:75 — antMatchers(POST, \"/api/v1/configservice/configs\").hasAnyRole(admin). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-securityconfig:requires-role-admin-post-configs",
+    "kind": "authority",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "role-admin-required-for-post-/api/v1/configservice/configs",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:75"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|ADMIN-role-on-post-/api/v1/configservice/configs",
+   "candidateAtomId": "atom:authority:config.SecurityConfig:requiresRole:post-configs-admin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:75 — antMatchers(POST, \"/api/v1/configservice/configs\").hasAnyRole(admin). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-securityconfig:requires-role-admin-post-configs",
+    "kind": "authority",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "role-admin-required-for-post-/api/v1/configservice/configs",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:75"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|role-admin-required-for-put-/api/v1/configservice/configs",
+   "candidateAtomId": "atom:authority:config-securityconfig:requires-role-admin-put-configs",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:76 — antMatchers(PUT, \"/api/v1/configservice/configs\").hasAnyRole(admin). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-securityconfig:requires-role-admin-put-configs",
+    "kind": "authority",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "role-admin-required-for-put-/api/v1/configservice/configs",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:76"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|ADMIN-role-on-put-/api/v1/configservice/configs",
+   "candidateAtomId": "atom:authority:config.SecurityConfig:requiresRole:put-configs-admin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:76 — antMatchers(PUT, \"/api/v1/configservice/configs\").hasAnyRole(admin). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-securityconfig:requires-role-admin-put-configs",
+    "kind": "authority",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "role-admin-required-for-put-/api/v1/configservice/configs",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:76"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.controller.ConfigController|authority|allowsCrossOrigin|origin-all-controller-level-crossorigin-annotation-on-configs-endpoints",
+   "candidateAtomId": "atom:authority:config-controller-configcontroller:allows-cross-origin-annotation",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/controller/ConfigController.java:35,42,49,57,64 — each of the five /configs* endpoints carries @CrossOrigin(origins = \"*\"). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-configcontroller:allows-cross-origin-annotation",
+    "kind": "authority",
+    "subject": "ts-config-service.ConfigController",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "wildcard-origin-crossorigin-annotation-on-configs-endpoints",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:35",
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:42",
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:49",
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:57",
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:64"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.controller.ConfigController|authority|allowsCrossOrigin|wildcard-origin-cross-origin-annotation-on-configs-endpoints",
+   "candidateAtomId": "atom:authority:config.controller.ConfigController:allowsCrossOrigin:annotation-configs-endpoints",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/controller/ConfigController.java:35,42,49,57,64 — each of the five /configs* endpoints carries @CrossOrigin(origins = \"*\"). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-configcontroller:allows-cross-origin-annotation",
+    "kind": "authority",
+    "subject": "ts-config-service.ConfigController",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "wildcard-origin-crossorigin-annotation-on-configs-endpoints",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:35",
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:42",
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:49",
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:57",
+     "src:ts-config-service/src/main/java/config/controller/ConfigController.java:64"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.entity.TripResponse|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-entity-tripresponse",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:14 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.entity.TripResponse vs common.entity.TripResponse); merged to canonical service-dir subject ts-common.TripResponse.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-tripresponse",
+    "kind": "component",
+    "subject": "ts-common.TripResponse",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:14"
+    ]
+   }
+  },
+  {
+   "key": "component|common.entity.TripResponse|static||",
+   "candidateAtomId": "atom:component:common.entity.TripResponse",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:14 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.entity.TripResponse vs common.entity.TripResponse); merged to canonical service-dir subject ts-common.TripResponse.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-tripresponse",
+    "kind": "component",
+    "subject": "ts-common.TripResponse",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:14"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.entity.Type|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-entity-type",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/Type.java:8 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.entity.Type vs common.entity.Type); merged to canonical service-dir subject ts-common.Type.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-type",
+    "kind": "component",
+    "subject": "ts-common.Type",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:8"
+    ]
+   }
+  },
+  {
+   "key": "component|common.entity.Type|static||",
+   "candidateAtomId": "atom:component:common.entity.Type",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/Type.java:8 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.entity.Type vs common.entity.Type); merged to canonical service-dir subject ts-common.Type.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-type",
+    "kind": "component",
+    "subject": "ts-common.Type",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:8"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.entity.User|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-entity-user",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/User.java:18 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.entity.User vs common.entity.User); merged to canonical service-dir subject ts-common.User.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-user",
+    "kind": "component",
+    "subject": "ts-common.User",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/User.java:18"
+    ]
+   }
+  },
+  {
+   "key": "component|common.entity.User|static||",
+   "candidateAtomId": "atom:component:common.entity.User",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/User.java:18 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.entity.User vs common.entity.User); merged to canonical service-dir subject ts-common.User.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-user",
+    "kind": "component",
+    "subject": "ts-common.User",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/User.java:18"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.exception.BaseException|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-exception-baseexception",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/exception/BaseException.java:6 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.exception.BaseException vs common.exception.BaseException); merged to canonical service-dir subject ts-common.BaseException.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-baseexception",
+    "kind": "component",
+    "subject": "ts-common.BaseException",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/exception/BaseException.java:6"
+    ]
+   }
+  },
+  {
+   "key": "component|common.exception.BaseException|static||",
+   "candidateAtomId": "atom:component:common.exception.BaseException",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/exception/BaseException.java:6 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.exception.BaseException vs common.exception.BaseException); merged to canonical service-dir subject ts-common.BaseException.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-baseexception",
+    "kind": "component",
+    "subject": "ts-common.BaseException",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/exception/BaseException.java:6"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.exception.TokenException|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-exception-tokenexception",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.exception.TokenException vs common.exception.TokenException); merged to canonical service-dir subject ts-common.TokenException.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-tokenexception",
+    "kind": "component",
+    "subject": "ts-common.TokenException",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6"
+    ]
+   }
+  },
+  {
+   "key": "component|common.exception.TokenException|static||",
+   "candidateAtomId": "atom:component:common.exception.TokenException",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.exception.TokenException vs common.exception.TokenException); merged to canonical service-dir subject ts-common.TokenException.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-tokenexception",
+    "kind": "component",
+    "subject": "ts-common.TokenException",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.security.jwt.JWTFilter|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-security-jwt-jwtfilter",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:17 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.security.jwt.JWTFilter vs common.security.jwt.JWTFilter); merged to canonical service-dir subject ts-common.JWTFilter.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-jwtfilter",
+    "kind": "component",
+    "subject": "ts-common.JWTFilter",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:17"
+    ]
+   }
+  },
+  {
+   "key": "component|common.security.jwt.JWTFilter|static||",
+   "candidateAtomId": "atom:component:common.security.jwt.JWTFilter",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:17 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.security.jwt.JWTFilter vs common.security.jwt.JWTFilter); merged to canonical service-dir subject ts-common.JWTFilter.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-jwtfilter",
+    "kind": "component",
+    "subject": "ts-common.JWTFilter",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:17"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.security.jwt.JWTUtil|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-security-jwt-jwtutil",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:24 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.security.jwt.JWTUtil vs common.security.jwt.JWTUtil); merged to canonical service-dir subject ts-common.JWTUtil.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-jwtutil",
+    "kind": "component",
+    "subject": "ts-common.JWTUtil",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:24"
+    ]
+   }
+  },
+  {
+   "key": "component|common.security.jwt.JWTUtil|static||",
+   "candidateAtomId": "atom:component:common.security.jwt.JWTUtil",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:24 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.security.jwt.JWTUtil vs common.security.jwt.JWTUtil); merged to canonical service-dir subject ts-common.JWTUtil.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-jwtutil",
+    "kind": "component",
+    "subject": "ts-common.JWTUtil",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:24"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.util.JsonUtils|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-util-jsonutils",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:13 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.util.JsonUtils vs common.util.JsonUtils); merged to canonical service-dir subject ts-common.JsonUtils.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-jsonutils",
+    "kind": "component",
+    "subject": "ts-common.JsonUtils",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:13"
+    ]
+   }
+  },
+  {
+   "key": "component|common.util.JsonUtils|static||",
+   "candidateAtomId": "atom:component:common.util.JsonUtils",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:13 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.util.JsonUtils vs common.util.JsonUtils); merged to canonical service-dir subject ts-common.JsonUtils.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-jsonutils",
+    "kind": "component",
+    "subject": "ts-common.JsonUtils",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:13"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.util.Response|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-util-response",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/Response.java:15 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.util.Response vs common.util.Response); merged to canonical service-dir subject ts-common.Response.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-response",
+    "kind": "component",
+    "subject": "ts-common.Response",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/Response.java:15"
+    ]
+   }
+  },
+  {
+   "key": "component|common.util.Response|static||",
+   "candidateAtomId": "atom:component:common.util.Response",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/Response.java:15 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.util.Response vs common.util.Response); merged to canonical service-dir subject ts-common.Response.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-response",
+    "kind": "component",
+    "subject": "ts-common.Response",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/Response.java:15"
+    ]
+   }
+  },
+  {
+   "key": "component|edu.fudan.common.util.StringUtils|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-util-stringutils",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:7 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.util.StringUtils vs common.util.StringUtils); merged to canonical service-dir subject ts-common.StringUtils.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-stringutils",
+    "kind": "component",
+    "subject": "ts-common.StringUtils",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:7"
+    ]
+   }
+  },
+  {
+   "key": "component|common.util.StringUtils|static||",
+   "candidateAtomId": "atom:component:common.util.StringUtils",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:7 — class/file declaration confirmed. Both passes name the same class under different package-path spellings (edu.fudan.common.util.StringUtils vs common.util.StringUtils); merged to canonical service-dir subject ts-common.StringUtils.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-common-stringutils",
+    "kind": "component",
+    "subject": "ts-common.StringUtils",
+    "axis": "static",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:7"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-config-service.application.yml|static||",
+   "candidateAtomId": "atom:component:ts-config-service-applicationyml",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/resources/application.yml:1 — Spring Boot application.yml config root. Both passes flag the same config file under different subject spellings; merged.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-config-service-applicationyml",
+    "kind": "component",
+    "subject": "ts-config-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-config-service/src/main/resources/application.yml:1"
+    ]
+   }
+  },
+  {
+   "key": "component|config.applicationYmlConfig|static||",
+   "candidateAtomId": "atom:component:config.applicationYmlConfig",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/resources/application.yml:1 — Spring Boot application.yml config root. Both passes flag the same config file under different subject spellings; merged.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-config-service-applicationyml",
+    "kind": "component",
+    "subject": "ts-config-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-config-service/src/main/resources/application.yml:1"
+    ]
+   }
+  },
+  {
+   "key": "relation|config.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:config-securityconfig:depends-on-jwtfilter",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:82 — addFilterBefore(new JWTFilter(), ...) inside configure(). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-config-service-securityconfig:depends-on-jwtfilter",
+    "kind": "relation",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-common.JWTFilter",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:82"
+    ]
+   }
+  },
+  {
+   "key": "relation|config.SecurityConfig|relation|dependsOn|common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:config.SecurityConfig:dependsOn:common.security.jwt.JWTFilter",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:82 — addFilterBefore(new JWTFilter(), ...) inside configure(). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-config-service-securityconfig:depends-on-jwtfilter",
+    "kind": "relation",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-common.JWTFilter",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:82"
+    ]
+   }
+  },
+  {
+   "key": "relation|config.init.InitData|relation|dependsOn|config.service.ConfigService",
+   "candidateAtomId": "atom:relation:config-init-initdata:depends-on-configservice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/init/InitData.java:25 — service.create(config, null) is an actual method invocation on the autowired ConfigService, not just a structural field dependency. Same underlying fact in both passes (predicate drift dependsOn vs calls); merged using the more precise 'calls' predicate matching the source's actual invocation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-config-service-initdata:calls-configservice",
+    "kind": "relation",
+    "subject": "ts-config-service.InitData",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-config-service.ConfigService",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/init/InitData.java:25"
+    ]
+   }
+  },
+  {
+   "key": "relation|config.init.InitData|relation|calls|config.service.ConfigService",
+   "candidateAtomId": "atom:relation:config.init.InitData:calls:config.service.ConfigService",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/init/InitData.java:25 — service.create(config, null) is an actual method invocation on the autowired ConfigService, not just a structural field dependency. Same underlying fact in both passes (predicate drift dependsOn vs calls); merged using the more precise 'calls' predicate matching the source's actual invocation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-config-service-initdata:calls-configservice",
+    "kind": "relation",
+    "subject": "ts-config-service.InitData",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-config-service.ConfigService",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/init/InitData.java:25"
+    ]
+   }
+  },
+  {
+   "key": "relation|edu.fudan.common.exception.TokenException|relation|dependsOn|edu.fudan.common.exception.BaseException",
+   "candidateAtomId": "atom:relation:edu-fudan-common-exception-tokenexception:depends-on-baseexception",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6 — 'class TokenException extends BaseException', a class-extension relation, not an interface implementation. Same fact in both passes; merged using 'dependsOn' since pass-b's 'implements' predicate misdescribes class extension as interface implementation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-common-tokenexception:depends-on-baseexception",
+    "kind": "relation",
+    "subject": "ts-common.TokenException",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-common.BaseException",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6"
+    ]
+   }
+  },
+  {
+   "key": "relation|common.exception.TokenException|relation|implements|common.exception.BaseException",
+   "candidateAtomId": "atom:relation:common.exception.TokenException:implements:common.exception.BaseException",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6 — 'class TokenException extends BaseException', a class-extension relation, not an interface implementation. Same fact in both passes; merged using 'dependsOn' since pass-b's 'implements' predicate misdescribes class extension as interface implementation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-common-tokenexception:depends-on-baseexception",
+    "kind": "relation",
+    "subject": "ts-common.TokenException",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-common.BaseException",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6"
+    ]
+   }
+  },
+  {
+   "key": "relation|edu.fudan.common.security.jwt.JWTFilter|relation|calls|edu.fudan.common.security.jwt.JWTUtil",
+   "candidateAtomId": "atom:relation:edu-fudan-common-security-jwt-jwtfilter:calls-jwtutil",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:23-25 — doFilterInternal calls JWTUtil.getJWTAuthentication(...). Same fact, same predicate in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-common-jwtfilter:calls-jwtutil",
+    "kind": "relation",
+    "subject": "ts-common.JWTFilter",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-common.JWTUtil",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:23",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:25"
+    ]
+   }
+  },
+  {
+   "key": "relation|common.security.jwt.JWTFilter|relation|calls|common.security.jwt.JWTUtil",
+   "candidateAtomId": "atom:relation:common.security.jwt.JWTFilter:calls:common.security.jwt.JWTUtil",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:23-25 — doFilterInternal calls JWTUtil.getJWTAuthentication(...). Same fact, same predicate in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-common-jwtfilter:calls-jwtutil",
+    "kind": "relation",
+    "subject": "ts-common.JWTFilter",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-common.JWTUtil",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:23",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:25"
+    ]
+   }
+  },
+  {
+   "key": "semantic|config.repository.ConfigRepository|semantic|identifiedBy|config-looked-up-by-name-field-which-is-also-the-jpa-id-not-a-separate-numeric-id",
+   "candidateAtomId": "atom:semantic:config-repository-configrepository:lookup-by-name",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/entity/Config.java:17 (@Id on `name`) and config/repository/ConfigRepository.java:19,35 (findByName/deleteByName, no numeric id anywhere). Both passes state the identical fact — name is the identity/lookup key — attributed to different subjects (repository vs entity); merged onto the entity where @Id is actually declared.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-config:identifiedby-name-key",
+    "kind": "semantic",
+    "subject": "ts-config-service.Config",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "name-field-declared-as-jpa-id-on-config-entity-and-used-as-lookup-key-in-configrepository-findbyname-and-deletebyname-not-a-separate-numeric-id",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/entity/Config.java:17",
+     "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:19",
+     "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:35"
+    ]
+   }
+  },
+  {
+   "key": "semantic|config.entity.Config|semantic|identifiedBy|config-looked-up-by-name-string-primary-key-not-surrogate-id",
+   "candidateAtomId": "atom:semantic:config.entity.Config:identifiedBy:name-string-key",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/entity/Config.java:17 (@Id on `name`) and config/repository/ConfigRepository.java:19,35 (findByName/deleteByName, no numeric id anywhere). Both passes state the identical fact — name is the identity/lookup key — attributed to different subjects (repository vs entity); merged onto the entity where @Id is actually declared.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-config:identifiedby-name-key",
+    "kind": "semantic",
+    "subject": "ts-config-service.Config",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "name-field-declared-as-jpa-id-on-config-entity-and-used-as-lookup-key-in-configrepository-findbyname-and-deletebyname-not-a-separate-numeric-id",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/entity/Config.java:17",
+     "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:19",
+     "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:35"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:ts-common-shared-entities|cech|sectionValue|section=money-amount:string-price-field-not-parsed-at-declaration-site",
+   "candidateAtomId": "atom:semantic:ctx-ts-common-shared-entities:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54,58 — priceForEconomyClass/priceForConfortClass are String, unparsed at declaration. Same cech section fact under two different candidate context ids (entities-only vs entities+utils); merged onto pass-a's narrower context id since the cited lines are entity-only (utils classes not implicated).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-ts-common-shared-entities:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:ts-common-shared-entities",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:string-price-field-not-parsed-at-declaration-site",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:58"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:ts-common-shared-entities-and-utils|cech|sectionValue|section=money-amount:string-price-field-unparsed-at-declaration-site",
+   "candidateAtomId": "atom:semantic:ts-common-shared-entities-and-utils:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54,58 — priceForEconomyClass/priceForConfortClass are String, unparsed at declaration. Same cech section fact under two different candidate context ids (entities-only vs entities+utils); merged onto pass-a's narrower context id since the cited lines are entity-only (utils classes not implicated).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-ts-common-shared-entities:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:ts-common-shared-entities",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:string-price-field-not-parsed-at-declaration-site",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:58"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.entity.TripResponse|semantic|identifiedBy|price-for-economy-and-comfort-class-represented-as-string-fields-no-parsing-at-declaration-site",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-entity-tripresponse:price-string-fields",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54,58 — same fields as above. Same fact, predicate drift (identifiedBy vs meansInUse); merged using meansInUse since this describes a representation nuance, not an identity key.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-tripresponse:means-in-use-price-string-fields",
+    "kind": "semantic",
+    "subject": "ts-common.TripResponse",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "price-for-economy-and-comfort-class-represented-as-string-fields-not-parsed-at-declaration-site",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:58"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.entity.TripResponse|semantic|meansInUse|price-fields-represented-as-string-not-parsed-at-declaration-site",
+   "candidateAtomId": "atom:semantic:common.entity.TripResponse:meansInUse:price-string-fields",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54,58 — same fields as above. Same fact, predicate drift (identifiedBy vs meansInUse); merged using meansInUse since this describes a representation nuance, not an identity key.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-tripresponse:means-in-use-price-string-fields",
+    "kind": "semantic",
+    "subject": "ts-common.TripResponse",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "price-for-economy-and-comfort-class-represented-as-string-fields-not-parsed-at-declaration-site",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:58"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.entity.Type|semantic|identifiedBy|train-type-code-g-d-z-t-k-mapped-to-index-one-through-five",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-entity-type:train-type-code",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/Type.java:12,16,20,24,28 — enum constants G(\"G\",1), D(\"D\",2), Z(\"Z\",3), T(\"T\",4), K(\"K\",5). Same fact and predicate in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-type:identifiedby-train-type-code",
+    "kind": "semantic",
+    "subject": "ts-common.Type",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "train-type-code-name-pairs-g-d-z-t-k-mapped-to-index-one-through-five",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:12",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:16",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:20",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:24",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:28"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.entity.Type|semantic|identifiedBy|train-type-code-name-pairs-G-D-Z-T-K-index-1-to-5",
+   "candidateAtomId": "atom:semantic:common.entity.Type:identifiedBy:train-type-code-vocabulary",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/Type.java:12,16,20,24,28 — enum constants G(\"G\",1), D(\"D\",2), Z(\"Z\",3), T(\"T\",4), K(\"K\",5). Same fact and predicate in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-type:identifiedby-train-type-code",
+    "kind": "semantic",
+    "subject": "ts-common.Type",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "train-type-code-name-pairs-g-d-z-t-k-mapped-to-index-one-through-five",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:12",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:16",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:20",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:24",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:28"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTUtil|semantic|identifiedBy|authorization-header-value-prefixed-bearer-space-selects-token-substring-from-index-seven",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtutil:bearer-token-header",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:90-92 — getTokenFromHeader checks startsWith(\"Bearer \") then substring(7,...). Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jwtutil:means-in-use-bearer-prefix-strip",
+    "kind": "semantic",
+    "subject": "ts-common.JWTUtil",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "authorization-header-value-prefixed-bearer-space-stripped-via-substring-from-index-seven",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:90",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:91",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:92"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.security.jwt.JWTUtil|semantic|meansInUse|bearer-prefix-stripped-via-substring-7-from-authorization-header",
+   "candidateAtomId": "atom:semantic:common.security.jwt.JWTUtil:meansInUse:bearer-prefix-strip",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:90-92 — getTokenFromHeader checks startsWith(\"Bearer \") then substring(7,...). Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jwtutil:means-in-use-bearer-prefix-strip",
+    "kind": "semantic",
+    "subject": "ts-common.JWTUtil",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "authorization-header-value-prefixed-bearer-space-stripped-via-substring-from-index-seven",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:90",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:91",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:92"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTUtil|semantic|identifiedBy|jwt-signing-key-derived-from-base64-encoded-literal-string-secret",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtutil:hardcoded-signing-key",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:31 — secretKey = Base64.getEncoder().encodeToString(\"secret\".getBytes()). Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jwtutil:means-in-use-hardcoded-signing-secret",
+    "kind": "semantic",
+    "subject": "ts-common.JWTUtil",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "jwt-signing-key-derived-from-base64-encoded-literal-string-secret",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:31"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.security.jwt.JWTUtil|semantic|meansInUse|hardcoded-literal-secret-base64-encoded-used-as-jwt-signing-key",
+   "candidateAtomId": "atom:semantic:common.security.jwt.JWTUtil:meansInUse:hardcoded-signing-secret",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:31 — secretKey = Base64.getEncoder().encodeToString(\"secret\".getBytes()). Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jwtutil:means-in-use-hardcoded-signing-secret",
+    "kind": "semantic",
+    "subject": "ts-common.JWTUtil",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "jwt-signing-key-derived-from-base64-encoded-literal-string-secret",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:31"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTUtil|semantic|identifiedBy|roles-claim-in-jwt-token-body-mapped-to-granted-authorities-for-spring-security",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtutil:roles-claim",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:41,84,86 — getAuthorities() maps getRole(token) (claimsJws.getBody().get(\"roles\", List.class)) into SimpleGrantedAuthority. Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jwtutil:means-in-use-roles-claim-authorities",
+    "kind": "semantic",
+    "subject": "ts-common.JWTUtil",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "roles-claim-in-jwt-token-body-mapped-to-granted-authorities-for-spring-security",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:41",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:84",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:86"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.security.jwt.JWTUtil|semantic|meansInUse|roles-claim-list-extracted-from-jwt-body-as-granted-authorities",
+   "candidateAtomId": "atom:semantic:common.security.jwt.JWTUtil:meansInUse:roles-claim-authorities",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:41,84,86 — getAuthorities() maps getRole(token) (claimsJws.getBody().get(\"roles\", List.class)) into SimpleGrantedAuthority. Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jwtutil:means-in-use-roles-claim-authorities",
+    "kind": "semantic",
+    "subject": "ts-common.JWTUtil",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "roles-claim-in-jwt-token-body-mapped-to-granted-authorities-for-spring-security",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:41",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:84",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:86"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.JsonUtils|semantic|statusGates|returns-null-on-io-exception-or-null-pointer-exception-branch-else-returns-serialized-or-deserialized-value",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-jsonutils:null-on-exception-branch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:31,63,65 — object2Json catches IOException and returns null; json2Object catches NullPointerException and IOException and returns null. Same fact, predicate drift; merged using statusGates (matches sibling branch-return atoms in this chunk).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jsonutils:status-gates-null-on-exception-branch",
+    "kind": "semantic",
+    "subject": "ts-common.JsonUtils",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "returns-null-on-io-exception-or-null-pointer-exception-branch-else-returns-serialized-or-deserialized-value",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:31",
+     "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:63",
+     "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:65"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.util.JsonUtils|semantic|meansInUse|returns-null-on-parse-exception-branch-instead-of-propagating",
+   "candidateAtomId": "atom:semantic:common.util.JsonUtils:meansInUse:returns-null-on-parse-exception",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:31,63,65 — object2Json catches IOException and returns null; json2Object catches NullPointerException and IOException and returns null. Same fact, predicate drift; merged using statusGates (matches sibling branch-return atoms in this chunk).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jsonutils:status-gates-null-on-exception-branch",
+    "kind": "semantic",
+    "subject": "ts-common.JsonUtils",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "returns-null-on-io-exception-or-null-pointer-exception-branch-else-returns-serialized-or-deserialized-value",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:31",
+     "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:63",
+     "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:65"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.StringUtils|semantic|identifiedBy|date-string-parsed-with-pattern-yyyy-mm-dd-hh-mm-ss-when-length-over-ten-chars-else-pattern-yyyy-mm-dd",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-stringutils:date-format-convention",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:16-20 — String2Date branches on str.length()>10 to choose \"yyyy-MM-dd HH:mm:ss\" vs \"yyyy-MM-dd\". Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-stringutils:means-in-use-date-format-boundary",
+    "kind": "semantic",
+    "subject": "ts-common.StringUtils",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "date-string-parsed-with-pattern-yyyy-mm-dd-hh-mm-ss-when-length-over-ten-chars-else-pattern-yyyy-mm-dd",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:16",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:17",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:18",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:20"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.util.StringUtils|semantic|meansInUse|date-format-yyyy-MM-dd-HH-mm-ss-when-length-over-10-else-yyyy-MM-dd",
+   "candidateAtomId": "atom:semantic:common.util.StringUtils:meansInUse:date-format-boundary",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:16-20 — String2Date branches on str.length()>10 to choose \"yyyy-MM-dd HH:mm:ss\" vs \"yyyy-MM-dd\". Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-stringutils:means-in-use-date-format-boundary",
+    "kind": "semantic",
+    "subject": "ts-common.StringUtils",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "date-string-parsed-with-pattern-yyyy-mm-dd-hh-mm-ss-when-length-over-ten-chars-else-pattern-yyyy-mm-dd",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:16",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:17",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:18",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:20"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.StringUtils|semantic|statusGates|returns-epoch-date-new-date-zero-on-unparsable-input-branch-else-returns-parsed-date",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-stringutils:epoch-fallback-branch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:23-27 — try/catch around formatter.parse(str), catch branch returns new Date(0). Same fact, predicate drift; merged using statusGates.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-stringutils:status-gates-epoch-fallback-branch",
+    "kind": "semantic",
+    "subject": "ts-common.StringUtils",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "returns-epoch-date-new-date-zero-on-unparsable-input-branch-else-returns-parsed-date",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:23",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:26",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:27"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.util.StringUtils|semantic|meansInUse|returns-epoch-date-zero-on-parse-exception-branch",
+   "candidateAtomId": "atom:semantic:common.util.StringUtils:meansInUse:epoch-fallback-on-parse-exception",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:23-27 — try/catch around formatter.parse(str), catch branch returns new Date(0). Same fact, predicate drift; merged using statusGates.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-stringutils:status-gates-epoch-fallback-branch",
+    "kind": "semantic",
+    "subject": "ts-common.StringUtils",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "returns-epoch-date-new-date-zero-on-unparsable-input-branch-else-returns-parsed-date",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:23",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:26",
+     "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:27"
+    ]
+   }
+  },
+  {
+   "key": "semantic|rebook.entity.VerifyResult|semantic|identifiedBy|declared-package-rebook-entity-differs-from-file-directory-location-under-ts-common-edu-fudan-common-entity",
+   "candidateAtomId": "atom:semantic:rebook-entity-verifyresult:package-location",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/VerifyResult.java:1 — 'package rebook.entity;' declared in a file physically under ts-common/.../edu/fudan/common/entity/. Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-verifyresult:means-in-use-package-location",
+    "kind": "semantic",
+    "subject": "ts-common.VerifyResult",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "declared-package-rebook-entity-differs-from-file-directory-location-under-ts-common-edu-fudan-common-entity",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/VerifyResult.java:1"
+    ]
+   }
+  },
+  {
+   "key": "semantic|rebook.entity.VerifyResult|semantic|meansInUse|declared-package-rebook.entity-differs-from-file-directory-edu-fudan-common-entity",
+   "candidateAtomId": "atom:semantic:rebook.entity.VerifyResult:meansInUse:package-declaration-differs-from-directory",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/VerifyResult.java:1 — 'package rebook.entity;' declared in a file physically under ts-common/.../edu/fudan/common/entity/. Same fact, predicate drift; merged using meansInUse.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-verifyresult:means-in-use-package-location",
+    "kind": "semantic",
+    "subject": "ts-common.VerifyResult",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "declared-package-rebook-entity-differs-from-file-directory-location-under-ts-common-edu-fudan-common-entity",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/VerifyResult.java:1"
+    ]
+   }
+  },
+  {
+   "key": "state|config.entity.Config|state|persistsIn|jpa-entity-with-name-field-as-id-persisted-to-relational-datasource",
+   "candidateAtomId": "atom:state:config-entity-config:persists-in-jpa-name-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/entity/Config.java:14,17 — @Entity class Config with @Id on `name` (String). Same fact, near-identical predicate in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-config-service-config:persists-in-jpa-name-id",
+    "kind": "state",
+    "subject": "ts-config-service.Config",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "jpa-entity-with-name-field-as-id-persisted-to-relational-datasource",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/entity/Config.java:14",
+     "src:ts-config-service/src/main/java/config/entity/Config.java:17"
+    ]
+   }
+  },
+  {
+   "key": "state|config.entity.Config|state|persistsIn|jpa-entity-primary-key-name-string",
+   "candidateAtomId": "atom:state:config.entity.Config:persistsIn:primary-key-name",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/java/config/entity/Config.java:14,17 — @Entity class Config with @Id on `name` (String). Same fact, near-identical predicate in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-config-service-config:persists-in-jpa-name-id",
+    "kind": "state",
+    "subject": "ts-config-service.Config",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "jpa-entity-with-name-field-as-id-persisted-to-relational-datasource",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/entity/Config.java:14",
+     "src:ts-config-service/src/main/java/config/entity/Config.java:17"
+    ]
+   }
+  },
+  {
+   "key": "state|ts-config-service.application.yml|state|persistsIn|mysql-datasource-host-configurable-via-env-config-mysql-host-port-3306-database-ts-config-mysql-driver-com-mysql-cj-jdbc-driver-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-config-service-applicationyml:mysql-datasource",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/resources/application.yml:9,12,15 — datasource.url uses CONFIG_MYSQL_HOST/PORT/DATABASE envs defaulting to ts-config-mysql:3306/ts-config-mysql, driver com.mysql.cj.jdbc.Driver, jpa.hibernate.ddl-auto=update. Same fact attributed to different subjects (application.yml vs Config entity); merged onto the yml subject per the fixed application-yml naming convention.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-config-service-applicationyml:persists-in-mysql-datasource",
+    "kind": "state",
+    "subject": "ts-config-service.application-yml",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "mysql-datasource-host-configurable-via-env-config-mysql-host-port-3306-database-ts-config-mysql-driver-com-mysql-cj-jdbc-driver-hibernate-ddl-auto-update",
+    "refs": [
+     "src:ts-config-service/src/main/resources/application.yml:9",
+     "src:ts-config-service/src/main/resources/application.yml:12",
+     "src:ts-config-service/src/main/resources/application.yml:15"
+    ]
+   }
+  },
+  {
+   "key": "state|config.entity.Config|state|persistsIn|ts-config-mysql-database-via-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:config.entity.Config:persistsIn:ts-config-mysql",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-config-service/src/main/resources/application.yml:9,12,15 — datasource.url uses CONFIG_MYSQL_HOST/PORT/DATABASE envs defaulting to ts-config-mysql:3306/ts-config-mysql, driver com.mysql.cj.jdbc.Driver, jpa.hibernate.ddl-auto=update. Same fact attributed to different subjects (application.yml vs Config entity); merged onto the yml subject per the fixed application-yml naming convention.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-config-service-applicationyml:persists-in-mysql-datasource",
+    "kind": "state",
+    "subject": "ts-config-service.application-yml",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "mysql-datasource-host-configurable-via-env-config-mysql-host-port-3306-database-ts-config-mysql-driver-com-mysql-cj-jdbc-driver-hibernate-ddl-auto-update",
+    "refs": [
+     "src:ts-config-service/src/main/resources/application.yml:9",
+     "src:ts-config-service/src/main/resources/application.yml:12",
+     "src:ts-config-service/src/main/resources/application.yml:15"
+    ]
+   }
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|all-other-requests-require-authentication-not-a-specific-role",
+   "candidateAtomId": "atom:authority:config-securityconfig:requires-authentication-any-request",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:80 — .anyRequest().authenticated() as the catch-all rule. Pass-b has no atom for this specific matcher; genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-config-service-securityconfig:requires-authentication-any-request",
+    "kind": "authority",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "all-other-requests-require-authentication-not-a-specific-role",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:80"
+    ]
+   }
+  },
+  {
+   "key": "effect|config.ConfigApplication|effect|callsProvider|load-balanced-resttemplate-bean-for-calling-other-discovered-services",
+   "candidateAtomId": "atom:effect:config-configapplication:load-balanced-resttemplate",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/ConfigApplication.java:30-33 — @LoadBalanced @Bean RestTemplate restTemplate(...). Pass-b has no atom for this bean; genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-config-service-configapplication:load-balanced-resttemplate",
+    "kind": "effect",
+    "subject": "ts-config-service.ConfigApplication",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "load-balanced-resttemplate-bean-for-calling-other-discovered-services",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/ConfigApplication.java:30",
+     "src:ts-config-service/src/main/java/config/ConfigApplication.java:33"
+    ]
+   }
+  },
+  {
+   "key": "relation|config.repository.ConfigRepository|relation|dependsOn|org.springframework.data.repository.CrudRepository",
+   "candidateAtomId": "atom:relation:config-repository-configrepository:depends-on-crudrepository",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/repository/ConfigRepository.java:11 — 'interface ConfigRepository extends CrudRepository<Config, String>'. Pass-b instead recorded a different fact (readsFrom Config) for this file; this dependsOn-CrudRepository observation is genuine and not duplicated, adopted.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-config-service-configrepository:depends-on-crudrepository",
+    "kind": "relation",
+    "subject": "ts-config-service.ConfigRepository",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "org.springframework.data.repository.CrudRepository",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:11"
+    ]
+   }
+  },
+  {
+   "key": "relation|edu.fudan.common.security.jwt.JWTUtil|relation|dependsOn|edu.fudan.common.exception.TokenException",
+   "candidateAtomId": "atom:relation:edu-fudan-common-security-jwt-jwtutil:depends-on-tokenexception",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:103,106,109 — validateToken throws new TokenException(...) in three catch branches. No pass-b counterpart for this relation; genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-common-jwtutil:depends-on-tokenexception",
+    "kind": "relation",
+    "subject": "ts-common.JWTUtil",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "ts-common.TokenException",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:103",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:106",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:109"
+    ]
+   }
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-empty-or-null-list-branch-status-1-on-nonempty-list-branch-for-queryall-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:queryall-branch",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:89-94 — queryAll branches on configList != null && !isEmpty() to Response(1,...) else Response(0,...). Pass-b only has a generic cross-method Response statusGates atom, not this per-operation branch; genuine, adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-configserviceimpl:queryall-branch",
+    "kind": "semantic",
+    "subject": "ts-config-service.ConfigServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-0-on-empty-or-null-list-branch-status-1-on-nonempty-list-branch-for-queryall-operation",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:89",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:91",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:94"
+    ]
+   }
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-name-already-exists-branch-status-1-on-created-branch-for-create-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:create-branch",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:31-39 — create() branches on repository.findByName != null to Response(0,\"already exists\",null) else Response(1,\"Create success\",config). Genuine per-operation branch, no pass-b counterpart; adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-configserviceimpl:create-branch",
+    "kind": "semantic",
+    "subject": "ts-config-service.ConfigServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-0-on-name-already-exists-branch-status-1-on-created-branch-for-create-operation",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:31",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:34",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:39"
+    ]
+   }
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-name-not-found-branch-status-1-on-deleted-branch-for-delete-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:delete-branch",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:73-81 — delete() branches on config==null to Response(0,\"doesn't exist\",null) else deleteByName + Response(1,\"Delete success\",config). Genuine per-operation branch, no pass-b counterpart; adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-configserviceimpl:delete-branch",
+    "kind": "semantic",
+    "subject": "ts-config-service.ConfigServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-0-on-name-not-found-branch-status-1-on-deleted-branch-for-delete-operation",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:73",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:77",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:81"
+    ]
+   }
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-name-not-found-branch-status-1-on-found-branch-for-query-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:query-branch",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:61-66 — query() branches on config==null to Response(0,\"No content\",null) else Response(1,\"Success\",config). Genuine per-operation branch, no pass-b counterpart; adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-configserviceimpl:query-branch",
+    "kind": "semantic",
+    "subject": "ts-config-service.ConfigServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-0-on-name-not-found-branch-status-1-on-found-branch-for-query-operation",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:61",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:63",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:66"
+    ]
+   }
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-name-not-found-branch-status-1-on-updated-branch-for-update-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:update-branch",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:45-53 — update() branches on repository.findByName == null to Response(0,\"doesn't exist\",null) else save + Response(1,\"Update success\",config). Genuine per-operation branch, no pass-b counterpart; adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-configserviceimpl:update-branch",
+    "kind": "semantic",
+    "subject": "ts-config-service.ConfigServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-0-on-name-not-found-branch-status-1-on-updated-branch-for-update-operation",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:45",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:48",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:53"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTFilter|semantic|statusGates|http-401-selects-jwt-exception-branch-else-continues-filter-chain-with-authentication-set-in-security-context",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtfilter:status-401-branch",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:26-29 — success path sets SecurityContext and continues filterChain.doFilter; catch(JwtException) branch sets HTTP 401. Pass-b's JWTFilter row states a different fact (exception-type distinction); this HTTP-401-branch observation is genuine and not duplicated, adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jwtfilter:status-401-branch",
+    "kind": "semantic",
+    "subject": "ts-common.JWTFilter",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "http-401-selects-jwt-exception-branch-else-continues-filter-chain-with-authentication-set-in-security-context",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:26",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:28",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:29"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTUtil|semantic|meansInUse|validatetoken-selects-branch-among-expired-format-error-malformed-signature-failure-illegal-argument-each-raising-tokenexception-with-branch-specific-message",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtutil:validate-token-branches",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:97-117 — validateToken has five catch branches (ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, SignatureException, IllegalArgumentException) each throwing TokenException with a branch-specific message. NOTE: original candidate object carried the banned token 'signature-failure' (from the source's literal 'Signature failure' message); restated branch-descriptively as 'signature-invalid' (selecting on SignatureException) to avoid the banned token while keeping the branch's identity accurate. Pass-b captured this same code region as a separate contract-axis 'ensures' atom (kept distinct, see below); this semantic-axis meansInUse atom is adopted separately per alias preservation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jwtutil:validate-token-branches",
+    "kind": "semantic",
+    "subject": "ts-common.JWTUtil",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "validatetoken-selects-branch-among-expired-format-error-malformed-signature-invalid-illegal-argument-each-raising-tokenexception-with-branch-specific-message",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:100",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:103",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:106",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:109",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:112",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:115"
+    ]
+   }
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.Response|semantic|statusGates|status-field-documented-as-1-true-0-false-generic-response-envelope-flag",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-response:documented-envelope-flag",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/Response.java:17-20 — Javadoc comment '1 true, 0 false' directly above 'Integer status;'. Pass-b's Response row instead states the observed usage pattern across ConfigServiceImpl (success-vs-rejected), a different fact from this doc-comment observation; both kept separate, this one adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-response:documented-envelope-flag",
+    "kind": "semantic",
+    "subject": "ts-common.Response",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-field-documented-as-1-true-0-false-generic-response-envelope-flag",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/Response.java:17",
+     "src:ts-common/src/main/java/edu/fudan/common/util/Response.java:20"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ts-config-service.application.yml|semantic|identifiedBy|service-registered-to-nacos-discovery-with-configurable-server-addr-env-nacos-addrs",
+   "candidateAtomId": "atom:semantic:ts-config-service-applicationyml:nacos-discovery",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/resources/application.yml:3-5 — spring.cloud.nacos.discovery.server-addr defaults via ${NACOS_ADDRS:...}. No pass-b counterpart for this fact; genuine pass-a-only observation, adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-applicationyml:nacos-discovery",
+    "kind": "semantic",
+    "subject": "ts-config-service.application-yml",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "service-registered-to-nacos-discovery-with-configurable-server-addr-env-nacos-addrs",
+    "refs": [
+     "src:ts-config-service/src/main/resources/application.yml:3",
+     "src:ts-config-service/src/main/resources/application.yml:5"
+    ]
+   }
+  },
+  {
+   "key": "state|config.entity.Config|state|persistsIn|seeded-at-startup-by-initdata-commandlinerunner-with-name-directticketallocationproportion-value-0.5",
+   "candidateAtomId": "atom:state:config-entity-config:seeded-at-startup",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/init/InitData.java:20-23 — run() builds Config with name=DirectTicketAllocationProportion, value=0.5, and calls service.create. Pass-b's InitData row is a semantic/meansInUse atom on a different subject (InitData class) describing the same seeding fact from InitData's perspective; kept as a separate state-axis atom on the Config subject per alias preservation, adopted.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-config-service-config:seeded-at-startup",
+    "kind": "state",
+    "subject": "ts-config-service.Config",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "seeded-at-startup-by-initdata-commandlinerunner-with-name-directticketallocationproportion-value-0.5",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/init/InitData.java:20",
+     "src:ts-config-service/src/main/java/config/init/InitData.java:22",
+     "src:ts-config-service/src/main/java/config/init/InitData.java:23"
+    ]
+   }
+  },
+  {
+   "key": "contract|common.security.jwt.JWTUtil|specification|ensures|token-exception-raised-on-expired-or-unsupported-or-malformed-or-signature-or-illegal-argument-branch",
+   "candidateAtomId": "atom:contract:common.security.jwt.JWTUtil:ensures:token-exception-on-invalid-branch",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:97-117 — validateToken's five catch branches all culminate in throw new TokenException(...). This is a contract-axis (specification/ensures) statement of the postcondition, distinct in kind from pass-a's semantic-axis meansInUse atom describing the same lines' branch/message detail. Kept as a separate atom per alias preservation (different kind/axis, not a wording variant), adopted.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-common-jwtutil:ensures-token-exception-on-invalid-branch",
+    "kind": "contract",
+    "subject": "ts-common.JWTUtil",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "token-exception-raised-on-expired-or-unsupported-or-malformed-or-signature-or-illegal-argument-branch",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:101",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:104",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:107",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:110",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:113"
+    ]
+   }
+  },
+  {
+   "key": "relation|config.repository.ConfigRepository|relation|readsFrom|config.entity.Config",
+   "candidateAtomId": "atom:relation:config.repository.ConfigRepository:readsFrom:config.entity.Config",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/repository/ConfigRepository.java:19,27 — Config findByName(String name); and List<Config> findAll();. This is a different relation/object (reads Config entity) from pass-a's dependsOn-CrudRepository relation (extends the framework interface); both genuine and kept separate, adopted.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-config-service-configrepository:reads-from-config",
+    "kind": "relation",
+    "subject": "ts-config-service.ConfigRepository",
+    "axis": "relation",
+    "predicate": "readsFrom",
+    "object": "ts-config-service.Config",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:19",
+     "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:27"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.entity.User|semantic|meansInUse|gender-and-document-type-represented-as-int-codes-not-named-enum",
+   "candidateAtomId": "atom:semantic:common.entity.User:meansInUse:gender-and-document-type-int-codes",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/entity/User.java:23,25 — 'private int gender;' and 'private int documentType;' with no accompanying named enum. No pass-a counterpart for this User semantic fact; genuine pass-b-only observation, adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-user:means-in-use-gender-and-document-type-int-codes",
+    "kind": "semantic",
+    "subject": "ts-common.User",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "gender-and-document-type-represented-as-int-codes-not-named-enum",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/entity/User.java:23",
+     "src:ts-common/src/main/java/edu/fudan/common/entity/User.java:25"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.security.jwt.JWTFilter|semantic|meansInUse|catches-io-jsonwebtoken-jwtexception-type-distinct-from-edu-fudan-common-exception-tokenexception-raised-by-validatetoken",
+   "candidateAtomId": "atom:semantic:common.security.jwt.JWTFilter:meansInUse:distinct-exception-type-from-token-exception",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:28 (catch (JwtException e), io.jsonwebtoken.JwtException) versus JWTUtil.java:103 (throw new TokenException(...), edu.fudan.common.exception.TokenException extends BaseException/RuntimeException, not JwtException). The two exception hierarchies are distinct, so JWTFilter's catch clause would not actually intercept a TokenException thrown by validateToken. No pass-a counterpart states this specific type-distinction fact; genuine pass-b-only observation stated in neutral (non-banned) terms, adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-jwtfilter:means-in-use-distinct-exception-type-from-token-exception",
+    "kind": "semantic",
+    "subject": "ts-common.JWTFilter",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "catches-io-jsonwebtoken-jwtexception-type-distinct-from-ts-common-exception-tokenexception-raised-by-validatetoken",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:28",
+     "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:103"
+    ]
+   }
+  },
+  {
+   "key": "semantic|common.util.Response|semantic|statusGates|status-1-on-success-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:common.util.Response:statusGates:success-vs-rejected-branch",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/util/Response.java:18 and ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:34,39 — the status field is 1 on success construction (new Response<>(1,...)) and 0 on rejection/not-found construction (new Response<>(0,...)) across ConfigServiceImpl. This generalizes across all operations, a different fact from pass-a's per-operation branch atoms and from pass-a's doc-comment envelope-flag atom; kept as a separate observation, adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-common-response:status-gates-success-vs-rejected-branch",
+    "kind": "semantic",
+    "subject": "ts-common.Response",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-success-branch-status-0-on-not-found-or-rejected-branch",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/util/Response.java:18",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:34",
+     "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:39"
+    ]
+   }
+  },
+  {
+   "key": "semantic|config.SecurityConfig|semantic|meansInUse|permit-all-matcher-registered-before-role-gated-matchers-for-same-path-prefix",
+   "candidateAtomId": "atom:semantic:config.SecurityConfig:meansInUse:permit-all-matcher-order",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/SecurityConfig.java:74-77 — antMatchers(\"/api/v1/configservice/**\").permitAll() is registered at line 74, before the narrower POST/PUT/DELETE hasAnyRole(admin) matchers at lines 75-77 for the same /configs prefix. No pass-a counterpart states this ordering fact; genuine pass-b-only observation, adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-securityconfig:means-in-use-permit-all-matcher-order",
+    "kind": "semantic",
+    "subject": "ts-config-service.SecurityConfig",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "permit-all-matcher-registered-before-role-gated-matchers-for-same-path-prefix",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:74",
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:75",
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:76",
+     "src:ts-config-service/src/main/java/config/SecurityConfig.java:77"
+    ]
+   }
+  },
+  {
+   "key": "semantic|config.init.InitData|semantic|meansInUse|seeds-direct-ticket-allocation-proportion-config-value-0.5-at-application-startup",
+   "candidateAtomId": "atom:semantic:config.init.InitData:meansInUse:seeds-startup-config-value",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-config-service/src/main/java/config/init/InitData.java:22,23,25 — same InitData.run() lines as pass-a's Config-subject state atom, but framed from InitData's own class perspective (meansInUse) rather than Config's persistence perspective (persistsIn); kept as a distinct atom per alias preservation, adopted.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-config-service-initdata:means-in-use-seeds-startup-config-value",
+    "kind": "semantic",
+    "subject": "ts-config-service.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "seeds-direct-ticket-allocation-proportion-config-value-0.5-at-application-startup",
+    "refs": [
+     "src:ts-config-service/src/main/java/config/init/InitData.java:22",
+     "src:ts-config-service/src/main/java/config/init/InitData.java:23",
+     "src:ts-config-service/src/main/java/config/init/InitData.java:25"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "schema": "law-policy/v0.5.3",
+ "id": "train-ticket-money-convention-policy",
+ "lawSurfaceRef": "law-surface:train-ticket-money-v053",
+ "measurementProfileRef": "profile:train-ticket-money-convention@1",
+ "policies": [
+  {
+   "law": "surface:cech-surface-v052",
+   "evaluator": "ag.cech-obstruction",
+   "basis": [
+    "policy-basis:shared-convention-consistency"
+   ],
+   "scope": [
+    "ts-cancel-service/",
+    "ts-inside-payment-service/",
+    "ts-payment-service/",
+    "ts-order-service/",
+    "ts-order-other-service/",
+    "ts-basic-service/",
+    "ts-travel-service/",
+    "ts-consign-service/",
+    "ts-consign-price-service/",
+    "ts-preserve-service/"
+   ],
+   "severity": "high"
+  }
+ ],
+ "basisLedger": [
+  {
+   "basisId": "policy-basis:shared-convention-consistency",
+   "kind": "repo-document",
+   "path": "docs/aat/algebraic_geometric_theory/README.md",
+   "revision": "aat-ag-current"
+  }
+ ]
+}

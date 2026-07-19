@@ -1,0 +1,1137 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|admintravel.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:allows-cross-origin",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:51-56"
+   ]
+  },
+  {
+   "key": "authority|admintravel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:permits-unauthenticated",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "authority|admintravel.SecurityConfig|authority|requiresRole|ADMIN-on-/api/v1/admintravelservice/**",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:requires-role",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|adminuser.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:allows-cross-origin",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:51-56"
+   ]
+  },
+  {
+   "key": "authority|adminuser.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:permits-unauthenticated",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:71-72"
+   ]
+  },
+  {
+   "key": "authority|adminuser.SecurityConfig|authority|requiresRole|ADMIN-on-/api/v1/adminuserservice/users/**",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:requires-role",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|assurance.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:allows-cross-origin",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:51-56"
+   ]
+  },
+  {
+   "key": "authority|assurance.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:permits-unauthenticated",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "authority|assurance.SecurityConfig|authority|requiresRole|USER-on-/api/v1/assuranceservice/**",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:requires-role",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|DELETE-/api/v1/admintravelservice/admintravel/{tripId}",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:delete-travel",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:51-55"
+   ]
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|GET-/api/v1/admintravelservice/admintravel-cross-origin-star",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:get-all-travels",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:30-35"
+   ]
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|GET-/api/v1/admintravelservice/welcome",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:welcome",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:25-28"
+   ]
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|POST-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:add-travel",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:37-42"
+   ]
+  },
+  {
+   "key": "capability|admintravel.AdminTravelController|capability|exposesEndpoint|PUT-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:update-travel",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:44-49"
+   ]
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|DELETE-/api/v1/adminuserservice/users/{userId}",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:delete-user",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:50-54"
+   ]
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|GET-/api/v1/adminuserservice/users-cross-origin-star",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:get-all-users",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:30-35"
+   ]
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|GET-/api/v1/adminuserservice/users/welcome",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:welcome",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:25-28"
+   ]
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|POST-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:add-user",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:44-48"
+   ]
+  },
+  {
+   "key": "capability|adminuser.AdminUserController|capability|exposesEndpoint|PUT-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:update-user",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:37-41"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|DELETE-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:delete-assurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:46-51"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|DELETE-/api/v1/assuranceservice/assurances/orderid/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:delete-assurance-by-order-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:53-58"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurance/orderid/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:find-assurance-by-order-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:86-91"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances-cross-origin-star",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-all-assurances",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:32-37"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-assurance-by-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:79-84"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/types-cross-origin-star",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-all-assurance-type",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:39-44"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/{typeIndex}/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:create-new-assurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:71-77"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/welcome",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:welcome",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:27-30"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceController|capability|exposesEndpoint|PATCH-/api/v1/assuranceservice/assurances/{assuranceId}/{orderId}/{typeIndex}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:modify-assurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:60-68"
+   ]
+  },
+  {
+   "key": "component|admintravel.AdminTravelController|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelcontroller",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:19"
+   ]
+  },
+  {
+   "key": "component|admintravel.AdminTravelServiceImpl|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelserviceimpl",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:29"
+   ]
+  },
+  {
+   "key": "component|admintravel.AdminTravelService|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelservice",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelService.java:10"
+   ]
+  },
+  {
+   "key": "component|admintravel.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:admintravel-securityconfig",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:26"
+   ]
+  },
+  {
+   "key": "component|admintravel.application.yml|static||",
+   "candidateAtomId": "atom:component:admintravel-application-yml",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/resources/application.yml:1-14"
+   ]
+  },
+  {
+   "key": "component|adminuser.AdminUserController|static||",
+   "candidateAtomId": "atom:component:adminuser-adminusercontroller",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:19"
+   ]
+  },
+  {
+   "key": "component|adminuser.AdminUserServiceImpl|static||",
+   "candidateAtomId": "atom:component:adminuser-adminuserserviceimpl",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:25"
+   ]
+  },
+  {
+   "key": "component|adminuser.AdminUserService|static||",
+   "candidateAtomId": "atom:component:adminuser-adminuserservice",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserService.java:10"
+   ]
+  },
+  {
+   "key": "component|adminuser.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:adminuser-securityconfig",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:26"
+   ]
+  },
+  {
+   "key": "component|adminuser.UserDto|static||",
+   "candidateAtomId": "atom:component:adminuser-userdto",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:13"
+   ]
+  },
+  {
+   "key": "component|adminuser.application.yml|static||",
+   "candidateAtomId": "atom:component:adminuser-application-yml",
+   "refs": [
+    "src:ts-admin-user-service/src/main/resources/application.yml:1-13"
+   ]
+  },
+  {
+   "key": "component|assurance.AssuranceController|static||",
+   "candidateAtomId": "atom:component:assurance-assurancecontroller",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:20"
+   ]
+  },
+  {
+   "key": "component|assurance.AssuranceTypeBean|static||",
+   "candidateAtomId": "atom:component:assurance-assurancetypebean",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:15"
+   ]
+  },
+  {
+   "key": "component|assurance.AssuranceType|static||",
+   "candidateAtomId": "atom:component:assurance-assurancetype",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:8"
+   ]
+  },
+  {
+   "key": "component|assurance.Assurance|static||",
+   "candidateAtomId": "atom:component:assurance-assurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:17"
+   ]
+  },
+  {
+   "key": "component|assurance.InitData|static||",
+   "candidateAtomId": "atom:component:assurance-initdata",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:21"
+   ]
+  },
+  {
+   "key": "component|assurance.PlainAssurance|static||",
+   "candidateAtomId": "atom:component:assurance-plainassurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:15"
+   ]
+  },
+  {
+   "key": "component|assurance.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:assurance-securityconfig",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:26"
+   ]
+  },
+  {
+   "key": "contract|adminuser.UserDto|specification|shapedAs|fields-userid-username-password-gender-int-documenttype-int-documentnum-email",
+   "candidateAtomId": "atom:contract:adminuser-userdto:shaped-as",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:14-27"
+   ]
+  },
+  {
+   "key": "contract|assurance.AssuranceTypeBean|specification|shapedAs|fields-index-int-name-string-price-double",
+   "candidateAtomId": "atom:contract:assurance-assurancetypebean:shaped-as",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:17-30"
+   ]
+  },
+  {
+   "key": "contract|assurance.PlainAssurance|specification|shapedAs|fields-id-orderid-typeindex-int-typename-string-typeprice-double-flattened-from-assurance-plus-assurancetype",
+   "candidateAtomId": "atom:contract:assurance-plainassurance:shaped-as",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:17-25"
+   ]
+  },
+  {
+   "key": "relation|admintravel.AdminTravelController|relation|dependsOn|admintravel.AdminTravelService",
+   "candidateAtomId": "atom:relation:admintravel-admintravelcontroller:depends-on",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:20-21"
+   ]
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|GET-http://ts-route-service/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-route-service",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:270-278"
+   ]
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|GET-http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-train-service",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:256-264"
+   ]
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|GET-http://ts-travel-service/api/v1/travelservice/admin_trip",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-admin-trip",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:48-54"
+   ]
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|GET-http://ts-travel2-service/api/v1/travel2service/admin_trip",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-admin-trip",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:66-72"
+   ]
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|POST-PUT-DELETE-http://ts-travel-service/api/v1/travelservice/trips-on-tripid-starting-with-g-or-d",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel-service-trips",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101-112",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136-147",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165-176"
+   ]
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|POST-PUT-DELETE-http://ts-travel2-service/api/v1/travel2service/trips-on-tripid-not-starting-with-g-or-d",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-travel2-service-trips",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101-112",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136-147",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165-176"
+   ]
+  },
+  {
+   "key": "relation|admintravel.AdminTravelServiceImpl|relation|calls|POST-http://ts-station-service/api/v1/stationservice/stations/idlist",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-ts-station-service",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:229-237"
+   ]
+  },
+  {
+   "key": "relation|adminuser.AdminUserController|relation|dependsOn|adminuser.AdminUserService",
+   "candidateAtomId": "atom:relation:adminuser-adminusercontroller:depends-on",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:21-22"
+   ]
+  },
+  {
+   "key": "relation|adminuser.AdminUserServiceImpl|relation|calls|DELETE-http://ts-user-service/api/v1/userservice/users/{userId}",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-delete-user",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:69-74"
+   ]
+  },
+  {
+   "key": "relation|adminuser.AdminUserServiceImpl|relation|calls|GET-http://ts-user-service/api/v1/userservice/users",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-get-users",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:43-50"
+   ]
+  },
+  {
+   "key": "relation|adminuser.AdminUserServiceImpl|relation|calls|POST-http://ts-user-service/api/v1/userservice/users/register",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-register",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:113-120"
+   ]
+  },
+  {
+   "key": "relation|adminuser.AdminUserServiceImpl|relation|calls|PUT-http://ts-user-service/api/v1/userservice/users",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-ts-user-service-put-users",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:93-98"
+   ]
+  },
+  {
+   "key": "relation|assurance.AssuranceController|relation|dependsOn|assurance.AssuranceService",
+   "candidateAtomId": "atom:relation:assurance-assurancecontroller:depends-on",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:22-23"
+   ]
+  },
+  {
+   "key": "relation|assurance.InitData|relation|dependsOn|assurance.AssuranceRepository",
+   "candidateAtomId": "atom:relation:assurance-initdata:depends-on-repository",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:25-26"
+   ]
+  },
+  {
+   "key": "relation|assurance.InitData|relation|dependsOn|assurance.AssuranceService",
+   "candidateAtomId": "atom:relation:assurance-initdata:depends-on-service",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:22-23"
+   ]
+  },
+  {
+   "key": "semantic|admintravel.AdminTravelServiceImpl|semantic|meansInUse|tripid-first-character-g-or-d-selects-ts-travel-service-branch-otherwise-ts-travel2-service-branch",
+   "candidateAtomId": "atom:semantic:admintravel-admintravelserviceimpl:tripid-routing",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165"
+   ]
+  },
+  {
+   "key": "semantic|admintravel.AdminTravelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:admintravel-admintravelserviceimpl:status-gates",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:57",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:114",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:149",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:178"
+   ]
+  },
+  {
+   "key": "semantic|adminuser.AdminUserServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-any-other-value-or-null-body-on-error-branch",
+   "candidateAtomId": "atom:semantic:adminuser-adminuserserviceimpl:status-gates",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:51",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:75",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:101",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:123"
+   ]
+  },
+  {
+   "key": "semantic|adminuser.UserDto|semantic|meansInUse|documenttype-represented-as-int-field-in-transfer-dto-not-as-named-enum",
+   "candidateAtomId": "atom:semantic:adminuser-userdto:documenttype-int",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:22"
+   ]
+  },
+  {
+   "key": "semantic|adminuser.UserDto|semantic|meansInUse|gender-represented-as-int-field-in-transfer-dto-not-as-named-enum",
+   "candidateAtomId": "atom:semantic:adminuser-userdto:gender-int",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:20"
+   ]
+  },
+  {
+   "key": "semantic|assurance.AssuranceTypeBean|semantic|meansInUse|price-field-typed-as-java-double-in-transfer-bean-mirroring-assurancetype-price",
+   "candidateAtomId": "atom:semantic:assurance-assurancetypebean:price-double",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30"
+   ]
+  },
+  {
+   "key": "semantic|assurance.AssuranceType|semantic|meansInUse|index-value-1-selects-traffic-accident-assurance-type-via-gettypebyindex-lookup",
+   "candidateAtomId": "atom:semantic:assurance-assurancetype:index-selects-type",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:60-68"
+   ]
+  },
+  {
+   "key": "semantic|assurance.AssuranceType|semantic|meansInUse|price-field-typed-as-java-double-hardcoded-literal-3.0-in-enum-constant-constructor",
+   "candidateAtomId": "atom:semantic:assurance-assurancetype:price-double",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:28",
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:52"
+   ]
+  },
+  {
+   "key": "semantic|assurance.Assurance|semantic|meansInUse|no-arg-constructor-assigns-a-random-uuid-to-orderid-field-at-construction",
+   "candidateAtomId": "atom:semantic:assurance-assurance:default-ctor-orderid",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:36-38"
+   ]
+  },
+  {
+   "key": "semantic|assurance.InitData|semantic|meansInUse|commandlinerunner-run-method-body-fully-commented-out-so-startup-seed-and-service-exercise-code-does-not-execute",
+   "candidateAtomId": "atom:semantic:assurance-initdata:inert-seed-routine",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:28-79"
+   ]
+  },
+  {
+   "key": "semantic|assurance.PlainAssurance|semantic|meansInUse|typeprice-field-typed-as-java-double-in-flattened-transfer-dto",
+   "candidateAtomId": "atom:semantic:assurance-plainassurance:typeprice-double",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25"
+   ]
+  },
+  {
+   "key": "semantic|ctx:assurance-pricing-surface|cech|sectionValue|section=money-amount:double-typed-price-fields-across-assurancetype-assurancetypebean-plainassurance-no-string-parsing-observed-in-chunk",
+   "candidateAtomId": "atom:semantic:assurance-pricing-surface:cech-section-money-amount",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:28",
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30",
+    "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25"
+   ]
+  },
+  {
+   "key": "state|assurance.Assurance|state|persistsIn|assurance_type-column-stores-enum-name-as-string-via-enumerated-string",
+   "candidateAtomId": "atom:state:assurance-assurance:enum-column",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:32-34"
+   ]
+  },
+  {
+   "key": "state|assurance.Assurance|state|persistsIn|jpa-entity-primary-key-column-assurance_id",
+   "candidateAtomId": "atom:state:assurance-assurance:persists-in",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:15-21"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|admintravel.config.SecurityConfig|authority|allowsCrossOrigin|cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:allows-cross-origin",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:51",
+    "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|admintravel.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:permits-unauthenticated-swagger",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|admintravel.config.SecurityConfig|authority|requiresRole|ADMIN-role-required-on-/api/v1/admintravelservice/**",
+   "candidateAtomId": "atom:authority:admintravel-securityconfig:requires-role-admin",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|admintravel.controller.AdminTravelController|authority|allowsCrossOrigin|endpoint-level-cross-origin-origins-star-on-get-all-travels",
+   "candidateAtomId": "atom:authority:admintravel-admintravelcontroller:allows-cross-origin-get-all-travels",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:30"
+   ]
+  },
+  {
+   "key": "authority|adminuser.config.SecurityConfig|authority|allowsCrossOrigin|cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:allows-cross-origin",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:51",
+    "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|adminuser.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:permits-unauthenticated-swagger",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|adminuser.config.SecurityConfig|authority|requiresRole|ADMIN-role-required-on-/api/v1/adminuserservice/users/**",
+   "candidateAtomId": "atom:authority:adminuser-securityconfig:requires-role-admin",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|adminuser.controller.AdminUserController|authority|allowsCrossOrigin|endpoint-level-cross-origin-origins-star-on-get-all-users",
+   "candidateAtomId": "atom:authority:adminuser-adminusercontroller:allows-cross-origin-get-all-users",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:30"
+   ]
+  },
+  {
+   "key": "authority|adminuser.service.AdminUserServiceImpl|authority|forwardsAuthorizationHeader|updateuser-and-deleteuser-extract-and-forward-authorization-header-to-ts-user-service-getallusers-and-adduser-call-downstream-with-null-headers",
+   "candidateAtomId": "atom:authority:adminuser-adminuserserviceimpl:forwards-authorization-header",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:62",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:87",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:42",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:112"
+   ]
+  },
+  {
+   "key": "authority|assurance.config.SecurityConfig|authority|allowsCrossOrigin|cors-mapping-/**-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:allows-cross-origin",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:51",
+    "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|assurance.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:permits-unauthenticated-swagger",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|assurance.config.SecurityConfig|authority|requiresRole|USER-role-required-on-/api/v1/assuranceservice/**",
+   "candidateAtomId": "atom:authority:assurance-securityconfig:requires-role-user",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|assurance.controller.AssuranceController|authority|allowsCrossOrigin|every-controller-method-annotated-crossorigin-origins-star-in-addition-to-global-cors-mapping",
+   "candidateAtomId": "atom:authority:assurance-assurancecontroller:allows-cross-origin-all-endpoints",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:32",
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:60",
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:86"
+   ]
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|DELETE-/api/v1/admintravelservice/admintravel/{tripId}",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:delete-travel",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:51"
+   ]
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|GET-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:get-all-travels",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:31"
+   ]
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|GET-/api/v1/admintravelservice/welcome",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:welcome",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:25"
+   ]
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|POST-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:add-travel",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:37"
+   ]
+  },
+  {
+   "key": "capability|admintravel.controller.AdminTravelController|capability|exposesEndpoint|PUT-/api/v1/admintravelservice/admintravel",
+   "candidateAtomId": "atom:capability:admintravel-admintravelcontroller:update-travel",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java:44"
+   ]
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|DELETE-/api/v1/adminuserservice/users/{userId}",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:delete-user",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:50"
+   ]
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|GET-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:get-all-users",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:31"
+   ]
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|GET-/api/v1/adminuserservice/users/welcome",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:welcome",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:25"
+   ]
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|POST-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:add-user",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:44"
+   ]
+  },
+  {
+   "key": "capability|adminuser.controller.AdminUserController|capability|exposesEndpoint|PUT-/api/v1/adminuserservice/users",
+   "candidateAtomId": "atom:capability:adminuser-adminusercontroller:update-user",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java:37"
+   ]
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|DELETE-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:delete-assurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:47"
+   ]
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|DELETE-/api/v1/assuranceservice/assurances/orderid/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:delete-assurance-by-order-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:54"
+   ]
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurance/orderid/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:find-assurance-by-order-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:87"
+   ]
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-all-assurances",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:33"
+   ]
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/assuranceid/{assuranceId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-assurance-by-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:80"
+   ]
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/types",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:get-all-assurance-types",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:40"
+   ]
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/assurances/{typeIndex}/{orderId}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:create-new-assurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:72"
+   ]
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|GET-/api/v1/assuranceservice/welcome",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:welcome",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:27"
+   ]
+  },
+  {
+   "key": "capability|assurance.controller.AssuranceController|capability|exposesEndpoint|PATCH-/api/v1/assuranceservice/assurances/{assuranceId}/{orderId}/{typeIndex}",
+   "candidateAtomId": "atom:capability:assurance-assurancecontroller:modify-assurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:61"
+   ]
+  },
+  {
+   "key": "component|admintravel.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:admintravel-securityconfig",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|admintravel.controller.AdminTravelController|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelcontroller",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/controller/AdminTravelController.java"
+   ]
+  },
+  {
+   "key": "component|admintravel.service.AdminTravelServiceImpl|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelserviceimpl",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|admintravel.service.AdminTravelService|static||",
+   "candidateAtomId": "atom:component:admintravel-admintravelservice",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelService.java"
+   ]
+  },
+  {
+   "key": "component|adminuser.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:adminuser-securityconfig",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|adminuser.controller.AdminUserController|static||",
+   "candidateAtomId": "atom:component:adminuser-adminusercontroller",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/controller/AdminUserController.java"
+   ]
+  },
+  {
+   "key": "component|adminuser.dto.UserDto|static||",
+   "candidateAtomId": "atom:component:adminuser-userdto",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java"
+   ]
+  },
+  {
+   "key": "component|adminuser.service.AdminUserServiceImpl|static||",
+   "candidateAtomId": "atom:component:adminuser-adminuserserviceimpl",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|adminuser.service.AdminUserService|static||",
+   "candidateAtomId": "atom:component:adminuser-adminuserservice",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserService.java"
+   ]
+  },
+  {
+   "key": "component|assurance.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:assurance-securityconfig",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|assurance.controller.AssuranceController|static||",
+   "candidateAtomId": "atom:component:assurance-assurancecontroller",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java"
+   ]
+  },
+  {
+   "key": "component|assurance.entity.AssuranceTypeBean|static||",
+   "candidateAtomId": "atom:component:assurance-assurancetypebean-entity",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java"
+   ]
+  },
+  {
+   "key": "component|assurance.entity.AssuranceType|static||",
+   "candidateAtomId": "atom:component:assurance-assurancetype-entity",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java"
+   ]
+  },
+  {
+   "key": "component|assurance.entity.Assurance|static||",
+   "candidateAtomId": "atom:component:assurance-assurance-entity",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java"
+   ]
+  },
+  {
+   "key": "component|assurance.entity.PlainAssurance|static||",
+   "candidateAtomId": "atom:component:assurance-plainassurance-entity",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java"
+   ]
+  },
+  {
+   "key": "component|assurance.init.InitData|static||",
+   "candidateAtomId": "atom:component:assurance-initdata",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/init/InitData.java"
+   ]
+  },
+  {
+   "key": "contract|admintravel.service.AdminTravelServiceImpl|specification|ensures|start-and-end-station-must-both-exist-and-both-be-listed-on-route-with-start-index-before-end-index",
+   "candidateAtomId": "atom:contract:admintravel-admintravelserviceimpl:check-travel-info",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:187",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:218"
+   ]
+  },
+  {
+   "key": "contract|adminuser.dto.UserDto|specification|shapedAs|userid-username-password-gender-int-documenttype-int-documentnum-email-fields",
+   "candidateAtomId": "atom:contract:adminuser-userdto:shape",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:14",
+    "src:ts-admin-user-service/src/main/java/adminuser/dto/UserDto.java:26"
+   ]
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-route-service:/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-route-service",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:273",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:275"
+   ]
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-station-service:/api/v1/stationservice/stations/idlist",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-station-service",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:232",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:234"
+   ]
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-train-service:/api/v1/trainservice/trains/byName/{name}",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-train-service",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:259",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:261"
+   ]
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-travel-service:/api/v1/travelservice/admin_trip",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-travel-service-admin-trip",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:48",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:50"
+   ]
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-travel-service:/api/v1/travelservice/trips",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-travel-service-trips",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:102",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:137",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:166"
+   ]
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-travel2-service:/api/v1/travel2service/admin_trip",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-travel2-service-admin-trip",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:66",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:68"
+   ]
+  },
+  {
+   "key": "relation|admintravel.service.AdminTravelServiceImpl|restriction|calls|ts-travel2-service:/api/v1/travel2service/trips",
+   "candidateAtomId": "atom:relation:admintravel-admintravelserviceimpl:calls-travel2-service-trips",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:104",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:139",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:168"
+   ]
+  },
+  {
+   "key": "relation|adminuser.service.AdminUserServiceImpl|restriction|calls|ts-user-service:/api/v1/userservice/users",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-user-service-get-all",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:43",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:45"
+   ]
+  },
+  {
+   "key": "relation|adminuser.service.AdminUserServiceImpl|restriction|calls|ts-user-service:/api/v1/userservice/users(PUT)",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-user-service-update",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:93",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:95"
+   ]
+  },
+  {
+   "key": "relation|adminuser.service.AdminUserServiceImpl|restriction|calls|ts-user-service:/api/v1/userservice/users/register",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-user-service-register",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:114",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:116"
+   ]
+  },
+  {
+   "key": "relation|adminuser.service.AdminUserServiceImpl|restriction|calls|ts-user-service:/api/v1/userservice/users/{userId}",
+   "candidateAtomId": "atom:relation:adminuser-adminuserserviceimpl:calls-user-service-delete",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:69",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:71"
+   ]
+  },
+  {
+   "key": "semantic|admintravel.resources.application-yml|semantic|meansInUse|service-name-ts-admin-travel-service-registered-in-nacos-discovery-on-port-16114",
+   "candidateAtomId": "atom:semantic:admintravel-application-yml:service-identity",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/resources/application.yml:1",
+    "src:ts-admin-travel-service/src/main/resources/application.yml:10"
+   ]
+  },
+  {
+   "key": "semantic|admintravel.service.AdminTravelServiceImpl|semantic|meansInUse|tripid-first-char-g-or-d-selects-ts-travel-service-route-else-ts-travel2-service-route",
+   "candidateAtomId": "atom:semantic:admintravel-admintravelserviceimpl:tripid-prefix-routing",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:101",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:136",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:165"
+   ]
+  },
+  {
+   "key": "semantic|admintravel.service.AdminTravelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch-of-downstream-response",
+   "candidateAtomId": "atom:semantic:admintravel-admintravelserviceimpl:response-status-envelope",
+   "refs": [
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:57",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:114",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:149",
+    "src:ts-admin-travel-service/src/main/java/admintravel/service/AdminTravelServiceImpl.java:178"
+   ]
+  },
+  {
+   "key": "semantic|adminuser.resources.application-yml|semantic|meansInUse|service-name-ts-admin-user-service-registered-in-nacos-discovery-on-port-16115",
+   "candidateAtomId": "atom:semantic:adminuser-application-yml:service-identity",
+   "refs": [
+    "src:ts-admin-user-service/src/main/resources/application.yml:1",
+    "src:ts-admin-user-service/src/main/resources/application.yml:10"
+   ]
+  },
+  {
+   "key": "semantic|adminuser.service.AdminUserServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-not-1-on-not-found-or-rejected-branch-of-downstream-response",
+   "candidateAtomId": "atom:semantic:adminuser-adminuserserviceimpl:response-status-envelope",
+   "refs": [
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:51",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:75",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:101",
+    "src:ts-admin-user-service/src/main/java/adminuser/service/AdminUserServiceImpl.java:123"
+   ]
+  },
+  {
+   "key": "semantic|assurance.controller.AssuranceController|semantic|meansInUse|find-assurance-by-order-id-endpoint-mounted-under-singular-assurance-orderid-segment-while-other-endpoints-on-this-controller-use-plural-assurances-segment",
+   "candidateAtomId": "atom:semantic:assurance-assurancecontroller:find-by-order-id-path-naming",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:19",
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:87"
+   ]
+  },
+  {
+   "key": "semantic|assurance.controller.AssuranceController|semantic|meansInUse|get-http-verb-selected-for-create-new-assurance-capability-at-/assurances/{typeindex}/{orderid}-rather-than-post",
+   "candidateAtomId": "atom:semantic:assurance-assurancecontroller:create-new-assurance-http-verb",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:71",
+    "src:ts-assurance-service/src/main/java/assurance/controller/AssuranceController.java:76"
+   ]
+  },
+  {
+   "key": "semantic|assurance.entity.AssuranceTypeBean|semantic|meansInUse|price-field-typed-double-on-flattened-dto-mirroring-assurancetype-enum-price",
+   "candidateAtomId": "atom:semantic:assurance-assurancetypebean-entity:price-representation",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30"
+   ]
+  },
+  {
+   "key": "semantic|assurance.entity.AssuranceType|semantic|meansInUse|price-represented-as-java-primitive-double-hardcoded-enum-literal-3.0-for-traffic-accident-assurance-type",
+   "candidateAtomId": "atom:semantic:assurance-assurancetype-entity:price-representation",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:28"
+   ]
+  },
+  {
+   "key": "semantic|assurance.entity.PlainAssurance|semantic|meansInUse|typeprice-field-typed-double-on-flattened-read-model-combining-assurance-and-assurancetype-fields",
+   "candidateAtomId": "atom:semantic:assurance-plainassurance-entity:type-price-representation",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25"
+   ]
+  },
+  {
+   "key": "semantic|assurance.init.InitData|semantic|meansInUse|commandlinerunner-run-method-body-fully-commented-out-startup-seeding-not-executed-at-boot",
+   "candidateAtomId": "atom:semantic:assurance-initdata:seed-behavior",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:29",
+    "src:ts-assurance-service/src/main/java/assurance/init/InitData.java:79"
+   ]
+  },
+  {
+   "key": "semantic|ctx:assurance-state-and-pricing|cech|sectionValue|section=money-amount:double-typed-price-literal-on-assurancetype-enum-propagated-unchanged-through-assurancetypebean-and-plainassurance-typeprice",
+   "candidateAtomId": "atom:semantic:assurance-state-and-pricing:cech-section-money-amount",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:13",
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceType.java:28",
+    "src:ts-assurance-service/src/main/java/assurance/entity/AssuranceTypeBean.java:30",
+    "src:ts-assurance-service/src/main/java/assurance/entity/PlainAssurance.java:25"
+   ]
+  },
+  {
+   "key": "state|assurance.entity.Assurance|state|persistsIn|jpa-entity-assurance-id-primary-key-column-orderid-not-null-assurance-type-enum-stored-as-string-in-assurance-type-column",
+   "candidateAtomId": "atom:state:assurance-assurance-entity:persists-in-assurance-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:19",
+    "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:26",
+    "src:ts-assurance-service/src/main/java/assurance/entity/Assurance.java:32"
+   ]
+  }
+ ]
+}

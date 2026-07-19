@@ -1,0 +1,821 @@
+{
+ "chunkId": "chunk-19",
+ "adjudications": [
+  {
+   "key": "authority|train.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origin-method-header-scope-with-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:46-59 — corsConfigurer bean maps /** with allow-all origins/methods/headers, credentials false, maxAge 3600. Same CORS fact as pass-b's allowsCrossOrigin:global-cors row (refs 46-59); merged with unioned refs.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:allows-cross-origin", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "cors-registry-allows-all-origins-methods-headers-on-/**-credentials-false-maxage-3600", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:46-59"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/trainservice/**",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:permits-unauthenticated-trainservice-api",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:71 — antMatchers(\"/api/v1/trainservice/**\").permitAll(). Same base-path permitAll fact as pass-b's permitsUnauthenticated:base-path row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:permits-unauthenticated-base-path", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-/api/v1/trainservice/**-matcher-declared-before-the-narrower-admin-role-gated-post-put-delete-trains-matchers-in-the-same-antmatchers-chain", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:71"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-docs-paths",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:permits-unauthenticated-swagger-paths",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:75-76 — antMatchers for swagger-ui.html/webjars/images/configuration/swagger-resources/v2 set permitAll. Same fact as pass-b's permitsUnauthenticated:swagger-paths row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:permits-unauthenticated-swagger-paths", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-and-api-docs-paths", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:75-76"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-delete-/api/v1/trainservice/trains/*",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requires-role-admin-delete-trains",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:74 — antMatchers(DELETE, \"/api/v1/trainservice/trains/*\").hasAnyRole(admin). Same fact as pass-b's requiresRole:delete-trains row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:requires-role-admin-delete-trains", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "admin-role-required-on-delete-/api/v1/trainservice/trains/*-matcher-declared-after-the-broader-permit-all-matcher-for-the-same-base-path", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:74"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-post-/api/v1/trainservice/trains",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requires-role-admin-post-trains",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:72 — antMatchers(POST, \"/api/v1/trainservice/trains\").hasAnyRole(admin). Same fact as pass-b's requiresRole:post-trains row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:requires-role-admin-post-trains", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "admin-role-required-on-post-/api/v1/trainservice/trains-matcher-declared-after-the-broader-permit-all-matcher-for-the-same-base-path", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:72"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-put-/api/v1/trainservice/trains",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requires-role-admin-put-trains",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:73 — antMatchers(PUT, \"/api/v1/trainservice/trains\").hasAnyRole(admin). Same fact as pass-b's requiresRole:put-trains row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:requires-role-admin-put-trains", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "admin-role-required-on-put-/api/v1/trainservice/trains-matcher-declared-after-the-broader-permit-all-matcher-for-the-same-base-path", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:73"] }
+  },
+  {
+   "key": "authority|train.controller.TrainController|authority|allowsCrossOrigin|cross-origin-any-origin-on-trains-crud-endpoints",
+   "candidateAtomId": "atom:authority:train-controller-traincontroller:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:33,45,57,69,81,93,105 — @CrossOrigin(origins=\"*\") is declared on all seven data endpoints (create/retrieve/retrieveByName/retrieveByNames/update/delete/query), not just the three lines each pass cited. Same fact as pass-b's allowsCrossOrigin:endpoint-level row; merged with pass-b's more complete object text.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-traincontroller:allows-cross-origin-endpoint-level", "kind": "authority", "subject": "ts-train-service.TrainController", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "@CrossOrigin(origins=*)-declared-per-endpoint-on-all-seven-data-endpoints-create-retrieve-retrieveByName-retrieveByNames-update-delete-query-in-addition-to-service-level-cors-config", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:33", "src:ts-train-service/src/main/java/train/controller/TrainController.java:45", "src:ts-train-service/src/main/java/train/controller/TrainController.java:57", "src:ts-train-service/src/main/java/train/controller/TrainController.java:81", "src:ts-train-service/src/main/java/train/controller/TrainController.java:93"] }
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origin-method-header-scope-with-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:39-52 — corsConfigurer bean allow-all origins/methods/headers, credentials false, maxAge 3600 on /**. Same fact as pass-b's allowsCrossOrigin:global-cors row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-food-service-securityconfig:allows-cross-origin", "kind": "authority", "subject": "ts-train-food-service.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "cors-registry-allows-all-origins-methods-headers-on-/**-credentials-false-maxage-3600", "refs": ["src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:39-52"] }
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-docs-paths",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:permits-unauthenticated-swagger-paths",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:65-66 — antMatchers for swagger/webjars/images/configuration/v2 set permitAll. Same fact as pass-b's permitsUnauthenticated:swagger-paths row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-food-service-securityconfig:permits-unauthenticated-swagger-paths", "kind": "authority", "subject": "ts-train-food-service.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-and-api-docs-paths", "refs": ["src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:65-66"] }
+  },
+  {
+   "key": "authority|trainFood.controller.TrainFoodController|authority|allowsCrossOrigin|cross-origin-any-origin-on-trainfoods-list-and-by-trip-endpoints",
+   "candidateAtomId": "atom:authority:trainfood-controller-trainfoodcontroller:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27,34 — @CrossOrigin(origins=\"*\") on getAllTrainFood and getTrainFoodOfTrip. Same fact as pass-b's allowsCrossOrigin:endpoint-level row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-food-service-trainfoodcontroller:allows-cross-origin-endpoint-level", "kind": "authority", "subject": "ts-train-food-service.TrainFoodController", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "@CrossOrigin(origins=*)-declared-per-endpoint-on-getAllTrainFood-and-getTrainFoodOfTrip-in-addition-to-service-level-cors-config", "refs": ["src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27", "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:34"] }
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origin-method-header-scope-with-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:46-59 — corsConfigurer bean allow-all origins/methods/headers, credentials false, maxAge 3600 on /**. Same fact as pass-b's allowsCrossOrigin:global-cors row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-travel-plan-service-securityconfig:allows-cross-origin", "kind": "authority", "subject": "ts-travel-plan-service.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "cors-registry-allows-all-origins-methods-headers-on-/**-credentials-false-maxage-3600", "refs": ["src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:46-59"] }
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-docs-paths",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:permits-unauthenticated-swagger-paths",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:72-73 — antMatchers for swagger/webjars/images/configuration/v2 set permitAll. Same fact as pass-b's permitsUnauthenticated:swagger-paths row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-travel-plan-service-securityconfig:permits-unauthenticated-swagger-paths", "kind": "authority", "subject": "ts-travel-plan-service.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-and-api-docs-paths", "refs": ["src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:72-73"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|DELETE /api/v1/trainservice/trains/{id}",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-delete-trains-by-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:94-103 — @DeleteMapping(\"/trains/{id}\") calls trainService.delete(id, headers). Same endpoint as pass-b's exposesEndpoint:delete-trains-by-id row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-delete-trains-by-id", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "DELETE /api/v1/trainservice/trains/{id} calls trainService.delete(id, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:94-103"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-get-trains-query",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:106-115 — @GetMapping(\"/trains\") calls trainService.query(headers). Same endpoint as pass-b's exposesEndpoint:get-trains-query row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-get-trains-query", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainservice/trains calls trainService.query(headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:106-115"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains/byName/{name}",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-get-trains-by-name",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:58-67 — @GetMapping(\"/trains/byName/{name}\") calls trainService.retrieveByName(name, headers). Same endpoint as pass-b's exposesEndpoint:get-trains-by-name row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-get-trains-by-name", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainservice/trains/byName/{name} calls trainService.retrieveByName(name, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:58-67"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains/{id}",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-get-trains-by-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:46-55 — @GetMapping(\"/trains/{id}\") calls trainService.retrieve(id, headers). Same endpoint as pass-b's exposesEndpoint:get-trains-by-id row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-get-trains-by-id", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainservice/trains/{id} calls trainService.retrieve(id, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:46-55"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|POST /api/v1/trainservice/trains",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-post-trains",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:34-43 — @PostMapping(\"/trains\") calls trainService.create(trainType, headers). Same endpoint as pass-b's exposesEndpoint:post-trains-create row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-post-trains-create", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "POST /api/v1/trainservice/trains calls trainService.create(trainType, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:34-43"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|POST /api/v1/trainservice/trains/byNames",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-post-trains-by-names",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:70-79 — @PostMapping(\"/trains/byNames\") calls trainService.retrieveByNames(names, headers), and this method overloads the retrieveByName method name on the controller. Same endpoint as pass-b's exposesEndpoint:post-trains-by-names row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-post-trains-by-names", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "POST /api/v1/trainservice/trains/byNames calls trainService.retrieveByNames(names, headers), overloads retrieveByName method name on controller", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:70-79"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|PUT /api/v1/trainservice/trains",
+   "candidateAtomId": "atom:capability:train-controller-traincontroller:exposes-endpoint-put-trains",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:82-91 — @PutMapping(\"/trains\") calls trainService.update(trainType, headers). Same endpoint as pass-b's exposesEndpoint:put-trains-update row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-put-trains-update", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "PUT /api/v1/trainservice/trains calls trainService.update(trainType, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:82-91"] }
+  },
+  {
+   "key": "capability|train.repository.TrainTypeRepository|capability|servesQuery|native-query-select-star-from-train_type-where-name-in-?1",
+   "candidateAtomId": "atom:capability:train-repository-traintyperepository:serves-query-find-by-names",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:20-21 — @Query(value=\"SELECT * from train_type where name in ?1\", nativeQuery=true) List<TrainType> findByNames(List<String> names). Same fact as pass-b's servesQuery:findByNamesNativeQuery row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traintyperepository:serves-query-find-by-names-native", "kind": "capability", "subject": "ts-train-service.TrainTypeRepository", "axis": "capability", "predicate": "servesQuery", "object": "findByNames(List<String> names) backed by @Query nativeQuery=true \"SELECT * from train_type where name in ?1\"", "refs": ["src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:20-21"] }
+  },
+  {
+   "key": "capability|trainFood.controller.TrainFoodController|capability|exposesEndpoint|GET /api/v1/trainfoodservice/trainfoods",
+   "candidateAtomId": "atom:capability:trainfood-controller-trainfoodcontroller:exposes-endpoint-get-trainfoods",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27-32 — @GetMapping(\"/trainfoods\") returns ok(trainFoodService.listTrainFood(headers)). Same endpoint as pass-b's exposesEndpoint:get-trainfoods row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-food-service-trainfoodcontroller:exposes-endpoint-get-trainfoods", "kind": "capability", "subject": "ts-train-food-service.TrainFoodController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainfoodservice/trainfoods returns Response wrapping trainFoodService.listTrainFood(headers)", "refs": ["src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27-32"] }
+  },
+  {
+   "key": "capability|trainFood.controller.TrainFoodController|capability|exposesEndpoint|GET /api/v1/trainfoodservice/trainfoods/{tripId}",
+   "candidateAtomId": "atom:capability:trainfood-controller-trainfoodcontroller:exposes-endpoint-get-trainfoods-by-tripid",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:34-39 — @GetMapping(\"/trainfoods/{tripId}\") returns ok(trainFoodService.listTrainFoodByTripId(...)). Same endpoint as pass-b's exposesEndpoint:get-trainfoods-by-tripid row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-food-service-trainfoodcontroller:exposes-endpoint-get-trainfoods-by-tripid", "kind": "capability", "subject": "ts-train-food-service.TrainFoodController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainfoodservice/trainfoods/{tripId} returns Response wrapping trainFoodService.listTrainFoodByTripId(tripId, headers)", "refs": ["src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:34-39"] }
+  },
+  {
+   "key": "component|train.ApplicationYml|static||",
+   "candidateAtomId": "atom:component:train-applicationyml",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/resources/application.yml — file exists with nacos discovery, mysql datasource, jpa, server port and swagger config. Pass-b's packet never emitted a component atom for this file (no ApplicationYml component atom anywhere in pass-b's candidateAtoms), so this is a genuine pass-a-only observation. Kept.",
+   "canonicalAtom": { "id": "atom:component:ts-train-service-application-yml", "kind": "component", "subject": "ts-train-service.application-yml", "axis": "static", "refs": ["src:ts-train-service/src/main/resources/application.yml"] }
+  },
+  {
+   "key": "component|trainFood.ApplicationYml|static||",
+   "candidateAtomId": "atom:component:trainfood-applicationyml",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/resources/application.yml — file exists with server port, nacos discovery, mysql datasource, jpa and swagger config. Pass-b never emitted a component atom for this file either. Genuine pass-a-only observation, kept.",
+   "canonicalAtom": { "id": "atom:component:ts-train-food-service-application-yml", "kind": "component", "subject": "ts-train-food-service.application-yml", "axis": "static", "refs": ["src:ts-train-food-service/src/main/resources/application.yml"] }
+  },
+  {
+   "key": "contract|train.entity.TrainType|specification|ensures|name-column-is-notnull-and-unique",
+   "candidateAtomId": "atom:contract:train-entity-traintype:ensures-name-unique",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/entity/TrainType.java:25-27 — @NotNull @Column(name=\"name\", unique=true) private String name. Pass-b has no contract-axis atoms at all in this chunk; genuine pass-a-only observation, kept.",
+   "canonicalAtom": { "id": "atom:contract:ts-train-service-traintype:ensures-name-unique", "kind": "contract", "subject": "ts-train-service.TrainType", "axis": "specification", "predicate": "ensures", "object": "name-column-is-notnull-and-unique", "refs": ["src:ts-train-service/src/main/java/train/entity/TrainType.java:25-27"] }
+  },
+  {
+   "key": "contract|train.service.TrainService|specification|shapedAs|create/retrieve/retrieveByName/retrieveByNames/update/delete/query-signatures-over-traintype",
+   "candidateAtomId": "atom:contract:train-service-trainservice:shaped-as-crud",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/service/TrainService.java:8-23 — interface declares create/retrieve/retrieveByName/retrieveByNames/update/delete/query over TrainType. Genuine pass-a-only contract-axis observation, kept.",
+   "canonicalAtom": { "id": "atom:contract:ts-train-service-trainservice:shaped-as-crud", "kind": "contract", "subject": "ts-train-service.TrainService", "axis": "specification", "predicate": "shapedAs", "object": "create/retrieve/retrieveByName/retrieveByNames/update/delete/query-signatures-over-traintype", "refs": ["src:ts-train-service/src/main/java/train/service/TrainService.java:8-23"] }
+  },
+  {
+   "key": "contract|trainFood.entity.TrainFood|specification|ensures|tripId-column-is-notnull-and-unique",
+   "candidateAtomId": "atom:contract:trainfood-entity-trainfood:ensures-tripid-unique",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:25-27 — @NotNull @Column(unique=true) private String tripId. Genuine pass-a-only contract-axis observation, kept.",
+   "canonicalAtom": { "id": "atom:contract:ts-train-food-service-trainfood:ensures-tripid-unique", "kind": "contract", "subject": "ts-train-food-service.TrainFood", "axis": "specification", "predicate": "ensures", "object": "tripId-column-is-notnull-and-unique", "refs": ["src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:25-27"] }
+  },
+  {
+   "key": "contract|trainFood.service.TrainFoodService|specification|shapedAs|createTrainFood/listTrainFood/listTrainFoodByTripId-signatures-over-trainfood-and-response-envelope",
+   "candidateAtomId": "atom:contract:trainfood-service-trainfoodservice:shaped-as-crud",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/service/TrainFoodService.java:7-13 — interface declares createTrainFood(TrainFood,HttpHeaders), listTrainFood(HttpHeaders), listTrainFoodByTripId(String,HttpHeaders) returning Response. Genuine pass-a-only contract-axis observation, kept.",
+   "canonicalAtom": { "id": "atom:contract:ts-train-food-service-trainfoodservice:shaped-as-crud", "kind": "contract", "subject": "ts-train-food-service.TrainFoodService", "axis": "specification", "predicate": "shapedAs", "object": "createTrainFood/listTrainFood/listTrainFoodByTripId-signatures-over-trainfood-and-response-envelope", "refs": ["src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodService.java:7-13"] }
+  },
+  {
+   "key": "effect|train.service.TrainServiceImpl|effect|writesTo|traintype-row-persisted-via-repository-save-on-create-or-update",
+   "candidateAtomId": "atom:effect:train-service-trainserviceimpl:writes-to-traintyperepository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/service/TrainServiceImpl.java:29-39,77-100 — create() and update() call repository.save() (lines 32,80) guarded by prior findByName/findById presence checks; delete() calls repository.deleteById() (line 93) guarded by findById presence check. Pass-b's row (writesTo:traintyperepository) already combines both the save and deleteById behavior into one atom over the same lines; merged into one canonical effect atom together with the sibling pass-a 'removes' row.",
+   "canonicalAtom": { "id": "atom:effect:ts-train-service-trainserviceimpl:writes-to-traintyperepository", "kind": "effect", "subject": "ts-train-service.TrainServiceImpl", "axis": "effect", "predicate": "writesTo", "object": "traintype-row-persisted-via-repository-save-on-create-or-update-line-32-80-and-removed-via-repository-deletebyid-on-delete-line-93-each-guarded-by-a-prior-findbyname-or-findbyid-presence-check", "refs": ["src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:29-39", "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:77-100"] }
+  },
+  {
+   "key": "effect|train.service.TrainServiceImpl|effect|writesTo|traintype-row-removed-via-repository-deletebyid-on-delete",
+   "candidateAtomId": "atom:effect:train-service-trainserviceimpl:removes-traintype-row",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/service/TrainServiceImpl.java:90-93 — delete() calls repository.deleteById(id) guarded by findById(id).isPresent(). This is the delete-branch half of the same writesTo effect that pass-b's single row (refs 29-39,77-100) already covers alongside the save-branch; merged into the same canonical atom as the save row rather than kept as a second effect atom, to avoid double-counting the same source lines under two effect atoms.",
+   "canonicalAtom": { "id": "atom:effect:ts-train-service-trainserviceimpl:writes-to-traintyperepository", "kind": "effect", "subject": "ts-train-service.TrainServiceImpl", "axis": "effect", "predicate": "writesTo", "object": "traintype-row-persisted-via-repository-save-on-create-or-update-line-32-80-and-removed-via-repository-deletebyid-on-delete-line-93-each-guarded-by-a-prior-findbyname-or-findbyid-presence-check", "refs": ["src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:29-39", "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:77-100"] }
+  },
+  {
+   "key": "effect|trainFood.service.TrainFoodServiceImpl|effect|writesTo|trainfood-row-or-updated-foodlist-persisted-via-repository-save",
+   "candidateAtomId": "atom:effect:trainfood-service-trainfoodserviceimpl:writes-to-trainfoodrepository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:26-39 — createTrainFood looks up by tripId, calls trainFoodRepository.save() at line 33 (updated foodList) or line 36 (new record). Same fact as pass-b's writesTo:trainfoodrepository row; merged.",
+   "canonicalAtom": { "id": "atom:effect:ts-train-food-service-trainfoodserviceimpl:writes-to-trainfoodrepository", "kind": "effect", "subject": "ts-train-food-service.TrainFoodServiceImpl", "axis": "effect", "predicate": "writesTo", "object": "trainFoodRepository.save() called on new-or-updated TrainFood keyed by tripId lookup in createTrainFood", "refs": ["src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:26-39"] }
+  },
+  {
+   "key": "relation|train.ApplicationYml|relation|dependsOn|nacos-discovery-server-addr-cluster-endpoints",
+   "candidateAtomId": "atom:relation:train-applicationyml:depends-on-nacos-discovery",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/resources/application.yml:2-5 — spring.cloud.nacos.discovery.server-addr lists the nacos-headless cluster endpoints. Pass-b never treats ApplicationYml as a subject; genuine pass-a-only observation, kept.",
+   "canonicalAtom": { "id": "atom:relation:ts-train-service-application-yml:depends-on-nacos-discovery", "kind": "relation", "subject": "ts-train-service.application-yml", "axis": "relation", "predicate": "dependsOn", "object": "nacos-discovery-server-addr-cluster-endpoints", "refs": ["src:ts-train-service/src/main/resources/application.yml:2-5"] }
+  },
+  {
+   "key": "relation|train.config.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:train-config-securityconfig:depends-on-jwtfilter",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:3,79 — imports and instantiates edu.fudan.common.security.jwt.JWTFilter via addFilterBefore. This is a distinct structural relation-axis fact from pass-b's authority-axis checksPermission row (different axis/predicate describing JWTFilter's runtime behavior); pass-b has no relation:dependsOn atom for JWTFilter anywhere in this chunk. Kept as its own atom per alias preservation.",
+   "canonicalAtom": { "id": "atom:relation:ts-train-service-securityconfig:depends-on-jwtfilter", "kind": "relation", "subject": "ts-train-service.SecurityConfig", "axis": "relation", "predicate": "dependsOn", "object": "edu.fudan.common.security.jwt.JWTFilter", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:79"] }
+  },
+  {
+   "key": "relation|train.repository.TrainTypeRepository|relation|dependsOn|org.springframework.data.repository.CrudRepository<TrainType,String>",
+   "candidateAtomId": "atom:relation:train-repository-traintyperepository:extends-crudrepository",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:12 — public interface TrainTypeRepository extends CrudRepository<TrainType,String>. Pass-b has no relation atom for this interface extension. Genuine pass-a-only observation, kept.",
+   "canonicalAtom": { "id": "atom:relation:ts-train-service-traintyperepository:depends-on-crudrepository", "kind": "relation", "subject": "ts-train-service.TrainTypeRepository", "axis": "relation", "predicate": "dependsOn", "object": "org.springframework.data.repository.CrudRepository<TrainType,String>", "refs": ["src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:12"] }
+  },
+  {
+   "key": "relation|trainFood.ApplicationYml|relation|dependsOn|nacos-discovery-server-addr-cluster-endpoints",
+   "candidateAtomId": "atom:relation:trainfood-applicationyml:depends-on-nacos-discovery",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/resources/application.yml:5-8 — spring.cloud.nacos.discovery.server-addr lists the nacos-headless cluster endpoints. Genuine pass-a-only observation (pass-b never treats ApplicationYml as a subject), kept.",
+   "canonicalAtom": { "id": "atom:relation:ts-train-food-service-application-yml:depends-on-nacos-discovery", "kind": "relation", "subject": "ts-train-food-service.application-yml", "axis": "relation", "predicate": "dependsOn", "object": "nacos-discovery-server-addr-cluster-endpoints", "refs": ["src:ts-train-food-service/src/main/resources/application.yml:5-8"] }
+  },
+  {
+   "key": "relation|trainFood.config.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:trainfood-config-securityconfig:depends-on-jwtfilter",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:3,69 — imports and instantiates JWTFilter via addFilterBefore. Distinct structural relation-axis fact from pass-b's authority-axis checksPermission row; kept as its own atom per alias preservation.",
+   "canonicalAtom": { "id": "atom:relation:ts-train-food-service-securityconfig:depends-on-jwtfilter", "kind": "relation", "subject": "ts-train-food-service.SecurityConfig", "axis": "relation", "predicate": "dependsOn", "object": "edu.fudan.common.security.jwt.JWTFilter", "refs": ["src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:69"] }
+  },
+  {
+   "key": "relation|trainFood.init.InitData|relation|readsFrom|classpath-resource-/trainfood.txt-read-at-startup",
+   "candidateAtomId": "atom:relation:trainfood-init-initdata:reads-from-trainfood-resource",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/init/InitData.java:29 — new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(\"/trainfood.txt\"))). Pass-b's InitData relation row is dependsOn TrainFoodService only, not this resource-read fact. Genuine pass-a-only observation, kept.",
+   "canonicalAtom": { "id": "atom:relation:ts-train-food-service-initdata:reads-from-trainfood-resource", "kind": "relation", "subject": "ts-train-food-service.InitData", "axis": "relation", "predicate": "readsFrom", "object": "classpath-resource-/trainfood.txt-read-at-startup", "refs": ["src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:29"] }
+  },
+  {
+   "key": "relation|trainFood.repository.TrainFoodRepository|relation|dependsOn|org.springframework.data.repository.CrudRepository<TrainFood,String>",
+   "candidateAtomId": "atom:relation:trainfood-repository-trainfoodrepository:extends-crudrepository",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:11 — public interface TrainFoodRepository extends CrudRepository<TrainFood,String>. Pass-b has no relation atom for this interface extension. Genuine pass-a-only observation, kept.",
+   "canonicalAtom": { "id": "atom:relation:ts-train-food-service-trainfoodrepository:depends-on-crudrepository", "kind": "relation", "subject": "ts-train-food-service.TrainFoodRepository", "axis": "relation", "predicate": "dependsOn", "object": "org.springframework.data.repository.CrudRepository<TrainFood,String>", "refs": ["src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:11"] }
+  },
+  {
+   "key": "relation|travelplan.config.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:travelplan-config-securityconfig:depends-on-jwtfilter",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:3,76 — imports and instantiates JWTFilter via addFilterBefore. Distinct structural relation-axis fact from pass-b's authority-axis checksPermission row; kept as its own atom per alias preservation.",
+   "canonicalAtom": { "id": "atom:relation:ts-travel-plan-service-securityconfig:depends-on-jwtfilter", "kind": "relation", "subject": "ts-travel-plan-service.SecurityConfig", "axis": "relation", "predicate": "dependsOn", "object": "edu.fudan.common.security.jwt.JWTFilter", "refs": ["src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:76"] }
+  },
+  {
+   "key": "semantic|ctx:train-food-service-listing-flow|cech|sectionValue|section=money-amount:double-price-parsed-from-string-at-init-time",
+   "candidateAtomId": "atom:semantic:ctx-train-food-service-listing-flow:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/init/InitData.java:61 — food.setPrice(Double.parseDouble(foodTemp[1])). Same money-amount section value as pass-b's cech row (context ctx:train-food-service-bootstrap, same line 61); merged under pass-a's context id, to be remapped by the integrator.",
+   "canonicalAtom": { "id": "atom:semantic:ctx-train-food-service-listing-flow:cech-section-money-amount", "kind": "semantic", "subject": "ctx:train-food-service-listing-flow", "axis": "cech", "predicate": "sectionValue", "object": "section=money-amount:double-price-parsed-from-string-at-init-time", "refs": ["src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:61"] }
+  },
+  {
+   "key": "semantic|train.ApplicationYml|semantic|meansInUse|default-mysql-database-name-literal-configured-as-s-train-mysql",
+   "candidateAtomId": "atom:semantic:train-applicationyml:default-database-name-literal",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/resources/application.yml:9 — datasource url uses ${TRAIN_MYSQL_DATABASE:s-train-mysql} default literal. Genuine pass-a-only observation (pass-b never treats ApplicationYml as a subject), kept.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-application-yml:default-database-name-literal", "kind": "semantic", "subject": "ts-train-service.application-yml", "axis": "semantic", "predicate": "meansInUse", "object": "default-mysql-database-name-literal-configured-as-s-train-mysql", "refs": ["src:ts-train-service/src/main/resources/application.yml:9"] }
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-created-branch-status-0-on-already-exists-branch",
+   "candidateAtomId": "atom:semantic:train-controller-traincontroller:response-status-branch-create",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:37-42 — Response(1,\"create success\",...) vs Response(0,\"train type already exist\",...). Same fact as pass-b's create:statusGates row (refs 37-42); merged.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-traincontroller:create-status-gates", "kind": "semantic", "subject": "ts-train-service.TrainController", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-create-success-branch-status-0-on-train-type-already-exists-branch", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:37-42"] }
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-found-or-succeeded-branch-status-0-on-not-found-branch",
+   "candidateAtomId": "atom:semantic:train-controller-traincontroller:response-status-branch-lookup",
+   "pass": "pass-a",
+   "decision": "not-adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:49-54,61-66,73-78,85-90,97-102,109-114 — retrieve/retrieveByName/retrieveByNames/update/delete/query each branch on a distinct not-found or empty-result condition with distinct messages ('no TrainType with id', 'no TrainType with name', 'no TrainTypes with names', 'no trainType with the trainType id', 'no train according to id', 'no content'). Pass-b already captures these as six separate per-endpoint statusGates atoms, which is the alias-preserving decomposition (different observed semantic uses of TrainController kept separate). This pass-a row collapses four of the six (missing retrieveByNames and query entirely) into one coarse atom, so it is dropped in favor of the finer pass-b atoms.",
+   "canonicalAtom": null
+  },
+  {
+   "key": "semantic|train.entity.TrainType|semantic|meansInUse|averageSpeed-seed-values-differentiate-train-type-tier-250-200-180-120-120-90",
+   "candidateAtomId": "atom:semantic:train-entity-traintype:averagespeed-selects-tier",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/init/InitData.java:18-59 — six TrainType seeds (GaoTieOne/250, GaoTieTwo/200, DongCheOne/180, ZhiDa/120, TeKuai/120, KuaiSu/90 avg speed) with economy/confort class set to Integer.MAX_VALUE. Same fact as pass-b's InitData trainTypeSpeedVocabulary row (richer, includes seed names and class-capacity detail); merged with pass-b's object text under the InitData subject, since InitData is the component performing the seeding.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-initdata:train-type-speed-vocabulary", "kind": "semantic", "subject": "ts-train-service.InitData", "axis": "semantic", "predicate": "meansInUse", "object": "bootstrap-seeds-six-named-train-types-gaotieone-250-gaotietwo-200-dongcheone-180-zhida-120-tekuai-120-kuaisu-90-average-speed-km-h-differentiating-train-type-tier-with-economy-and-confort-class-capacity-set-to-integer-max-value", "refs": ["src:ts-train-service/src/main/java/train/init/InitData.java:18-59"] }
+  },
+  {
+   "key": "semantic|train.service.TrainServiceImpl|semantic|meansInUse|traintype-name-must-be-non-empty-and-unique-to-create-branch",
+   "candidateAtomId": "atom:semantic:train-service-trainserviceimpl:name-is-unique-create-key",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/service/TrainServiceImpl.java:25-37 — create() returns false immediately if trainType.getName().isEmpty(), then only saves if repository.findByName(name)==null. Genuine pass-a-only observation, pass-b has no equivalent semantic atom about this precondition. Kept.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-trainserviceimpl:name-is-unique-create-key", "kind": "semantic", "subject": "ts-train-service.TrainServiceImpl", "axis": "semantic", "predicate": "meansInUse", "object": "traintype-name-must-be-non-empty-and-unique-to-create-branch", "refs": ["src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:25-37"] }
+  },
+  {
+   "key": "semantic|trainFood.entity.TrainFood|semantic|identifiedBy|tripId-uniquely-identifies-trainfood-record-for-lookup-and-upsert",
+   "candidateAtomId": "atom:semantic:trainfood-entity-trainfood:tripid-identifies-record",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:27, TrainFoodRepository.java:19, TrainFoodServiceImpl.java:27 — tripId is unique-column, has a dedicated findByTripId query, and createTrainFood upserts by looking up on tripId. This is distinct from pass-b's idLookupParamType row (which is about the UUID-vs-String mismatch on the id/generic-type parameter, not tripId). Genuine pass-a-only observation, kept.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-food-service-trainfood:tripid-identifies-record", "kind": "semantic", "subject": "ts-train-food-service.TrainFood", "axis": "semantic", "predicate": "identifiedBy", "object": "tripId-uniquely-identifies-trainfood-record-for-lookup-and-upsert", "refs": ["src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:27", "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:19", "src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:27"] }
+  },
+  {
+   "key": "semantic|trainFood.init.InitData|semantic|meansInUse|double-price-parsed-from-string-token-at-init-time-via-double-parsedouble",
+   "candidateAtomId": "atom:semantic:trainfood-init-initdata:money-amount-representation",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/init/InitData.java:52-64 — toFoodList splits each underscore-separated entry on comma and calls Double.parseDouble(foodTemp[1]) at line 61 to populate Food.price. Same fact as pass-b's moneyAmountRepresentation row (broader span, more detail on the delimiter parsing); merged with pass-b's richer object text.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-food-service-initdata:money-amount-representation", "kind": "semantic", "subject": "ts-train-food-service.InitData", "axis": "semantic", "predicate": "meansInUse", "object": "food-price-field-populated-via-double-parsedouble-from-second-comma-delimited-token-of-each-underscore-separated-bootstrap-file-entry", "refs": ["src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:52-64"] }
+  },
+  {
+   "key": "semantic|trainFood.service.TrainFoodServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:trainfood-service-trainfoodserviceimpl:response-status-branch",
+   "pass": "pass-a",
+   "decision": "not-adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:42-50,53-60 — listTrainFood and listTrainFoodByTripId gate on different conditions (non-empty list vs found-by-tripId) with different Response messages. Pass-b already captures these as two separate per-method statusGates atoms (listTrainFood, listTrainFoodByTripId), the alias-preserving decomposition. This pass-a row collapses both into one coarse atom over the same lines, so it is dropped in favor of the finer pass-b atoms.",
+   "canonicalAtom": null
+  },
+  {
+   "key": "state|train.ApplicationYml|state|persistsIn|s-train-mysql-database-default-via-jpa-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:train-applicationyml:persists-in-mysql",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/resources/application.yml:6-15 — datasource.url with default ${TRAIN_MYSQL_DATABASE:s-train-mysql}, default ${TRAIN_MYSQL_PASSWORD:Abcd1234#}, jpa.hibernate.ddl-auto: update. Same underlying datasource config as pass-b's TrainServiceImpl persistsIn:mysql-datasource row (refs the same application.yml:8-15); merged under the ApplicationYml subject, since the config values literally live there, with pass-b's richer credential detail folded in.",
+   "canonicalAtom": { "id": "atom:state:ts-train-service-application-yml:persists-in-mysql", "kind": "state", "subject": "ts-train-service.application-yml", "axis": "state", "predicate": "persistsIn", "object": "mysql-database-reached-via-jdbc-url-with-default-literal-database-name-s-train-mysql-for-train_mysql_database-env-var-and-default-literal-password-abcd1234-for-train_mysql_password-env-var-hibernate-ddl-auto-update", "refs": ["src:ts-train-service/src/main/resources/application.yml:6-15"] }
+  },
+  {
+   "key": "state|train.entity.TrainType|state|persistsIn|train_type-table-columns-name-economy_class-confort_class-average_speed",
+   "candidateAtomId": "atom:state:train-entity-traintype:persists-in-train-type-table",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/entity/TrainType.java:16-36 — @Entity with @GenericGenerator(jpa-uuid), no explicit @Table (Hibernate default naming derives train_type), columns id, name(unique), economy_class, confort_class, average_speed. Same entity/table as pass-b's default-table row (refs 16-27, id-gen+name-unique detail only); merged, unioning the full column list with the id-generation detail.",
+   "canonicalAtom": { "id": "atom:state:ts-train-service-traintype:persists-in-train-type-table", "kind": "state", "subject": "ts-train-service.TrainType", "axis": "state", "predicate": "persistsIn", "object": "default-jpa-entity-table-train_type-with-jpa-uuid-genericgenerator-id-column-name-notnull-unique-plus-economy_class-confort_class-average_speed-columns", "refs": ["src:ts-train-service/src/main/java/train/entity/TrainType.java:16-36"] }
+  },
+  {
+   "key": "state|trainFood.ApplicationYml|state|persistsIn|ts-train-food-mysql-database-via-jpa-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:trainfood-applicationyml:persists-in-mysql",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/resources/application.yml:11-19 — datasource.url with default ${TRAIN_FOOD_MYSQL_DATABASE:ts-train-food-mysql}, jpa.hibernate.ddl-auto: update. Same config as pass-b's TrainFoodServiceImpl persistsIn:mysql-datasource row (same application.yml:11-19); merged under the ApplicationYml subject.",
+   "canonicalAtom": { "id": "atom:state:ts-train-food-service-application-yml:persists-in-mysql", "kind": "state", "subject": "ts-train-food-service.application-yml", "axis": "state", "predicate": "persistsIn", "object": "ts-train-food-mysql-database-default-via-jdbc-url-with-hibernate-ddl-auto-update", "refs": ["src:ts-train-food-service/src/main/resources/application.yml:11-19"] }
+  },
+  {
+   "key": "state|trainFood.entity.TrainFood|state|persistsIn|train_food_list-join-table-holds-foodlist-elementcollection-keyed-by-trip-id",
+   "candidateAtomId": "atom:state:trainfood-entity-trainfood:persists-in-train-food-list-table",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:29-31 — @ElementCollection(targetClass=Food.class) @CollectionTable(name=\"train_food_list\", joinColumns=@JoinColumn(name=\"trip_id\")) private List<Food> foodList. Identical fact and identical refs as pass-b's persistsIn:train-food-list-table row; merged.",
+   "canonicalAtom": { "id": "atom:state:ts-train-food-service-trainfood:persists-in-train-food-list-table", "kind": "state", "subject": "ts-train-food-service.TrainFood", "axis": "state", "predicate": "persistsIn", "object": "train_food_list-collection-table-holds-foodlist-elementcollection-joined-on-trip_id-column", "refs": ["src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:29-31"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|allowsCrossOrigin|cors-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:allowsCrossOrigin:global-cors",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:46-59 — corsConfigurer bean maps /** allow-all origins/methods/headers, credentials false, maxAge 3600. Same fact as pass-a's allowsCrossOrigin row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:allows-cross-origin", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "cors-registry-allows-all-origins-methods-headers-on-/**-credentials-false-maxage-3600", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:46-59"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|checksPermission|JWTFilter inserted before UsernamePasswordAuthenticationFilter validates bearer token on paths not covered by permitAll matchers",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:checksPermission:jwt-filter",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:79 — addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); and ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:19-31 — doFilterInternal calls JWTUtil.getJWTAuthentication and sets SecurityContext, returning 401 on JwtException. The behavioral claim is grounded once the JWTFilter implementation is included in refs. Distinct authority-axis fact from pass-a's relation-axis dependsOn row (structural vs behavioral); pass-a has no checksPermission atom. Kept, with JWTFilter.java added to refs for grounding.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:checks-permission-jwt-filter", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "checksPermission", "object": "JWTFilter-inserted-before-UsernamePasswordAuthenticationFilter-validates-bearer-token-via-JWTUtil-and-sets-securitycontext-returning-401-on-jwtexception-on-paths-not-covered-by-permitall-matchers", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:79", "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:19-31"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/trainservice/**-matcher-listed-before-the-narrower-post-put-delete-trains-matchers-in-the-same-authorizeRequests-chain",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:permitsUnauthenticated:base-path",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:71 — antMatchers(\"/api/v1/trainservice/**\").permitAll() declared before the admin-role-gated matchers. Same fact as pass-a's permitsUnauthenticated-trainservice-api row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:permits-unauthenticated-base-path", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-/api/v1/trainservice/**-matcher-declared-before-the-narrower-admin-role-gated-post-put-delete-trains-matchers-in-the-same-antmatchers-chain", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:71"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:permitsUnauthenticated:swagger-paths",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:75-76 — antMatchers for swagger/webjars/images/configuration/v2 set permitAll. Same fact as pass-a's permitsUnauthenticated-swagger-paths row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:permits-unauthenticated-swagger-paths", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-and-api-docs-paths", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:75-76"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-delete-/api/v1/trainservice/trains/*-matcher-listed-after-the-broader-permit-all-matcher-for-the-same-base-path",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requiresRole:delete-trains",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:74 — antMatchers(DELETE, \"/api/v1/trainservice/trains/*\").hasAnyRole(admin), declared after the broader permitAll matcher at line 71. Same fact as pass-a's requires-role-admin-delete-trains row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:requires-role-admin-delete-trains", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "admin-role-required-on-delete-/api/v1/trainservice/trains/*-matcher-declared-after-the-broader-permit-all-matcher-for-the-same-base-path", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:74"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-post-/api/v1/trainservice/trains-matcher-listed-after-the-broader-permit-all-matcher-for-the-same-base-path",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requiresRole:post-trains",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:72 — antMatchers(POST, \"/api/v1/trainservice/trains\").hasAnyRole(admin), declared after the broader permitAll matcher at line 71. Same fact as pass-a's requires-role-admin-post-trains row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:requires-role-admin-post-trains", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "admin-role-required-on-post-/api/v1/trainservice/trains-matcher-declared-after-the-broader-permit-all-matcher-for-the-same-base-path", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:72"] }
+  },
+  {
+   "key": "authority|train.config.SecurityConfig|authority|requiresRole|admin-role-required-on-put-/api/v1/trainservice/trains-matcher-listed-after-the-broader-permit-all-matcher-for-the-same-base-path",
+   "candidateAtomId": "atom:authority:train-config-securityconfig:requiresRole:put-trains",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:73 — antMatchers(PUT, \"/api/v1/trainservice/trains\").hasAnyRole(admin), declared after the broader permitAll matcher at line 71. Same fact as pass-a's requires-role-admin-put-trains row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-securityconfig:requires-role-admin-put-trains", "kind": "authority", "subject": "ts-train-service.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "admin-role-required-on-put-/api/v1/trainservice/trains-matcher-declared-after-the-broader-permit-all-matcher-for-the-same-base-path", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:73"] }
+  },
+  {
+   "key": "authority|train.controller.TrainController|authority|allowsCrossOrigin|@CrossOrigin(origins=\"*\") declared per-endpoint on all seven data endpoints (create/retrieve/retrieveByName/retrieveByNames/update/delete/query) in addition to service-level CORS config",
+   "candidateAtomId": "atom:authority:train-traincontroller:allowsCrossOrigin:endpoint-level",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:33,45,57,69,81,93,105 — confirmed @CrossOrigin(origins=\"*\") on all seven data endpoints (welcome endpoint at line 28 has none). Same fact as pass-a's allowsCrossOrigin row (narrower refs, coarser object text); merged with this row's more complete object text.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-service-traincontroller:allows-cross-origin-endpoint-level", "kind": "authority", "subject": "ts-train-service.TrainController", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "@CrossOrigin(origins=*)-declared-per-endpoint-on-all-seven-data-endpoints-create-retrieve-retrieveByName-retrieveByNames-update-delete-query-in-addition-to-service-level-cors-config", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:33", "src:ts-train-service/src/main/java/train/controller/TrainController.java:45", "src:ts-train-service/src/main/java/train/controller/TrainController.java:57", "src:ts-train-service/src/main/java/train/controller/TrainController.java:81", "src:ts-train-service/src/main/java/train/controller/TrainController.java:93"] }
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|allowsCrossOrigin|cors-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:allowsCrossOrigin:global-cors",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:39-52 — corsConfigurer bean maps /** allow-all origins/methods/headers, credentials false, maxAge 3600. Same fact as pass-a's allowsCrossOrigin row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-food-service-securityconfig:allows-cross-origin", "kind": "authority", "subject": "ts-train-food-service.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "cors-registry-allows-all-origins-methods-headers-on-/**-credentials-false-maxage-3600", "refs": ["src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:39-52"] }
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|checksPermission|JWTFilter inserted before UsernamePasswordAuthenticationFilter validates bearer token on paths not covered by permitAll matchers",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:checksPermission:jwt-filter",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:69 — addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); and ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:19-31 confirms bearer-token validation and 401-on-failure behavior. Distinct authority-axis fact from pass-a's relation-axis dependsOn row; pass-a has no checksPermission atom. Kept, with JWTFilter.java added to refs for grounding.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-food-service-securityconfig:checks-permission-jwt-filter", "kind": "authority", "subject": "ts-train-food-service.SecurityConfig", "axis": "authority", "predicate": "checksPermission", "object": "JWTFilter-inserted-before-UsernamePasswordAuthenticationFilter-validates-bearer-token-via-JWTUtil-and-sets-securitycontext-returning-401-on-jwtexception-on-paths-not-covered-by-permitall-matchers", "refs": ["src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:69", "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:19-31"] }
+  },
+  {
+   "key": "authority|trainFood.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:trainfood-config-securityconfig:permitsUnauthenticated:swagger-paths",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:65-66 — antMatchers for swagger/webjars/images/configuration/v2 set permitAll. Same fact as pass-a's permitsUnauthenticated-swagger-paths row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-food-service-securityconfig:permits-unauthenticated-swagger-paths", "kind": "authority", "subject": "ts-train-food-service.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-and-api-docs-paths", "refs": ["src:ts-train-food-service/src/main/java/trainFood/config/SecurityConfig.java:65-66"] }
+  },
+  {
+   "key": "authority|trainFood.controller.TrainFoodController|authority|allowsCrossOrigin|@CrossOrigin(origins=\"*\") declared per-endpoint on getAllTrainFood and getTrainFoodOfTrip in addition to service-level CORS config",
+   "candidateAtomId": "atom:authority:trainfood-trainfoodcontroller:allowsCrossOrigin:endpoint-level",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27,34 — @CrossOrigin(origins=\"*\") on getAllTrainFood and getTrainFoodOfTrip. Same fact as pass-a's allowsCrossOrigin row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-train-food-service-trainfoodcontroller:allows-cross-origin-endpoint-level", "kind": "authority", "subject": "ts-train-food-service.TrainFoodController", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "@CrossOrigin(origins=*)-declared-per-endpoint-on-getAllTrainFood-and-getTrainFoodOfTrip-in-addition-to-service-level-cors-config", "refs": ["src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27", "src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:34"] }
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|allowsCrossOrigin|cors-allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:allowsCrossOrigin:global-cors",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:46-59 — corsConfigurer bean maps /** allow-all origins/methods/headers, credentials false, maxAge 3600. Same fact as pass-a's allowsCrossOrigin row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-travel-plan-service-securityconfig:allows-cross-origin", "kind": "authority", "subject": "ts-travel-plan-service.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "cors-registry-allows-all-origins-methods-headers-on-/**-credentials-false-maxage-3600", "refs": ["src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:46-59"] }
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|checksPermission|JWTFilter inserted before UsernamePasswordAuthenticationFilter validates bearer token on paths not covered by permitAll matchers",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:checksPermission:jwt-filter",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:76 — addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); and ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:19-31 confirms bearer-token validation and 401-on-failure behavior. Distinct authority-axis fact from pass-a's relation-axis dependsOn row; pass-a has no checksPermission atom. Kept, with JWTFilter.java added to refs for grounding.",
+   "canonicalAtom": { "id": "atom:authority:ts-travel-plan-service-securityconfig:checks-permission-jwt-filter", "kind": "authority", "subject": "ts-travel-plan-service.SecurityConfig", "axis": "authority", "predicate": "checksPermission", "object": "JWTFilter-inserted-before-UsernamePasswordAuthenticationFilter-validates-bearer-token-via-JWTUtil-and-sets-securitycontext-returning-401-on-jwtexception-on-paths-not-covered-by-permitall-matchers", "refs": ["src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:76", "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:19-31"] }
+  },
+  {
+   "key": "authority|travelplan.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:travelplan-config-securityconfig:permitsUnauthenticated:swagger-paths",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:72-73 — antMatchers for swagger/webjars/images/configuration/v2 set permitAll. Same fact as pass-a's permitsUnauthenticated-swagger-paths row; merged.",
+   "canonicalAtom": { "id": "atom:authority:ts-travel-plan-service-securityconfig:permits-unauthenticated-swagger-paths", "kind": "authority", "subject": "ts-travel-plan-service.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-and-api-docs-paths", "refs": ["src:ts-travel-plan-service/src/main/java/travelplan/config/SecurityConfig.java:72-73"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|DELETE /api/v1/trainservice/trains/{id} calls trainService.delete(id, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:delete-trains-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:94-103 — @DeleteMapping(\"/trains/{id}\") calls trainService.delete(id, headers). Same endpoint as pass-a's exposes-endpoint-delete-trains-by-id row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-delete-trains-by-id", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "DELETE /api/v1/trainservice/trains/{id} calls trainService.delete(id, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:94-103"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains calls trainService.query(headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:get-trains-query",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:106-115 — @GetMapping(\"/trains\") calls trainService.query(headers). Same endpoint as pass-a's exposes-endpoint-get-trains-query row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-get-trains-query", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainservice/trains calls trainService.query(headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:106-115"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains/byName/{name} calls trainService.retrieveByName(name, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:get-trains-by-name",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:58-67 — @GetMapping(\"/trains/byName/{name}\") calls trainService.retrieveByName(name, headers). Same endpoint as pass-a's exposes-endpoint-get-trains-by-name row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-get-trains-by-name", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainservice/trains/byName/{name} calls trainService.retrieveByName(name, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:58-67"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|GET /api/v1/trainservice/trains/{id} calls trainService.retrieve(id, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:get-trains-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:46-55 — @GetMapping(\"/trains/{id}\") calls trainService.retrieve(id, headers). Same endpoint as pass-a's exposes-endpoint-get-trains-by-id row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-get-trains-by-id", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainservice/trains/{id} calls trainService.retrieve(id, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:46-55"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|POST /api/v1/trainservice/trains calls trainService.create(trainType, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:post-trains-create",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:34-43 — @PostMapping(\"/trains\") calls trainService.create(trainType, headers). Same endpoint as pass-a's exposes-endpoint-post-trains row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-post-trains-create", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "POST /api/v1/trainservice/trains calls trainService.create(trainType, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:34-43"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|POST /api/v1/trainservice/trains/byNames calls trainService.retrieveByNames(names, headers), overloads retrieveByName method name on controller",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:post-trains-by-names",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:70-79 — @PostMapping(\"/trains/byNames\") method named retrieveByName (overloading the single-name retrieveByName at line 59) calls trainService.retrieveByNames(names, headers). Same endpoint as pass-a's exposes-endpoint-post-trains-by-names row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-post-trains-by-names", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "POST /api/v1/trainservice/trains/byNames calls trainService.retrieveByNames(names, headers), overloads retrieveByName method name on controller", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:70-79"] }
+  },
+  {
+   "key": "capability|train.controller.TrainController|capability|exposesEndpoint|PUT /api/v1/trainservice/trains calls trainService.update(trainType, headers)",
+   "candidateAtomId": "atom:capability:train-traincontroller:exposesEndpoint:put-trains-update",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:82-91 — @PutMapping(\"/trains\") calls trainService.update(trainType, headers). Same endpoint as pass-a's exposes-endpoint-put-trains row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traincontroller:exposes-endpoint-put-trains-update", "kind": "capability", "subject": "ts-train-service.TrainController", "axis": "capability", "predicate": "exposesEndpoint", "object": "PUT /api/v1/trainservice/trains calls trainService.update(trainType, headers)", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:82-91"] }
+  },
+  {
+   "key": "capability|train.repository.TrainTypeRepository|capability|servesQuery|findByNames(List<String> names) backed by @Query nativeQuery=true \"SELECT * from train_type where name in ?1\"",
+   "candidateAtomId": "atom:capability:train-traintyperepository:servesQuery:findByNamesNativeQuery",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:20-21 — @Query(value=\"SELECT * from train_type where name in ?1\", nativeQuery=true) List<TrainType> findByNames(List<String> names). Same fact as pass-a's serves-query-find-by-names row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-service-traintyperepository:serves-query-find-by-names-native", "kind": "capability", "subject": "ts-train-service.TrainTypeRepository", "axis": "capability", "predicate": "servesQuery", "object": "findByNames(List<String> names) backed by @Query nativeQuery=true \"SELECT * from train_type where name in ?1\"", "refs": ["src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:20-21"] }
+  },
+  {
+   "key": "capability|trainFood.controller.TrainFoodController|capability|exposesEndpoint|GET /api/v1/trainfoodservice/trainfoods returns Response wrapping trainFoodService.listTrainFood(headers)",
+   "candidateAtomId": "atom:capability:trainfood-trainfoodcontroller:exposesEndpoint:get-trainfoods",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27-32 — @GetMapping(\"/trainfoods\") returns ok(trainFoodService.listTrainFood(headers)). Same endpoint as pass-a's exposes-endpoint-get-trainfoods row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-food-service-trainfoodcontroller:exposes-endpoint-get-trainfoods", "kind": "capability", "subject": "ts-train-food-service.TrainFoodController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainfoodservice/trainfoods returns Response wrapping trainFoodService.listTrainFood(headers)", "refs": ["src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:27-32"] }
+  },
+  {
+   "key": "capability|trainFood.controller.TrainFoodController|capability|exposesEndpoint|GET /api/v1/trainfoodservice/trainfoods/{tripId} returns Response wrapping trainFoodService.listTrainFoodByTripId",
+   "candidateAtomId": "atom:capability:trainfood-trainfoodcontroller:exposesEndpoint:get-trainfoods-by-tripid",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:34-39 — @GetMapping(\"/trainfoods/{tripId}\") returns ok(trainFoodService.listTrainFoodByTripId(tripId, headers)). Same endpoint as pass-a's exposes-endpoint-get-trainfoods-by-tripid row; merged.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-food-service-trainfoodcontroller:exposes-endpoint-get-trainfoods-by-tripid", "kind": "capability", "subject": "ts-train-food-service.TrainFoodController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/trainfoodservice/trainfoods/{tripId} returns Response wrapping trainFoodService.listTrainFoodByTripId(tripId, headers)", "refs": ["src:ts-train-food-service/src/main/java/trainFood/controller/TrainFoodController.java:34-39"] }
+  },
+  {
+   "key": "capability|trainFood.repository.TrainFoodRepository|capability|servesQuery|findById(UUID id) and deleteById(UUID id) declared as additional derived-query methods alongside inherited CrudRepository<TrainFood,String>",
+   "candidateAtomId": "atom:capability:trainfood-trainfoodrepository:servesQuery:findByIdUuidParam",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:11,13,21 — extends CrudRepository<TrainFood,String> yet declares TrainFood findById(UUID id) and void deleteById(UUID id), a UUID-typed override alongside the String generic type. Pass-a only captured findByTripId as a capability atom for this repository; genuine pass-b-only observation, kept.",
+   "canonicalAtom": { "id": "atom:capability:ts-train-food-service-trainfoodrepository:serves-query-find-by-id-uuid-param", "kind": "capability", "subject": "ts-train-food-service.TrainFoodRepository", "axis": "capability", "predicate": "servesQuery", "object": "findById(UUID id) and deleteById(UUID id) declared as additional derived-query methods alongside inherited CrudRepository<TrainFood,String>", "refs": ["src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:13", "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:21"] }
+  },
+  {
+   "key": "effect|train.service.TrainServiceImpl|effect|writesTo|train.repository.TrainTypeRepository save()/deleteById() called from create/update/delete flows guarded by prior findByName or findById presence checks",
+   "candidateAtomId": "atom:effect:train-trainserviceimpl:writesTo:traintyperepository",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/service/TrainServiceImpl.java:29-39,77-100 — create/update call repository.save() (lines 32,80), delete calls repository.deleteById() (line 93), all guarded by presence checks. This row already spans both branches that pass-a split into two atoms (writes-to-traintyperepository and removes-traintype-row); merged into one canonical effect atom covering all three rows.",
+   "canonicalAtom": { "id": "atom:effect:ts-train-service-trainserviceimpl:writes-to-traintyperepository", "kind": "effect", "subject": "ts-train-service.TrainServiceImpl", "axis": "effect", "predicate": "writesTo", "object": "traintype-row-persisted-via-repository-save-on-create-or-update-line-32-80-and-removed-via-repository-deletebyid-on-delete-line-93-each-guarded-by-a-prior-findbyname-or-findbyid-presence-check", "refs": ["src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:29-39", "src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:77-100"] }
+  },
+  {
+   "key": "effect|trainFood.service.TrainFoodServiceImpl|effect|writesTo|trainFood.repository.TrainFoodRepository save() called on new-or-updated TrainFood keyed by tripId lookup",
+   "candidateAtomId": "atom:effect:trainfood-trainfoodserviceimpl:writesTo:trainfoodrepository",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:26-39 — createTrainFood looks up by tripId, calls trainFoodRepository.save() at line 33 or line 36. Same fact as pass-a's writes-to-trainfoodrepository row; merged.",
+   "canonicalAtom": { "id": "atom:effect:ts-train-food-service-trainfoodserviceimpl:writes-to-trainfoodrepository", "kind": "effect", "subject": "ts-train-food-service.TrainFoodServiceImpl", "axis": "effect", "predicate": "writesTo", "object": "trainFoodRepository.save() called on new-or-updated TrainFood keyed by tripId lookup in createTrainFood", "refs": ["src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:26-39"] }
+  },
+  {
+   "key": "relation|train.service.TrainServiceImpl|relation|implements|train.service.TrainService",
+   "candidateAtomId": "atom:relation:train-trainserviceimpl:implements",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/service/TrainServiceImpl.java:15 — public class TrainServiceImpl implements TrainService. Pass-a never emitted an implements-relation atom (only depends-on-repository). Genuine pass-b-only observation, kept.",
+   "canonicalAtom": { "id": "atom:relation:ts-train-service-trainserviceimpl:implements-trainservice", "kind": "relation", "subject": "ts-train-service.TrainServiceImpl", "axis": "relation", "predicate": "implements", "object": "train.service.TrainService", "refs": ["src:ts-train-service/src/main/java/train/service/TrainServiceImpl.java:15"] }
+  },
+  {
+   "key": "relation|trainFood.service.TrainFoodServiceImpl|relation|implements|trainFood.service.TrainFoodService",
+   "candidateAtomId": "atom:relation:trainfood-trainfoodserviceimpl:implements",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:15 — public class TrainFoodServiceImpl implements TrainFoodService. Genuine pass-b-only observation, kept.",
+   "canonicalAtom": { "id": "atom:relation:ts-train-food-service-trainfoodserviceimpl:implements-trainfoodservice", "kind": "relation", "subject": "ts-train-food-service.TrainFoodServiceImpl", "axis": "relation", "predicate": "implements", "object": "trainFood.service.TrainFoodService", "refs": ["src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:15"] }
+  },
+  {
+   "key": "semantic|ctx:train-food-service-bootstrap|cech|sectionValue|section=money-amount:double-price-parsed-from-string-at-bootstrap-init-site",
+   "candidateAtomId": "atom:semantic:trainfood-bootstrap:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/init/InitData.java:61 — Double.parseDouble(foodTemp[1]) sets Food price. Same money-amount section value as pass-a's cech row (context ctx:train-food-service-listing-flow, same line 61); merged under pass-a's context id, to be remapped by the integrator.",
+   "canonicalAtom": { "id": "atom:semantic:ctx-train-food-service-listing-flow:cech-section-money-amount", "kind": "semantic", "subject": "ctx:train-food-service-listing-flow", "axis": "cech", "predicate": "sectionValue", "object": "section=money-amount:double-price-parsed-from-string-at-init-time", "refs": ["src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:61"] }
+  },
+  {
+   "key": "semantic|train.config.SecurityConfig|semantic|meansInUse|authorizeRequests chain lists the broad permit-all matcher for /api/v1/trainservice/** first, then lists the narrower admin-role-gated POST/PUT/DELETE trains matchers second, within a single antMatchers list evaluated in declaration order",
+   "candidateAtomId": "atom:semantic:train-config-securityconfig:matcherOrder",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/config/SecurityConfig.java:71-74 — permitAll matcher for /api/v1/trainservice/** is declared at line 71, before the three role-gated POST/PUT/DELETE matchers at lines 72-74, all within one chained antMatchers() list. Neutral declaration-order observation with no diagnostic wording; pass-a has no equivalent semantic atom. Genuine pass-b-only observation, kept.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-securityconfig:matcher-order", "kind": "semantic", "subject": "ts-train-service.SecurityConfig", "axis": "semantic", "predicate": "meansInUse", "object": "authorizeRequests chain lists the broad permit-all matcher for /api/v1/trainservice/** first, then lists the narrower admin-role-gated POST/PUT/DELETE trains matchers second, within a single antMatchers list evaluated in declaration order", "refs": ["src:ts-train-service/src/main/java/train/config/SecurityConfig.java:71-74"] }
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-create-success-branch-status-0-on-train-type-already-exists-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:create:statusGates",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:37-42 — Response(1,\"create success\",...) vs Response(0,\"train type already exist\",...). Same fact as pass-a's response-status-branch-create row; merged.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-traincontroller:create-status-gates", "kind": "semantic", "subject": "ts-train-service.TrainController", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-create-success-branch-status-0-on-train-type-already-exists-branch", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:37-42"] }
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-delete-success-branch-status-0-on-no-train-according-to-id-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:delete:statusGates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:97-102 — Response(1,\"delete success\",...) vs Response(0,\"there is no train according to id\",...). Pass-a only captured this branch as part of a coarse four-endpoint aggregate atom, which was not-adopted; this finer per-endpoint atom is kept instead.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-traincontroller:delete-status-gates", "kind": "semantic", "subject": "ts-train-service.TrainController", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-delete-success-branch-status-0-on-no-train-according-to-id-branch", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:97-102"] }
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-result-carrying-branch-found-by-id-status-0-on-not-found-by-id-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:retrieve:statusGates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:49-54 — Response(0,\"here is no TrainType with the trainType id\",...) vs Response(1,\"success\",trainType). Kept as the finer per-endpoint atom in place of pass-a's not-adopted aggregate.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-traincontroller:retrieve-status-gates", "kind": "semantic", "subject": "ts-train-service.TrainController", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-result-carrying-branch-found-by-id-status-0-on-not-found-by-id-branch", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:49-54"] }
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-result-carrying-branch-found-by-name-status-0-on-not-found-by-name-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:retrieveByName:statusGates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:61-66 — Response(0,\"here is no TrainType with the trainType name\",...) vs Response(1,\"success\",trainType). Kept as the finer per-endpoint atom in place of pass-a's not-adopted aggregate.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-traincontroller:retrieve-by-name-status-gates", "kind": "semantic", "subject": "ts-train-service.TrainController", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-result-carrying-branch-found-by-name-status-0-on-not-found-by-name-branch", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:61-66"] }
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-result-carrying-branch-found-by-names-status-0-on-not-found-by-names-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:retrieveByNames:statusGates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:73-78 — Response(0,\"here is no TrainTypes with the trainType names\",...) vs Response(1,\"success\",trainTypes). Pass-a's aggregate atom omitted this endpoint entirely (its refs list does not include 73-78); genuine finer-grained observation, kept.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-traincontroller:retrieve-by-names-status-gates", "kind": "semantic", "subject": "ts-train-service.TrainController", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-result-carrying-branch-found-by-names-status-0-on-not-found-by-names-branch", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:73-78"] }
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-result-carrying-branch-when-trainTypes-non-empty-status-0-on-no-content-branch-when-list-null-or-empty",
+   "candidateAtomId": "atom:semantic:train-traincontroller:query:statusGates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:109-114 — Response(1,\"success\",trainTypes) when trainTypes!=null && !isEmpty, else Response(0,\"no content\",...). Pass-a's aggregate atom omitted this endpoint entirely; genuine finer-grained observation, kept.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-traincontroller:query-status-gates", "kind": "semantic", "subject": "ts-train-service.TrainController", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-result-carrying-branch-when-trainTypes-non-empty-status-0-on-no-content-branch-when-list-null-or-empty", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:109-114"] }
+  },
+  {
+   "key": "semantic|train.controller.TrainController|semantic|statusGates|status-1-on-update-success-branch-status-0-on-no-traintype-with-given-id-branch",
+   "candidateAtomId": "atom:semantic:train-traincontroller:update:statusGates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/controller/TrainController.java:85-90 — Response(1,\"update success\",...) vs Response(0,\"there is no trainType with the trainType id\",...). Kept as the finer per-endpoint atom in place of pass-a's not-adopted aggregate.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-traincontroller:update-status-gates", "kind": "semantic", "subject": "ts-train-service.TrainController", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-update-success-branch-status-0-on-no-traintype-with-given-id-branch", "refs": ["src:ts-train-service/src/main/java/train/controller/TrainController.java:85-90"] }
+  },
+  {
+   "key": "semantic|train.init.InitData|semantic|meansInUse|bootstrap-seeds-six-named-train-types-gaotieone-250-gaotietwo-200-dongcheone-180-zhida-120-tekuai-120-kuaisu-90-average-speed-km-h-with-economy-and-confort-class-capacity-set-to-integer-max-value",
+   "candidateAtomId": "atom:semantic:train-initdata:trainTypeSpeedVocabulary",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/init/InitData.java:18-59 — six TrainType seeds with the stated names/speeds and Integer.MAX_VALUE class capacity, confirmed. Same fact as pass-a's averagespeed-selects-tier row; merged under InitData subject (the component performing the seeding) with this row's richer detail.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-initdata:train-type-speed-vocabulary", "kind": "semantic", "subject": "ts-train-service.InitData", "axis": "semantic", "predicate": "meansInUse", "object": "bootstrap-seeds-six-named-train-types-gaotieone-250-gaotietwo-200-dongcheone-180-zhida-120-tekuai-120-kuaisu-90-average-speed-km-h-differentiating-train-type-tier-with-economy-and-confort-class-capacity-set-to-integer-max-value", "refs": ["src:ts-train-service/src/main/java/train/init/InitData.java:18-59"] }
+  },
+  {
+   "key": "semantic|train.repository.TrainTypeRepository|semantic|identifiedBy|findbyid-and-deleteby-id-parameter-and-repository-generic-type-both-typed-string-consistent-with-entity-id-column",
+   "candidateAtomId": "atom:semantic:train-traintyperepository:idLookupParamType",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:12,14,17 — extends CrudRepository<TrainType,String>, findById(String id), deleteById(String id): all String, consistent with the entity id column. Pass-a has no equivalent semantic atom. Genuine pass-b-only observation, kept.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-service-traintyperepository:id-lookup-param-type", "kind": "semantic", "subject": "ts-train-service.TrainTypeRepository", "axis": "semantic", "predicate": "identifiedBy", "object": "findbyid-and-deleteby-id-parameter-and-repository-generic-type-both-typed-string-consistent-with-entity-id-column", "refs": ["src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:12", "src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:14", "src:ts-train-service/src/main/java/train/repository/TrainTypeRepository.java:17"] }
+  },
+  {
+   "key": "semantic|trainFood.init.InitData|semantic|meansInUse|food-price-field-populated-via-double-parsedouble-from-second-comma-delimited-token-of-each-underscore-separated-bootstrap-file-entry",
+   "candidateAtomId": "atom:semantic:trainfood-initdata:moneyAmountRepresentation",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/init/InitData.java:52-64 — toFoodList splits on underscore then comma and calls Double.parseDouble(foodTemp[1]). Same fact as pass-a's money-amount-representation row; merged with this row's broader/richer object text.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-food-service-initdata:money-amount-representation", "kind": "semantic", "subject": "ts-train-food-service.InitData", "axis": "semantic", "predicate": "meansInUse", "object": "food-price-field-populated-via-double-parsedouble-from-second-comma-delimited-token-of-each-underscore-separated-bootstrap-file-entry", "refs": ["src:ts-train-food-service/src/main/java/trainFood/init/InitData.java:52-64"] }
+  },
+  {
+   "key": "semantic|trainFood.repository.TrainFoodRepository|semantic|identifiedBy|uuid-typed-id-parameter-declared-on-findbyid-and-deleteby-id-methods-while-entity-id-column-and-repository-generic-type-are-string",
+   "candidateAtomId": "atom:semantic:trainfood-trainfoodrepository:idLookupParamType",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:11,13,21 and TrainFood.java:20-23 — extends CrudRepository<TrainFood,String> (generic String) yet findById(UUID id)/deleteById(UUID id) are UUID-typed, while the entity id column is String. Distinct from pass-a's tripId-identifies-record row (different predicate focus: id-param-type mismatch vs tripId-as-business-key). Genuine pass-b-only observation, kept.",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-food-service-trainfoodrepository:id-lookup-param-type", "kind": "semantic", "subject": "ts-train-food-service.TrainFoodRepository", "axis": "semantic", "predicate": "identifiedBy", "object": "uuid-typed-id-parameter-declared-on-findbyid-and-deleteby-id-methods-while-entity-id-column-and-repository-generic-type-are-string", "refs": ["src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:11", "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:13", "src:ts-train-food-service/src/main/java/trainFood/repository/TrainFoodRepository.java:21", "src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:20-23"] }
+  },
+  {
+   "key": "semantic|trainFood.service.TrainFoodServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-when-found-by-tripid-status-0-on-no-content-branch-when-not-found",
+   "candidateAtomId": "atom:semantic:trainfood-trainfoodserviceimpl:listTrainFoodByTripId:statusGates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:53-60 — Response(0,noContent,null) when tf==null else Response(1,success,tf.getFoodList()). Kept as the finer per-method atom in place of pass-a's not-adopted aggregate (response-status-branch).",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-food-service-trainfoodserviceimpl:list-train-food-by-trip-id-status-gates", "kind": "semantic", "subject": "ts-train-food-service.TrainFoodServiceImpl", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-result-carrying-branch-when-found-by-tripid-status-0-on-no-content-branch-when-not-found", "refs": ["src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:53-60"] }
+  },
+  {
+   "key": "semantic|trainFood.service.TrainFoodServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-when-trainFoodList-non-empty-status-0-on-no-content-branch-when-list-null-or-empty",
+   "candidateAtomId": "atom:semantic:trainfood-trainfoodserviceimpl:listTrainFood:statusGates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:42-50 — Response(1,success,trainFoodList) when non-empty else Response(0,noContent,null). Kept as the finer per-method atom in place of pass-a's not-adopted aggregate (response-status-branch).",
+   "canonicalAtom": { "id": "atom:semantic:ts-train-food-service-trainfoodserviceimpl:list-train-food-status-gates", "kind": "semantic", "subject": "ts-train-food-service.TrainFoodServiceImpl", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-result-carrying-branch-when-trainFoodList-non-empty-status-0-on-no-content-branch-when-list-null-or-empty", "refs": ["src:ts-train-food-service/src/main/java/trainFood/service/TrainFoodServiceImpl.java:42-50"] }
+  },
+  {
+   "key": "state|train.entity.TrainType|state|persistsIn|default JPA entity table with jpa-uuid GenericGenerator id and unique name column",
+   "candidateAtomId": "atom:state:train-entity-traintype:persistsIn:default-table",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/java/train/entity/TrainType.java:16-27 — @GenericGenerator(jpa-uuid), @Id/@GeneratedValue on id, @NotNull @Column(unique=true) on name. Same TrainType table as pass-a's train-type-table row (broader column list); merged with the full column list unioned in.",
+   "canonicalAtom": { "id": "atom:state:ts-train-service-traintype:persists-in-train-type-table", "kind": "state", "subject": "ts-train-service.TrainType", "axis": "state", "predicate": "persistsIn", "object": "default-jpa-entity-table-train_type-with-jpa-uuid-genericgenerator-id-column-name-notnull-unique-plus-economy_class-confort_class-average_speed-columns", "refs": ["src:ts-train-service/src/main/java/train/entity/TrainType.java:16-36"] }
+  },
+  {
+   "key": "state|train.service.TrainServiceImpl|state|persistsIn|mysql database with default literal value s-train-mysql for TRAIN_MYSQL_DATABASE env var and default literal credential Abcd1234# for TRAIN_MYSQL_PASSWORD, reached via hibernate ddl-auto update",
+   "candidateAtomId": "atom:state:train-trainserviceimpl:persistsIn:mysql-datasource",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-service/src/main/resources/application.yml:8-15 — datasource.url with default ${TRAIN_MYSQL_DATABASE:s-train-mysql}, default ${TRAIN_MYSQL_PASSWORD:Abcd1234#}, jpa.hibernate.ddl-auto: update. Same underlying config as pass-a's ApplicationYml persistsIn:mysql row; merged under the ApplicationYml subject since the config values live in that file, not in TrainServiceImpl itself.",
+   "canonicalAtom": { "id": "atom:state:ts-train-service-application-yml:persists-in-mysql", "kind": "state", "subject": "ts-train-service.application-yml", "axis": "state", "predicate": "persistsIn", "object": "mysql-database-reached-via-jdbc-url-with-default-literal-database-name-s-train-mysql-for-train_mysql_database-env-var-and-default-literal-password-abcd1234-for-train_mysql_password-env-var-hibernate-ddl-auto-update", "refs": ["src:ts-train-service/src/main/resources/application.yml:6-15"] }
+  },
+  {
+   "key": "state|trainFood.entity.TrainFood|state|persistsIn|default JPA entity table with jpa-uuid GenericGenerator id and unique tripId column",
+   "candidateAtomId": "atom:state:trainfood-entity-trainfood:persistsIn:default-table",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:16-27 — @GenericGenerator(jpa-uuid), @Id/@GeneratedValue on id, @NotNull @Column(unique=true) on tripId. Pass-a's only TrainFood state atom covers the separate train_food_list collection table (A52); pass-a's tripId-uniqueness observation (A27) is contract-axis, not state-axis. Genuine pass-b-only state observation, kept.",
+   "canonicalAtom": { "id": "atom:state:ts-train-food-service-trainfood:persists-in-default-table", "kind": "state", "subject": "ts-train-food-service.TrainFood", "axis": "state", "predicate": "persistsIn", "object": "default-jpa-entity-table-with-jpa-uuid-genericgenerator-id-and-unique-tripid-column", "refs": ["src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:16-27"] }
+  },
+  {
+   "key": "state|trainFood.entity.TrainFood|state|persistsIn|foodList persisted via @ElementCollection into train_food_list collection table joined on trip_id column",
+   "candidateAtomId": "atom:state:trainfood-entity-trainfood:persistsIn:train-food-list-table",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:29-31 — @ElementCollection @CollectionTable(name=\"train_food_list\", joinColumns=@JoinColumn(name=\"trip_id\")). Identical fact and identical refs as pass-a's train-food-list-table row; merged.",
+   "canonicalAtom": { "id": "atom:state:ts-train-food-service-trainfood:persists-in-train-food-list-table", "kind": "state", "subject": "ts-train-food-service.TrainFood", "axis": "state", "predicate": "persistsIn", "object": "train_food_list-collection-table-holds-foodlist-elementcollection-joined-on-trip_id-column", "refs": ["src:ts-train-food-service/src/main/java/trainFood/entity/TrainFood.java:29-31"] }
+  },
+  {
+   "key": "state|trainFood.service.TrainFoodServiceImpl|state|persistsIn|mysql database ts-train-food-mysql (default) reached via spring.datasource url with hibernate ddl-auto update",
+   "candidateAtomId": "atom:state:trainfood-trainfoodserviceimpl:persistsIn:mysql-datasource",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-train-food-service/src/main/resources/application.yml:11-19 — datasource.url default ${TRAIN_FOOD_MYSQL_DATABASE:ts-train-food-mysql}, jpa.hibernate.ddl-auto: update. Same config as pass-a's ApplicationYml persistsIn:mysql row; merged under the ApplicationYml subject.",
+   "canonicalAtom": { "id": "atom:state:ts-train-food-service-application-yml:persists-in-mysql", "kind": "state", "subject": "ts-train-food-service.application-yml", "axis": "state", "predicate": "persistsIn", "object": "ts-train-food-mysql-database-default-via-jdbc-url-with-hibernate-ddl-auto-update", "refs": ["src:ts-train-food-service/src/main/resources/application.yml:11-19"] }
+  }
+ ]
+}

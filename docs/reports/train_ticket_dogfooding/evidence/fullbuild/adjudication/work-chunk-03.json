@@ -1,0 +1,960 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|auth.config.WebSecurityConfig|authority|allowsCrossOrigin|cors-mapping-slash-star-star-allows-all-origins-all-methods-all-headers-credentials-disabled-max-age-3600",
+   "candidateAtomId": "atom:authority:auth-config-websecurityconfig:allows-cross-origin-all",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:57-64"
+   ]
+  },
+  {
+   "key": "authority|auth.config.WebSecurityConfig|authority|configuresSessionPolicy|http-basic-and-csrf-disabled-session-creation-policy-set-to-stateless",
+   "candidateAtomId": "atom:authority:auth-config-websecurityconfig:configures-stateless-session-policy",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:80-84"
+   ]
+  },
+  {
+   "key": "authority|auth.config.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/auth-/api/v1/auth/hello-/api/v1/user/hello",
+   "candidateAtomId": "atom:authority:auth-config-websecurityconfig:permits-unauthenticated-auth-hello",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:86"
+   ]
+  },
+  {
+   "key": "authority|auth.config.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/users/login",
+   "candidateAtomId": "atom:authority:auth-config-websecurityconfig:permits-unauthenticated-login",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:87"
+   ]
+  },
+  {
+   "key": "authority|auth.config.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/user/star-star-used-while-user-service-creates-default-role",
+   "candidateAtomId": "atom:authority:auth-config-websecurityconfig:permits-unauthenticated-user-register",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:90-91"
+   ]
+  },
+  {
+   "key": "authority|auth.config.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-doc-paths",
+   "candidateAtomId": "atom:authority:auth-config-websecurityconfig:permits-unauthenticated-swagger",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:92-93"
+   ]
+  },
+  {
+   "key": "authority|auth.config.WebSecurityConfig|authority|requiresAuthentication|any-remaining-request-requires-authentication-as-default-fallback-branch",
+   "candidateAtomId": "atom:authority:auth-config-websecurityconfig:requires-authentication-default-fallback",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:94"
+   ]
+  },
+  {
+   "key": "authority|auth.config.WebSecurityConfig|authority|requiresRole|role-admin-gates-delete-/api/v1/users/star",
+   "candidateAtomId": "atom:authority:auth-config-websecurityconfig:requires-role-admin-delete-users",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:89"
+   ]
+  },
+  {
+   "key": "authority|auth.config.WebSecurityConfig|authority|requiresRole|role-admin-gates-get-/api/v1/users",
+   "candidateAtomId": "atom:authority:auth-config-websecurityconfig:requires-role-admin-get-users",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:88"
+   ]
+  },
+  {
+   "key": "capability|assurance.service.AssuranceServiceImpl|capability|handlesCommand|create",
+   "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:handles-command-create",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:52-68"
+   ]
+  },
+  {
+   "key": "capability|assurance.service.AssuranceServiceImpl|capability|handlesCommand|deleteById",
+   "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:handles-command-delete-by-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:70-81"
+   ]
+  },
+  {
+   "key": "capability|assurance.service.AssuranceServiceImpl|capability|handlesCommand|deleteByOrderId",
+   "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:handles-command-delete-by-order-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:83-94"
+   ]
+  },
+  {
+   "key": "capability|assurance.service.AssuranceServiceImpl|capability|handlesCommand|modify",
+   "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:handles-command-modify",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:96-115"
+   ]
+  },
+  {
+   "key": "capability|assurance.service.AssuranceServiceImpl|capability|servesQuery|findAssuranceById",
+   "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:29-38"
+   ]
+  },
+  {
+   "key": "capability|assurance.service.AssuranceServiceImpl|capability|servesQuery|findAssuranceByOrderId",
+   "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-order-id",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:41-50"
+   ]
+  },
+  {
+   "key": "capability|assurance.service.AssuranceServiceImpl|capability|servesQuery|getAllAssuranceTypes",
+   "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:serves-query-get-all-assurance-types",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:139-157"
+   ]
+  },
+  {
+   "key": "capability|assurance.service.AssuranceServiceImpl|capability|servesQuery|getAllAssurances",
+   "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:serves-query-get-all-assurances",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:117-137"
+   ]
+  },
+  {
+   "key": "capability|auth.controller.AuthController|capability|exposesEndpoint|GET-/api/v1/auth/hello",
+   "candidateAtomId": "atom:capability:auth-controller-authcontroller:exposes-endpoint-get-auth-hello",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:31-34"
+   ]
+  },
+  {
+   "key": "capability|auth.controller.AuthController|capability|exposesEndpoint|POST-/api/v1/auth",
+   "candidateAtomId": "atom:capability:auth-controller-authcontroller:exposes-endpoint-post-auth",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:36-42"
+   ]
+  },
+  {
+   "key": "capability|auth.controller.UserController|capability|exposesEndpoint|DELETE-/api/v1/users/{userId}",
+   "candidateAtomId": "atom:capability:auth-controller-usercontroller:exposes-endpoint-delete-users-user-id",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:59-63"
+   ]
+  },
+  {
+   "key": "capability|auth.controller.UserController|capability|exposesEndpoint|GET-/api/v1/users",
+   "candidateAtomId": "atom:capability:auth-controller-usercontroller:exposes-endpoint-get-users",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:53-57"
+   ]
+  },
+  {
+   "key": "capability|auth.controller.UserController|capability|exposesEndpoint|GET-/api/v1/users/hello",
+   "candidateAtomId": "atom:capability:auth-controller-usercontroller:exposes-endpoint-get-users-hello",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:36-39"
+   ]
+  },
+  {
+   "key": "capability|auth.controller.UserController|capability|exposesEndpoint|POST-/api/v1/users/login",
+   "candidateAtomId": "atom:capability:auth-controller-usercontroller:exposes-endpoint-post-users-login",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:41-51"
+   ]
+  },
+  {
+   "key": "capability|auth.repository.UserRepository|capability|handlesCommand|deleteByUserId",
+   "candidateAtomId": "atom:capability:auth-repository-userrepository:handles-command-delete-by-user-id",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:28"
+   ]
+  },
+  {
+   "key": "capability|auth.repository.UserRepository|capability|servesQuery|findByUsername",
+   "candidateAtomId": "atom:capability:auth-repository-userrepository:serves-query-find-by-username",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:20"
+   ]
+  },
+  {
+   "key": "capability|auth.security.UserDetailsServiceImpl|capability|servesQuery|loadUserByUsername",
+   "candidateAtomId": "atom:capability:auth-security-userdetailsserviceimpl:serves-query-load-user-by-username",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:26-33"
+   ]
+  },
+  {
+   "key": "capability|auth.security.jwt.JWTProvider|capability|handlesCommand|createToken",
+   "candidateAtomId": "atom:capability:auth-security-jwt-jwtprovider:handles-command-create-token",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:29-44"
+   ]
+  },
+  {
+   "key": "component|assurance.repository.AssuranceRepository|static||",
+   "candidateAtomId": "atom:component:assurance-repository-assurancerepository",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:15"
+   ]
+  },
+  {
+   "key": "component|assurance.service.AssuranceService|static||",
+   "candidateAtomId": "atom:component:assurance-service-assuranceservice",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:12"
+   ]
+  },
+  {
+   "key": "component|auth.entity.User|static||",
+   "candidateAtomId": "atom:component:auth-entity-user",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/entity/User.java:20-30"
+   ]
+  },
+  {
+   "key": "component|auth.exception.UserOperationException|static||",
+   "candidateAtomId": "atom:component:auth-exception-useroperationexception",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/exception/UserOperationException.java:6-11"
+   ]
+  },
+  {
+   "key": "contract|assurance.service.AssuranceServiceImpl|specification|requires|modify-assumes-find-assurance-by-id-response-data-optional-is-present-before-unwrapping-with-get",
+   "candidateAtomId": "atom:contract:assurance-service-assuranceserviceimpl:modify-requires-response-data-present",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:98-99"
+   ]
+  },
+  {
+   "key": "contract|auth.dto.AuthDto|specification|shapedAs|authdto-fields-userid-username-password-created-by-user-service-on-register-then-sent-to-auth-service",
+   "candidateAtomId": "atom:contract:auth-dto-authdto:shaped-as",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/dto/AuthDto.java:15-19"
+   ]
+  },
+  {
+   "key": "contract|auth.dto.BasicAuthDto|specification|shapedAs|basicauthdto-fields-username-password-verificationcode-used-as-login-request-body",
+   "candidateAtomId": "atom:contract:auth-dto-basicauthdto:shaped-as",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/dto/BasicAuthDto.java:19-24"
+   ]
+  },
+  {
+   "key": "contract|auth.dto.TokenDto|specification|shapedAs|tokendto-fields-userid-username-token-used-as-token-issuance-result-shape",
+   "candidateAtomId": "atom:contract:auth-dto-tokendto:shaped-as",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/dto/TokenDto.java:20-25"
+   ]
+  },
+  {
+   "key": "contract|auth.entity.User|specification|shapedAs|get-authorities-maps-roles-set-of-string-one-to-one-to-simplegrantedauthority-without-any-role-prefix-transformation",
+   "candidateAtomId": "atom:contract:auth-entity-user:get-authorities-shaped-as",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/entity/User.java:41-44"
+   ]
+  },
+  {
+   "key": "contract|auth.exception.handler.GlobalExceptionHandler|specification|ensures|returns-http-500-internal-server-error-with-raw-exception-message-as-body-not-wrapped-in-the-response-envelope-on-useroperationexception",
+   "candidateAtomId": "atom:contract:auth-exception-handler-globalexceptionhandler:ensures-raw-message-envelope",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:16-19"
+   ]
+  },
+  {
+   "key": "relation|assurance.repository.AssuranceRepository|restriction|dependsOn|assurance.entity.Assurance",
+   "candidateAtomId": "atom:relation:assurance-repository-assurancerepository:depends-on-assurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:3",
+    "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:15"
+   ]
+  },
+  {
+   "key": "relation|auth.config.WebSecurityConfig|restriction|dependsOn|auth.security.UserDetailsServiceImpl",
+   "candidateAtomId": "atom:relation:auth-config-websecurityconfig:depends-on-userdetailsserviceimpl",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:36-38"
+   ]
+  },
+  {
+   "key": "relation|auth.config.WebSecurityConfig|restriction|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:auth-config-websecurityconfig:depends-on-jwtfilter",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:4",
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:96"
+   ]
+  },
+  {
+   "key": "relation|auth.controller.AuthController|restriction|dependsOn|auth.service.UserService",
+   "candidateAtomId": "atom:relation:auth-controller-authcontroller:depends-on-userservice",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:22",
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:39"
+   ]
+  },
+  {
+   "key": "relation|auth.controller.UserController|restriction|dependsOn|auth.exception.UserOperationException",
+   "candidateAtomId": "atom:relation:auth-controller-usercontroller:depends-on-useroperationexception",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:47"
+   ]
+  },
+  {
+   "key": "relation|auth.controller.UserController|restriction|dependsOn|auth.service.TokenService",
+   "candidateAtomId": "atom:relation:auth-controller-usercontroller:depends-on-tokenservice",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:31-32",
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:45"
+   ]
+  },
+  {
+   "key": "relation|auth.controller.UserController|restriction|dependsOn|auth.service.UserService",
+   "candidateAtomId": "atom:relation:auth-controller-usercontroller:depends-on-userservice",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:28-29",
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:56",
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:62"
+   ]
+  },
+  {
+   "key": "relation|auth.exception.handler.GlobalExceptionHandler|restriction|dependsOn|auth.exception.UserOperationException",
+   "candidateAtomId": "atom:relation:auth-exception-handler-globalexceptionhandler:depends-on-useroperationexception",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:15",
+    "src:ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:17"
+   ]
+  },
+  {
+   "key": "relation|auth.init.InitUser|restriction|dependsOn|auth.repository.UserRepository",
+   "candidateAtomId": "atom:relation:auth-init-inituser:depends-on-userrepository",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:21",
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:29",
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:37",
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:48"
+   ]
+  },
+  {
+   "key": "relation|auth.repository.UserRepository|restriction|dependsOn|auth.entity.User",
+   "candidateAtomId": "atom:relation:auth-repository-userrepository:depends-on-user",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:3",
+    "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:12"
+   ]
+  },
+  {
+   "key": "relation|auth.security.UserDetailsServiceImpl|restriction|dependsOn|auth.repository.UserRepository",
+   "candidateAtomId": "atom:relation:auth-security-userdetailsserviceimpl:depends-on-userrepository",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:21-22",
+    "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:29"
+   ]
+  },
+  {
+   "key": "relation|ts-assurance-service|restriction|dependsOn|nacos-service-discovery-cluster",
+   "candidateAtomId": "atom:relation:ts-assurance-service:depends-on-nacos-discovery",
+   "refs": [
+    "src:ts-assurance-service/src/main/resources/application.yml:3-5"
+   ]
+  },
+  {
+   "key": "relation|ts-assurance-service|restriction|dependsOn|ts-assurance-mysql-datasource",
+   "candidateAtomId": "atom:relation:ts-assurance-service:depends-on-mysql-datasource",
+   "refs": [
+    "src:ts-assurance-service/src/main/resources/application.yml:8-12"
+   ]
+  },
+  {
+   "key": "semantic|auth.constant.AuthConstant|semantic|identifiedBy|role-strings-role-underscore-user-and-role-underscore-admin-match-spring-security-hasrole-suffix-convention-user-admin-used-in-websecurityconfig",
+   "candidateAtomId": "atom:semantic:auth-constant-authconstant:identified-by-role-strings",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/constant/AuthConstant.java:12-13",
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:88-89"
+   ]
+  },
+  {
+   "key": "semantic|auth.constant.InfoConstant|semantic|identifiedBy|infoconstant-roles-and-id-keys-used-as-jwt-claim-keys-in-jwtprovider-username-not-found-template-used-in-userdetailsserviceimpl-lookup-exception-message",
+   "candidateAtomId": "atom:semantic:auth-constant-infoconstant:identified-by-shared-keys",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/constant/InfoConstant.java:19",
+    "src:ts-auth-service/src/main/java/auth/constant/InfoConstant.java:23-26",
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:32-33",
+    "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:31"
+   ]
+  },
+  {
+   "key": "semantic|auth.controller.AuthController|semantic|meansInUse|post-auth-returns-http-201-created-echoing-submitted-authdto-regardless-of-createdefaultauthuser-outcome",
+   "candidateAtomId": "atom:semantic:auth-controller-authcontroller:means-in-use-create-default-user-response",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:36-42"
+   ]
+  },
+  {
+   "key": "semantic|auth.init.InitUser|semantic|meansInUse|seed-account-passwords-are-string-literals-111111-and-222222-run-through-passwordencoder-encode-at-startup",
+   "candidateAtomId": "atom:semantic:auth-init-inituser:means-in-use-seed-passwords",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:34",
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:45"
+   ]
+  },
+  {
+   "key": "semantic|auth.security.jwt.JWTProvider|semantic|identifiedBy|jwt-claims-carry-username-as-subject-plus-roles-set-and-user-id-under-infoconstant-roles-and-id-keys",
+   "candidateAtomId": "atom:semantic:auth-security-jwt-jwtprovider:identified-by-claims",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:31-33"
+   ]
+  },
+  {
+   "key": "semantic|auth.security.jwt.JWTProvider|semantic|meansInUse|secret-key-is-string-literal-secret-base64-encoded-once-at-postconstruct-init-and-reused-for-every-issued-token",
+   "candidateAtomId": "atom:semantic:auth-security-jwt-jwtprovider:means-in-use-secret-key",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:20",
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:24-27"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.Response|semantic|statusGates|http-200-ok-with-embedded-status-0-on-caught-useroperationexception-branch-during-login-otherwise-tokenservice-result-is-passed-through",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-response:status-gates-login-exception-branch",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:44-50"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.Response|semantic|statusGates|status-1-on-record-returned-or-created-branch-status-0-on-no-content-or-not-created-branch",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-response:status-gates-assurance-service",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:33",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:36",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:58",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:66"
+   ]
+  },
+  {
+   "key": "state|assurance.entity.Assurance|state|persistsIn|assurance-row-persisted-via-crudrepository-save-keyed-by-generated-uuid-id-and-order-id",
+   "candidateAtomId": "atom:state:assurance-entity-assurance:persists-in-assurance-table",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:63-64",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:107"
+   ]
+  },
+  {
+   "key": "state|auth.entity.User|state|persistsIn|auth-user-table-columns-user-id-user-name-password-and-roles-element-collection-joined-on-user-id",
+   "candidateAtomId": "atom:state:auth-entity-user:persists-in-auth-user-table",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/entity/User.java:26-39"
+   ]
+  },
+  {
+   "key": "state|auth.entity.User|state|persistsIn|auth-user-table-seeded-at-startup-with-fdse-microservice-role-user-and-admin-role-admin-accounts-if-not-already-present",
+   "candidateAtomId": "atom:state:auth-entity-user:persists-in-seed-startup",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:29-49"
+   ]
+  },
+  {
+   "key": "state|auth.security.jwt.JWTProvider|state|transitionsTo|token-expiration-fixed-constant-3600000-milliseconds-one-hour-from-issue-time",
+   "candidateAtomId": "atom:state:auth-security-jwt-jwtprovider:validity-in-milliseconds",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:22",
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:35-36"
+   ]
+  },
+  {
+   "key": "state|ts-assurance-service|state|transitionsTo|schema-auto-managed-via-hibernate-ddl-auto-update-at-startup",
+   "candidateAtomId": "atom:state:ts-assurance-service:hibernate-ddl-auto-update",
+   "refs": [
+    "src:ts-assurance-service/src/main/resources/application.yml:13-15"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|auth.WebSecurityConfig|authority|allowsCrossOrigin|cors-mapping-star-star-allows-all-origins-all-methods-all-headers-credentials-disabled-maxage-3600",
+   "candidateAtomId": "atom:authority:auth-websecurityconfig:allowscrossorigin-all-origins",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:58-63"
+   ]
+  },
+  {
+   "key": "authority|auth.WebSecurityConfig|authority|checksPermission|authentication-required-on-any-request-not-matched-by-earlier-permitall-or-role-rules",
+   "candidateAtomId": "atom:authority:auth-websecurityconfig:checkspermission-authenticated-anyrequest",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:94"
+   ]
+  },
+  {
+   "key": "authority|auth.WebSecurityConfig|authority|checksPermission|http-basic-and-csrf-disabled-with-stateless-session-creation-policy",
+   "candidateAtomId": "atom:authority:auth-websecurityconfig:checkspermission-csrf-disabled-stateless-session",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:80-84"
+   ]
+  },
+  {
+   "key": "authority|auth.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/auth-/api/v1/auth/hello-/api/v1/user/hello",
+   "candidateAtomId": "atom:authority:auth-websecurityconfig:permitsunauthenticated-auth-and-hello-paths",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:86"
+   ]
+  },
+  {
+   "key": "authority|auth.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/users/login",
+   "candidateAtomId": "atom:authority:auth-websecurityconfig:permitsunauthenticated-users-login",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:87"
+   ]
+  },
+  {
+   "key": "authority|auth.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/user/star-star-path-used-during-registration",
+   "candidateAtomId": "atom:authority:auth-websecurityconfig:permitsunauthenticated-user-wildcard",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:91"
+   ]
+  },
+  {
+   "key": "authority|auth.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:auth-websecurityconfig:permitsunauthenticated-swagger-paths",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:92-93"
+   ]
+  },
+  {
+   "key": "authority|auth.WebSecurityConfig|authority|requiresRole|role-admin-required-on-DELETE-/api/v1/users/star-path",
+   "candidateAtomId": "atom:authority:auth-websecurityconfig:requiresrole-admin-delete-users",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:89"
+   ]
+  },
+  {
+   "key": "authority|auth.WebSecurityConfig|authority|requiresRole|role-admin-required-on-GET-/api/v1/users",
+   "candidateAtomId": "atom:authority:auth-websecurityconfig:requiresrole-admin-get-users",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:88"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceRepository|capability|handlesCommand|removeAssuranceByOrderId",
+   "candidateAtomId": "atom:capability:assurance-assurancerepository:handlescommand-removeassurancebyorderid",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:48-49"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceRepository|capability|servesQuery|findByOrderId",
+   "candidateAtomId": "atom:capability:assurance-assurancerepository:servesquery-findbyorderid",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:31"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceServiceImpl|capability|handlesCommand|create",
+   "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:handlescommand-create",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:53-68"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceServiceImpl|capability|handlesCommand|deleteById",
+   "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:handlescommand-deletebyid",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:71-81"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceServiceImpl|capability|handlesCommand|deleteByOrderId",
+   "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:handlescommand-deletebyorderid",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:84-94"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceServiceImpl|capability|handlesCommand|modify",
+   "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:handlescommand-modify",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:97-115"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceServiceImpl|capability|servesQuery|findAssuranceById",
+   "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:servesquery-findassurancebyid",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:29-38"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceServiceImpl|capability|servesQuery|findAssuranceByOrderId",
+   "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:servesquery-findassurancebyorderid",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:41-50"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceServiceImpl|capability|servesQuery|getAllAssuranceTypes",
+   "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:servesquery-getallassurancetypes",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:140-157"
+   ]
+  },
+  {
+   "key": "capability|assurance.AssuranceServiceImpl|capability|servesQuery|getAllAssurances",
+   "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:servesquery-getallassurances",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:118-137"
+   ]
+  },
+  {
+   "key": "capability|auth.AuthController|capability|handlesCommand|createDefaultUser-invoked-by-ts-user-service-during-registration",
+   "candidateAtomId": "atom:capability:auth-authcontroller:handlescommand-createdefaultuser",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:36-42"
+   ]
+  },
+  {
+   "key": "capability|auth.AuthController|capability|servesQuery|hello",
+   "candidateAtomId": "atom:capability:auth-authcontroller:servesquery-hello",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:31-34"
+   ]
+  },
+  {
+   "key": "capability|auth.JWTProvider|capability|handlesCommand|createToken",
+   "candidateAtomId": "atom:capability:auth-jwtprovider:handlescommand-createtoken",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:29-44"
+   ]
+  },
+  {
+   "key": "capability|auth.UserController|capability|handlesCommand|deleteUserById-via-delete-/api/v1/users/userId",
+   "candidateAtomId": "atom:capability:auth-usercontroller:handlescommand-deleteuserbyid",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:59-63"
+   ]
+  },
+  {
+   "key": "capability|auth.UserController|capability|handlesCommand|login-via-post-/api/v1/users/login",
+   "candidateAtomId": "atom:capability:auth-usercontroller:handlescommand-login",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:41-51"
+   ]
+  },
+  {
+   "key": "capability|auth.UserController|capability|servesQuery|getAllUser-via-get-/api/v1/users",
+   "candidateAtomId": "atom:capability:auth-usercontroller:servesquery-getalluser",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:53-57"
+   ]
+  },
+  {
+   "key": "capability|auth.UserController|capability|servesQuery|hello",
+   "candidateAtomId": "atom:capability:auth-usercontroller:servesquery-hello",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:36-39"
+   ]
+  },
+  {
+   "key": "capability|auth.UserDetailsServiceImpl|capability|servesQuery|loadUserByUsername",
+   "candidateAtomId": "atom:capability:auth-userdetailsserviceimpl:servesquery-loadUserByUsername",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:27-33"
+   ]
+  },
+  {
+   "key": "capability|auth.UserRepository|capability|handlesCommand|deleteByUserId",
+   "candidateAtomId": "atom:capability:auth-userrepository:handlescommand-deletebyuserid",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:28"
+   ]
+  },
+  {
+   "key": "capability|auth.UserRepository|capability|servesQuery|findByUsername",
+   "candidateAtomId": "atom:capability:auth-userrepository:servesquery-findbyusername",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:20"
+   ]
+  },
+  {
+   "key": "component|assurance.AssuranceRepository|static||",
+   "candidateAtomId": "atom:component:assurance-assurancerepository",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java"
+   ]
+  },
+  {
+   "key": "component|assurance.AssuranceServiceImpl|static||",
+   "candidateAtomId": "atom:component:assurance-assuranceserviceimpl",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:21"
+   ]
+  },
+  {
+   "key": "component|assurance.AssuranceService|static||",
+   "candidateAtomId": "atom:component:assurance-assuranceservice",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java"
+   ]
+  },
+  {
+   "key": "component|auth.AuthController|static||",
+   "candidateAtomId": "atom:component:auth-authcontroller",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:19"
+   ]
+  },
+  {
+   "key": "component|auth.JWTProvider|static||",
+   "candidateAtomId": "atom:component:auth-jwtprovider",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:18"
+   ]
+  },
+  {
+   "key": "component|auth.UserController|static||",
+   "candidateAtomId": "atom:component:auth-usercontroller",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:26"
+   ]
+  },
+  {
+   "key": "component|auth.UserDetailsServiceImpl|static||",
+   "candidateAtomId": "atom:component:auth-userdetailsserviceimpl",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:19"
+   ]
+  },
+  {
+   "key": "component|auth.UserOperationException|static||",
+   "candidateAtomId": "atom:component:auth-useroperationexception",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/exception/UserOperationException.java:6"
+   ]
+  },
+  {
+   "key": "component|auth.UserRepository|static||",
+   "candidateAtomId": "atom:component:auth-userrepository",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:12"
+   ]
+  },
+  {
+   "key": "component|auth.User|static||",
+   "candidateAtomId": "atom:component:auth-user",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/entity/User.java:27"
+   ]
+  },
+  {
+   "key": "contract|assurance.AssuranceService|specification|requires|delete-by-assurance-id-and-delete-by-order-id-declared-transactional",
+   "candidateAtomId": "atom:contract:assurance-assuranceservice:requires-transactional-delete",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:49",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:59"
+   ]
+  },
+  {
+   "key": "contract|auth.AuthDto|specification|shapedAs|userId-userName-password-fields-for-default-auth-user-creation-dto",
+   "candidateAtomId": "atom:contract:auth-authdto:shapedas-userid-username-password",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/dto/AuthDto.java:15-19"
+   ]
+  },
+  {
+   "key": "contract|auth.BasicAuthDto|specification|shapedAs|username-password-verificationCode-fields-for-login-request-dto",
+   "candidateAtomId": "atom:contract:auth-basicauthdto:shapedas-username-password-verificationcode",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/dto/BasicAuthDto.java:19-24"
+   ]
+  },
+  {
+   "key": "contract|auth.GlobalExceptionHandler|specification|ensures|useroperationexception-caught-globally-and-mapped-to-http-500-internal-server-error-response-with-exception-message-as-body",
+   "candidateAtomId": "atom:contract:auth-globalexceptionhandler:ensures-useroperationexception-maps-to-500",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:15-19"
+   ]
+  },
+  {
+   "key": "contract|auth.JWTProvider|specification|ensures|issued-jwt-expires-3600000-milliseconds-one-hour-after-issuedat-timestamp",
+   "candidateAtomId": "atom:contract:auth-jwtprovider:ensures-token-expiry-one-hour",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:22",
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:35-36"
+   ]
+  },
+  {
+   "key": "contract|auth.TokenDto|specification|shapedAs|userId-username-token-fields-for-token-issuance-response-dto",
+   "candidateAtomId": "atom:contract:auth-tokendto:shapedas-userid-username-token",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/dto/TokenDto.java:20-25"
+   ]
+  },
+  {
+   "key": "effect|auth.AuthApplication|effect|callsProvider|load-balanced-resttemplate-bean-registered-for-outbound-calls-to-other-services",
+   "candidateAtomId": "atom:effect:auth-authapplication:callsprovider-load-balanced-resttemplate",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/AuthApplication.java:21-24"
+   ]
+  },
+  {
+   "key": "relation|assurance.AssuranceRepository|relation|dependsOn|assurance.Assurance",
+   "candidateAtomId": "atom:relation:assurance-assurancerepository:dependson-assurance",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:15"
+   ]
+  },
+  {
+   "key": "relation|assurance.AssuranceServiceImpl|relation|dependsOn|assurance.AssuranceRepository",
+   "candidateAtomId": "atom:relation:assurance-assuranceserviceimpl:dependson-assurancerepository",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:24"
+   ]
+  },
+  {
+   "key": "relation|auth.AuthController|relation|dependsOn|auth.UserService",
+   "candidateAtomId": "atom:relation:auth-authcontroller:dependson-userservice",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:21-22",
+    "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:39"
+   ]
+  },
+  {
+   "key": "relation|auth.UserController|relation|dependsOn|auth.TokenService",
+   "candidateAtomId": "atom:relation:auth-usercontroller:dependson-tokenservice",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:28-32"
+   ]
+  },
+  {
+   "key": "relation|auth.UserDetailsServiceImpl|relation|dependsOn|auth.UserRepository",
+   "candidateAtomId": "atom:relation:auth-userdetailsserviceimpl:dependson-userrepository",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:22"
+   ]
+  },
+  {
+   "key": "relation|auth.UserRepository|relation|dependsOn|auth.User",
+   "candidateAtomId": "atom:relation:auth-userrepository:dependson-user",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:3",
+    "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:12"
+   ]
+  },
+  {
+   "key": "relation|auth.WebSecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:auth-websecurityconfig:dependson-jwtfilter",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:96"
+   ]
+  },
+  {
+   "key": "semantic|assurance.AssuranceServiceImpl|semantic|meansInUse|assurance-type-price-value-copied-via-gettype-getprice-into-plainassurance-and-assurancetypebean-with-no-visible-parsing-or-rounding-in-this-file",
+   "candidateAtomId": "atom:semantic:assurance-assuranceserviceimpl:meansinuse-price-passthrough",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:127-128",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:145-146"
+   ]
+  },
+  {
+   "key": "semantic|assurance.AssuranceServiceImpl|semantic|statusGates|response-code-1-selects-success-or-found-branch-0-selects-not-found-or-already-exists-or-type-not-exist-branch",
+   "candidateAtomId": "atom:semantic:assurance-assuranceserviceimpl:statusgates-response-code",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:33",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:57-61",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:75-79",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:101-102",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:131-135"
+   ]
+  },
+  {
+   "key": "semantic|auth.AuthConstant|semantic|identifiedBy|role-user-and-role-admin-string-literals-consumed-by-spring-security-hasrole-and-granted-authority-checks",
+   "candidateAtomId": "atom:semantic:auth-authconstant:identifiedby-role-tokens",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/constant/AuthConstant.java:12-13"
+   ]
+  },
+  {
+   "key": "semantic|auth.InfoConstant|semantic|identifiedBy|parameterized-message-templates-select-duplicate-user-not-found-and-password-length-response-text",
+   "candidateAtomId": "atom:semantic:auth-infoconstant:identifiedby-message-templates",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/constant/InfoConstant.java:14-19"
+   ]
+  },
+  {
+   "key": "semantic|auth.InitUser|semantic|identifiedBy|hardcoded-username-admin-and-literal-password-222222-bcrypt-encoded-then-seeded-with-role-admin-when-absent",
+   "candidateAtomId": "atom:semantic:auth-inituser:identifiedby-hardcoded-credential-admin",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:40-49"
+   ]
+  },
+  {
+   "key": "semantic|auth.InitUser|semantic|identifiedBy|hardcoded-username-fdse_microservice-and-literal-password-111111-bcrypt-encoded-then-seeded-with-role-user-when-absent",
+   "candidateAtomId": "atom:semantic:auth-inituser:identifiedby-hardcoded-credential-fdse-microservice",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:29-38"
+   ]
+  },
+  {
+   "key": "semantic|auth.JWTProvider|semantic|identifiedBy|jwt-signing-key-hardcoded-literal-string-secret-then-base64-encoded-at-postconstruct-init",
+   "candidateAtomId": "atom:semantic:auth-jwtprovider:identifiedby-hardcoded-secret-key",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:20",
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:26"
+   ]
+  },
+  {
+   "key": "semantic|auth.JWTProvider|semantic|meansInUse|jwt-claims-carry-subject-username-plus-roles-and-userid-custom-claims-signed-hs256",
+   "candidateAtomId": "atom:semantic:auth-jwtprovider:meansinuse-claims-carry-roles-and-userid",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:31-33",
+    "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:42"
+   ]
+  },
+  {
+   "key": "semantic|auth.UserController|semantic|statusGates|response-code-0-selects-token-issuance-exception-branch-on-useroperationexception-caught-at-controller",
+   "candidateAtomId": "atom:semantic:auth-usercontroller:statusgates-login-response",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/controller/UserController.java:47-50"
+   ]
+  },
+  {
+   "key": "semantic|auth.UserDetailsServiceImpl|semantic|identifiedBy|absent-username-lookup-raises-usernamenotfoundexception-with-message-templated-from-infoconstant-username-not-found",
+   "candidateAtomId": "atom:semantic:auth-userdetailsserviceimpl:identifiedby-username-not-found-message",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:29-32"
+   ]
+  },
+  {
+   "key": "semantic|auth.User|semantic|meansInUse|roles-string-set-mapped-to-simplegrantedauthority-collection-for-spring-security-authorization",
+   "candidateAtomId": "atom:semantic:auth-user:meansinuse-roles-as-granted-authorities",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/entity/User.java:37-44"
+   ]
+  },
+  {
+   "key": "state|assurance.Assurance|state|persistsIn|assurance-entity-persisted-via-assurancerepository-save-on-create-and-modify",
+   "candidateAtomId": "atom:state:assurance-assurance:persistsin-assurancerepository",
+   "refs": [
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:64",
+    "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:107"
+   ]
+  },
+  {
+   "key": "state|assurance.ts-assurance-service-config|state|persistsIn|mysql-datasource-ts-assurance-mysql-database-with-hibernate-ddl-auto-update-schema-sync",
+   "candidateAtomId": "atom:state:assurance-ts-assurance-service-config:persistsin-mysql-schema",
+   "refs": [
+    "src:ts-assurance-service/src/main/resources/application.yml:9",
+    "src:ts-assurance-service/src/main/resources/application.yml:15"
+   ]
+  },
+  {
+   "key": "state|auth.InitUser|state|persistsIn|default-user-and-admin-accounts-saved-into-userrepository-on-commandlinerunner-startup-if-absent",
+   "candidateAtomId": "atom:state:auth-inituser:persistsin-seeded-default-users",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/init/InitUser.java:29-49"
+   ]
+  },
+  {
+   "key": "state|auth.User|state|persistsIn|user-entity-persisted-in-auth_user-table-with-36-char-user-id-and-user-name-columns",
+   "candidateAtomId": "atom:state:auth-user:persistsin-auth-user-table",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/entity/User.java:26",
+    "src:ts-auth-service/src/main/java/auth/entity/User.java:28-30"
+   ]
+  }
+ ]
+}

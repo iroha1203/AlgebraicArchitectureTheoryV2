@@ -1,0 +1,3532 @@
+{
+ "chunkId": "chunk-21",
+ "adjudications": [
+  {
+   "key": "authority|travel2.config.SecurityConfig|authority|allowsCrossOrigin|cors-allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:travel2-config-securityconfig:allows-cross-origin-global",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:55-60 — corsConfigurer registers addMapping(\"/**\") with allowedOrigins/Methods/Headers(ALL), allowCredentials(false), maxAge(3600). Same CORS fact, only subject-naming and ref-subset differ between passes; kept as one canonical atom with union refs.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-securityconfig:allows-cross-origin-global",
+    "kind": "authority",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:55",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:59",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:60"
+    ]
+   }
+  },
+  {
+   "key": "authority|travel2.SecurityConfig|authority|allowsCrossOrigin|origin-star-methods-star-headers-star-credentials-false-on-all-paths",
+   "candidateAtomId": "atom:authority:travel2.securityconfig:allows-cross-origin-all-paths",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:55-60 — corsConfigurer registers addMapping(\"/**\") with allowedOrigins/Methods/Headers(ALL), allowCredentials(false), maxAge(3600). Same CORS fact, only subject-naming and ref-subset differ between passes; kept as one canonical atom with union refs.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-securityconfig:allows-cross-origin-global",
+    "kind": "authority",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:55",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:59",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:60"
+    ]
+   }
+  },
+  {
+   "key": "authority|travel2.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/travel2service/**",
+   "candidateAtomId": "atom:authority:travel2-config-securityconfig:permits-unauthenticated-trip-root",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:75 — antMatchers(\"/api/v1/travel2service/**\").permitAll(). Identical fact in both passes, only subject spelling differs.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-securityconfig:permits-unauthenticated-trip-root",
+    "kind": "authority",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/api/v1/travel2service/**",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:75"
+    ]
+   }
+  },
+  {
+   "key": "authority|travel2.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/travel2service/**",
+   "candidateAtomId": "atom:authority:travel2.securityconfig:permits-unauthenticated-trips-base",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:75 — antMatchers(\"/api/v1/travel2service/**\").permitAll(). Identical fact in both passes, only subject spelling differs.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-securityconfig:permits-unauthenticated-trip-root",
+    "kind": "authority",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/api/v1/travel2service/**",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:75"
+    ]
+   }
+  },
+  {
+   "key": "authority|travel2.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-and-api-doc-paths",
+   "candidateAtomId": "atom:authority:travel2-config-securityconfig:permits-unauthenticated-docs",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:79-80 — antMatchers(swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/**).permitAll(). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-securityconfig:permits-unauthenticated-docs",
+    "kind": "authority",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:79",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:80"
+    ]
+   }
+  },
+  {
+   "key": "authority|travel2.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:travel2.securityconfig:permits-unauthenticated-swagger",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:79-80 — antMatchers(swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/**).permitAll(). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-securityconfig:permits-unauthenticated-docs",
+    "kind": "authority",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:79",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:80"
+    ]
+   }
+  },
+  {
+   "key": "authority|travel2.config.SecurityConfig|authority|requiresRole|admin-role-required-on-put-post-delete-/api/v1/travel2service/trips",
+   "candidateAtomId": "atom:authority:travel2-config-securityconfig:requires-role-admin-trip-mutation",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:76-78 — antMatchers(PUT/POST/DELETE, trips).hasAnyRole(admin). Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-securityconfig:requires-role-admin-trip-mutation",
+    "kind": "authority",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "admin-role-required-on-put-post-delete-/api/v1/travel2service/trips",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:76",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:77",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:78"
+    ]
+   }
+  },
+  {
+   "key": "authority|travel2.SecurityConfig|authority|requiresRole|admin-role-required-on-put-post-delete-/api/v1/travel2service/trips",
+   "candidateAtomId": "atom:authority:travel2.securityconfig:requires-role-admin-on-trips-mutations",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:76-78 — antMatchers(PUT/POST/DELETE, trips).hasAnyRole(admin). Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-securityconfig:requires-role-admin-trip-mutation",
+    "kind": "authority",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "admin-role-required-on-put-post-delete-/api/v1/travel2service/trips",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:76",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:77",
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:78"
+    ]
+   }
+  },
+  {
+   "key": "authority|travel2.controller.Travel2Controller|authority|allowsCrossOrigin|method-level-cross-origin-star-on-create-retrieve-update-delete-query-left-detail-queryall-admin-endpoints",
+   "candidateAtomId": "atom:authority:travel2-controller-travel2controller:allows-cross-origin-write-and-detail-endpoints",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:59,74,82,90,105,126,133,141 — @CrossOrigin(origins=\"*\") precedes createTrip, retrieve, updateTrip, deleteTrip, queryInfo, getTripAllDetailInfo, queryAll, adminQueryAll (all 8 occurrences). Pass-b cited only 3 of the 8; same observation, kept the fuller ref set.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-travel2controller:allows-cross-origin-write-and-detail-endpoints",
+    "kind": "authority",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "method-level-cross-origin-star-on-create-retrieve-update-delete-query-left-detail-queryall-admin-endpoints",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:59",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:74",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:82",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:90",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:105",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:126",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:133",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:141"
+    ]
+   }
+  },
+  {
+   "key": "authority|travel2.Travel2Controller|authority|allowsCrossOrigin|origin-star-annotated-per-method-on-trips-and-trip-detail-and-query-endpoints",
+   "candidateAtomId": "atom:authority:travel2.travel2controller:allows-cross-origin-method-level-star",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:59,74,82,90,105,126,133,141 — @CrossOrigin(origins=\"*\") precedes createTrip, retrieve, updateTrip, deleteTrip, queryInfo, getTripAllDetailInfo, queryAll, adminQueryAll (all 8 occurrences). Pass-b cited only 3 of the 8; same observation, kept the fuller ref set.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-travel2-service-travel2controller:allows-cross-origin-write-and-detail-endpoints",
+    "kind": "authority",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "method-level-cross-origin-star-on-create-retrieve-update-delete-query-left-detail-queryall-admin-endpoints",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:59",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:74",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:82",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:90",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:105",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:126",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:133",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:141"
+    ]
+   }
+  },
+  {
+   "key": "authority|user.config.SecurityConfig|authority|allowsCrossOrigin|cors-allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:user-config-securityconfig:allows-cross-origin-global",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread user/config/SecurityConfig.java:52-57 — corsConfigurer registers addMapping(\"/**\") with allowedOrigins/Methods/Headers(ALL), allowCredentials(false), maxAge(3600). Same fact both passes, union refs.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-user-service-securityconfig:allows-cross-origin-global",
+    "kind": "authority",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:52",
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:56",
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:57"
+    ]
+   }
+  },
+  {
+   "key": "authority|user.SecurityConfig|authority|allowsCrossOrigin|origin-star-methods-star-headers-star-credentials-false-on-all-paths",
+   "candidateAtomId": "atom:authority:user.securityconfig:allows-cross-origin-all-paths",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread user/config/SecurityConfig.java:52-57 — corsConfigurer registers addMapping(\"/**\") with allowedOrigins/Methods/Headers(ALL), allowCredentials(false), maxAge(3600). Same fact both passes, union refs.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-user-service-securityconfig:allows-cross-origin-global",
+    "kind": "authority",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:52",
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:56",
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:57"
+    ]
+   }
+  },
+  {
+   "key": "authority|user.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/userservice/users/**-covering-register-list-and-lookup-and-update-paths",
+   "candidateAtomId": "atom:authority:user-config-securityconfig:permits-unauthenticated-users-root",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread user/config/SecurityConfig.java:72 — antMatchers(\"/api/v1/userservice/users/**\").permitAll(). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-user-service-securityconfig:permits-unauthenticated-users-root",
+    "kind": "authority",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/api/v1/userservice/users/**-covering-register-list-and-lookup-and-update-paths",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:72"
+    ]
+   }
+  },
+  {
+   "key": "authority|user.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/userservice/users/**",
+   "candidateAtomId": "atom:authority:user.securityconfig:permits-unauthenticated-users-base",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread user/config/SecurityConfig.java:72 — antMatchers(\"/api/v1/userservice/users/**\").permitAll(). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-user-service-securityconfig:permits-unauthenticated-users-root",
+    "kind": "authority",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/api/v1/userservice/users/**-covering-register-list-and-lookup-and-update-paths",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:72"
+    ]
+   }
+  },
+  {
+   "key": "authority|user.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-and-api-doc-paths",
+   "candidateAtomId": "atom:authority:user-config-securityconfig:permits-unauthenticated-docs",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread user/config/SecurityConfig.java:74-75 — antMatchers(swagger paths).permitAll(). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-user-service-securityconfig:permits-unauthenticated-docs",
+    "kind": "authority",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:74",
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:75"
+    ]
+   }
+  },
+  {
+   "key": "authority|user.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:user.securityconfig:permits-unauthenticated-swagger",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread user/config/SecurityConfig.java:74-75 — antMatchers(swagger paths).permitAll(). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-user-service-securityconfig:permits-unauthenticated-docs",
+    "kind": "authority",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:74",
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:75"
+    ]
+   }
+  },
+  {
+   "key": "authority|user.config.SecurityConfig|authority|requiresRole|admin-or-user-role-required-on-delete-/api/v1/userservice/users/*",
+   "candidateAtomId": "atom:authority:user-config-securityconfig:requires-role-admin-or-user-delete",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread user/config/SecurityConfig.java:73 — antMatchers(DELETE, users/*).hasAnyRole(\"ADMIN\",\"USER\"). Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-user-service-securityconfig:requires-role-admin-or-user-delete",
+    "kind": "authority",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "admin-or-user-role-required-on-delete-/api/v1/userservice/users/*",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|user.SecurityConfig|authority|requiresRole|admin-or-user-role-required-on-delete-/api/v1/userservice/users/*",
+   "candidateAtomId": "atom:authority:user.securityconfig:requires-role-admin-or-user-on-delete",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread user/config/SecurityConfig.java:73 — antMatchers(DELETE, users/*).hasAnyRole(\"ADMIN\",\"USER\"). Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-user-service-securityconfig:requires-role-admin-or-user-delete",
+    "kind": "authority",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "admin-or-user-role-required-on-delete-/api/v1/userservice/users/*",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|DELETE /api/v1/travel2service/trips/{tripId}",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:delete-trip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:91 — mapping annotation matches DELETE /api/v1/travel2service/trips/{tripId}. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:delete-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE /api/v1/travel2service/trips/{tripId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:91"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|DELETE /api/v1/travel2service/trips/{tripId}",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-delete-trips-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:91 — mapping annotation matches DELETE /api/v1/travel2service/trips/{tripId}. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:delete-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE /api/v1/travel2service/trips/{tripId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:91"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/admin_trip",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:admin-query-all-trips",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:142 — mapping annotation matches GET /api/v1/travel2service/admin_trip. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:admin-query-all-trips",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/admin_trip",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:142"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/admin_trip",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-get-admin-trip",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:142 — mapping annotation matches GET /api/v1/travel2service/admin_trip. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:admin-query-all-trips",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/admin_trip",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:142"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/routes/{tripId}",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:route-by-trip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:43 — mapping annotation matches GET /api/v1/travel2service/routes/{tripId}. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:route-by-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/routes/{tripId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:43"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/routes/{tripId}",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-get-routes-by-trip-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:43 — mapping annotation matches GET /api/v1/travel2service/routes/{tripId}. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:route-by-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/routes/{tripId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:43"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/train_types/{tripId}",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:train-type-by-trip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:35 — mapping annotation matches GET /api/v1/travel2service/train_types/{tripId}. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:train-type-by-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/train_types/{tripId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:35"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/train_types/{tripId}",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-get-train-types-by-trip-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:35 — mapping annotation matches GET /api/v1/travel2service/train_types/{tripId}. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:train-type-by-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/train_types/{tripId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:35"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/trips",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:query-all-trips",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:134 — mapping annotation matches GET /api/v1/travel2service/trips. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:query-all-trips",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/trips",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:134"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/trips",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-get-trips-query-all",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:134 — mapping annotation matches GET /api/v1/travel2service/trips. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:query-all-trips",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/trips",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:134"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/trips/{tripId}",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:retrieve-trip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:75 — mapping annotation matches GET /api/v1/travel2service/trips/{tripId}. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:retrieve-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/trips/{tripId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:75"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/trips/{tripId}",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-get-trips-by-id-retrieve",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:75 — mapping annotation matches GET /api/v1/travel2service/trips/{tripId}. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:retrieve-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/trips/{tripId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:75"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/welcome",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:30 — mapping annotation matches GET /api/v1/travel2service/welcome. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:welcome",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/welcome",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|GET /api/v1/travel2service/welcome",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-get-welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:30 — mapping annotation matches GET /api/v1/travel2service/welcome. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:welcome",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/travel2service/welcome",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|POST /api/v1/travel2service/trip_detail",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:trip-detail",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:127 — mapping annotation matches POST /api/v1/travel2service/trip_detail. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:trip-detail",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/travel2service/trip_detail",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:127"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|POST /api/v1/travel2service/trip_detail",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-post-trip-detail",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:127 — mapping annotation matches POST /api/v1/travel2service/trip_detail. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:trip-detail",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/travel2service/trip_detail",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:127"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|POST /api/v1/travel2service/trips",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:create-trip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:60 — mapping annotation matches POST /api/v1/travel2service/trips. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:create-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/travel2service/trips",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:60"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|POST /api/v1/travel2service/trips",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-post-trips-create",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:60 — mapping annotation matches POST /api/v1/travel2service/trips. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:create-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/travel2service/trips",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:60"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|POST /api/v1/travel2service/trips/left",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:query-left-tickets",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:106 — mapping annotation matches POST /api/v1/travel2service/trips/left. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:query-left-tickets",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/travel2service/trips/left",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:106"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|POST /api/v1/travel2service/trips/left",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-post-trips-left-query",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:106 — mapping annotation matches POST /api/v1/travel2service/trips/left. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:query-left-tickets",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/travel2service/trips/left",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:106"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|POST /api/v1/travel2service/trips/routes",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:trips-by-route",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:51 — mapping annotation matches POST /api/v1/travel2service/trips/routes. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:trips-by-route",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/travel2service/trips/routes",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:51"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|POST /api/v1/travel2service/trips/routes",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-post-trips-routes",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:51 — mapping annotation matches POST /api/v1/travel2service/trips/routes. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:trips-by-route",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/travel2service/trips/routes",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:51"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.controller.Travel2Controller|capability|exposesEndpoint|PUT /api/v1/travel2service/trips",
+   "candidateAtomId": "atom:capability:travel2-controller-travel2controller:update-trip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:83 — mapping annotation matches PUT /api/v1/travel2service/trips. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:update-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/travel2service/trips",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:83"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.Travel2Controller|capability|exposesEndpoint|PUT /api/v1/travel2service/trips",
+   "candidateAtomId": "atom:capability:travel2.travel2controller:exposes-endpoint-put-trips-update",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:83 — mapping annotation matches PUT /api/v1/travel2service/trips. Identical endpoint fact in both passes, only subject-naming convention differs.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-travel2controller:update-trip",
+    "kind": "capability",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/travel2service/trips",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:83"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.controller.UserController|capability|exposesEndpoint|DELETE /api/v1/userservice/users/{userId}",
+   "candidateAtomId": "atom:capability:user-controller-usercontroller:delete-user-by-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserController.java:59 — mapping annotation matches DELETE /api/v1/userservice/users/{userId}. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:delete-user-by-id",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE /api/v1/userservice/users/{userId}",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:59"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserController|capability|exposesEndpoint|DELETE /api/v1/userservice/users/{userId}",
+   "candidateAtomId": "atom:capability:user.usercontroller:exposes-endpoint-delete-user-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserController.java:59 — mapping annotation matches DELETE /api/v1/userservice/users/{userId}. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:delete-user-by-id",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "DELETE /api/v1/userservice/users/{userId}",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:59"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.controller.UserController|capability|exposesEndpoint|GET /api/v1/userservice/users",
+   "candidateAtomId": "atom:capability:user-controller-usercontroller:get-all-users",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserController.java:35 — mapping annotation matches GET /api/v1/userservice/users. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:get-all-users",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/userservice/users",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:35"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserController|capability|exposesEndpoint|GET /api/v1/userservice/users",
+   "candidateAtomId": "atom:capability:user.usercontroller:exposes-endpoint-get-all-users",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserController.java:35 — mapping annotation matches GET /api/v1/userservice/users. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:get-all-users",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/userservice/users",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:35"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.controller.UserController|capability|exposesEndpoint|GET /api/v1/userservice/users/hello",
+   "candidateAtomId": "atom:capability:user-controller-usercontroller:hello",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserController.java:30 — mapping annotation matches GET /api/v1/userservice/users/hello. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:hello",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/userservice/users/hello",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserController|capability|exposesEndpoint|GET /api/v1/userservice/users/hello",
+   "candidateAtomId": "atom:capability:user.usercontroller:exposes-endpoint-get-hello",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserController.java:30 — mapping annotation matches GET /api/v1/userservice/users/hello. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:hello",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/userservice/users/hello",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.controller.UserController|capability|exposesEndpoint|GET /api/v1/userservice/users/id/{userId}",
+   "candidateAtomId": "atom:capability:user-controller-usercontroller:get-user-by-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserController.java:46 — mapping annotation matches GET /api/v1/userservice/users/id/{userId}. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:get-user-by-id",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/userservice/users/id/{userId}",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:46"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserController|capability|exposesEndpoint|GET /api/v1/userservice/users/id/{userId}",
+   "candidateAtomId": "atom:capability:user.usercontroller:exposes-endpoint-get-user-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserController.java:46 — mapping annotation matches GET /api/v1/userservice/users/id/{userId}. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:get-user-by-id",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/userservice/users/id/{userId}",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:46"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.controller.UserController|capability|exposesEndpoint|GET /api/v1/userservice/users/{userName}",
+   "candidateAtomId": "atom:capability:user-controller-usercontroller:get-user-by-username",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserController.java:41 — mapping annotation matches GET /api/v1/userservice/users/{userName}. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:get-user-by-username",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/userservice/users/{userName}",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:41"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserController|capability|exposesEndpoint|GET /api/v1/userservice/users/{userName}",
+   "candidateAtomId": "atom:capability:user.usercontroller:exposes-endpoint-get-user-by-username",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserController.java:41 — mapping annotation matches GET /api/v1/userservice/users/{userName}. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:get-user-by-username",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/userservice/users/{userName}",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:41"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.controller.UserController|capability|exposesEndpoint|PUT /api/v1/userservice/users",
+   "candidateAtomId": "atom:capability:user-controller-usercontroller:update-user",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserController.java:67 — mapping annotation matches PUT /api/v1/userservice/users. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:update-user",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/userservice/users",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:67"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserController|capability|exposesEndpoint|PUT /api/v1/userservice/users",
+   "candidateAtomId": "atom:capability:user.usercontroller:exposes-endpoint-put-update-user",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserController.java:67 — mapping annotation matches PUT /api/v1/userservice/users. Identical fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:update-user",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/userservice/users",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:67"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.controller.UserController|capability|exposesEndpoint|POST /api/v1/userservice/users/register",
+   "candidateAtomId": "atom:capability:user-controller-usercontroller:register-user",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserController.java:52,55 — @PostMapping(\"/register\") returns ResponseEntity.status(HttpStatus.CREATED). Same endpoint fact; kept pass-b's more complete citation of the 201 status.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:register-user",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/userservice/users/register-returns-201-created",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:52",
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:55"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserController|capability|exposesEndpoint|POST /api/v1/userservice/users/register-returns-201-created",
+   "candidateAtomId": "atom:capability:user.usercontroller:exposes-endpoint-post-register",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserController.java:52,55 — @PostMapping(\"/register\") returns ResponseEntity.status(HttpStatus.CREATED). Same endpoint fact; kept pass-b's more complete citation of the 201 status.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-usercontroller:register-user",
+    "kind": "capability",
+    "subject": "ts-user-service.UserController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/userservice/users/register-returns-201-created",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:52",
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:55"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:travel2-config-securityconfig",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:27 — class/interface SecurityConfig declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-securityconfig",
+    "kind": "component",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:27"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:travel2.securityconfig",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:27 — class/interface SecurityConfig declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-securityconfig",
+    "kind": "component",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:27"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.controller.Travel2Controller|static||",
+   "candidateAtomId": "atom:component:travel2-controller-travel2controller",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:23 — class/interface Travel2Controller declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-travel2controller",
+    "kind": "component",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:23"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.Travel2Controller|static||",
+   "candidateAtomId": "atom:component:travel2.travel2controller",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:23 — class/interface Travel2Controller declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-travel2controller",
+    "kind": "component",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:23"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.entity.AdminTrip|static||",
+   "candidateAtomId": "atom:component:travel2-entity-admintrip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/entity/AdminTrip.java:11 — class/interface AdminTrip declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-admintrip",
+    "kind": "component",
+    "subject": "ts-travel2-service.AdminTrip",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/AdminTrip.java:11"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.AdminTrip|static||",
+   "candidateAtomId": "atom:component:travel2.admintrip",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/entity/AdminTrip.java:11 — class/interface AdminTrip declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-admintrip",
+    "kind": "component",
+    "subject": "ts-travel2-service.AdminTrip",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/AdminTrip.java:11"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.entity.Travel|static||",
+   "candidateAtomId": "atom:component:travel2-entity-travel",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/entity/Travel.java:13 — class/interface Travel declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-travel",
+    "kind": "component",
+    "subject": "ts-travel2-service.Travel",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:13"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.Travel|static||",
+   "candidateAtomId": "atom:component:travel2.travel",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/entity/Travel.java:13 — class/interface Travel declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-travel",
+    "kind": "component",
+    "subject": "ts-travel2-service.Travel",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:13"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.entity.TripAllDetail|static||",
+   "candidateAtomId": "atom:component:travel2-entity-tripalldetail",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/entity/TripAllDetail.java:14 — class/interface TripAllDetail declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-tripalldetail",
+    "kind": "component",
+    "subject": "ts-travel2-service.TripAllDetail",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/TripAllDetail.java:14"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.TripAllDetail|static||",
+   "candidateAtomId": "atom:component:travel2.tripalldetail",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/entity/TripAllDetail.java:14 — class/interface TripAllDetail declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-tripalldetail",
+    "kind": "component",
+    "subject": "ts-travel2-service.TripAllDetail",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/TripAllDetail.java:14"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.entity.Trip|static||",
+   "candidateAtomId": "atom:component:travel2-entity-trip",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/entity/Trip.java:20 — class/interface Trip declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-trip",
+    "kind": "component",
+    "subject": "ts-travel2-service.Trip",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:20",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:21"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.Trip|static||",
+   "candidateAtomId": "atom:component:travel2.trip",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/entity/Trip.java:20 — class/interface Trip declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-trip",
+    "kind": "component",
+    "subject": "ts-travel2-service.Trip",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:20",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:21"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.init.InitData|static||",
+   "candidateAtomId": "atom:component:travel2-init-initdata",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/init/InitData.java:14 — class/interface InitData declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-initdata",
+    "kind": "component",
+    "subject": "ts-travel2-service.InitData",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:14"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.InitData|static||",
+   "candidateAtomId": "atom:component:travel2.initdata",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/init/InitData.java:14 — class/interface InitData declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-initdata",
+    "kind": "component",
+    "subject": "ts-travel2-service.InitData",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:14"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.repository.TripRepository|static||",
+   "candidateAtomId": "atom:component:travel2-repository-triprepository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:15 — class/interface TripRepository declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-triprepository",
+    "kind": "component",
+    "subject": "ts-travel2-service.TripRepository",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:15"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.TripRepository|static||",
+   "candidateAtomId": "atom:component:travel2.triprepository",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:15 — class/interface TripRepository declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-triprepository",
+    "kind": "component",
+    "subject": "ts-travel2-service.TripRepository",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:15"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.service.TravelServiceImpl|static||",
+   "candidateAtomId": "atom:component:travel2-service-travelserviceimpl",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:33 — class/interface TravelServiceImpl declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-travelserviceimpl",
+    "kind": "component",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:33"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.TravelServiceImpl|static||",
+   "candidateAtomId": "atom:component:travel2.travelserviceimpl",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:33 — class/interface TravelServiceImpl declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-travelserviceimpl",
+    "kind": "component",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:33"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.service.TravelService|static||",
+   "candidateAtomId": "atom:component:travel2-service-travelservice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/service/TravelService.java:13 — class/interface TravelService declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-travelservice",
+    "kind": "component",
+    "subject": "ts-travel2-service.TravelService",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelService.java:13"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.TravelService|static||",
+   "candidateAtomId": "atom:component:travel2.travelservice",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/java/travel2/service/TravelService.java:13 — class/interface TravelService declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-travelservice",
+    "kind": "component",
+    "subject": "ts-travel2-service.TravelService",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelService.java:13"
+    ]
+   }
+  },
+  {
+   "key": "component|user.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:user-config-securityconfig",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/config/SecurityConfig.java:27 — class/interface SecurityConfig declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-securityconfig",
+    "kind": "component",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:27"
+    ]
+   }
+  },
+  {
+   "key": "component|user.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:user.securityconfig",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/config/SecurityConfig.java:27 — class/interface SecurityConfig declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-securityconfig",
+    "kind": "component",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:27"
+    ]
+   }
+  },
+  {
+   "key": "component|user.controller.UserController|static||",
+   "candidateAtomId": "atom:component:user-controller-usercontroller",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/controller/UserController.java:23 — class/interface UserController declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-usercontroller",
+    "kind": "component",
+    "subject": "ts-user-service.UserController",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:23"
+    ]
+   }
+  },
+  {
+   "key": "component|user.UserController|static||",
+   "candidateAtomId": "atom:component:user.usercontroller",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/controller/UserController.java:23 — class/interface UserController declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-usercontroller",
+    "kind": "component",
+    "subject": "ts-user-service.UserController",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:23"
+    ]
+   }
+  },
+  {
+   "key": "component|user.dto.AuthDto|static||",
+   "candidateAtomId": "atom:component:user-dto-authdto",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/dto/AuthDto.java:17 — class/interface AuthDto declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-authdto",
+    "kind": "component",
+    "subject": "ts-user-service.AuthDto",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:17"
+    ]
+   }
+  },
+  {
+   "key": "component|user.AuthDto|static||",
+   "candidateAtomId": "atom:component:user.authdto",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/dto/AuthDto.java:17 — class/interface AuthDto declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-authdto",
+    "kind": "component",
+    "subject": "ts-user-service.AuthDto",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:17"
+    ]
+   }
+  },
+  {
+   "key": "component|user.dto.Gender|static||",
+   "candidateAtomId": "atom:component:user-dto-gender",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/dto/Gender.java:6 — class/interface Gender declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-gender",
+    "kind": "component",
+    "subject": "ts-user-service.Gender",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:6"
+    ]
+   }
+  },
+  {
+   "key": "component|user.Gender|static||",
+   "candidateAtomId": "atom:component:user.gender",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/dto/Gender.java:6 — class/interface Gender declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-gender",
+    "kind": "component",
+    "subject": "ts-user-service.Gender",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:6"
+    ]
+   }
+  },
+  {
+   "key": "component|user.dto.UserDto|static||",
+   "candidateAtomId": "atom:component:user-dto-userdto",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/dto/UserDto.java:15 — class/interface UserDto declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-userdto",
+    "kind": "component",
+    "subject": "ts-user-service.UserDto",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:15"
+    ]
+   }
+  },
+  {
+   "key": "component|user.UserDto|static||",
+   "candidateAtomId": "atom:component:user.userdto",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/dto/UserDto.java:15 — class/interface UserDto declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-userdto",
+    "kind": "component",
+    "subject": "ts-user-service.UserDto",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:15"
+    ]
+   }
+  },
+  {
+   "key": "component|user.entity.User|static||",
+   "candidateAtomId": "atom:component:user-entity-user",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/entity/User.java:22 — class/interface User declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-user",
+    "kind": "component",
+    "subject": "ts-user-service.User",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/entity/User.java:22"
+    ]
+   }
+  },
+  {
+   "key": "component|user.User|static||",
+   "candidateAtomId": "atom:component:user.user",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/entity/User.java:22 — class/interface User declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-user",
+    "kind": "component",
+    "subject": "ts-user-service.User",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/entity/User.java:22"
+    ]
+   }
+  },
+  {
+   "key": "component|user.init.InitUser|static||",
+   "candidateAtomId": "atom:component:user-init-inituser",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/init/InitUser.java:18 — class/interface InitUser declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-inituser",
+    "kind": "component",
+    "subject": "ts-user-service.InitUser",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:18"
+    ]
+   }
+  },
+  {
+   "key": "component|user.InitUser|static||",
+   "candidateAtomId": "atom:component:user.inituser",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/init/InitUser.java:18 — class/interface InitUser declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-inituser",
+    "kind": "component",
+    "subject": "ts-user-service.InitUser",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:18"
+    ]
+   }
+  },
+  {
+   "key": "component|user.repository.UserRepository|static||",
+   "candidateAtomId": "atom:component:user-repository-userrepository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/repository/UserRepository.java:14 — class/interface UserRepository declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-userrepository",
+    "kind": "component",
+    "subject": "ts-user-service.UserRepository",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/repository/UserRepository.java:14"
+    ]
+   }
+  },
+  {
+   "key": "component|user.UserRepository|static||",
+   "candidateAtomId": "atom:component:user.userrepository",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-user-service/src/main/java/user/repository/UserRepository.java:14 — class/interface UserRepository declared there. Same component both passes; canonicalized subject to <service-dir>.<ClassName> form.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-user-service-userrepository",
+    "kind": "component",
+    "subject": "ts-user-service.UserRepository",
+    "axis": "static",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/repository/UserRepository.java:14"
+    ]
+   }
+  },
+  {
+   "key": "component|ts-travel2-service.application.yml|static||",
+   "candidateAtomId": "atom:component:travel2-config-application-yml",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/resources/application.yml:1 — file header. Same config file component both passes; canonicalized subject per yml-subject rule.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-application-yml",
+    "kind": "component",
+    "subject": "ts-travel2-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/resources/application.yml:1"
+    ]
+   }
+  },
+  {
+   "key": "component|travel2.application.yml|static||",
+   "candidateAtomId": "atom:component:travel2.applicationyml",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-travel2-service/src/main/resources/application.yml:1 — file header. Same config file component both passes; canonicalized subject per yml-subject rule.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-travel2-service-application-yml",
+    "kind": "component",
+    "subject": "ts-travel2-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-travel2-service/src/main/resources/application.yml:1"
+    ]
+   }
+  },
+  {
+   "key": "contract|travel2.entity.Travel|specification|shapedAs|trip-plus-start-place-plus-end-place-plus-departure-time-query-envelope",
+   "candidateAtomId": "atom:contract:travel2-entity-travel:shaped-as-trip-query-envelope",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel.java:15,17,19,21 — fields trip, startPlace, endPlace, departureTime. Same shape fact both passes; kept fuller pass-b ref set.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-travel2-service-travel:shaped-as-trip-query-envelope",
+    "kind": "contract",
+    "subject": "ts-travel2-service.Travel",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "trip-plus-start-place-plus-end-place-plus-departure-time-query-envelope",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:15",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:17",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:19",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:21"
+    ]
+   }
+  },
+  {
+   "key": "contract|travel2.Travel|specification|shapedAs|trip-startplace-endplace-departuretime-fields",
+   "candidateAtomId": "atom:contract:travel2.travel:shaped-as-trip-startplace-endplace-departuretime",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel.java:15,17,19,21 — fields trip, startPlace, endPlace, departureTime. Same shape fact both passes; kept fuller pass-b ref set.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-travel2-service-travel:shaped-as-trip-query-envelope",
+    "kind": "contract",
+    "subject": "ts-travel2-service.Travel",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "trip-plus-start-place-plus-end-place-plus-departure-time-query-envelope",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:15",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:17",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:19",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Travel.java:21"
+    ]
+   }
+  },
+  {
+   "key": "contract|user.dto.AuthDto|specification|shapedAs|userid-username-password-triple-documented-for-forwarding-from-user-service-to-auth-service",
+   "candidateAtomId": "atom:contract:user-dto-authdto:shaped-as-userid-username-password-for-auth-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread AuthDto.java:9 (doc comment: user-service register user, then send to auth-service), 19-21 (userId/userName/password fields). Same shape+intent fact both passes; union refs.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-user-service-authdto:shaped-as-userid-username-password-for-auth-service",
+    "kind": "contract",
+    "subject": "ts-user-service.AuthDto",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "userid-username-password-triple-documented-for-forwarding-from-user-service-to-auth-service",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:9",
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:19",
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:20",
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:21"
+    ]
+   }
+  },
+  {
+   "key": "contract|user.AuthDto|specification|shapedAs|userid-username-password-fields-for-forwarding-to-auth-service",
+   "candidateAtomId": "atom:contract:user.authdto:shaped-as-userid-username-password",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread AuthDto.java:9 (doc comment: user-service register user, then send to auth-service), 19-21 (userId/userName/password fields). Same shape+intent fact both passes; union refs.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-user-service-authdto:shaped-as-userid-username-password-for-auth-service",
+    "kind": "contract",
+    "subject": "ts-user-service.AuthDto",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "userid-username-password-triple-documented-for-forwarding-from-user-service-to-auth-service",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:9",
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:19",
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:20",
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:21"
+    ]
+   }
+  },
+  {
+   "key": "contract|user.dto.UserDto|specification|shapedAs|userid-username-password-gender-int-documenttype-int-documentnum-email-registration-and-update-payload",
+   "candidateAtomId": "atom:contract:user-dto-userdto:shaped-as-registration-update-payload",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserDto.java:17-29 — userId, userName, password, gender(int), documentType(int), documentNum, email fields, used both for registration (UserController.register) and update (UserController.updateUser). Same shape fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-user-service-userdto:shaped-as-registration-update-payload",
+    "kind": "contract",
+    "subject": "ts-user-service.UserDto",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "userid-username-password-gender-int-documenttype-int-documentnum-email-registration-and-update-payload",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:17",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:19",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:21",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:23",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:25",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:27",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:29"
+    ]
+   }
+  },
+  {
+   "key": "contract|user.UserDto|specification|shapedAs|userid-username-password-gender-int-documenttype-int-documentnum-email-fields",
+   "candidateAtomId": "atom:contract:user.userdto:shaped-as-registration-fields",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserDto.java:17-29 — userId, userName, password, gender(int), documentType(int), documentNum, email fields, used both for registration (UserController.register) and update (UserController.updateUser). Same shape fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-user-service-userdto:shaped-as-registration-update-payload",
+    "kind": "contract",
+    "subject": "ts-user-service.UserDto",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "userid-username-password-gender-int-documenttype-int-documentnum-email-registration-and-update-payload",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:17",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:19",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:21",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:23",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:25",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:27",
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:29"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.service.TravelServiceImpl|effect|callsProvider|GET http://ts-route-service/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:effect:travel2-service-travelserviceimpl:calls-route-service-by-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:431-436 (getRouteByRouteId) — restTemplate.exchange(route_service_url+\"/api/v1/routeservice/routes/\"+routeId, GET, ...). Same call both passes; union refs.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-route-service-by-id",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET http://ts-route-service/api/v1/routeservice/routes/{routeId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:431",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:432",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:436"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.TravelServiceImpl|effect|callsProvider|GET-http://ts-route-service/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:effect:travel2.travelserviceimpl:calls-provider-route-service-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:431-436 (getRouteByRouteId) — restTemplate.exchange(route_service_url+\"/api/v1/routeservice/routes/\"+routeId, GET, ...). Same call both passes; union refs.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-route-service-by-id",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET http://ts-route-service/api/v1/routeservice/routes/{routeId}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:431",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:432",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:436"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.service.TravelServiceImpl|effect|callsProvider|GET http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+   "candidateAtomId": "atom:effect:travel2-service-travelserviceimpl:calls-train-service-by-name",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:417-423 (getTrainTypeByName) — restTemplate.exchange(train_service_url+\"/api/v1/trainservice/trains/byName/\"+trainTypeName, GET, ...). Same call both passes.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-train-service-by-name",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:417",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:418",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:423"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.TravelServiceImpl|effect|callsProvider|GET-http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+   "candidateAtomId": "atom:effect:travel2.travelserviceimpl:calls-provider-train-service-by-name",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:417-423 (getTrainTypeByName) — restTemplate.exchange(train_service_url+\"/api/v1/trainservice/trains/byName/\"+trainTypeName, GET, ...). Same call both passes.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-train-service-by-name",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:417",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:418",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:423"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.service.TravelServiceImpl|effect|callsProvider|POST http://ts-basic-service/api/v1/basicservice/basic/travel",
+   "candidateAtomId": "atom:effect:travel2-service-travelserviceimpl:calls-basic-service-travel-single",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:311-317 (getTickets) — restTemplate.exchange(basic_service_url+\"/api/v1/basicservice/basic/travel\", POST, ...). Same call both passes.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-basic-service-travel-single",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST http://ts-basic-service/api/v1/basicservice/basic/travel",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:311",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:312",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:313",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:317"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.TravelServiceImpl|effect|callsProvider|POST-http://ts-basic-service/api/v1/basicservice/basic/travel",
+   "candidateAtomId": "atom:effect:travel2.travelserviceimpl:calls-provider-basic-service-travel-single",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:311-317 (getTickets) — restTemplate.exchange(basic_service_url+\"/api/v1/basicservice/basic/travel\", POST, ...). Same call both passes.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-basic-service-travel-single",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST http://ts-basic-service/api/v1/basicservice/basic/travel",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:311",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:312",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:313",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:317"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.service.TravelServiceImpl|effect|callsProvider|POST http://ts-basic-service/api/v1/basicservice/basic/travels",
+   "candidateAtomId": "atom:effect:travel2-service-travelserviceimpl:calls-basic-service-travels-batch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:263-268 (getTicketsByBatch) — restTemplate.exchange(basic_service_url+\"/api/v1/basicservice/basic/travels\", POST, ...). Same call both passes.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-basic-service-travels-batch",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST http://ts-basic-service/api/v1/basicservice/basic/travels",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:263",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:264",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:265",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:268"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.TravelServiceImpl|effect|callsProvider|POST-http://ts-basic-service/api/v1/basicservice/basic/travels",
+   "candidateAtomId": "atom:effect:travel2.travelserviceimpl:calls-provider-basic-service-travels-batch",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:263-268 (getTicketsByBatch) — restTemplate.exchange(basic_service_url+\"/api/v1/basicservice/basic/travels\", POST, ...). Same call both passes.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-basic-service-travels-batch",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST http://ts-basic-service/api/v1/basicservice/basic/travels",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:263",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:264",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:265",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:268"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.service.TravelServiceImpl|effect|callsProvider|POST http://ts-seat-service/api/v1/seatservice/seats/left_tickets",
+   "candidateAtomId": "atom:effect:travel2-service-travelserviceimpl:calls-seat-service-left-tickets",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:462-467 (getRestTicketNumber) — restTemplate.exchange(seat_service_url+\"/api/v1/seatservice/seats/left_tickets\", POST, ...). Same call both passes.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-seat-service-left-tickets",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST http://ts-seat-service/api/v1/seatservice/seats/left_tickets",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:462",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:463",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:467"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.TravelServiceImpl|effect|callsProvider|POST-http://ts-seat-service/api/v1/seatservice/seats/left_tickets",
+   "candidateAtomId": "atom:effect:travel2.travelserviceimpl:calls-provider-seat-service-left-tickets",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:462-467 (getRestTicketNumber) — restTemplate.exchange(seat_service_url+\"/api/v1/seatservice/seats/left_tickets\", POST, ...). Same call both passes.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:calls-seat-service-left-tickets",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST http://ts-seat-service/api/v1/seatservice/seats/left_tickets",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:462",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:463",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:467"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.service.TravelServiceImpl|effect|mutatesFile|repository-deletebytripid-removes-trip-record-inside-transactional-delete-method",
+   "candidateAtomId": "atom:effect:travel2-service-travelserviceimpl:writes-trip-delete-transactional",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:158-166 (@Transactional delete) — if repository.findByTripId(ti)!=null then repository.deleteByTripId(ti) else not-found Response(0,...). Same delete-method fact viewed via effect (mutatesFile) vs state (transitionsTo) axes; merged into one atom with union refs.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:removes-trip-on-delete-when-found",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "mutatesFile",
+    "object": "repository-deletebytripid-removes-trip-record-when-found-by-tripid-inside-transactional-delete-method-else-not-found-branch-returned",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:158",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:159",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:161",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:162",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:166"
+    ]
+   }
+  },
+  {
+   "key": "state|travel2.TravelServiceImpl|state|transitionsTo|trip-row-removed-when-found-by-tripid-else-not-found-branch-returned",
+   "candidateAtomId": "atom:state:travel2.travelserviceimpl:removes-trip-on-delete-when-found",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:158-166 (@Transactional delete) — if repository.findByTripId(ti)!=null then repository.deleteByTripId(ti) else not-found Response(0,...). Same delete-method fact viewed via effect (mutatesFile) vs state (transitionsTo) axes; merged into one atom with union refs.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:removes-trip-on-delete-when-found",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "mutatesFile",
+    "object": "repository-deletebytripid-removes-trip-record-when-found-by-tripid-inside-transactional-delete-method-else-not-found-branch-returned",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:158",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:159",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:161",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:162",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:166"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.service.TravelServiceImpl|effect|mutatesFile|repository-save-persists-new-or-updated-trip-record-on-create-and-update-paths",
+   "candidateAtomId": "atom:effect:travel2-service-travelserviceimpl:writes-trip-save-on-create-update",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:113-117 (create: guarded by findByTripId==null then repository.save) and :149 (update: repository.save(t) unconditional on t!=null). Same save fact viewed via effect (mutatesFile, both paths) vs state (persistsIn, create path only); merged, union refs covering both paths.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:writes-trip-save-on-create-update",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "mutatesFile",
+    "object": "repository-save-persists-new-trip-record-on-create-when-not-already-found-by-tripid-and-persists-updated-trip-record-on-update",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:113",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:117",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:149"
+    ]
+   }
+  },
+  {
+   "key": "state|travel2.TravelServiceImpl|state|persistsIn|trip-row-saved-in-create-when-not-already-found-by-tripid",
+   "candidateAtomId": "atom:state:travel2.travelserviceimpl:persists-trip-on-create-when-not-found",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:113-117 (create: guarded by findByTripId==null then repository.save) and :149 (update: repository.save(t) unconditional on t!=null). Same save fact viewed via effect (mutatesFile, both paths) vs state (persistsIn, create path only); merged, union refs covering both paths.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-travelserviceimpl:writes-trip-save-on-create-update",
+    "kind": "effect",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "effect",
+    "predicate": "mutatesFile",
+    "object": "repository-save-persists-new-trip-record-on-create-when-not-already-found-by-tripid-and-persists-updated-trip-record-on-update",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:113",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:117",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:149"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.config.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:travel2-config-securityconfig:depends-on-jwt-filter",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:83 — addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-securityconfig:depends-on-jwt-filter",
+    "kind": "relation",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "edu.fudan.common.security.jwt.JWTFilter",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:83"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:travel2.securityconfig:adds-jwtfilter-before-username-password-filter",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:83 — addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-securityconfig:depends-on-jwt-filter",
+    "kind": "relation",
+    "subject": "ts-travel2-service.SecurityConfig",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "edu.fudan.common.security.jwt.JWTFilter",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/config/SecurityConfig.java:83"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.service.TravelServiceImpl|relation|dependsOn|travel2.repository.TripRepository",
+   "candidateAtomId": "atom:relation:travel2-service-travelserviceimpl:depends-on-triprepository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:36 — @Autowired TripRepository repository. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-travelserviceimpl:depends-on-triprepository",
+    "kind": "relation",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "travel2.repository.TripRepository",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:36"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.TravelServiceImpl|relation|dependsOn|travel2.repository.TripRepository",
+   "candidateAtomId": "atom:relation:travel2.travelserviceimpl:depends-on-trip-repository",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:36 — @Autowired TripRepository repository. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-travelserviceimpl:depends-on-triprepository",
+    "kind": "relation",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "travel2.repository.TripRepository",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:36"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.service.TravelServiceImpl|relation|implements|travel2.service.TravelService",
+   "candidateAtomId": "atom:relation:travel2-service-travelserviceimpl:implements-travelservice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:33 — public class TravelServiceImpl implements TravelService. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-travelserviceimpl:implements-travelservice",
+    "kind": "relation",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "relation",
+    "predicate": "implements",
+    "object": "travel2.service.TravelService",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:33"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.TravelServiceImpl|relation|implements|travel2.service.TravelService",
+   "candidateAtomId": "atom:relation:travel2.travelserviceimpl:implements-travel-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:33 — public class TravelServiceImpl implements TravelService. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-travelserviceimpl:implements-travelservice",
+    "kind": "relation",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "relation",
+    "predicate": "implements",
+    "object": "travel2.service.TravelService",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:33"
+    ]
+   }
+  },
+  {
+   "key": "relation|user.controller.UserController|relation|dependsOn|user.service.UserService",
+   "candidateAtomId": "atom:relation:user-controller-usercontroller:depends-on-userservice",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserController.java:26 — @Autowired UserService userService. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-user-service-usercontroller:depends-on-userservice",
+    "kind": "relation",
+    "subject": "ts-user-service.UserController",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "user.service.UserService",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:26"
+    ]
+   }
+  },
+  {
+   "key": "relation|user.UserController|relation|dependsOn|user.service.UserService",
+   "candidateAtomId": "atom:relation:user.usercontroller:depends-on-user-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserController.java:26 — @Autowired UserService userService. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-user-service-usercontroller:depends-on-userservice",
+    "kind": "relation",
+    "subject": "ts-user-service.UserController",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "user.service.UserService",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:26"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.controller.Travel2Controller|semantic|meansInUse|empty-trip-response-list-returned-on-null-or-empty-start-place-end-place-or-null-departure-time",
+   "candidateAtomId": "atom:semantic:travel2-controller-travel2controller:query-left-tickets-empty-branch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:108-114 (queryInfo) — if startPlace/endPlace null-or-empty or departureTime null, logs and returns ok(empty ArrayList<TripResponse>). Same branch fact both passes; union refs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travel2controller:query-left-tickets-empty-branch",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "empty-trip-response-list-returned-when-startplace-null-or-empty-or-endplace-null-or-empty-or-departuretime-null",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:108",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:112",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:113",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:114"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.Travel2Controller|semantic|meansInUse|empty-list-returned-on-missing-start-place-or-end-place-or-departure-time",
+   "candidateAtomId": "atom:semantic:travel2.travel2controller:query-info-validation-branch",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Travel2Controller.java:108-114 (queryInfo) — if startPlace/endPlace null-or-empty or departureTime null, logs and returns ok(empty ArrayList<TripResponse>). Same branch fact both passes; union refs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travel2controller:query-left-tickets-empty-branch",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "empty-trip-response-list-returned-when-startplace-null-or-empty-or-endplace-null-or-empty-or-departuretime-null",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:108",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:112",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:113",
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:114"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.entity.Trip|semantic|meansInUse|start-stations-name-and-terminal-station-name-normalized-to-lowercase-in-full-detail-constructor",
+   "candidateAtomId": "atom:semantic:travel2-entity-trip:station-names-lowercased-at-construction",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Trip.java:60-62 (7-arg constructor) — startStationName/stationsName/terminalStationName each set via StringUtils.String2Lower(...). Same fact both passes; union refs including line 61 (stationsName).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-trip:station-names-lowercased-at-construction",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.Trip",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "startstationname-stationsname-and-terminalstationname-normalized-via-stringutils-string2lower-in-seven-arg-constructor",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:60",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:61",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:62"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.Trip|semantic|meansInUse|start-and-stations-and-terminal-station-names-lowercased-via-string2lower-in-seven-arg-constructor",
+   "candidateAtomId": "atom:semantic:travel2.trip:station-names-lowercased-at-construction",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Trip.java:60-62 (7-arg constructor) — startStationName/stationsName/terminalStationName each set via StringUtils.String2Lower(...). Same fact both passes; union refs including line 61 (stationsName).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-trip:station-names-lowercased-at-construction",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.Trip",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "startstationname-stationsname-and-terminalstationname-normalized-via-stringutils-string2lower-in-seven-arg-constructor",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:60",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:61",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:62"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.service.TravelServiceImpl|semantic|identifiedBy|trip-looked-up-by-tripid-value-object-wrapping-trip-number-string-not-by-database-primary-key",
+   "candidateAtomId": "atom:semantic:travel2-service-travelserviceimpl:trip-identified-by-tripid-value-object",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:54,56,75,112,127,139,160 — every lookup wraps the incoming tripId string in `new TripId(tripId)` then calls repository.findByTripId(...), never repository.findById on the generated `id` column. Same identification pattern both passes; union refs (pass-a's broader location list plus pass-b's line 56).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travelserviceimpl:trip-identified-by-tripid-value-object",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "trip-looked-up-by-tripid-value-object-wrapping-trip-number-string-via-repository-findbytripid-not-by-database-generated-id-primary-key",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:54",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:56",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:75",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:112",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:127",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:139",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:160"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.TravelServiceImpl|semantic|identifiedBy|trip-looked-up-via-embedded-tripid-value-object-not-raw-string-id",
+   "candidateAtomId": "atom:semantic:travel2.travelserviceimpl:trip-lookup-by-embedded-trip-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java:54,56,75,112,127,139,160 — every lookup wraps the incoming tripId string in `new TripId(tripId)` then calls repository.findByTripId(...), never repository.findById on the generated `id` column. Same identification pattern both passes; union refs (pass-a's broader location list plus pass-b's line 56).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travelserviceimpl:trip-identified-by-tripid-value-object",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "trip-looked-up-by-tripid-value-object-wrapping-trip-number-string-via-repository-findbytripid-not-by-database-generated-id-primary-key",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:54",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:56",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:75",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:112",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:127",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:139",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:160"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.service.TravelServiceImpl|semantic|statusGates|response-status-1-selects-success-with-data-payload-branch-status-0-selects-not-found-or-no-content-branch",
+   "candidateAtomId": "atom:semantic:travel2-service-travelserviceimpl:response-status-gates-branch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java at 59,67,88,106,133,166,221,230,389 — each `new Response<>(1,...)` vs `new Response<>(0,...)` selects success/no-content branch across getRouteByTripId, getTrainTypeByTripId, getTripByRoute, retrieve, delete, getTripAllDetailInfo (both its status-0 returns, lines 221 and 230), and queryAll. Same statusGates pattern both passes; pass-a cited line 230, pass-b cited line 221 — both are genuine instances of the same phenomenon, merged with union refs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travelserviceimpl:response-status-gates-branch",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "response-status-1-selects-success-with-data-payload-branch-status-0-selects-not-found-or-no-content-branch",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:59",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:67",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:88",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:106",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:133",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:166",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:221",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:230",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:389"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.TravelServiceImpl|semantic|statusGates|status-1-on-result-carrying-or-success-branch-status-0-on-not-found-or-empty-branch",
+   "candidateAtomId": "atom:semantic:travel2.travelserviceimpl:response-status-gates-result-branch",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread TravelServiceImpl.java at 59,67,88,106,133,166,221,230,389 — each `new Response<>(1,...)` vs `new Response<>(0,...)` selects success/no-content branch across getRouteByTripId, getTrainTypeByTripId, getTripByRoute, retrieve, delete, getTripAllDetailInfo (both its status-0 returns, lines 221 and 230), and queryAll. Same statusGates pattern both passes; pass-a cited line 230, pass-b cited line 221 — both are genuine instances of the same phenomenon, merged with union refs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travelserviceimpl:response-status-gates-branch",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "response-status-1-selects-success-with-data-payload-branch-status-0-selects-not-found-or-no-content-branch",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:59",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:67",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:88",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:106",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:133",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:166",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:221",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:230",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:389"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.controller.UserController|semantic|meansInUse|delete-endpoint-comment-states-admin-only-while-securityconfig-antmatcher-permits-either-admin-or-user-role",
+   "candidateAtomId": "atom:semantic:user-controller-usercontroller:delete-comment-vs-securityconfig-roles",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserController.java:62 (\"// only admin token can delete\") and SecurityConfig.java:73 (antMatchers(DELETE, users/*).hasAnyRole(\"ADMIN\",\"USER\")). Pass-a's atom already ties the two files together; pass-b's atom covers only the local comment half of the same observation. Merged into the fuller cross-file fact.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-usercontroller:delete-comment-vs-securityconfig-roles",
+    "kind": "semantic",
+    "subject": "ts-user-service.UserController",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "delete-endpoint-inline-comment-states-only-admin-token-can-delete-while-securityconfig-antmatcher-for-delete-/api/v1/userservice/users/*-permits-either-admin-or-user-role",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:62",
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.UserController|semantic|meansInUse|inline-comment-states-only-admin-token-can-delete-on-delete-user-by-id-endpoint",
+   "candidateAtomId": "atom:semantic:user.usercontroller:delete-endpoint-comment-states-admin-only",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserController.java:62 (\"// only admin token can delete\") and SecurityConfig.java:73 (antMatchers(DELETE, users/*).hasAnyRole(\"ADMIN\",\"USER\")). Pass-a's atom already ties the two files together; pass-b's atom covers only the local comment half of the same observation. Merged into the fuller cross-file fact.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-usercontroller:delete-comment-vs-securityconfig-roles",
+    "kind": "semantic",
+    "subject": "ts-user-service.UserController",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "delete-endpoint-inline-comment-states-only-admin-token-can-delete-while-securityconfig-antmatcher-for-delete-/api/v1/userservice/users/*-permits-either-admin-or-user-role",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/controller/UserController.java:62",
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.dto.Gender|semantic|statusGates|gender-code-0-selects-none-1-selects-male-2-selects-female-3-selects-other",
+   "candidateAtomId": "atom:semantic:user-dto-gender:codes-none-male-female-other",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Gender.java:11,15,19,23 — enum constants NONE(0,\"Null\"), MALE(1,\"Male\"), FEMALE(2,\"Female\"), OTHER(3,\"Other\"). Same code-to-name mapping both passes; kept identifiedBy predicate as the more accurate fit for an enum lookup fact.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-gender:codes-none-male-female-other",
+    "kind": "semantic",
+    "subject": "ts-user-service.Gender",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "gender-code-0-identifies-none-1-identifies-male-2-identifies-female-3-identifies-other",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:11",
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:15",
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:19",
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:23"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.Gender|semantic|identifiedBy|code-0-selects-null-name-1-selects-male-2-selects-female-3-selects-other",
+   "candidateAtomId": "atom:semantic:user.gender:code-identifies-gender-name",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Gender.java:11,15,19,23 — enum constants NONE(0,\"Null\"), MALE(1,\"Male\"), FEMALE(2,\"Female\"), OTHER(3,\"Other\"). Same code-to-name mapping both passes; kept identifiedBy predicate as the more accurate fit for an enum lookup fact.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-gender:codes-none-male-female-other",
+    "kind": "semantic",
+    "subject": "ts-user-service.Gender",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "gender-code-0-identifies-none-1-identifies-male-2-identifies-female-3-identifies-other",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:11",
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:15",
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:19",
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:23"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.dto.UserDto|semantic|meansInUse|gender-field-carried-as-raw-int-code-matching-gender-enum-codes-rather-than-gender-enum-type",
+   "candidateAtomId": "atom:semantic:user-dto-userdto:gender-as-raw-int-code",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread UserDto.java:23 — `private int gender;` (not a Gender enum reference). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-userdto:gender-as-raw-int-code",
+    "kind": "semantic",
+    "subject": "ts-user-service.UserDto",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "gender-field-carried-as-raw-int-code-matching-gender-enum-codes-rather-than-gender-enum-type",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:23"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.UserDto|semantic|meansInUse|gender-field-carried-as-int-code-matching-gender-enum-code-convention",
+   "candidateAtomId": "atom:semantic:user.userdto:gender-represented-as-int-code",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread UserDto.java:23 — `private int gender;` (not a Gender enum reference). Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-userdto:gender-as-raw-int-code",
+    "kind": "semantic",
+    "subject": "ts-user-service.UserDto",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "gender-field-carried-as-raw-int-code-matching-gender-enum-codes-rather-than-gender-enum-type",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/UserDto.java:23"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.entity.User|semantic|meansInUse|userid-assigned-as-random-uuid-string-in-default-no-arg-constructor",
+   "candidateAtomId": "atom:semantic:user-entity-user:userid-assigned-random-uuid-in-default-constructor",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread User.java:40-41 — public User() { this.userId = UUID.randomUUID().toString(); }. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-user:userid-assigned-random-uuid-in-default-constructor",
+    "kind": "semantic",
+    "subject": "ts-user-service.User",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "userid-assigned-as-random-uuid-string-via-uuid-randomuuid-in-default-no-arg-constructor",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/entity/User.java:40",
+     "src:ts-user-service/src/main/java/user/entity/User.java:41"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.User|semantic|meansInUse|userid-assigned-via-uuid-randomuuid-when-default-no-arg-constructor-used",
+   "candidateAtomId": "atom:semantic:user.user:userid-generated-via-uuid-in-default-constructor",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread User.java:40-41 — public User() { this.userId = UUID.randomUUID().toString(); }. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-user:userid-assigned-random-uuid-in-default-constructor",
+    "kind": "semantic",
+    "subject": "ts-user-service.User",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "userid-assigned-as-random-uuid-string-via-uuid-randomuuid-in-default-no-arg-constructor",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/entity/User.java:40",
+     "src:ts-user-service/src/main/java/user/entity/User.java:41"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.init.InitUser|semantic|meansInUse|seeded-default-user-password-stored-as-literal-string-111111-with-passwordencoder-bean-autowired-but-not-invoked-in-this-run-method",
+   "candidateAtomId": "atom:semantic:user-init-inituser:seeded-password-stored-as-literal-string",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread InitUser.java:24 (@Autowired protected PasswordEncoder passwordEncoder) and :35 (.password(\"111111\")) — passwordEncoder.encode(...) is never called on the literal. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-inituser:seeded-password-stored-as-literal-string",
+    "kind": "semantic",
+    "subject": "ts-user-service.InitUser",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "seeded-default-user-password-stored-as-literal-string-111111-via-builder-password-with-injected-passwordencoder-not-invoked-in-this-run-method",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:24",
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:35"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.InitUser|semantic|meansInUse|password-field-set-to-literal-string-111111-without-calling-injected-passwordencoder-encode",
+   "candidateAtomId": "atom:semantic:user.inituser:password-field-set-without-encoder-call",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread InitUser.java:24 (@Autowired protected PasswordEncoder passwordEncoder) and :35 (.password(\"111111\")) — passwordEncoder.encode(...) is never called on the literal. Same fact both passes.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-inituser:seeded-password-stored-as-literal-string",
+    "kind": "semantic",
+    "subject": "ts-user-service.InitUser",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "seeded-default-user-password-stored-as-literal-string-111111-via-builder-password-with-injected-passwordencoder-not-invoked-in-this-run-method",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:24",
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:35"
+    ]
+   }
+  },
+  {
+   "key": "state|travel2.entity.Trip|state|persistsIn|jpa-table-trip2-with-generated-uuid-primary-key",
+   "candidateAtomId": "atom:state:travel2-entity-trip:persists-in-jpa-table-trip2",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread Trip.java:18 (@Table(name=\"trip2\")), :24 (@GeneratedValue uuid id), :29 (@Embedded TripId tripId). Same persistence fact both passes; union refs.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-travel2-service-trip:persists-in-jpa-table-trip2",
+    "kind": "state",
+    "subject": "ts-travel2-service.Trip",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "jpa-table-trip2-with-generated-uuid-primary-key-id-and-embedded-tripid-value-object",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:18",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:24",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:29"
+    ]
+   }
+  },
+  {
+   "key": "state|travel2.Trip|state|persistsIn|trip2-table-with-uuid-generated-id-and-embedded-tripid",
+   "candidateAtomId": "atom:state:travel2.trip:persists-in-trip2-table",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Trip.java:18 (@Table(name=\"trip2\")), :24 (@GeneratedValue uuid id), :29 (@Embedded TripId tripId). Same persistence fact both passes; union refs.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-travel2-service-trip:persists-in-jpa-table-trip2",
+    "kind": "state",
+    "subject": "ts-travel2-service.Trip",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "jpa-table-trip2-with-generated-uuid-primary-key-id-and-embedded-tripid-value-object",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:18",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:24",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:29"
+    ]
+   }
+  },
+  {
+   "key": "state|user.entity.User|state|persistsIn|jpa-entity-with-snake-case-columns-user-id-user-name-document-type-document-num",
+   "candidateAtomId": "atom:state:user-entity-user:persists-in-jpa-entity-snake-case-columns",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread User.java:25-38 — @Id @Column(name=\"user_id\") userId, @Column(name=\"user_name\") userName, plain password/gender/email fields, @Column(name=\"document_type\") documentType, @Column(name=\"document_num\") documentNum. Same JPA entity fact both passes; merged pass-a's snake-case-column focus with pass-b's full field list, union refs.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-user-service-user:persists-in-jpa-entity-snake-case-columns",
+    "kind": "state",
+    "subject": "ts-user-service.User",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "jpa-entity-with-userid-username-password-gender-documenttype-documentnum-email-fields-userid-username-documenttype-documentnum-mapped-to-snake-case-columns",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/entity/User.java:25",
+     "src:ts-user-service/src/main/java/user/entity/User.java:26",
+     "src:ts-user-service/src/main/java/user/entity/User.java:28",
+     "src:ts-user-service/src/main/java/user/entity/User.java:33",
+     "src:ts-user-service/src/main/java/user/entity/User.java:35",
+     "src:ts-user-service/src/main/java/user/entity/User.java:38"
+    ]
+   }
+  },
+  {
+   "key": "state|user.User|state|persistsIn|user-id-user-name-password-gender-document-type-document-num-email-columns-persisted-via-jpa-entity",
+   "candidateAtomId": "atom:state:user.user:persists-in-user-table",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread User.java:25-38 — @Id @Column(name=\"user_id\") userId, @Column(name=\"user_name\") userName, plain password/gender/email fields, @Column(name=\"document_type\") documentType, @Column(name=\"document_num\") documentNum. Same JPA entity fact both passes; merged pass-a's snake-case-column focus with pass-b's full field list, union refs.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-user-service-user:persists-in-jpa-entity-snake-case-columns",
+    "kind": "state",
+    "subject": "ts-user-service.User",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "jpa-entity-with-userid-username-password-gender-documenttype-documentnum-email-fields-userid-username-documenttype-documentnum-mapped-to-snake-case-columns",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/entity/User.java:25",
+     "src:ts-user-service/src/main/java/user/entity/User.java:26",
+     "src:ts-user-service/src/main/java/user/entity/User.java:28",
+     "src:ts-user-service/src/main/java/user/entity/User.java:33",
+     "src:ts-user-service/src/main/java/user/entity/User.java:35",
+     "src:ts-user-service/src/main/java/user/entity/User.java:38"
+    ]
+   }
+  },
+  {
+   "key": "contract|travel2.entity.AdminTrip|specification|shapedAs|trip-plus-traintype-plus-route-composite-for-admin-view",
+   "candidateAtomId": "atom:contract:travel2-entity-admintrip:shaped-as-trip-traintype-route-composite",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread AdminTrip.java:12-14 — fields trip(Trip), trainType(TrainType), route(Route). Pass-b only captured this via three separate per-field relation atoms (dependsOn Trip/TrainType/Route); this contract-shape observation is a distinct axis view not duplicated elsewhere in pass-b. Kept.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-travel2-service-admintrip:shaped-as-trip-traintype-route-composite",
+    "kind": "contract",
+    "subject": "ts-travel2-service.AdminTrip",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "trip-plus-traintype-plus-route-composite-for-admin-view",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/AdminTrip.java:12",
+     "src:ts-travel2-service/src/main/java/travel2/entity/AdminTrip.java:14"
+    ]
+   }
+  },
+  {
+   "key": "effect|travel2.init.InitData|effect|callsProvider|seeds-five-trip-records-into-travel2-service-at-startup-via-travelservice-create",
+   "candidateAtomId": "atom:effect:travel2-init-initdata:seeds-trip-records-at-startup",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread InitData.java:26-76 — run() builds a TravelInfo and calls service.create(info,null) five times (lines 36,46,56,66,76) for trips Z1234/Z1235/Z1236/T1235/K1345. Grounded, no pass-b effect-kind counterpart (pass-b instead recorded this fact as a semantic atom about the specific seeded IDs, adopted separately).",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-travel2-service-initdata:seeds-trip-records-at-startup",
+    "kind": "effect",
+    "subject": "ts-travel2-service.InitData",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "seeds-five-trip-records-into-travel2-service-at-startup-via-repeated-travelservice-create-calls",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:26",
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:76"
+    ]
+   }
+  },
+  {
+   "key": "effect|user.init.InitUser|effect|mutatesFile|seeds-default-user-fdse-microservice-into-user-repository-at-startup-only-when-not-already-present",
+   "candidateAtomId": "atom:effect:user-init-inituser:seeds-default-user-at-startup",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread InitUser.java:31 (findByUserName guard), :41 (if whetherExistUser==null), :43 (closing brace after save). Grounded guarded-seed fact. Pass-b split this territory into two more granular atoms (skip-when-exists semantic, seeded-row state); this coarser effect view is not itself duplicated, kept as a separate atom.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-user-service-inituser:seeds-default-user-at-startup",
+    "kind": "effect",
+    "subject": "ts-user-service.InitUser",
+    "axis": "effect",
+    "predicate": "mutatesFile",
+    "object": "seeds-default-user-fdse-microservice-into-user-repository-at-startup-only-when-not-already-present",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:31",
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:41",
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:43"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.repository.TripRepository|relation|dependsOn|travel2.entity.Trip",
+   "candidateAtomId": "atom:relation:travel2-repository-triprepository:depends-on-trip-entity",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread TripRepository.java:15 — public interface TripRepository extends CrudRepository<Trip, TripId>. Genuinely absent from pass-b's candidate set for this file (pass-b only recorded per-method capability atoms, no CrudRepository<Trip,...> dependency relation). Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-triprepository:depends-on-trip-entity",
+    "kind": "relation",
+    "subject": "ts-travel2-service.TripRepository",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "travel2.entity.Trip",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:15"
+    ]
+   }
+  },
+  {
+   "key": "relation|ts-travel2-service.application.yml|relation|dependsOn|nacos-headless-discovery-service-registry",
+   "candidateAtomId": "atom:relation:travel2-config-application-yml:depends-on-nacos-discovery",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread application.yml:6-9 — spring.cloud.nacos.discovery.server-addr points at nacos-0/1/2.nacos-headless.default.svc.cluster.local. Absent from pass-b's candidate set for this chunk. Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-application-yml:depends-on-nacos-discovery",
+    "kind": "relation",
+    "subject": "ts-travel2-service.application-yml",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "nacos-headless-discovery-service-registry",
+    "refs": [
+     "src:ts-travel2-service/src/main/resources/application.yml:6",
+     "src:ts-travel2-service/src/main/resources/application.yml:9"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:travel2-ticket-pricing-flow|cech|sectionValue|section=money-amount:confort-and-economy-class-prices-looked-up-by-string-class-name-key-in-untyped-prices-map-not-a-dedicated-money-type",
+   "candidateAtomId": "atom:semantic:travel2-ticket-pricing-flow:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread TravelServiceImpl.java:376-377 — response.setPriceForConfortClass(tr.getPrices().get(\"confortClass\")); ...getPrices().get(\"economyClass\"). No cech-axis counterpart in pass-b for this chunk. Kept (context id retained per cech-atom rule; integrator remaps later).",
+   "canonicalAtom": {
+    "id": "atom:semantic:travel2-ticket-pricing-flow:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:travel2-ticket-pricing-flow",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:confort-and-economy-class-prices-looked-up-by-string-class-name-key-in-untyped-prices-map-not-a-dedicated-money-type",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:376",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:377"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.entity.TripAllDetail|semantic|meansInUse|response-status-carried-as-boolean-field-here-distinct-from-integer-status-code-used-in-edu-fudan-common-response",
+   "candidateAtomId": "atom:semantic:travel2-entity-tripalldetail:boolean-status-envelope",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread TripAllDetail.java:16 — `private boolean status;` versus the int-status convention seen throughout TravelServiceImpl's Response<> returns. Pass-b instead recorded a contract-shape atom for this class (adopted separately, different axis); this semantic nuance is not duplicated. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-tripalldetail:boolean-status-envelope",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TripAllDetail",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "response-status-carried-as-boolean-field-here-distinct-from-integer-status-code-used-in-edu-fudan-common-response",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/TripAllDetail.java:16"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.entity.Trip|semantic|identifiedBy|business-identity-carried-by-embedded-tripid-value-object-separate-from-generated-uuid-id-column",
+   "candidateAtomId": "atom:semantic:travel2-entity-trip:identified-by-embedded-tripid",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread Trip.java:23-26 (@Id @GeneratedValue generated `id`) vs :28-29 (@Embedded TripId tripId). No equivalent identifiedBy atom in pass-b's Trip observations (which cover only the lowercasing/constructor semantics, adopted separately). Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-trip:identified-by-embedded-tripid",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.Trip",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "business-identity-carried-by-embedded-tripid-value-object-separate-from-generated-uuid-id-column",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:23",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:29"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.init.InitData|semantic|meansInUse|trip-start-and-end-time-represented-as-string-in-yyyy-mm-dd-hh-mm-ss-format",
+   "candidateAtomId": "atom:semantic:travel2-init-initdata:time-string-format",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread InitData.java:34-35 — info.setStartTime(\"2013-05-04 09:51:52\"); info.setEndTime(\"2013-05-04 15:51:52\"). No equivalent atom about this specific string-format fact in pass-b. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-initdata:time-string-format",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "trip-start-and-end-time-represented-as-string-in-yyyy-mm-dd-hh-mm-ss-format",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:34",
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:35"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.service.TravelServiceImpl|semantic|meansInUse|confort-class-and-economy-class-prices-looked-up-by-string-class-name-key-in-untyped-prices-map-returned-from-ts-basic-service",
+   "candidateAtomId": "atom:semantic:travel2-service-travelserviceimpl:price-looked-up-by-class-name-key",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread TravelServiceImpl.java:376-377 — tr.getPrices().get(\"confortClass\")/get(\"economyClass\"). This is the same lines as the cech sectionValue atom above but a distinct axis (semantic meansInUse vs cech sectionValue), intentionally co-recorded by pass-a; no equivalent semantic atom for this fact exists in pass-b. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travelserviceimpl:price-looked-up-by-class-name-key",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "confort-class-and-economy-class-prices-looked-up-by-string-class-name-key-in-untyped-prices-map-returned-from-ts-basic-service",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:376",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:377"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.service.TravelServiceImpl|semantic|meansInUse|seat-type-parameter-populated-from-seatclass-firstclass-and-secondclass-getcode-enum-values",
+   "candidateAtomId": "atom:semantic:travel2-service-travelserviceimpl:seat-class-code-via-enum",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread TravelServiceImpl.java:342 (SeatClass.FIRSTCLASS.getCode()) and :345 (SeatClass.SECONDCLASS.getCode()) passed as the seatType arg to getRestTicketNumber. No equivalent atom in pass-b. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travelserviceimpl:seat-class-code-via-enum",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "seat-type-parameter-populated-from-seatclass-firstclass-and-secondclass-getcode-enum-values",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:342",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:345"
+    ]
+   }
+  },
+  {
+   "key": "state|travel2.repository.TripRepository|state|persistsIn|trip-entity-persisted-and-queried-via-crudrepository-keyed-by-embedded-tripid-plus-lookup-by-routeid",
+   "candidateAtomId": "atom:state:travel2-repository-triprepository:persists-trip-via-crudrepository",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread TripRepository.java:15 (interface decl), :17 (findByTripId), :24 (findByRouteId). Pass-b recorded the same file as four separate per-method capability atoms (findByTripId/deleteByTripId/findAll/findByRouteId, all adopted separately below); this aggregate state view is a distinct, non-duplicated granularity. Kept.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-travel2-service-triprepository:persists-trip-via-crudrepository",
+    "kind": "state",
+    "subject": "ts-travel2-service.TripRepository",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "trip-entity-persisted-and-queried-via-crudrepository-keyed-by-embedded-tripid-plus-lookup-by-routeid",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:15",
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:17",
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:24"
+    ]
+   }
+  },
+  {
+   "key": "state|ts-travel2-service.application.yml|state|persistsIn|travel2-service-backed-by-dedicated-mysql-database-ts-travel2-mysql-with-jpa-ddl-auto-update",
+   "candidateAtomId": "atom:state:travel2-config-application-yml:persists-in-dedicated-mysql-db",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread application.yml:12-15 (datasource.url pointing at ts-travel2-mysql) and :20 (ddl-auto: update). Pass-b instead recorded two narrower semantic atoms (ddl-auto behavior; default credentials), both adopted separately; this aggregate persistsIn fact is not duplicated. Kept.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-travel2-service-application-yml:persists-in-dedicated-mysql-db",
+    "kind": "state",
+    "subject": "ts-travel2-service.application-yml",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "travel2-service-backed-by-dedicated-mysql-database-ts-travel2-mysql-with-jpa-ddl-auto-update",
+    "refs": [
+     "src:ts-travel2-service/src/main/resources/application.yml:12",
+     "src:ts-travel2-service/src/main/resources/application.yml:20"
+    ]
+   }
+  },
+  {
+   "key": "state|user.repository.UserRepository|state|persistsIn|user-entity-persisted-and-queried-via-crudrepository-keyed-by-userid-string-with-lookup-by-username-and-by-userid",
+   "candidateAtomId": "atom:state:user-repository-userrepository:persists-user-via-crudrepository",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread UserRepository.java:14 (interface decl, CrudRepository<User,String>), :16 (findByUserName), :18 (findByUserId). Pass-b recorded four separate per-method capability atoms instead (adopted separately below); this aggregate state view is a distinct granularity, not duplicated. Kept.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-user-service-userrepository:persists-user-via-crudrepository",
+    "kind": "state",
+    "subject": "ts-user-service.UserRepository",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "user-entity-persisted-and-queried-via-crudrepository-keyed-by-userid-string-with-lookup-by-username-and-by-userid",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/repository/UserRepository.java:14",
+     "src:ts-user-service/src/main/java/user/repository/UserRepository.java:16",
+     "src:ts-user-service/src/main/java/user/repository/UserRepository.java:18"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.TripRepository|capability|handlesCommand|deleteByTripId(TripId)",
+   "candidateAtomId": "atom:capability:travel2.triprepository:handles-command-delete-by-trip-id",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TripRepository.java:19 — void deleteByTripId(TripId tripId). Per-method capability decomposition not present in pass-a (which only recorded an aggregate persistsIn state atom for this file). Kept as distinct granularity.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-triprepository:handles-command-delete-by-trip-id",
+    "kind": "capability",
+    "subject": "ts-travel2-service.TripRepository",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "deleteByTripId(TripId)",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:19"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.TripRepository|capability|servesQuery|findAll-overridden-to-return-arraylist",
+   "candidateAtomId": "atom:capability:travel2.triprepository:serves-query-find-all",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TripRepository.java:21-22 — @Override ArrayList<Trip> findAll(). Not present in pass-a's atom set. Kept.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-triprepository:serves-query-find-all",
+    "kind": "capability",
+    "subject": "ts-travel2-service.TripRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findAll-overridden-to-return-arraylist",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:22"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.TripRepository|capability|servesQuery|findByRouteId(String)",
+   "candidateAtomId": "atom:capability:travel2.triprepository:serves-query-find-by-route-id",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TripRepository.java:24 — ArrayList<Trip> findByRouteId(String routeId). Distinct per-method capability, kept.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-triprepository:serves-query-find-by-route-id",
+    "kind": "capability",
+    "subject": "ts-travel2-service.TripRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByRouteId(String)",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:24"
+    ]
+   }
+  },
+  {
+   "key": "capability|travel2.TripRepository|capability|servesQuery|findByTripId(TripId)",
+   "candidateAtomId": "atom:capability:travel2.triprepository:serves-query-find-by-trip-id",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TripRepository.java:17 — Trip findByTripId(TripId tripId). Distinct per-method capability, kept.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-travel2-service-triprepository:serves-query-find-by-trip-id",
+    "kind": "capability",
+    "subject": "ts-travel2-service.TripRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByTripId(TripId)",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/repository/TripRepository.java:17"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserRepository|capability|handlesCommand|deleteByUserId(String)",
+   "candidateAtomId": "atom:capability:user.userrepository:handles-command-delete-by-user-id",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread UserRepository.java:20 — void deleteByUserId(String userId). Distinct per-method capability, kept.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-userrepository:handles-command-delete-by-user-id",
+    "kind": "capability",
+    "subject": "ts-user-service.UserRepository",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "deleteByUserId(String)",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/repository/UserRepository.java:20"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserRepository|capability|servesQuery|findAll-overridden-to-return-list",
+   "candidateAtomId": "atom:capability:user.userrepository:serves-query-find-all",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread UserRepository.java:22-23 — @Override List<User> findAll(). Distinct per-method capability, kept.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-userrepository:serves-query-find-all",
+    "kind": "capability",
+    "subject": "ts-user-service.UserRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findAll-overridden-to-return-list",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/repository/UserRepository.java:23"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserRepository|capability|servesQuery|findByUserId(String)",
+   "candidateAtomId": "atom:capability:user.userrepository:serves-query-find-by-user-id",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread UserRepository.java:18 — User findByUserId(String userId). Distinct per-method capability, kept.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-userrepository:serves-query-find-by-user-id",
+    "kind": "capability",
+    "subject": "ts-user-service.UserRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByUserId(String)",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/repository/UserRepository.java:18"
+    ]
+   }
+  },
+  {
+   "key": "capability|user.UserRepository|capability|servesQuery|findByUserName(String)",
+   "candidateAtomId": "atom:capability:user.userrepository:serves-query-find-by-username",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread UserRepository.java:16 — User findByUserName(String userName). Distinct per-method capability, kept.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-user-service-userrepository:serves-query-find-by-username",
+    "kind": "capability",
+    "subject": "ts-user-service.UserRepository",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "findByUserName(String)",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/repository/UserRepository.java:16"
+    ]
+   }
+  },
+  {
+   "key": "contract|travel2.TripAllDetail|specification|shapedAs|boolean-status-string-message-tripresponse-and-trip-fields",
+   "candidateAtomId": "atom:contract:travel2.tripalldetail:shaped-as-status-message-tripresponse-trip",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TripAllDetail.java:16 (status boolean), :18 (message String), :20 (tripResponse), :22 (trip). Distinct shape-axis observation not present in pass-a (which recorded only the boolean-vs-int-status semantic nuance for this class, adopted separately). Kept.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-travel2-service-tripalldetail:shaped-as-status-message-tripresponse-trip",
+    "kind": "contract",
+    "subject": "ts-travel2-service.TripAllDetail",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "boolean-status-string-message-tripresponse-and-trip-fields",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/TripAllDetail.java:16",
+     "src:ts-travel2-service/src/main/java/travel2/entity/TripAllDetail.java:18",
+     "src:ts-travel2-service/src/main/java/travel2/entity/TripAllDetail.java:20",
+     "src:ts-travel2-service/src/main/java/travel2/entity/TripAllDetail.java:22"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.AdminTrip|relation|dependsOn|edu.fudan.common.entity.Route",
+   "candidateAtomId": "atom:relation:travel2.admintrip:depends-on-route",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread AdminTrip.java:14 — private Route route. Field-level dependency not present in pass-a (which recorded only the composite contract-shape atom, adopted separately). Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-admintrip:depends-on-route",
+    "kind": "relation",
+    "subject": "ts-travel2-service.AdminTrip",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "edu.fudan.common.entity.Route",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/AdminTrip.java:14"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.AdminTrip|relation|dependsOn|edu.fudan.common.entity.TrainType",
+   "candidateAtomId": "atom:relation:travel2.admintrip:depends-on-train-type",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread AdminTrip.java:13 — private TrainType trainType. Distinct field-level dependency, kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-admintrip:depends-on-train-type",
+    "kind": "relation",
+    "subject": "ts-travel2-service.AdminTrip",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "edu.fudan.common.entity.TrainType",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/AdminTrip.java:13"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.AdminTrip|relation|dependsOn|travel2.entity.Trip",
+   "candidateAtomId": "atom:relation:travel2.admintrip:depends-on-trip",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread AdminTrip.java:12 — private Trip trip. Distinct field-level dependency, kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-admintrip:depends-on-trip",
+    "kind": "relation",
+    "subject": "ts-travel2-service.AdminTrip",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "travel2.entity.Trip",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/AdminTrip.java:12"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.InitData|relation|dependsOn|travel2.service.TravelService",
+   "candidateAtomId": "atom:relation:travel2.initdata:depends-on-travel-service",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread InitData.java:16-17 — @Autowired TravelService service. Not present in pass-a's InitData atom set. Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-initdata:depends-on-travel-service",
+    "kind": "relation",
+    "subject": "ts-travel2-service.InitData",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "travel2.service.TravelService",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:17"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.Travel2Controller|relation|dependsOn|travel2.service.TravelService",
+   "candidateAtomId": "atom:relation:travel2.travel2controller:depends-on-travel-service",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread Travel2Controller.java:25-26 — @Autowired private TravelService service. Not present in pass-a's Travel2Controller atom set. Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-travel2controller:depends-on-travel-service",
+    "kind": "relation",
+    "subject": "ts-travel2-service.Travel2Controller",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "travel2.service.TravelService",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/controller/Travel2Controller.java:26"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.TravelServiceImpl|relation|dependsOn|org.springframework.cloud.client.discovery.DiscoveryClient",
+   "candidateAtomId": "atom:relation:travel2.travelserviceimpl:depends-on-discovery-client",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TravelServiceImpl.java:41-42 — @Autowired private DiscoveryClient discoveryClient. Not present in pass-a's atom set. Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-travelserviceimpl:depends-on-discovery-client",
+    "kind": "relation",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "org.springframework.cloud.client.discovery.DiscoveryClient",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:42"
+    ]
+   }
+  },
+  {
+   "key": "relation|travel2.TravelServiceImpl|relation|dependsOn|org.springframework.web.client.RestTemplate",
+   "candidateAtomId": "atom:relation:travel2.travelserviceimpl:depends-on-rest-template",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TravelServiceImpl.java:38-39 — @Autowired private RestTemplate restTemplate. Not present in pass-a's atom set. Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-travel2-service-travelserviceimpl:depends-on-rest-template",
+    "kind": "relation",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "org.springframework.web.client.RestTemplate",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:39"
+    ]
+   }
+  },
+  {
+   "key": "relation|user.InitUser|relation|dependsOn|org.springframework.security.crypto.password.PasswordEncoder",
+   "candidateAtomId": "atom:relation:user.inituser:depends-on-password-encoder",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread InitUser.java:23-24 — @Autowired protected PasswordEncoder passwordEncoder. Not present in pass-a's InitUser atom set. Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-user-service-inituser:depends-on-password-encoder",
+    "kind": "relation",
+    "subject": "ts-user-service.InitUser",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "org.springframework.security.crypto.password.PasswordEncoder",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:24"
+    ]
+   }
+  },
+  {
+   "key": "relation|user.InitUser|relation|dependsOn|user.repository.UserRepository",
+   "candidateAtomId": "atom:relation:user.inituser:depends-on-user-repository",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread InitUser.java:20-21 — @Autowired private UserRepository userRepository. Not present in pass-a's InitUser atom set. Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-user-service-inituser:depends-on-user-repository",
+    "kind": "relation",
+    "subject": "ts-user-service.InitUser",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "user.repository.UserRepository",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:21"
+    ]
+   }
+  },
+  {
+   "key": "relation|user.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:user.securityconfig:adds-jwtfilter-before-username-password-filter",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread user/config/SecurityConfig.java:78 — addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class). Pass-a only recorded this relation for travel2's SecurityConfig, not user's; genuinely missing from pass-a's atom set for this file. Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-user-service-securityconfig:depends-on-jwt-filter",
+    "kind": "relation",
+    "subject": "ts-user-service.SecurityConfig",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "edu.fudan.common.security.jwt.JWTFilter",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/config/SecurityConfig.java:78"
+    ]
+   }
+  },
+  {
+   "key": "relation|user.UserApplication|relation|dependsOn|load-balanced-resttemplate-bean-for-downstream-service-calls",
+   "candidateAtomId": "atom:relation:user.userapplication:provides-load-balanced-rest-template",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread UserApplication.java:28-30 — @LoadBalanced @Bean public RestTemplate restTemplate(RestTemplateBuilder builder). Pass-a only recorded the bare component atom for UserApplication, no relation. Kept.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-user-service-userapplication:provides-load-balanced-rest-template",
+    "kind": "relation",
+    "subject": "ts-user-service.UserApplication",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "load-balanced-resttemplate-bean-for-downstream-service-calls",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/UserApplication.java:28",
+     "src:ts-user-service/src/main/java/user/UserApplication.java:29",
+     "src:ts-user-service/src/main/java/user/UserApplication.java:30"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.InitData|semantic|meansInUse|seeds-five-hardcoded-trips-z1234-z1235-z1236-t1235-k1345-with-fixed-route-ids-and-times-via-service-create-on-startup",
+   "candidateAtomId": "atom:semantic:travel2.initdata:seeds-fixed-trip-catalog-on-startup",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread InitData.java:28 (setTripId(\"Z1234\")), :58 (setTripId(\"T1235\")), :66 (implicit, K1345 block), :36/76 (create calls). Confirms five hardcoded trip IDs Z1234/Z1235/Z1236/T1235/K1345 with fixed route UUIDs. Distinct content from pass-a's coarser effect atom (which does not name the specific IDs); kept as separate, more granular semantic fact.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-initdata:seeds-fixed-trip-catalog-on-startup",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "seeds-five-hardcoded-trips-z1234-z1235-z1236-t1235-k1345-with-fixed-route-ids-and-times-via-service-create-on-startup",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:28",
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:36",
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:58",
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:66",
+     "src:ts-travel2-service/src/main/java/travel2/init/InitData.java:76"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.TravelServiceImpl|semantic|meansInUse|start-and-end-place-names-passed-into-travel-query-in-the-case-received-from-request-without-lowercasing",
+   "candidateAtomId": "atom:semantic:travel2.travelserviceimpl:travel-query-uses-received-case-place-names",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TravelServiceImpl.java:174-175 (queryByBatch reads startPlaceName/endPlaceName from request as-is) and :252-253,306-307 (getTicketsByBatch/getTickets set query.setStartPlace/setEndPlace directly from the passed-in names, no lowercasing call), contrasting with Trip's own lowercasing at construction. Distinct fact, no pass-a equivalent. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travelserviceimpl:travel-query-uses-received-case-place-names",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "start-and-end-place-names-passed-into-travel-query-in-the-case-received-from-request-without-lowercasing",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:252",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:253",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:306",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:307"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.TravelServiceImpl|semantic|meansInUse|start-station-name-set-twice-first-from-traintypename-then-overwritten-with-startstationname-traintypename-field-itself-not-reassigned-in-update",
+   "candidateAtomId": "atom:semantic:travel2.travelserviceimpl:update-sets-start-station-name-twice",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TravelServiceImpl.java:142 (t.setStartStationName(info.getTrainTypeName())), :143 (t.setStartStationName(info.getStartStationName()) overwrites it), :145 (setTerminalStationName; no t.setTrainTypeName(...) call anywhere in update()). Confirmed accurate, neutral description of update()'s field-assignment order. No pass-a equivalent. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travelserviceimpl:update-sets-start-station-name-twice",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "start-station-name-set-twice-first-from-traintypename-then-overwritten-with-startstationname-traintypename-field-itself-not-reassigned-in-update",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:142",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:143",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:145"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.TravelServiceImpl|semantic|meansInUse|ts-basic-service-response-status-0-selects-early-return-of-empty-or-null-ticket-result-branch",
+   "candidateAtomId": "atom:semantic:travel2.travelserviceimpl:downstream-basic-service-status-zero-selects-empty-branch",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread TravelServiceImpl.java:271 (getTicketsByBatch: if(r.getStatus()==0) return responses;) and :319 (getTickets: if(r.getStatus()==0) return null;) — this is the downstream ts-basic-service response's own status field gating an early-return, distinct from TravelServiceImpl's own outbound Response status (already covered by the merged statusGates atom, refs 59/67/88/106/133/166/221/230/389, which does not include 271 or 319). Distinct fact, kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-travelserviceimpl:downstream-basic-service-status-zero-selects-empty-branch",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.TravelServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "ts-basic-service-response-status-0-selects-early-return-of-empty-or-null-ticket-result-branch",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:271",
+     "src:ts-travel2-service/src/main/java/travel2/service/TravelServiceImpl.java:319"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.Trip|semantic|meansInUse|three-arg-constructor-sets-start-and-terminal-station-and-time-fields-to-empty-string-not-lowercased",
+   "candidateAtomId": "atom:semantic:travel2.trip:three-arg-constructor-leaves-station-fields-empty",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread Trip.java:67 (public Trip(TripId tripId, String trainTypeName, String routeId)), :71-74 — startStationName/terminalStationName/startTime/endTime each set to \"\" with no StringUtils.String2Lower call, contrasting with the 7-arg constructor's lowercasing. Distinct fact, no pass-a equivalent for this second constructor. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-trip:three-arg-constructor-leaves-station-fields-empty",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.Trip",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "three-arg-constructor-sets-start-and-terminal-station-and-time-fields-to-empty-string-not-lowercased",
+    "refs": [
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:67",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:71",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:72",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:73",
+     "src:ts-travel2-service/src/main/java/travel2/entity/Trip.java:74"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.application.yml|semantic|meansInUse|database-schema-auto-updated-on-startup-via-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:semantic:travel2.applicationyml:jpa-ddl-auto-update-schema-behavior",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread application.yml:19-20 — jpa.hibernate.ddl-auto: update. Distinct semantic nuance from pass-a's coarser state atom (which names the fact but doesn't isolate ddl-auto as its own observation); no equivalent semantic-kind atom in pass-a. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-application-yml:jpa-ddl-auto-update-schema-behavior",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.application-yml",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "database-schema-auto-updated-on-startup-via-hibernate-ddl-auto-update",
+    "refs": [
+     "src:ts-travel2-service/src/main/resources/application.yml:19",
+     "src:ts-travel2-service/src/main/resources/application.yml:20"
+    ]
+   }
+  },
+  {
+   "key": "semantic|travel2.application.yml|semantic|meansInUse|datasource-username-and-password-default-to-root-and-fixed-value-when-travel2-mysql-user-and-password-env-vars-unset",
+   "candidateAtomId": "atom:semantic:travel2.applicationyml:default-mysql-credentials-when-env-unset",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread application.yml:14 (username: ${TRAVEL2_MYSQL_USER:root}) and :15 (password: ${TRAVEL2_MYSQL_PASSWORD:Abcd1234#}). Distinct credential-default nuance, no equivalent in pass-a. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-travel2-service-application-yml:default-mysql-credentials-when-env-unset",
+    "kind": "semantic",
+    "subject": "ts-travel2-service.application-yml",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "datasource-username-and-password-default-to-root-and-fixed-value-when-travel2-mysql-user-and-password-env-vars-unset",
+    "refs": [
+     "src:ts-travel2-service/src/main/resources/application.yml:14",
+     "src:ts-travel2-service/src/main/resources/application.yml:15"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.AuthDto|semantic|meansInUse|doc-comment-states-user-service-registers-user-then-sends-authdto-to-auth-service",
+   "candidateAtomId": "atom:semantic:user.authdto:forwarded-to-auth-service-after-registration",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread AuthDto.java:9 — \"user-service register user , then send to auth-service\" doc comment. Pass-a folded this into its contract shapedAs atom's refs (already merged above); this semantic-kind (meansInUse) restatement of the same comment is a distinct axis observation with no separate pass-a semantic counterpart. Kept.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-authdto:forwarded-to-auth-service-after-registration",
+    "kind": "semantic",
+    "subject": "ts-user-service.AuthDto",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "doc-comment-states-user-service-registers-user-then-sends-authdto-to-auth-service",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/AuthDto.java:9"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.Gender|semantic|meansInUse|get-name-by-code-returns-first-enum-value-name-null-when-no-code-matches",
+   "candidateAtomId": "atom:semantic:user.gender:unmatched-code-falls-back-to-first-enum-branch",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread Gender.java:41-47 — getNameByCode iterates Gender.values(), returns matching gender.getName(), else falls through to `return genderSet[0].getName();` (NONE's name \"Null\"), not null. Distinct fallback-behavior fact, no pass-a equivalent. Kept (object corrected from 'null' to the accurate 'NONE/first enum name' per source).",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-gender:unmatched-code-falls-back-to-first-enum-branch",
+    "kind": "semantic",
+    "subject": "ts-user-service.Gender",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "get-name-by-code-returns-first-enum-value-name-none-when-no-code-matches",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:41",
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:42",
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:43",
+     "src:ts-user-service/src/main/java/user/dto/Gender.java:47"
+    ]
+   }
+  },
+  {
+   "key": "semantic|user.InitUser|semantic|meansInUse|save-skipped-when-fdse-microservice-username-already-found-by-username-lookup",
+   "candidateAtomId": "atom:semantic:user.inituser:skips-save-when-seed-user-already-exists",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread InitUser.java:31 (findByUserName(\"fdse_microservice\")), :41-42 (if whetherExistUser==null then userRepository.save(user)). Distinct guard-condition nuance from pass-a's coarser effect atom; kept as separate granular fact.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-user-service-inituser:skips-save-when-seed-user-already-exists",
+    "kind": "semantic",
+    "subject": "ts-user-service.InitUser",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "save-skipped-when-fdse-microservice-username-already-found-by-username-lookup",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:31",
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:41",
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:42"
+    ]
+   }
+  },
+  {
+   "key": "state|user.InitUser|state|persistsIn|fdse-microservice-user-row-with-fixed-uuid-and-gender-1-and-documenttype-1-seeded-via-user-repository-save-on-startup",
+   "candidateAtomId": "atom:state:user.inituser:seeds-fdse-microservice-user-row-on-startup",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread InitUser.java:32-33 (User.builder().userId(\"4d2a46c7-...\").userName(\"fdse_microservice\")... .gender(1).documentType(1)...) and :42 (userRepository.save(user)). Distinct specific-field nuance from pass-a's coarser effect atom; kept as separate granular fact.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-user-service-inituser:seeds-fdse-microservice-user-row-on-startup",
+    "kind": "state",
+    "subject": "ts-user-service.InitUser",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "fdse-microservice-user-row-with-fixed-uuid-and-gender-1-and-documenttype-1-seeded-via-user-repository-save-on-startup",
+    "refs": [
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:32",
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:33",
+     "src:ts-user-service/src/main/java/user/init/InitUser.java:42"
+    ]
+   }
+  }
+ ]
+}

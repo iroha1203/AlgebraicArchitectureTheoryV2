@@ -1,0 +1,169 @@
+{
+  "atoms": {
+    "added": [],
+    "modified": [
+      {
+        "base": {
+          "atomKind": "semantic",
+          "axis": "cech",
+          "contextMemberships": [],
+          "normalizationStatus": "normalized",
+          "normalizedAtomId": "atom:semantic:cancel-surface:cech-section-money-amount",
+          "object": "section=money-amount:string-parsed-to-double-arithmetic-decimalformat",
+          "predicate": "sectionValue",
+          "sourceAtomId": "atom:semantic:cancel-surface:cech-section-money-amount",
+          "sourceRefs": [
+            "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java"
+          ],
+          "subject": "ctx:cancel-surface"
+        },
+        "head": {
+          "atomKind": "semantic",
+          "axis": "cech",
+          "contextMemberships": [],
+          "normalizationStatus": "normalized",
+          "normalizedAtomId": "atom:semantic:cancel-surface:cech-section-money-amount",
+          "object": "section=money-amount:bigdecimal-scale2-half-even-shared",
+          "predicate": "sectionValue",
+          "sourceAtomId": "atom:semantic:cancel-surface:cech-section-money-amount",
+          "sourceRefs": [
+            "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java"
+          ],
+          "subject": "ctx:cancel-surface"
+        },
+        "id": "atom:semantic:cancel-surface:cech-section-money-amount",
+        "kind": "atoms",
+        "op": "modified"
+      },
+      {
+        "base": {
+          "atomKind": "semantic",
+          "axis": "cech",
+          "contextMemberships": [],
+          "normalizationStatus": "normalized",
+          "normalizedAtomId": "atom:semantic:inside-payment-surface:cech-section-money-amount",
+          "object": "section=money-amount:string-parsed-to-bigdecimal-at-use-site",
+          "predicate": "sectionValue",
+          "sourceAtomId": "atom:semantic:inside-payment-surface:cech-section-money-amount",
+          "sourceRefs": [
+            "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java",
+            "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java",
+            "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java",
+            "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java"
+          ],
+          "subject": "ctx:inside-payment-surface"
+        },
+        "head": {
+          "atomKind": "semantic",
+          "axis": "cech",
+          "contextMemberships": [],
+          "normalizationStatus": "normalized",
+          "normalizedAtomId": "atom:semantic:inside-payment-surface:cech-section-money-amount",
+          "object": "section=money-amount:bigdecimal-scale2-half-even-shared",
+          "predicate": "sectionValue",
+          "sourceAtomId": "atom:semantic:inside-payment-surface:cech-section-money-amount",
+          "sourceRefs": [
+            "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java",
+            "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java",
+            "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java",
+            "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java"
+          ],
+          "subject": "ctx:inside-payment-surface"
+        },
+        "id": "atom:semantic:inside-payment-surface:cech-section-money-amount",
+        "kind": "atoms",
+        "op": "modified"
+      },
+      {
+        "base": {
+          "atomKind": "semantic",
+          "axis": "cech",
+          "contextMemberships": [],
+          "normalizationStatus": "normalized",
+          "normalizedAtomId": "atom:semantic:order-surface:cech-section-money-amount",
+          "object": "section=money-amount:string-passthrough-unparsed",
+          "predicate": "sectionValue",
+          "sourceAtomId": "atom:semantic:order-surface:cech-section-money-amount",
+          "sourceRefs": [
+            "src:ts-order-service/src/main/java/order/entity/Order.java",
+            "src:ts-order-service/src/main/java/order/init/InitData.java",
+            "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java"
+          ],
+          "subject": "ctx:order-surface"
+        },
+        "head": {
+          "atomKind": "semantic",
+          "axis": "cech",
+          "contextMemberships": [],
+          "normalizationStatus": "normalized",
+          "normalizedAtomId": "atom:semantic:order-surface:cech-section-money-amount",
+          "object": "section=money-amount:bigdecimal-scale2-half-even-shared",
+          "predicate": "sectionValue",
+          "sourceAtomId": "atom:semantic:order-surface:cech-section-money-amount",
+          "sourceRefs": [
+            "src:ts-order-service/src/main/java/order/entity/Order.java",
+            "src:ts-order-service/src/main/java/order/init/InitData.java",
+            "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java"
+          ],
+          "subject": "ctx:order-surface"
+        },
+        "id": "atom:semantic:order-surface:cech-section-money-amount",
+        "kind": "atoms",
+        "op": "modified"
+      }
+    ],
+    "removed": [
+      {
+        "base": {
+          "atomKind": "semantic",
+          "axis": "semantic",
+          "contextMemberships": [],
+          "normalizationStatus": "normalized",
+          "normalizedAtomId": "atom:refund-drift-witness",
+          "object": "cancel books an 80% refund rounded by DecimalFormat(\"0.00\") while inside-payment ledgers the exact BigDecimal amount against order's unrounded price string; the rounding remainder is recorded nowhere",
+          "predicate": "reconciliationResidue",
+          "sourceAtomId": "atom:refund-drift-witness",
+          "sourceRefs": [
+            "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java"
+          ],
+          "subject": "drift:refund-rounding"
+        },
+        "id": "atom:refund-drift-witness",
+        "kind": "atoms",
+        "op": "removed"
+      }
+    ]
+  },
+  "basis": "deterministic JSON comparison of normalized-archmap/v0.5.3 sources, atoms, contexts, and covers",
+  "contexts": {
+    "added": [],
+    "modified": [],
+    "removed": []
+  },
+  "covers": {
+    "added": [],
+    "modified": [],
+    "removed": []
+  },
+  "inputDigests": {
+    "baseNormalizedArchmap": {
+      "path": "head/normalized-archmap.json",
+      "sha256": "ef24490a3be760e3a7b975a1f513a82a09aff601055b34f46940a4c38c0065cf"
+    },
+    "headNormalizedArchmap": {
+      "path": "repaired/normalized-archmap.json",
+      "sha256": "9aaf23e5e5ecf5894918eef29eea8541b9a8fa32cfb7d4cc0bab48063dd6e1b8"
+    }
+  },
+  "nonConclusions": [
+    "ArchMap diff is computed from normalized artifacts; it is not an observation artifact.",
+    "Diff operations are mechanical record intersections, not causal claims."
+  ],
+  "schema": "archmap-diff/v0.5.3",
+  "sources": {
+    "added": [],
+    "modified": [],
+    "removed": []
+  },
+  "toolVersion": "0.5.3"
+}

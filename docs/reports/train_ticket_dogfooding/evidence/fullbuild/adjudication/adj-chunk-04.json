@@ -1,0 +1,1886 @@
+{
+ "chunkId": "chunk-04",
+ "adjudications": [
+  {
+   "key": "authority|basic.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:basic-securityconfig:allowscrossorigin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:51-57 (also 47,58) — corsConfigurer bean sets allowedOrigins/Methods/Headers(ALL), allowCredentials(false), maxAge(3600) on /**. Same fact as pass-b's row (naming/ref-precision drift only); kept merged, using A's fuller maxAge detail.",
+   "canonicalAtom": {
+    "id": "atom:authority:basic-securityconfig:allowscrossorigin",
+    "kind": "authority",
+    "subject": "basic.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:51-57"
+    ]
+   }
+  },
+  {
+   "key": "authority|basic.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72-73 — antMatchers for swagger-ui.html/webjars/images/configuration/swagger-resources/v2 permitAll(). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+    "kind": "authority",
+    "subject": "basic.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72-73"
+    ]
+   }
+  },
+  {
+   "key": "authority|cancel.CancelController|authority|allowsCrossOrigin|wildcard-origin-method-level-annotation-on-cancel-refound-and-cancel-orderid-loginid-endpoints",
+   "candidateAtomId": "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/controller/CancelController.java:32,39 — @CrossOrigin(origins=\"*\") on calculate and cancelTicket endpoints. Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+    "kind": "authority",
+    "subject": "cancel.CancelController",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "wildcard-origin-method-level-crossorigin-annotation-on-cancel-refound-and-cancel-orderid-loginid-endpoints",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:32",
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:39"
+    ]
+   }
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:72-73 — same swagger permitAll pattern as basic service. Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+    "kind": "authority",
+    "subject": "cancel.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:72-73"
+    ]
+   }
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-on-/api/v1/cancelservice/**",
+   "candidateAtomId": "atom:authority:cancel-securityconfig:requiresrole-api",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:71 — antMatchers(\"/api/v1/cancelservice/**\").hasAnyRole(\"ADMIN\",\"USER\"). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:cancel-securityconfig:requiresrole-api",
+    "kind": "authority",
+    "subject": "cancel.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-or-USER-role-required-on-/api/v1/cancelservice/**",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "capability|auth.TokenService|capability|handlesCommand|IssueToken",
+   "candidateAtomId": "atom:capability:auth-tokenservice:handlescommand-issuetoken",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/TokenService.java:19 (getToken declared) and ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:58-96 (impl). Pass-a attributed subject to the interface, pass-b to the impl class — same capability; canonicalized to the implementing class TokenServiceImpl since it carries the behavior.",
+   "canonicalAtom": {
+    "id": "atom:capability:auth-tokenserviceimpl:handlescommand-issuetoken",
+    "kind": "capability",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "IssueToken",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/TokenService.java:19",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:58-97"
+    ]
+   }
+  },
+  {
+   "key": "capability|auth.UserService|capability|handlesCommand|CreateDefaultAuthUser",
+   "candidateAtomId": "atom:capability:auth-userservice:handlescommand-createdefaultauthuser",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/UserService.java:38 and ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:51-66 — createDefaultAuthUser builds and saves a default-role user. Same interface-vs-impl subject drift as row 6; merged to impl.",
+   "canonicalAtom": {
+    "id": "atom:capability:auth-userserviceimpl:handlescommand-createdefaultauthuser",
+    "kind": "capability",
+    "subject": "auth.UserServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "CreateDefaultAuthUser",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/UserService.java:38",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:51-66"
+    ]
+   }
+  },
+  {
+   "key": "capability|auth.UserService|capability|handlesCommand|DeleteByUserId",
+   "candidateAtomId": "atom:capability:auth-userservice:handlescommand-deletebyuserid",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/UserService.java:47 and ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:69-74 — deleteByUserId deletes via repository. Same interface-vs-impl drift; merged to impl.",
+   "canonicalAtom": {
+    "id": "atom:capability:auth-userserviceimpl:handlescommand-deletebyuserid",
+    "kind": "capability",
+    "subject": "auth.UserServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "DeleteByUserId",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/UserService.java:47",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:69-74"
+    ]
+   }
+  },
+  {
+   "key": "capability|basic.BasicService|capability|servesQuery|QueryForTravel-and-QueryForTravels",
+   "candidateAtomId": "atom:capability:basic-basicservice:servesquery-queryfortravel",
+   "pass": "pass-a",
+   "decision": "not-adopted",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:23,25,34 — BasicService interface declares THREE distinct methods (queryForTravel, queryForTravels, queryForStationId), not two. This row conflates queryForTravel+queryForTravels into one atom and omits queryForStationId entirely; pass-b's finer per-method atoms (adopted separately) are the correct grain, so this coarser/incomplete atom is dropped."
+  },
+  {
+   "key": "capability|cancel.CancelService|capability|handlesCommand|CancelOrder",
+   "candidateAtomId": "atom:capability:cancel-cancelservice:handlescommand-cancelorder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelService.java:20 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:46-141 — cancelOrder interface/impl. Interface-vs-impl subject drift as rows 6-8; merged to impl.",
+   "canonicalAtom": {
+    "id": "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+    "kind": "capability",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "CancelOrder",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:20",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:46",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:141"
+    ]
+   }
+  },
+  {
+   "key": "capability|cancel.CancelService|capability|servesQuery|CalculateRefund",
+   "candidateAtomId": "atom:capability:cancel-cancelservice:servesquery-calculaterefund",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelService.java:29 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:157-198 — calculateRefund interface/impl. Same drift; merged to impl.",
+   "canonicalAtom": {
+    "id": "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+    "kind": "capability",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "CalculateRefund",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:29",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:157",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:198"
+    ]
+   }
+  },
+  {
+   "key": "contract|auth.TokenServiceImpl|specification|ensures|returns-tokendto-with-userid-username-and-jwt-on-success-branch",
+   "candidateAtomId": "atom:contract:auth-tokenserviceimpl:ensures-tokendto",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:94-96 — success branch builds token via jwtProvider and returns Response(1,...,new TokenDto(userId,username,token)). No matching contract atom exists in pass-b for TokenServiceImpl; genuine pass-a-only observation, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:contract:auth-tokenserviceimpl:ensures-tokendto",
+    "kind": "contract",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "returns-tokendto-with-userid-username-and-jwt-on-success-branch",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:94-96"
+    ]
+   }
+  },
+  {
+   "key": "contract|auth.TokenServiceImpl|specification|requires|when-verifyCode-is-supplied-it-must-verify-true-against-verification-code-service-before-username-password-authentication-proceeds",
+   "candidateAtomId": "atom:contract:auth-tokenserviceimpl:requires-verification-code",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:65-79 — if verifyCode non-empty, verification-code-service is called and must return true before authenticationManager.authenticate proceeds. No pass-b counterpart; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:contract:auth-tokenserviceimpl:requires-verificationcode",
+    "kind": "contract",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "specification",
+    "predicate": "requires",
+    "object": "when-verifyCode-is-supplied-it-must-verify-true-against-verification-code-service-before-username-password-authentication-proceeds",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:65-79"
+    ]
+   }
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|ensures|order-status-set-to-cancel-and-refund-amount-computed-and-drawn-back-to-account-on-success-branch",
+   "candidateAtomId": "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:59-66,117-123 — on changeOrderResult success, money is computed via calculateRefund and drawn back via drawbackMoney (order status set to CANCEL happens inside cancelFromOrder/cancelFromOtherOrder, called from these branches). No pass-b atom summarizes this overall success-branch contract at this grain; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+    "kind": "contract",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "order-status-set-to-cancel-and-refund-amount-computed-and-drawn-back-to-account-on-success-branch",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:59-66",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:117-123"
+    ]
+   }
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|ensures|refund-is-zero-when-travel-start-time-already-passed-otherwise-eighty-percent-of-price",
+   "candidateAtomId": "atom:contract:cancel-cancelserviceimpl:calculaterefund-ensures",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200-234 — private calculateRefund(Order): NOTPAID returns \"0.00\" (202), ticket-expired returns \"0\" (226), else price*0.8 via DecimalFormat 0.00 (228-233). Same underlying rule as pass-b row; pass-b's refs additionally anchor the method start (200), merged with union refs.",
+   "canonicalAtom": {
+    "id": "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+    "kind": "contract",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "refund-amount-is-zero-when-order-status-is-notpaid-or-when-current-time-is-after-travel-start-time-otherwise-price-times-0.8-formatted-to-two-decimals",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:224-234"
+    ]
+   }
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|requires|order-status-must-be-notpaid-paid-or-change-for-cancellation-to-proceed",
+   "candidateAtomId": "atom:contract:cancel-cancelserviceimpl:requires-order-status",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53,109-110 — both cancelOrder branches gate on status==NOTPAID||PAID||CHANGE before proceeding. Identical refs/fact to pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+    "kind": "contract",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "specification",
+    "predicate": "requires",
+    "object": "order-status-must-be-notpaid-paid-or-change-for-cancellation-to-proceed-otherwise-cancel-not-permitted-branch-returned",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109-110"
+    ]
+   }
+  },
+  {
+   "key": "contract|cancel.GetAccountByIdInfo|specification|shapedAs|accountId:String",
+   "candidateAtomId": "atom:contract:cancel-getaccountbyidinfo:shapedas",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:11 — single field `private String accountId`. Pass-b only created a component atom for this class, not a shapedAs contract atom; genuine pass-a-only observation, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:contract:cancel-getaccountbyidinfo:shapedas",
+    "kind": "contract",
+    "subject": "cancel.GetAccountByIdInfo",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "accountId:String",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:11"
+    ]
+   }
+  },
+  {
+   "key": "contract|cancel.GetAccountByIdResult|specification|shapedAs|status:boolean,message:String,account:Account",
+   "candidateAtomId": "atom:contract:cancel-getaccountbyidresult:shapedas",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:13-17 — fields status:boolean, message:String, account:Account. Same situation as row 17; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:contract:cancel-getaccountbyidresult:shapedas",
+    "kind": "contract",
+    "subject": "cancel.GetAccountByIdResult",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "status:boolean,message:String,account:Account",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:13-17"
+    ]
+   }
+  },
+  {
+   "key": "contract|cancel.GetOrderByIdInfo|specification|shapedAs|orderId:String",
+   "candidateAtomId": "atom:contract:cancel-getorderbyidinfo:shapedas",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:11 — single field `private String orderId`. Same situation as row 17; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:contract:cancel-getorderbyidinfo:shapedas",
+    "kind": "contract",
+    "subject": "cancel.GetOrderByIdInfo",
+    "axis": "specification",
+    "predicate": "shapedAs",
+    "object": "orderId:String",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:11"
+    ]
+   }
+  },
+  {
+   "key": "contract|common.SwaggerConfig|specification|requires|swagger.controllerPackage-property-supplied-per-service-fdse.microservice.controller-for-basic-cancel.controller-for-cancel",
+   "candidateAtomId": "atom:contract:common-swaggerconfig:requires-controllerpackage",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:21-22 (@Value(\"${swagger.controllerPackage}\")) and application.yml:13 in both basic (fdse.microservice.controller) and cancel (cancel.controller) services. No pass-b contract atom for SwaggerConfig; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:contract:common-swaggerconfig:requires-controllerpackage",
+    "kind": "contract",
+    "subject": "common.SwaggerConfig",
+    "axis": "specification",
+    "predicate": "requires",
+    "object": "swagger.controllerPackage-property-supplied-per-service-fdse.microservice.controller-for-basic-cancel.controller-for-cancel",
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:21-22",
+     "src:ts-basic-service/src/main/resources/application.yml:13",
+     "src:ts-cancel-service/src/main/resources/application.yml:13"
+    ]
+   }
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|GET ts-inside-payment-service drawback endpoint to credit refund amount to the paying account",
+   "candidateAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-drawbackmoney",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278-292 — drawbackMoney GETs ts-inside-payment-service drawback endpoint. Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:effect:cancel-cancelserviceimpl:callsprovider-drawbackmoney",
+    "kind": "effect",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET ts-inside-payment-service drawback endpoint to credit refund amount to the paying account",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278-292"
+    ]
+   }
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|POST ts-notification-service order_cancel_success notification, method present but its call site in cancelOrder is a source comment rather than an active statement",
+   "candidateAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-sendemail",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143-154 (sendEmail method, POST to notification-service) and :86-87 (call site commented out in cancelOrder). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:effect:cancel-cancelserviceimpl:callsprovider-sendemail",
+    "kind": "effect",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST ts-notification-service order_cancel_success notification, method present but its call site in cancelOrder is a source comment rather than an active statement",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:86-87",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143-154"
+    ]
+   }
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|PUT ts-order-other-service to persist order status change",
+   "candidateAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromotherorder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263-276 — cancelFromOtherOrder PUTs ts-order-other-service. Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromotherorder",
+    "kind": "effect",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "PUT ts-order-other-service to persist order status change",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263-276"
+    ]
+   }
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|PUT ts-order-service to persist order status change",
+   "candidateAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromorder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238-252 — cancelFromOrder PUTs ts-order-service. Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromorder",
+    "kind": "effect",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "PUT ts-order-service to persist order status change",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238-252"
+    ]
+   }
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|static|calls|JWTProvider.createToken",
+   "candidateAtomId": "atom:relation:auth-tokenserviceimpl:calls-jwtprovider-createtoken",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:94 — jwtProvider.createToken(user) invocation. Pass-b only recorded a dependsOn atom (field-level, row 28 below) not this call-site fact; kept as a distinct genuine observation (invocation vs structural dependency are different relation facts).",
+   "canonicalAtom": {
+    "id": "atom:relation:auth-tokenserviceimpl:calls-jwtprovider-createtoken",
+    "kind": "relation",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "JWTProvider.createToken",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:94"
+    ]
+   }
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|static|calls|UserRepository.findByUsername",
+   "candidateAtomId": "atom:relation:auth-tokenserviceimpl:calls-userrepository-findbyusername",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:90-93 — userRepository.findByUsername(username).orElseThrow(...). No pass-b atom for this call at all; genuine pass-a-only observation, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:relation:auth-tokenserviceimpl:calls-userrepository-findbyusername",
+    "kind": "relation",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "UserRepository.findByUsername",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:90-93"
+    ]
+   }
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|static|calls|ts-verification-code-service:/api/v1/verifycode/verify/{verifyCode}",
+   "candidateAtomId": "atom:relation:auth-tokenserviceimpl:calls-verifycode-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:64-71 — GET verification-code-service /api/v1/verifycode/verify/{verifyCode}. Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:auth-tokenserviceimpl:calls-verificationcodeservice",
+    "kind": "relation",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-verification-code-service:/api/v1/verifycode/verify/{verifyCode}",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:64-71"
+    ]
+   }
+  },
+  {
+   "key": "relation|auth.UserServiceImpl|static|dependsOn|PasswordEncoder.encode",
+   "candidateAtomId": "atom:relation:auth-userserviceimpl:dependson-passwordencoder",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:33 (@Autowired PasswordEncoder) and :57 (passwordEncoder.encode). Same fact as pass-b row; merged with pass-b's fuller refs.",
+   "canonicalAtom": {
+    "id": "atom:relation:auth-userserviceimpl:dependson-passwordencoder",
+    "kind": "relation",
+    "subject": "auth.UserServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "org.springframework.security.crypto.password.PasswordEncoder",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:33",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:57"
+    ]
+   }
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|static|calls|ts-price-service:/api/v1/priceservice/prices/{routeId}/{trainType} and /byRouteIdsAndTrainTypes",
+   "candidateAtomId": "atom:relation:basic-basicserviceimpl:calls-price-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:445-450,460-465 — two price-service calls (by route+trainType, and batch). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:basic-basicserviceimpl:calls-priceservice",
+    "kind": "relation",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-price-service:/api/v1/priceservice/prices/{routeId}/{trainType} and /byRouteIdsAndTrainTypes",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:445-450",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:460-465"
+    ]
+   }
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|static|calls|ts-route-service:/api/v1/routeservice/routes/{routeId} and /byIds/",
+   "candidateAtomId": "atom:relation:basic-basicserviceimpl:calls-route-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:406-411,426-431 — route-service calls (byIds batch, single route). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:basic-basicserviceimpl:calls-routeservice",
+    "kind": "relation",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-route-service:/api/v1/routeservice/routes/{routeId} and /byIds/",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:406-411",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:426-431"
+    ]
+   }
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|static|calls|ts-station-service:/api/v1/stationservice/stations/id/{stationName} and /stations/idlist",
+   "candidateAtomId": "atom:relation:basic-basicserviceimpl:calls-station-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:328-332,345-349,362-366 — three station-service call sites (queryForStationId, checkStationsExists, checkStationExists). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:basic-basicserviceimpl:calls-stationservice",
+    "kind": "relation",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-station-service:/api/v1/stationservice/stations/id/{stationName} and /stations/idlist",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:328-332",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:345-349",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:362-366"
+    ]
+   }
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|static|calls|ts-train-service:/api/v1/trainservice/trains/byName/{name} and /byNames",
+   "candidateAtomId": "atom:relation:basic-basicserviceimpl:calls-train-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:376-380,392-397 — train-service calls (byNames batch, byName single). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:basic-basicserviceimpl:calls-trainservice",
+    "kind": "relation",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-train-service:/api/v1/trainservice/trains/byName/{name} and /byNames",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:376-380",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:392-397"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-inside-payment-service:GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-inside-payment-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:283-288 — GET inside-payment-service drawback/{userId}/{money}. Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-insidepaymentservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-inside-payment-service:GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:283-288"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-notification-service:POST /api/v1/notifyservice/notification/order_cancel_success, method defined and called only from a source line kept as a comment in cancelOrder",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-notification-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143-154 (sendEmail POST) and :87 (commented call site). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-notificationservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-notification-service:POST /api/v1/notifyservice/notification/order_cancel_success, method defined and called only from a source line kept as a comment in cancelOrder",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:87",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143-153"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-order-other-service:GET/PUT /api/v1/orderOtherService/orderOther(/{orderId})",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-order-other-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263-276 (PUT cancelFromOtherOrder) and :326-332 (GET getOrderByIdFromOrderOther). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-orderotherservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-order-other-service:GET/PUT /api/v1/orderOtherService/orderOther(/{orderId})",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263-276",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:326-332"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-order-service:GET/PUT /api/v1/orderservice/order(/{orderId})",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-order-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238-252 (PUT cancelFromOrder) and :312-318 (GET getOrderByIdFromOrder). Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-orderservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-order-service:GET/PUT /api/v1/orderservice/order(/{orderId})",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238-252",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:312-318"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-user-service:GET /api/v1/userservice/users/id/{accountId}",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-user-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:298-303 — GET user-service users/id/{orderId-param}. Same fact as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-userservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-user-service:GET /api/v1/userservice/users/id/{accountId}",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:298-303"
+    ]
+   }
+  },
+  {
+   "key": "semantic|auth.TokenServiceImpl|semantic|meansInUse|status-1-on-login-success-branch-status-0-on-verification-code-or-credential-rejection-branch",
+   "candidateAtomId": "atom:semantic:auth-tokenserviceimpl:meansinuse-response-status",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:77,87,96 — status 0 on verification-failed/credential-rejected branches, status 1 on login success. Identical refs to pass-b's statusGates row; predicates meansInUse(pass-a) vs statusGates(pass-b) describe the same response-envelope convention, canonicalized as statusGates to match pass-b's more specific/consistent predicate use across this chunk.",
+   "canonicalAtom": {
+    "id": "atom:semantic:auth-tokenserviceimpl:statusgates-responseenvelope",
+    "kind": "semantic",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-login-success-branch-status-0-on-verification-code-or-credential-rejection-branch",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:77",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:87",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:96"
+    ]
+   }
+  },
+  {
+   "key": "semantic|basic.BasicServiceImpl|semantic|identifiedBy|station-existence-checked-via-endpoint-path-segment-named-id-while-the-value-passed-is-a-station-name-string",
+   "candidateAtomId": "atom:semantic:basic-basicserviceimpl:identifiedby-station-lookup",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:328-329,362-363 — station lookup URL path segment is literally \"id\" but the value passed is a station NAME string, not an id. No pass-b atom captures this identifiedBy naming mismatch; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:semantic:basic-basicserviceimpl:identifiedby-stationlookup",
+    "kind": "semantic",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "station-existence-checked-via-endpoint-path-segment-named-id-while-the-value-passed-is-a-station-name-string",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:328-329",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:362-363"
+    ]
+   }
+  },
+  {
+   "key": "semantic|basic.BasicServiceImpl|semantic|meansInUse|status-1-on-successful-query-branch-status-0-on-station-traintype-route-or-price-lookup-not-found-branch",
+   "candidateAtomId": "atom:semantic:basic-basicserviceimpl:meansinuse-response-status",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:45-46,53,65-67 (queryForTravel) plus pass-b's additional refs 126,203 (queryForTravels) and 333 (queryForStationId) — same status 1/0 response-envelope convention, pass-b's evidence spans all three service methods vs pass-a's queryForTravel-only; merged with union refs, predicate canonicalized to statusGates.",
+   "canonicalAtom": {
+    "id": "atom:semantic:basic-basicserviceimpl:statusgates-responseenvelope",
+    "kind": "semantic",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-result-carrying-branch-status-0-on-station-traintype-route-price-or-not-found-rejected-branch-covering-queryfortravel-queryfortravels-and-queryforstationid",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:45-46",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:53",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:65-67",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:126",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:203",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:333"
+    ]
+   }
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|identifiedBy|getAccount-http-call-parameter-declared-as-orderId-carries-the-order-owner-account-id-value-passed-by-the-caller",
+   "candidateAtomId": "atom:semantic:cancel-cancelserviceimpl:identifiedby-user-lookup-param-name",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:70 (getAccount(order.getAccountId()...)) and :294-303 (getAccount(String orderId,...) uses that value as the users/id/{orderId} path segment) — parameter literally named orderId actually carries an accountId. Same fact as pass-b's meansInUse row (pass-a mislabeled predicate as identifiedBy); canonicalized to meansInUse, matching pass-b's more accurate categorization of a value-naming fact rather than a lookup-identification fact.",
+   "canonicalAtom": {
+    "id": "atom:semantic:cancel-cancelserviceimpl:meansinuse-orderidparamcarriesaccountid",
+    "kind": "semantic",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "getAccount-http-call-parameter-declared-as-orderId-carries-the-order-owner-account-id-value-passed-by-the-caller",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:70",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:294-303"
+    ]
+   }
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|identifiedBy|order-id-looked-up-first-against-order-service-then-order-other-service-on-not-found-fallback",
+   "candidateAtomId": "atom:semantic:cancel-cancelserviceimpl:identifiedby-order-lookup",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:48,104 — orderId looked up against ts-order-service first, falling back to ts-order-other-service on not-found. Same fact and predicate as pass-b row; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:cancel-cancelserviceimpl:identifiedby-orderlookupfallback",
+    "kind": "semantic",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "order-id-looked-up-first-against-ts-order-service-then-against-ts-order-other-service-on-the-not-found-branch",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:48",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:104"
+    ]
+   }
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|meansInUse|status-1-on-cancel-or-refund-success-branch-status-0-on-order-not-found-or-cancel-not-permitted-branch",
+   "candidateAtomId": "atom:semantic:cancel-cancelserviceimpl:meansinuse-response-status",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:92,100-101,138 (cancelOrder) plus pass-b's additional refs 49,59,95,160,291 (calculateRefund and getOrderByIdFromOrder branches) — same status 1/0 response-envelope convention across a broader method set in pass-b; merged with union refs, predicate canonicalized to statusGates.",
+   "canonicalAtom": {
+    "id": "atom:semantic:cancel-cancelserviceimpl:statusgates-responseenvelope",
+    "kind": "semantic",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-cancel-or-refund-success-or-result-carrying-branch-status-0-on-order-not-found-cancel-not-permitted-or-rejected-branch-covering-cancelorder-and-calculaterefund",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:49",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:59",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:92",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:95",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:100-101",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:138",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:160",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:291"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:basic-service-travel-query-aggregation|cech|sectionValue|section=money-amount:price-computed-as-double-distance-times-rate-then-converted-to-string-via-plain-string-concatenation-with-no-explicit-rounding-or-format",
+   "candidateAtomId": "atom:semantic:ctx-basic-service-travel-query-aggregation:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:106-109,111-112,299-302,305 — price computed as distance*rate, string-concatenated with no formatting, with hardcoded fallback literals \"95.0\"/\"120.0\" on exception (lines 111-112,304-305). Same money-amount section/context as pass-b's row (context-id naming drift \"-aggregation\" suffix only); pass-b's refs additionally cover the exception-fallback lines, merged with union refs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-basic-service-travel-query:cech-section-moneyamount",
+    "kind": "semantic",
+    "subject": "ctx:basic-service-travel-query",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:price-computed-as-double-distance-times-rate-then-converted-to-string-via-plain-string-concatenation-with-no-explicit-rounding-or-format,-with-hardcoded-fallback-strings-95.0-and-120.0-on-exception",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:106-109",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:111-112",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:299-302",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:305"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:cancel-service-order-cancellation-flow|cech|sectionValue|section=money-amount:string-price-parsed-to-double-via-Double-parseDouble-at-use-site-refund-formatted-back-to-string-with-decimalformat-0.00",
+   "candidateAtomId": "atom:semantic:ctx-cancel-service-order-cancellation-flow:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:63-64 (money computed then passed to drawbackMoney within cancelOrder), :228-231 (Double.parseDouble/DecimalFormat inside private calculateRefund), :278 (drawbackMoney call site). This is a flow-level observation (how the money value threads through cancelOrder into drawbackMoney), distinct in scope from pass-b's refund-calculation-only context (row 61, which covers only the calculateRefund method family's internal zero/formula branches); kept as a separate context/atom per cech context-scoping, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-cancel-service-order-cancellation-flow:cech-section-moneyamount",
+    "kind": "semantic",
+    "subject": "ctx:cancel-service-order-cancellation-flow",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:money-value-returned-by-calculateRefund-as-a-string-is-passed-directly-into-drawbackMoney-without-intermediate-reparse,-string-price-parsed-to-double-via-Double.parseDouble-at-use-site,-refund-formatted-back-to-string-with-DecimalFormat-0.00",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:63-64",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228-231",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:cancel-service-order-cancellation-flow|cech|sectionValue|section=order-status-code:codes-referenced-via-OrderStatus-enum-accessor-getCode-not-hardcoded-int-literal-at-this-site-covering-NOTPAID-PAID-CHANGE-CANCEL",
+   "candidateAtomId": "atom:semantic:ctx-cancel-service-order-cancellation-flow:cech-section-order-status-code",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53,109-110,240,265 — OrderStatus accessed via enum .getCode() (NOTPAID/PAID/CHANGE guards, CANCEL transition), never a raw int literal. Identical refs to pass-b row (context-id naming drift only); merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-cancel-service-order-cancellation-flow:cech-section-orderstatuscode",
+    "kind": "semantic",
+    "subject": "ctx:cancel-service-order-cancellation-flow",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=order-status-code:codes-referenced-via-OrderStatus-enum-accessor-getCode-not-hardcoded-int-literal-at-this-site-covering-NOTPAID-PAID-CHANGE-CANCEL",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109-110",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+    ]
+   }
+  },
+  {
+   "key": "state|cancel.Order|state|transitionsTo|status-set-to-OrderStatus-CANCEL-code-before-persisting-through-order-or-order-other-service",
+   "candidateAtomId": "atom:state:cancel-order:transitionsto-cancel",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240 (cancelFromOrder: order.setStatus(OrderStatus.CANCEL.getCode())) and :265 (cancelFromOtherOrder: same). Pass-a stated this as one combined Order-state atom; pass-b split it into two CancelServiceImpl-subject atoms per call site (rows 51-52 below) describing the identical target-state fact. Merged all three into one canonical atom on the state-bearing entity (cancel.Order), refs union {240,265}.",
+   "canonicalAtom": {
+    "id": "atom:state:cancel-order:transitionsto-cancel",
+    "kind": "state",
+    "subject": "cancel.Order",
+    "axis": "state",
+    "predicate": "transitionsTo",
+    "object": "status-set-to-OrderStatus-CANCEL-code-before-persisting-through-either-ts-order-service-or-ts-order-other-service",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+    ]
+   }
+  },
+  {
+   "key": "authority|basic.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:basic-security-config:allows-cross-origin:all-paths",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:47,58 — corsConfigurer bean bounds (method signature at 47, closing brace at 58), enclosing the ALL-origin/method/header/no-credentials/maxAge(3600) config at 51-57. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:basic-securityconfig:allowscrossorigin",
+    "kind": "authority",
+    "subject": "basic.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:51-57"
+    ]
+   }
+  },
+  {
+   "key": "authority|basic.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:basic-security-config:permits-unauthenticated:swagger-ui",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72,73 — swagger-ui/docs paths permitAll(). Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+    "kind": "authority",
+    "subject": "basic.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72-73"
+    ]
+   }
+  },
+  {
+   "key": "authority|cancel.CancelController|authority|allowsCrossOrigin|all-origins-explicit-crossorigin-on-refund-calculate-and-cancel-ticket-endpoints",
+   "candidateAtomId": "atom:authority:cancel-controller:allows-cross-origin:cancel-endpoints",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/controller/CancelController.java:32,39 — @CrossOrigin(origins=\"*\") on both cancel endpoints. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+    "kind": "authority",
+    "subject": "cancel.CancelController",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "wildcard-origin-method-level-crossorigin-annotation-on-cancel-refound-and-cancel-orderid-loginid-endpoints",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:32",
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:39"
+    ]
+   }
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:cancel-security-config:allows-cross-origin:all-paths",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:47-58 — corsConfigurer bean for cancel.SecurityConfig mirrors basic's (ALL origins/methods/headers, credentials false, maxAge 3600) on /**. Pass-a's atom list for chunk-04 has no cancel.SecurityConfig allowsCrossOrigin atom at all (only permitsUnauthenticated/requiresRole); genuine pass-b-only observation, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:authority:cancel-securityconfig:allowscrossorigin",
+    "kind": "authority",
+    "subject": "cancel.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:51-57"
+    ]
+   }
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:cancel-security-config:permits-unauthenticated:swagger-ui",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:72,73 — same swagger permitAll pattern. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+    "kind": "authority",
+    "subject": "cancel.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:72-73"
+    ]
+   }
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|requiresRole|role-admin-or-role-user-on-/api/v1/cancelservice/**",
+   "candidateAtomId": "atom:authority:cancel-security-config:requires-role:cancelservice-api",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:71 — hasAnyRole(\"ADMIN\",\"USER\") on /api/v1/cancelservice/**. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:cancel-securityconfig:requiresrole-api",
+    "kind": "authority",
+    "subject": "cancel.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-or-USER-role-required-on-/api/v1/cancelservice/**",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "capability|auth.TokenServiceImpl|capability|handlesCommand|IssueToken",
+   "candidateAtomId": "atom:capability:auth-token-service-impl:handles-command:issue-token",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:58-97 — getToken impl. Same capability as pass-a row (interface-vs-impl subject drift); merged to impl.",
+   "canonicalAtom": {
+    "id": "atom:capability:auth-tokenserviceimpl:handlescommand-issuetoken",
+    "kind": "capability",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "IssueToken",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/TokenService.java:19",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:58-97"
+    ]
+   }
+  },
+  {
+   "key": "capability|auth.UserServiceImpl|capability|handlesCommand|CreateDefaultAuthUser",
+   "candidateAtomId": "atom:capability:auth-user-service-impl:handles-command:create-default-auth-user",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:51-66 — createDefaultAuthUser impl. Same drift as row 7; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:auth-userserviceimpl:handlescommand-createdefaultauthuser",
+    "kind": "capability",
+    "subject": "auth.UserServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "CreateDefaultAuthUser",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/UserService.java:38",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:51-66"
+    ]
+   }
+  },
+  {
+   "key": "capability|auth.UserServiceImpl|capability|handlesCommand|DeleteByUserId",
+   "candidateAtomId": "atom:capability:auth-user-service-impl:handles-command:delete-by-user-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:69-74 — deleteByUserId impl. Same drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:auth-userserviceimpl:handlescommand-deletebyuserid",
+    "kind": "capability",
+    "subject": "auth.UserServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "DeleteByUserId",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/UserService.java:47",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:69-74"
+    ]
+   }
+  },
+  {
+   "key": "capability|auth.UserServiceImpl|capability|servesQuery|GetAllUser",
+   "candidateAtomId": "atom:capability:auth-user-service-impl:serves-query:get-all-user",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:40-43 — getAllUser returns userRepository.findAll(). Pass-a's UserService capability atoms in this chunk cover only CreateDefaultAuthUser/DeleteByUserId, missing GetAllUser; genuine pass-b-only observation, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:capability:auth-userserviceimpl:servesquery-getalluser",
+    "kind": "capability",
+    "subject": "auth.UserServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "GetAllUser",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/UserService.java:30",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:40-43"
+    ]
+   }
+  },
+  {
+   "key": "capability|basic.BasicServiceImpl|capability|servesQuery|QueryForStationId",
+   "candidateAtomId": "atom:capability:basic-service-impl:serves-query:query-for-station-id",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:34 and ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:323-339 — queryForStationId method. Pass-a's combined atom (row A9, not-adopted) omits this method entirely; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:capability:basic-basicserviceimpl:servesquery-queryforstationid",
+    "kind": "capability",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "QueryForStationId",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:34",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:323",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:339"
+    ]
+   }
+  },
+  {
+   "key": "capability|basic.BasicServiceImpl|capability|servesQuery|QueryForTravel",
+   "candidateAtomId": "atom:capability:basic-service-impl:serves-query:query-for-travel",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:23 and ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:39-121 — queryForTravel is a distinct declared method from queryForTravels. Pass-a conflated both into one atom (row A9); this finer-grained split is adopted as the correct per-capability atom.",
+   "canonicalAtom": {
+    "id": "atom:capability:basic-basicserviceimpl:servesquery-queryfortravel",
+    "kind": "capability",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "QueryForTravel",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:23",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:39",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:121"
+    ]
+   }
+  },
+  {
+   "key": "capability|basic.BasicServiceImpl|capability|servesQuery|QueryForTravels",
+   "candidateAtomId": "atom:capability:basic-service-impl:serves-query:query-for-travels",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:25 and ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:123-321 — queryForTravels is a distinct declared method. Same reasoning as row 12; adopted as the correct per-capability split.",
+   "canonicalAtom": {
+    "id": "atom:capability:basic-basicserviceimpl:servesquery-queryfortravels",
+    "kind": "capability",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "QueryForTravels",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:25",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:123",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:321"
+    ]
+   }
+  },
+  {
+   "key": "capability|cancel.CancelServiceImpl|capability|handlesCommand|CancelOrder",
+   "candidateAtomId": "atom:capability:cancel-service-impl:handles-command:cancel-order",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:46-141 — cancelOrder impl. Same interface-vs-impl drift as auth rows; merged to impl.",
+   "canonicalAtom": {
+    "id": "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+    "kind": "capability",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "capability",
+    "predicate": "handlesCommand",
+    "object": "CancelOrder",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:20",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:46",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:141"
+    ]
+   }
+  },
+  {
+   "key": "capability|cancel.CancelServiceImpl|capability|servesQuery|CalculateRefund",
+   "candidateAtomId": "atom:capability:cancel-service-impl:serves-query:calculate-refund",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:157-198 — calculateRefund impl. Same drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+    "kind": "capability",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "capability",
+    "predicate": "servesQuery",
+    "object": "CalculateRefund",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:29",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:157",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:198"
+    ]
+   }
+  },
+  {
+   "key": "component|cancel.GetAccountByIdInfo|static||",
+   "candidateAtomId": "atom:component:cancel-get-account-by-id-info",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:9 — public class GetAccountByIdInfo exists as a DTO. Pass-a only produced a shapedAs contract atom for this class (row A17), not a component-existence atom; genuine pass-b-only observation, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:component:cancel-getaccountbyidinfo",
+    "kind": "component",
+    "subject": "cancel.GetAccountByIdInfo",
+    "axis": "static",
+    "predicate": null,
+    "object": null,
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java"
+    ]
+   }
+  },
+  {
+   "key": "component|cancel.GetAccountByIdResult|static||",
+   "candidateAtomId": "atom:component:cancel-get-account-by-id-result",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:11 — public class GetAccountByIdResult exists. Same situation as row 16; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:component:cancel-getaccountbyidresult",
+    "kind": "component",
+    "subject": "cancel.GetAccountByIdResult",
+    "axis": "static",
+    "predicate": null,
+    "object": null,
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java"
+    ]
+   }
+  },
+  {
+   "key": "component|cancel.GetOrderByIdInfo|static||",
+   "candidateAtomId": "atom:component:cancel-get-order-by-id-info",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:9 — public class GetOrderByIdInfo exists. Same situation as row 16; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:component:cancel-getorderbyidinfo",
+    "kind": "component",
+    "subject": "cancel.GetOrderByIdInfo",
+    "axis": "static",
+    "predicate": null,
+    "object": null,
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java"
+    ]
+   }
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|ensures|refund-amount-zero-when-current-time-is-after-travel-start-time-else-price-times-0.8-formatted-to-two-decimals",
+   "candidateAtomId": "atom:contract:cancel-service-impl:ensures:refund-amount-rule",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200,224,228,234 — calculateRefund(Order) formula (0 on expiry, else price*0.8 formatted). Same fact as pass-a's row; merged.",
+   "canonicalAtom": {
+    "id": "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+    "kind": "contract",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "refund-amount-is-zero-when-order-status-is-notpaid-or-when-current-time-is-after-travel-start-time-otherwise-price-times-0.8-formatted-to-two-decimals",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:224-234"
+    ]
+   }
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|requires|authorization-header-copied-from-incoming-request-into-downstream-order-user-payment-notification-calls-when-present",
+   "candidateAtomId": "atom:contract:cancel-service-impl:requires:forwarded-authorization-header",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:254-260 — static getAuthorizationHeadersFrom copies the Authorization header from the incoming request into new headers when present, used by every downstream call (order/user/payment/notification). No pass-a atom captures this; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:contract:cancel-cancelserviceimpl:requires-forwardedauthorizationheader",
+    "kind": "contract",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "specification",
+    "predicate": "requires",
+    "object": "authorization-header-copied-from-incoming-request-into-downstream-order-user-payment-notification-calls-when-present",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:254",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:260"
+    ]
+   }
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|requires|order-status-notpaid-or-paid-or-change-required-before-cancel-proceeds-else-cancel-not-permitted-branch-returned",
+   "candidateAtomId": "atom:contract:cancel-service-impl:requires:order-status-eligible-for-cancel",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53,109-110 — identical gate condition to pass-a's row; merged.",
+   "canonicalAtom": {
+    "id": "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+    "kind": "contract",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "specification",
+    "predicate": "requires",
+    "object": "order-status-must-be-notpaid-paid-or-change-for-cancellation-to-proceed-otherwise-cancel-not-permitted-branch-returned",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109-110"
+    ]
+   }
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|GET ts-inside-payment-service drawback endpoint with userId and money path segments",
+   "candidateAtomId": "atom:effect:cancel-service-impl:calls-provider:drawback-money",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278,292 — drawbackMoney method bounds. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:effect:cancel-cancelserviceimpl:callsprovider-drawbackmoney",
+    "kind": "effect",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "GET ts-inside-payment-service drawback endpoint to credit refund amount to the paying account",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278-292"
+    ]
+   }
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|POST ts-notification-service order_cancel_success endpoint, method present but call left commented out at the cancelOrder call site",
+   "candidateAtomId": "atom:effect:cancel-service-impl:calls-provider:send-email",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143 (sendEmail decl) and :87 (commented call site). Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:effect:cancel-cancelserviceimpl:callsprovider-sendemail",
+    "kind": "effect",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "POST ts-notification-service order_cancel_success notification, method present but its call site in cancelOrder is a source comment rather than an active statement",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:86-87",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143-154"
+    ]
+   }
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|PUT ts-order-other-service /api/v1/orderOtherService/orderOther to persist cancel status",
+   "candidateAtomId": "atom:effect:cancel-service-impl:calls-provider:cancel-from-other-order",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263,276 — cancelFromOtherOrder bounds. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromotherorder",
+    "kind": "effect",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "PUT ts-order-other-service to persist order status change",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263-276"
+    ]
+   }
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|PUT ts-order-service /api/v1/orderservice/order to persist cancel status",
+   "candidateAtomId": "atom:effect:cancel-service-impl:calls-provider:cancel-from-order",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238,252 — cancelFromOrder bounds. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromorder",
+    "kind": "effect",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "PUT ts-order-service to persist order status change",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238-252"
+    ]
+   }
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|relation|calls|AuthenticationManager.authenticate",
+   "candidateAtomId": "atom:relation:auth-token-service-impl:calls:authentication-manager",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:82-88 — authenticationManager.authenticate(upat) at line 84, inside this try/catch block. No pass-a atom for this call; genuine pass-b-only observation, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:relation:auth-tokenserviceimpl:calls-authenticationmanager-authenticate",
+    "kind": "relation",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "AuthenticationManager.authenticate",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:82-88"
+    ]
+   }
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|relation|calls|ts-verification-code-service /api/v1/verifycode/verify/{code}",
+   "candidateAtomId": "atom:relation:auth-token-service-impl:calls:verification-code-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:64,71 — verification-code-service call bounds. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:auth-tokenserviceimpl:calls-verificationcodeservice",
+    "kind": "relation",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-verification-code-service:/api/v1/verifycode/verify/{verifyCode}",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:64-71"
+    ]
+   }
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|relation|dependsOn|auth.security.jwt.JWTProvider",
+   "candidateAtomId": "atom:relation:auth-token-service-impl:depends-on:jwt-provider",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:40 (@Autowired private JWTProvider jwtProvider field) and :94 (usage). This is a structural field-dependency fact, distinct from pass-a's call-site-only atom (row A25, calls JWTProvider.createToken); kept as a separate genuine observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:auth-tokenserviceimpl:dependson-jwtprovider",
+    "kind": "relation",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "auth.security.jwt.JWTProvider",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:40",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:94"
+    ]
+   }
+  },
+  {
+   "key": "relation|auth.UserServiceImpl|relation|dependsOn|org.springframework.security.crypto.password.PasswordEncoder",
+   "candidateAtomId": "atom:relation:auth-user-service-impl:depends-on:password-encoder",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:33,57 — same PasswordEncoder dependency as pass-a row; merged with pass-b's fuller refs (includes field declaration).",
+   "canonicalAtom": {
+    "id": "atom:relation:auth-userserviceimpl:dependson-passwordencoder",
+    "kind": "relation",
+    "subject": "auth.UserServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "org.springframework.security.crypto.password.PasswordEncoder",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:33",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:57"
+    ]
+   }
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|relation|calls|ts-price-service /api/v1/priceservice/prices/**",
+   "candidateAtomId": "atom:relation:basic-service-impl:calls:price-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:445,460 — price-service call anchors. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:basic-basicserviceimpl:calls-priceservice",
+    "kind": "relation",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-price-service:/api/v1/priceservice/prices/{routeId}/{trainType} and /byRouteIdsAndTrainTypes",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:445-450",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:460-465"
+    ]
+   }
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|relation|calls|ts-route-service /api/v1/routeservice/routes/**",
+   "candidateAtomId": "atom:relation:basic-service-impl:calls:route-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:406,426 — route-service call anchors. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:basic-basicserviceimpl:calls-routeservice",
+    "kind": "relation",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-route-service:/api/v1/routeservice/routes/{routeId} and /byIds/",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:406-411",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:426-431"
+    ]
+   }
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|relation|calls|ts-station-service /api/v1/stationservice/stations/**",
+   "candidateAtomId": "atom:relation:basic-service-impl:calls:station-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:326,344,361 — station-service call anchors. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:basic-basicserviceimpl:calls-stationservice",
+    "kind": "relation",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-station-service:/api/v1/stationservice/stations/id/{stationName} and /stations/idlist",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:328-332",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:345-349",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:362-366"
+    ]
+   }
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|relation|calls|ts-train-service /api/v1/trainservice/trains/**",
+   "candidateAtomId": "atom:relation:basic-service-impl:calls:train-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:375,392 — train-service call anchors. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:basic-basicserviceimpl:calls-trainservice",
+    "kind": "relation",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-train-service:/api/v1/trainservice/trains/byName/{name} and /byNames",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:376-380",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:392-397"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-inside-payment-service /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:inside-payment-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:283,285 — inside-payment-service call anchors. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-insidepaymentservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-inside-payment-service:GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:283-288"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-notification-service /api/v1/notifyservice/notification/order_cancel_success",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:notification-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:147,149 — notification-service call anchors inside sendEmail. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-notificationservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-notification-service:POST /api/v1/notifyservice/notification/order_cancel_success, method defined and called only from a source line kept as a comment in cancelOrder",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:87",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143-153"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-order-other-service /api/v1/orderOtherService/orderOther/**",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:order-other-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:268,326 — order-other-service call anchors. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-orderotherservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-order-other-service:GET/PUT /api/v1/orderOtherService/orderOther(/{orderId})",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263-276",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:326-332"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-order-service /api/v1/orderservice/order/**",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:order-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:244,312 — order-service call anchors. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-orderservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-order-service:GET/PUT /api/v1/orderservice/order(/{orderId})",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238-252",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:312-318"
+    ]
+   }
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-user-service /api/v1/userservice/users/id/{id}",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:user-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:298,300 — user-service call anchors. Same fact as pass-a row; merged.",
+   "canonicalAtom": {
+    "id": "atom:relation:cancel-cancelserviceimpl:calls-userservice",
+    "kind": "relation",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-user-service:GET /api/v1/userservice/users/id/{accountId}",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:298-303"
+    ]
+   }
+  },
+  {
+   "key": "semantic|auth.TokenServiceImpl|semantic|meansInUse|password-value-included-in-warn-level-log-message-on-authentication-rejected-branch",
+   "candidateAtomId": "atom:semantic:auth-token-service-impl:means-in-use:credential-value-in-log",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:86 — LOGGER.warn(...,username,password) logs the raw password value on the rejected-credentials branch. No pass-a atom for this; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:semantic:auth-tokenserviceimpl:meansinuse-credentialvalueinlog",
+    "kind": "semantic",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "password-value-included-in-warn-level-log-message-on-authentication-rejected-branch",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:86"
+    ]
+   }
+  },
+  {
+   "key": "semantic|auth.TokenServiceImpl|semantic|statusGates|status-1-on-login-success-branch-status-0-on-verification-or-credential-rejected-branch",
+   "candidateAtomId": "atom:semantic:auth-token-service-impl:status-gates:response-envelope",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:77,87,96 — identical refs to pass-a's meansInUse row describing the same status 1/0 convention; predicate canonicalized to statusGates, merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:auth-tokenserviceimpl:statusgates-responseenvelope",
+    "kind": "semantic",
+    "subject": "auth.TokenServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-login-success-branch-status-0-on-verification-code-or-credential-rejection-branch",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:77",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:87",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:96"
+    ]
+   }
+  },
+  {
+   "key": "semantic|auth.UserServiceImpl|semantic|meansInUse|saveuser-method-body-returns-null-without-calling-the-repository",
+   "candidateAtomId": "atom:semantic:auth-user-service-impl:means-in-use:save-user-no-op",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:36-38 — saveUser(User user) body is `return null;`, never touches userRepository despite the interface declaring it as a save operation. No pass-a atom for this; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:semantic:auth-userserviceimpl:meansinuse-saveusernoop",
+    "kind": "semantic",
+    "subject": "auth.UserServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "saveuser-method-body-returns-null-without-calling-the-repository",
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:36",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:38"
+    ]
+   }
+  },
+  {
+   "key": "semantic|basic.BasicServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:basic-service-impl:status-gates:response-envelope",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:45,53,66,126,203,333 — status 1/0 convention across queryForTravel, queryForTravels, and queryForStationId. Same underlying convention as pass-a's row (narrower refs, queryForTravel only); merged with union refs, predicate statusGates.",
+   "canonicalAtom": {
+    "id": "atom:semantic:basic-basicserviceimpl:statusgates-responseenvelope",
+    "kind": "semantic",
+    "subject": "basic.BasicServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-result-carrying-branch-status-0-on-station-traintype-route-price-or-not-found-rejected-branch-covering-queryfortravel-queryfortravels-and-queryforstationid",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:45-46",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:53",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:65-67",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:126",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:203",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:333"
+    ]
+   }
+  },
+  {
+   "key": "semantic|cancel.CancelController|semantic|statusGates|status-1-on-controller-catch-block-branch-for-a-caught-exception-status-0-on-service-rejected-branch-for-the-same-cancel-flow",
+   "candidateAtomId": "atom:semantic:cancel-controller:status-gates:response-envelope-diverging-branch",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/controller/CancelController.java:48,50 — the catch(Exception e) block returns new Response<>(1,\"error\",null): status=1 (normally \"success\") is used on this caught-exception branch, diverging from the service-layer's own 0-on-rejection convention. No pass-a atom exists for CancelController at all in this chunk; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:semantic:cancel-cancelcontroller:statusgates-divergingbranch",
+    "kind": "semantic",
+    "subject": "cancel.CancelController",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-controller-catch-block-branch-for-a-caught-exception-status-0-on-service-rejected-branch-for-the-same-cancel-flow",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:48",
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:50"
+    ]
+   }
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|identifiedBy|order-id-looked-up-first-against-ts-order-service-then-against-ts-order-other-service-on-the-not-found-branch",
+   "candidateAtomId": "atom:semantic:cancel-service-impl:identified-by:order-lookup-fallback",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:48,104 — identical refs/fact to pass-a's row; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:cancel-cancelserviceimpl:identifiedby-orderlookupfallback",
+    "kind": "semantic",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "order-id-looked-up-first-against-ts-order-service-then-against-ts-order-other-service-on-the-not-found-branch",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:48",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:104"
+    ]
+   }
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|meansInUse|getaccount-parameter-named-orderid-receives-the-order-accountid-value-at-the-cancelorder-call-site-and-is-used-as-the-user-lookup-path-segment",
+   "candidateAtomId": "atom:semantic:cancel-service-impl:means-in-use:orderid-param-carries-account-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:70,294,300 — same orderId-param-carries-accountId fact as pass-a's row (pass-a mislabeled it identifiedBy); canonicalized as meansInUse, merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:cancel-cancelserviceimpl:meansinuse-orderidparamcarriesaccountid",
+    "kind": "semantic",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "getAccount-http-call-parameter-declared-as-orderId-carries-the-order-owner-account-id-value-passed-by-the-caller",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:70",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:294-303"
+    ]
+   }
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|meansInUse|notifyinfo-object-populated-with-email-price-seat-and-trip-fields-on-the-successful-drawback-branch-while-the-sendemail-call-at-this-site-is-left-commented-out",
+   "candidateAtomId": "atom:semantic:cancel-service-impl:means-in-use:notify-info-built-but-send-not-invoked",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:74-84 (NotifyInfo populated with email/price/seat/trip fields) and :87 (sendEmail call commented out). No pass-a atom for this; genuine, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:semantic:cancel-cancelserviceimpl:meansinuse-notifyinfobuiltbutsendnotinvoked",
+    "kind": "semantic",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "notifyinfo-object-populated-with-email-price-seat-and-trip-fields-on-the-successful-drawback-branch-while-the-sendemail-call-at-this-site-is-left-commented-out",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:74-84",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:87"
+    ]
+   }
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:cancel-service-impl:status-gates:response-envelope",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:49,59,92,95,160,291 — status 1/0 convention across cancelOrder and calculateRefund. Same underlying convention as pass-a's row (narrower refs); merged with union refs, predicate statusGates.",
+   "canonicalAtom": {
+    "id": "atom:semantic:cancel-cancelserviceimpl:statusgates-responseenvelope",
+    "kind": "semantic",
+    "subject": "cancel.CancelServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-cancel-or-refund-success-or-result-carrying-branch-status-0-on-order-not-found-cancel-not-permitted-or-rejected-branch-covering-cancelorder-and-calculaterefund",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:49",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:59",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:92",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:95",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:100-101",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:138",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:160",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:291"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:basic-service-travel-query|cech|sectionValue|section=money-amount:double-price-computed-from-distance-times-rate-then-concatenated-to-string-with-plus-operator-no-decimal-formatting-fallback-literal-strings-95.0-and-120.0-on-exception",
+   "candidateAtomId": "atom:semantic:basic-service-travel-query:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:106,109,111,112,299,305 — price computation plus the hardcoded 95.0/120.0 exception-fallback literals. Same money-amount section as pass-a's row (context-id naming drift, pass-a's ref set narrower); merged with union refs.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-basic-service-travel-query:cech-section-moneyamount",
+    "kind": "semantic",
+    "subject": "ctx:basic-service-travel-query",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:price-computed-as-double-distance-times-rate-then-converted-to-string-via-plain-string-concatenation-with-no-explicit-rounding-or-format,-with-hardcoded-fallback-strings-95.0-and-120.0-on-exception",
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:106-109",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:111-112",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:299-302",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:305"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:cancel-service-order-cancellation|cech|sectionValue|section=order-status-code:enum-code-accessor-notpaid-paid-change-cancel-used-as-guard-and-transition-value",
+   "candidateAtomId": "atom:semantic:cancel-service-order-cancellation:cech-section-order-status-code",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52,53,109,110,240,265 — identical refs to pass-a's order-status-code section; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-cancel-service-order-cancellation-flow:cech-section-orderstatuscode",
+    "kind": "semantic",
+    "subject": "ctx:cancel-service-order-cancellation-flow",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=order-status-code:codes-referenced-via-OrderStatus-enum-accessor-getCode-not-hardcoded-int-literal-at-this-site-covering-NOTPAID-PAID-CHANGE-CANCEL",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109-110",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:cancel-service-refund-calculation|cech|sectionValue|section=money-amount:string-price-parsed-to-double-with-double-parsedouble-refund-formatted-back-to-string-via-decimalformat-0.00-or-literal-0-string-on-zero-branches",
+   "candidateAtomId": "atom:semantic:cancel-service-refund-calculation:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:166,184,200,228,230,233 — this section is scoped specifically to the calculateRefund method family (public quick-zero returns at 166/184 plus the private helper's formula), distinct from pass-a's cancel-service-order-cancellation-flow context (row A45) which covers the broader cancelOrder-to-drawbackMoney pipeline; kept as a separate context/atom, confirmed true.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-cancel-service-refund-calculation:cech-section-moneyamount",
+    "kind": "semantic",
+    "subject": "ctx:cancel-service-refund-calculation",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:string-price-parsed-to-double-with-Double.parseDouble,-refund-formatted-back-to-string-via-DecimalFormat-0.00-or-literal-0-or-0.00-string-on-notpaid-or-expired-zero-branches",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:166",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:184",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:230",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:233"
+    ]
+   }
+  },
+  {
+   "key": "state|cancel.CancelServiceImpl|state|transitionsTo|OrderStatus.CANCEL before PUT to ts-order-other-service",
+   "candidateAtomId": "atom:state:cancel-service-impl:transitions-to:cancel-status-via-order-other-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265 — order.setStatus(OrderStatus.CANCEL.getCode()) inside cancelFromOtherOrder, before the PUT to ts-order-other-service. Same target-state fact as pass-a's combined row (A47) and pass-b's row 52 (cancel-from-order path); all three merged onto the entity-subject canonical atom, refs union {240,265}.",
+   "canonicalAtom": {
+    "id": "atom:state:cancel-order:transitionsto-cancel",
+    "kind": "state",
+    "subject": "cancel.Order",
+    "axis": "state",
+    "predicate": "transitionsTo",
+    "object": "status-set-to-OrderStatus-CANCEL-code-before-persisting-through-either-ts-order-service-or-ts-order-other-service",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+    ]
+   }
+  },
+  {
+   "key": "state|cancel.CancelServiceImpl|state|transitionsTo|OrderStatus.CANCEL before PUT to ts-order-service",
+   "candidateAtomId": "atom:state:cancel-service-impl:transitions-to:cancel-status-via-order-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240 — order.setStatus(OrderStatus.CANCEL.getCode()) inside cancelFromOrder, before the PUT to ts-order-service. Same target-state fact as pass-a's combined row (A47) and pass-b's row 51 (cancel-from-other-order path); all three merged onto the entity-subject canonical atom, refs union {240,265}.",
+   "canonicalAtom": {
+    "id": "atom:state:cancel-order:transitionsto-cancel",
+    "kind": "state",
+    "subject": "cancel.Order",
+    "axis": "state",
+    "predicate": "transitionsTo",
+    "object": "status-set-to-OrderStatus-CANCEL-code-before-persisting-through-either-ts-order-service-or-ts-order-other-service",
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+    ]
+   }
+  }
+ ]
+}

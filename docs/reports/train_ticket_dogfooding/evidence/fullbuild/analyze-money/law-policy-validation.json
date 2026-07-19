@@ -1,0 +1,148 @@
+{
+  "checks": [
+    {
+      "id": "law-policy-schema052-schema",
+      "result": "pass",
+      "title": "LawPolicy v0.5.3 uses the selector schema discriminator"
+    },
+    {
+      "id": "law-policy-schema052-identity",
+      "result": "pass",
+      "title": "LawPolicy v0.5.3 identity and selected policies are recorded"
+    },
+    {
+      "id": "law-policy-schema052-entry-shape",
+      "result": "pass",
+      "title": "policy entries select pack, law, or lawPair and carry scope / severity"
+    },
+    {
+      "id": "law-policy-schema052-policy-profile-resolution",
+      "result": "pass",
+      "title": "policy rows resolve profileRef against the supplied measurement profile"
+    },
+    {
+      "id": "law-policy-schema052-basis-recorded",
+      "result": "pass",
+      "title": "policy entries carry explicit basis refs"
+    },
+    {
+      "id": "law-policy-schema052-registry-vocabulary",
+      "result": "pass",
+      "title": "policy entries resolve to known evaluators"
+    },
+    {
+      "id": "law-policy-schema052-reserved-fields",
+      "result": "pass",
+      "title": "LawPolicy v0.5.3 declares a law surface reference"
+    },
+    {
+      "id": "law-policy-schema052-measurement-profile-selector",
+      "result": "pass",
+      "title": "LawPolicy v0.5.3 selects an external MeasurementProfile artifact for AG evaluators"
+    },
+    {
+      "id": "law-policy-schema052-ag-evaluator-profile-required",
+      "result": "pass",
+      "title": "AG evaluator selectors fail closed when MeasurementProfile is absent"
+    },
+    {
+      "id": "law-policy-schema052-law-surface-resolution",
+      "result": "pass",
+      "title": "LawPolicy laws resolve against the supplied law surface and registry mapping"
+    },
+    {
+      "id": "measurement-profile-schema052-shape",
+      "result": "pass",
+      "title": "MeasurementProfile v0.5.3 declares site, cover, coefficients, predicates, certificates, verdict discipline, and finite bounds"
+    },
+    {
+      "id": "measurement-profile-schema052-diagnostic-ceiling",
+      "result": "pass",
+      "title": "MeasurementProfile v0.5.3 accepts only registered diagnostic ceiling stages"
+    },
+    {
+      "id": "measurement-profile-schema052-finite-bounds",
+      "result": "pass",
+      "title": "finiteBounds can only lower the registry hard caps used by finite evaluators"
+    }
+  ],
+  "componentFingerprints": {
+    "lawPolicy": "sha256:07af43360e9f10e99dd4ff3e7d6352bd13e9722254a032b69617f49a3abe013a",
+    "lawSurface": "sha256:5c18b79b154e6759ecfae7c5e1b3d048e1bd3c8f5a7d5bff8c2c43f865d606e6",
+    "measurementProfile": "sha256:d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+  },
+  "expandedPolicies": [
+    {
+      "basis": [
+        "policy-basis:shared-convention-consistency"
+      ],
+      "evaluator": "ag.cech-obstruction",
+      "law": "surface:cech-surface-v052",
+      "scope": [
+        "ts-cancel-service/",
+        "ts-inside-payment-service/",
+        "ts-payment-service/",
+        "ts-order-service/",
+        "ts-order-other-service/",
+        "ts-basic-service/",
+        "ts-travel-service/",
+        "ts-consign-service/",
+        "ts-consign-price-service/",
+        "ts-preserve-service/"
+      ],
+      "severity": "high",
+      "sourcePolicyIndex": 0,
+      "sourceSelector": "surface:cech-surface-v052"
+    }
+  ],
+  "input": {
+    "id": "train-ticket-money-convention-policy",
+    "path": "input:law-policy-money.json",
+    "schema": "law-policy/v0.5.3"
+  },
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap-money-variant.json",
+      "sha256": "fc59dd11611b6bd511531810a6a307feef1fa71d56cd472db7d7fb7dc2e2483c"
+    },
+    "lawPolicy": {
+      "path": "input:law-policy-money.json",
+      "sha256": "07af43360e9f10e99dd4ff3e7d6352bd13e9722254a032b69617f49a3abe013a"
+    },
+    "lawSurface": {
+      "path": "input:law-surface-money.json",
+      "sha256": "5c18b79b154e6759ecfae7c5e1b3d048e1bd3c8f5a7d5bff8c2c43f865d606e6"
+    },
+    "measurementProfile": {
+      "path": "input:measurement-profile-money.json",
+      "sha256": "d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement-profile-money.json",
+        "sha256": "d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "d4c2beb634b2eaa33a8d18c07ae444ffd469846b1071e39e9506c8715d47964a"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "4546e2c0edc04fd62bdbfd92ecb1e171670709a86146e70c582e72f2bf9e8342",
+      "status": "computed"
+    }
+  },
+  "runId": "run:856b95734cf7",
+  "schema": "law-policy-validation-report/v0.5.3",
+  "summary": {
+    "expandedPolicyEntryCount": 1,
+    "explicitLawEntryCount": 1,
+    "failedCheckCount": 0,
+    "packEntryCount": 0,
+    "policyEntryCount": 1,
+    "result": "pass",
+    "warningCheckCount": 0
+  },
+  "toolVersion": "0.5.3"
+}

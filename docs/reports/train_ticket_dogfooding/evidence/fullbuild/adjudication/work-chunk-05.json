@@ -1,0 +1,567 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "contract|common.Assurance|specification|requires|orderId-field-annotated-notnull",
+   "candidateAtomId": "atom:contract:common.Assurance:requires:orderId",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:21",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:22"
+   ]
+  },
+  {
+   "key": "contract|common.Contacts|specification|shapedAs|equals-compares-name-accountid-documentnumber-phonenumber-documenttype-excluding-id",
+   "candidateAtomId": "atom:contract:common.Contacts:shapedAs:equals",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:32",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:43"
+   ]
+  },
+  {
+   "key": "contract|common.Contacts|specification|shapedAs|hashcode-derived-solely-from-id-field-with-null-safe-fallback-to-0-independent-of-fields-used-in-equals",
+   "candidateAtomId": "atom:contract:common.Contacts:shapedAs:hashCode",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:50",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:52"
+   ]
+  },
+  {
+   "key": "contract|common.LeftTicketInfo|specification|requires|soldTickets-field-annotated-valid-and-notnull",
+   "candidateAtomId": "atom:contract:common.LeftTicketInfo:requires:soldTickets",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:14",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:16"
+   ]
+  },
+  {
+   "key": "contract|common.Order|specification|shapedAs|equals-compares-boughtdate-travaltime-identity-and-itinerary-fields-boughtdate-travelDate-traveltime-accountid-contactsname-contactsdocumentnumber-documenttype-trainnumber-coachnumber-seatclass-seatnumber-from-to-status-price-excluding-id-and-differencemoney",
+   "candidateAtomId": "atom:contract:common.Order:shapedAs:equals",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:75",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:87"
+   ]
+  },
+  {
+   "key": "contract|common.Order|specification|shapedAs|hashcode-derived-solely-from-id-field-with-null-safe-fallback-to-0-independent-of-fields-used-in-equals",
+   "candidateAtomId": "atom:contract:common.Order:shapedAs:hashCode",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:104",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:106"
+   ]
+  },
+  {
+   "key": "semantic|common.Account|semantic|identifiedBy|account-entity-carries-both-a-uuid-id-field-and-a-separate-string-accountid-field-as-distinct-identifiers",
+   "candidateAtomId": "atom:semantic:common.Account:identifiedBy:dual-identifier-scheme",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:14",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:16"
+   ]
+  },
+  {
+   "key": "semantic|common.Account|semantic|meansInUse|gender-and-documenttype-int-fields-defaulted-via-named-enum-getcode-gender-other-documenttype-none-in-account-noarg-constructor",
+   "candidateAtomId": "atom:semantic:common.Account:meansInUse:default-gender-document-type",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:22",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:26",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:33",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:36"
+   ]
+  },
+  {
+   "key": "semantic|common.Account|semantic|meansInUse|password-field-defaulted-to-literal-string-defaultpassword-in-noarg-constructor-marked-nosonar",
+   "candidateAtomId": "atom:semantic:common.Account:meansInUse:default-password-placeholder",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:20",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:34"
+   ]
+  },
+  {
+   "key": "semantic|common.Assurance|semantic|meansInUse|orderid-field-defaulted-to-a-freshly-generated-random-uuid-when-assurance-is-constructed-without-an-explicit-order-link",
+   "candidateAtomId": "atom:semantic:common.Assurance:meansInUse:orderId-default-random",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:29",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:30"
+   ]
+  },
+  {
+   "key": "semantic|common.Consign|semantic|meansInUse|boolean-iswithin-field-selects-within-region-true-vs-cross-region-false-consignment-handling-branch",
+   "candidateAtomId": "atom:semantic:common.Consign:meansInUse:isWithin-flag",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:24"
+   ]
+  },
+  {
+   "key": "semantic|common.DocumentType|semantic|identifiedBy|enum-codes-0-none-1-id-card-2-passport-3-other-with-display-names",
+   "candidateAtomId": "atom:semantic:common.DocumentType:identifiedBy:code-vocabulary",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:11",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:15",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:23"
+   ]
+  },
+  {
+   "key": "semantic|common.FoodOrder|semantic|identifiedBy|int-foodtype-field-selects-1-train-food-branch-or-2-food-store-branch-per-inline-comment",
+   "candidateAtomId": "atom:semantic:common.FoodOrder:identifiedBy:foodType-code-vocabulary",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:18",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:20"
+   ]
+  },
+  {
+   "key": "semantic|common.Gender|semantic|identifiedBy|enum-codes-0-none-1-male-2-female-3-other-with-display-names",
+   "candidateAtomId": "atom:semantic:common.Gender:identifiedBy:code-vocabulary",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:11",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:15",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:23"
+   ]
+  },
+  {
+   "key": "semantic|common.OrderTicketsInfo|semantic|meansInUse|getfrom-and-getto-accessors-lowercase-the-stored-from-to-station-name-fields-via-stringutils-string2lower-at-read-time",
+   "candidateAtomId": "atom:semantic:common.OrderTicketsInfo:meansInUse:from-to-lowercase-normalization",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:56",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:60"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|assurance-entity-orderid-foreign-key-field-typed-as-uuid-linking-to-order",
+   "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:assurance-orderId-uuid",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:22"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|consign-entity-id-orderid-accountid-fields-all-typed-as-string-not-uuid",
+   "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:consign-keys-string",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:13",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:14",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:15"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|contacts-id-and-accountid-fields-and-priceconfig-id-field-typed-as-uuid",
+   "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:contacts-priceConfig-keys-uuid",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:21",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:16"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|foodorder-entity-id-and-orderid-fields-typed-as-string-not-uuid",
+   "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:foodOrder-keys-string",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:13",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:15"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|order-entity-primary-key-id-field-typed-as-string-not-uuid",
+   "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:order-primary-key-string",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:21"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|paymentdifferenceinfo-entity-orderid-field-typed-as-string-not-uuid",
+   "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:paymentDifferenceInfo-orderId-string",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PaymentDifferenceInfo.java:11"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-money-amount-representation|cech|sectionValue|section=money-amount:double-price-hardcoded-as-a-compile-time-enum-constant-literal-3.0-in-assurancetype",
+   "candidateAtomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-double-hardcoded-literal",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:13",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:26"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-money-amount-representation|cech|sectionValue|section=money-amount:double-price-or-rate-runtime-field-no-hardcoded-default-in-food-foodorder-priceconfig-orderticketsinfo-entities",
+   "candidateAtomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-double-runtime-field",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:14",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:28",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:22",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:24",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:43"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-money-amount-representation|cech|sectionValue|section=money-amount:string-price-and-differencemoney-fields-default-string-0.0-literal-in-order-noarg-constructor",
+   "candidateAtomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-string-order-price",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:57",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:59",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:71",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:72"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-money-amount-representation|cech|sectionValue|section=money-amount:string-price-field-no-default-literal-in-notifyinfo-and-paymentdifferenceinfo-entities",
+   "candidateAtomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-string-no-default",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/NotifyInfo.java:24",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PaymentDifferenceInfo.java:17"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-order-status-vocabulary|cech|sectionValue|section=order-status-code:enum-codes-0-notpaid-1-paid-2-collected-3-change-4-cancel-5-refunds-6-used-with-display-names",
+   "candidateAtomId": "atom:semantic:ts-common-order-status-vocabulary:cech-section-order-status-code-enum-definition",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:11",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:15",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:23",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:27",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:31",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:35"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-order-status-vocabulary|cech|sectionValue|section=order-status-code:int-status-field-defaulted-via-named-enum-orderstatus-paid-getcode-not-a-raw-literal-in-order-noarg-constructor",
+   "candidateAtomId": "atom:semantic:ts-common-order-status-vocabulary:cech-section-order-status-code-default-assignment",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:55",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:70"
+   ]
+  },
+  {
+   "key": "state|common.Food|state|persistsIn|jpa-embeddable-value-type-annotated-with-javax-persistence-embeddable-embedded-in-owning-entity",
+   "candidateAtomId": "atom:state:common.Food:persistsIn:jpa-embeddable",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:6",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:10"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "contract|common.Assurance|specification|requires|orderid-field-annotated-notnull-precondition-on-assurance-dto",
+   "candidateAtomId": "atom:contract:common-assurance:order-id-requires-non-null",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:21",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:22"
+   ]
+  },
+  {
+   "key": "contract|common.Assurance|specification|shapedAs|dto-tolerates-unknown-json-properties-on-deserialization-via-jsonignoreproperties-ignoreunknown-true",
+   "candidateAtomId": "atom:contract:common-assurance:shaped-as-json-ignore-unknown",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:13"
+   ]
+  },
+  {
+   "key": "contract|common.Contacts|specification|shapedAs|dto-tolerates-unknown-json-properties-on-deserialization-via-jsonignoreproperties-ignoreunknown-true",
+   "candidateAtomId": "atom:contract:common-contacts:shaped-as-json-ignore-unknown",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:14"
+   ]
+  },
+  {
+   "key": "contract|common.Contacts|specification|shapedAs|hashcode-computed-from-id-field-only-while-equals-compares-additional-fields",
+   "candidateAtomId": "atom:contract:common-contacts:hash-code-basis-id-only",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:51",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:52",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:53",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:54"
+   ]
+  },
+  {
+   "key": "contract|common.LeftTicketInfo|specification|requires|soldtickets-field-annotated-valid-and-notnull-precondition-on-leftticketinfo-dto",
+   "candidateAtomId": "atom:contract:common-left-ticket-info:sold-tickets-requires-non-null-valid",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:14",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:15",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:16"
+   ]
+  },
+  {
+   "key": "contract|common.Order|specification|shapedAs|dto-tolerates-unknown-json-properties-on-deserialization-via-jsonignoreproperties-ignoreunknown-true",
+   "candidateAtomId": "atom:contract:common-order:shaped-as-json-ignore-unknown",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:17"
+   ]
+  },
+  {
+   "key": "contract|common.Order|specification|shapedAs|equals-implementation-compares-this-boughtdate-field-to-others-boughtdate-field-and-to-others-traveldate-field-does-not-compare-own-traveldate-field",
+   "candidateAtomId": "atom:contract:common-order:equals-compares-boughtdate-to-traveldate",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:86",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:87"
+   ]
+  },
+  {
+   "key": "contract|common.Order|specification|shapedAs|hashcode-computed-from-id-field-only-while-equals-compares-additional-fields",
+   "candidateAtomId": "atom:contract:common-order:hash-code-basis-id-only",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:104",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:105",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:106",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:107"
+   ]
+  },
+  {
+   "key": "relation|common.Account|relation|dependsOn|common.DocumentType",
+   "candidateAtomId": "atom:relation:common-account:depends-on-common-document-type",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:36"
+   ]
+  },
+  {
+   "key": "relation|common.Account|relation|dependsOn|common.Gender",
+   "candidateAtomId": "atom:relation:common-account:depends-on-common-gender",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:33"
+   ]
+  },
+  {
+   "key": "relation|common.OrderTicketsInfo|relation|dependsOn|common.util.StringUtils",
+   "candidateAtomId": "atom:relation:common-order-tickets-info:depends-on-common-util-string-utils",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:57",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:61"
+   ]
+  },
+  {
+   "key": "relation|common.Order|relation|dependsOn|common.OrderStatus",
+   "candidateAtomId": "atom:relation:common-order:depends-on-common-order-status",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:70"
+   ]
+  },
+  {
+   "key": "relation|common.Order|relation|dependsOn|common.SeatClass",
+   "candidateAtomId": "atom:relation:common-order:depends-on-common-seat-class",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:66"
+   ]
+  },
+  {
+   "key": "relation|common.Order|relation|dependsOn|common.util.StringUtils",
+   "candidateAtomId": "atom:relation:common-order:depends-on-common-util-string-utils",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:62",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:63"
+   ]
+  },
+  {
+   "key": "semantic|common.Account|semantic|identifiedBy|uuid-typed-id-field-used-as-account-primary-identifier",
+   "candidateAtomId": "atom:semantic:common-account:id-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:14"
+   ]
+  },
+  {
+   "key": "semantic|common.Account|semantic|statusGates|documenttype-field-default-initialized-to-documenttypenone-code-0-selecting-none-branch",
+   "candidateAtomId": "atom:semantic:common-account:document-type-default-code",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:26",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:36"
+   ]
+  },
+  {
+   "key": "semantic|common.Account|semantic|statusGates|gender-field-default-initialized-to-genderother-code-3-selecting-other-branch",
+   "candidateAtomId": "atom:semantic:common-account:gender-default-code",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:22",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:33"
+   ]
+  },
+  {
+   "key": "semantic|common.AssuranceType|semantic|meansInUse|double-typed-price-field-literal-3.0-per-assurance-type-instance",
+   "candidateAtomId": "atom:semantic:common-assurance-type:price-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:13",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:26"
+   ]
+  },
+  {
+   "key": "semantic|common.Assurance|semantic|identifiedBy|uuid-typed-orderid-field-referencing-order-identifier",
+   "candidateAtomId": "atom:semantic:common-assurance:order-id-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:22"
+   ]
+  },
+  {
+   "key": "semantic|common.Consign|semantic|meansInUse|double-typed-weight-field-in-consign-dto",
+   "candidateAtomId": "atom:semantic:common-consign:weight-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:23"
+   ]
+  },
+  {
+   "key": "semantic|common.DocumentType|semantic|statusGates|code-0-selects-none-branch-1-selects-idcard-branch-2-selects-passport-branch-3-selects-other-branch",
+   "candidateAtomId": "atom:semantic:common-document-type:code-vocabulary",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:11",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:15",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:23"
+   ]
+  },
+  {
+   "key": "semantic|common.FoodOrder|semantic|meansInUse|double-typed-price-field-in-food-order-dto",
+   "candidateAtomId": "atom:semantic:common-food-order:price-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:28"
+   ]
+  },
+  {
+   "key": "semantic|common.FoodOrder|semantic|statusGates|code-1-selects-train-food-branch-2-selects-food-store-branch-per-source-comment",
+   "candidateAtomId": "atom:semantic:common-food-order:food-type-code",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:18",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:20"
+   ]
+  },
+  {
+   "key": "semantic|common.Food|semantic|meansInUse|double-typed-price-field-in-food-embeddable-entity",
+   "candidateAtomId": "atom:semantic:common-food:price-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:14"
+   ]
+  },
+  {
+   "key": "semantic|common.Gender|semantic|statusGates|code-0-selects-none-branch-1-selects-male-branch-2-selects-female-branch-3-selects-other-branch",
+   "candidateAtomId": "atom:semantic:common-gender:code-vocabulary",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:11",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:15",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:23"
+   ]
+  },
+  {
+   "key": "semantic|common.NotifyInfo|semantic|meansInUse|string-typed-price-field-in-order-notification-payload",
+   "candidateAtomId": "atom:semantic:common-notify-info:price-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/NotifyInfo.java:24"
+   ]
+  },
+  {
+   "key": "semantic|common.OrderStatus|semantic|statusGates|code-0-selects-notpaid-branch-1-selects-paid-branch-2-selects-collected-branch-3-selects-change-branch-4-selects-cancel-branch-5-selects-refunds-branch-6-selects-used-branch",
+   "candidateAtomId": "atom:semantic:common-order-status:code-vocabulary",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:11",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:15",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:23",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:27",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:31",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:35"
+   ]
+  },
+  {
+   "key": "semantic|common.OrderTicketsInfo|semantic|meansInUse|double-typed-consigneeweight-field-in-order-tickets-request-dto",
+   "candidateAtomId": "atom:semantic:common-order-tickets-info:consignee-weight-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:52"
+   ]
+  },
+  {
+   "key": "semantic|common.OrderTicketsInfo|semantic|meansInUse|double-typed-foodprice-field-in-order-tickets-request-dto",
+   "candidateAtomId": "atom:semantic:common-order-tickets-info:food-price-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:43"
+   ]
+  },
+  {
+   "key": "semantic|common.OrderTicketsInfo|semantic|meansInUse|getfrom-and-getto-accessors-normalize-from-to-fields-to-lowercase-via-stringutils-string2lower",
+   "candidateAtomId": "atom:semantic:common-order-tickets-info:from-to-lowercase-normalization",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:56",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:57",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:60",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:61"
+   ]
+  },
+  {
+   "key": "semantic|common.Order|semantic|identifiedBy|string-typed-id-field-used-as-order-primary-identifier",
+   "candidateAtomId": "atom:semantic:common-order:id-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:21"
+   ]
+  },
+  {
+   "key": "semantic|common.Order|semantic|meansInUse|string-typed-difference-money-field-default-literal-0.0",
+   "candidateAtomId": "atom:semantic:common-order:difference-money-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:59",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:72"
+   ]
+  },
+  {
+   "key": "semantic|common.Order|semantic|meansInUse|string-typed-price-field-default-literal-0.0-compared-via-string-equals-in-equals-method",
+   "candidateAtomId": "atom:semantic:common-order:price-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:57",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:71",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:100"
+   ]
+  },
+  {
+   "key": "semantic|common.Order|semantic|statusGates|status-field-default-initialized-to-orderstatus-paid-code-1-selecting-paid-not-collected-branch",
+   "candidateAtomId": "atom:semantic:common-order:status-code-usage",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:55",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:70"
+   ]
+  },
+  {
+   "key": "semantic|common.PaymentDifferenceInfo|semantic|meansInUse|string-typed-price-field-in-payment-difference-dto",
+   "candidateAtomId": "atom:semantic:common-payment-difference-info:price-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PaymentDifferenceInfo.java:17"
+   ]
+  },
+  {
+   "key": "semantic|common.PriceConfig|semantic|meansInUse|double-typed-basicpricerate-and-firstclasspricerate-fields",
+   "candidateAtomId": "atom:semantic:common-price-config:price-rate-representation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:22",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:24"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-entity-price-double-convention|cech|sectionValue|section=money-amount:double-typed-price-and-rate-fields-in-assurancetype-food-foodorder-orderticketsinfo-priceconfig-dtos",
+   "candidateAtomId": "atom:semantic:ts-common-entity-price-double-convention:cech-section-money-amount",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:26",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:14",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:28",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:43",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:22",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:24"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-entity-price-string-convention|cech|sectionValue|section=money-amount:string-typed-price-and-difference-money-fields-in-order-notifyinfo-paymentdifferenceinfo-dtos",
+   "candidateAtomId": "atom:semantic:ts-common-entity-price-string-convention:cech-section-money-amount",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:57",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:59",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/NotifyInfo.java:24",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/PaymentDifferenceInfo.java:17"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-orderstatus-definition|cech|sectionValue|section=order-status-code:code-0-notpaid-1-paid-2-collected-3-change-4-cancel-5-refunds-6-used-canonical-enum-definition",
+   "candidateAtomId": "atom:semantic:ts-common-orderstatus-definition:cech-section-order-status-code",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:11",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:15",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:23",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:27",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:31",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:35"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,952 @@
+{
+  "service": "ts-cancel-service, ts-payment-service",
+  "adjudications": [
+    {
+      "key": "authority|ts-cancel-service.SecurityConfig|authority|checksPermission|JWT bearer token via JWTFilter before UsernamePasswordAuthenticationFilter",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:76 confirms JWTFilter added before UsernamePasswordAuthenticationFilter; same fact as pass-B key, kept atom:authority:ts-cancel-service.SecurityConfig:checksPermission:jwt-filter."
+    },
+    {
+      "key": "authority|ts-payment-service.SecurityConfig|authority|checksPermission|jwt-filter-before-username-password-authentication",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:76 confirms JWTFilter before UsernamePasswordAuthenticationFilter; kept atom:authority:ts-payment-service.SecurityConfig:checksPermission:jwt-filter."
+    },
+    {
+      "key": "authority|ts-payment-service.SecurityConfig|authority|checksPermission|swagger-and-docs-paths-permit-all",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:72-73 confirms permitAll on swagger and docs paths; kept atom:authority:ts-payment-service.SecurityConfig:checksPermission:swagger-paths-permit-all with the catalog predicate."
+    },
+    {
+      "key": "authority|ts-payment-service.SecurityConfig|authority|requiresRole|ADMIN-or-USER:/api/v1/paymentservice/**",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:71 confirms hasAnyRole(ADMIN,USER) on /api/v1/paymentservice/**; kept atom:authority:ts-payment-service.SecurityConfig:requiresRole:admin-or-user-for-paymentservice-api."
+    },
+    {
+      "key": "capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/welcome",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/controller/CancelController.java:27-29 confirms the GET /welcome mapping under /api/v1/cancelservice, and no matched atom covers it."
+    },
+    {
+      "key": "capability|ts-payment-service.PaymentController|capability|exposesEndpoint|GET /api/v1/paymentservice/welcome",
+      "decision": "adopted",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:27-30 confirms the GET /welcome mapping, and no matched atom covers it."
+    },
+    {
+      "key": "contract|ts-cancel-service.CancelController|specification|ensures|cancelTicket maps a thrown exception to HTTP 200 with Response(status=1, msg=error, data=null)",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/controller/CancelController.java:48-50 confirms the catch block returns ok(new Response<>(1, \"error\", null))."
+    },
+    {
+      "key": "contract|ts-cancel-service.CancelServiceImpl|specification|ensures|downstream calls forward only the Authorization header from the inbound request",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:254-259 confirms only the Authorization header is copied; kept the method-qualified atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding."
+    },
+    {
+      "key": "contract|ts-cancel-service.CancelServiceImpl|specification|ensures|paid refund amount is formatted as a 0.00 decimal string",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:230-233 confirms DecimalFormat(\"0.00\"); this format fact is contained in the pass-B refund rule, kept atom:contract:ts-cancel-service.CancelServiceImpl.calculateRefund:ensures:refund-rule with refs unioned."
+    },
+    {
+      "key": "contract|ts-cancel-service.GetAccountByIdInfo|specification|shapedAs|accountId:String",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:11 confirms single accountId String field; kept the field-typed atom:contract:ts-cancel-service-getaccountbyidinfo:shapedas-accountid."
+    },
+    {
+      "key": "contract|ts-cancel-service.GetAccountByIdResult|specification|shapedAs|status:boolean, message:String, account:common.Account",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:13-17 confirms status/message/account fields; kept atom:contract:ts-cancel-service-getaccountbyidresult:shapedas-status-message-account."
+    },
+    {
+      "key": "contract|ts-cancel-service.GetOrderByIdInfo|specification|shapedAs|orderId:String",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:11 confirms single orderId String field; kept atom:contract:ts-cancel-service-getorderbyidinfo:shapedas-orderid."
+    },
+    {
+      "key": "contract|ts-payment-service.Money.money|specification|shapedAs|string-amount",
+      "decision": "adopted",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30 confirms the money field is a String."
+    },
+    {
+      "key": "contract|ts-payment-service.PaymentServiceImpl.pay|specification|requires|no-existing-payment-for-order-id",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35 confirms pay proceeds only when findByOrderId is null; kept atom:contract:ts-payment-service.PaymentServiceImpl.pay:requires:no-existing-payment-for-orderId."
+    },
+    {
+      "key": "contract|ts-payment-service.Payment|specification|shapedAs|not-null-id-orderId-userId-price",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:20-40 confirms @NotNull String id/orderId/userId/price; kept atom:contract:ts-payment-service.Payment:shapedAs:payment-record-notnull-strings with refs unioned."
+    },
+    {
+      "key": "contract|ts-payment-service.SecurityConfig|specification|ensures|stateless-session-policy",
+      "decision": "adopted",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:68 confirms SessionCreationPolicy.STATELESS."
+    },
+    {
+      "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|ts-inside-payment-service GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278-288 confirms the GET drawback call; kept the route-precise atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-inside-payment-drawback."
+    },
+    {
+      "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|ts-order-other-service PUT /api/v1/orderOtherService/orderOther with order status set to CANCEL",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263-275 confirms cancelFromOtherOrder sets CANCEL and PUTs to ts-order-other-service; pass B saw this PUT only inside a combined relation object, so the effect atom is kept here."
+    },
+    {
+      "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|ts-order-service PUT /api/v1/orderservice/order with order status set to CANCEL",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238-249 confirms cancelFromOrder sets CANCEL and PUTs to ts-order-service; pass B saw this PUT only inside a combined relation object, so the effect atom is kept here."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelApplication|relation|dependsOn|spring-cloud-discovery-client",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/CancelApplication.java:23 (@EnableDiscoveryClient) and :30 (@LoadBalanced) confirm the Spring Cloud discovery client dependency, distinct from the service-level nacos atom."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelController|relation|calls|ts-cancel-service.CancelService",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/controller/CancelController.java:36 and ts-cancel-service/src/main/java/cancel/controller/CancelController.java:47 confirm calls into CancelService; kept atom:relation:ts-cancel-service-cancelcontroller:calls-cancelservice."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|relation|calls|ts-notification-service POST /api/v1/notifyservice/notification/order_cancel_success",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:148-152 confirms sendEmail issues the POST to ts-notification-service; kept atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-notification-order-cancel-success."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|relation|calls|ts-order-other-service GET /api/v1/orderOtherService/orderOther/{orderId}",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:327-328 confirms the GET orderOther/{orderId} call; kept atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|relation|calls|ts-order-service GET /api/v1/orderservice/order/{orderId}",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:313-314 confirms the GET order/{orderId} call; kept atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|relation|calls|ts-user-service GET /api/v1/userservice/users/id/{id}",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:299-300 confirms the GET users/id call; kept atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-user-service-get-user."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|relation|implements|ts-cancel-service.CancelService",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:30 confirms CancelServiceImpl implements CancelService, and no matched atom covers this edge."
+    },
+    {
+      "key": "relation|ts-cancel-service|relation|dependsOn|nacos-service-discovery-registry",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/resources/application.yml:5-8 confirms nacos discovery config; merged into the normalized atom:relation:ts-cancel-service:dependsOn:nacos-service-discovery (relation axis, object matching the pass-B and matched-row token)."
+    },
+    {
+      "key": "relation|ts-payment-service.InitData|relation|calls|ts-payment-service.PaymentService",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/init/InitData.java:32 confirms service.initPayment(...); kept the more precise atom:relation:ts-payment-service.InitData:calls:PaymentService-initPayment."
+    },
+    {
+      "key": "relation|ts-payment-service.PaymentServiceImpl|relation|writesTo|addmoney-crud-repository",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:50-53 confirms addMoneyRepository.save; same write fact as the pass-B effect key, kept atom:relation:ts-payment-service.PaymentServiceImpl:writesTo:addmoney-crud-repository."
+    },
+    {
+      "key": "relation|ts-payment-service.PaymentServiceImpl|relation|writesTo|payment-crud-repository",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:40 and ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:73 confirm paymentRepository.save; kept atom:relation:ts-payment-service.PaymentServiceImpl:writesTo:payment-crud-repository."
+    },
+    {
+      "key": "semantic|common.OrderStatus|semantic|statusGates|cancel-permitted-when-NOTPAID-PAID-or-CHANGE",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109-110 confirm the NOTPAID/PAID/CHANGE gate; kept atom:semantic:common-orderstatus:statusgates-cancelable whose common.OrderStatus subject matches the edu.fudan.common import."
+    },
+    {
+      "key": "semantic|common.OrderStatus|semantic|statusGates|refund-quote-computed-when-NOTPAID-or-PAID",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:162-163 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:180-181 confirm the NOTPAID/PAID refund-quote gate; kept atom:semantic:common-orderstatus:statusgates-refund-quotable."
+    },
+    {
+      "key": "semantic|common.Order|semantic|meansInUse|partitioned-across-order-service-GH-trains-and-order-other-service-ZK-trains-with-lookup-fallback",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:48-50 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:104-106 confirm the G|H via ts-order-service lookup with Z|K|Other fallback via ts-order-other-service."
+    },
+    {
+      "key": "semantic|common.Response.status|semantic|meansInUse|status-1-selects-proceed-branch-status-0-selects-fallback-or-early-return-branch-in-cancel-flow",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:49, ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:59 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:291 confirm status 1 selects the proceed branch and 0 the fallback; kept atom:semantic:common-response-status:meansinuse-one-proceed-zero-fallback on the common Response class."
+    },
+    {
+      "key": "semantic|ts-cancel-service.refund|semantic|meansInUse|eighty-percent-of-order-price-before-travel-start",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228-231 confirms refund = price * 0.8 before the travel start time."
+    },
+    {
+      "key": "semantic|ts-cancel-service.refund|semantic|meansInUse|zero-refund-when-NOTPAID-or-after-travel-start",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:201-202 (NOTPAID returns 0.00) and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:224-226 (after start time returns 0) confirm the zero-refund cases."
+    },
+    {
+      "key": "semantic|ts-payment-service.Money|semantic|meansInUse|user-balance-topup-record",
+      "decision": "adopted",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:49-54 confirms addMoney records a Money row of added credit for the userId."
+    },
+    {
+      "key": "semantic|ts-payment-service.Payment|semantic|identifiedBy|order-id-lookup-in-pay",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35 and ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:16 confirm the findByOrderId lookup; kept the field-precise atom:semantic:ts-payment-service.Payment.orderId:identifiedBy:one-payment-per-order-key."
+    },
+    {
+      "key": "state|common.Order.status|static|transitionsTo|CANCEL",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265 confirm setStatus(OrderStatus.CANCEL); kept atom:state:common-order-status:transitionsto-cancel on the common Order entity."
+    },
+    {
+      "key": "state|ts-payment-service.Money|static|persistsIn|addmoney-crud-repository",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Money.java:21-26 and ts-payment-service/src/main/java/com/trainticket/repository/AddMoneyRepository.java:9 confirm JPA persistence via the CrudRepository; kept atom:state:ts-payment-service.Money:persistsIn:addmoney-crud-repository."
+    },
+    {
+      "key": "state|ts-payment-service.Payment|static|persistsIn|payment-crud-repository",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:18-25 and ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:12 confirm JPA persistence via the CrudRepository; kept atom:state:ts-payment-service.Payment:persistsIn:payment-crud-repository."
+    },
+    {
+      "key": "state|ts-payment-service|static|persistsIn|mysql-payment-datasource",
+      "decision": "adopted",
+      "basis": "Reread ts-payment-service/src/main/resources/application.yml:13 confirms the MySQL ts-payment datasource configuration."
+    },
+    {
+      "key": "authority|ts-cancel-service.SecurityConfig|authority|checksPermission|jwt-filter-before-username-password-auth",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:76 confirms the JWT filter registration; merged with the pass-A wording, kept atom:authority:ts-cancel-service.SecurityConfig:checksPermission:jwt-filter."
+    },
+    {
+      "key": "authority|ts-payment-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-no-credentials",
+      "decision": "not-adopted",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:51-56 confirms the CORS mapping, but allowsCrossOrigin is catalog-external and none of the catalog authority predicates (requiresRole, checksPermission, scopesToOwner) truthfully describes an allow-all CORS mapping."
+    },
+    {
+      "key": "authority|ts-payment-service.SecurityConfig|authority|checksPermission|jwt-filter-before-username-password-auth",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:76 confirms the JWT filter registration; merged with the pass-A wording, kept atom:authority:ts-payment-service.SecurityConfig:checksPermission:jwt-filter."
+    },
+    {
+      "key": "authority|ts-payment-service.SecurityConfig|authority|permitsWithoutAuthentication|swagger-and-api-docs-paths",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:72-73 shows the same permitAll fact; permitsWithoutAuthentication is catalog-external, so the catalog-predicate side atom:authority:ts-payment-service.SecurityConfig:checksPermission:swagger-paths-permit-all is kept."
+    },
+    {
+      "key": "authority|ts-payment-service.SecurityConfig|authority|requiresRole|ADMIN-or-USER on /api/v1/paymentservice/**",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:71 shows the same role rule as the pass-A key; kept atom:authority:ts-payment-service.SecurityConfig:requiresRole:admin-or-user-for-paymentservice-api."
+    },
+    {
+      "key": "contract|ts-cancel-service.CancelServiceImpl.calculateRefund|specification|ensures|refund is 0.00 when not paid, 0 after departure time, else 80 percent of order price formatted to two decimals",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200-234 confirms 0.00 when NOTPAID, 0 after start time, else price*0.8 formatted 0.00; kept atom:contract:ts-cancel-service.CancelServiceImpl.calculateRefund:ensures:refund-rule absorbing the pass-A format-only key."
+    },
+    {
+      "key": "contract|ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom|specification|ensures|downstream request headers carry only the forwarded Authorization header",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:254-259 confirms the header copy; merged with the pass-A class-level wording, kept atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding."
+    },
+    {
+      "key": "contract|ts-cancel-service.GetAccountByIdInfo|specification|shapedAs|accountId request DTO",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:11 shows the same DTO shape; kept atom:contract:ts-cancel-service-getaccountbyidinfo:shapedas-accountid."
+    },
+    {
+      "key": "contract|ts-cancel-service.GetAccountByIdResult|specification|shapedAs|status+message+account result DTO",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:13-17 shows the same shape; kept atom:contract:ts-cancel-service-getaccountbyidresult:shapedas-status-message-account."
+    },
+    {
+      "key": "contract|ts-cancel-service.GetOrderByIdInfo|specification|shapedAs|orderId request DTO",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:11 shows the same shape; kept atom:contract:ts-cancel-service-getorderbyidinfo:shapedas-orderid."
+    },
+    {
+      "key": "contract|ts-payment-service.PaymentServiceImpl.initPayment|specification|requires|payment-id-not-already-present",
+      "decision": "adopted",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:70-77 confirms initPayment saves only when findById finds no existing payment id."
+    },
+    {
+      "key": "contract|ts-payment-service.PaymentServiceImpl.pay|specification|requires|no-existing-payment-for-orderId",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35 confirms the same precondition as the pass-A key; kept atom:contract:ts-payment-service.PaymentServiceImpl.pay:requires:no-existing-payment-for-orderId."
+    },
+    {
+      "key": "contract|ts-payment-service.Payment|specification|shapedAs|id-orderId-userId-price-notnull-string-fields",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:20-40 confirms the same shape; kept atom:contract:ts-payment-service.Payment:shapedAs:payment-record-notnull-strings."
+    },
+    {
+      "key": "effect|ts-cancel-service.CancelServiceImpl.drawbackMoney|effect|callsProvider|ts-inside-payment-service drawback money transfer",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278-288 shows the same provider call; kept atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-inside-payment-drawback."
+    },
+    {
+      "key": "effect|ts-payment-service.InitData|effect|writesTo|startup-seed-payment",
+      "decision": "adopted",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/init/InitData.java:27-32 confirms a seed Payment is created and persisted via initPayment at startup."
+    },
+    {
+      "key": "effect|ts-payment-service.PaymentServiceImpl|effect|writesTo|money-store",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:50-53 shows the same save to the Money repository; kept the repository-named atom:relation:ts-payment-service.PaymentServiceImpl:writesTo:addmoney-crud-repository."
+    },
+    {
+      "key": "effect|ts-payment-service.PaymentServiceImpl|effect|writesTo|payment-store",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:40 and ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:73 show the same saves; kept the repository-named atom:relation:ts-payment-service.PaymentServiceImpl:writesTo:payment-crud-repository."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelController|restriction|calls|ts-cancel-service.CancelService",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/controller/CancelController.java:36 and ts-cancel-service/src/main/java/cancel/controller/CancelController.java:47 show the same edge under the restriction axis; kept the relation-axis atom:relation:ts-cancel-service-cancelcontroller:calls-cancelservice."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|restriction|calls|ts-inside-payment-service /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money} (GET)",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:283-288 confirms the GET drawback call edge; kept verbatim as the descriptive call edge alongside the merged effect atom."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|restriction|calls|ts-notification-service /api/v1/notifyservice/notification/order_cancel_success (POST)",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:148-152 shows the same POST edge under the restriction axis; kept atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-notification-order-cancel-success."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|restriction|calls|ts-order-other-service /api/v1/orderOtherService/orderOther (GET by id; PUT update)",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:322-333 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263-275 confirm both verbs; GET is kept as atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order and the PUT edge is carried by the adopted effect atom for the CANCEL update."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|restriction|calls|ts-order-service /api/v1/orderservice/order (GET by id; PUT update)",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:308-319 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238-249 confirm both verbs; GET is kept as atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order and the PUT edge is carried by the adopted effect atom for the CANCEL update."
+    },
+    {
+      "key": "relation|ts-cancel-service.CancelServiceImpl|restriction|calls|ts-user-service /api/v1/userservice/users/id/{id} (GET)",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:299-300 shows the same edge under the restriction axis; kept atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-user-service-get-user."
+    },
+    {
+      "key": "relation|ts-cancel-service|restriction|dependsOn|nacos-service-discovery",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/resources/application.yml:5-8 and ts-cancel-service/src/main/java/cancel/CancelApplication.java:23 confirm the dependency; kept atom:relation:ts-cancel-service:dependsOn:nacos-service-discovery normalized to the relation axis."
+    },
+    {
+      "key": "relation|ts-payment-service.InitData|relation|calls|ts-payment-service.PaymentService.initPayment",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/init/InitData.java:32 confirms the same call; kept atom:relation:ts-payment-service.InitData:calls:PaymentService-initPayment."
+    },
+    {
+      "key": "semantic|ts-cancel-service.OrderStatus|semantic|statusGates|cancel-permitted-when-notpaid-paid-or-change",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109-110 show the same gate; OrderStatus is the common-library enum, so atom:semantic:common-orderstatus:statusgates-cancelable is kept."
+    },
+    {
+      "key": "semantic|ts-cancel-service.OrderStatus|semantic|statusGates|refund-quote-permitted-when-notpaid-or-paid",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:162-163 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:180-181 show the same gate on the common-library enum; kept atom:semantic:common-orderstatus:statusgates-refund-quotable."
+    },
+    {
+      "key": "semantic|ts-cancel-service.Response.status|semantic|meansInUse|status-1-means-success-status-0-means-error-result",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:49-100 shows the same status-1 success / status-0 error usage of the common Response class; kept atom:semantic:common-response-status:meansinuse-one-proceed-zero-fallback."
+    },
+    {
+      "key": "semantic|ts-cancel-service.Response.status|semantic|meansInUse|status-1-paired-with-error-message-in-controller-exception-path",
+      "decision": "adopted",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/controller/CancelController.java:50 confirms the exception path returns Response(1, \"error\", null), a genuinely distinct use of status kept separate per alias rules."
+    },
+    {
+      "key": "semantic|ts-payment-service.Money.money|semantic|meansInUse|string-encoded-recharge-credit-taken-from-payment-price",
+      "decision": "adopted",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:52 and ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30 confirm money is a String set from the payment price on addMoney."
+    },
+    {
+      "key": "semantic|ts-payment-service.Payment.orderId|semantic|identifiedBy|one-payment-per-order-lookup-key-duplicate-pay-rejected",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35-44 confirms pay keys on orderId and rejects a second payment for the same order; kept atom:semantic:ts-payment-service.Payment.orderId:identifiedBy:one-payment-per-order-key."
+    },
+    {
+      "key": "semantic|ts-payment-service.Payment.price|semantic|meansInUse|string-encoded-payment-amount-copied-on-pay",
+      "decision": "adopted",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:40 and ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:38 confirm price is a String copied from the request on pay."
+    },
+    {
+      "key": "state|ts-cancel-service.Order.status|static|transitionsTo|CANCEL",
+      "decision": "merged",
+      "basis": "Reread ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240 and ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265 show the same transition on the common-library Order; kept atom:state:common-order-status:transitionsto-cancel."
+    },
+    {
+      "key": "state|ts-payment-service.Money|static|persistsIn|mysql-ts-payment-database",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Money.java:21-26 shows the same persistence fact at database granularity; kept atom:state:ts-payment-service.Money:persistsIn:addmoney-crud-repository, with the MySQL datasource covered by the adopted service-level state atom."
+    },
+    {
+      "key": "state|ts-payment-service.Payment|static|persistsIn|mysql-ts-payment-database",
+      "decision": "merged",
+      "basis": "Reread ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:18-25 shows the same persistence fact at database granularity; kept atom:state:ts-payment-service.Payment:persistsIn:payment-crud-repository, with the MySQL datasource covered by the adopted service-level state atom."
+    },
+    {
+      "key": "relation|ts-cancel-service|relation|dependsOn|nacos-service-discovery",
+      "decision": "merged",
+      "basis": "Normalization row: canonical atom keeps pass-B subject/object (nacos-service-discovery, matching the matched-row token for ts-payment-service) on the catalog relation axis from pass A, evidenced at ts-cancel-service/src/main/resources/application.yml:5-8."
+    }
+  ],
+  "canonicalAtoms": [
+    {
+      "id": "atom:authority:ts-cancel-service.SecurityConfig:checksPermission:jwt-filter",
+      "kind": "authority",
+      "subject": "ts-cancel-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "jwt-filter-before-username-password-auth",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:76"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-payment-service.SecurityConfig:checksPermission:jwt-filter",
+      "kind": "authority",
+      "subject": "ts-payment-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "jwt-filter-before-username-password-auth",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:76"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-payment-service.SecurityConfig:checksPermission:swagger-paths-permit-all",
+      "kind": "authority",
+      "subject": "ts-payment-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "swagger-and-docs-paths-permit-all",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:72"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-payment-service.SecurityConfig:requiresRole:admin-or-user-for-paymentservice-api",
+      "kind": "authority",
+      "subject": "ts-payment-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "requiresRole",
+      "object": "ADMIN-or-USER:/api/v1/paymentservice/**",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:71"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding",
+      "kind": "contract",
+      "subject": "ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "downstream request headers carry only the forwarded Authorization header",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:254"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-cancel-service.CancelServiceImpl.calculateRefund:ensures:refund-rule",
+      "kind": "contract",
+      "subject": "ts-cancel-service.CancelServiceImpl.calculateRefund",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "refund is 0.00 when not paid, 0 after departure time, else 80 percent of order price formatted to two decimals",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:230"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-cancel-service-getaccountbyidinfo:shapedas-accountid",
+      "kind": "contract",
+      "subject": "ts-cancel-service.GetAccountByIdInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "accountId:String",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:11"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-cancel-service-getaccountbyidresult:shapedas-status-message-account",
+      "kind": "contract",
+      "subject": "ts-cancel-service.GetAccountByIdResult",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "status:boolean, message:String, account:common.Account",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:13"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-cancel-service-getorderbyidinfo:shapedas-orderid",
+      "kind": "contract",
+      "subject": "ts-cancel-service.GetOrderByIdInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "orderId:String",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:11"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-payment-service.PaymentServiceImpl.pay:requires:no-existing-payment-for-orderId",
+      "kind": "contract",
+      "subject": "ts-payment-service.PaymentServiceImpl.pay",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "no-existing-payment-for-orderId",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-payment-service.Payment:shapedAs:payment-record-notnull-strings",
+      "kind": "contract",
+      "subject": "ts-payment-service.Payment",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "id-orderId-userId-price-notnull-string-fields",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:20",
+        "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:22",
+        "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:37"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-inside-payment-drawback",
+      "kind": "effect",
+      "subject": "ts-cancel-service.CancelServiceImpl",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "ts-inside-payment-service GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-cancel-service-cancelcontroller:calls-cancelservice",
+      "kind": "relation",
+      "subject": "ts-cancel-service.CancelController",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-cancel-service.CancelService",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:36",
+        "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:47"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-notification-order-cancel-success",
+      "kind": "relation",
+      "subject": "ts-cancel-service.CancelServiceImpl",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-notification-service POST /api/v1/notifyservice/notification/order_cancel_success",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:86"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order",
+      "kind": "relation",
+      "subject": "ts-cancel-service.CancelServiceImpl",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-order-other-service GET /api/v1/orderOtherService/orderOther/{orderId}",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:322"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order",
+      "kind": "relation",
+      "subject": "ts-cancel-service.CancelServiceImpl",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-order-service GET /api/v1/orderservice/order/{orderId}",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:308"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-user-service-get-user",
+      "kind": "relation",
+      "subject": "ts-cancel-service.CancelServiceImpl",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-user-service GET /api/v1/userservice/users/id/{id}",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:294"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-cancel-service:dependsOn:nacos-service-discovery",
+      "kind": "relation",
+      "subject": "ts-cancel-service",
+      "axis": "relation",
+      "predicate": "dependsOn",
+      "object": "nacos-service-discovery",
+      "refs": [
+        "src:ts-cancel-service/src/main/resources/application.yml:5",
+        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java:23"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-payment-service.InitData:calls:PaymentService-initPayment",
+      "kind": "relation",
+      "subject": "ts-payment-service.InitData",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-payment-service.PaymentService.initPayment",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:32"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-payment-service.PaymentServiceImpl:writesTo:addmoney-crud-repository",
+      "kind": "relation",
+      "subject": "ts-payment-service.PaymentServiceImpl",
+      "axis": "relation",
+      "predicate": "writesTo",
+      "object": "addmoney-crud-repository",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:53"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-payment-service.PaymentServiceImpl:writesTo:payment-crud-repository",
+      "kind": "relation",
+      "subject": "ts-payment-service.PaymentServiceImpl",
+      "axis": "relation",
+      "predicate": "writesTo",
+      "object": "payment-crud-repository",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:40",
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:73"
+      ]
+    },
+    {
+      "id": "atom:semantic:common-orderstatus:statusgates-cancelable",
+      "kind": "semantic",
+      "subject": "common.OrderStatus",
+      "axis": "semantic",
+      "predicate": "statusGates",
+      "object": "cancel-permitted-when-NOTPAID-PAID-or-CHANGE",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109"
+      ]
+    },
+    {
+      "id": "atom:semantic:common-orderstatus:statusgates-refund-quotable",
+      "kind": "semantic",
+      "subject": "common.OrderStatus",
+      "axis": "semantic",
+      "predicate": "statusGates",
+      "object": "refund-quote-computed-when-NOTPAID-or-PAID",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:162",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:180"
+      ]
+    },
+    {
+      "id": "atom:semantic:common-response-status:meansinuse-one-proceed-zero-fallback",
+      "kind": "semantic",
+      "subject": "common.Response.status",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "status-1-selects-proceed-branch-status-0-selects-fallback-or-early-return-branch-in-cancel-flow",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:49",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:59",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:291"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-payment-service.Payment.orderId:identifiedBy:one-payment-per-order-key",
+      "kind": "semantic",
+      "subject": "ts-payment-service.Payment.orderId",
+      "axis": "semantic",
+      "predicate": "identifiedBy",
+      "object": "one-payment-per-order-lookup-key-duplicate-pay-rejected",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:35",
+        "src:ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:16"
+      ]
+    },
+    {
+      "id": "atom:state:common-order-status:transitionsto-cancel",
+      "kind": "state",
+      "subject": "common.Order.status",
+      "axis": "static",
+      "predicate": "transitionsTo",
+      "object": "CANCEL",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+      ]
+    },
+    {
+      "id": "atom:state:ts-payment-service.Money:persistsIn:addmoney-crud-repository",
+      "kind": "state",
+      "subject": "ts-payment-service.Money",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "addmoney-crud-repository",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:21",
+        "src:ts-payment-service/src/main/java/com/trainticket/repository/AddMoneyRepository.java:9"
+      ]
+    },
+    {
+      "id": "atom:state:ts-payment-service.Payment:persistsIn:payment-crud-repository",
+      "kind": "state",
+      "subject": "ts-payment-service.Payment",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "payment-crud-repository",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:18",
+        "src:ts-payment-service/src/main/java/com/trainticket/repository/PaymentRepository.java:12"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-cancel-service-cancelcontroller:exposesendpoint-get-welcome",
+      "kind": "capability",
+      "subject": "ts-cancel-service.CancelController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/cancelservice/welcome",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:27"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-payment-service.PaymentController:exposesEndpoint:get-welcome",
+      "kind": "capability",
+      "subject": "ts-payment-service.PaymentController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/paymentservice/welcome",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/controller/PaymentController.java:27"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-cancel-service-cancelcontroller:ensures-exception-response-shape",
+      "kind": "contract",
+      "subject": "ts-cancel-service.CancelController",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "cancelTicket maps a thrown exception to HTTP 200 with Response(status=1, msg=error, data=null)",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:48"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-payment-service.Money.money:shapedAs:string-amount",
+      "kind": "contract",
+      "subject": "ts-payment-service.Money.money",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "string-amount",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-payment-service.SecurityConfig:ensures:stateless-session-policy",
+      "kind": "contract",
+      "subject": "ts-payment-service.SecurityConfig",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "stateless-session-policy",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/config/SecurityConfig.java:68"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-other-service-put-order",
+      "kind": "effect",
+      "subject": "ts-cancel-service.CancelServiceImpl",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "ts-order-other-service PUT /api/v1/orderOtherService/orderOther with order status set to CANCEL",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-service-put-order",
+      "kind": "effect",
+      "subject": "ts-cancel-service.CancelServiceImpl",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "ts-order-service PUT /api/v1/orderservice/order with order status set to CANCEL",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-cancel-service-cancelapplication:dependson-spring-cloud-discovery",
+      "kind": "relation",
+      "subject": "ts-cancel-service.CancelApplication",
+      "axis": "relation",
+      "predicate": "dependsOn",
+      "object": "spring-cloud-discovery-client",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java:23",
+        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java:30"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-cancel-service-cancelserviceimpl:implements-cancelservice",
+      "kind": "relation",
+      "subject": "ts-cancel-service.CancelServiceImpl",
+      "axis": "relation",
+      "predicate": "implements",
+      "object": "ts-cancel-service.CancelService",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:30"
+      ]
+    },
+    {
+      "id": "atom:semantic:common-order:meansinuse-order-store-partition",
+      "kind": "semantic",
+      "subject": "common.Order",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "partitioned-across-order-service-GH-trains-and-order-other-service-ZK-trains-with-lookup-fallback",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:50",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:104",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:106"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-cancel-service-refund:meansinuse-eighty-percent-before-departure",
+      "kind": "semantic",
+      "subject": "ts-cancel-service.refund",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "eighty-percent-of-order-price-before-travel-start",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-cancel-service-refund:meansinuse-zero-when-notpaid-or-departed",
+      "kind": "semantic",
+      "subject": "ts-cancel-service.refund",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "zero-refund-when-NOTPAID-or-after-travel-start",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:201",
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:224"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-payment-service.Money:meansInUse:user-balance-topup-record",
+      "kind": "semantic",
+      "subject": "ts-payment-service.Money",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "user-balance-topup-record",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:50",
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:53"
+      ]
+    },
+    {
+      "id": "atom:state:ts-payment-service:persistsIn:mysql-payment-datasource",
+      "kind": "state",
+      "subject": "ts-payment-service",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "mysql-payment-datasource",
+      "refs": [
+        "src:ts-payment-service/src/main/resources/application.yml:13"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-payment-service.PaymentServiceImpl.initPayment:requires:payment-id-not-already-present",
+      "kind": "contract",
+      "subject": "ts-payment-service.PaymentServiceImpl.initPayment",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "payment-id-not-already-present",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:71"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-payment-service.InitData:writesTo:startup-seed-payment",
+      "kind": "effect",
+      "subject": "ts-payment-service.InitData",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "startup-seed-payment",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:27",
+        "src:ts-payment-service/src/main/java/com/trainticket/init/InitData.java:32"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-cancel-service.CancelServiceImpl:calls:ts-inside-payment-service",
+      "kind": "relation",
+      "subject": "ts-cancel-service.CancelServiceImpl",
+      "axis": "restriction",
+      "predicate": "calls",
+      "object": "ts-inside-payment-service /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money} (GET)",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-cancel-service.Response.status:meansInUse:one-paired-with-error-message-on-exception",
+      "kind": "semantic",
+      "subject": "ts-cancel-service.Response.status",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "status-1-paired-with-error-message-in-controller-exception-path",
+      "refs": [
+        "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:50"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-payment-service.Money.money:meansInUse:string-encoded-recharge-credit",
+      "kind": "semantic",
+      "subject": "ts-payment-service.Money.money",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "string-encoded-recharge-credit-taken-from-payment-price",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:52",
+        "src:ts-payment-service/src/main/java/com/trainticket/entity/Money.java:30"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-payment-service.Payment.price:meansInUse:string-encoded-payment-amount",
+      "kind": "semantic",
+      "subject": "ts-payment-service.Payment.price",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "string-encoded-payment-amount-copied-on-pay",
+      "refs": [
+        "src:ts-payment-service/src/main/java/com/trainticket/entity/Payment.java:40",
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:38"
+      ]
+    }
+  ],
+  "coverage": {
+    "assignedEntryCount": 77,
+    "adjudicatedEntryCount": 77
+  }
+}

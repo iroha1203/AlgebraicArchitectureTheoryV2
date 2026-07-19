@@ -1,0 +1,1194 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|plan.SecurityConfig|authority|allowsCrossOrigin|any-origin-any-method-any-header-credentials-false",
+   "candidateAtomId": "atom:authority:plan.SecurityConfig:allowsCrossOrigin:all",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java:51"
+   ]
+  },
+  {
+   "key": "authority|plan.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/routeplanservice/**",
+   "candidateAtomId": "atom:authority:plan.SecurityConfig:permitsUnauthenticated:routeplanservice",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|rebook.RebookServiceImpl|authority|checksPermission|authorization-header-forwarded-if-present-else-omitted-on-downstream-calls",
+   "candidateAtomId": "atom:authority:rebook.RebookServiceImpl:forwardsAuthorizationHeader",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:468"
+   ]
+  },
+  {
+   "key": "authority|rebook.SecurityConfig|authority|allowsCrossOrigin|any-origin-any-method-any-header-credentials-false",
+   "candidateAtomId": "atom:authority:rebook.SecurityConfig:allowsCrossOrigin:all",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:51"
+   ]
+  },
+  {
+   "key": "authority|rebook.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-v2-doc-paths",
+   "candidateAtomId": "atom:authority:rebook.SecurityConfig:permitsUnauthenticated:swagger",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|rebook.SecurityConfig|authority|requiresRole|role-ADMIN-or-USER-on-/api/v1/rebookservice/**",
+   "candidateAtomId": "atom:authority:rebook.SecurityConfig:requiresRole:rebookservice",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|route.SecurityConfig|authority|allowsCrossOrigin|any-origin-any-method-any-header-credentials-false",
+   "candidateAtomId": "atom:authority:route.SecurityConfig:allowsCrossOrigin:all",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:52"
+   ]
+  },
+  {
+   "key": "authority|route.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/routeservice/**",
+   "candidateAtomId": "atom:authority:route.SecurityConfig:permitsUnauthenticated:routeservice",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|route.SecurityConfig|authority|requiresRole|role-ADMIN-required-for-DELETE-/api/v1/routeservice/routes/*-overriding-earlier-permitAll-rule",
+   "candidateAtomId": "atom:authority:route.SecurityConfig:requiresRole:deleteRoute",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|route.SecurityConfig|authority|requiresRole|role-ADMIN-required-for-POST-/api/v1/routeservice/routes-overriding-earlier-permitAll-rule",
+   "candidateAtomId": "atom:authority:route.SecurityConfig:requiresRole:createRoute",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "capability|plan.RoutePlanController|capability|exposesEndpoint|POST-/api/v1/routeplanservice/routePlan/cheapestRoute",
+   "candidateAtomId": "atom:capability:plan.RoutePlanController:exposesEndpoint:cheapestRoute",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:30"
+   ]
+  },
+  {
+   "key": "capability|plan.RoutePlanController|capability|exposesEndpoint|POST-/api/v1/routeplanservice/routePlan/minStopStations",
+   "candidateAtomId": "atom:capability:plan.RoutePlanController:exposesEndpoint:minStopStations",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:42"
+   ]
+  },
+  {
+   "key": "capability|plan.RoutePlanController|capability|exposesEndpoint|POST-/api/v1/routeplanservice/routePlan/quickestRoute",
+   "candidateAtomId": "atom:capability:plan.RoutePlanController:exposesEndpoint:quickestRoute",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:36"
+   ]
+  },
+  {
+   "key": "capability|price.PriceConfigRepository|capability|servesQuery|findByRouteIdsAndTrainTypes-native-sql-in-clause",
+   "candidateAtomId": "atom:capability:price.PriceConfigRepository:findByRouteIdsAndTrainTypes",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/repository/PriceConfigRepository.java:21"
+   ]
+  },
+  {
+   "key": "capability|price.PriceServiceImpl|capability|handlesCommand|createNewPriceConfig",
+   "candidateAtomId": "atom:capability:price.PriceServiceImpl:createNewPriceConfig",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:29"
+   ]
+  },
+  {
+   "key": "capability|rebook.RebookController|capability|exposesEndpoint|POST-/api/v1/rebookservice/rebook",
+   "candidateAtomId": "atom:capability:rebook.RebookController:exposesEndpoint:rebook",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:38"
+   ]
+  },
+  {
+   "key": "capability|rebook.RebookController|capability|exposesEndpoint|POST-/api/v1/rebookservice/rebook/difference",
+   "candidateAtomId": "atom:capability:rebook.RebookController:exposesEndpoint:payDifference",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:31"
+   ]
+  },
+  {
+   "key": "capability|rebook.RebookServiceImpl|capability|handlesCommand|payDifference",
+   "candidateAtomId": "atom:capability:rebook.RebookServiceImpl:payDifference",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:146"
+   ]
+  },
+  {
+   "key": "capability|rebook.RebookServiceImpl|capability|handlesCommand|rebook",
+   "candidateAtomId": "atom:capability:rebook.RebookServiceImpl:rebook",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:48"
+   ]
+  },
+  {
+   "key": "capability|route.RouteController|capability|exposesEndpoint|DELETE-/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:capability:route.RouteController:exposesEndpoint:deleteRoute",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:39"
+   ]
+  },
+  {
+   "key": "capability|route.RouteController|capability|exposesEndpoint|GET-/api/v1/routeservice/routes",
+   "candidateAtomId": "atom:capability:route.RouteController:exposesEndpoint:queryAll",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:57"
+   ]
+  },
+  {
+   "key": "capability|route.RouteController|capability|exposesEndpoint|GET-/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:capability:route.RouteController:exposesEndpoint:queryById",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:45"
+   ]
+  },
+  {
+   "key": "capability|route.RouteController|capability|exposesEndpoint|GET-/api/v1/routeservice/routes/{start}/{end}",
+   "candidateAtomId": "atom:capability:route.RouteController:exposesEndpoint:queryByStartAndTerminal",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:63"
+   ]
+  },
+  {
+   "key": "capability|route.RouteController|capability|exposesEndpoint|POST-/api/v1/routeservice/routes",
+   "candidateAtomId": "atom:capability:route.RouteController:exposesEndpoint:createAndModifyRoute",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:33"
+   ]
+  },
+  {
+   "key": "capability|route.RouteController|capability|exposesEndpoint|POST-/api/v1/routeservice/routes/byIds",
+   "candidateAtomId": "atom:capability:route.RouteController:exposesEndpoint:queryByIds",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:51"
+   ]
+  },
+  {
+   "key": "capability|ts-price-service.application|capability|exposesEndpoint|http-port-16579",
+   "candidateAtomId": "atom:capability:ts-price-service:exposesEndpoint:16579",
+   "refs": [
+    "src:ts-price-service/src/main/resources/application.yml:23"
+   ]
+  },
+  {
+   "key": "component|plan.RoutePlanController|static||",
+   "candidateAtomId": "atom:component:plan.RoutePlanController",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java"
+   ]
+  },
+  {
+   "key": "component|plan.RoutePlanServiceImpl|static||",
+   "candidateAtomId": "atom:component:plan.RoutePlanServiceImpl",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|plan.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:plan.SecurityConfig",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|price.PriceService|static||",
+   "candidateAtomId": "atom:component:price.PriceService",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceService.java"
+   ]
+  },
+  {
+   "key": "component|rebook.RebookController|static||",
+   "candidateAtomId": "atom:component:rebook.RebookController",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java"
+   ]
+  },
+  {
+   "key": "component|rebook.RebookInfo|static||",
+   "candidateAtomId": "atom:component:rebook.RebookInfo",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/entity/RebookInfo.java"
+   ]
+  },
+  {
+   "key": "component|rebook.RebookServiceImpl|static||",
+   "candidateAtomId": "atom:component:rebook.RebookServiceImpl",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|rebook.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:rebook.SecurityConfig",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|route.RouteController|static||",
+   "candidateAtomId": "atom:component:route.RouteController",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java"
+   ]
+  },
+  {
+   "key": "component|route.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:route.SecurityConfig",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|ts-price-service.application|static||",
+   "candidateAtomId": "atom:component:price.ApplicationYml",
+   "refs": [
+    "src:ts-price-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "contract|plan.RoutePlanServiceImpl|specification|shapedAs|price-carried-as-String-parsed-to-float-at-use-site-for-sort-comparison",
+   "candidateAtomId": "atom:contract:plan.RoutePlanServiceImpl:priceForEconomyClass-representation",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:64"
+   ]
+  },
+  {
+   "key": "contract|rebook.RebookInfo|specification|requires|loginId-orderId-oldTripId-tripId-seatType-date-all-NotNull",
+   "candidateAtomId": "atom:contract:rebook.RebookInfo:requires:validatedFields",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/entity/RebookInfo.java:16"
+   ]
+  },
+  {
+   "key": "contract|rebook.RebookServiceImpl|specification|shapedAs|price-carried-as-String-parsed-to-BigDecimal-at-use-site",
+   "candidateAtomId": "atom:contract:rebook.RebookServiceImpl:ticketPrice-string-representation",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:121",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:122",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:123"
+   ]
+  },
+  {
+   "key": "effect|plan.RoutePlanServiceImpl|effect|callsProvider|GET-ts-route-service/api/v1/routeservice/routes/{routeId}-or-{start}/{end}",
+   "candidateAtomId": "atom:relation:plan.RoutePlanServiceImpl:callsProvider:route",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:170",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:290"
+   ]
+  },
+  {
+   "key": "effect|plan.RoutePlanServiceImpl|effect|callsProvider|POST-ts-travel-service-and-ts-travel2-service/trips/left-or-trips/routes-or-trip_detail",
+   "candidateAtomId": "atom:relation:plan.RoutePlanServiceImpl:callsProvider:travel",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:311",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:206",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:216",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:253"
+   ]
+  },
+  {
+   "key": "effect|price.PriceServiceImpl|effect|mutatesFile|priceConfigRepository.delete-on-found-branch",
+   "candidateAtomId": "atom:effect:price.PriceServiceImpl:deletePriceConfig:deletesEntity",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:133"
+   ]
+  },
+  {
+   "key": "effect|price.PriceServiceImpl|effect|mutatesFile|priceConfigRepository.save-on-create-or-modify",
+   "candidateAtomId": "atom:effect:price.PriceServiceImpl:createNewPriceConfig:persistsPriceConfig",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:40",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:54"
+   ]
+  },
+  {
+   "key": "effect|rebook.RebookServiceImpl|effect|callsProvider|GET-PUT-POST-ts-order-service/api/v1/orderservice/order-or-ts-order-other-service/api/v1/orderOtherService/orderOther",
+   "candidateAtomId": "atom:relation:rebook.RebookServiceImpl:callsProvider:orderservice",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:325",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:345",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:365",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:387"
+   ]
+  },
+  {
+   "key": "effect|rebook.RebookServiceImpl|effect|callsProvider|GET-ts-route-service/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:relation:rebook.RebookServiceImpl:callsProvider:route",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:421"
+   ]
+  },
+  {
+   "key": "effect|rebook.RebookServiceImpl|effect|callsProvider|GET-ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+   "candidateAtomId": "atom:relation:rebook.RebookServiceImpl:callsProvider:train",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:408"
+   ]
+  },
+  {
+   "key": "effect|rebook.RebookServiceImpl|effect|callsProvider|POST-GET-ts-inside-payment-service/api/v1/inside_pay_service/inside_payment",
+   "candidateAtomId": "atom:relation:rebook.RebookServiceImpl:callsProvider:inside-payment",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:446",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:460"
+   ]
+  },
+  {
+   "key": "effect|rebook.RebookServiceImpl|effect|callsProvider|POST-ts-seat-service/api/v1/seatservice/seats",
+   "candidateAtomId": "atom:relation:rebook.RebookServiceImpl:callsProvider:seatservice",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:251"
+   ]
+  },
+  {
+   "key": "effect|rebook.RebookServiceImpl|effect|callsProvider|POST-ts-travel-service-or-ts-travel2-service/trip_detail",
+   "candidateAtomId": "atom:relation:rebook.RebookServiceImpl:callsProvider:travel",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:301",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:304"
+   ]
+  },
+  {
+   "key": "relation|price.PriceServiceImpl|restriction|dependsOn|price.PriceConfigRepository",
+   "candidateAtomId": "atom:relation:price.PriceServiceImpl:dependsOn:price.PriceConfigRepository",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:22"
+   ]
+  },
+  {
+   "key": "relation|rebook.RebookController|restriction|dependsOn|rebook.RebookService",
+   "candidateAtomId": "atom:relation:rebook.RebookController:dependsOn:RebookService",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:22"
+   ]
+  },
+  {
+   "key": "relation|rebook.SecurityConfig|restriction|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:rebook.SecurityConfig:addsFilter:JWTFilter",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "relation|route.RouteController|restriction|dependsOn|route.RouteService",
+   "candidateAtomId": "atom:relation:route.RouteController:dependsOn:RouteService",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:26"
+   ]
+  },
+  {
+   "key": "relation|ts-price-service.application|restriction|dependsOn|PRICE_MYSQL_HOST-jdbc-mysql-datasource",
+   "candidateAtomId": "atom:relation:ts-price-service:dependsOn:mysql",
+   "refs": [
+    "src:ts-price-service/src/main/resources/application.yml:9"
+   ]
+  },
+  {
+   "key": "relation|ts-rebook-service.application|restriction|dependsOn|nacos-headless-discovery-server-addr",
+   "candidateAtomId": "atom:relation:rebook.applicationYml:dependsOn:nacos",
+   "refs": [
+    "src:ts-rebook-service/src/main/resources/application.yml:9"
+   ]
+  },
+  {
+   "key": "relation|ts-route-plan-service.application|restriction|dependsOn|nacos-headless-discovery-server-addr",
+   "candidateAtomId": "atom:relation:plan.applicationYml:dependsOn:nacos",
+   "refs": [
+    "src:ts-route-plan-service/src/main/resources/application.yml:4"
+   ]
+  },
+  {
+   "key": "semantic|ctx:rebook-rebook-price-difference-flow|cech|sectionValue|section=money-amount:string-price-parsed-to-bigdecimal-at-use-site",
+   "candidateAtomId": "atom:semantic:rebook.RebookServiceImpl:cech-section-money-amount",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:121",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:122",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:126"
+   ]
+  },
+  {
+   "key": "semantic|ctx:rebook-rebook-price-difference-flow|cech|sectionValue|section=order-status-code:enum-code-comparison-via-OrderStatus.NOTPAID-PAID-CHANGE-COLLECTED-getCode",
+   "candidateAtomId": "atom:semantic:rebook.RebookServiceImpl:cech-section-order-status-code",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:64",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:67",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:69",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:72"
+   ]
+  },
+  {
+   "key": "semantic|ctx:route-plan-cheapest-route-flow|cech|sectionValue|section=money-amount:string-price-parsed-to-float-at-use-site",
+   "candidateAtomId": "atom:semantic:plan.RoutePlanServiceImpl:cech-section-money-amount",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:64",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:65"
+   ]
+  },
+  {
+   "key": "semantic|plan.RoutePlanServiceImpl|semantic|meansInUse|cheapest-route-selects-top-5-trips-by-ascending-priceForEconomyClass-parsed-as-float",
+   "candidateAtomId": "atom:semantic:plan.RoutePlanServiceImpl:cheapest-selects-min-economy-price",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:64",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:65"
+   ]
+  },
+  {
+   "key": "semantic|plan.RoutePlanServiceImpl|semantic|meansInUse|tripId-first-char-D-or-G-selects-ts-travel-service-else-selects-ts-travel2-service-for-trip-detail-lookup",
+   "candidateAtomId": "atom:semantic:plan.RoutePlanServiceImpl:tripId-prefix-selects-service",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:248",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:341"
+   ]
+  },
+  {
+   "key": "semantic|plan.RoutePlanServiceImpl|semantic|statusGates|route-lookup-status-0-selects-null-route-and-skipped-stopStations-set-status-1-selects-populated-stopStations",
+   "candidateAtomId": "atom:semantic:plan.RoutePlanServiceImpl:minStopStations-result-status",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:297",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:276"
+   ]
+  },
+  {
+   "key": "semantic|price.PriceServiceImpl|semantic|meansInUse|id-null-or-length-under-10-selects-create-branch-else-modify-branch",
+   "candidateAtomId": "atom:semantic:price.PriceServiceImpl:createNewPriceConfig:idLengthGatesCreateVsModify",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:33"
+   ]
+  },
+  {
+   "key": "semantic|price.PriceServiceImpl|semantic|statusGates|status-0-on-price-config-not-found-branch-status-1-on-result-carrying-branch",
+   "candidateAtomId": "atom:semantic:price.Response:findByRouteIdAndTrainType:statusGates",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:75",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:78"
+   ]
+  },
+  {
+   "key": "semantic|rebook.RebookServiceImpl|semantic|meansInUse|old-price-greater-than-new-price-selects-drawback-refund-branch-equal-selects-no-op-update-branch-less-selects-pay-difference-response-status-2",
+   "candidateAtomId": "atom:semantic:rebook.RebookServiceImpl:priceComparison-selects-refund-or-payment",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:124",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:133",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:136",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:141"
+   ]
+  },
+  {
+   "key": "semantic|rebook.RebookServiceImpl|semantic|meansInUse|tripId-prefix-G-or-D-selects-ts-travel-service-and-ts-order-service-else-selects-ts-travel2-service-and-ts-order-other-service",
+   "candidateAtomId": "atom:semantic:rebook.RebookServiceImpl:tripId-prefix-selects-service",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:300",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:323",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:261"
+   ]
+  },
+  {
+   "key": "semantic|rebook.RebookServiceImpl|semantic|statusGates|order-status-NOTPAID-rejects-status-PAID-proceeds-status-CHANGE-or-COLLECTED-rejects-rebook-with-distinct-message-per-branch",
+   "candidateAtomId": "atom:semantic:rebook.OrderStatus:rebook:statusGates",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:64",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:67",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:69",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:72"
+   ]
+  },
+  {
+   "key": "state|price.PriceConfig|state|persistsIn|price_config-table-via-jpa-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:price.PriceConfig:persistsIn:priceConfigTable",
+   "refs": [
+    "src:ts-price-service/src/main/resources/application.yml:15"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|plan.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-on-/**-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:plan.securityconfig:allowscrossorigin",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java:51",
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java:52",
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java:55",
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|plan.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/routeplanservice/**-all-methods-no-role-check",
+   "candidateAtomId": "atom:authority:plan.securityconfig:permitsunauthenticated:routeplanservice",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|plan.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:plan.securityconfig:permitsunauthenticated:swagger",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java:72",
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|rebook.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-on-/**-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:rebook.securityconfig:allowscrossorigin",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:51",
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:52",
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:55",
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|rebook.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:rebook.securityconfig:permitsunauthenticated:swagger",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:72",
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|rebook.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-/api/v1/rebookservice/**",
+   "candidateAtomId": "atom:authority:rebook.securityconfig:requiresrole",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|route.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-on-/**-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:route.securityconfig:allowscrossorigin",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:52",
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:53",
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:56",
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:57"
+   ]
+  },
+  {
+   "key": "authority|route.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/routeservice/**-all-methods-declared-before-the-narrower-role-restricted-matchers-below-it",
+   "candidateAtomId": "atom:authority:route.securityconfig:permitsunauthenticated:routeservice",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|route.config.SecurityConfig|authority|requiresRole|role-admin-declared-on-delete-/api/v1/routeservice/routes/*-listed-after-the-broader-permit-all-matcher-for-the-same-path-prefix",
+   "candidateAtomId": "atom:authority:route.securityconfig:requiresrole:delete-routes",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|route.config.SecurityConfig|authority|requiresRole|role-admin-declared-on-post-/api/v1/routeservice/routes-listed-after-the-broader-permit-all-matcher-for-the-same-path-prefix",
+   "candidateAtomId": "atom:authority:route.securityconfig:requiresrole:post-routes",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "capability|plan.controller.RoutePlanController|capability|exposesEndpoint|POST-/api/v1/routeplanservice/routePlan/cheapestRoute",
+   "candidateAtomId": "atom:capability:plan.routeplancontroller:exposesendpoint:post-cheapestroute",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:30",
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:33"
+   ]
+  },
+  {
+   "key": "capability|plan.controller.RoutePlanController|capability|exposesEndpoint|POST-/api/v1/routeplanservice/routePlan/minStopStations",
+   "candidateAtomId": "atom:capability:plan.routeplancontroller:exposesendpoint:post-minstopstations",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:42",
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:45"
+   ]
+  },
+  {
+   "key": "capability|plan.controller.RoutePlanController|capability|exposesEndpoint|POST-/api/v1/routeplanservice/routePlan/quickestRoute",
+   "candidateAtomId": "atom:capability:plan.routeplancontroller:exposesendpoint:post-quickestroute",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:36",
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:39"
+   ]
+  },
+  {
+   "key": "capability|price.PriceConfigRepository|capability|servesQuery|findByRouteIdsAndTrainTypes-native-query",
+   "candidateAtomId": "atom:capability:price.priceconfigrepository:servesquery:findbyrouteidsandtraintypes",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/repository/PriceConfigRepository.java:21",
+    "src:ts-price-service/src/main/java/price/repository/PriceConfigRepository.java:22"
+   ]
+  },
+  {
+   "key": "capability|price.PriceServiceImpl|capability|handlesCommand|createNewPriceConfig-branch-selected-by-id-null-or-short-id-vs-existing-id-lookup",
+   "candidateAtomId": "atom:capability:price.priceserviceimpl:handlescommand:createnewpriceconfig",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:29",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:33",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:41"
+   ]
+  },
+  {
+   "key": "capability|price.PriceServiceImpl|capability|servesQuery|findAllPriceConfig",
+   "candidateAtomId": "atom:capability:price.priceserviceimpl:servesquery:findallpriceconfig",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:110"
+   ]
+  },
+  {
+   "key": "capability|price.PriceServiceImpl|capability|servesQuery|findById",
+   "candidateAtomId": "atom:capability:price.priceserviceimpl:servesquery:findbyid",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:60"
+   ]
+  },
+  {
+   "key": "capability|price.PriceServiceImpl|capability|servesQuery|findByRouteIdAndTrainType",
+   "candidateAtomId": "atom:capability:price.priceserviceimpl:servesquery:findbyrouteidandtraintype",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:70"
+   ]
+  },
+  {
+   "key": "capability|price.PriceServiceImpl|capability|servesQuery|findByRouteIdsAndTrainTypes",
+   "candidateAtomId": "atom:capability:price.priceserviceimpl:servesquery:findbyrouteidsandtraintypes",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:84"
+   ]
+  },
+  {
+   "key": "capability|rebook.controller.RebookController|capability|exposesEndpoint|GET-/api/v1/rebookservice/welcome",
+   "candidateAtomId": "atom:capability:rebook.rebookcontroller:exposesendpoint:get-welcome",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:26",
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:29"
+   ]
+  },
+  {
+   "key": "capability|rebook.controller.RebookController|capability|exposesEndpoint|POST-/api/v1/rebookservice/rebook",
+   "candidateAtomId": "atom:capability:rebook.rebookcontroller:exposesendpoint:post-rebook",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:38",
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:42"
+   ]
+  },
+  {
+   "key": "capability|rebook.controller.RebookController|capability|exposesEndpoint|POST-/api/v1/rebookservice/rebook/difference",
+   "candidateAtomId": "atom:capability:rebook.rebookcontroller:exposesendpoint:post-rebook-difference",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:31",
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:36"
+   ]
+  },
+  {
+   "key": "capability|route.controller.RouteController|capability|exposesEndpoint|DELETE-/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:capability:route.routecontroller:exposesendpoint:delete-routes-id",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:39",
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:42"
+   ]
+  },
+  {
+   "key": "capability|route.controller.RouteController|capability|exposesEndpoint|GET-/api/v1/routeservice/routes",
+   "candidateAtomId": "atom:capability:route.routecontroller:exposesendpoint:get-routes",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:57",
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:60"
+   ]
+  },
+  {
+   "key": "capability|route.controller.RouteController|capability|exposesEndpoint|GET-/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:capability:route.routecontroller:exposesendpoint:get-routes-id",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:45",
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:48"
+   ]
+  },
+  {
+   "key": "capability|route.controller.RouteController|capability|exposesEndpoint|GET-/api/v1/routeservice/routes/{start}/{end}",
+   "candidateAtomId": "atom:capability:route.routecontroller:exposesendpoint:get-routes-start-end",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:63",
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:68"
+   ]
+  },
+  {
+   "key": "capability|route.controller.RouteController|capability|exposesEndpoint|POST-/api/v1/routeservice/routes",
+   "candidateAtomId": "atom:capability:route.routecontroller:exposesendpoint:post-routes",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:33",
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:36"
+   ]
+  },
+  {
+   "key": "capability|route.controller.RouteController|capability|exposesEndpoint|POST-/api/v1/routeservice/routes/byIds",
+   "candidateAtomId": "atom:capability:route.routecontroller:exposesendpoint:post-routes-byids",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:51",
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:54"
+   ]
+  },
+  {
+   "key": "component|plan.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:plan.config.securityconfig",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|plan.controller.RoutePlanController|static||",
+   "candidateAtomId": "atom:component:plan.controller.routeplancontroller",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java"
+   ]
+  },
+  {
+   "key": "component|plan.service.RoutePlanServiceImpl|static||",
+   "candidateAtomId": "atom:component:plan.service.routeplanserviceimpl",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|rebook.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:rebook.config.securityconfig",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|rebook.controller.RebookController|static||",
+   "candidateAtomId": "atom:component:rebook.controller.rebookcontroller",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java"
+   ]
+  },
+  {
+   "key": "component|rebook.entity.RebookInfo|static||",
+   "candidateAtomId": "atom:component:rebook.entity.rebookinfo",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/entity/RebookInfo.java"
+   ]
+  },
+  {
+   "key": "component|rebook.service.RebookServiceImpl|static||",
+   "candidateAtomId": "atom:component:rebook.service.rebookserviceimpl",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|route.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:route.config.securityconfig",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|route.controller.RouteController|static||",
+   "candidateAtomId": "atom:component:route.controller.routecontroller",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java"
+   ]
+  },
+  {
+   "key": "component|ts-price-service.application-config|static||",
+   "candidateAtomId": "atom:component:ts-price-service.applicationconfig",
+   "refs": [
+    "src:ts-price-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "component|ts-rebook-service.application-config|static||",
+   "candidateAtomId": "atom:component:ts-rebook-service.applicationconfig",
+   "refs": [
+    "src:ts-rebook-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "component|ts-route-plan-service.application-config|static||",
+   "candidateAtomId": "atom:component:ts-route-plan-service.applicationconfig",
+   "refs": [
+    "src:ts-route-plan-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "contract|price.PriceConfigRepository|specification|shapedAs|native-sql-select-star-from-price-config-where-route-id-in-and-train-type-in",
+   "candidateAtomId": "atom:contract:price.priceconfigrepository:shapedas:native-sql-in-clause",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/repository/PriceConfigRepository.java:21"
+   ]
+  },
+  {
+   "key": "contract|price.PriceService|specification|shapedAs|findbyid-returns-raw-priceconfig-entity-or-null-not-wrapped-in-response-envelope-unlike-the-other-priceservice-methods",
+   "candidateAtomId": "atom:contract:price.priceservice:findbyid:shapedas",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceService.java:19",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:59",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:60",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:66"
+   ]
+  },
+  {
+   "key": "contract|rebook.entity.RebookInfo|specification|shapedAs|loginid-orderid-oldtripid-tripid-string-seattype-int-date-string-fields-notnull-valid-annotated-default-date-set-to-current-date-on-construction",
+   "candidateAtomId": "atom:contract:rebook.rebookinfo:shapedas",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/entity/RebookInfo.java:14",
+    "src:ts-rebook-service/src/main/java/rebook/entity/RebookInfo.java:34",
+    "src:ts-rebook-service/src/main/java/rebook/entity/RebookInfo.java:40",
+    "src:ts-rebook-service/src/main/java/rebook/entity/RebookInfo.java:47"
+   ]
+  },
+  {
+   "key": "effect|rebook.service.RebookServiceImpl|effect|callsProvider|GET-http://ts-inside-payment-service/api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+   "candidateAtomId": "atom:effect:rebook.rebookserviceimpl:callsprovider:ts-inside-payment-service-drawback",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:444",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:460"
+   ]
+  },
+  {
+   "key": "effect|rebook.service.RebookServiceImpl|effect|callsProvider|POST-http://ts-inside-payment-service/api/v1/inside_pay_service/inside_payment/difference",
+   "candidateAtomId": "atom:effect:rebook.rebookserviceimpl:callsprovider:ts-inside-payment-service-difference",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:444",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:446"
+   ]
+  },
+  {
+   "key": "relation|plan.controller.RoutePlanController|static|dependsOn|plan.service.RoutePlanService",
+   "candidateAtomId": "atom:relation:plan.routeplancontroller:dependson:plan.routeplanservice",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:21",
+    "src:ts-route-plan-service/src/main/java/plan/controller/RoutePlanController.java:22"
+   ]
+  },
+  {
+   "key": "relation|plan.service.RoutePlanServiceImpl|static|calls|GET-http://ts-route-service/api/v1/routeservice/routes/{start}/{end}-and-/routes/{routeId}",
+   "candidateAtomId": "atom:relation:plan.routeplanserviceimpl:calls:ts-route-service",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:168",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:170",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:288",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:290"
+   ]
+  },
+  {
+   "key": "relation|plan.service.RoutePlanServiceImpl|static|calls|POST-http://ts-travel-service/api/v1/travelservice/trips/left-and-/trips/routes-and-/trip_detail",
+   "candidateAtomId": "atom:relation:plan.routeplanserviceimpl:calls:ts-travel-service",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:309",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:311",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:204",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:206",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:248",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:249"
+   ]
+  },
+  {
+   "key": "relation|plan.service.RoutePlanServiceImpl|static|calls|POST-http://ts-travel2-service/api/v1/travel2service/trips/left-and-/trips/routes-and-/trip_detail",
+   "candidateAtomId": "atom:relation:plan.routeplanserviceimpl:calls:ts-travel2-service",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:324",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:326",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:214",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:216",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:251"
+   ]
+  },
+  {
+   "key": "relation|price.PriceConfigRepository|static|dependsOn|price.PriceConfig",
+   "candidateAtomId": "atom:relation:price.priceconfigrepository:dependson:price.priceconfig",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/repository/PriceConfigRepository.java:6"
+   ]
+  },
+  {
+   "key": "relation|price.PriceServiceImpl|static|dependsOn|price.PriceConfigRepository",
+   "candidateAtomId": "atom:relation:price.priceserviceimpl:dependson:price.priceconfigrepository",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:22"
+   ]
+  },
+  {
+   "key": "relation|rebook.controller.RebookController|static|dependsOn|rebook.entity.RebookInfo",
+   "candidateAtomId": "atom:relation:rebook.rebookcontroller:dependson:rebook.rebookinfo",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:9",
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:32"
+   ]
+  },
+  {
+   "key": "relation|rebook.controller.RebookController|static|dependsOn|rebook.service.RebookService",
+   "candidateAtomId": "atom:relation:rebook.rebookcontroller:dependson:rebook.rebookservice",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:21",
+    "src:ts-rebook-service/src/main/java/rebook/controller/RebookController.java:22"
+   ]
+  },
+  {
+   "key": "relation|rebook.service.RebookServiceImpl|static|calls|GET-http://ts-route-service/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:relation:rebook.rebookserviceimpl:calls:ts-route-service",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:419",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:421"
+   ]
+  },
+  {
+   "key": "relation|rebook.service.RebookServiceImpl|static|calls|GET-http://ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+   "candidateAtomId": "atom:relation:rebook.rebookserviceimpl:calls:ts-train-service",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:406",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:408"
+   ]
+  },
+  {
+   "key": "relation|rebook.service.RebookServiceImpl|static|calls|POST-http://ts-seat-service/api/v1/seatservice/seats",
+   "candidateAtomId": "atom:relation:rebook.rebookserviceimpl:calls:ts-seat-service",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:250",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:251"
+   ]
+  },
+  {
+   "key": "relation|rebook.service.RebookServiceImpl|static|calls|POST-http://ts-travel-service/api/v1/travelservice/trip_detail",
+   "candidateAtomId": "atom:relation:rebook.rebookserviceimpl:calls:ts-travel-service",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:298",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:301"
+   ]
+  },
+  {
+   "key": "relation|rebook.service.RebookServiceImpl|static|calls|POST-http://ts-travel2-service/api/v1/travel2service/trip_detail",
+   "candidateAtomId": "atom:relation:rebook.rebookserviceimpl:calls:ts-travel2-service",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:299",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:304"
+   ]
+  },
+  {
+   "key": "relation|rebook.service.RebookServiceImpl|static|calls|create-update-delete-and-get-order-at-http://ts-order-other-service/api/v1/orderOtherService/orderOther-selected-when-tripid-does-not-start-with-g-or-d",
+   "candidateAtomId": "atom:relation:rebook.rebookserviceimpl:calls:ts-order-other-service",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:322",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:328",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:343",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:347",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:363",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:367",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:385",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:389"
+   ]
+  },
+  {
+   "key": "relation|rebook.service.RebookServiceImpl|static|calls|create-update-delete-and-get-order-at-http://ts-order-service/api/v1/orderservice/order-selected-when-tripid-starts-with-g-or-d",
+   "candidateAtomId": "atom:relation:rebook.rebookserviceimpl:calls:ts-order-service",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:321",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:325",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:342",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:345",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:362",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:365",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:384",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:387"
+   ]
+  },
+  {
+   "key": "relation|route.controller.RouteController|static|dependsOn|route.entity.RouteInfo",
+   "candidateAtomId": "atom:relation:route.routecontroller:dependson:route.routeinfo",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:11",
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:34"
+   ]
+  },
+  {
+   "key": "relation|route.controller.RouteController|static|dependsOn|route.service.RouteService",
+   "candidateAtomId": "atom:relation:route.routecontroller:dependson:route.routeservice",
+   "refs": [
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:12",
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:25",
+    "src:ts-route-service/src/main/java/route/controller/RouteController.java:26"
+   ]
+  },
+  {
+   "key": "semantic|ctx:rebook-rebook-flow|cech|sectionValue|section=money-amount:string-price-parsed-to-bigdecimal-at-use-site",
+   "candidateAtomId": "atom:semantic:ctx-rebook-rebook-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:121",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:122",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:123",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:172",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:173",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:174"
+   ]
+  },
+  {
+   "key": "semantic|ctx:rebook-rebook-flow|cech|sectionValue|section=order-status-code:enum-orderstatus-getcode-used-at-use-site-not-hardcoded-int-literal-values-notpaid-paid-change-collected",
+   "candidateAtomId": "atom:semantic:ctx-rebook-rebook-flow:cech-section-order-status-code",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:64",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:67",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:69",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:72",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:191"
+   ]
+  },
+  {
+   "key": "semantic|ctx:route-plan-search-flow|cech|sectionValue|section=money-amount:string-price-parsed-to-float-at-use-site-via-float-parsefloat",
+   "candidateAtomId": "atom:semantic:ctx-route-plan-search-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:64",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:65"
+   ]
+  },
+  {
+   "key": "semantic|plan.service.RoutePlanServiceImpl|semantic|identifiedBy|tripid-prefix-d-or-g-selects-travelservice-trip-detail-and-route-branch-any-other-prefix-selects-travel2service-branch",
+   "candidateAtomId": "atom:semantic:plan.routeplanserviceimpl:tripid:meansinuse",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:248",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:341"
+   ]
+  },
+  {
+   "key": "semantic|plan.service.RoutePlanServiceImpl|semantic|meansInUse|repeatedly-selects-the-remaining-trip-with-the-lowest-parsed-economy-class-price-up-to-5-results",
+   "candidateAtomId": "atom:semantic:plan.routeplanserviceimpl:searchcheapestresult:selection",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:55",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:64",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:69"
+   ]
+  },
+  {
+   "key": "semantic|plan.service.RoutePlanServiceImpl|semantic|meansInUse|repeatedly-selects-the-remaining-trip-with-the-smallest-end-minus-start-time-duration-up-to-5-results",
+   "candidateAtomId": "atom:semantic:plan.routeplanserviceimpl:searchquickestresult:selection",
+   "refs": [
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:117",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:128",
+    "src:ts-route-plan-service/src/main/java/plan/service/RoutePlanServiceImpl.java:133"
+   ]
+  },
+  {
+   "key": "semantic|price.PriceServiceImpl|semantic|statusGates|status-1-selects-non-empty-price-config-list-branch-which-also-emits-a-warn-level-log-status-0-selects-empty-list-branch-with-message-no-price-config",
+   "candidateAtomId": "atom:semantic:price.priceserviceimpl:findallpriceconfig:responsestatus",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:116",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:117",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:118",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:120"
+   ]
+  },
+  {
+   "key": "semantic|price.PriceServiceImpl|semantic|statusGates|status-1-selects-success-branch-with-payload-status-0-selects-not-found-or-empty-branch-with-message-no-that-config",
+   "candidateAtomId": "atom:semantic:price.priceserviceimpl:responseenvelope:meansinuse",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:56",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:77",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:79",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:102",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:104",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:130",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:134",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:143",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:152"
+   ]
+  },
+  {
+   "key": "semantic|rebook.service.RebookServiceImpl|semantic|identifiedBy|tripid-prefix-g-or-d-selects-high-speed-travel-service-and-order-service-family-branch-any-other-prefix-selects-normal-train-travel2-service-and-order-other-service-family-branch",
+   "candidateAtomId": "atom:semantic:rebook.rebookserviceimpl:tripid:meansinuse",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:220",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:261",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:300",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:323",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:344",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:364",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:386"
+   ]
+  },
+  {
+   "key": "semantic|rebook.service.RebookServiceImpl|semantic|meansInUse|getauthorizationheadersfrom-forwards-only-the-authorization-header-value-from-the-inbound-request-to-downstream-calls-dropping-all-other-inbound-headers",
+   "candidateAtomId": "atom:semantic:rebook.rebookserviceimpl:authorizationheader:meansinuse",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:468",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:470",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:471"
+   ]
+  },
+  {
+   "key": "semantic|rebook.service.RebookServiceImpl|semantic|statusGates|order-status-notpaid-selects-not-paid-rejection-branch-paid-selects-continue-branch-change-selects-already-changed-rejection-branch-collected-selects-already-collected-rejection-branch-other-values-select-a-generic-cant-change-rejection-branch",
+   "candidateAtomId": "atom:semantic:rebook.rebookserviceimpl:orderstatus:meansinuse",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:64",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:67",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:69",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:72",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:75"
+   ]
+  },
+  {
+   "key": "semantic|rebook.service.RebookServiceImpl|semantic|statusGates|response-status-0-selects-rejection-branch-with-message-status-1-selects-success-branch-status-2-selects-a-third-branch-carrying-the-outstanding-price-difference-to-be-paid",
+   "candidateAtomId": "atom:semantic:rebook.rebookserviceimpl:responseenvelope:meansinuse",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:141",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:150",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:180",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:224",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:234"
+   ]
+  },
+  {
+   "key": "semantic|rebook.service.RebookServiceImpl|semantic|statusGates|seattype-code-firstclass-selects-confort-class-price-and-availability-branch-secondclass-selects-economy-class-price-and-availability-branch",
+   "candidateAtomId": "atom:semantic:rebook.rebookserviceimpl:seattype:meansinuse",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:99",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:100",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:105",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:116",
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:118"
+   ]
+  },
+  {
+   "key": "state|price.PriceConfig|state|persistsIn|price_config-table-row-removed-via-priceConfigRepository-delete",
+   "candidateAtomId": "atom:state:price.priceconfig:persistsin:delete",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:133"
+   ]
+  },
+  {
+   "key": "state|price.PriceConfig|state|persistsIn|price_config-table-row-via-priceConfigRepository-save-on-create-or-modify-branch",
+   "candidateAtomId": "atom:state:price.priceconfig:persistsin:save",
+   "refs": [
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:40",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:54",
+    "src:ts-price-service/src/main/java/price/service/PriceServiceImpl.java:151"
+   ]
+  },
+  {
+   "key": "state|rebook.service.RebookServiceImpl|state|transitionsTo|sets-order-status-to-orderstatus-change-code-on-successful-rebook-update",
+   "candidateAtomId": "atom:state:rebook.rebookserviceimpl:transitionsto:order-status-change",
+   "refs": [
+    "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java:191"
+   ]
+  },
+  {
+   "key": "state|ts-price-service.application-config|state|persistsIn|mysql-jdbc-datasource-configured-via-price-mysql-host-port-database-env-vars-with-jpa-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-price-service:datasource",
+   "refs": [
+    "src:ts-price-service/src/main/resources/application.yml:8",
+    "src:ts-price-service/src/main/resources/application.yml:9",
+    "src:ts-price-service/src/main/resources/application.yml:11",
+    "src:ts-price-service/src/main/resources/application.yml:15"
+   ]
+  }
+ ]
+}

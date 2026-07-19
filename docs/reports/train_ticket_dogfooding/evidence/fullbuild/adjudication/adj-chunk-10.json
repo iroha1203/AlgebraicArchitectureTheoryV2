@@ -1,0 +1,2440 @@
+{
+  "chunkId": "chunk-10",
+  "adjudications": [
+    {
+      "key": "authority|food_delivery.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+      "candidateAtomId": "atom:authority:food-delivery-config-securityconfig:allowscrossorigin-all",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:44-49 — corsConfigurer registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials(false), maxAge(3600). Same fact as pass-b's cors row; kept, normalized subject/id.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-delivery-service-securityconfig:allowscrossorigin-all",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:44"
+        ]
+      }
+    },
+    {
+      "key": "authority|food_delivery.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-credentials-false-maxage-3600",
+      "candidateAtomId": "atom:authority:food-delivery-securityconfig:cors",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:44-49 — same CORS bean confirmed; merged with pass-a's row under canonical subject ts-food-delivery-service.SecurityConfig.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-delivery-service-securityconfig:allowscrossorigin-all",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:44"
+        ]
+      }
+    },
+    {
+      "key": "authority|food_delivery.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/fooddeliveryservice/**",
+      "candidateAtomId": "atom:authority:food-delivery-config-securityconfig:permitsunauthenticated-fooddeliveryservice-root",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:64 — antMatchers(\"/api/v1/fooddeliveryservice/**\").permitAll() confirmed. Same fact as pass-b; merged.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-delivery-service-securityconfig:permitsunauthenticated-fooddeliveryservice-root",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/fooddeliveryservice/**",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:64"
+        ]
+      }
+    },
+    {
+      "key": "authority|food_delivery.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/fooddeliveryservice/**",
+      "candidateAtomId": "atom:authority:food-delivery-securityconfig:permit-all",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:64 — confirmed same permitAll matcher; merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-delivery-service-securityconfig:permitsunauthenticated-fooddeliveryservice-root",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/fooddeliveryservice/**",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:64"
+        ]
+      }
+    },
+    {
+      "key": "authority|food_delivery.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-and-webjars-paths",
+      "candidateAtomId": "atom:authority:food-delivery-securityconfig:permit-all-swagger",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:65-66 — antMatchers(\"/swagger-ui.html\",\"/webjars/**\",...).permitAll() confirmed; genuine observation pass-a's survey of this file did not extract as its own atom.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-delivery-service-securityconfig:permitsunauthenticated-swagger",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:65",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:66"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+      "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:allowscrossorigin-all",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:51-56 — same CORS bean pattern as food_delivery, registry.addMapping(\"/**\") with ALL origins/methods/headers, credentials false, maxAge 3600 confirmed. Pass-a cited the enclosing method line (:47); actual addMapping call is at :51. Merged with pass-b, ref corrected.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:allowscrossorigin-all",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:51"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-credentials-false-maxage-3600",
+      "candidateAtomId": "atom:authority:foodsearch-securityconfig:cors",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:51-56 — confirmed at the precise addMapping call line; merged with pass-a's row (subject/id normalized).",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:allowscrossorigin-all",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:51"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/foodservice/**",
+      "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:permitsunauthenticated-foodservice-root",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:71 — antMatchers(\"/api/v1/foodservice/**\").permitAll() confirmed, registered before the narrower role-gated matchers. Merged with pass-b.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:permitsunauthenticated-foodservice-root",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/foodservice/**",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:71"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/foodservice/**",
+      "candidateAtomId": "atom:authority:foodsearch-securityconfig:permit-all",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:71 — confirmed; merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:permitsunauthenticated-foodservice-root",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/foodservice/**",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:71"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-and-webjars-paths",
+      "candidateAtomId": "atom:authority:foodsearch-securityconfig:permit-all-swagger",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:75-76 — antMatchers(swagger-ui.html, webjars/**, ...).permitAll() confirmed; genuine additional observation not extracted by pass-a for this file.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:permitsunauthenticated-swagger",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:75",
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:76"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.config.SecurityConfig|authority|requiresRole|admin-role-on-DELETE-/api/v1/foodservice/orders/*",
+      "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:requiresrole-admin-delete-orders",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:72 — antMatchers(HttpMethod.DELETE, \"/api/v1/foodservice/orders/*\").hasAnyRole(admin) confirmed. Merged with pass-b.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:requiresrole-admin-delete-orders",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "admin-role-on-DELETE-/api/v1/foodservice/orders/*",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:72"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.SecurityConfig|authority|requiresRole|admin-role-required-for-delete-/api/v1/foodservice/orders/*",
+      "candidateAtomId": "atom:authority:foodsearch-securityconfig:role-delete",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:72 — confirmed; merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:requiresrole-admin-delete-orders",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "admin-role-on-DELETE-/api/v1/foodservice/orders/*",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:72"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.config.SecurityConfig|authority|requiresRole|admin-role-on-POST-/api/v1/foodservice/orders",
+      "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:requiresrole-admin-post-orders",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:74 — antMatchers(HttpMethod.POST, \"/api/v1/foodservice/orders\").hasAnyRole(admin) confirmed. Merged with pass-b.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:requiresrole-admin-post-orders",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "admin-role-on-POST-/api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:74"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.SecurityConfig|authority|requiresRole|admin-role-required-for-post-/api/v1/foodservice/orders",
+      "candidateAtomId": "atom:authority:foodsearch-securityconfig:role-post",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:74 — confirmed; merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:requiresrole-admin-post-orders",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "admin-role-on-POST-/api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:74"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.config.SecurityConfig|authority|requiresRole|admin-role-on-PUT-/api/v1/foodservice/orders",
+      "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:requiresrole-admin-put-orders",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:73 — antMatchers(HttpMethod.PUT, \"/api/v1/foodservice/orders\").hasAnyRole(admin) confirmed. Merged with pass-b.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:requiresrole-admin-put-orders",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "admin-role-on-PUT-/api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:73"
+        ]
+      }
+    },
+    {
+      "key": "authority|foodsearch.SecurityConfig|authority|requiresRole|admin-role-required-for-put-/api/v1/foodservice/orders",
+      "candidateAtomId": "atom:authority:foodsearch-securityconfig:role-put",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:73 — confirmed; merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "authority",
+        "id": "atom:authority:ts-food-service-securityconfig:requiresrole-admin-put-orders",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "admin-role-on-PUT-/api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:73"
+        ]
+      }
+    },
+    {
+      "key": "capability|execute.serivce.ExecuteService|capability|handlesCommand|ticketCollect",
+      "candidateAtomId": "atom:capability:execute-serivce-executeservice:handlescommand-ticketcollect",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:27 (interface) and ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:89 (impl) — ticketCollect(orderId, headers) declared and implemented. Same capability as pass-b's row (attributed to interface vs impl); canonical subject set to the implementing class ExecuteServiceImpl, consistent with how endpoint-exposing capabilities are attributed elsewhere in this packet.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "capability",
+        "id": "atom:capability:ts-execute-service-executeserviceimpl:handlescommand-ticketcollect",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "ticketCollect",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:27",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:89"
+        ]
+      }
+    },
+    {
+      "key": "capability|execute.ExecuteServiceImpl|capability|handlesCommand|TicketCollect",
+      "candidateAtomId": "atom:capability:execute-executeserviceimpl:ticket-collect",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:27 and ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:89 — confirmed; merged with pass-a's row, object normalized to the literal method name ticketCollect.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "capability",
+        "id": "atom:capability:ts-execute-service-executeserviceimpl:handlescommand-ticketcollect",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "ticketCollect",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:27",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:89"
+        ]
+      }
+    },
+    {
+      "key": "capability|execute.serivce.ExecuteService|capability|handlesCommand|ticketExecute",
+      "candidateAtomId": "atom:capability:execute-serivce-executeservice:handlescommand-ticketexecute",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:18 (interface) and ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:41 (impl) — ticketExecute(orderId, headers) declared and implemented. Merged with pass-b, canonical subject = implementing class.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "capability",
+        "id": "atom:capability:ts-execute-service-executeserviceimpl:handlescommand-ticketexecute",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "ticketExecute",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:18",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:41"
+        ]
+      }
+    },
+    {
+      "key": "capability|execute.ExecuteServiceImpl|capability|handlesCommand|TicketExecute",
+      "candidateAtomId": "atom:capability:execute-executeserviceimpl:ticket-execute",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:18 and ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:41 — confirmed; merged with pass-a's row, object normalized to literal method name ticketExecute.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "capability",
+        "id": "atom:capability:ts-execute-service-executeserviceimpl:handlescommand-ticketexecute",
+        "axis": "capability",
+        "predicate": "handlesCommand",
+        "object": "ticketExecute",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:18",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:41"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|DELETE /api/v1/fooddeliveryservice/orders/d/{orderId}",
+      "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-delete-orders-d-orderid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:40 — endpoint mapping confirmed. Merged with pass-b's row (subject normalized, dropping java package segment).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:deletefooddeliveryorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "DELETE /api/v1/fooddeliveryservice/orders/d/{orderId}",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:40"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|delete-/api/v1/fooddeliveryservice/orders/d/{orderId}",
+      "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:delete-food-delivery-order",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:40 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:deletefooddeliveryorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "DELETE /api/v1/fooddeliveryservice/orders/d/{orderId}",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:40"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|GET /api/v1/fooddeliveryservice/orders/all",
+      "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-get-orders-all",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:52 — endpoint mapping confirmed. Merged with pass-b's row (subject normalized, dropping java package segment).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getallfooddeliveryorders",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/fooddeliveryservice/orders/all",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:52"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|get-/api/v1/fooddeliveryservice/orders/all",
+      "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:get-all-food-delivery-orders",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:52 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getallfooddeliveryorders",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/fooddeliveryservice/orders/all",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:52"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|GET /api/v1/fooddeliveryservice/orders/store/{storeId}",
+      "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-get-orders-store-storeid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:58 — endpoint mapping confirmed. Merged with pass-b's row (subject normalized, dropping java package segment).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getfooddeliveryorderbystoreid",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/fooddeliveryservice/orders/store/{storeId}",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:58"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|get-/api/v1/fooddeliveryservice/orders/store/{storeId}",
+      "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:get-food-delivery-order-by-store-id",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:58 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getfooddeliveryorderbystoreid",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/fooddeliveryservice/orders/store/{storeId}",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:58"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|GET /api/v1/fooddeliveryservice/orders/{orderId}",
+      "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-get-orders-orderid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:46 — endpoint mapping confirmed. Merged with pass-b's row (subject normalized, dropping java package segment).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getfooddeliveryorderbyid",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/fooddeliveryservice/orders/{orderId}",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:46"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|get-/api/v1/fooddeliveryservice/orders/{orderId}",
+      "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:get-food-delivery-order-by-id",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:46 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getfooddeliveryorderbyid",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/fooddeliveryservice/orders/{orderId}",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:46"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|POST /api/v1/fooddeliveryservice/orders",
+      "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-post-orders",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:34 — endpoint mapping confirmed. Merged with pass-b's row (subject normalized, dropping java package segment).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:createfooddeliveryorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/fooddeliveryservice/orders",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:34"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|post-/api/v1/fooddeliveryservice/orders",
+      "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:create-food-delivery-order",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:34 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:createfooddeliveryorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/fooddeliveryservice/orders",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:34"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|PUT /api/v1/fooddeliveryservice/orders/dtime",
+      "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-put-orders-dtime",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:76 — endpoint mapping confirmed. Merged with pass-b's row (subject normalized, dropping java package segment).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updatedeliverytime",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/fooddeliveryservice/orders/dtime",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:76"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|put-/api/v1/fooddeliveryservice/orders/dtime",
+      "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:update-delivery-time",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:76 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updatedeliverytime",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/fooddeliveryservice/orders/dtime",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:76"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|PUT /api/v1/fooddeliveryservice/orders/seatno",
+      "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-put-orders-seatno",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:70 — endpoint mapping confirmed. Merged with pass-b's row (subject normalized, dropping java package segment).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updateseatno",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/fooddeliveryservice/orders/seatno",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:70"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|put-/api/v1/fooddeliveryservice/orders/seatno",
+      "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:update-seat-no",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:70 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updateseatno",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/fooddeliveryservice/orders/seatno",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:70"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|PUT /api/v1/fooddeliveryservice/orders/tripid",
+      "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-put-orders-tripid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:64 — endpoint mapping confirmed. Merged with pass-b's row (subject normalized, dropping java package segment).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updatetripid",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/fooddeliveryservice/orders/tripid",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:64"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|put-/api/v1/fooddeliveryservice/orders/tripid",
+      "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:update-trip-id",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:64 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updatetripid",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/fooddeliveryservice/orders/tripid",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:64"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|GET /api/v1/fooddeliveryservice/welcome",
+      "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-get-welcome",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:28-31 — @GetMapping(path=\"/welcome\") home() returns a static welcome string; confirmed real endpoint. Pass-b's survey of this file omitted the /welcome mapping (all of its other 8 FoodDeliveryController endpoints matched pass-a, /welcome did not), so this is a genuine pass-a-only capture.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliverycontroller:exposesendpoint-get-welcome",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/fooddeliveryservice/welcome",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:28"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|DELETE /api/v1/foodservice/orders/{orderId}",
+      "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-delete-orders-orderid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:76 — endpoint mapping confirmed. Merged with pass-b's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:deletefoodorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "DELETE /api/v1/foodservice/orders/{orderId}",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:76"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|delete-/api/v1/foodservice/orders/{orderId}",
+      "candidateAtomId": "atom:capability:foodsearch-foodcontroller:delete-food-order",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:76 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:deletefoodorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "DELETE /api/v1/foodservice/orders/{orderId}",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:76"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}",
+      "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-foods-date-startstation-endstation-tripid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:89 — endpoint mapping confirmed. Merged with pass-b's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:getallfood",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:89"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|get-/api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}",
+      "candidateAtomId": "atom:capability:foodsearch-foodcontroller:get-all-food",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:89 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:getallfood",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:89"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/orders",
+      "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-orders",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:50 — endpoint mapping confirmed. Merged with pass-b's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:findallfoodorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:50"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|get-/api/v1/foodservice/orders",
+      "candidateAtomId": "atom:capability:foodsearch-foodcontroller:find-all-food-order",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:50 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:findallfoodorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:50"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/orders/{orderId}",
+      "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-orders-orderid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:82 — endpoint mapping confirmed. Merged with pass-b's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:findfoodorderbyorderid",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/foodservice/orders/{orderId}",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:82"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|get-/api/v1/foodservice/orders/{orderId}",
+      "candidateAtomId": "atom:capability:foodsearch-foodcontroller:find-food-order-by-order-id",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:82 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:findfoodorderbyorderid",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/foodservice/orders/{orderId}",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:82"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/test_send_delivery",
+      "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-test-send-delivery",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:37 — endpoint mapping confirmed. Merged with pass-b's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:testsenddelivery",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/foodservice/test_send_delivery",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:37"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|get-/api/v1/foodservice/test_send_delivery",
+      "candidateAtomId": "atom:capability:foodsearch-foodcontroller:test-send-delivery",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:37 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:testsenddelivery",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/foodservice/test_send_delivery",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:37"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|POST /api/v1/foodservice/createOrderBatch",
+      "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-post-createorderbatch",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:62 — endpoint mapping confirmed. Merged with pass-b's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:createfoodordersinbatch",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/foodservice/createOrderBatch",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:62"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|post-/api/v1/foodservice/createOrderBatch",
+      "candidateAtomId": "atom:capability:foodsearch-foodcontroller:create-food-orders-in-batch",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:62 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:createfoodordersinbatch",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/foodservice/createOrderBatch",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:62"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|POST /api/v1/foodservice/orders",
+      "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-post-orders",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:56 — endpoint mapping confirmed. Merged with pass-b's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:createfoodorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:56"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|post-/api/v1/foodservice/orders",
+      "candidateAtomId": "atom:capability:foodsearch-foodcontroller:create-food-order",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:56 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:createfoodorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:56"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|PUT /api/v1/foodservice/orders",
+      "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-put-orders",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:69 — endpoint mapping confirmed. Merged with pass-b's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:updatefoodorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:69"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|put-/api/v1/foodservice/orders",
+      "candidateAtomId": "atom:capability:foodsearch-foodcontroller:update-food-order",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:69 — same endpoint confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:updatefoodorder",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/foodservice/orders",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:69"
+        ]
+      }
+    },
+    {
+      "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/welcome",
+      "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-welcome",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:32-35 — @GetMapping(path=\"/welcome\") home() returns a static welcome string; confirmed real endpoint. Pass-b's survey of this file omitted /welcome (matches all its other 8 FoodController endpoints), so this is a genuine pass-a-only capture.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-service-foodcontroller:exposesendpoint-get-welcome",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/foodservice/welcome",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:32"
+        ]
+      }
+    },
+    {
+      "key": "capability|food_delivery.FoodDeliveryOrderRepository|capability|servesQuery|food-delivery-orders-by-stationfoodstoreid",
+      "candidateAtomId": "atom:capability:food-delivery-fooddeliveryorderrepository:find-by-station-food-store-id",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java:10 — List<FoodDeliveryOrder> findByStationFoodStoreId(String stationFoodStoreId) confirmed as a derived-query method on the repository interface; pass-a's survey of this file only produced a component atom + a semantic identifiedBy atom, not this capability. Genuine additional observation.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryOrderRepository",
+        "kind": "capability",
+        "id": "atom:capability:ts-food-delivery-service-fooddeliveryorderrepository:servesquery-by-stationfoodstoreid",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "food-delivery-orders-by-stationfoodstoreid",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java:10"
+        ]
+      }
+    },
+    {
+      "key": "component|execute.serivce.ExecuteServiceImpl|static||",
+      "candidateAtomId": "atom:component:execute-serivce-executeserviceimpl",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "component",
+        "id": "atom:component:ts-execute-service-executeserviceimpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java"
+        ]
+      }
+    },
+    {
+      "key": "component|execute.ExecuteServiceImpl|static||",
+      "candidateAtomId": "atom:component:execute-executeserviceimpl",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "component",
+        "id": "atom:component:ts-execute-service-executeserviceimpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java"
+        ]
+      }
+    },
+    {
+      "key": "component|execute.serivce.ExecuteService|static||",
+      "candidateAtomId": "atom:component:execute-serivce-executeservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteService.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteService",
+        "kind": "component",
+        "id": "atom:component:ts-execute-service-executeservice",
+        "axis": "static",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java"
+        ]
+      }
+    },
+    {
+      "key": "component|execute.ExecuteService|static||",
+      "candidateAtomId": "atom:component:execute-executeservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteService.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteService",
+        "kind": "component",
+        "id": "atom:component:ts-execute-service-executeservice",
+        "axis": "static",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.config.SecurityConfig|static||",
+      "candidateAtomId": "atom:component:food-delivery-config-securityconfig",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SecurityConfig",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-securityconfig",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.SecurityConfig|static||",
+      "candidateAtomId": "atom:component:food-delivery-securityconfig",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SecurityConfig",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-securityconfig",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.controller.FoodDeliveryController|static||",
+      "candidateAtomId": "atom:component:food-delivery-controller-fooddeliverycontroller",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliverycontroller",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.FoodDeliveryController|static||",
+      "candidateAtomId": "atom:component:food-delivery-fooddeliverycontroller",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliverycontroller",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.entity.DeliveryInfo|static||",
+      "candidateAtomId": "atom:component:food-delivery-entity-deliveryinfo",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.DeliveryInfo",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-deliveryinfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.DeliveryInfo|static||",
+      "candidateAtomId": "atom:component:food-delivery-deliveryinfo",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.DeliveryInfo",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-deliveryinfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.entity.FoodDeliveryOrder|static||",
+      "candidateAtomId": "atom:component:food-delivery-entity-fooddeliveryorder",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryOrder",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliveryorder",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.FoodDeliveryOrder|static||",
+      "candidateAtomId": "atom:component:food-delivery-fooddeliveryorder",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryOrder",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliveryorder",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.entity.SeatInfo|static||",
+      "candidateAtomId": "atom:component:food-delivery-entity-seatinfo",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SeatInfo",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-seatinfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.SeatInfo|static||",
+      "candidateAtomId": "atom:component:food-delivery-seatinfo",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SeatInfo",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-seatinfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.entity.StationFoodStoreInfo|static||",
+      "candidateAtomId": "atom:component:food-delivery-entity-stationfoodstoreinfo",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.StationFoodStoreInfo",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-stationfoodstoreinfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.StationFoodStoreInfo|static||",
+      "candidateAtomId": "atom:component:food-delivery-stationfoodstoreinfo",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.StationFoodStoreInfo",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-stationfoodstoreinfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.entity.TripOrderInfo|static||",
+      "candidateAtomId": "atom:component:food-delivery-entity-triporderinfo",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.TripOrderInfo",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-triporderinfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.TripOrderInfo|static||",
+      "candidateAtomId": "atom:component:food-delivery-triporderinfo",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.TripOrderInfo",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-triporderinfo",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.init.InitData|static||",
+      "candidateAtomId": "atom:component:food-delivery-init-initdata",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.InitData",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-initdata",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.InitData|static||",
+      "candidateAtomId": "atom:component:food-delivery-initdata",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.InitData",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-initdata",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.repository.FoodDeliveryOrderRepository|static||",
+      "candidateAtomId": "atom:component:food-delivery-repository-fooddeliveryorderrepository",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryOrderRepository",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliveryorderrepository",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.FoodDeliveryOrderRepository|static||",
+      "candidateAtomId": "atom:component:food-delivery-fooddeliveryorderrepository",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryOrderRepository",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliveryorderrepository",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.service.FoodDeliveryServiceImpl|static||",
+      "candidateAtomId": "atom:component:food-delivery-service-fooddeliveryserviceimpl",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliveryserviceimpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.FoodDeliveryServiceImpl|static||",
+      "candidateAtomId": "atom:component:food-delivery-fooddeliveryserviceimpl",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliveryserviceimpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.service.FoodDeliveryService|static||",
+      "candidateAtomId": "atom:component:food-delivery-service-fooddeliveryservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryService.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryService",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliveryservice",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryService.java"
+        ]
+      }
+    },
+    {
+      "key": "component|food_delivery.FoodDeliveryService|static||",
+      "candidateAtomId": "atom:component:food-delivery-fooddeliveryservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryService.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryService",
+        "kind": "component",
+        "id": "atom:component:ts-food-delivery-service-fooddeliveryservice",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryService.java"
+        ]
+      }
+    },
+    {
+      "key": "component|foodsearch.config.Queues|static||",
+      "candidateAtomId": "atom:component:foodsearch-config-queues",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/Queues.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.Queues",
+        "kind": "component",
+        "id": "atom:component:ts-food-service-queues",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/Queues.java"
+        ]
+      }
+    },
+    {
+      "key": "component|foodsearch.Queues|static||",
+      "candidateAtomId": "atom:component:foodsearch-queues",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/Queues.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.Queues",
+        "kind": "component",
+        "id": "atom:component:ts-food-service-queues",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/Queues.java"
+        ]
+      }
+    },
+    {
+      "key": "component|foodsearch.config.SecurityConfig|static||",
+      "candidateAtomId": "atom:component:foodsearch-config-securityconfig",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "component",
+        "id": "atom:component:ts-food-service-securityconfig",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java"
+        ]
+      }
+    },
+    {
+      "key": "component|foodsearch.SecurityConfig|static||",
+      "candidateAtomId": "atom:component:foodsearch-securityconfig",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.SecurityConfig",
+        "kind": "component",
+        "id": "atom:component:ts-food-service-securityconfig",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java"
+        ]
+      }
+    },
+    {
+      "key": "component|foodsearch.controller.FoodController|static||",
+      "candidateAtomId": "atom:component:foodsearch-controller-foodcontroller",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java — class confirmed present. Same component as pass-b's row under a shortened subject; merged with subject normalized to service-dir.ClassName form.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "component",
+        "id": "atom:component:ts-food-service-foodcontroller",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java"
+        ]
+      }
+    },
+    {
+      "key": "component|foodsearch.FoodController|static||",
+      "candidateAtomId": "atom:component:foodsearch-foodcontroller",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java — same class confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "component",
+        "id": "atom:component:ts-food-service-foodcontroller",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java"
+        ]
+      }
+    },
+    {
+      "key": "component|mq.food_delivery-queue|static||",
+      "candidateAtomId": "atom:component:mq-food-delivery-queue",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/config/Queues.java:10,14 — queueName=\"food_delivery\" and @Bean Queue emailQueue() returning new Queue(queueName) confirmed: a distinct RabbitMQ queue resource. Pass-a folded this into the Queues config-class component only; pass-b's separate queue-resource component is a genuine additional observation (note: the bean accessor method name emailQueue does not match the queue's own name food_delivery).",
+      "canonicalAtom": {
+        "subject": "ts-food-service.food-delivery-queue",
+        "kind": "component",
+        "id": "atom:component:ts-food-service-food-delivery-queue",
+        "axis": "static",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/config/Queues.java:10",
+          "src:ts-food-service/src/main/java/foodsearch/config/Queues.java:14"
+        ]
+      }
+    },
+    {
+      "key": "contract|food_delivery.entity.DeliveryInfo|specification|shapedAs|orderId(String), deliveryTime(String)",
+      "candidateAtomId": "atom:contract:food-delivery-entity-deliveryinfo:shapedas-fields",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java:10-12 — fields orderId(String), deliveryTime(String) confirmed via @Data lombok class. No pass-b contract atom exists for this entity.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.DeliveryInfo",
+        "kind": "contract",
+        "id": "atom:contract:ts-food-delivery-service-deliveryinfo:shapedas-fields",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "orderId(String), deliveryTime(String)",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java:11",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java:12"
+        ]
+      }
+    },
+    {
+      "key": "contract|food_delivery.entity.FoodDeliveryOrder|specification|shapedAs|id, stationFoodStoreId, foodList[Food], tripId, seatNo(int), createdTime(String), deliveryTime(String), deliveryFee(double)",
+      "candidateAtomId": "atom:contract:food-delivery-entity-fooddeliveryorder:shapedas-fields",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:19-39 — @Entity fields id, stationFoodStoreId, foodList (List<Food>), tripId, seatNo(int), createdTime, deliveryTime, deliveryFee(double) confirmed in declared order. No pass-b contract atom for this entity.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryOrder",
+        "kind": "contract",
+        "id": "atom:contract:ts-food-delivery-service-fooddeliveryorder:shapedas-fields",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "id, stationFoodStoreId, foodList[Food], tripId, seatNo(int), createdTime(String), deliveryTime(String), deliveryFee(double)",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:19",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39"
+        ]
+      }
+    },
+    {
+      "key": "contract|food_delivery.entity.SeatInfo|specification|shapedAs|orderId(String), seatNo(int)",
+      "candidateAtomId": "atom:contract:food-delivery-entity-seatinfo:shapedas-fields",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java:10-12 — fields orderId(String), seatNo(int) confirmed. No pass-b contract atom for this entity.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.SeatInfo",
+        "kind": "contract",
+        "id": "atom:contract:ts-food-delivery-service-seatinfo:shapedas-fields",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "orderId(String), seatNo(int)",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java:11",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java:12"
+        ]
+      }
+    },
+    {
+      "key": "contract|food_delivery.entity.StationFoodStoreInfo|specification|shapedAs|id, stationId, storeName, telephone, businessTime, deliveryFee(double), foodList[Food]",
+      "candidateAtomId": "atom:contract:food-delivery-entity-stationfoodstoreinfo:shapedas-fields",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:15-29 — fields id, stationId, storeName, telephone, businessTime, deliveryFee(double), foodList(List<Food>) confirmed in declared order. No pass-b contract atom for this entity.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.StationFoodStoreInfo",
+        "kind": "contract",
+        "id": "atom:contract:ts-food-delivery-service-stationfoodstoreinfo:shapedas-fields",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "id, stationId, storeName, telephone, businessTime, deliveryFee(double), foodList[Food]",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:17",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:29"
+        ]
+      }
+    },
+    {
+      "key": "contract|food_delivery.entity.TripOrderInfo|specification|shapedAs|orderId(String), tripId(String)",
+      "candidateAtomId": "atom:contract:food-delivery-entity-triporderinfo:shapedas-fields",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java:10-12 — fields orderId(String), tripId(String) confirmed. No pass-b contract atom for this entity.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.TripOrderInfo",
+        "kind": "contract",
+        "id": "atom:contract:ts-food-delivery-service-triporderinfo:shapedas-fields",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "orderId(String), tripId(String)",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java:11",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java:12"
+        ]
+      }
+    },
+    {
+      "key": "effect|execute.serivce.ExecuteServiceImpl|effect|callsProvider|ts-order-service order status update (/api/v1/orderservice/order/status/{orderId}/{status}) and order get (/api/v1/orderservice/order/{orderId}) endpoints via RestTemplate",
+      "candidateAtomId": "atom:effect:execute-serivce-executeserviceimpl:callsprovider-ts-order-service",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:136-146 (executeOrder) and :163-174 (getOrderByIdFromOrder) — both hit ts-order-service via restTemplate.exchange. ticketExecute/ticketCollect call getOrderByIdFromOrder first and only fall back to the order-other-service pair when its status != 1 (lines 45-64), so this is a conditional/restriction-shaped call, not an unconditional one. Reclassified axis from pass-a's 'effect:callsProvider' to 'relation:calls' with axis 'restriction' (matches this repo's precedent for branch-selected provider calls, see chunk-02 adjudication). Merged with pass-b's relation row.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "relation",
+        "id": "atom:relation:ts-execute-service-executeserviceimpl:calls-ts-order-service",
+        "axis": "restriction",
+        "predicate": "calls",
+        "object": "GET-http://ts-order-service/api/v1/orderservice/order/{orderId}-and-order/status/{orderId}/{status}-tried-first-before-falling-back-to-ts-order-other-service",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:140",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:141",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:163",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:167"
+        ]
+      }
+    },
+    {
+      "key": "relation|execute.ExecuteServiceImpl|relation|calls|ts-order-service",
+      "candidateAtomId": "atom:relation:execute-executeserviceimpl:calls-ts-order-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:140,167 — confirmed calls to ts-order-service. Axis corrected to 'restriction' since the call is the first branch of a try-order-service-then-order-other-service fallback (see pass-a basis). Merged.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "relation",
+        "id": "atom:relation:ts-execute-service-executeserviceimpl:calls-ts-order-service",
+        "axis": "restriction",
+        "predicate": "calls",
+        "object": "GET-http://ts-order-service/api/v1/orderservice/order/{orderId}-and-order/status/{orderId}/{status}-tried-first-before-falling-back-to-ts-order-other-service",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:140",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:141",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:163",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:167"
+        ]
+      }
+    },
+    {
+      "key": "effect|execute.serivce.ExecuteServiceImpl|effect|callsProvider|ts-order-other-service orderOther status update (/api/v1/orderOtherService/orderOther/status/{orderId}/{status}) and orderOther get (/api/v1/orderOtherService/orderOther/{orderId}) endpoints via RestTemplate",
+      "candidateAtomId": "atom:effect:execute-serivce-executeserviceimpl:callsprovider-ts-order-other-service",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:150-160 (executeOrderOther) and :177-188 (getOrderByIdFromOrderOther) — hit ts-order-other-service via restTemplate.exchange, invoked only in the else-branch when the order was not found via ts-order-service (line 64/112). Reclassified axis to 'relation:calls'/'restriction' (branch-selected fallback provider); merged with pass-b's relation row.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "relation",
+        "id": "atom:relation:ts-execute-service-executeserviceimpl:calls-ts-order-other-service",
+        "axis": "restriction",
+        "predicate": "calls",
+        "object": "GET-http://ts-order-other-service/api/v1/orderOtherService/orderOther/status/{orderId}/{status}-and-orderOther/{orderId}-used-as-fallback-when-ts-order-service-does-not-have-the-order",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:150",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:154",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:177",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:181"
+        ]
+      }
+    },
+    {
+      "key": "relation|execute.ExecuteServiceImpl|relation|calls|ts-order-other-service",
+      "candidateAtomId": "atom:relation:execute-executeserviceimpl:calls-ts-order-other-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:154,181 — confirmed calls to ts-order-other-service, used as the fallback branch. Axis corrected to 'restriction'. Merged.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "relation",
+        "id": "atom:relation:ts-execute-service-executeserviceimpl:calls-ts-order-other-service",
+        "axis": "restriction",
+        "predicate": "calls",
+        "object": "GET-http://ts-order-other-service/api/v1/orderOtherService/orderOther/status/{orderId}/{status}-and-orderOther/{orderId}-used-as-fallback-when-ts-order-service-does-not-have-the-order",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:150",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:154",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:177",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:181"
+        ]
+      }
+    },
+    {
+      "key": "effect|food_delivery.service.FoodDeliveryServiceImpl|effect|callsProvider|ts-station-food-service GET /api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId} endpoint via RestTemplate, called synchronously during order creation",
+      "candidateAtomId": "atom:effect:food-delivery-service-fooddeliveryserviceimpl:callsprovider-ts-station-food-service",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:47-54 — createFoodDeliveryOrder calls ts-station-food-service unconditionally (no branch selecting among alternative providers) to fetch store food/fee info before computing deliveryFee. Reclassified axis from 'effect:callsProvider' to 'relation:calls' (default 'relation' axis, no restriction evidence). Merged with pass-b's relation row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "relation",
+        "id": "atom:relation:ts-food-delivery-service-fooddeliveryserviceimpl:calls-ts-station-food-service",
+        "axis": "relation",
+        "predicate": "calls",
+        "object": "GET-http://ts-station-food-service/api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:47",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:49"
+        ]
+      }
+    },
+    {
+      "key": "relation|food_delivery.FoodDeliveryServiceImpl|relation|calls|ts-station-food-service",
+      "candidateAtomId": "atom:relation:food-delivery-fooddeliveryserviceimpl:calls-ts-station-food-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:49 — confirmed unconditional call to ts-station-food-service. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "relation",
+        "id": "atom:relation:ts-food-delivery-service-fooddeliveryserviceimpl:calls-ts-station-food-service",
+        "axis": "relation",
+        "predicate": "calls",
+        "object": "GET-http://ts-station-food-service/api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:47",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:49"
+        ]
+      }
+    },
+    {
+      "key": "effect|foodsearch.controller.FoodController|effect|publishes|food_delivery queue message via RabbitSend.send(deliveryJson) on the test_send_delivery endpoint",
+      "candidateAtomId": "atom:effect:foodsearch-controller-foodcontroller:publishes-food-delivery-queue",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:37-47 — test_send_delivery() builds a Delivery and calls sender.send(deliveryJson) where sender is a RabbitSend bean; ts-food-service/src/main/java/foodsearch/config/Queues.java:10 shows the target queue name is \"food_delivery\". Same fact as pass-b's 'enqueues' row (predicate phrasing drift); merged, kept the 'publishes' predicate.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "effect",
+        "id": "atom:effect:ts-food-service-foodcontroller:publishes-food-delivery-queue",
+        "axis": "effect",
+        "predicate": "publishes",
+        "object": "food_delivery queue message via RabbitSend.send(deliveryJson) on the test_send_delivery endpoint",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:45",
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:46",
+          "src:ts-food-service/src/main/java/foodsearch/config/Queues.java:10"
+        ]
+      }
+    },
+    {
+      "key": "effect|foodsearch.FoodController|effect|enqueues|food_delivery-queue-via-rabbitsend-send",
+      "candidateAtomId": "atom:effect:foodsearch-foodcontroller:enqueues-food-delivery-queue",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:46 and ts-food-service/src/main/java/foodsearch/config/Queues.java:10 — confirmed same RabbitSend.send call and queue name. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "effect",
+        "id": "atom:effect:ts-food-service-foodcontroller:publishes-food-delivery-queue",
+        "axis": "effect",
+        "predicate": "publishes",
+        "object": "food_delivery queue message via RabbitSend.send(deliveryJson) on the test_send_delivery endpoint",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:45",
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:46",
+          "src:ts-food-service/src/main/java/foodsearch/config/Queues.java:10"
+        ]
+      }
+    },
+    {
+      "key": "effect|food_delivery.InitData|effect|terminatesProcess|system-exit-1-called-on-exception-reading-food_delivery_orders.txt",
+      "candidateAtomId": "atom:effect:food-delivery-initdata:terminates-on-read-error",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:48-51 — catch(Exception e) block logs and calls System.exit(1) if reading/parsing food_delivery_orders.txt fails. Pass-a's survey of this file only produced a readsFrom relation, not this effect. Genuine additional observation.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.InitData",
+        "kind": "effect",
+        "id": "atom:effect:ts-food-delivery-service-initdata:terminatesprocess-on-read-error",
+        "axis": "effect",
+        "predicate": "terminatesProcess",
+        "object": "system-exit-1-called-on-exception-reading-food_delivery_orders.txt",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:48",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:51"
+        ]
+      }
+    },
+    {
+      "key": "relation|food_delivery.controller.FoodDeliveryController|relation|dependsOn|food_delivery.service.FoodDeliveryService",
+      "candidateAtomId": "atom:relation:food-delivery-controller-fooddeliverycontroller:dependson-fooddeliveryservice",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:23-24 — @Autowired private FoodDeliveryService foodDeliveryService; confirmed. No pass-b relation atom for this dependency.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryController",
+        "kind": "relation",
+        "id": "atom:relation:ts-food-delivery-service-fooddeliverycontroller:dependson-fooddeliveryservice",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-food-delivery-service.FoodDeliveryService",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:24"
+        ]
+      }
+    },
+    {
+      "key": "relation|food_delivery.init.InitData|relation|readsFrom|classpath resource food_delivery_orders.txt",
+      "candidateAtomId": "atom:relation:food-delivery-init-initdata:readsfrom-food-delivery-orders-txt",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:25 — this.getClass().getResourceAsStream(\"/food_delivery_orders.txt\") confirmed. No pass-b relation atom for this read.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.InitData",
+        "kind": "relation",
+        "id": "atom:relation:ts-food-delivery-service-initdata:readsfrom-food-delivery-orders-txt",
+        "axis": "relation",
+        "predicate": "readsFrom",
+        "object": "classpath resource food_delivery_orders.txt",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:25"
+        ]
+      }
+    },
+    {
+      "key": "relation|foodsearch.controller.FoodController|relation|dependsOn|foodsearch.service.FoodService",
+      "candidateAtomId": "atom:relation:foodsearch-controller-foodcontroller:dependson-foodservice",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:24-25 — @Autowired FoodService foodService; confirmed. No pass-b relation atom for this dependency.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "relation",
+        "id": "atom:relation:ts-food-service-foodcontroller:dependson-foodservice",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-food-service.FoodService",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:25"
+        ]
+      }
+    },
+    {
+      "key": "relation|ts-execute-service|relation|dependsOn|nacos service-discovery cluster (NACOS_ADDRS)",
+      "candidateAtomId": "atom:relation:ts-execute-service:dependson-nacos-discovery",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-execute-service/src/main/resources/application.yml:6-8 — spring.cloud.nacos.discovery.server-addr resolves ${NACOS_ADDRS:...nacos-0/1/2.nacos-headless...} confirmed. Line corrected from :4 (the 'spring:' header) to the actual server-addr line. No pass-b atom mentions nacos in this chunk at all.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.application-yml",
+        "kind": "relation",
+        "id": "atom:relation:ts-execute-service-application-yml:dependson-nacos-discovery",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "nacos service-discovery cluster (NACOS_ADDRS)",
+        "refs": [
+          "src:ts-execute-service/src/main/resources/application.yml:8"
+        ]
+      }
+    },
+    {
+      "key": "relation|ts-food-delivery-service|relation|dependsOn|nacos service-discovery cluster (NACOS_ADDRS)",
+      "candidateAtomId": "atom:relation:ts-food-delivery-service:dependson-nacos-discovery",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/resources/application.yml:6-8 — spring.cloud.nacos.discovery.server-addr resolves ${NACOS_ADDRS:...} confirmed (with a commented-out static override at :9). Line corrected from :4 to the actual server-addr line. No pass-b atom mentions nacos in this chunk.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.application-yml",
+        "kind": "relation",
+        "id": "atom:relation:ts-food-delivery-service-application-yml:dependson-nacos-discovery",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "nacos service-discovery cluster (NACOS_ADDRS)",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/resources/application.yml:8"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:execute-service-ticket-flow|cech|sectionValue|section=order-status-code:enum-orderstatus-getcode-accessor-used-for-collected-used-paid-change-values-not-raw-hardcoded-int-literals-at-this-site",
+      "candidateAtomId": "atom:semantic:ctx-execute-service-ticket-flow:cech-section-order-status-code",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:50,56,98,104 — OrderStatus.COLLECTED.getCode()/USED.getCode()/PAID.getCode()/CHANGE.getCode() confirmed used at all cited lines (enum accessor, not literal ints). Same section-value observation as pass-b's narrower-refs row (context id differs by pass, integrator remaps); merged, kept pass-a's fuller ref set.",
+      "canonicalAtom": {
+        "subject": "ctx:execute-service-ticket-flow",
+        "kind": "semantic",
+        "id": "atom:semantic:ctx-execute-service-ticket-flow:cech-section-order-status-code",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=order-status-code:enum-orderstatus-getcode-accessor-used-for-collected-used-paid-change-values-not-raw-hardcoded-int-literals-at-this-site",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:50",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:56",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:98",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:104"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-execute-service-ticket-lifecycle|cech|sectionValue|section=order-status-code:enum-referenced-via-orderstatus-collected-used-paid-change-not-hardcoded-literal",
+      "candidateAtomId": "atom:semantic:ts-execute-service-ticket-lifecycle:cech-section-order-status-code",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:50,98 — confirmed a subset of the same order-status-code enum usage pass-a cited more fully (also at :56,:104). Merged.",
+      "canonicalAtom": {
+        "subject": "ctx:execute-service-ticket-flow",
+        "kind": "semantic",
+        "id": "atom:semantic:ctx-execute-service-ticket-flow:cech-section-order-status-code",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=order-status-code:enum-orderstatus-getcode-accessor-used-for-collected-used-paid-change-values-not-raw-hardcoded-int-literals-at-this-site",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:50",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:56",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:98",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:104"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:food-delivery-order-lifecycle|cech|sectionValue|section=money-amount:double-deliveryfee-field-summed-from-per-food-double-prices-plus-store-double-deliveryfee-at-order-create-site",
+      "candidateAtomId": "atom:semantic:ctx-food-delivery-order-lifecycle:cech-section-money-amount",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39 (deliveryFee double field), ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:27 (store deliveryFee double field), ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58-70 (loop summing Food.getPrice() doubles then += store fee) — confirmed. Same section-value observation as pass-b's row with identical refs (context id differs by pass); merged.",
+      "canonicalAtom": {
+        "subject": "ctx:food-delivery-order-lifecycle",
+        "kind": "semantic",
+        "id": "atom:semantic:ctx-food-delivery-order-lifecycle:cech-section-money-amount",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:double-deliveryfee-field-summed-from-per-food-double-prices-plus-store-double-deliveryfee-at-order-create-site",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:27",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:70"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-food-delivery-service-order-management|cech|sectionValue|section=money-amount:double-summed-from-food-price-double-field-at-use-site",
+      "candidateAtomId": "atom:semantic:ts-food-delivery-service-order-management:cech-section-money-amount",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread same three refs — confirmed identical evidence to pass-a's row. Merged.",
+      "canonicalAtom": {
+        "subject": "ctx:food-delivery-order-lifecycle",
+        "kind": "semantic",
+        "id": "atom:semantic:ctx-food-delivery-order-lifecycle:cech-section-money-amount",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:double-deliveryfee-field-summed-from-per-food-double-prices-plus-store-double-deliveryfee-at-order-create-site",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:27",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:70"
+        ]
+      }
+    },
+    {
+      "key": "semantic|execute.serivce.ExecuteServiceImpl|semantic|meansInUse|headers-parameter-reassigned-to-null-before-every-downstream-call-so-incoming-request-headers-are-not-forwarded-to-order-or-order-other-service",
+      "candidateAtomId": "atom:semantic:execute-serivce-executeserviceimpl:meansinuse-headers-nulled",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java — headers = null; appears at :44 (ticketExecute), :92 (ticketCollect), :138 (executeOrder), :152 (executeOrderOther), :165 (getOrderByIdFromOrder), :179 (getOrderByIdFromOrderOther); pass-a cited only 4 of these 6 sites, pass-b cited all 6. Same fact; merged with the fuller pass-b ref set.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-execute-service-executeserviceimpl:meansinuse-headers-nulled",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "headers-parameter-reassigned-to-null-before-every-downstream-call-so-incoming-request-headers-are-not-forwarded-to-order-or-order-other-service",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:44",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:92",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:138",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:152",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:165",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:179"
+        ]
+      }
+    },
+    {
+      "key": "semantic|execute.ExecuteServiceImpl|semantic|meansInUse|headers-parameter-set-to-null-before-every-downstream-order-service-call",
+      "candidateAtomId": "atom:semantic:execute-executeserviceimpl:headers-discarded",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread all 6 headers=null sites (:44,92,138,152,165,179) — confirmed complete. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-execute-service-executeserviceimpl:meansinuse-headers-nulled",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "headers-parameter-reassigned-to-null-before-every-downstream-call-so-incoming-request-headers-are-not-forwarded-to-order-or-order-other-service",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:44",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:92",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:138",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:152",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:165",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:179"
+        ]
+      }
+    },
+    {
+      "key": "semantic|execute.serivce.ExecuteServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+      "candidateAtomId": "atom:semantic:execute-serivce-executeserviceimpl:statusgates-response-status",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:47,57,95 — Response.getStatus()==1 gates confirmed at each cited branch; pass-b additionally cited :113 (another getStatus()==1 check in ticketCollect's order-other branch), same pattern. Merged with the fuller ref set.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-execute-service-executeserviceimpl:statusgates-response-status",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:47",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:57",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:95",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:113"
+        ]
+      }
+    },
+    {
+      "key": "semantic|execute.ExecuteServiceImpl|semantic|statusGates|status-1-on-success-or-found-branch-status-0-on-error-or-not-found-branch",
+      "candidateAtomId": "atom:semantic:execute-executeserviceimpl:response-envelope",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:47,57,95,113 — confirmed all four status==1 gate sites. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-execute-service-executeserviceimpl:statusgates-response-status",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:47",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:57",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:95",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:113"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.entity.FoodDeliveryOrder|semantic|meansInUse|deliveryFee-field-typed-double-populated-by-summing-per-food-double-prices-from-station-food-store-plus-the-store-double-deliveryFee-at-order-creation-site",
+      "candidateAtomId": "atom:semantic:food-delivery-entity-fooddeliveryorder:meansinuse-deliveryfee-double-summed",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39 (deliveryFee double field) and ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58-70 (the summation loop and fd.setDeliveryFee call) — confirmed. This combines a field-type fact and a computation fact; pass-b split these into two atoms (field type on FoodDeliveryOrder, computation on FoodDeliveryServiceImpl). The computation half is the same observation as pass-b's 'deliveryfee-computation' row; merged into that, with subject moved to FoodDeliveryServiceImpl where the computation actually happens (the field-type half is separately adopted from pass-b's identifiedBy row).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-fooddeliveryserviceimpl:meansinuse-deliveryfee-computation",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "deliveryFee-computed-in-createFoodDeliveryOrder-as-double-sum-of-per-food-double-prices-from-the-station-food-store-response-plus-the-store's-own-double-deliveryFee-field-then-set-on-the-order-before-save",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:61",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:68",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:70",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.FoodDeliveryServiceImpl|semantic|meansInUse|deliveryfee-computed-as-double-sum-of-food-price-double-values-plus-store-deliveryfee-at-use-site",
+      "candidateAtomId": "atom:semantic:food-delivery-fooddeliveryserviceimpl:deliveryfee-computation",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58-70 — confirmed the summation and store-fee addition. Merged with pass-a's row (see basis there for the field-type atom split-off).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-fooddeliveryserviceimpl:meansinuse-deliveryfee-computation",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "deliveryFee-computed-in-createFoodDeliveryOrder-as-double-sum-of-per-food-double-prices-from-the-station-food-store-response-plus-the-store's-own-double-deliveryFee-field-then-set-on-the-order-before-save",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:61",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:68",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:70",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.FoodDeliveryOrder|semantic|identifiedBy|deliveryfee-field-declared-as-primitive-double",
+      "candidateAtomId": "atom:semantic:food-delivery-fooddeliveryorder:deliveryfee-type",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39 — private double deliveryFee; confirmed as a primitive double field (not a boxed Double), independent of the computation-site fact captured separately (see the merged deliveryfee-computation atom).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryOrder",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-fooddeliveryorder:identifiedby-deliveryfee-primitive-double",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "deliveryfee-field-declared-as-primitive-double",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.StationFoodStoreInfo|semantic|identifiedBy|deliveryfee-field-declared-as-primitive-double",
+      "candidateAtomId": "atom:semantic:food-delivery-stationfoodstoreinfo:deliveryfee-type",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:27 — private double deliveryFee; confirmed as a primitive double field on this entity too. Genuine additional observation not extracted by pass-a as its own atom.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.StationFoodStoreInfo",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-stationfoodstoreinfo:identifiedby-deliveryfee-primitive-double",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "deliveryfee-field-declared-as-primitive-double",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:27"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.repository.FoodDeliveryOrderRepository|semantic|identifiedBy|lookup-by-primary-key-id-uuid-string-via-crudrepository-findbyid-orelse-null-then-null-checked-by-caller",
+      "candidateAtomId": "atom:semantic:food-delivery-repository-fooddeliveryorderrepository:identifiedby-findbyid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:78,91,129 — foodDeliveryOrderRepository.findById(id).orElse(null) confirmed at all three sites, each followed by a null check. Same observation as pass-b's row; merged, subject moved to FoodDeliveryServiceImpl (the call site) to match pass-b and this packet's precedent for use-site attribution.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-fooddeliveryserviceimpl:identifiedby-findbyid",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "food-delivery-orders-looked-up-by-primary-key-id-uuid-string-via-foodDeliveryOrderRepository.findById(id).orElse(null)-then-null-checked-by-the-caller",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:78",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:91",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:129"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.FoodDeliveryServiceImpl|semantic|identifiedBy|food-delivery-orders-looked-up-by-primary-key-id-via-findbyid",
+      "candidateAtomId": "atom:semantic:food-delivery-fooddeliveryserviceimpl:lookup-by-id",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:78,91,129 — confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-fooddeliveryserviceimpl:identifiedby-findbyid",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "food-delivery-orders-looked-up-by-primary-key-id-uuid-string-via-foodDeliveryOrderRepository.findById(id).orElse(null)-then-null-checked-by-the-caller",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:78",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:91",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:129"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.service.FoodDeliveryServiceImpl|semantic|meansInUse|findall-and-findbystationfoodstoreid-results-null-checked-branch-though-crudrepository-collection-methods-typically-return-empty-not-null",
+      "candidateAtomId": "atom:semantic:food-delivery-service-fooddeliveryserviceimpl:meansinuse-null-checked-collection-results",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:103-104 (getAllFoodDeliveryOrders: foodDeliveryOrders==null check after findAll()) and :115-116 (getFoodDeliveryOrderByStoreId: same null check after findByStationFoodStoreId) — confirmed. No pass-b atom captures this null-check-on-collection-result pattern.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-fooddeliveryserviceimpl:meansinuse-null-checked-collection-results",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "findall-and-findbystationfoodstoreid-results-null-checked-branch-though-crudrepository-collection-methods-typically-return-empty-not-null",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:104",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:116"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.service.FoodDeliveryServiceImpl|semantic|statusGates|status-1-on-saved-or-found-branch-status-0-on-not-found-or-rejected-branch",
+      "candidateAtomId": "atom:semantic:food-delivery-service-fooddeliveryserviceimpl:statusgates-response-status",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:66,81,94 (status-0 branches: 'Food not in store', 'No such food delivery order id' x2) and :106 (pass-b's additional status-0 site in getAllFoodDeliveryOrders) alongside the corresponding status-1 successes at :73,85,97,109 — status gating pattern confirmed across the class. Merged with pass-b's row (same fact, different representative third ref).",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-fooddeliveryserviceimpl:statusgates-response-status",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-on-saved-or-found-branch-status-0-on-not-found-or-rejected-branch",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:66",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:81",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:94",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:106"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.FoodDeliveryServiceImpl|semantic|statusGates|status-1-on-success-branch-status-0-on-error-or-not-found-branch",
+      "candidateAtomId": "atom:semantic:food-delivery-fooddeliveryserviceimpl:response-envelope",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:66,81,106 — confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-fooddeliveryserviceimpl:statusgates-response-status",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1-on-saved-or-found-branch-status-0-on-not-found-or-rejected-branch",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:66",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:81",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:94",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:106"
+        ]
+      }
+    },
+    {
+      "key": "semantic|execute.ExecuteServiceImpl|semantic|meansInUse|order-status-code-referenced-via-orderstatus-enum-collected-used-paid-change-not-a-literal",
+      "candidateAtomId": "atom:semantic:execute-executeserviceimpl:order-status-enum",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:50,56,68,74,98,104,116,121 — OrderStatus.COLLECTED/USED/PAID/CHANGE.getCode() confirmed at all 8 sites (pass-b cited 6 of them; two more at :68,:74 in the order-other branch of ticketExecute also use the enum). This is a plain per-class semantic atom distinct from the cech section-value atom already merged above (cech captures cross-context comparison, this captures the per-class fact directly); genuine additional axis pass-a did not extract as a standalone semantic atom.",
+      "canonicalAtom": {
+        "subject": "ts-execute-service.ExecuteServiceImpl",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-execute-service-executeserviceimpl:meansinuse-order-status-enum",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "order-status-code-referenced-via-orderstatus-enum-collected-used-paid-change-accessors-not-raw-int-literals",
+        "refs": [
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:50",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:56",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:68",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:74",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:98",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:104",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:116",
+          "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:121"
+        ]
+      }
+    },
+    {
+      "key": "state|food_delivery.entity.FoodDeliveryOrder|state|persistsIn|JPA entity with generated jpa-uuid primary key id (length 36)",
+      "candidateAtomId": "atom:state:food-delivery-entity-fooddeliveryorder:persistsin-jpa-uuid-pk",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:14-23 — @Entity, @GenericGenerator(name=\"jpa-uuid\", strategy=\"uuid\"), @Id, @GeneratedValue(generator=\"jpa-uuid\"), @Column(length=36) on id confirmed. Same fact as pass-b's row, which additionally cites the CrudRepository extension at ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java:8; merged, union of refs.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryOrder",
+        "kind": "state",
+        "id": "atom:state:ts-food-delivery-service-fooddeliveryorder:persistsin-jpa-uuid-pk",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "JPA entity (CrudRepository-backed) with generated jpa-uuid primary key id (length 36)",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:14",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:15",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:21",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:22",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:23",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java:8"
+        ]
+      }
+    },
+    {
+      "key": "state|food_delivery.FoodDeliveryOrder|state|persistsIn|jpa-entity-persisted-via-crudrepository-uuid-generated-id",
+      "candidateAtomId": "atom:state:food-delivery-fooddeliveryorder:persists",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:14 and ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java:8 (CrudRepository<FoodDeliveryOrder, String>) — confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryOrder",
+        "kind": "state",
+        "id": "atom:state:ts-food-delivery-service-fooddeliveryorder:persistsin-jpa-uuid-pk",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "JPA entity (CrudRepository-backed) with generated jpa-uuid primary key id (length 36)",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:14",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:15",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:21",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:22",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:23",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java:8"
+        ]
+      }
+    },
+    {
+      "key": "state|ts-food-delivery-service|state|persistsIn|mysql datasource ts-food-delivery-mysql with jpa hibernate ddl-auto update and MySQL5Dialect",
+      "candidateAtomId": "atom:state:ts-food-delivery-service:persistsin-mysql-datasource",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/resources/application.yml:12-23 — datasource.url (jdbc:mysql://...ts-food-delivery-mysql...), jpa.hibernate.ddl-auto: update (:20, not :18 as pass-a's ref pointed to the 'jpa:' header), and dialect: MySQL5Dialect (:23) confirmed. Merged with pass-b's row, refs corrected to the precise value lines.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.application-yml",
+        "kind": "state",
+        "id": "atom:state:ts-food-delivery-service-application-yml:persistsin-mysql-datasource",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "mysql datasource ts-food-delivery-mysql (jdbc:mysql url with FOOD_DELIVERY_MYSQL_HOST/PORT/DATABASE overrides) with jpa hibernate ddl-auto update and MySQL5Dialect",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/resources/application.yml:12",
+          "src:ts-food-delivery-service/src/main/resources/application.yml:14",
+          "src:ts-food-delivery-service/src/main/resources/application.yml:20",
+          "src:ts-food-delivery-service/src/main/resources/application.yml:23"
+        ]
+      }
+    },
+    {
+      "key": "state|ts-food-delivery-service|state|persistsIn|mysql-ts-food-delivery-mysql-database-jpa-ddl-auto-update",
+      "candidateAtomId": "atom:state:ts-food-delivery-service-config:datasource",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-delivery-service/src/main/resources/application.yml:12,19-20 — confirmed, ref corrected to the exact ddl-auto:update line (:20) and dialect line (:23) added. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.application-yml",
+        "kind": "state",
+        "id": "atom:state:ts-food-delivery-service-application-yml:persistsin-mysql-datasource",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "mysql datasource ts-food-delivery-mysql (jdbc:mysql url with FOOD_DELIVERY_MYSQL_HOST/PORT/DATABASE overrides) with jpa hibernate ddl-auto update and MySQL5Dialect",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/resources/application.yml:12",
+          "src:ts-food-delivery-service/src/main/resources/application.yml:14",
+          "src:ts-food-delivery-service/src/main/resources/application.yml:20",
+          "src:ts-food-delivery-service/src/main/resources/application.yml:23"
+        ]
+      }
+    },
+    {
+      "key": "semantic|foodsearch.controller.FoodController|semantic|meansInUse|delete-food-order-endpoint-sets-http-202-accepted-via-responsestatus-annotation-a-transport-status-distinct-from-the-response-body-status-field",
+      "candidateAtomId": "atom:semantic:foodsearch-controller-foodcontroller:meansinuse-delete-endpoint-http-202",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:75-77 — @ResponseStatus(HttpStatus.ACCEPTED) confirmed on deleteFoodOrder, a transport-layer status set independent of the edu.fudan.common.util.Response.status field returned in the body. Same evidence as pass-b's contract row (predicate/kind phrasing drift: semantic meansInUse vs contract ensures); merged, kept as a contract/specification atom with the transport-vs-body-status distinction folded into the object text.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "contract",
+        "id": "atom:contract:ts-food-service-foodcontroller:ensures-delete-returns-202",
+        "axis": "specification",
+        "predicate": "ensures",
+        "object": "returns-202-accepted-http-status-via-responsestatus-annotation-on-the-delete-food-order-endpoint-a-transport-status-distinct-from-the-response-body-status-field",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:75",
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:76"
+        ]
+      }
+    },
+    {
+      "key": "contract|foodsearch.FoodController|specification|ensures|returns-202-accepted-http-status-on-delete-food-order-request",
+      "candidateAtomId": "atom:contract:foodsearch-foodcontroller:delete-food-order-status",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-food-service/src/main/java/foodsearch/controller/FoodController.java:75-76 — confirmed. Merged with pass-a's row.",
+      "canonicalAtom": {
+        "subject": "ts-food-service.FoodController",
+        "kind": "contract",
+        "id": "atom:contract:ts-food-service-foodcontroller:ensures-delete-returns-202",
+        "axis": "specification",
+        "predicate": "ensures",
+        "object": "returns-202-accepted-http-status-via-responsestatus-annotation-on-the-delete-food-order-endpoint-a-transport-status-distinct-from-the-response-body-status-field",
+        "refs": [
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:75",
+          "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:76"
+        ]
+      }
+    },
+    {
+      "key": "semantic|food_delivery.InitData|semantic|meansInUse|commandlinerunner-startup-body-fully-commented-out-effectively-no-op-at-boot",
+      "candidateAtomId": "atom:semantic:food-delivery-initdata:body-disabled",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:26-47 — the entire parsing/seed-creation loop body inside the try block is commented out (Chinese comment at :26 explains it was disabled deliberately); only the resource-open and catch/exit scaffold remain active. Pass-a's survey noted this in prose (surveyRow note) but did not emit it as its own atom; genuine additional observation.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.InitData",
+        "kind": "semantic",
+        "id": "atom:semantic:ts-food-delivery-service-initdata:meansinuse-body-disabled",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "commandlinerunner-startup-body-fully-commented-out-effectively-no-op-at-boot",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:26",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:47"
+        ]
+      }
+    },
+    {
+      "key": "state|food_delivery.FoodDeliveryServiceImpl|state|transitionsTo|food-delivery-order-saved-or-updated-via-repository-save-on-create-triporder-seat-deliverytime-update",
+      "candidateAtomId": "atom:state:food-delivery-fooddeliveryserviceimpl:persists-order-writes",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:72 (createFoodDeliveryOrder save), :135 (updateTripId save), :151 (updateSeatNo save), :167 (updateDeliveryTime save) — foodDeliveryOrderRepository.save(...) confirmed at all four sites. Genuine additional observation; pass-a's survey of this file did not produce a state atom for these write transitions.",
+      "canonicalAtom": {
+        "subject": "ts-food-delivery-service.FoodDeliveryServiceImpl",
+        "kind": "state",
+        "id": "atom:state:ts-food-delivery-service-fooddeliveryserviceimpl:transitionsto-persists-order-writes",
+        "axis": "state",
+        "predicate": "transitionsTo",
+        "object": "food-delivery-order-saved-or-updated-via-repository-save-on-create-triporder-seat-deliverytime-update",
+        "refs": [
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:72",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:135",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:151",
+          "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:167"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+ "schema": "measurement-profile/v0.5.3",
+ "profileId": "profile:train-ticket-money-convention@1",
+ "siteRef": "archmap:/contexts",
+ "coverRef": "cover:money-amount-convention-surface",
+ "coefficient": "F2",
+ "effCoeff": "finite-linear-algebra@1",
+ "resolutionSelector": "taylor@1",
+ "domain": "finite-poset-site",
+ "zeroPredicate": "rank-zero@1",
+ "nonZeroPredicate": "rank-positive@1",
+ "certSelector": "finite-certificate@1",
+ "verdictDiscipline": "five-valued-structural-verdict@1",
+ "finiteBounds": {
+  "maxSquareFreeWitnessVariables": 12,
+  "maxCoherenceContexts": 12,
+  "maxTorWitnessVariables": 12,
+  "maxBoundaryResidueVariables": 16,
+  "maxLaplacianCells": 16,
+  "maxPeriodCycles": 16,
+  "maxTransferTargets": 16
+ }
+}

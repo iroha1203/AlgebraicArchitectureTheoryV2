@@ -1,0 +1,1120 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|travel.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/** via WebMvcConfigurer corsConfigurer",
+   "candidateAtomId": "atom:authority:travel-securityconfig:allowscrossorigin-global-wildcard",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:52",
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:53",
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:56",
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:57"
+   ]
+  },
+  {
+   "key": "authority|travel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/travelservice/**",
+   "candidateAtomId": "atom:authority:travel-securityconfig:permitsunauthenticated-travelservice-api",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|travel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:travel-securityconfig:permitsunauthenticated-swagger-paths",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:76",
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "authority|travel.SecurityConfig|authority|requiresRole|ADMIN on DELETE /api/v1/travelservice/trips/*",
+   "candidateAtomId": "atom:authority:travel-securityconfig:requiresrole-delete-trips",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|travel.SecurityConfig|authority|requiresRole|ADMIN on PUT /api/v1/travelservice/trips",
+   "candidateAtomId": "atom:authority:travel-securityconfig:requiresrole-put-trips",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|travel.TravelController|authority|allowsCrossOrigin|wildcard-origin-via-method-level-crossorigin-annotation-on-trip-mutation-and-query-endpoints-but-not-on-welcome-traintypes-routes-tripsbyroutes-endpoints",
+   "candidateAtomId": "atom:authority:travel-travelcontroller:allowscrossorigin-annotation-wildcard",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:66",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:81",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:89",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:97",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:112",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:133",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:154",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:163",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:171"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|DELETE /api/v1/travelservice/trips/{tripId}",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:deletetrip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:97"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/admin_trip",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:adminqueryall",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:172"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/routes/{tripId}",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:routesbytripid",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:50"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/train_types/{tripId}",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:traintypesbytripid",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:42"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/trips",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:queryall",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:164"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/trips/{tripId}",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:retrievetrip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:81"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/welcome",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:welcome",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:37"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trip_detail",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:tripdetail",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:155"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:createtrip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:66"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/left",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:queryleft",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:113"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/left_parallel",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:queryleftparallel",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:134"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/routes",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:tripsbyroutes",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:58"
+   ]
+  },
+  {
+   "key": "capability|travel.TravelController|capability|exposesEndpoint|PUT /api/v1/travelservice/trips",
+   "candidateAtomId": "atom:capability:travel-travelcontroller:updatetrip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:89"
+   ]
+  },
+  {
+   "key": "capability|travel.TripRepository|capability|servesQuery|findAll() returning ArrayList<Trip>",
+   "candidateAtomId": "atom:capability:travel-triprepository:findall",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:21"
+   ]
+  },
+  {
+   "key": "capability|travel.TripRepository|capability|servesQuery|findByRouteId(String routeId)",
+   "candidateAtomId": "atom:capability:travel-triprepository:findbyrouteid",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:23"
+   ]
+  },
+  {
+   "key": "capability|travel.TripRepository|capability|servesQuery|findByTripId(TripId)",
+   "candidateAtomId": "atom:capability:travel-triprepository:findbytripid",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:16"
+   ]
+  },
+  {
+   "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|GET /api/v1/travelplanservice/welcome",
+   "candidateAtomId": "atom:capability:travelplan-travelplancontroller:welcome",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:27"
+   ]
+  },
+  {
+   "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/cheapest",
+   "candidateAtomId": "atom:capability:travelplan-travelplancontroller:cheapest",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:38"
+   ]
+  },
+  {
+   "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/minStation",
+   "candidateAtomId": "atom:capability:travelplan-travelplancontroller:minstation",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:50"
+   ]
+  },
+  {
+   "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/quickest",
+   "candidateAtomId": "atom:capability:travelplan-travelplancontroller:quickest",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:44"
+   ]
+  },
+  {
+   "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/transferResult",
+   "candidateAtomId": "atom:capability:travelplan-travelplancontroller:transferresult",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:32"
+   ]
+  },
+  {
+   "key": "component|travel.AdminTrip|static||",
+   "candidateAtomId": "atom:component:travel-admintrip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/AdminTrip.java"
+   ]
+  },
+  {
+   "key": "component|travel.InitData|static||",
+   "candidateAtomId": "atom:component:travel-initdata",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java"
+   ]
+  },
+  {
+   "key": "component|travel.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:travel-securityconfig",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|travel.TravelController|static||",
+   "candidateAtomId": "atom:component:travel-travelcontroller",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java"
+   ]
+  },
+  {
+   "key": "component|travel.TravelServiceImpl|static||",
+   "candidateAtomId": "atom:component:travel-travelserviceimpl",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|travel.TravelService|static||",
+   "candidateAtomId": "atom:component:travel-travelservice",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelService.java"
+   ]
+  },
+  {
+   "key": "component|travel.Travel|static||",
+   "candidateAtomId": "atom:component:travel-travel",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/Travel.java"
+   ]
+  },
+  {
+   "key": "component|travel.TripAllDetail|static||",
+   "candidateAtomId": "atom:component:travel-tripalldetail",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/TripAllDetail.java"
+   ]
+  },
+  {
+   "key": "component|travel.TripRepository|static||",
+   "candidateAtomId": "atom:component:travel-triprepository",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java"
+   ]
+  },
+  {
+   "key": "component|travel.Trip|static||",
+   "candidateAtomId": "atom:component:travel-trip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.TransferTravelInfo|static||",
+   "candidateAtomId": "atom:component:travelplan-transfertravelinfo",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelInfo.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.TransferTravelResult|static||",
+   "candidateAtomId": "atom:component:travelplan-transfertravelresult",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelResult.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.TravelAdvanceResultUnit|static||",
+   "candidateAtomId": "atom:component:travelplan-traveladvanceresultunit",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.TravelPlanController|static||",
+   "candidateAtomId": "atom:component:travelplan-travelplancontroller",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.TravelPlanServiceImpl|static||",
+   "candidateAtomId": "atom:component:travelplan-travelplanserviceimpl",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.TravelPlanService|static||",
+   "candidateAtomId": "atom:component:travelplan-travelplanservice",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanService.java"
+   ]
+  },
+  {
+   "key": "contract|travel.Trip|specification|requires|trainTypeName, startStationName, terminalStationName, startTime, endTime are @NotNull while routeId and stationsName are not",
+   "candidateAtomId": "atom:contract:travel-trip:requires-nonnull-core-fields",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:32",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:39",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:46",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:50",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:54"
+   ]
+  },
+  {
+   "key": "contract|travelplan.TransferTravelInfo|specification|shapedAs|fields startStation, viaStation, endStation, travelDate, trainType as JSON request body for /travelPlan/transferResult",
+   "candidateAtomId": "atom:contract:travelplan-transfertravelinfo:shapedas-request-body",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelInfo.java:12",
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:33"
+   ]
+  },
+  {
+   "key": "effect|travel.InitData|effect|callsProvider|invokes travelService.create for five hardcoded trips on application startup via CommandLineRunner",
+   "candidateAtomId": "atom:effect:travel-initdata:seeds-initial-trips",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java:25",
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java:37",
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java:77"
+   ]
+  },
+  {
+   "key": "effect|travel.TravelServiceImpl|effect|callsProvider|GET ts-route-service/api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-route-byid",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:517",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:521"
+   ]
+  },
+  {
+   "key": "effect|travel.TravelServiceImpl|effect|callsProvider|GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+   "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-train-byname",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:504",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:508"
+   ]
+  },
+  {
+   "key": "effect|travel.TravelServiceImpl|effect|callsProvider|POST ts-basic-service/api/v1/basicservice/basic/travel",
+   "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-basic-travel",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:379",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:397"
+   ]
+  },
+  {
+   "key": "effect|travel.TravelServiceImpl|effect|callsProvider|POST ts-basic-service/api/v1/basicservice/basic/travels",
+   "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-basic-travels",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:322",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:348"
+   ]
+  },
+  {
+   "key": "effect|travel.TravelServiceImpl|effect|callsProvider|POST ts-seat-service/api/v1/seatservice/seats/left_tickets",
+   "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-seat-lefttickets",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:537",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:552"
+   ]
+  },
+  {
+   "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+   "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-train-byname",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:317",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:321"
+   ]
+  },
+  {
+   "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-route-plan-service/api/v1/routeplanservice/routePlan/cheapestRoute",
+   "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-routeplan-cheapest",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:254",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:258"
+   ]
+  },
+  {
+   "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-route-plan-service/api/v1/routeplanservice/routePlan/minStopStations",
+   "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-routeplan-minstation",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:279",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:283"
+   ]
+  },
+  {
+   "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-route-plan-service/api/v1/routeplanservice/routePlan/quickestRoute",
+   "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-routeplan-quickest",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:266",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:270"
+   ]
+  },
+  {
+   "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-seat-service/api/v1/seatservice/seats/left_tickets",
+   "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-seat-lefttickets",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:230",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:245"
+   ]
+  },
+  {
+   "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-travel-service/api/v1/travelservice/trips/left",
+   "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-travel-tripsleft",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:291",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:295"
+   ]
+  },
+  {
+   "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-travel2-service/api/v1/travel2service/trips/left",
+   "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-travel2-tripsleft",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:303",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:308"
+   ]
+  },
+  {
+   "key": "relation|travel.TravelController|relation|dependsOn|travel.TravelService",
+   "candidateAtomId": "atom:relation:travel-travelcontroller:dependson-travelservice",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:32"
+   ]
+  },
+  {
+   "key": "relation|travel.TravelServiceImpl|relation|dependsOn|travel.TripRepository",
+   "candidateAtomId": "atom:relation:travel-travelserviceimpl:dependson-triprepository",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:38"
+   ]
+  },
+  {
+   "key": "relation|travel.TravelServiceImpl|relation|implements|travel.TravelService",
+   "candidateAtomId": "atom:relation:travel-travelserviceimpl:implements-travelservice",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:36"
+   ]
+  },
+  {
+   "key": "relation|travel.TripRepository|relation|dependsOn|travel.Trip",
+   "candidateAtomId": "atom:relation:travel-triprepository:dependson-trip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:14"
+   ]
+  },
+  {
+   "key": "relation|travelplan.TravelPlanController|relation|dependsOn|travelplan.TravelPlanService",
+   "candidateAtomId": "atom:relation:travelplan-travelplancontroller:dependson-travelplanservice",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:22"
+   ]
+  },
+  {
+   "key": "relation|travelplan.TravelPlanServiceImpl|relation|implements|travelplan.TravelPlanService",
+   "candidateAtomId": "atom:relation:travelplan-travelplanserviceimpl:implements-travelplanservice",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:33"
+   ]
+  },
+  {
+   "key": "semantic|ctx:travel-trip-crud-and-query|cech|sectionValue|section=money-amount:price-value-taken-from-map-lookup-and-assigned-unparsed-at-travel-service-site",
+   "candidateAtomId": "atom:semantic:ctx-travel-trip-crud-and-query:cech-section-money-amount",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:461",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:462"
+   ]
+  },
+  {
+   "key": "semantic|ctx:travelplan-transfer-cheapest-quickest-minstation-search|cech|sectionValue|section=money-amount:string-price-passed-through-unparsed-at-travelplan-site",
+   "candidateAtomId": "atom:semantic:ctx-travelplan-transfer-cheapest-quickest-minstation-search:cech-section-money-amount",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java:24",
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java:28",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:108",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:109"
+   ]
+  },
+  {
+   "key": "semantic|travel.TravelServiceImpl|semantic|meansInUse|application.yml declares train-service, order-service, route-service, basic-service and seat-service base URL properties, but call sites build provider URLs via getServiceUrl(serviceName) string concatenation on the literal service name rather than reading those properties",
+   "candidateAtomId": "atom:semantic:travel-travelserviceimpl:meansinuse-hardcoded-service-urls-not-yml-injected",
+   "refs": [
+    "src:ts-travel-service/src/main/resources/application.yml:28",
+    "src:ts-travel-service/src/main/resources/application.yml:31",
+    "src:ts-travel-service/src/main/resources/application.yml:34",
+    "src:ts-travel-service/src/main/resources/application.yml:37",
+    "src:ts-travel-service/src/main/resources/application.yml:40",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:51"
+   ]
+  },
+  {
+   "key": "semantic|travel.TravelServiceImpl|semantic|meansInUse|ts-basic-service response status 0 selects the no-travel-result-data branch, causing an empty list or null return without a separate content check",
+   "candidateAtomId": "atom:semantic:travel-travelserviceimpl:meansinuse-basicservice-status0-empty-branch",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:354",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:403"
+   ]
+  },
+  {
+   "key": "semantic|travel.TravelServiceImpl|semantic|statusGates|status-1-on-both-trip-created-branch-and-tripid-already-exists-branch-for-create",
+   "candidateAtomId": "atom:semantic:travel-travelserviceimpl:statusgates-unconditional-status1-create",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:66",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:69"
+   ]
+  },
+  {
+   "key": "semantic|travel.TravelServiceImpl|semantic|statusGates|status-1-on-both-trip-updated-branch-and-trip-not-found-branch-for-update",
+   "candidateAtomId": "atom:semantic:travel-travelserviceimpl:statusgates-unconditional-status1-update",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:155",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:158"
+   ]
+  },
+  {
+   "key": "semantic|travel.TravelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-no-content-branch-for-getroutebytripid-gettraintypebytripid-gettripbyroute-retrieve-delete-queryall-queryinparallel-admin-queryall-gettripalldetailinfo",
+   "candidateAtomId": "atom:semantic:travel-travelserviceimpl:statusgates-branch-result-or-notfound",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:86",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:89",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:104",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:107",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:122",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:125",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:135",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:138",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:168",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:171",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:472",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:475"
+   ]
+  },
+  {
+   "key": "semantic|travel.Trip|semantic|identifiedBy|startStationName, stationsName and terminalStationName are normalized to lowercase at trip-creation site via StringUtils.String2Lower, while trainTypeName is stored as-is",
+   "candidateAtomId": "atom:semantic:travel-trip:identifiedby-lowercased-station-names",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:60",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:61",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:62"
+   ]
+  },
+  {
+   "key": "semantic|travelplan.TravelPlanServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch-for-getcheapest-getquickest-getminstation",
+   "candidateAtomId": "atom:semantic:travelplan-travelplanserviceimpl:statusgates-branch-result-or-notfound",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:127",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:130",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:175",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:178",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:223",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:226"
+   ]
+  },
+  {
+   "key": "semantic|travelplan.TravelPlanServiceImpl|semantic|statusGates|status-1-unconditionally-on-gettransfersearch-with-no-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:travelplan-travelplanserviceimpl:statusgates-unconditional-success-transfersearch",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:84"
+   ]
+  },
+  {
+   "key": "state|travel.TripRepository|state|transitionsTo|trip row removed for the given TripId",
+   "candidateAtomId": "atom:state:travel-triprepository:deletebytripid-transitionsto",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:18"
+   ]
+  },
+  {
+   "key": "state|travel.Trip|state|persistsIn|relational row via JPA @Entity with jpa-uuid generated id column length 36",
+   "candidateAtomId": "atom:state:travel-trip:persistsin-jpa-table",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:19",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:24",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:25"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|travel.config.SecurityConfig|authority|allowsCrossOrigin|WebMvcConfigurer CorsRegistry mapping /** to allowedOrigins=ALL, allowedMethods=ALL, allowedHeaders=ALL, allowCredentials=false",
+   "candidateAtomId": "atom:authority:travel-config-securityconfig:allows-cross-origin-global",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:52"
+   ]
+  },
+  {
+   "key": "authority|travel.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/travelservice/**",
+   "candidateAtomId": "atom:authority:travel-config-securityconfig:permits-unauthenticated-travelservice",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|travel.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**",
+   "candidateAtomId": "atom:authority:travel-config-securityconfig:permits-unauthenticated-swagger",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|travel.config.SecurityConfig|authority|requiresRole|ADMIN on DELETE /api/v1/travelservice/trips/*",
+   "candidateAtomId": "atom:authority:travel-config-securityconfig:requires-role-admin-delete-trips",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|travel.config.SecurityConfig|authority|requiresRole|ADMIN on PUT /api/v1/travelservice/trips",
+   "candidateAtomId": "atom:authority:travel-config-securityconfig:requires-role-admin-put-trips",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|travel.controller.TravelController|authority|allowsCrossOrigin|method-level @CrossOrigin(origins=\"*\") on createTrip/retrieve/updateTrip/deleteTrip/queryInfo/queryInfoInparallel/getTripAllDetailInfo/queryAll/adminQueryAll, including the two endpoints SecurityConfig gates with requiresRole ADMIN",
+   "candidateAtomId": "atom:authority:travel-controller-travelcontroller:allows-cross-origin-mutating-endpoints",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:81",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:89",
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:97"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|DELETE /api/v1/travelservice/trips/{tripId}",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:delete-trip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:98"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/admin_trip",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:admin-query-all",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:172"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/routes/{tripId}",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:routes-by-trip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:50"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/train_types/{tripId}",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:train-types",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:42"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/trips",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:query-all",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:164"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/trips/{tripId}",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:retrieve-trip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:82"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/welcome",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:welcome",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:37"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trip_detail",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:trip-detail",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:155"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:create-trip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:67"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/left",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:trips-left",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:113"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/left_parallel",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:trips-left-parallel",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:134"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/routes",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:trips-by-routes",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:58"
+   ]
+  },
+  {
+   "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|PUT /api/v1/travelservice/trips",
+   "candidateAtomId": "atom:capability:travel-controller-travelcontroller:update-trip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:90"
+   ]
+  },
+  {
+   "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|GET /api/v1/travelplanservice/welcome",
+   "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:welcome",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:27"
+   ]
+  },
+  {
+   "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/cheapest",
+   "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:cheapest",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:38"
+   ]
+  },
+  {
+   "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/minStation",
+   "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:minstation",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:50"
+   ]
+  },
+  {
+   "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/quickest",
+   "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:quickest",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:44"
+   ]
+  },
+  {
+   "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/transferResult",
+   "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:transferresult",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:32"
+   ]
+  },
+  {
+   "key": "component|travel.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:travel-config-securityconfig",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|travel.controller.TravelController|static||",
+   "candidateAtomId": "atom:component:travel-controller-travelcontroller",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java"
+   ]
+  },
+  {
+   "key": "component|travel.entity.AdminTrip|static||",
+   "candidateAtomId": "atom:component:travel-entity-admintrip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/AdminTrip.java"
+   ]
+  },
+  {
+   "key": "component|travel.entity.Travel|static||",
+   "candidateAtomId": "atom:component:travel-entity-travel",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/Travel.java"
+   ]
+  },
+  {
+   "key": "component|travel.entity.TripAllDetail|static||",
+   "candidateAtomId": "atom:component:travel-entity-tripalldetail",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/TripAllDetail.java"
+   ]
+  },
+  {
+   "key": "component|travel.entity.Trip|static||",
+   "candidateAtomId": "atom:component:travel-entity-trip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:19"
+   ]
+  },
+  {
+   "key": "component|travel.init.InitData|static||",
+   "candidateAtomId": "atom:component:travel-init-initdata",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java"
+   ]
+  },
+  {
+   "key": "component|travel.repository.TripRepository|static||",
+   "candidateAtomId": "atom:component:travel-repository-triprepository",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java"
+   ]
+  },
+  {
+   "key": "component|travel.service.TravelServiceImpl|static||",
+   "candidateAtomId": "atom:component:travel-service-travelserviceimpl",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|travel.service.TravelService|static||",
+   "candidateAtomId": "atom:component:travel-service-travelservice",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelService.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.controller.TravelPlanController|static||",
+   "candidateAtomId": "atom:component:travelplan-controller-travelplancontroller",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.entity.TransferTravelInfo|static||",
+   "candidateAtomId": "atom:component:travelplan-entity-transfertravelinfo",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelInfo.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.entity.TransferTravelResult|static||",
+   "candidateAtomId": "atom:component:travelplan-entity-transfertravelresult",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelResult.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.entity.TravelAdvanceResultUnit|static||",
+   "candidateAtomId": "atom:component:travelplan-entity-traveladvanceresultunit",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.service.TravelPlanServiceImpl|static||",
+   "candidateAtomId": "atom:component:travelplan-service-travelplanserviceimpl",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|travelplan.service.TravelPlanService|static||",
+   "candidateAtomId": "atom:component:travelplan-service-travelplanservice",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanService.java"
+   ]
+  },
+  {
+   "key": "contract|travel.repository.TripRepository|specification|shapedAs|CrudRepository<Trip,TripId> plus findByTripId/deleteByTripId/findByRouteId lookups keyed by embedded TripId or routeId",
+   "candidateAtomId": "atom:contract:travel-repository-triprepository:shaped-as",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:14",
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:16",
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:18",
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:23"
+   ]
+  },
+  {
+   "key": "effect|travel.init.InitData|effect|callsProvider|travel.service.TravelService.create invoked five times on CommandLineRunner startup",
+   "candidateAtomId": "atom:effect:travel-init-initdata:seeds-trips-at-startup",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java:37",
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java:47",
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java:57",
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java:67",
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java:77"
+   ]
+  },
+  {
+   "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-basic-service /api/v1/basicservice/basic/travel",
+   "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-basic-single",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:395"
+   ]
+  },
+  {
+   "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-basic-service /api/v1/basicservice/basic/travels",
+   "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-basic-batch",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:346"
+   ]
+  },
+  {
+   "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-route-service /api/v1/routeservice/routes/{routeId}",
+   "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-route-service",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:520"
+   ]
+  },
+  {
+   "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-seat-service /api/v1/seatservice/seats/left_tickets",
+   "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-seat-service",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:551"
+   ]
+  },
+  {
+   "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-train-service /api/v1/trainservice/trains/byName/{name}",
+   "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-train-service",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:506"
+   ]
+  },
+  {
+   "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-route-plan-service /api/v1/routeplanservice/routePlan/cheapestRoute",
+   "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-route-plan-cheapest",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:256"
+   ]
+  },
+  {
+   "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-route-plan-service /api/v1/routeplanservice/routePlan/minStopStations",
+   "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-route-plan-minstation",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:281"
+   ]
+  },
+  {
+   "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-route-plan-service /api/v1/routeplanservice/routePlan/quickestRoute",
+   "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-route-plan-quickest",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:268"
+   ]
+  },
+  {
+   "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-seat-service /api/v1/seatservice/seats/left_tickets",
+   "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-seat-service",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:243"
+   ]
+  },
+  {
+   "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-train-service /api/v1/trainservice/trains/byName/{name}",
+   "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-train-service",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:319"
+   ]
+  },
+  {
+   "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-travel-service /api/v1/travelservice/trips/left",
+   "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-travel-service",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:293"
+   ]
+  },
+  {
+   "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-travel2-service /api/v1/travel2service/trips/left",
+   "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-travel2-service",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:306"
+   ]
+  },
+  {
+   "key": "relation|travel.controller.TravelController|restriction|dependsOn|travel.service.TravelService",
+   "candidateAtomId": "atom:relation:travel-controller-travelcontroller:dependsOn",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:32"
+   ]
+  },
+  {
+   "key": "relation|travel.init.InitData|restriction|dependsOn|travel.service.TravelService",
+   "candidateAtomId": "atom:relation:travel-init-initdata:dependsOn",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/init/InitData.java:17"
+   ]
+  },
+  {
+   "key": "relation|travel.repository.TripRepository|restriction|dependsOn|travel.entity.Trip",
+   "candidateAtomId": "atom:relation:travel-repository-triprepository:persists-trip",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:14"
+   ]
+  },
+  {
+   "key": "relation|travel.service.TravelServiceImpl|restriction|dependsOn|travel.repository.TripRepository",
+   "candidateAtomId": "atom:relation:travel-service-travelserviceimpl:dependsOn-triprepository",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:39"
+   ]
+  },
+  {
+   "key": "relation|travel.service.TravelServiceImpl|restriction|implements|travel.service.TravelService",
+   "candidateAtomId": "atom:relation:travel-service-travelserviceimpl:implements",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:36"
+   ]
+  },
+  {
+   "key": "relation|travelplan.controller.TravelPlanController|restriction|dependsOn|travelplan.service.TravelPlanService",
+   "candidateAtomId": "atom:relation:travelplan-controller-travelplancontroller:dependsOn",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:22"
+   ]
+  },
+  {
+   "key": "relation|travelplan.service.TravelPlanServiceImpl|restriction|implements|travelplan.service.TravelPlanService",
+   "candidateAtomId": "atom:relation:travelplan-service-travelplanserviceimpl:implements",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:33"
+   ]
+  },
+  {
+   "key": "semantic|ctx:travel-plan-advance-search-flow|cech|sectionValue|section=money-amount:string-price-field-passed-through-from-upstream-route-plan-result-without-parsing",
+   "candidateAtomId": "atom:component:ctx-travel-plan-advance-search-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:108",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:109",
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java:24",
+    "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java:28"
+   ]
+  },
+  {
+   "key": "semantic|ctx:travel-service-ticket-pricing-flow|cech|sectionValue|section=money-amount:price-value-read-from-string-keyed-prices-map-and-passed-through-unparsed-into-tripresponse",
+   "candidateAtomId": "atom:component:ctx-travel-service-ticket-pricing-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:461",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:462"
+   ]
+  },
+  {
+   "key": "semantic|travel.entity.Trip|semantic|identifiedBy|start-stations-terminal-station-names-lowercased-only-in-the-seven-arg-constructor-used-by-create-not-in-the-three-arg-or-no-arg-constructors",
+   "candidateAtomId": "atom:semantic:travel-entity-trip:meansInUse:station-name-lowercasing",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:60",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:61",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:62",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:71",
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:80"
+   ]
+  },
+  {
+   "key": "semantic|travel.service.TravelServiceImpl|semantic|statusGates|status-1-on-both-newly-created-branch-and-tripid-already-exists-branch-of-create",
+   "candidateAtomId": "atom:semantic:travel-service-travelserviceimpl:meansInUse:create-status-branch",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:66",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:69"
+   ]
+  },
+  {
+   "key": "semantic|travel.service.TravelServiceImpl|semantic|statusGates|status-1-on-both-updated-branch-and-tripid-not-found-branch-of-update",
+   "candidateAtomId": "atom:semantic:travel-service-travelserviceimpl:meansInUse:update-status-branch",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:155",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:158"
+   ]
+  },
+  {
+   "key": "semantic|travel.service.TravelServiceImpl|semantic|statusGates|status-1-on-deleted-branch-status-0-on-tripid-not-found-branch-of-delete",
+   "candidateAtomId": "atom:semantic:travel-service-travelserviceimpl:meansInUse:delete-status-branch",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:168",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:171"
+   ]
+  },
+  {
+   "key": "semantic|travel.service.TravelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-empty-branch",
+   "candidateAtomId": "atom:semantic:travel-service-travelserviceimpl:meansInUse:response-envelope-general",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:86",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:89",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:135",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:138",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:472",
+    "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:475"
+   ]
+  },
+  {
+   "key": "semantic|travelplan.service.TravelPlanServiceImpl|semantic|statusGates|status-1-on-route-plan-result-carrying-branch-status-0-on-empty-route-plan-result-branch",
+   "candidateAtomId": "atom:semantic:travelplan-service-travelplanserviceimpl:meansInUse:response-envelope",
+   "refs": [
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:127",
+    "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:130"
+   ]
+  },
+  {
+   "key": "state|travel.entity.Trip|state|persistsIn|ts-travel-mysql (JPA @Entity via TripRepository, MySQL5Dialect, ddl-auto=update)",
+   "candidateAtomId": "atom:state:travel-entity-trip:persists-in-travel-mysql",
+   "refs": [
+    "src:ts-travel-service/src/main/java/travel/entity/Trip.java:19",
+    "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:14",
+    "src:ts-travel-service/src/main/resources/application.yml:13",
+    "src:ts-travel-service/src/main/resources/application.yml:20"
+   ]
+  }
+ ]
+}

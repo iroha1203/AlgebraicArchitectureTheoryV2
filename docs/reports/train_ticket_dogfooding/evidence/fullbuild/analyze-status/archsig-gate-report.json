@@ -1,0 +1,296 @@
+{
+  "decision": "PASS_WITHIN_GATE_POLICY",
+  "inputDigests": {
+    "comparisonReport": null,
+    "gatePolicy": {
+      "path": "input:gate_policy_conservative.json",
+      "sha256": "a3a91d6eae10e3aa89dd186b9d42fd804f0dde9c03b306b0d6d4bde18354f690"
+    },
+    "measurementPacket": {
+      "path": "input:archsig-measurement-packet.json",
+      "sha256": "b6bb585a387df297bf9523400b120d9ea93bc55a836644486caf66e4374b088a"
+    }
+  },
+  "nonConclusions": [
+    "Gate report records institutional mapping from measurement verdicts to gate actions.",
+    "Gate report does not change measurement verdicts or infer class transport.",
+    "Introduced-by-change rules without a comparison report are not applicable, not pass."
+  ],
+  "policyValidation": [
+    {
+      "id": "gate-policy-schema",
+      "reason": "gate-policy schema must be archsig-gate-policy/v0.5.3",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rules-present",
+      "reason": "rules must be a non-empty array",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-scope",
+      "reason": "rule scope must be absolute or introduced-by-change",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-present",
+      "reason": "verdictMapping must be an object",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-measured_nonzero-known-key",
+      "reason": "verdictMapping.measured_nonzero is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-measured_zero-known-key",
+      "reason": "verdictMapping.measured_zero is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-not_computed-known-key",
+      "reason": "verdictMapping.not_computed is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-unknown-known-key",
+      "reason": "verdictMapping.unknown is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-unmeasured-known-key",
+      "reason": "verdictMapping.unmeasured is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-violated_assumption_dependency-known-key",
+      "reason": "verdictMapping.violated_assumption_dependency is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-measured_zero-present",
+      "reason": "verdictMapping.measured_zero is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-measured_zero-action",
+      "reason": "verdictMapping.measured_zero must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-measured_nonzero-present",
+      "reason": "verdictMapping.measured_nonzero is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-measured_nonzero-action",
+      "reason": "verdictMapping.measured_nonzero must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-unmeasured-present",
+      "reason": "verdictMapping.unmeasured is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-unmeasured-action",
+      "reason": "verdictMapping.unmeasured must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-unknown-present",
+      "reason": "verdictMapping.unknown is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-unknown-action",
+      "reason": "verdictMapping.unknown must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-not_computed-present",
+      "reason": "verdictMapping.not_computed is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-not_computed-action",
+      "reason": "verdictMapping.not_computed must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-violated_assumption_dependency-present",
+      "reason": "verdictMapping.violated_assumption_dependency is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-violated_assumption_dependency-action",
+      "reason": "verdictMapping.violated_assumption_dependency must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-unmeasured-no-plain-pass",
+      "reason": "verdictMapping.unmeasured must not map to plain pass",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-unknown-no-plain-pass",
+      "reason": "verdictMapping.unknown must not map to plain pass",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-not_computed-no-plain-pass",
+      "reason": "verdictMapping.not_computed must not map to plain pass",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-violated_assumption_dependency-no-plain-pass",
+      "reason": "verdictMapping.violated_assumption_dependency must not map to plain pass",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-verdictMapping-violated_assumption_dependency-must-block",
+      "reason": "verdictMapping.violated_assumption_dependency must map to block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-boundary-overrides-object",
+      "reason": "boundaryKindOverrides must be an object",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-boundary-override-silence_by_design-known-key",
+      "reason": "boundaryKindOverrides key must be a known boundary statement kind",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-0-boundary-override-silence_by_design-action",
+      "reason": "boundaryKindOverrides may only map to pass_with_boundary or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-scope",
+      "reason": "rule scope must be absolute or introduced-by-change",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-present",
+      "reason": "introducedByChangeMapping must be an object",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-cleared-known-key",
+      "reason": "introducedByChangeMapping.cleared is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-new-known-key",
+      "reason": "introducedByChangeMapping.new is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-other-known-key",
+      "reason": "introducedByChangeMapping.other is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-preexisting-known-key",
+      "reason": "introducedByChangeMapping.preexisting is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-removed-known-key",
+      "reason": "introducedByChangeMapping.removed is not in the closed mapping vocabulary",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-new-present",
+      "reason": "introducedByChangeMapping.new is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-new-action",
+      "reason": "introducedByChangeMapping.new must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-cleared-present",
+      "reason": "introducedByChangeMapping.cleared is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-cleared-action",
+      "reason": "introducedByChangeMapping.cleared must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-preexisting-present",
+      "reason": "introducedByChangeMapping.preexisting is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-preexisting-action",
+      "reason": "introducedByChangeMapping.preexisting must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-removed-present",
+      "reason": "introducedByChangeMapping.removed is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-removed-action",
+      "reason": "introducedByChangeMapping.removed must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-other-present",
+      "reason": "introducedByChangeMapping.other is required",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-other-action",
+      "reason": "introducedByChangeMapping.other must be pass, pass_with_boundary, or block",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-removed-no-plain-pass",
+      "reason": "introducedByChangeMapping.removed must not map to plain pass",
+      "result": "pass"
+    },
+    {
+      "id": "gate-policy-rule-1-introducedByChangeMapping-other-no-plain-pass",
+      "reason": "introducedByChangeMapping.other must not map to plain pass",
+      "result": "pass"
+    },
+    {
+      "failedCheckCount": 0,
+      "id": "gate-policy-validation-summary",
+      "result": "pass",
+      "title": "Gate policy validation summary"
+    }
+  ],
+  "ruleOutcomes": [
+    {
+      "appliedMapping": [
+        {
+          "action": "pass",
+          "boundaryOverrideApplied": false,
+          "mappingKey": "measured_zero",
+          "rowRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/finite-f2-cech-computed",
+          "verdict": "measured_zero"
+        }
+      ],
+      "ruleId": "absolute-verdict-discipline",
+      "scope": "absolute",
+      "status": "evaluated"
+    },
+    {
+      "reason": "comparison report was not supplied; introduced-by-change rules are skipped, not passed",
+      "ruleId": "introduced-by-change-discipline",
+      "scope": "introduced-by-change",
+      "status": "not_applicable"
+    }
+  ],
+  "schema": "archsig-gate-report/v0.5.3",
+  "toolVersion": "0.5.3"
+}

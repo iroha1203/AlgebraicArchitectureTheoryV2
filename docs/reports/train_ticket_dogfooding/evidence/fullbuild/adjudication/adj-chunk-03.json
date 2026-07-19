@@ -1,0 +1,2365 @@
+{
+  "chunkId": "chunk-03",
+  "adjudications": [
+    {
+      "key": "authority|auth.config.WebSecurityConfig|authority|allowsCrossOrigin|cors-mapping-slash-star-star-allows-all-origins-all-methods-all-headers-credentials-disabled-max-age-3600",
+      "candidateAtomId": "atom:authority:auth-config-websecurityconfig:allows-cross-origin-all",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:57-64 - addCorsMappings registers /** with allowedOrigins/Methods/Headers(ALL), allowCredentials(false), maxAge(3600). Same CORS configuration cited by both passes at slightly different line spans; kept as one atom with union refs.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:allows-cross-origin-all-origins",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:57-64"
+        ],
+        "predicate": "allowsCrossOrigin",
+        "object": "cors-mapping-slash-star-star-allows-all-origins-all-methods-all-headers-credentials-disabled-max-age-3600"
+      }
+    },
+    {
+      "key": "authority|auth.WebSecurityConfig|authority|allowsCrossOrigin|cors-mapping-star-star-allows-all-origins-all-methods-all-headers-credentials-disabled-maxage-3600",
+      "candidateAtomId": "atom:authority:auth-websecurityconfig:allowscrossorigin-all-origins",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:57-64 - addCorsMappings registers /** with allowedOrigins/Methods/Headers(ALL), allowCredentials(false), maxAge(3600). Same CORS configuration cited by both passes at slightly different line spans; kept as one atom with union refs.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:allows-cross-origin-all-origins",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:57-64"
+        ],
+        "predicate": "allowsCrossOrigin",
+        "object": "cors-mapping-slash-star-star-allows-all-origins-all-methods-all-headers-credentials-disabled-max-age-3600"
+      }
+    },
+    {
+      "key": "authority|auth.config.WebSecurityConfig|authority|configuresSessionPolicy|http-basic-and-csrf-disabled-session-creation-policy-set-to-stateless",
+      "candidateAtomId": "atom:authority:auth-config-websecurityconfig:configures-stateless-session-policy",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:80-84 - httpBasic().disable(), csrf().disable(), sessionCreationPolicy(STATELESS). Same configuration; pass A's predicate configuresSessionPolicy is not a catalog authority predicate, pass B's checksPermission is catalog-listed and kept as canonical.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:checks-permission-csrf-disabled-stateless-session",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:80-84"
+        ],
+        "predicate": "checksPermission",
+        "object": "http-basic-and-csrf-disabled-with-session-creation-policy-set-to-stateless"
+      }
+    },
+    {
+      "key": "authority|auth.WebSecurityConfig|authority|checksPermission|http-basic-and-csrf-disabled-with-stateless-session-creation-policy",
+      "candidateAtomId": "atom:authority:auth-websecurityconfig:checkspermission-csrf-disabled-stateless-session",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:80-84 - httpBasic().disable(), csrf().disable(), sessionCreationPolicy(STATELESS). Same configuration; pass A's predicate configuresSessionPolicy is not a catalog authority predicate, pass B's checksPermission is catalog-listed and kept as canonical.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:checks-permission-csrf-disabled-stateless-session",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:80-84"
+        ],
+        "predicate": "checksPermission",
+        "object": "http-basic-and-csrf-disabled-with-session-creation-policy-set-to-stateless"
+      }
+    },
+    {
+      "key": "authority|auth.config.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/auth-/api/v1/auth/hello-/api/v1/user/hello",
+      "candidateAtomId": "atom:authority:auth-config-websecurityconfig:permits-unauthenticated-auth-hello",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:86 - antMatchers(/api/v1/auth, /api/v1/auth/hello, /api/v1/user/hello).permitAll(). Identical observation in both passes.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:permits-unauthenticated-auth-and-hello-paths",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:86"
+        ],
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/auth-/api/v1/auth/hello-/api/v1/user/hello"
+      }
+    },
+    {
+      "key": "authority|auth.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/auth-/api/v1/auth/hello-/api/v1/user/hello",
+      "candidateAtomId": "atom:authority:auth-websecurityconfig:permitsunauthenticated-auth-and-hello-paths",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:86 - antMatchers(/api/v1/auth, /api/v1/auth/hello, /api/v1/user/hello).permitAll(). Identical observation in both passes.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:permits-unauthenticated-auth-and-hello-paths",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:86"
+        ],
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/auth-/api/v1/auth/hello-/api/v1/user/hello"
+      }
+    },
+    {
+      "key": "authority|auth.config.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/users/login",
+      "candidateAtomId": "atom:authority:auth-config-websecurityconfig:permits-unauthenticated-login",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:87 - antMatchers(/api/v1/users/login).permitAll(). Identical observation in both passes.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:permits-unauthenticated-users-login",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:87"
+        ],
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/users/login"
+      }
+    },
+    {
+      "key": "authority|auth.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/users/login",
+      "candidateAtomId": "atom:authority:auth-websecurityconfig:permitsunauthenticated-users-login",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:87 - antMatchers(/api/v1/users/login).permitAll(). Identical observation in both passes.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:permits-unauthenticated-users-login",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:87"
+        ],
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/users/login"
+      }
+    },
+    {
+      "key": "authority|auth.config.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/user/star-star-used-while-user-service-creates-default-role",
+      "candidateAtomId": "atom:authority:auth-config-websecurityconfig:permits-unauthenticated-user-register",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:90-91 - comment 'create user and role while user register' then antMatchers(/user/**).permitAll(). Same rule; A includes the comment line, B cites only the matcher line.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:permits-unauthenticated-user-wildcard",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:90-91"
+        ],
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/user/star-star-path-used-while-user-service-creates-default-role-during-registration"
+      }
+    },
+    {
+      "key": "authority|auth.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-/user/star-star-path-used-during-registration",
+      "candidateAtomId": "atom:authority:auth-websecurityconfig:permitsunauthenticated-user-wildcard",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:90-91 - comment 'create user and role while user register' then antMatchers(/user/**).permitAll(). Same rule; A includes the comment line, B cites only the matcher line.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:permits-unauthenticated-user-wildcard",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:90-91"
+        ],
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/user/star-star-path-used-while-user-service-creates-default-role-during-registration"
+      }
+    },
+    {
+      "key": "authority|auth.config.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-api-doc-paths",
+      "candidateAtomId": "atom:authority:auth-config-websecurityconfig:permits-unauthenticated-swagger",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:92-93 - antMatchers(swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/**).permitAll(). Identical rule, both passes cite the same two lines.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:permits-unauthenticated-swagger-paths",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:92-93"
+        ],
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths"
+      }
+    },
+    {
+      "key": "authority|auth.WebSecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+      "candidateAtomId": "atom:authority:auth-websecurityconfig:permitsunauthenticated-swagger-paths",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:92-93 - antMatchers(swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/**).permitAll(). Identical rule, both passes cite the same two lines.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:permits-unauthenticated-swagger-paths",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:92-93"
+        ],
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths"
+      }
+    },
+    {
+      "key": "authority|auth.config.WebSecurityConfig|authority|requiresAuthentication|any-remaining-request-requires-authentication-as-default-fallback-branch",
+      "candidateAtomId": "atom:authority:auth-config-websecurityconfig:requires-authentication-default-fallback",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:94 - anyRequest().authenticated(). Same fallback rule; A's requiresAuthentication is not a catalog predicate, B's checksPermission is catalog-listed and kept as canonical.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:checks-permission-authenticated-any-request",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:94"
+        ],
+        "predicate": "checksPermission",
+        "object": "authentication-required-on-any-request-not-matched-by-earlier-permitall-or-role-rules"
+      }
+    },
+    {
+      "key": "authority|auth.WebSecurityConfig|authority|checksPermission|authentication-required-on-any-request-not-matched-by-earlier-permitall-or-role-rules",
+      "candidateAtomId": "atom:authority:auth-websecurityconfig:checkspermission-authenticated-anyrequest",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:94 - anyRequest().authenticated(). Same fallback rule; A's requiresAuthentication is not a catalog predicate, B's checksPermission is catalog-listed and kept as canonical.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:checks-permission-authenticated-any-request",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:94"
+        ],
+        "predicate": "checksPermission",
+        "object": "authentication-required-on-any-request-not-matched-by-earlier-permitall-or-role-rules"
+      }
+    },
+    {
+      "key": "authority|auth.config.WebSecurityConfig|authority|requiresRole|role-admin-gates-delete-/api/v1/users/star",
+      "candidateAtomId": "atom:authority:auth-config-websecurityconfig:requires-role-admin-delete-users",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:89 - antMatchers(DELETE, /api/v1/users/*).hasRole(ADMIN). Identical rule.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:requires-role-admin-delete-users",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:89"
+        ],
+        "predicate": "requiresRole",
+        "object": "role-admin-required-on-DELETE-/api/v1/users/star-path"
+      }
+    },
+    {
+      "key": "authority|auth.WebSecurityConfig|authority|requiresRole|role-admin-required-on-DELETE-/api/v1/users/star-path",
+      "candidateAtomId": "atom:authority:auth-websecurityconfig:requiresrole-admin-delete-users",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:89 - antMatchers(DELETE, /api/v1/users/*).hasRole(ADMIN). Identical rule.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:requires-role-admin-delete-users",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:89"
+        ],
+        "predicate": "requiresRole",
+        "object": "role-admin-required-on-DELETE-/api/v1/users/star-path"
+      }
+    },
+    {
+      "key": "authority|auth.config.WebSecurityConfig|authority|requiresRole|role-admin-gates-get-/api/v1/users",
+      "candidateAtomId": "atom:authority:auth-config-websecurityconfig:requires-role-admin-get-users",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:88 - antMatchers(GET, /api/v1/users).hasRole(ADMIN). Identical rule.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:requires-role-admin-get-users",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:88"
+        ],
+        "predicate": "requiresRole",
+        "object": "role-admin-required-on-GET-/api/v1/users"
+      }
+    },
+    {
+      "key": "authority|auth.WebSecurityConfig|authority|requiresRole|role-admin-required-on-GET-/api/v1/users",
+      "candidateAtomId": "atom:authority:auth-websecurityconfig:requiresrole-admin-get-users",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:88 - antMatchers(GET, /api/v1/users).hasRole(ADMIN). Identical rule.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-auth-service-websecurityconfig:requires-role-admin-get-users",
+        "kind": "authority",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "authority",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:88"
+        ],
+        "predicate": "requiresRole",
+        "object": "role-admin-required-on-GET-/api/v1/users"
+      }
+    },
+    {
+      "key": "capability|assurance.service.AssuranceServiceImpl|capability|handlesCommand|create",
+      "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:handles-command-create",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:52-68 - create(typeIndex, orderId, headers) checks existing assurance/type then saves a new Assurance. Same method, A's refs include the @Override line.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-create",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:52-68"
+        ],
+        "predicate": "handlesCommand",
+        "object": "create"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceServiceImpl|capability|handlesCommand|create",
+      "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:handlescommand-create",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:52-68 - create(typeIndex, orderId, headers) checks existing assurance/type then saves a new Assurance. Same method, A's refs include the @Override line.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-create",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:52-68"
+        ],
+        "predicate": "handlesCommand",
+        "object": "create"
+      }
+    },
+    {
+      "key": "capability|assurance.service.AssuranceServiceImpl|capability|handlesCommand|deleteById",
+      "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:handles-command-delete-by-id",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:70-81 - deleteById(assuranceId, headers) deletes then checks findById is empty. Same method in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-delete-by-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:70-81"
+        ],
+        "predicate": "handlesCommand",
+        "object": "deleteById"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceServiceImpl|capability|handlesCommand|deleteById",
+      "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:handlescommand-deletebyid",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:70-81 - deleteById(assuranceId, headers) deletes then checks findById is empty. Same method in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-delete-by-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:70-81"
+        ],
+        "predicate": "handlesCommand",
+        "object": "deleteById"
+      }
+    },
+    {
+      "key": "capability|assurance.service.AssuranceServiceImpl|capability|handlesCommand|deleteByOrderId",
+      "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:handles-command-delete-by-order-id",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:83-94 - deleteByOrderId(orderId, headers) removes then checks findByOrderId is null. Same method in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-delete-by-order-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:83-94"
+        ],
+        "predicate": "handlesCommand",
+        "object": "deleteByOrderId"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceServiceImpl|capability|handlesCommand|deleteByOrderId",
+      "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:handlescommand-deletebyorderid",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:83-94 - deleteByOrderId(orderId, headers) removes then checks findByOrderId is null. Same method in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-delete-by-order-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:83-94"
+        ],
+        "predicate": "handlesCommand",
+        "object": "deleteByOrderId"
+      }
+    },
+    {
+      "key": "capability|assurance.service.AssuranceServiceImpl|capability|handlesCommand|modify",
+      "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:handles-command-modify",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:96-115 - modify(assuranceId, orderId, typeIndex, headers) loads old assurance, sets new type, saves. Same method in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-modify",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:96-115"
+        ],
+        "predicate": "handlesCommand",
+        "object": "modify"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceServiceImpl|capability|handlesCommand|modify",
+      "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:handlescommand-modify",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:96-115 - modify(assuranceId, orderId, typeIndex, headers) loads old assurance, sets new type, saves. Same method in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-modify",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:96-115"
+        ],
+        "predicate": "handlesCommand",
+        "object": "modify"
+      }
+    },
+    {
+      "key": "capability|assurance.service.AssuranceServiceImpl|capability|servesQuery|findAssuranceById",
+      "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-id",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:29-38 - findAssuranceById(id, headers) returns Response wrapping repository.findById. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:29-38"
+        ],
+        "predicate": "servesQuery",
+        "object": "findAssuranceById"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceServiceImpl|capability|servesQuery|findAssuranceById",
+      "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:servesquery-findassurancebyid",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:29-38 - findAssuranceById(id, headers) returns Response wrapping repository.findById. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:29-38"
+        ],
+        "predicate": "servesQuery",
+        "object": "findAssuranceById"
+      }
+    },
+    {
+      "key": "capability|assurance.service.AssuranceServiceImpl|capability|servesQuery|findAssuranceByOrderId",
+      "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-order-id",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:41-50 - findAssuranceByOrderId(orderId, headers) returns Response wrapping repository.findByOrderId. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-order-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:41-50"
+        ],
+        "predicate": "servesQuery",
+        "object": "findAssuranceByOrderId"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceServiceImpl|capability|servesQuery|findAssuranceByOrderId",
+      "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:servesquery-findassurancebyorderid",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:41-50 - findAssuranceByOrderId(orderId, headers) returns Response wrapping repository.findByOrderId. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-order-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:41-50"
+        ],
+        "predicate": "servesQuery",
+        "object": "findAssuranceByOrderId"
+      }
+    },
+    {
+      "key": "capability|assurance.service.AssuranceServiceImpl|capability|servesQuery|getAllAssuranceTypes",
+      "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:serves-query-get-all-assurance-types",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:139-157 - getAllAssuranceTypes(headers) builds AssuranceTypeBean list from AssuranceType.values(). Same method, A's refs include the @Override line.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-get-all-assurance-types",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:139-157"
+        ],
+        "predicate": "servesQuery",
+        "object": "getAllAssuranceTypes"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceServiceImpl|capability|servesQuery|getAllAssuranceTypes",
+      "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:servesquery-getallassurancetypes",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:139-157 - getAllAssuranceTypes(headers) builds AssuranceTypeBean list from AssuranceType.values(). Same method, A's refs include the @Override line.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-get-all-assurance-types",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:139-157"
+        ],
+        "predicate": "servesQuery",
+        "object": "getAllAssuranceTypes"
+      }
+    },
+    {
+      "key": "capability|assurance.service.AssuranceServiceImpl|capability|servesQuery|getAllAssurances",
+      "candidateAtomId": "atom:capability:assurance-service-assuranceserviceimpl:serves-query-get-all-assurances",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:117-137 - getAllAssurances(headers) maps repository.findAll() into PlainAssurance list. Same method, A's refs include the @Override line.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-get-all-assurances",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:117-137"
+        ],
+        "predicate": "servesQuery",
+        "object": "getAllAssurances"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceServiceImpl|capability|servesQuery|getAllAssurances",
+      "candidateAtomId": "atom:capability:assurance-assuranceserviceimpl:servesquery-getallassurances",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:117-137 - getAllAssurances(headers) maps repository.findAll() into PlainAssurance list. Same method, A's refs include the @Override line.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-get-all-assurances",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:117-137"
+        ],
+        "predicate": "servesQuery",
+        "object": "getAllAssurances"
+      }
+    },
+    {
+      "key": "component|assurance.repository.AssuranceRepository|static||",
+      "candidateAtomId": "atom:component:assurance-repository-assurancerepository",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:14-15 - @Repository interface AssuranceRepository extends CrudRepository<Assurance, String>. Same component; A cites the interface line, B cites the whole file.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-assurance-service-assurancerepository",
+        "kind": "component",
+        "subject": "ts-assurance-service.AssuranceRepository",
+        "axis": "static",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java",
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:15"
+        ]
+      }
+    },
+    {
+      "key": "component|assurance.AssuranceRepository|static||",
+      "candidateAtomId": "atom:component:assurance-assurancerepository",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:14-15 - @Repository interface AssuranceRepository extends CrudRepository<Assurance, String>. Same component; A cites the interface line, B cites the whole file.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-assurance-service-assurancerepository",
+        "kind": "component",
+        "subject": "ts-assurance-service.AssuranceRepository",
+        "axis": "static",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java",
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:15"
+        ]
+      }
+    },
+    {
+      "key": "component|assurance.service.AssuranceService|static||",
+      "candidateAtomId": "atom:component:assurance-service-assuranceservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:12 - public interface AssuranceService declares the CRUD/query surface. Same component; A cites the interface line, B cites the whole file.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-assurance-service-assuranceservice",
+        "kind": "component",
+        "subject": "ts-assurance-service.AssuranceService",
+        "axis": "static",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:12"
+        ]
+      }
+    },
+    {
+      "key": "component|assurance.AssuranceService|static||",
+      "candidateAtomId": "atom:component:assurance-assuranceservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:12 - public interface AssuranceService declares the CRUD/query surface. Same component; A cites the interface line, B cites the whole file.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-assurance-service-assuranceservice",
+        "kind": "component",
+        "subject": "ts-assurance-service.AssuranceService",
+        "axis": "static",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:12"
+        ]
+      }
+    },
+    {
+      "key": "relation|assurance.repository.AssuranceRepository|restriction|dependsOn|assurance.entity.Assurance",
+      "candidateAtomId": "atom:relation:assurance-repository-assurancerepository:depends-on-assurance",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:3,15 - import assurance.entity.Assurance; interface extends CrudRepository<Assurance, String>. Same dependency; A's refs additionally cite the import line.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-assurance-service-assurancerepository:depends-on-assurance",
+        "kind": "relation",
+        "subject": "ts-assurance-service.AssuranceRepository",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:3",
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:15"
+        ],
+        "predicate": "dependsOn",
+        "object": "assurance.Assurance"
+      }
+    },
+    {
+      "key": "relation|assurance.AssuranceRepository|relation|dependsOn|assurance.Assurance",
+      "candidateAtomId": "atom:relation:assurance-assurancerepository:dependson-assurance",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:3,15 - import assurance.entity.Assurance; interface extends CrudRepository<Assurance, String>. Same dependency; A's refs additionally cite the import line.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-assurance-service-assurancerepository:depends-on-assurance",
+        "kind": "relation",
+        "subject": "ts-assurance-service.AssuranceRepository",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:3",
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:15"
+        ],
+        "predicate": "dependsOn",
+        "object": "assurance.Assurance"
+      }
+    },
+    {
+      "key": "semantic|edu.fudan.common.util.Response|semantic|statusGates|status-1-on-record-returned-or-created-branch-status-0-on-no-content-or-not-created-branch",
+      "candidateAtomId": "atom:semantic:edu-fudan-common-util-response:status-gates-assurance-service",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:29-137 - every method returns new Response<>(1,...) on a found/created/success branch and new Response<>(0,...) on a not-found/already-exists/type-not-exist branch (lines 33,36,58,66,75-79,101-102,131-135). Same status-gating convention; A attributed it to the shared Response envelope with narrower evidence (2 methods), B attributed it to AssuranceServiceImpl with broader evidence (5 methods). Merged with union refs and the broader branch description, subject anchored to the observing class per canonical-form service-dir.ClassName convention.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-assurance-service-assuranceserviceimpl:status-gates-response-code",
+        "kind": "semantic",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:33",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:36",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:57-61",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:58",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:66",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:75-79",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:101-102",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:131-135"
+        ],
+        "predicate": "statusGates",
+        "object": "response-code-1-selects-success-or-found-or-created-branch-status-0-selects-no-content-not-found-already-exists-or-type-not-exist-branch"
+      }
+    },
+    {
+      "key": "semantic|assurance.AssuranceServiceImpl|semantic|statusGates|response-code-1-selects-success-or-found-branch-0-selects-not-found-or-already-exists-or-type-not-exist-branch",
+      "candidateAtomId": "atom:semantic:assurance-assuranceserviceimpl:statusgates-response-code",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:29-137 - every method returns new Response<>(1,...) on a found/created/success branch and new Response<>(0,...) on a not-found/already-exists/type-not-exist branch (lines 33,36,58,66,75-79,101-102,131-135). Same status-gating convention; A attributed it to the shared Response envelope with narrower evidence (2 methods), B attributed it to AssuranceServiceImpl with broader evidence (5 methods). Merged with union refs and the broader branch description, subject anchored to the observing class per canonical-form service-dir.ClassName convention.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-assurance-service-assuranceserviceimpl:status-gates-response-code",
+        "kind": "semantic",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:33",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:36",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:57-61",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:58",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:66",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:75-79",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:101-102",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:131-135"
+        ],
+        "predicate": "statusGates",
+        "object": "response-code-1-selects-success-or-found-or-created-branch-status-0-selects-no-content-not-found-already-exists-or-type-not-exist-branch"
+      }
+    },
+    {
+      "key": "state|assurance.entity.Assurance|state|persistsIn|assurance-row-persisted-via-crudrepository-save-keyed-by-generated-uuid-id-and-order-id",
+      "candidateAtomId": "atom:state:assurance-entity-assurance:persists-in-assurance-table",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:63-64,107 - create() builds Assurance(UUID, orderId, type) then assuranceRepository.save(assurance); modify() calls assuranceRepository.save(oldAssurance). Same persistence fact in both passes.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-assurance-service-assurance:persists-in-assurance-table",
+        "kind": "state",
+        "subject": "ts-assurance-service.Assurance",
+        "axis": "state",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:63-64",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:107"
+        ],
+        "predicate": "persistsIn",
+        "object": "assurance-row-persisted-via-assurancerepository-save-keyed-by-generated-uuid-id-and-order-id-on-create-and-modify"
+      }
+    },
+    {
+      "key": "state|assurance.Assurance|state|persistsIn|assurance-entity-persisted-via-assurancerepository-save-on-create-and-modify",
+      "candidateAtomId": "atom:state:assurance-assurance:persistsin-assurancerepository",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:63-64,107 - create() builds Assurance(UUID, orderId, type) then assuranceRepository.save(assurance); modify() calls assuranceRepository.save(oldAssurance). Same persistence fact in both passes.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-assurance-service-assurance:persists-in-assurance-table",
+        "kind": "state",
+        "subject": "ts-assurance-service.Assurance",
+        "axis": "state",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:63-64",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:107"
+        ],
+        "predicate": "persistsIn",
+        "object": "assurance-row-persisted-via-assurancerepository-save-keyed-by-generated-uuid-id-and-order-id-on-create-and-modify"
+      }
+    },
+    {
+      "key": "capability|auth.controller.AuthController|capability|exposesEndpoint|GET-/api/v1/auth/hello",
+      "candidateAtomId": "atom:capability:auth-controller-authcontroller:exposes-endpoint-get-auth-hello",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/AuthController.java:31-34 - @GetMapping(/hello) public String getHello() returns \"hello\". Same endpoint; A frames it as an exposed route (exposesEndpoint, catalog), B frames the identical method as a query capability (servesQuery, also catalog). Kept the route-identifying framing as canonical since it preserves the concrete HTTP path.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-authcontroller:exposes-endpoint-get-auth-hello",
+        "kind": "capability",
+        "subject": "ts-auth-service.AuthController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:31-34"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/auth/hello"
+      }
+    },
+    {
+      "key": "capability|auth.AuthController|capability|servesQuery|hello",
+      "candidateAtomId": "atom:capability:auth-authcontroller:servesquery-hello",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/AuthController.java:31-34 - @GetMapping(/hello) public String getHello() returns \"hello\". Same endpoint; A frames it as an exposed route (exposesEndpoint, catalog), B frames the identical method as a query capability (servesQuery, also catalog). Kept the route-identifying framing as canonical since it preserves the concrete HTTP path.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-authcontroller:exposes-endpoint-get-auth-hello",
+        "kind": "capability",
+        "subject": "ts-auth-service.AuthController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:31-34"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/auth/hello"
+      }
+    },
+    {
+      "key": "capability|auth.controller.AuthController|capability|exposesEndpoint|POST-/api/v1/auth",
+      "candidateAtomId": "atom:capability:auth-controller-authcontroller:exposes-endpoint-post-auth",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/AuthController.java:36-42 - @PostMapping createDefaultUser(AuthDto) calls userService.createDefaultAuthUser then returns 201 Created. Same endpoint; A frames it as exposesEndpoint with the HTTP route, B frames it as handlesCommand naming the caller (ts-user-service). Kept the route-identifying framing as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-authcontroller:exposes-endpoint-post-auth",
+        "kind": "capability",
+        "subject": "ts-auth-service.AuthController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:36-42"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "POST-/api/v1/auth"
+      }
+    },
+    {
+      "key": "capability|auth.AuthController|capability|handlesCommand|createDefaultUser-invoked-by-ts-user-service-during-registration",
+      "candidateAtomId": "atom:capability:auth-authcontroller:handlescommand-createdefaultuser",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/AuthController.java:36-42 - @PostMapping createDefaultUser(AuthDto) calls userService.createDefaultAuthUser then returns 201 Created. Same endpoint; A frames it as exposesEndpoint with the HTTP route, B frames it as handlesCommand naming the caller (ts-user-service). Kept the route-identifying framing as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-authcontroller:exposes-endpoint-post-auth",
+        "kind": "capability",
+        "subject": "ts-auth-service.AuthController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:36-42"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "POST-/api/v1/auth"
+      }
+    },
+    {
+      "key": "capability|auth.controller.UserController|capability|exposesEndpoint|GET-/api/v1/users/hello",
+      "candidateAtomId": "atom:capability:auth-controller-usercontroller:exposes-endpoint-get-users-hello",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:36-39 - @GetMapping(/hello) public Object getHello() returns \"Hello\". Same endpoint under two predicate framings; kept exposesEndpoint as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-usercontroller:exposes-endpoint-get-users-hello",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:36-39"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/users/hello"
+      }
+    },
+    {
+      "key": "capability|auth.UserController|capability|servesQuery|hello",
+      "candidateAtomId": "atom:capability:auth-usercontroller:servesquery-hello",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:36-39 - @GetMapping(/hello) public Object getHello() returns \"Hello\". Same endpoint under two predicate framings; kept exposesEndpoint as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-usercontroller:exposes-endpoint-get-users-hello",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:36-39"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/users/hello"
+      }
+    },
+    {
+      "key": "capability|auth.controller.UserController|capability|exposesEndpoint|POST-/api/v1/users/login",
+      "candidateAtomId": "atom:capability:auth-controller-usercontroller:exposes-endpoint-post-users-login",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:41-51 - @PostMapping(/login) getToken(BasicAuthDto, headers) calls tokenService.getToken, catches UserOperationException. Same endpoint under two predicate framings; kept exposesEndpoint as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-usercontroller:exposes-endpoint-post-users-login",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:41-51"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "POST-/api/v1/users/login"
+      }
+    },
+    {
+      "key": "capability|auth.UserController|capability|handlesCommand|login-via-post-/api/v1/users/login",
+      "candidateAtomId": "atom:capability:auth-usercontroller:handlescommand-login",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:41-51 - @PostMapping(/login) getToken(BasicAuthDto, headers) calls tokenService.getToken, catches UserOperationException. Same endpoint under two predicate framings; kept exposesEndpoint as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-usercontroller:exposes-endpoint-post-users-login",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:41-51"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "POST-/api/v1/users/login"
+      }
+    },
+    {
+      "key": "capability|auth.controller.UserController|capability|exposesEndpoint|GET-/api/v1/users",
+      "candidateAtomId": "atom:capability:auth-controller-usercontroller:exposes-endpoint-get-users",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:53-57 - @GetMapping getAllUser(headers) delegates to userService.getAllUser. Same endpoint under two predicate framings; kept exposesEndpoint as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-usercontroller:exposes-endpoint-get-users",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:53-57"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/users"
+      }
+    },
+    {
+      "key": "capability|auth.UserController|capability|servesQuery|getAllUser-via-get-/api/v1/users",
+      "candidateAtomId": "atom:capability:auth-usercontroller:servesquery-getalluser",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:53-57 - @GetMapping getAllUser(headers) delegates to userService.getAllUser. Same endpoint under two predicate framings; kept exposesEndpoint as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-usercontroller:exposes-endpoint-get-users",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:53-57"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "GET-/api/v1/users"
+      }
+    },
+    {
+      "key": "capability|auth.controller.UserController|capability|exposesEndpoint|DELETE-/api/v1/users/{userId}",
+      "candidateAtomId": "atom:capability:auth-controller-usercontroller:exposes-endpoint-delete-users-user-id",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:59-63 - @DeleteMapping(/{userId}) deleteUserById(userId, headers) delegates to userService.deleteByUserId. Same endpoint under two predicate framings; kept exposesEndpoint as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-usercontroller:exposes-endpoint-delete-users-user-id",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:59-63"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "DELETE-/api/v1/users/{userId}"
+      }
+    },
+    {
+      "key": "capability|auth.UserController|capability|handlesCommand|deleteUserById-via-delete-/api/v1/users/userId",
+      "candidateAtomId": "atom:capability:auth-usercontroller:handlescommand-deleteuserbyid",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:59-63 - @DeleteMapping(/{userId}) deleteUserById(userId, headers) delegates to userService.deleteByUserId. Same endpoint under two predicate framings; kept exposesEndpoint as canonical.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-usercontroller:exposes-endpoint-delete-users-user-id",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserController",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:59-63"
+        ],
+        "predicate": "exposesEndpoint",
+        "object": "DELETE-/api/v1/users/{userId}"
+      }
+    },
+    {
+      "key": "capability|auth.repository.UserRepository|capability|servesQuery|findByUsername",
+      "candidateAtomId": "atom:capability:auth-repository-userrepository:serves-query-find-by-username",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/repository/UserRepository.java:20 - Optional<User> findByUsername(String username). Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-userrepository:serves-query-find-by-username",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserRepository",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:20"
+        ],
+        "predicate": "servesQuery",
+        "object": "findByUsername"
+      }
+    },
+    {
+      "key": "capability|auth.UserRepository|capability|servesQuery|findByUsername",
+      "candidateAtomId": "atom:capability:auth-userrepository:servesquery-findbyusername",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/repository/UserRepository.java:20 - Optional<User> findByUsername(String username). Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-userrepository:serves-query-find-by-username",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserRepository",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:20"
+        ],
+        "predicate": "servesQuery",
+        "object": "findByUsername"
+      }
+    },
+    {
+      "key": "capability|auth.repository.UserRepository|capability|handlesCommand|deleteByUserId",
+      "candidateAtomId": "atom:capability:auth-repository-userrepository:handles-command-delete-by-user-id",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/repository/UserRepository.java:28 - void deleteByUserId(String userId). Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-userrepository:handles-command-delete-by-user-id",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserRepository",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:28"
+        ],
+        "predicate": "handlesCommand",
+        "object": "deleteByUserId"
+      }
+    },
+    {
+      "key": "capability|auth.UserRepository|capability|handlesCommand|deleteByUserId",
+      "candidateAtomId": "atom:capability:auth-userrepository:handlescommand-deletebyuserid",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/repository/UserRepository.java:28 - void deleteByUserId(String userId). Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-userrepository:handles-command-delete-by-user-id",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserRepository",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:28"
+        ],
+        "predicate": "handlesCommand",
+        "object": "deleteByUserId"
+      }
+    },
+    {
+      "key": "capability|auth.security.UserDetailsServiceImpl|capability|servesQuery|loadUserByUsername",
+      "candidateAtomId": "atom:capability:auth-security-userdetailsserviceimpl:serves-query-load-user-by-username",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:26-33 - loadUserByUsername(s) delegates to userRepository.findByUsername and throws UsernameNotFoundException if absent. Same method; A's refs include the @Override line.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-userdetailsserviceimpl:serves-query-load-user-by-username",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserDetailsServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:26-33"
+        ],
+        "predicate": "servesQuery",
+        "object": "loadUserByUsername"
+      }
+    },
+    {
+      "key": "capability|auth.UserDetailsServiceImpl|capability|servesQuery|loadUserByUsername",
+      "candidateAtomId": "atom:capability:auth-userdetailsserviceimpl:servesquery-loadUserByUsername",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:26-33 - loadUserByUsername(s) delegates to userRepository.findByUsername and throws UsernameNotFoundException if absent. Same method; A's refs include the @Override line.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-userdetailsserviceimpl:serves-query-load-user-by-username",
+        "kind": "capability",
+        "subject": "ts-auth-service.UserDetailsServiceImpl",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:26-33"
+        ],
+        "predicate": "servesQuery",
+        "object": "loadUserByUsername"
+      }
+    },
+    {
+      "key": "capability|auth.security.jwt.JWTProvider|capability|handlesCommand|createToken",
+      "candidateAtomId": "atom:capability:auth-security-jwt-jwtprovider:handles-command-create-token",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:29-44 - createToken(User user) builds claims, sets issuedAt/expiration, signs HS256, returns compact JWT. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-jwtprovider:handles-command-create-token",
+        "kind": "capability",
+        "subject": "ts-auth-service.JWTProvider",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:29-44"
+        ],
+        "predicate": "handlesCommand",
+        "object": "createToken"
+      }
+    },
+    {
+      "key": "capability|auth.JWTProvider|capability|handlesCommand|createToken",
+      "candidateAtomId": "atom:capability:auth-jwtprovider:handlescommand-createtoken",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:29-44 - createToken(User user) builds claims, sets issuedAt/expiration, signs HS256, returns compact JWT. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-auth-service-jwtprovider:handles-command-create-token",
+        "kind": "capability",
+        "subject": "ts-auth-service.JWTProvider",
+        "axis": "capability",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:29-44"
+        ],
+        "predicate": "handlesCommand",
+        "object": "createToken"
+      }
+    },
+    {
+      "key": "component|auth.entity.User|static||",
+      "candidateAtomId": "atom:component:auth-entity-user",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/entity/User.java:26-30 - @Entity @Table(name=\"auth_user\") public class User implements UserDetails with userId/username/password fields. Same component; A cites the broader class body range, B cites the class declaration line.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-auth-service-user",
+        "kind": "component",
+        "subject": "ts-auth-service.User",
+        "axis": "static",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/entity/User.java:20-30"
+        ]
+      }
+    },
+    {
+      "key": "component|auth.User|static||",
+      "candidateAtomId": "atom:component:auth-user",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/entity/User.java:26-30 - @Entity @Table(name=\"auth_user\") public class User implements UserDetails with userId/username/password fields. Same component; A cites the broader class body range, B cites the class declaration line.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-auth-service-user",
+        "kind": "component",
+        "subject": "ts-auth-service.User",
+        "axis": "static",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/entity/User.java:20-30"
+        ]
+      }
+    },
+    {
+      "key": "component|auth.exception.UserOperationException|static||",
+      "candidateAtomId": "atom:component:auth-exception-useroperationexception",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/exception/UserOperationException.java:6 - public class UserOperationException extends RuntimeException. Same component; A cites the full class body range, B cites just the class declaration line.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-auth-service-useroperationexception",
+        "kind": "component",
+        "subject": "ts-auth-service.UserOperationException",
+        "axis": "static",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/exception/UserOperationException.java:6-11"
+        ]
+      }
+    },
+    {
+      "key": "component|auth.UserOperationException|static||",
+      "candidateAtomId": "atom:component:auth-useroperationexception",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/exception/UserOperationException.java:6 - public class UserOperationException extends RuntimeException. Same component; A cites the full class body range, B cites just the class declaration line.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-auth-service-useroperationexception",
+        "kind": "component",
+        "subject": "ts-auth-service.UserOperationException",
+        "axis": "static",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/exception/UserOperationException.java:6-11"
+        ]
+      }
+    },
+    {
+      "key": "contract|auth.dto.AuthDto|specification|shapedAs|authdto-fields-userid-username-password-created-by-user-service-on-register-then-sent-to-auth-service",
+      "candidateAtomId": "atom:contract:auth-dto-authdto:shaped-as",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/dto/AuthDto.java:15-19 - fields userId, userName, password on the default-auth-user creation DTO. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-authdto:shaped-as",
+        "kind": "contract",
+        "subject": "ts-auth-service.AuthDto",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/dto/AuthDto.java:15-19"
+        ],
+        "predicate": "shapedAs",
+        "object": "authdto-fields-userid-username-password-for-default-auth-user-creation-created-by-user-service-on-register-then-sent-to-auth-service"
+      }
+    },
+    {
+      "key": "contract|auth.AuthDto|specification|shapedAs|userId-userName-password-fields-for-default-auth-user-creation-dto",
+      "candidateAtomId": "atom:contract:auth-authdto:shapedas-userid-username-password",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/dto/AuthDto.java:15-19 - fields userId, userName, password on the default-auth-user creation DTO. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-authdto:shaped-as",
+        "kind": "contract",
+        "subject": "ts-auth-service.AuthDto",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/dto/AuthDto.java:15-19"
+        ],
+        "predicate": "shapedAs",
+        "object": "authdto-fields-userid-username-password-for-default-auth-user-creation-created-by-user-service-on-register-then-sent-to-auth-service"
+      }
+    },
+    {
+      "key": "contract|auth.dto.BasicAuthDto|specification|shapedAs|basicauthdto-fields-username-password-verificationcode-used-as-login-request-body",
+      "candidateAtomId": "atom:contract:auth-dto-basicauthdto:shaped-as",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/dto/BasicAuthDto.java:19-24 - fields username, password, verificationCode on the login request DTO. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-basicauthdto:shaped-as",
+        "kind": "contract",
+        "subject": "ts-auth-service.BasicAuthDto",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/dto/BasicAuthDto.java:19-24"
+        ],
+        "predicate": "shapedAs",
+        "object": "basicauthdto-fields-username-password-verificationcode-used-as-login-request-body"
+      }
+    },
+    {
+      "key": "contract|auth.BasicAuthDto|specification|shapedAs|username-password-verificationCode-fields-for-login-request-dto",
+      "candidateAtomId": "atom:contract:auth-basicauthdto:shapedas-username-password-verificationcode",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/dto/BasicAuthDto.java:19-24 - fields username, password, verificationCode on the login request DTO. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-basicauthdto:shaped-as",
+        "kind": "contract",
+        "subject": "ts-auth-service.BasicAuthDto",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/dto/BasicAuthDto.java:19-24"
+        ],
+        "predicate": "shapedAs",
+        "object": "basicauthdto-fields-username-password-verificationcode-used-as-login-request-body"
+      }
+    },
+    {
+      "key": "contract|auth.dto.TokenDto|specification|shapedAs|tokendto-fields-userid-username-token-used-as-token-issuance-result-shape",
+      "candidateAtomId": "atom:contract:auth-dto-tokendto:shaped-as",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/dto/TokenDto.java:20-25 - fields userId, username, token on the token issuance response DTO. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-tokendto:shaped-as",
+        "kind": "contract",
+        "subject": "ts-auth-service.TokenDto",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/dto/TokenDto.java:20-25"
+        ],
+        "predicate": "shapedAs",
+        "object": "tokendto-fields-userid-username-token-used-as-token-issuance-result-shape"
+      }
+    },
+    {
+      "key": "contract|auth.TokenDto|specification|shapedAs|userId-username-token-fields-for-token-issuance-response-dto",
+      "candidateAtomId": "atom:contract:auth-tokendto:shapedas-userid-username-token",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/dto/TokenDto.java:20-25 - fields userId, username, token on the token issuance response DTO. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-tokendto:shaped-as",
+        "kind": "contract",
+        "subject": "ts-auth-service.TokenDto",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/dto/TokenDto.java:20-25"
+        ],
+        "predicate": "shapedAs",
+        "object": "tokendto-fields-userid-username-token-used-as-token-issuance-result-shape"
+      }
+    },
+    {
+      "key": "contract|auth.exception.handler.GlobalExceptionHandler|specification|ensures|returns-http-500-internal-server-error-with-raw-exception-message-as-body-not-wrapped-in-the-response-envelope-on-useroperationexception",
+      "candidateAtomId": "atom:contract:auth-exception-handler-globalexceptionhandler:ensures-raw-message-envelope",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:15-18 - @ExceptionHandler(UserOperationException.class) returns ResponseEntity.status(500).body(e.getMessage()), a raw String body, not the Response envelope used elsewhere in the service. Same contract; kept A's richer object noting the envelope bypass since evidence supports it.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-globalexceptionhandler:ensures-raw-message-not-wrapped-in-envelope",
+        "kind": "contract",
+        "subject": "ts-auth-service.GlobalExceptionHandler",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:15-19"
+        ],
+        "predicate": "ensures",
+        "object": "returns-http-500-internal-server-error-with-raw-exception-message-as-body-not-wrapped-in-the-response-envelope-on-useroperationexception"
+      }
+    },
+    {
+      "key": "contract|auth.GlobalExceptionHandler|specification|ensures|useroperationexception-caught-globally-and-mapped-to-http-500-internal-server-error-response-with-exception-message-as-body",
+      "candidateAtomId": "atom:contract:auth-globalexceptionhandler:ensures-useroperationexception-maps-to-500",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:15-18 - @ExceptionHandler(UserOperationException.class) returns ResponseEntity.status(500).body(e.getMessage()), a raw String body, not the Response envelope used elsewhere in the service. Same contract; kept A's richer object noting the envelope bypass since evidence supports it.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-globalexceptionhandler:ensures-raw-message-not-wrapped-in-envelope",
+        "kind": "contract",
+        "subject": "ts-auth-service.GlobalExceptionHandler",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:15-19"
+        ],
+        "predicate": "ensures",
+        "object": "returns-http-500-internal-server-error-with-raw-exception-message-as-body-not-wrapped-in-the-response-envelope-on-useroperationexception"
+      }
+    },
+    {
+      "key": "relation|auth.config.WebSecurityConfig|restriction|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+      "candidateAtomId": "atom:relation:auth-config-websecurityconfig:depends-on-jwtfilter",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:4,96 - import edu.fudan.common.security.jwt.JWTFilter; addFilterBefore(new JWTFilter(), ...). Same dependency; A's refs additionally cite the import line.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-websecurityconfig:depends-on-jwtfilter",
+        "kind": "relation",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:4",
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:96"
+        ],
+        "predicate": "dependsOn",
+        "object": "edu.fudan.common.security.jwt.JWTFilter"
+      }
+    },
+    {
+      "key": "relation|auth.WebSecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+      "candidateAtomId": "atom:relation:auth-websecurityconfig:dependson-jwtfilter",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:4,96 - import edu.fudan.common.security.jwt.JWTFilter; addFilterBefore(new JWTFilter(), ...). Same dependency; A's refs additionally cite the import line.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-websecurityconfig:depends-on-jwtfilter",
+        "kind": "relation",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:4",
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:96"
+        ],
+        "predicate": "dependsOn",
+        "object": "edu.fudan.common.security.jwt.JWTFilter"
+      }
+    },
+    {
+      "key": "relation|auth.controller.AuthController|restriction|dependsOn|auth.service.UserService",
+      "candidateAtomId": "atom:relation:auth-controller-authcontroller:depends-on-userservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/AuthController.java:21-22,39 - @Autowired private UserService userService; used at userService.createDefaultAuthUser(authDto). Same dependency; B's refs additionally cite the @Autowired annotation line.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-authcontroller:depends-on-userservice",
+        "kind": "relation",
+        "subject": "ts-auth-service.AuthController",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:21-22",
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:39"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.UserService"
+      }
+    },
+    {
+      "key": "relation|auth.AuthController|relation|dependsOn|auth.UserService",
+      "candidateAtomId": "atom:relation:auth-authcontroller:dependson-userservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/AuthController.java:21-22,39 - @Autowired private UserService userService; used at userService.createDefaultAuthUser(authDto). Same dependency; B's refs additionally cite the @Autowired annotation line.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-authcontroller:depends-on-userservice",
+        "kind": "relation",
+        "subject": "ts-auth-service.AuthController",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:21-22",
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:39"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.UserService"
+      }
+    },
+    {
+      "key": "relation|auth.controller.UserController|restriction|dependsOn|auth.service.TokenService",
+      "candidateAtomId": "atom:relation:auth-controller-usercontroller:depends-on-tokenservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:28-32,45 - @Autowired private TokenService tokenService; used at tokenService.getToken(dao, headers). Same dependency; refs from both passes overlap on the field declaration and B's wider 28-32 span also covers the adjacent userService field.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-usercontroller:depends-on-tokenservice",
+        "kind": "relation",
+        "subject": "ts-auth-service.UserController",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:28-32",
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:45"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.TokenService"
+      }
+    },
+    {
+      "key": "relation|auth.UserController|relation|dependsOn|auth.TokenService",
+      "candidateAtomId": "atom:relation:auth-usercontroller:dependson-tokenservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:28-32,45 - @Autowired private TokenService tokenService; used at tokenService.getToken(dao, headers). Same dependency; refs from both passes overlap on the field declaration and B's wider 28-32 span also covers the adjacent userService field.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-usercontroller:depends-on-tokenservice",
+        "kind": "relation",
+        "subject": "ts-auth-service.UserController",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:28-32",
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:45"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.TokenService"
+      }
+    },
+    {
+      "key": "relation|auth.repository.UserRepository|restriction|dependsOn|auth.entity.User",
+      "candidateAtomId": "atom:relation:auth-repository-userrepository:depends-on-user",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/repository/UserRepository.java:3,12 - import auth.entity.User; interface UserRepository extends CrudRepository<User, String>. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-userrepository:depends-on-user",
+        "kind": "relation",
+        "subject": "ts-auth-service.UserRepository",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:3",
+          "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:12"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.User"
+      }
+    },
+    {
+      "key": "relation|auth.UserRepository|relation|dependsOn|auth.User",
+      "candidateAtomId": "atom:relation:auth-userrepository:dependson-user",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/repository/UserRepository.java:3,12 - import auth.entity.User; interface UserRepository extends CrudRepository<User, String>. Identical refs in both passes.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-userrepository:depends-on-user",
+        "kind": "relation",
+        "subject": "ts-auth-service.UserRepository",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:3",
+          "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:12"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.User"
+      }
+    },
+    {
+      "key": "relation|auth.security.UserDetailsServiceImpl|restriction|dependsOn|auth.repository.UserRepository",
+      "candidateAtomId": "atom:relation:auth-security-userdetailsserviceimpl:depends-on-userrepository",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:21-22,29 - @Autowired private UserRepository userRepository; used at userRepository.findByUsername(s). Same dependency; A's refs additionally cite the usage line.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-userdetailsserviceimpl:depends-on-userrepository",
+        "kind": "relation",
+        "subject": "ts-auth-service.UserDetailsServiceImpl",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:21-22",
+          "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:29"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.UserRepository"
+      }
+    },
+    {
+      "key": "relation|auth.UserDetailsServiceImpl|relation|dependsOn|auth.UserRepository",
+      "candidateAtomId": "atom:relation:auth-userdetailsserviceimpl:dependson-userrepository",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:21-22,29 - @Autowired private UserRepository userRepository; used at userRepository.findByUsername(s). Same dependency; A's refs additionally cite the usage line.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-userdetailsserviceimpl:depends-on-userrepository",
+        "kind": "relation",
+        "subject": "ts-auth-service.UserDetailsServiceImpl",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:21-22",
+          "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:29"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.UserRepository"
+      }
+    },
+    {
+      "key": "semantic|auth.constant.AuthConstant|semantic|identifiedBy|role-strings-role-underscore-user-and-role-underscore-admin-match-spring-security-hasrole-suffix-convention-user-admin-used-in-websecurityconfig",
+      "candidateAtomId": "atom:semantic:auth-constant-authconstant:identified-by-role-strings",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/constant/AuthConstant.java:12-13 - ROLE_USER=\"ROLE_USER\", ROLE_ADMIN=\"ROLE_ADMIN\"; cross-referenced against WebSecurityConfig.java:88-89 hasRole(\"ADMIN\") checks. Same constants-in-use fact; A's refs additionally cite the WebSecurityConfig use site, kept in the union.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-authconstant:identified-by-role-strings",
+        "kind": "semantic",
+        "subject": "ts-auth-service.AuthConstant",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/constant/AuthConstant.java:12-13",
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:88-89"
+        ],
+        "predicate": "identifiedBy",
+        "object": "role-strings-role-underscore-user-and-role-underscore-admin-match-spring-security-hasrole-suffix-convention-used-in-websecurityconfig"
+      }
+    },
+    {
+      "key": "semantic|auth.AuthConstant|semantic|identifiedBy|role-user-and-role-admin-string-literals-consumed-by-spring-security-hasrole-and-granted-authority-checks",
+      "candidateAtomId": "atom:semantic:auth-authconstant:identifiedby-role-tokens",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/constant/AuthConstant.java:12-13 - ROLE_USER=\"ROLE_USER\", ROLE_ADMIN=\"ROLE_ADMIN\"; cross-referenced against WebSecurityConfig.java:88-89 hasRole(\"ADMIN\") checks. Same constants-in-use fact; A's refs additionally cite the WebSecurityConfig use site, kept in the union.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-authconstant:identified-by-role-strings",
+        "kind": "semantic",
+        "subject": "ts-auth-service.AuthConstant",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/constant/AuthConstant.java:12-13",
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:88-89"
+        ],
+        "predicate": "identifiedBy",
+        "object": "role-strings-role-underscore-user-and-role-underscore-admin-match-spring-security-hasrole-suffix-convention-used-in-websecurityconfig"
+      }
+    },
+    {
+      "key": "semantic|auth.security.jwt.JWTProvider|semantic|meansInUse|secret-key-is-string-literal-secret-base64-encoded-once-at-postconstruct-init-and-reused-for-every-issued-token",
+      "candidateAtomId": "atom:semantic:auth-security-jwt-jwtprovider:means-in-use-secret-key",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:20,24-27 - secretKey=\"secret\" field, @PostConstruct init() base64-encodes it once; signWith(HS256, secretKey) in createToken reuses the same field for every call. Same fact under two predicate framings (meansInUse vs identifiedBy); kept the fused object covering both the hardcoded-literal identity and the reuse-per-token consequence.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-jwtprovider:identified-by-hardcoded-secret-key",
+        "kind": "semantic",
+        "subject": "ts-auth-service.JWTProvider",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:20",
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:24-27"
+        ],
+        "predicate": "identifiedBy",
+        "object": "jwt-signing-key-hardcoded-literal-string-secret-then-base64-encoded-once-at-postconstruct-init-and-reused-for-every-issued-token"
+      }
+    },
+    {
+      "key": "semantic|auth.JWTProvider|semantic|identifiedBy|jwt-signing-key-hardcoded-literal-string-secret-then-base64-encoded-at-postconstruct-init",
+      "candidateAtomId": "atom:semantic:auth-jwtprovider:identifiedby-hardcoded-secret-key",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:20,24-27 - secretKey=\"secret\" field, @PostConstruct init() base64-encodes it once; signWith(HS256, secretKey) in createToken reuses the same field for every call. Same fact under two predicate framings (meansInUse vs identifiedBy); kept the fused object covering both the hardcoded-literal identity and the reuse-per-token consequence.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-jwtprovider:identified-by-hardcoded-secret-key",
+        "kind": "semantic",
+        "subject": "ts-auth-service.JWTProvider",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:20",
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:24-27"
+        ],
+        "predicate": "identifiedBy",
+        "object": "jwt-signing-key-hardcoded-literal-string-secret-then-base64-encoded-once-at-postconstruct-init-and-reused-for-every-issued-token"
+      }
+    },
+    {
+      "key": "semantic|auth.security.jwt.JWTProvider|semantic|identifiedBy|jwt-claims-carry-username-as-subject-plus-roles-set-and-user-id-under-infoconstant-roles-and-id-keys",
+      "candidateAtomId": "atom:semantic:auth-security-jwt-jwtprovider:identified-by-claims",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:31-33,42 - claims.setSubject(username), claims.put(ROLES, roles), claims.put(ID, userId), then .signWith(SignatureAlgorithm.HS256, secretKey). Same claims-composition fact; B additionally cites the HS256 signing line, kept in the union.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-jwtprovider:means-in-use-claims-carry-roles-and-userid-signed-hs256",
+        "kind": "semantic",
+        "subject": "ts-auth-service.JWTProvider",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:31-33",
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:42"
+        ],
+        "predicate": "meansInUse",
+        "object": "jwt-claims-carry-username-as-subject-plus-roles-set-and-user-id-under-infoconstant-roles-and-id-keys-signed-hs256"
+      }
+    },
+    {
+      "key": "semantic|auth.JWTProvider|semantic|meansInUse|jwt-claims-carry-subject-username-plus-roles-and-userid-custom-claims-signed-hs256",
+      "candidateAtomId": "atom:semantic:auth-jwtprovider:meansinuse-claims-carry-roles-and-userid",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:31-33,42 - claims.setSubject(username), claims.put(ROLES, roles), claims.put(ID, userId), then .signWith(SignatureAlgorithm.HS256, secretKey). Same claims-composition fact; B additionally cites the HS256 signing line, kept in the union.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-jwtprovider:means-in-use-claims-carry-roles-and-userid-signed-hs256",
+        "kind": "semantic",
+        "subject": "ts-auth-service.JWTProvider",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:31-33",
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:42"
+        ],
+        "predicate": "meansInUse",
+        "object": "jwt-claims-carry-username-as-subject-plus-roles-set-and-user-id-under-infoconstant-roles-and-id-keys-signed-hs256"
+      }
+    },
+    {
+      "key": "semantic|edu.fudan.common.util.Response|semantic|statusGates|http-200-ok-with-embedded-status-0-on-caught-useroperationexception-branch-during-login-otherwise-tokenservice-result-is-passed-through",
+      "candidateAtomId": "atom:semantic:edu-fudan-common-util-response:status-gates-login-exception-branch",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:44-50 - getToken() try-block returns ResponseEntity.ok(res) with the TokenService result on success; catch(UserOperationException) returns ResponseEntity.ok(new Response<>(0, \"get token error\", null)). Same status-gating fact; A's refs cover both branches, B's cover only the catch branch. Kept A's more complete two-branch description and the wider ref span.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-usercontroller:status-gates-login-response",
+        "kind": "semantic",
+        "subject": "ts-auth-service.UserController",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:44-50"
+        ],
+        "predicate": "statusGates",
+        "object": "http-200-ok-with-embedded-status-0-on-caught-useroperationexception-branch-during-login-otherwise-tokenservice-result-is-passed-through"
+      }
+    },
+    {
+      "key": "semantic|auth.UserController|semantic|statusGates|response-code-0-selects-token-issuance-exception-branch-on-useroperationexception-caught-at-controller",
+      "candidateAtomId": "atom:semantic:auth-usercontroller:statusgates-login-response",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:44-50 - getToken() try-block returns ResponseEntity.ok(res) with the TokenService result on success; catch(UserOperationException) returns ResponseEntity.ok(new Response<>(0, \"get token error\", null)). Same status-gating fact; A's refs cover both branches, B's cover only the catch branch. Kept A's more complete two-branch description and the wider ref span.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-usercontroller:status-gates-login-response",
+        "kind": "semantic",
+        "subject": "ts-auth-service.UserController",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:44-50"
+        ],
+        "predicate": "statusGates",
+        "object": "http-200-ok-with-embedded-status-0-on-caught-useroperationexception-branch-during-login-otherwise-tokenservice-result-is-passed-through"
+      }
+    },
+    {
+      "key": "state|auth.entity.User|state|persistsIn|auth-user-table-columns-user-id-user-name-password-and-roles-element-collection-joined-on-user-id",
+      "candidateAtomId": "atom:state:auth-entity-user:persists-in-auth-user-table",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/entity/User.java:26-39 - @Table(name=\"auth_user\"), @Column(length=36,name=\"user_id\") userId, @Column(length=36,name=\"user_name\") username, password, and roles as an @ElementCollection joined on user_id. Same schema fact; A's refs cover the full mapping including the roles element-collection, B's narrower refs cover only the table/userId/username columns. Kept A's richer object and refs since evidence supports the fuller description.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-auth-service-user:persists-in-auth-user-table",
+        "kind": "state",
+        "subject": "ts-auth-service.User",
+        "axis": "state",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/entity/User.java:26-39"
+        ],
+        "predicate": "persistsIn",
+        "object": "auth-user-table-columns-user-id-user-name-password-and-roles-element-collection-joined-on-user-id"
+      }
+    },
+    {
+      "key": "state|auth.User|state|persistsIn|user-entity-persisted-in-auth_user-table-with-36-char-user-id-and-user-name-columns",
+      "candidateAtomId": "atom:state:auth-user:persistsin-auth-user-table",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/entity/User.java:26-39 - @Table(name=\"auth_user\"), @Column(length=36,name=\"user_id\") userId, @Column(length=36,name=\"user_name\") username, password, and roles as an @ElementCollection joined on user_id. Same schema fact; A's refs cover the full mapping including the roles element-collection, B's narrower refs cover only the table/userId/username columns. Kept A's richer object and refs since evidence supports the fuller description.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-auth-service-user:persists-in-auth-user-table",
+        "kind": "state",
+        "subject": "ts-auth-service.User",
+        "axis": "state",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/entity/User.java:26-39"
+        ],
+        "predicate": "persistsIn",
+        "object": "auth-user-table-columns-user-id-user-name-password-and-roles-element-collection-joined-on-user-id"
+      }
+    },
+    {
+      "key": "state|auth.entity.User|state|persistsIn|auth-user-table-seeded-at-startup-with-fdse-microservice-role-user-and-admin-role-admin-accounts-if-not-already-present",
+      "candidateAtomId": "atom:state:auth-entity-user:persists-in-seed-startup",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/init/InitUser.java:29-49 - CommandLineRunner.run() seeds fdse_microservice/ROLE_USER (29-38) and admin/ROLE_ADMIN (40-49) into UserRepository if absent. Same startup-seeding fact; A attributes the persisted state to the User entity (consistent with A's other User state atom), B attributes it to the InitUser component that performs the seeding. Kept subject anchored to the persisted entity (User), consistent with the persistsIn predicate's usual entity-centric framing used elsewhere in this chunk.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-auth-service-user:persists-in-seed-startup",
+        "kind": "state",
+        "subject": "ts-auth-service.User",
+        "axis": "state",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/init/InitUser.java:29-49"
+        ],
+        "predicate": "persistsIn",
+        "object": "auth-user-table-seeded-at-startup-with-fdse-microservice-role-user-and-admin-role-admin-accounts-if-not-already-present"
+      }
+    },
+    {
+      "key": "state|auth.InitUser|state|persistsIn|default-user-and-admin-accounts-saved-into-userrepository-on-commandlinerunner-startup-if-absent",
+      "candidateAtomId": "atom:state:auth-inituser:persistsin-seeded-default-users",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-auth-service/src/main/java/auth/init/InitUser.java:29-49 - CommandLineRunner.run() seeds fdse_microservice/ROLE_USER (29-38) and admin/ROLE_ADMIN (40-49) into UserRepository if absent. Same startup-seeding fact; A attributes the persisted state to the User entity (consistent with A's other User state atom), B attributes it to the InitUser component that performs the seeding. Kept subject anchored to the persisted entity (User), consistent with the persistsIn predicate's usual entity-centric framing used elsewhere in this chunk.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-auth-service-user:persists-in-seed-startup",
+        "kind": "state",
+        "subject": "ts-auth-service.User",
+        "axis": "state",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/init/InitUser.java:29-49"
+        ],
+        "predicate": "persistsIn",
+        "object": "auth-user-table-seeded-at-startup-with-fdse-microservice-role-user-and-admin-role-admin-accounts-if-not-already-present"
+      }
+    },
+    {
+      "key": "contract|assurance.service.AssuranceServiceImpl|specification|requires|modify-assumes-find-assurance-by-id-response-data-optional-is-present-before-unwrapping-with-get",
+      "candidateAtomId": "atom:contract:assurance-service-assuranceserviceimpl:modify-requires-response-data-present",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:97-99 - modify() calls findAssuranceById(...) then unwraps ((Optional<Assurance>)oldAssuranceResponse.getData()).get() without checking isPresent. Genuine precondition finding pass B never emitted for AssuranceServiceImpl.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-assurance-service-assuranceserviceimpl:modify-requires-response-data-present",
+        "kind": "contract",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "specification",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:98-99"
+        ],
+        "predicate": "requires",
+        "object": "modify-assumes-find-assurance-by-id-response-data-optional-is-present-before-unwrapping-with-get"
+      }
+    },
+    {
+      "key": "relation|ts-assurance-service|restriction|dependsOn|nacos-service-discovery-cluster",
+      "candidateAtomId": "atom:relation:ts-assurance-service:depends-on-nacos-discovery",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/resources/application.yml:3-5 - spring.cloud.nacos.discovery.server-addr lists a 3-node nacos-headless cluster. Genuine dependency pass B never emitted (B only captured the mysql datasource fact from this file).",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-assurance-service-application-yml:depends-on-nacos-discovery",
+        "kind": "relation",
+        "subject": "ts-assurance-service.application-yml",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-assurance-service/src/main/resources/application.yml:3-5"
+        ],
+        "predicate": "dependsOn",
+        "object": "nacos-service-discovery-cluster"
+      }
+    },
+    {
+      "key": "relation|ts-assurance-service|restriction|dependsOn|ts-assurance-mysql-datasource",
+      "candidateAtomId": "atom:relation:ts-assurance-service:depends-on-mysql-datasource",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/resources/application.yml:8-12 - spring.datasource.url/username/password/driver-class-name point at ts-assurance-mysql. Genuine relation fact distinct in kind (dependsOn) from B's fused persistsIn state atom on the same file; pass B never emitted a dependsOn-datasource relation.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-assurance-service-application-yml:depends-on-mysql-datasource",
+        "kind": "relation",
+        "subject": "ts-assurance-service.application-yml",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-assurance-service/src/main/resources/application.yml:8-12"
+        ],
+        "predicate": "dependsOn",
+        "object": "ts-assurance-mysql-datasource"
+      }
+    },
+    {
+      "key": "state|ts-assurance-service|state|transitionsTo|schema-auto-managed-via-hibernate-ddl-auto-update-at-startup",
+      "candidateAtomId": "atom:state:ts-assurance-service:hibernate-ddl-auto-update",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/resources/application.yml:13-15 - spring.jpa.hibernate.ddl-auto: update. Genuine state fact about schema management distinct from B's persistsIn atom which instead fuses the datasource identity (line 9) with ddl-auto (line 15) into one atom; kept separate since predicate/subject differ.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-assurance-service-application-yml:hibernate-ddl-auto-update",
+        "kind": "state",
+        "subject": "ts-assurance-service.application-yml",
+        "axis": "state",
+        "refs": [
+          "src:ts-assurance-service/src/main/resources/application.yml:13-15"
+        ],
+        "predicate": "transitionsTo",
+        "object": "schema-auto-managed-via-hibernate-ddl-auto-update-at-startup"
+      }
+    },
+    {
+      "key": "contract|auth.entity.User|specification|shapedAs|get-authorities-maps-roles-set-of-string-one-to-one-to-simplegrantedauthority-without-any-role-prefix-transformation",
+      "candidateAtomId": "atom:contract:auth-entity-user:get-authorities-shaped-as",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/entity/User.java:41-44 - getAuthorities() returns roles.stream().map(SimpleGrantedAuthority::new).collect(...), a 1:1 mapping with no ROLE_ prefix stripped or added. Kept as a distinct contract atom from B's semantic meansInUse atom on the same lines: A specifically notes the absent prefix transformation, a fact B's atom does not state; kind differs (contract shapedAs vs semantic meansInUse) so the two are not the same match key.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-user:get-authorities-shaped-as",
+        "kind": "contract",
+        "subject": "ts-auth-service.User",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/entity/User.java:41-44"
+        ],
+        "predicate": "shapedAs",
+        "object": "get-authorities-maps-roles-set-of-string-one-to-one-to-simplegrantedauthority-without-any-role-prefix-transformation"
+      }
+    },
+    {
+      "key": "relation|auth.config.WebSecurityConfig|restriction|dependsOn|auth.security.UserDetailsServiceImpl",
+      "candidateAtomId": "atom:relation:auth-config-websecurityconfig:depends-on-userdetailsserviceimpl",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:36-38 - @Autowired @Qualifier(\"userDetailServiceImpl\") private UserDetailsService userDetailsService, wired to the UserDetailsServiceImpl bean. Genuine dependency pass B never emitted for WebSecurityConfig.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-websecurityconfig:depends-on-userdetailsserviceimpl",
+        "kind": "relation",
+        "subject": "ts-auth-service.WebSecurityConfig",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/config/WebSecurityConfig.java:36-38"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.UserDetailsServiceImpl"
+      }
+    },
+    {
+      "key": "relation|auth.controller.UserController|restriction|dependsOn|auth.exception.UserOperationException",
+      "candidateAtomId": "atom:relation:auth-controller-usercontroller:depends-on-useroperationexception",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:47 - catch (UserOperationException e) inside getToken(). Genuine dependency pass B never emitted for UserController.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-usercontroller:depends-on-useroperationexception",
+        "kind": "relation",
+        "subject": "ts-auth-service.UserController",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:47"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.UserOperationException"
+      }
+    },
+    {
+      "key": "relation|auth.controller.UserController|restriction|dependsOn|auth.service.UserService",
+      "candidateAtomId": "atom:relation:auth-controller-usercontroller:depends-on-userservice",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:28-29,56,62 - @Autowired private UserService userService; used at userService.getAllUser(headers) and userService.deleteByUserId(userId, headers). Genuine dependency pass B never emitted for UserController (B only recorded UserController's TokenService dependency).",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-usercontroller:depends-on-userservice",
+        "kind": "relation",
+        "subject": "ts-auth-service.UserController",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:28-29",
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:56",
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:62"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.UserService"
+      }
+    },
+    {
+      "key": "relation|auth.exception.handler.GlobalExceptionHandler|restriction|dependsOn|auth.exception.UserOperationException",
+      "candidateAtomId": "atom:relation:auth-exception-handler-globalexceptionhandler:depends-on-useroperationexception",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:15,17 - @ExceptionHandler(UserOperationException.class) and the handler method parameter UserOperationException e. Genuine dependency pass B never emitted for GlobalExceptionHandler (B only recorded its contract).",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-globalexceptionhandler:depends-on-useroperationexception",
+        "kind": "relation",
+        "subject": "ts-auth-service.GlobalExceptionHandler",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:15",
+          "src:ts-auth-service/src/main/java/auth/exception/handler/GlobalExceptionHandler.java:17"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.UserOperationException"
+      }
+    },
+    {
+      "key": "relation|auth.init.InitUser|restriction|dependsOn|auth.repository.UserRepository",
+      "candidateAtomId": "atom:relation:auth-init-inituser:depends-on-userrepository",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/init/InitUser.java:21,29,37,48 - @Autowired private UserRepository userRepository; used at findByUsername (lines 29,40 for both accounts) and save (lines 37,48). Genuine dependency pass B never emitted for InitUser (B only recorded InitUser's semantic/state facts).",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-auth-service-inituser:depends-on-userrepository",
+        "kind": "relation",
+        "subject": "ts-auth-service.InitUser",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/init/InitUser.java:21",
+          "src:ts-auth-service/src/main/java/auth/init/InitUser.java:29",
+          "src:ts-auth-service/src/main/java/auth/init/InitUser.java:37",
+          "src:ts-auth-service/src/main/java/auth/init/InitUser.java:48"
+        ],
+        "predicate": "dependsOn",
+        "object": "auth.UserRepository"
+      }
+    },
+    {
+      "key": "semantic|auth.constant.InfoConstant|semantic|identifiedBy|infoconstant-roles-and-id-keys-used-as-jwt-claim-keys-in-jwtprovider-username-not-found-template-used-in-userdetailsserviceimpl-lookup-exception-message",
+      "candidateAtomId": "atom:semantic:auth-constant-infoconstant:identified-by-shared-keys",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/constant/InfoConstant.java:19,23-26 - USER_NAME_NOT_FOUND_1 (line 19), ROLES/ID/USERNAME/PASSWORD keys (23-26), cross-referenced against actual use sites at JWTProvider.java:32-33 (claims.put(ROLES/ID)) and UserDetailsServiceImpl.java:31 (MessageFormat.format(USER_NAME_NOT_FOUND_1, s)). Grounded in concrete use evidence within this chunk's files; kept as pass A's atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-infoconstant:identified-by-shared-keys",
+        "kind": "semantic",
+        "subject": "ts-auth-service.InfoConstant",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/constant/InfoConstant.java:19",
+          "src:ts-auth-service/src/main/java/auth/constant/InfoConstant.java:23-26",
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:32-33",
+          "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:31"
+        ],
+        "predicate": "identifiedBy",
+        "object": "infoconstant-roles-and-id-keys-used-as-jwt-claim-keys-in-jwtprovider-username-not-found-template-used-in-userdetailsserviceimpl-lookup-exception-message"
+      }
+    },
+    {
+      "key": "semantic|auth.controller.AuthController|semantic|meansInUse|post-auth-returns-http-201-created-echoing-submitted-authdto-regardless-of-createdefaultauthuser-outcome",
+      "candidateAtomId": "atom:semantic:auth-controller-authcontroller:means-in-use-create-default-user-response",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/AuthController.java:36-42 - createDefaultUser() calls userService.createDefaultAuthUser(authDto) then unconditionally returns new Response(1,\"SUCCESS\",authDto) with HttpStatus.CREATED, with no branch on the call's outcome. Genuine semantic finding pass B never emitted for AuthController.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-authcontroller:means-in-use-create-default-user-response",
+        "kind": "semantic",
+        "subject": "ts-auth-service.AuthController",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:36-42"
+        ],
+        "predicate": "meansInUse",
+        "object": "post-auth-returns-http-201-created-echoing-submitted-authdto-regardless-of-createdefaultauthuser-outcome"
+      }
+    },
+    {
+      "key": "state|auth.security.jwt.JWTProvider|state|transitionsTo|token-expiration-fixed-constant-3600000-milliseconds-one-hour-from-issue-time",
+      "candidateAtomId": "atom:state:auth-security-jwt-jwtprovider:validity-in-milliseconds",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:22,35-36 - validityInMilliseconds=3600000; Date validate=new Date(now.getTime()+validityInMilliseconds). Genuine state/lifecycle observation; kept distinct from pass B's contract/ensures atom on the same lines since kind differs (state vs contract) and both are separately catalog-valid framings of the same numeric fact.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-auth-service-jwtprovider:transitions-to-validity-in-milliseconds",
+        "kind": "state",
+        "subject": "ts-auth-service.JWTProvider",
+        "axis": "state",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:22",
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:35-36"
+        ],
+        "predicate": "transitionsTo",
+        "object": "token-expiration-fixed-constant-3600000-milliseconds-one-hour-from-issue-time"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceRepository|capability|handlesCommand|removeAssuranceByOrderId",
+      "candidateAtomId": "atom:capability:assurance-assurancerepository:handlescommand-removeassurancebyorderid",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:48-49 - @Transactional void removeAssuranceByOrderId(String orderId). Genuine capability pass A never emitted for AssuranceRepository (A only recorded its component and dependsOn-Assurance relation).",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assurancerepository:handles-command-remove-assurance-by-order-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceRepository",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:48-49"
+        ],
+        "predicate": "handlesCommand",
+        "object": "removeAssuranceByOrderId"
+      }
+    },
+    {
+      "key": "capability|assurance.AssuranceRepository|capability|servesQuery|findByOrderId",
+      "candidateAtomId": "atom:capability:assurance-assurancerepository:servesquery-findbyorderid",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:31 - Assurance findByOrderId(String orderId). Genuine capability pass A never emitted for AssuranceRepository.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-assurance-service-assurancerepository:serves-query-find-by-order-id",
+        "kind": "capability",
+        "subject": "ts-assurance-service.AssuranceRepository",
+        "axis": "capability",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/repository/AssuranceRepository.java:31"
+        ],
+        "predicate": "servesQuery",
+        "object": "findByOrderId"
+      }
+    },
+    {
+      "key": "component|assurance.AssuranceServiceImpl|static||",
+      "candidateAtomId": "atom:component:assurance-assuranceserviceimpl",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:21 - @Service public class AssuranceServiceImpl implements AssuranceService. Pass A never emitted a component atom for this class (only its capabilities/state/semantic/contract).",
+      "canonicalAtom": {
+        "id": "atom:component:ts-assurance-service-assuranceserviceimpl",
+        "kind": "component",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:21"
+        ]
+      }
+    },
+    {
+      "key": "contract|assurance.AssuranceService|specification|requires|delete-by-assurance-id-and-delete-by-order-id-declared-transactional",
+      "candidateAtomId": "atom:contract:assurance-assuranceservice:requires-transactional-delete",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:49,59 - @Transactional annotates deleteById and deleteByOrderId declarations. Genuine contract pass A never emitted for AssuranceService.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-assurance-service-assuranceservice:requires-transactional-delete",
+        "kind": "contract",
+        "subject": "ts-assurance-service.AssuranceService",
+        "axis": "specification",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:49",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceService.java:59"
+        ],
+        "predicate": "requires",
+        "object": "delete-by-assurance-id-and-delete-by-order-id-declared-transactional"
+      }
+    },
+    {
+      "key": "relation|assurance.AssuranceServiceImpl|relation|dependsOn|assurance.AssuranceRepository",
+      "candidateAtomId": "atom:relation:assurance-assuranceserviceimpl:dependson-assurancerepository",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:23-24 - @Autowired private AssuranceRepository assuranceRepository. Genuine dependsOn relation pass A never emitted despite reading this file.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-assurance-service-assuranceserviceimpl:depends-on-assurancerepository",
+        "kind": "relation",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "restriction",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:24"
+        ],
+        "predicate": "dependsOn",
+        "object": "assurance.AssuranceRepository"
+      }
+    },
+    {
+      "key": "semantic|assurance.AssuranceServiceImpl|semantic|meansInUse|assurance-type-price-value-copied-via-gettype-getprice-into-plainassurance-and-assurancetypebean-with-no-visible-parsing-or-rounding-in-this-file",
+      "candidateAtomId": "atom:semantic:assurance-assuranceserviceimpl:meansinuse-price-passthrough",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:126-128,144-147 - getAllAssurances copies a.getType().getPrice() into PlainAssurance.setTypePrice (line 128); getAllAssuranceTypes copies at.getPrice() into AssuranceTypeBean.setPrice (line 147), both with no parsing/rounding visible in this file. Genuine cech-relevant money-representation observation pass A never emitted; corrected the second ref pair from 145-146 to 146-147 since setPrice is on line 147, not 146.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-assurance-service-assuranceserviceimpl:means-in-use-price-passthrough",
+        "kind": "semantic",
+        "subject": "ts-assurance-service.AssuranceServiceImpl",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:127-128",
+          "src:ts-assurance-service/src/main/java/assurance/service/AssuranceServiceImpl.java:146-147"
+        ],
+        "predicate": "meansInUse",
+        "object": "assurance-type-price-value-copied-via-gettype-getprice-into-plainassurance-and-assurancetypebean-with-no-visible-parsing-or-rounding-in-this-file"
+      }
+    },
+    {
+      "key": "state|assurance.ts-assurance-service-config|state|persistsIn|mysql-datasource-ts-assurance-mysql-database-with-hibernate-ddl-auto-update-schema-sync",
+      "candidateAtomId": "atom:state:assurance-ts-assurance-service-config:persistsin-mysql-schema",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-assurance-service/src/main/resources/application.yml:9,15 - datasource url identifies the ts-assurance-mysql database (line 9) and jpa.hibernate.ddl-auto: update (line 15) keeps the schema in sync. Distinct fused state observation from pass A's separate dependsOn-datasource relation and transitionsTo-ddl-auto state atoms; kept as its own atom since predicate/subject differ from both of A's.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-assurance-service-application-yml:persists-in-mysql-schema",
+        "kind": "state",
+        "subject": "ts-assurance-service.application-yml",
+        "axis": "state",
+        "refs": [
+          "src:ts-assurance-service/src/main/resources/application.yml:9",
+          "src:ts-assurance-service/src/main/resources/application.yml:15"
+        ],
+        "predicate": "persistsIn",
+        "object": "mysql-datasource-ts-assurance-mysql-database-with-hibernate-ddl-auto-update-schema-sync"
+      }
+    },
+    {
+      "key": "component|auth.AuthController|static||",
+      "candidateAtomId": "atom:component:auth-authcontroller",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/AuthController.java:19 - @RestController @RequestMapping(/api/v1/auth) public class AuthController. Pass A never emitted a component atom for this class (only its two capability rows and a relation/semantic row).",
+      "canonicalAtom": {
+        "id": "atom:component:ts-auth-service-authcontroller",
+        "kind": "component",
+        "subject": "ts-auth-service.AuthController",
+        "axis": "static",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/AuthController.java:19"
+        ]
+      }
+    },
+    {
+      "key": "component|auth.JWTProvider|static||",
+      "candidateAtomId": "atom:component:auth-jwtprovider",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:18 - @Component public class JWTProvider. Pass A never emitted a component atom for this class.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-auth-service-jwtprovider",
+        "kind": "component",
+        "subject": "ts-auth-service.JWTProvider",
+        "axis": "static",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:18"
+        ]
+      }
+    },
+    {
+      "key": "component|auth.UserController|static||",
+      "candidateAtomId": "atom:component:auth-usercontroller",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/controller/UserController.java:26 - @RestController @RequestMapping(/api/v1/users) public class UserController. Pass A never emitted a component atom for this class.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-auth-service-usercontroller",
+        "kind": "component",
+        "subject": "ts-auth-service.UserController",
+        "axis": "static",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/controller/UserController.java:26"
+        ]
+      }
+    },
+    {
+      "key": "component|auth.UserDetailsServiceImpl|static||",
+      "candidateAtomId": "atom:component:auth-userdetailsserviceimpl",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:19 - @Component(\"userDetailServiceImpl\") public class UserDetailsServiceImpl implements UserDetailsService. Pass A never emitted a component atom for this class.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-auth-service-userdetailsserviceimpl",
+        "kind": "component",
+        "subject": "ts-auth-service.UserDetailsServiceImpl",
+        "axis": "static",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:19"
+        ]
+      }
+    },
+    {
+      "key": "component|auth.UserRepository|static||",
+      "candidateAtomId": "atom:component:auth-userrepository",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/repository/UserRepository.java:12 - public interface UserRepository extends CrudRepository<User, String>. Pass A never emitted a component atom for this interface (only its relation and two capability rows).",
+      "canonicalAtom": {
+        "id": "atom:component:ts-auth-service-userrepository",
+        "kind": "component",
+        "subject": "ts-auth-service.UserRepository",
+        "axis": "static",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/repository/UserRepository.java:12"
+        ]
+      }
+    },
+    {
+      "key": "semantic|auth.User|semantic|meansInUse|roles-string-set-mapped-to-simplegrantedauthority-collection-for-spring-security-authorization",
+      "candidateAtomId": "atom:semantic:auth-user:meansinuse-roles-as-granted-authorities",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/entity/User.java:37-44 - roles field (Set<String>) is mapped via getAuthorities() into SimpleGrantedAuthority for Spring Security's authorization checks. Kept as a distinct semantic atom from A's contract shapedAs atom on the same site: B's meansInUse states the security-authorization purpose which A's shape-focused atom does not state; kind differs so not the same match key.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-user:means-in-use-roles-as-granted-authorities",
+        "kind": "semantic",
+        "subject": "ts-auth-service.User",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/entity/User.java:37-44"
+        ],
+        "predicate": "meansInUse",
+        "object": "roles-string-set-mapped-to-simplegrantedauthority-collection-for-spring-security-authorization"
+      }
+    },
+    {
+      "key": "semantic|auth.InitUser|semantic|identifiedBy|hardcoded-username-fdse_microservice-and-literal-password-111111-bcrypt-encoded-then-seeded-with-role-user-when-absent",
+      "candidateAtomId": "atom:semantic:auth-inituser:identifiedby-hardcoded-credential-fdse-microservice",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/init/InitUser.java:29-38 - findByUsername(\"fdse_microservice\").orElse(new User()); if absent, builds User with password(passwordEncoder.encode(\"111111\")).roles(ROLE_USER) and saves. Genuine per-account observation not covered by pass A's single fused two-account atom, which is separately adjudicated not-adopted for conflating both aliases.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-inituser:identified-by-hardcoded-credential-fdse-microservice",
+        "kind": "semantic",
+        "subject": "ts-auth-service.InitUser",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/init/InitUser.java:29-38"
+        ],
+        "predicate": "identifiedBy",
+        "object": "hardcoded-username-fdse_microservice-and-literal-password-111111-bcrypt-encoded-then-seeded-with-role-user-when-absent"
+      }
+    },
+    {
+      "key": "semantic|auth.InitUser|semantic|identifiedBy|hardcoded-username-admin-and-literal-password-222222-bcrypt-encoded-then-seeded-with-role-admin-when-absent",
+      "candidateAtomId": "atom:semantic:auth-inituser:identifiedby-hardcoded-credential-admin",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/init/InitUser.java:40-49 - findByUsername(\"admin\").orElse(new User()); if absent, builds User with password(passwordEncoder.encode(\"222222\")).roles(ROLE_ADMIN) and saves. Genuine per-account observation, alias-distinct from the fdse_microservice account.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-inituser:identified-by-hardcoded-credential-admin",
+        "kind": "semantic",
+        "subject": "ts-auth-service.InitUser",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/init/InitUser.java:40-49"
+        ],
+        "predicate": "identifiedBy",
+        "object": "hardcoded-username-admin-and-literal-password-222222-bcrypt-encoded-then-seeded-with-role-admin-when-absent"
+      }
+    },
+    {
+      "key": "semantic|auth.UserDetailsServiceImpl|semantic|identifiedBy|absent-username-lookup-raises-usernamenotfoundexception-with-message-templated-from-infoconstant-username-not-found",
+      "candidateAtomId": "atom:semantic:auth-userdetailsserviceimpl:identifiedby-username-not-found-message",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:29-32 - userRepository.findByUsername(s).orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format(InfoConstant.USER_NAME_NOT_FOUND_1, s))). Genuine branch-behavior observation distinct from pass A's InfoConstant-anchored atom, which states the template's use site but not this specific exception-raising branch behavior.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-auth-service-userdetailsserviceimpl:identified-by-username-not-found-message",
+        "kind": "semantic",
+        "subject": "ts-auth-service.UserDetailsServiceImpl",
+        "axis": "semantic",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/UserDetailsServiceImpl.java:29-32"
+        ],
+        "predicate": "identifiedBy",
+        "object": "absent-username-lookup-raises-usernamenotfoundexception-with-message-templated-from-infoconstant-username-not-found"
+      }
+    },
+    {
+      "key": "contract|auth.JWTProvider|specification|ensures|issued-jwt-expires-3600000-milliseconds-one-hour-after-issuedat-timestamp",
+      "candidateAtomId": "atom:contract:auth-jwtprovider:ensures-token-expiry-one-hour",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:22,35-36 - same validityInMilliseconds=3600000 constant used to compute the expiration Date from issuedAt. Genuine contract/postcondition framing kept distinct from pass A's state/transitionsTo atom on the same lines since kind differs and both are separately catalog-valid.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-auth-service-jwtprovider:ensures-token-expiry-one-hour",
+        "kind": "contract",
+        "subject": "ts-auth-service.JWTProvider",
+        "axis": "specification",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:22",
+          "src:ts-auth-service/src/main/java/auth/security/jwt/JWTProvider.java:35-36"
+        ],
+        "predicate": "ensures",
+        "object": "issued-jwt-expires-3600000-milliseconds-one-hour-after-issuedat-timestamp"
+      }
+    },
+    {
+      "key": "effect|auth.AuthApplication|effect|callsProvider|load-balanced-resttemplate-bean-registered-for-outbound-calls-to-other-services",
+      "candidateAtomId": "atom:effect:auth-authapplication:callsprovider-load-balanced-resttemplate",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/AuthApplication.java:21-24 - @LoadBalanced @Bean public RestTemplate restTemplate(RestTemplateBuilder builder). Genuine effect finding pass A never emitted for AuthApplication (A only recorded its component atom).",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-auth-service-authapplication:calls-provider-load-balanced-resttemplate",
+        "kind": "effect",
+        "subject": "ts-auth-service.AuthApplication",
+        "axis": "effect",
+        "refs": [
+          "src:ts-auth-service/src/main/java/auth/AuthApplication.java:21-24"
+        ],
+        "predicate": "callsProvider",
+        "object": "load-balanced-resttemplate-bean-registered-for-outbound-calls-to-other-services"
+      }
+    },
+    {
+      "key": "semantic|auth.init.InitUser|semantic|meansInUse|seed-account-passwords-are-string-literals-111111-and-222222-run-through-passwordencoder-encode-at-startup",
+      "candidateAtomId": "atom:semantic:auth-init-inituser:means-in-use-seed-passwords",
+      "pass": "pass-a",
+      "decision": "not-adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/init/InitUser.java:29-49 - the two seeded accounts (fdse_microservice/111111 at 29-38, admin/222222 at 40-49) are distinct aliases (different username, password, and role). This atom conflates both into a single object, violating alias-preservation; pass B correctly split them into two separate identifiedBy atoms (adopted above) that together cover the same evidence more precisely. Not adopted in favor of the finer-grained pair."
+    },
+    {
+      "key": "semantic|auth.InfoConstant|semantic|identifiedBy|parameterized-message-templates-select-duplicate-user-not-found-and-password-length-response-text",
+      "candidateAtomId": "atom:semantic:auth-infoconstant:identifiedby-message-templates",
+      "pass": "pass-b",
+      "decision": "not-adopted",
+      "basis": "Reread ts-auth-service/src/main/java/auth/constant/InfoConstant.java:14-19 - DUPLICATE, USER_HAS_ALREADY_EXIST, PROPERTIES_CANNOT_BE_EMPTY_1, USER_IS_NOT_EXIST_2, PASSWORD_LEAST_CHAR_1, USER_NAME_NOT_FOUND_1 are declared here, but none of these message templates (other than USER_NAME_NOT_FOUND_1, separately covered by pass A's atom with real use-site evidence) is actually used at any site within this chunk's 20 reviewed files. The cited refs are the declaration site only, not a use site, so the semantic meansInUse/identifiedBy use-evidence requirement is not met for this atom."
+    }
+  ]
+}
