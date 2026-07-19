@@ -53,6 +53,10 @@ body:not(.home-page) {
   line-height: 1.72;
 }
 
+.home-page .hero-copy .research-primary-link {
+  margin-top: clamp(26px, 3.2vw, 38px);
+}
+
 .hero-aside {
   border-top: 3px solid var(--ink);
   padding-top: 22px;

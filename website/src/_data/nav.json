@@ -1,5 +1,6 @@
 [
   { "key": "home", "label": "Home", "path": "" },
+  { "key": "vision", "label": "Vision", "path": "vision/" },
   { "key": "aat", "label": "AAT", "path": "aat/" },
   { "key": "sft", "label": "SFT", "path": "sft/" },
   { "key": "archsig", "label": "ArchSig", "path": "archsig/" },
