@@ -7940,5 +7940,344 @@ theorem rigidImmersion_not_isIso : ¬ IsIso rigidImmersion := by
   rw [← rigidIdeal_top_eq, hk]
   simp
 
+/-! ## R5: law comparison -/
+
+/-- The concrete atom map from the weak reading to the strong reading. -/
+def weakToStrongAtomMap
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    AAT.AG.FiniteModel.carrier.Atom :=
+  if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+    AAT.AG.FiniteModel.FiniteAtom.componentA
+  else
+    AAT.AG.FiniteModel.FiniteAtom.componentC
+
+/-- The weak-to-strong atom map is fixed on every input. -/
+@[simp] theorem weakToStrongAtomMap_eq
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    weakToStrongAtomMap a =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        AAT.AG.FiniteModel.FiniteAtom.componentA
+      else
+        AAT.AG.FiniteModel.FiniteAtom.componentC :=
+  rfl
+
+private theorem weakGlobalEquation_atomMap
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    semanticCoreGlobalEquation referenceRaw referenceScheme
+        weakLawEquationCore weakSchemeBridge PUnit.unit a =
+      semanticCoreGlobalEquation referenceRaw referenceScheme
+        strongLawEquationCore strongSchemeBridge PUnit.unit
+          (weakToStrongAtomMap a) := by
+  apply (ConcreteCategory.bijective_of_isIso
+    ambientGlobalSectionsIso.hom).1
+  rw [weakGlobalEquation_eq, strongGlobalEquation_eq]
+  cases a <;> simp [weakToStrongAtomMap]
+
+/-- The concrete primitive inclusion from weak laws to strong laws. -/
+def weakToStrong :
+    ClosedEquationalLawInclusion
+      referenceRaw referenceScheme weakReading strongReading where
+  lawMap := id
+  atomMap := fun _ => weakToStrongAtomMap
+
+/-- The weak-to-strong inclusion preserves the sole law index. -/
+@[simp] theorem weakToStrong_lawMap :
+    weakToStrong.lawMap = id :=
+  rfl
+
+/-- The weak-to-strong inclusion uses the concrete atom map. -/
+@[simp] theorem weakToStrong_atomMap :
+    weakToStrong.atomMap PUnit.unit = weakToStrongAtomMap :=
+  rfl
+
+/-- The weak-to-strong inclusion preserves required laws, witnesses, and semantics. -/
+theorem weakToStrong_valid :
+    IsClosedEquationalLawInclusion
+      referenceRaw referenceScheme weakToStrong where
+  required_map := fun i hi => by simpa [weakToStrong] using hi
+  closed_map := fun i _ => by
+    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    exact Set.mem_univ i
+  selected_map := fun V i _ => by
+    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    exact Set.mem_univ i
+  coordinate_eq := by
+    intro i hi V a
+    cases i
+    simp only [weakReading, strongReading,
+      ClosedEquationalLawReading.ofSemanticCore_witness,
+      ClosedEquationalLawWitness.ofSemanticCore,
+      ClosedEquationalLawWitness.ofGlobalSections_coordinate,
+      weakToStrong]
+    exact congrArg
+      (referenceScheme.underlying.presheaf.map (homOfLE le_top).op)
+      (weakGlobalEquation_atomMap a)
+  semantic_monotone := by
+    intro T s i hs
+    cases i
+    change (GeometricLawReading.ofSemanticCore referenceRaw referenceScheme
+      weakLawEquationCore weakSchemeBridge).HoldsOn s PUnit.unit
+    rw [GeometricLawReading.ofSemanticCore_holdsOn]
+    change (GeometricLawReading.ofSemanticCore referenceRaw referenceScheme
+      strongLawEquationCore strongSchemeBridge).HoldsOn s PUnit.unit at hs
+    rw [GeometricLawReading.ofSemanticCore_holdsOn] at hs
+    intro a
+    rw [weakGlobalEquation_atomMap]
+    exact hs (weakToStrongAtomMap a)
+
+/-- The strong lawful locus maps contravariantly to the weak lawful locus. -/
+noncomputable def lawComparison :
+    strongLocus ⟶ weakLocus :=
+  lawfulClosedSubschemeMap
+    referenceRaw referenceScheme
+    weakReading_valid strongReading_valid
+    weakReading_requiredClosed strongReading_requiredClosed
+    weakToStrong weakToStrong_valid
+
+/-- The weak-to-strong comparison is the canonical law-inclusion map. -/
+@[simp] theorem lawComparison_eq :
+    lawComparison =
+      lawfulClosedSubschemeMap
+        referenceRaw referenceScheme
+        weakReading_valid strongReading_valid
+        weakReading_requiredClosed strongReading_requiredClosed
+        weakToStrong weakToStrong_valid :=
+  rfl
+
+/-- The weak-to-strong law comparison is a closed immersion. -/
+theorem lawComparison_isClosedImmersion :
+    AlgebraicGeometry.IsClosedImmersion lawComparison :=
+  lawfulClosedSubschemeMap_isClosedImmersion
+    referenceRaw referenceScheme
+    weakReading_valid strongReading_valid
+    weakReading_requiredClosed strongReading_requiredClosed
+    weakToStrong weakToStrong_valid
+
+/-- The weak-to-strong law comparison commutes with the ambient immersions. -/
+theorem lawComparison_immersion :
+    lawComparison ≫ weakImmersion = strongImmersion :=
+  lawfulClosedSubschemeMap_immersion
+    referenceRaw referenceScheme
+    weakReading_valid strongReading_valid
+    weakReading_requiredClosed strongReading_requiredClosed
+    weakToStrong weakToStrong_valid
+
+/-- Strictness of the weak and strong ideals makes the comparison non-isomorphic. -/
+theorem lawComparison_not_isIso :
+    ¬ IsIso lawComparison := by
+  intro hIso
+  letI : IsIso lawComparison := hIso
+  have hker := Scheme.Hom.ker_comp_of_isIso lawComparison weakImmersion
+  have hsheaf : strongIdealSheaf = weakIdealSheaf := by
+    calc
+      strongIdealSheaf = strongImmersion.ker := strongImmersion_ker.symm
+      _ = (lawComparison ≫ weakImmersion).ker := by rw [lawComparison_immersion]
+      _ = weakImmersion.ker := hker
+      _ = weakIdealSheaf := weakImmersion_ker
+  exact (ne_of_lt weakIdeal_lt_strongIdeal) hsheaf.symm
+
+/-- The concrete atom map from the strong reading to the rigid reading. -/
+def strongToRigidAtomMap
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    AAT.AG.FiniteModel.carrier.Atom :=
+  if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+    AAT.AG.FiniteModel.FiniteAtom.componentA
+  else if a = AAT.AG.FiniteModel.FiniteAtom.componentB then
+    AAT.AG.FiniteModel.FiniteAtom.componentB
+  else
+    AAT.AG.FiniteModel.FiniteAtom.dependsAB
+
+/-- The strong-to-rigid atom map is fixed on every input. -/
+@[simp] theorem strongToRigidAtomMap_eq
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    strongToRigidAtomMap a =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        AAT.AG.FiniteModel.FiniteAtom.componentA
+      else if a = AAT.AG.FiniteModel.FiniteAtom.componentB then
+        AAT.AG.FiniteModel.FiniteAtom.componentB
+      else
+        AAT.AG.FiniteModel.FiniteAtom.dependsAB :=
+  rfl
+
+private theorem strongGlobalEquation_atomMap
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    semanticCoreGlobalEquation referenceRaw referenceScheme
+        strongLawEquationCore strongSchemeBridge PUnit.unit a =
+      semanticCoreGlobalEquation referenceRaw referenceScheme
+        rigidLawEquationCore rigidSchemeBridge PUnit.unit
+          (strongToRigidAtomMap a) := by
+  apply (ConcreteCategory.bijective_of_isIso
+    ambientGlobalSectionsIso.hom).1
+  rw [strongGlobalEquation_eq, rigidGlobalEquation_eq]
+  cases a <;> simp [strongToRigidAtomMap]
+
+/-- The concrete primitive inclusion from strong laws to rigid laws. -/
+def strongToRigid :
+    ClosedEquationalLawInclusion
+      referenceRaw referenceScheme strongReading rigidReading where
+  lawMap := id
+  atomMap := fun _ => strongToRigidAtomMap
+
+/-- The strong-to-rigid inclusion preserves the sole law index. -/
+@[simp] theorem strongToRigid_lawMap :
+    strongToRigid.lawMap = id :=
+  rfl
+
+/-- The strong-to-rigid inclusion uses the concrete atom map. -/
+@[simp] theorem strongToRigid_atomMap :
+    strongToRigid.atomMap PUnit.unit = strongToRigidAtomMap :=
+  rfl
+
+/-- The strong-to-rigid inclusion preserves required laws, witnesses, and semantics. -/
+theorem strongToRigid_valid :
+    IsClosedEquationalLawInclusion
+      referenceRaw referenceScheme strongToRigid where
+  required_map := fun i hi => by simpa [strongToRigid] using hi
+  closed_map := fun i _ => by
+    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    exact Set.mem_univ i
+  selected_map := fun V i _ => by
+    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    exact Set.mem_univ i
+  coordinate_eq := by
+    intro i hi V a
+    cases i
+    simp only [strongReading, rigidReading,
+      ClosedEquationalLawReading.ofSemanticCore_witness,
+      ClosedEquationalLawWitness.ofSemanticCore,
+      ClosedEquationalLawWitness.ofGlobalSections_coordinate,
+      strongToRigid]
+    exact congrArg
+      (referenceScheme.underlying.presheaf.map (homOfLE le_top).op)
+      (strongGlobalEquation_atomMap a)
+  semantic_monotone := by
+    intro T s i hs
+    cases i
+    change (GeometricLawReading.ofSemanticCore referenceRaw referenceScheme
+      strongLawEquationCore strongSchemeBridge).HoldsOn s PUnit.unit
+    rw [GeometricLawReading.ofSemanticCore_holdsOn]
+    change (GeometricLawReading.ofSemanticCore referenceRaw referenceScheme
+      rigidLawEquationCore rigidSchemeBridge).HoldsOn s PUnit.unit at hs
+    rw [GeometricLawReading.ofSemanticCore_holdsOn] at hs
+    intro a
+    rw [strongGlobalEquation_atomMap]
+    exact hs (strongToRigidAtomMap a)
+
+/-- The rigid lawful locus maps contravariantly to the strong lawful locus. -/
+noncomputable def strongToRigidComparison :
+    rigidLocus ⟶ strongLocus :=
+  lawfulClosedSubschemeMap
+    referenceRaw referenceScheme
+    strongReading_valid rigidReading_valid
+    strongReading_requiredClosed rigidReading_requiredClosed
+    strongToRigid strongToRigid_valid
+
+/-- The strong-to-rigid comparison is the canonical law-inclusion map. -/
+@[simp] theorem strongToRigidComparison_eq :
+    strongToRigidComparison =
+      lawfulClosedSubschemeMap
+        referenceRaw referenceScheme
+        strongReading_valid rigidReading_valid
+        strongReading_requiredClosed rigidReading_requiredClosed
+        strongToRigid strongToRigid_valid :=
+  rfl
+
+/-- The strong-to-rigid law comparison is a closed immersion. -/
+theorem strongToRigidComparison_isClosedImmersion :
+    AlgebraicGeometry.IsClosedImmersion strongToRigidComparison :=
+  lawfulClosedSubschemeMap_isClosedImmersion
+    referenceRaw referenceScheme
+    strongReading_valid rigidReading_valid
+    strongReading_requiredClosed rigidReading_requiredClosed
+    strongToRigid strongToRigid_valid
+
+/-- The strong-to-rigid comparison commutes with the ambient immersions. -/
+theorem strongToRigidComparison_immersion :
+    strongToRigidComparison ≫ strongImmersion = rigidImmersion :=
+  lawfulClosedSubschemeMap_immersion
+    referenceRaw referenceScheme
+    strongReading_valid rigidReading_valid
+    strongReading_requiredClosed rigidReading_requiredClosed
+    strongToRigid strongToRigid_valid
+
+/-- Strictness of the strong and rigid ideals makes the comparison non-isomorphic. -/
+theorem strongToRigidComparison_not_isIso :
+    ¬ IsIso strongToRigidComparison := by
+  intro hIso
+  letI : IsIso strongToRigidComparison := hIso
+  have hker := Scheme.Hom.ker_comp_of_isIso
+    strongToRigidComparison strongImmersion
+  have hsheaf : rigidIdealSheaf = strongIdealSheaf := by
+    calc
+      rigidIdealSheaf = rigidImmersion.ker := rigidImmersion_ker.symm
+      _ = (strongToRigidComparison ≫ strongImmersion).ker := by
+        rw [strongToRigidComparison_immersion]
+      _ = strongImmersion.ker := hker
+      _ = strongIdealSheaf := strongImmersion_ker
+  exact (ne_of_lt strongIdeal_lt_rigidIdeal) hsheaf.symm
+
+/-- The composite inclusion from weak laws to rigid laws. -/
+def weakToRigid :
+    ClosedEquationalLawInclusion
+      referenceRaw referenceScheme weakReading rigidReading :=
+  weakToStrong.comp referenceRaw referenceScheme strongToRigid
+
+/-- The weak-to-rigid inclusion is the generic composite inclusion. -/
+@[simp] theorem weakToRigid_eq :
+    weakToRigid =
+      weakToStrong.comp referenceRaw referenceScheme strongToRigid :=
+  rfl
+
+/-- Validity of the weak-to-rigid inclusion is inherited from generic composition. -/
+theorem weakToRigid_valid :
+    IsClosedEquationalLawInclusion
+      referenceRaw referenceScheme weakToRigid :=
+  ClosedEquationalLawInclusion.comp_valid
+    referenceRaw referenceScheme weakToStrong strongToRigid
+    weakToStrong_valid strongToRigid_valid
+
+/-- The rigid lawful locus maps directly to the weak lawful locus. -/
+noncomputable def weakToRigidComparison :
+    rigidLocus ⟶ weakLocus :=
+  lawfulClosedSubschemeMap
+    referenceRaw referenceScheme
+    weakReading_valid rigidReading_valid
+    weakReading_requiredClosed rigidReading_requiredClosed
+    weakToRigid weakToRigid_valid
+
+/-- The weak-to-rigid comparison is the canonical composite-inclusion map. -/
+@[simp] theorem weakToRigidComparison_eq :
+    weakToRigidComparison =
+      lawfulClosedSubschemeMap
+        referenceRaw referenceScheme
+        weakReading_valid rigidReading_valid
+        weakReading_requiredClosed rigidReading_requiredClosed
+        weakToRigid weakToRigid_valid :=
+  rfl
+
+/-- The identity law inclusion induces the identity map of the weak locus. -/
+theorem lawComparison_id_fires :
+    lawfulClosedSubschemeMap
+        referenceRaw referenceScheme
+        weakReading_valid weakReading_valid
+        weakReading_requiredClosed weakReading_requiredClosed
+        (ClosedEquationalLawInclusion.refl
+          referenceRaw referenceScheme weakReading)
+        (ClosedEquationalLawInclusion.refl_valid
+          referenceRaw referenceScheme weakReading) =
+      𝟙 weakLocus :=
+  lawfulClosedSubschemeMap_id referenceRaw referenceScheme
+    weakReading weakReading_valid weakReading_requiredClosed
+
+/-- The two non-isomorphic comparison legs compose by the generic law-inclusion theorem. -/
+theorem lawComparison_comp_fires :
+    strongToRigidComparison ≫ lawComparison = weakToRigidComparison :=
+  lawfulClosedSubschemeMap_comp
+    referenceRaw referenceScheme
+    weakReading_valid strongReading_valid rigidReading_valid
+    weakReading_requiredClosed strongReading_requiredClosed
+    rigidReading_requiredClosed
+    weakToStrong strongToRigid weakToStrong_valid strongToRigid_valid
+
 end
 end AAT.AG.Examples.StandardGeometryReferenceModels

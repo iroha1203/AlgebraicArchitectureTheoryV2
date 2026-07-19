@@ -6617,6 +6617,69 @@ def standardGeometry_onePoint_fires :=
 def standardGeometry_twoPoint_fires :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.twoPoint_fires
 
+def standardGeometry_weakToStrongAtomMap_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakToStrongAtomMap_eq
+
+def standardGeometry_weakToStrong_lawMap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakToStrong_lawMap
+
+def standardGeometry_weakToStrong_atomMap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakToStrong_atomMap
+
+def standardGeometry_weakToStrong_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakToStrong_valid
+
+def standardGeometry_lawComparison_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.lawComparison_eq
+
+def standardGeometry_lawComparison_isClosedImmersion :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.lawComparison_isClosedImmersion
+
+def standardGeometry_lawComparison_immersion :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.lawComparison_immersion
+
+def standardGeometry_lawComparison_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.lawComparison_not_isIso
+
+def standardGeometry_strongToRigidAtomMap_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongToRigidAtomMap_eq
+
+def standardGeometry_strongToRigid_lawMap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongToRigid_lawMap
+
+def standardGeometry_strongToRigid_atomMap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongToRigid_atomMap
+
+def standardGeometry_strongToRigid_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongToRigid_valid
+
+def standardGeometry_strongToRigidComparison_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongToRigidComparison_eq
+
+def standardGeometry_strongToRigidComparison_isClosedImmersion :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongToRigidComparison_isClosedImmersion
+
+def standardGeometry_strongToRigidComparison_immersion :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongToRigidComparison_immersion
+
+def standardGeometry_strongToRigidComparison_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongToRigidComparison_not_isIso
+
+def standardGeometry_weakToRigid_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakToRigid_eq
+
+def standardGeometry_weakToRigid_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakToRigid_valid
+
+def standardGeometry_weakToRigidComparison_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakToRigidComparison_eq
+
+def standardGeometry_lawComparison_id_fires :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.lawComparison_id_fires
+
+def standardGeometry_lawComparison_comp_fires :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.lawComparison_comp_fires
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
