@@ -6680,6 +6680,75 @@ def standardGeometry_lawComparison_id_fires :=
 def standardGeometry_lawComparison_comp_fires :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.lawComparison_comp_fires
 
+def standardGeometry_coefficientChange_hom :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChange_hom
+
+def standardGeometry_coefficientChange_not_surjective :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChange_not_surjective
+
+def standardGeometry_coefficientChangedScheme_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedScheme_eq
+
+def standardGeometry_coefficientChangedWeakReading_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedWeakReading_eq
+
+def standardGeometry_coefficientChangedStrongReading_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedStrongReading_eq
+
+def standardGeometry_coefficientChangedWeakReading_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedWeakReading_valid
+
+def standardGeometry_coefficientChangedStrongReading_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedStrongReading_valid
+
+def standardGeometry_coefficientChangedWeakReading_requiredClosed :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedWeakReading_requiredClosed
+
+def standardGeometry_coefficientChangedStrongReading_requiredClosed :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedStrongReading_requiredClosed
+
+def standardGeometry_weakIdeal_baseChange :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakIdeal_baseChange
+
+def standardGeometry_strongIdeal_baseChange :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongIdeal_baseChange
+
+def standardGeometry_leftChart_baseChange_isPullback :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftChart_baseChange_isPullback
+
+def standardGeometry_rightChart_baseChange_isPullback :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightChart_baseChange_isPullback
+
+def standardGeometry_coefficientChanged_ideal_strict :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChanged_ideal_strict
+
+def standardGeometry_coefficientChangedWeakToStrong_lawMap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedWeakToStrong_lawMap
+
+def standardGeometry_coefficientChangedWeakToStrong_atomMap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedWeakToStrong_atomMap
+
+def standardGeometry_coefficientChangedWeakToStrong_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedWeakToStrong_valid
+
+def standardGeometry_coefficientChangedLawComparison_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedLawComparison_eq
+
+def standardGeometry_coefficientChangedLawComparison_isClosedImmersion :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedLawComparison_isClosedImmersion
+
+def standardGeometry_coefficientChangedLawComparison_immersion :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedLawComparison_immersion
+
+def standardGeometry_coefficientChangedLawComparison_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChangedLawComparison_not_isIso
+
+def standardGeometry_coefficient_law_comparison_square :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficient_law_comparison_square
+
+def standardGeometry_coefficientChange_schemeMap_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChange_schemeMap_not_isIso
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
