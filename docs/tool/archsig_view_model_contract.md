@@ -29,6 +29,7 @@
 | `complex.edges[].edgeRef / sourceContextRef / targetContextRef` | 同 `coverNerveProjection.edges[].edgeId / sourceContextRef / targetContextRef` |
 | `complex.triples[].tripleRef / contextRefs / edgeRefs / sharedAtomRefs` | 同 `coverNerveProjection.faces[]` の `faceId / contextRefs / edgeRefs / sharedAtomRefs` |
 | `complex.tripleSource` | 同 `coverNerveProjection.faceSource` |
+| `sectionValues[].contextRef / value / atomRef / sourceRefs` | normalized ArchMap の `axis=cech, predicate=sectionValue` atom の `subject / object / normalizedAtomId / sourceRefs` の逐語投影(宣言なしなら区画 absent) |
 | `observationCoverage[].contextRef` | complex の vertex(= packet が記録した選択 cover の context) |
 | `observationCoverage[].profileRef` | `packet.profile.profileId` |
 | `observationCoverage[].measurementAxis = "cech.sectionValue"` の行 | normalized ArchMap の `axis=cech, predicate=sectionValue` atom の当該 context への存在。`supportRefs` = その `normalizedAtomId`、`sourceRefs` = その `sourceRefs`(sort+dedup) |

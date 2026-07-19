@@ -67,11 +67,14 @@
     <div id="toolbar">
       <button id="scene-basemap" class="on">基図と観測網</button>
       <button id="scene-weather">天気</button>
+      <button id="scene-sky">空(section 層)</button>
+      <button id="scene-staircase">診断階段</button>
       <button id="btn-flat">平面</button>
       <button id="btn-deco" class="on">演出</button>
       <button id="btn-legend">How to read</button>
       <input id="file-input" type="file" accept="application/json" style="display:none">
       <button id="btn-open">Open…</button>
+      <select id="profile-switch" style="display:none; background:var(--panel); color:var(--ink); border:1px solid #364152; border-radius:6px; font-size:12px; padding:4px"></select>
     </div>
     <div id="legend">
       <div class="row"><span class="swbox" style="background:#2b3442"></span>地区 = 観測された context(基図)</div>
@@ -105,16 +108,22 @@ const FIDELITY = [
   { channel: "循環警報の台(support 辺)", lane: "measured", source: "viewModel.classSupport.representativeEdgeRefs" },
   { channel: "穴の表示", lane: "measured", source: "classNonzero + representative cycle + complex.triples (face absence)" },
   { channel: "観測所と axis チップ", lane: "measured", source: "viewModel.observationCoverage rows" },
+  { channel: "雲(section 宣言)の存在と bridge", lane: "measured", source: "viewModel.sectionValues + edgeMismatch agreement rows" },
+  { channel: "沈黙種別 badge", lane: "measured", source: "viewModel.boundaryStatements[].kind / coverage status" },
+  { channel: "階段の frame・provenance・gate", lane: "measured", source: "dossier frames (supplier-declared provenance, digest-verified bundle)" },
   { channel: "2D/3D の配置座標", lane: "derived", source: "spectral embedding of complex edges; deterministic ring fallback on degeneracy (declared layout)" },
   { channel: "成分間の並び・絶対スケール", lane: "layout", source: "component packing order" },
+  { channel: "雲の高さ・厚み・色の割当", lane: "layout", source: "fixed sky height; colors assigned to sorted distinct declared values" },
   { channel: "発光・明滅", lane: "decoration", source: "measured nonzero class only; OFF via 演出 toggle" },
   { channel: "F₂ 類の回転・向き・強さ", lane: "forbidden", source: "no orientation exists in F2 measurement — never drawn" },
+  { channel: "未測定の連続場(等値線・流線)", lane: "forbidden", source: "no per-edge/vertex field is recorded — never drawn" },
 ];
 
 /* ================= state ================= */
 const S = {
   vm: null, scene: "basemap", flat: false, deco: true, rejected: null,
   three: null, layout: null,
+  loaded: new Map(), activeKey: null, dossier: null,
 };
 const TEST = { rejected: null };
 window.__ARCHVIEW_STATE__ = TEST;
@@ -129,6 +138,40 @@ async function loadSibling() {
     if (!res.ok) { setStatus("archsig-measurement-view-model.json が同ディレクトリに無いため空シェル表示。Open… か drag&drop で供給できます。"); publish(); return; }
     acceptViewModel(await res.json(), "sibling fetch");
   } catch (e) { setStatus("sibling fetch 失敗: " + e.message); publish(); }
+  try {
+    const res = await fetch("archsig-diagnosis-dossier.json");
+    if (res.ok) acceptDossier(await res.json(), "sibling fetch");
+  } catch (e) { /* dossier is optional */ }
+}
+function acceptDossier(doc, origin) {
+  if (!doc || doc.schema !== "archsig-diagnosis-dossier/v0.5.4") {
+    reject(`expected schema archsig-diagnosis-dossier/v0.5.4, got ${doc && doc.schema}`);
+    return false;
+  }
+  if (!Array.isArray(doc.frames) || doc.frames.length === 0 || !Array.isArray(doc.sequence)) {
+    reject("dossier has no frames/sequence");
+    return false;
+  }
+  for (const frame of doc.frames) {
+    if (typeof frame.stateProvenance !== "string") {
+      reject(`dossier frame ${frame.frameId} is missing stateProvenance`);
+      return false;
+    }
+  }
+  S.dossier = doc;
+  setStatus(`dossier loaded (${origin}): ${doc.frames.length} frames`);
+  if (S.scene === "staircase") rebuild();
+  publish();
+  return true;
+}
+function registerViewModel(doc, origin) {
+  const prof = (doc.profiles && doc.profiles[0]) || {};
+  const key = `${prof.profileRef ?? "profile?"} · ${doc.runId ?? origin}`;
+  S.loaded.set(key, { doc, origin });
+  S.activeKey = key;
+  const select = $("profile-switch");
+  select.innerHTML = [...S.loaded.keys()].map(k => `<option${k === key ? " selected" : ""}>${k}</option>`).join("");
+  select.style.display = S.loaded.size > 1 ? "inline-block" : "none";
 }
 function acceptViewModel(doc, origin) {
   if (!doc || doc.schema !== "archsig-measurement-view-model/v0.5.4") {
@@ -144,12 +187,20 @@ function acceptViewModel(doc, origin) {
   }
   S.rejected = null; $("reject").style.display = "none";
   S.vm = doc;
+  registerViewModel(doc, origin);
   $("hdr-conclusion").textContent = doc.conclusion ?? "—";
   $("hdr-conclusion").className = "code" + (String(doc.conclusion||"").startsWith("NO_") ? " quiet" : "");
   const prof = (doc.profiles && doc.profiles[0]) || {};
   $("hdr-meta").textContent = `${doc.runId ?? ""} · ${prof.profileRef ?? ""} · ${doc.complex.coverRef ?? ""} · ${origin}`;
   buildLayout(); rebuild(); defaultSide(); publish();
 }
+// Profiles are never composited: exactly one view model is drawn at a time and
+// the switcher replaces the whole scene. There is no comparison contract in a
+// bare view model, so there is nothing that would justify overlaying two runs.
+$("profile-switch").onchange = (event) => {
+  const entry = S.loaded.get(event.target.value);
+  if (entry) acceptViewModel(entry.doc, entry.origin);
+};
 function reject(reason) {
   S.rejected = reason; S.vm = null;
   $("reject").style.display = "flex";
@@ -157,19 +208,26 @@ function reject(reason) {
   setStatus("rejected");
   publish();
 }
+function acceptAnyDocument(doc, origin) {
+  if (doc && doc.schema === "archsig-diagnosis-dossier/v0.5.4") acceptDossier(doc, origin);
+  else acceptViewModel(doc, origin);
+}
 $("btn-open").onclick = () => $("file-input").click();
 $("file-input").onchange = async (e) => {
   const file = e.target.files[0]; if (!file) return;
-  try { acceptViewModel(JSON.parse(await file.text()), file.name); }
+  try { acceptAnyDocument(JSON.parse(await file.text()), file.name); }
   catch (err) { reject("JSON parse error: " + err.message); }
 };
 document.body.addEventListener("dragover", (e) => e.preventDefault());
 document.body.addEventListener("drop", async (e) => {
   e.preventDefault();
   const file = e.dataTransfer.files[0]; if (!file) return;
-  try { acceptViewModel(JSON.parse(await file.text()), file.name); }
+  try { acceptAnyDocument(JSON.parse(await file.text()), file.name); }
   catch (err) { reject("JSON parse error: " + err.message); }
 });
+// Test-only loader: e2e uses this to supply a second profile run and assert
+// replacement (never composition). It goes through the same accept path.
+window.__archviewLoadDocument = (doc, origin) => acceptAnyDocument(doc, origin || "test-supply");
 
 /* ================= layout (derived / layout lanes) =================
    Spectral embedding per connected component (deterministic Jacobi);
@@ -319,10 +377,35 @@ function coverageByContext() {
   }
   return map;
 }
+function sectionRows() { return Array.isArray(S.vm.sectionValues) ? S.vm.sectionValues : []; }
+function sectionColor(value, palette) {
+  // Color identity is a layout mapping: sorted distinct declared values get
+  // fixed low-saturation hues in order. Deterministic; carries no verdict.
+  return palette.get(value) ?? 0x7d8ba1;
+}
+function sectionPalette() {
+  const values = [...new Set(sectionRows().map(r => r.value))].sort();
+  const hues = [210, 130, 45, 285, 0, 170, 60, 330];
+  const palette = new Map();
+  values.forEach((value, i) => {
+    const h = hues[i % hues.length] / 360;
+    const color = new THREE.Color().setHSL(h, 0.22, 0.62);
+    palette.set(value, color.getHex());
+  });
+  return palette;
+}
+function boundaryKindCounts() {
+  const counts = new Map();
+  for (const st of (S.vm.boundaryStatements || [])) {
+    counts.set(st.kind, (counts.get(st.kind) || 0) + 1);
+  }
+  return counts;
+}
 
 /* ================= three.js scene ================= */
 function rebuild() {
   if (S.three) { S.three.dispose(); S.three = null; }
+  if (S.scene === "staircase") { rebuildStaircase(); return; }
   if (!S.vm) return;
   const stage = $("gl");
   const W = stage.clientWidth, H = stage.clientHeight;
@@ -405,6 +488,43 @@ function rebuild() {
       }
     }
   }
+  // sky: one cloud per declared section value above its context; a bridge is
+  // drawn only where a witness measured agreement. Mismatch edges get no
+  // bridge (the tear is the absence). No declaration => no cloud (silence).
+  if (S.scene === "sky") {
+    const palette = sectionPalette();
+    const cloudY = 2.4;
+    const byContext = new Map();
+    for (const row of sectionRows()) {
+      if (!byContext.has(row.contextRef)) byContext.set(row.contextRef, []);
+      byContext.get(row.contextRef).push(row);
+    }
+    for (const [contextRef, rows] of byContext) {
+      const p = P.get(contextRef); if (!p) continue;
+      rows.forEach((row, i) => {
+        const cloud = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.0, 1.0, 0.14, 26),
+          new THREE.MeshStandardMaterial({ color: sectionColor(row.value, palette), transparent: true, opacity: 0.42 }));
+        cloud.position.set(p.x, cloudY + i * 0.3, p.z);
+        cloud.userData = { kind: "section", ref: row.atomRef, contextRef, value: row.value };
+        scene.add(cloud); pickables.push(cloud);
+      });
+    }
+    for (const edge of S.vm.complex.edges) {
+      const witness = statusMap.get(edge.edgeRef);
+      if (!witness || witness.status !== "agreement_observed") continue;
+      const a = P.get(edge.sourceContextRef), b = P.get(edge.targetContextRef);
+      if (!a || !b) continue;
+      const rowsA = byContext.get(edge.sourceContextRef) || [];
+      const color = rowsA.length ? sectionColor(rowsA[0].value, palette) : 0x3f9a8a;
+      const bridge = new THREE.Mesh(
+        new THREE.TubeGeometry(new THREE.LineCurve3(
+          new THREE.Vector3(a.x, cloudY, a.z), new THREE.Vector3(b.x, cloudY, b.z)), 1, 0.32, 8),
+        new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.3 }));
+      bridge.userData = { kind: "bridge", ref: edge.edgeRef };
+      scene.add(bridge); pickables.push(bridge);
+    }
+  }
   // circulation warning + hole (weather scene, measured nonzero class only)
   let warningRing = null;
   if (S.scene === "weather" && cycle) {
@@ -483,6 +603,45 @@ function rebuild() {
   S.three = { renderer, camera, controls, dispose() { disposed = true; renderer.dispose(); } };
   publish();
 }
+/* ================= staircase scene (dossier projection) =================
+   Rendered as a document panel: every row restates a digest-verified dossier
+   field. State provenance badges are always visible; hypothetical and actual
+   states are never displayed interchangeably. */
+function rebuildStaircase() {
+  const stage = $("gl");
+  if (!S.dossier) {
+    stage.innerHTML = `<div style="padding:60px 40px; max-width:640px">
+      <div class="card note">診断階段は沈黙しています — archsig-diagnosis-dossier.json が供給されていません。<br>
+      <span class="mono">archsig dossier --frame &lt;id&gt;=&lt;provenance&gt;=&lt;run-dir&gt; …</span> で束ねた dossier を
+      同ディレクトリに置くか Open… で供給してください。(未供給はエラーではなく沈黙)</div></div>`;
+    publish();
+    return;
+  }
+  const d = S.dossier;
+  const provClass = { "observed-source": "calm", "authored-model": "reading", "measured-conclusion": "calm", "hypothetical-state": "warn", "actual-change": "calm" };
+  const gateByFrame = new Map((d.gateReports || []).map(g => [g.frameId, g]));
+  const compareByHead = new Map((d.comparisons || []).map(c => [c.headFrameId, c]));
+  const rows = d.frames.map(frame => {
+    const gate = gateByFrame.get(frame.frameId);
+    const compare = compareByHead.get(frame.frameId);
+    return `
+    ${compare ? `<div style="margin:2px 0 2px 26px; color:var(--ink-dim); font-size:11px">│ compare(${compare.baseFrameId} → ${compare.headFrameId}): <span class="mono">${compare.conclusionCode}</span></div>` : ""}
+    <div class="card" data-frame="${frame.frameId}" style="display:flex; gap:12px; align-items:baseline">
+      <b style="min-width:90px">${frame.frameId}</b>
+      <span class="chip ${provClass[frame.stateProvenance] || "silent"}">${frame.stateProvenance}</span>
+      <span class="mono">${frame.conclusion ?? ""}</span>
+      ${gate ? `<span class="chip ${gate.decision === "PASS_WITHIN_GATE_POLICY" ? "calm" : "warn"}">gate: ${gate.decision}</span>` : `<span class="chip silent">gate 沈黙</span>`}
+      <span class="mono" style="margin-left:auto">${frame.runId}</span>
+    </div>`;
+  }).join("");
+  stage.innerHTML = `<div style="padding:46px 34px; max-width:860px; overflow-y:auto; height:100%">
+    <h2 style="font-size:12px; color:var(--ink-dim); margin-bottom:10px">診断階段(digest 整合検証済み dossier の投影・frame 順 = 供給された sequence)</h2>
+    ${rows}
+    <div class="card note" style="margin-top:10px">hypothetical-state は「この修理案なら貼り合う」という事前検証の状態であり、
+    repository への適用を主張しない。frame の順序は供給された列であって因果ではない。</div></div>`;
+  publish();
+}
+
 function applyCamera(camera, controls) {
   const points = S.layout ? [...S.layout.positions.values()] : [];
   const span = Math.max(6, ...points.map(p => Math.abs(p.x)), ...points.map(p => Math.abs(p.z)));
@@ -519,7 +678,22 @@ function defaultSide() {
   ${cs.b1 != null ? ` b₁=${cs.b1}` : ""}</div>
   <div class="card note">クリックで観測報告を表示。「天気」シーンは測定された現象だけを描き、
   観測の無い場所には何も主張しない。</div>
+  ${boundaryCard()}
   ${fidelityTable()}`;
+}
+function boundaryCard() {
+  const counts = boundaryKindCounts();
+  if (!counts.size) return "";
+  const kindsJa = {
+    silence_by_design: "設計上の沈黙", out_of_selected_vocabulary: "選択語彙の外",
+    unmeasured_support: "support 未測定", violated_assumption: "前提不成立",
+    blocked_method: "手法ブロック", not_applicable: "非適用",
+  };
+  return `<h2>沈黙の種別(boundary statements)</h2><div class="card">` +
+    [...counts.entries()].map(([kind, count]) =>
+      `<span class="chip silent" title="${kindsJa[kind] || ""}">${kind} × ${count}</span>`).join("") +
+    `<br><span class="note">沈黙は1色の霧に潰さない — 種別ごとに理由と whatNext が異なる。
+    詳細は view model の boundaryStatements。</span></div>`;
 }
 function showDetail(data) {
   if (!S.vm) return;
@@ -549,6 +723,18 @@ function showDetail(data) {
     side.innerHTML = `<h2>基図の穴</h2><div class="card"><span class="chip warn">structural absence</span><br>
       この閉路を埋める面(triple overlap)が複体に存在しない。「未観測の土地」(霧)ではなく、
       <b>土地そのものが無い</b>ことが測定された複体の形である。循環があるのに埋める面が無い — それが H¹≠0。</div>` + fidelityTable();
+  } else if (data.kind === "section") {
+    const rows = sectionRows().filter(r => r.atomRef === data.ref);
+    const row = rows[0] || {};
+    side.innerHTML = `<h2>雲(section 宣言)</h2><div class="card"><b>${data.contextRef}</b><br>
+      宣言された section 値:<br><span class="mono">${row.value ?? ""}</span><br><br>
+      典拠:<br><span class="mono">${(row.sourceRefs||[]).join("<br>")}</span></div>
+      <div class="card note">雲は「この context がこの値を宣言している」の描画。値の正しさや大域整合の主張ではない。</div>` + fidelityTable();
+  } else if (data.kind === "bridge") {
+    side.innerHTML = `<h2>bridge(一致の実測)</h2><div class="card"><span class="chip calm">agreement_observed</span><br>
+      <span class="mono">${data.ref}</span><br>
+      この overlap の witness 比較で section が一致した — 雲がここで繋がる。
+      mismatch 辺には bridge を描かない(裂け目は「無いこと」で表す)。</div>` + fidelityTable();
   } else if (data.kind === "triple") {
     const triple = (S.vm.complex.triples || []).find(t => t.tripleRef === data.ref) || {};
     side.innerHTML = `<h2>面のある土地</h2><div class="card"><span class="chip calm">${data.ref}</span><br>
@@ -561,12 +747,15 @@ function showDetail(data) {
 function setStatus(text) { $("status").textContent = text; }
 function setScene(name) {
   S.scene = name;
-  $("scene-basemap").classList.toggle("on", name === "basemap");
-  $("scene-weather").classList.toggle("on", name === "weather");
+  for (const id of ["basemap", "weather", "sky", "staircase"]) {
+    $("scene-" + id).classList.toggle("on", name === id);
+  }
   rebuild();
 }
 $("scene-basemap").onclick = () => setScene("basemap");
 $("scene-weather").onclick = () => setScene("weather");
+$("scene-sky").onclick = () => setScene("sky");
+$("scene-staircase").onclick = () => setScene("staircase");
 $("btn-flat").onclick = () => {
   S.flat = !S.flat;
   $("btn-flat").classList.toggle("on", S.flat);
@@ -600,6 +789,18 @@ function publish() {
       holeDrawn: !!(cycle && cycle.polygonIds),
     } : null,
     stations: vm ? new Set((vm.observationCoverage || []).map(r => r.contextRef)).size : 0,
+    sections: vm ? sectionRows().length : 0,
+    distinctSectionValues: vm ? new Set(sectionRows().map(r => r.value)).size : 0,
+    agreementBridges: vm ? (vm.edgeMismatch || []).filter(r => r.status === "agreement_observed").length : 0,
+    boundaryKinds: vm ? Object.fromEntries(boundaryKindCounts()) : {},
+    loadedProfiles: [...S.loaded.keys()],
+    activeProfile: S.activeKey,
+    staircase: S.dossier ? {
+      frames: S.dossier.frames.length,
+      provenances: S.dossier.frames.map(f => f.stateProvenance),
+      gateDecisions: (S.dossier.gateReports || []).map(g => g.decision),
+      comparisons: (S.dossier.comparisons || []).map(c => c.conclusionCode),
+    } : null,
     fidelityLanes: FIDELITY.map(f => f.lane),
   });
 }

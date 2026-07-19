@@ -17853,6 +17853,15 @@ fn cli_analyze_emits_measurement_view_model_typed_sections() {
     // boundary statements are projected verbatim.
     assert_eq!(view_model["boundaryStatements"], packet["boundaryStatements"]);
 
+    // section values are the verbatim sky-layer supply.
+    let sections = view_model["sectionValues"].as_array().expect("section rows");
+    assert!(!sections.is_empty());
+    for row in sections {
+        assert!(row["contextRef"].is_string());
+        assert!(row["value"].is_string());
+        assert!(row["atomRef"].is_string());
+    }
+
     // harmonic edge values are not recorded in current packets: absent, not zero.
     assert!(view_model["harmonicFlow"].is_null());
 

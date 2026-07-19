@@ -319,6 +319,24 @@ fn boundary_kinds_by_scope(packet: &Value) -> BTreeMap<String, Vec<Value>> {
     map
 }
 
+/// Declared section values per context (verbatim projection of the normalized
+/// cech sectionValue atoms). This is the sky-layer supply: one row per
+/// declaration, no merging, no normalization of the declared value string.
+fn section_values_section(normalized: &NormalizedArchMapV2) -> Value {
+    let mut rows = Vec::new();
+    for atom in &normalized.atoms {
+        if atom.axis == "cech" && atom.predicate == "sectionValue" {
+            rows.push(json!({
+                "contextRef": atom.subject,
+                "value": atom.object,
+                "atomRef": atom.normalized_atom_id,
+                "sourceRefs": atom.source_refs,
+            }));
+        }
+    }
+    if rows.is_empty() { Value::Null } else { json!(rows) }
+}
+
 /// Measured scalar values with their packet provenance. Per-run scalars carry
 /// scope "cover"; no per-vertex/per-edge scalar exists in current packets, and
 /// none is synthesized here.
@@ -380,6 +398,7 @@ pub fn build_measurement_view_model_v1(
         "conclusion": summary["conclusion"],
         "profiles": profile_rows(packet_value),
         "complex": complex,
+        "sectionValues": section_values_section(normalized),
         "observationCoverage": observation_coverage,
         "localObservations": local_observations,
         "edgeMismatch": edge_mismatch,

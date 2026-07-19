@@ -6,6 +6,11 @@
 //   flat           the flat toggle changes projection, not claims
 //   reject-schema  tampered schema is rejected visibly (no silent empty scene)
 //   missing        absent view model shows the empty shell, not an error page
+//   sky            section clouds and agreement bridges match the view model
+//   staircase      dossier frames render with provenance badges and gate rows
+//   staircase-silent  absent dossier leaves the staircase silent, not an error
+//   decoration-off turning decoration off must not change any claim
+//   profile-switch a second view model replaces the scene; never composited
 
 const fs = require("fs");
 const http = require("http");
@@ -79,9 +84,22 @@ async function main() {
   } else if (mode === "missing") {
     serveRoot = fs.mkdtempSync(path.join(os.tmpdir(), "archview-weather-missing-"));
     fs.copyFileSync(path.join(root, "archview.html"), path.join(serveRoot, "archview.html"));
+  } else if (mode === "staircase-silent") {
+    serveRoot = fs.mkdtempSync(path.join(os.tmpdir(), "archview-weather-nostair-"));
+    fs.copyFileSync(path.join(root, "archview.html"), path.join(serveRoot, "archview.html"));
+    fs.copyFileSync(
+      path.join(root, "archsig-measurement-view-model.json"),
+      path.join(serveRoot, "archsig-measurement-view-model.json"));
   }
-  const expected = mode === "weather" || mode === "flat"
+  const needsExpected = ["weather", "flat", "sky", "decoration-off", "profile-switch"].includes(mode);
+  const expected = needsExpected
     ? JSON.parse(fs.readFileSync(path.join(serveRoot, "archsig-measurement-view-model.json"), "utf8"))
+    : null;
+  const expectedDossier = mode === "staircase"
+    ? JSON.parse(fs.readFileSync(path.join(serveRoot, "archsig-diagnosis-dossier.json"), "utf8"))
+    : null;
+  const secondViewModel = mode === "profile-switch"
+    ? JSON.parse(fs.readFileSync(path.join(serveRoot, "second-view-model.json"), "utf8"))
     : null;
 
   const server = await serve(serveRoot);
@@ -115,6 +133,11 @@ async function main() {
     flat: "document.getElementById('scene-weather').click(); document.getElementById('btn-flat').click();",
     "reject-schema": "",
     missing: "",
+    sky: "document.getElementById('scene-sky').click();",
+    staircase: "document.getElementById('scene-staircase').click();",
+    "staircase-silent": "document.getElementById('scene-staircase').click();",
+    "decoration-off": "document.getElementById('scene-weather').click(); document.getElementById('btn-deco').click();",
+    "profile-switch": `window.__archviewLoadDocument(${JSON.stringify(secondViewModel)}, 'second-profile');`,
   }[mode];
   const expression = `(() => { ${actions} return JSON.parse(JSON.stringify(window.__ARCHVIEW_STATE__ || {})); })()`;
   let value;
@@ -123,9 +146,11 @@ async function main() {
     const result = await page.send("Runtime.evaluate", { returnByValue: true, expression });
     value = result.result.value;
     const initialized = value && "scene" in value;
-    const settled = initialized && (
+    let settled = initialized && (
       typeof value.rejected === "string" || value.schema !== null
       || (mode === "missing" && value.districts === 0));
+    if (settled && mode === "staircase" && !value.staircase) settled = false;
+    if (settled && mode === "profile-switch" && value.loadedProfiles.length < 2) settled = false;
     if (settled) break;
     await new Promise((resolve) => setTimeout(resolve, 500));
   } while (Date.now() < pageDeadline);
@@ -137,6 +162,48 @@ async function main() {
   } else if (mode === "missing") {
     if (value.rejected || value.districts !== 0) {
       throw new Error("missing view model must show the empty shell: " + JSON.stringify(value));
+    }
+  } else if (mode === "sky") {
+    if (value.rejected) throw new Error("viewer rejected valid input: " + value.rejected);
+    if (value.scene !== "sky") throw new Error("sky scene not active: " + JSON.stringify(value));
+    const expectedSections = (expected.sectionValues || []).length;
+    const expectedDistinct = new Set((expected.sectionValues || []).map((row) => row.value)).size;
+    const expectedBridges = expected.edgeMismatch.filter((row) => row.status === "agreement_observed").length;
+    if (value.sections !== expectedSections) throw new Error("section cloud count mismatch: " + JSON.stringify(value));
+    if (value.distinctSectionValues !== expectedDistinct) throw new Error("distinct section value mismatch: " + JSON.stringify(value));
+    if (value.agreementBridges !== expectedBridges) throw new Error("agreement bridge count mismatch: " + JSON.stringify(value));
+  } else if (mode === "staircase") {
+    if (value.rejected) throw new Error("viewer rejected valid input: " + value.rejected);
+    if (!value.staircase) throw new Error("dossier was not loaded: " + JSON.stringify(value));
+    if (value.staircase.frames !== expectedDossier.frames.length) {
+      throw new Error("staircase frame count mismatch: " + JSON.stringify(value));
+    }
+    const expectedProv = expectedDossier.frames.map((frame) => frame.stateProvenance);
+    if (JSON.stringify(value.staircase.provenances) !== JSON.stringify(expectedProv)) {
+      throw new Error("provenance badges do not match the dossier: " + JSON.stringify(value));
+    }
+    if (value.staircase.gateDecisions.length !== (expectedDossier.gateReports || []).length) {
+      throw new Error("gate rows do not match the dossier: " + JSON.stringify(value));
+    }
+  } else if (mode === "staircase-silent") {
+    if (value.rejected) throw new Error("absent dossier must stay silent, not error: " + JSON.stringify(value));
+    if (value.staircase !== null) throw new Error("staircase must be silent without a dossier: " + JSON.stringify(value));
+  } else if (mode === "decoration-off") {
+    if (value.rejected) throw new Error("viewer rejected valid input: " + value.rejected);
+    if (value.decoration !== false) throw new Error("decoration toggle did not disengage: " + JSON.stringify(value));
+    const expectedFronts = expected.edgeMismatch.filter((row) => row.status === "mismatch_observed").length;
+    if (value.fronts !== expectedFronts || value.districts !== expected.complex.vertices.length
+      || !!(value.circulationWarning && value.circulationWarning.present) !== (expected.classSupport.classNonzero === true)) {
+      throw new Error("decoration OFF changed a claim: " + JSON.stringify(value));
+    }
+  } else if (mode === "profile-switch") {
+    if (value.rejected) throw new Error("viewer rejected valid input: " + value.rejected);
+    if (value.loadedProfiles.length !== 2) throw new Error("two profiles must be registered: " + JSON.stringify(value));
+    if (value.districts !== secondViewModel.complex.vertices.length) {
+      throw new Error("second view model must replace (not composite) the scene: " + JSON.stringify(value));
+    }
+    if (!String(value.activeProfile).includes((secondViewModel.profiles[0] || {}).profileRef || "")) {
+      throw new Error("active profile badge mismatch: " + JSON.stringify(value));
     }
   } else {
     if (value.rejected) throw new Error("viewer rejected valid input: " + value.rejected);
