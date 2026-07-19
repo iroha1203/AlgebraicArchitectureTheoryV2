@@ -77,8 +77,6 @@
    - `lawGeneratedIdealSheaf_baseChange_ofSemanticCore`
    - `lawfulClosedSubschemeBaseChangeMap`と
      `lawfulClosedSubschemeBaseChangeMap_immersion`
-   - `HasSheafify`を`AATCommAlgCat Int`と
-     `AATCommAlgCat (Polynomial Int)`について放電するnamed instance chain
 4. Mathlibの次のAPIを対象main commit上のscratch fileで`#check`し、
    exact name、引数順、direct importをtracking Issueへ記録している。
    - `Scheme.affineOpenCoverOfSpanRangeEqTop`
@@ -94,7 +92,9 @@
    評価`0/1/2`について、
    SD0〜SD6の型がscratch fileでelaborateする。証明完成は不要だが、
    localization map、scheme morphismの向き、global-section comparison、
-   ideal sheafの型が未確定のまま子Issueを開始しない。
+   ideal sheafの型、および`HasSheafify`を`AATCommAlgCat Int`と
+   `AATCommAlgCat (Polynomial Int)`について放電するnamed instance chainの型が
+   未確定のまま子Issueを開始しない。
 6. 実装前statement reviewで、SD0〜SD7の全signature、SD8のmaterial premise表、
    family展開後のSD9 positive / negative firingと`T` / `F` / `C`の集合契約が`Approved`になっている。
 
@@ -107,7 +107,7 @@
 
 | module | direct imports | 責務 |
 | --- | --- | --- |
-| `Formal.AG.Examples.StandardGeometryReferenceModels` | `Formal.AG.Examples.FiniteModel`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Mathlib.Algebra.MvPolynomial.Eval`、`Mathlib.Algebra.Polynomial.AlgebraMap`、`Mathlib.RingTheory.Localization.Away.Basic`、`Mathlib.RingTheory.ZMod`、`Mathlib.AlgebraicGeometry.Cover.Open`、`Mathlib.AlgebraicGeometry.Restrict`、`Mathlib.AlgebraicGeometry.OpenImmersion`、`Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme` | SD0〜SD7の固定fixture、positive / negative firing |
+| `Formal.AG.Examples.StandardGeometryReferenceModels` | `Formal.AG.Examples.FiniteModel`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient`、`Formal.AG.ReadingFunctoriality.CoefficientGeometry`、`Mathlib.Algebra.MvPolynomial.Eval`、`Mathlib.Algebra.Polynomial.AlgebraMap`、`Mathlib.RingTheory.Localization.Away.Basic`、`Mathlib.RingTheory.ZMod`、`Mathlib.AlgebraicGeometry.Cover.Open`、`Mathlib.AlgebraicGeometry.Restrict`、`Mathlib.AlgebraicGeometry.OpenImmersion`、`Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme` | SD0〜SD7の固定fixture、positive / negative firing |
 | `Formal.AG.StatementContractsStandardGeometryReferenceModels` | `Formal.AG.Examples.StandardGeometryReferenceModels` | `example : exact-type := exact-declaration`だけ |
 | `Formal.AG.StatementContracts` | `Formal.AG.StatementContractsStandardGeometryReferenceModels` | executable contract aggregate |
 | `Formal.AG` | `Formal.AG.ReadingFunctoriality`の後に`Formal.AG.Examples.StandardGeometryReferenceModels` | repository AAT aggregate。`Formal.AG.LawAlgebra`から本fixtureをimportしない |
@@ -136,11 +136,11 @@ Issue側のcontractは、実装開始前に次を完全に固定する。
 - 索引順の各contract commentと、family展開済みSD9およびexact `T` / `F` / `C`を持つ一意な
   `expanded firing inventory` commentについて、種別、URL、database ID、`updated_at`、正規化本文SHA-256
 - 対象main commit、査読者、判定
-- approval comment自身のURL、database ID、author、`created_at`、`updated_at`
 
 本文正規化はUTF-8、LF、末尾改行ちょうど1個とする。approval commentは`created_at = updated_at`を要求し、
 編集されたapproval commentは無効とする。revision変更時は旧approval commentを編集せず、直前のapproval comment
-database IDを記録した新規approval commentを追加する。
+database IDを記録した新規approval commentを追加する。approval comment自身のURL、database ID、author、
+`created_at`、`updated_at`は投稿後にGitHub APIから取得し、completion snapshotで監査する。
 
 初回`Approved`後または実装開始後にcontract変更が必要になった場合は関連実装を停止し、変更理由、旧 / 新signature、
 追加・削除したpremise、`T` / `F` / `C`への影響をユーザーへ報告する。人間の明示承認前にcommentを変更しない。
