@@ -15,6 +15,8 @@ import Formal.AG.ReadingFunctoriality.InfiniteProductCechFiring
 import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
 import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
 import Formal.AG.StatementContractsReadingFunctoriality
+import Formal.AG.Examples.StandardGeometryReferenceModels
+import Formal.AG.StatementContractsStandardGeometryReferenceModels
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -6002,6 +6004,227 @@ def readingFunctoriality_infiniteProductCech_degreeZero_not_isIso :=
 
 def readingFunctoriality_infiniteProductCech_not_compatible :=
   @AAT.AG.ReadingFunctorialityFinite.infiniteProductCech_not_compatible
+
+/-! Part 5 R1 concrete raw-localization reference model. -/
+
+def standardGeometry_ambientRing_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.ambientRing_eq
+
+def standardGeometry_coordinate_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coordinate_eq
+
+def standardGeometry_leftGenerator_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftGenerator_eq
+
+def standardGeometry_rightGenerator_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightGenerator_eq
+
+def standardGeometry_overlapGenerator_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.overlapGenerator_eq
+
+def standardGeometry_coverGenerator_false :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coverGenerator_false
+
+def standardGeometry_coverGenerator_true :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coverGenerator_true
+
+def standardGeometry_coverGenerator_span_eq_top :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coverGenerator_span_eq_top
+
+def standardGeometry_referenceContextPreorder_le_iff :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextPreorder_le_iff
+
+def standardGeometry_referenceOverlap_selected :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceOverlap_selected
+
+def standardGeometry_referenceCoverageRequirements_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCoverageRequirements_eq
+
+def standardGeometry_referenceSelectedGeometryReading_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSelectedGeometryReading_eq
+
+def standardGeometry_referenceSite_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSite_eq
+
+def standardGeometry_context_ctx :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.context_ctx
+
+def standardGeometry_context_hom_iff :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.context_hom_iff
+
+def standardGeometry_referenceCover_patch :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCover_patch
+
+def standardGeometry_referenceCover_presieve :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCover_presieve
+
+def standardGeometry_referenceCover_topologyCover :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCover_topologyCover
+
+def standardGeometry_referenceRawCoordinate_cases :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRawCoordinate_cases
+
+def standardGeometry_referenceCoordinateFamily_coord :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCoordinateFamily_coord
+
+def standardGeometry_referenceCoordinateFamily_label :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCoordinateFamily_label
+
+def standardGeometry_referenceCoordinateFamily_localData :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCoordinateFamily_localData
+
+def standardGeometry_rawVariable_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rawVariable_eq
+
+def standardGeometry_rawX_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rawX_eq
+
+def standardGeometry_rawLeftInverse_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rawLeftInverse_eq
+
+def standardGeometry_rawRightInverse_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rawRightInverse_eq
+
+def standardGeometry_leftInverseRelation_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftInverseRelation_eq
+
+def standardGeometry_rightInverseRelation_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightInverseRelation_eq
+
+def standardGeometry_leftIsInverted_iff :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftIsInverted_iff
+
+def standardGeometry_rightIsInverted_iff :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightIsInverted_iff
+
+def standardGeometry_leftIsInverted_left :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftIsInverted_left
+
+def standardGeometry_leftIsInverted_overlap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftIsInverted_overlap
+
+def standardGeometry_leftIsInverted_base :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftIsInverted_base
+
+def standardGeometry_leftIsInverted_right :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftIsInverted_right
+
+def standardGeometry_rightIsInverted_right :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightIsInverted_right
+
+def standardGeometry_rightIsInverted_overlap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightIsInverted_overlap
+
+def standardGeometry_rightIsInverted_base :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightIsInverted_base
+
+def standardGeometry_rightIsInverted_left :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightIsInverted_left
+
+def standardGeometry_referenceRelationPolynomial_false :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRelationPolynomial_false
+
+def standardGeometry_referenceRelationPolynomial_true :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRelationPolynomial_true
+
+def standardGeometry_referenceRelationFamily_relation :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRelationFamily_relation
+
+def standardGeometry_referenceRelationFamily_polynomial :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRelationFamily_polynomial
+
+def standardGeometry_base_JStruct_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.base_JStruct_eq
+
+def standardGeometry_left_JStruct_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.left_JStruct_eq
+
+def standardGeometry_right_JStruct_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.right_JStruct_eq
+
+def standardGeometry_overlap_JStruct_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.overlap_JStruct_eq
+
+def standardGeometry_referenceTypedRestriction_variableImage :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceTypedRestriction_variableImage
+
+def standardGeometry_referenceTypedRestriction_maps_JStruct :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceTypedRestriction_maps_JStruct
+
+def standardGeometry_referenceRestrictionStable_identity :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRestrictionStable_identity
+
+def standardGeometry_referenceRestrictionStable_comp :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRestrictionStable_comp
+
+def standardGeometry_referenceRaw_coordFamily :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRaw_coordFamily
+
+def standardGeometry_referenceRaw_relationFamily :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRaw_relationFamily
+
+def standardGeometry_referenceRaw_restrictionStable :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRaw_restrictionStable
+
+def standardGeometry_rawCoordinate_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rawCoordinate_eq
+
+def standardGeometry_rawCoordinate_restrict :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rawCoordinate_restrict
+
+def standardGeometry_baseRawAlgebraIso_coordinate :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.baseRawAlgebraIso_coordinate
+
+def standardGeometry_leftRawAlgebraIso_coordinate :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftRawAlgebraIso_coordinate
+
+def standardGeometry_rightRawAlgebraIso_coordinate :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightRawAlgebraIso_coordinate
+
+def standardGeometry_overlapRawAlgebraIso_coordinate :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.overlapRawAlgebraIso_coordinate
+
+def standardGeometry_leftGenerator_dvd_overlap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftGenerator_dvd_overlap
+
+def standardGeometry_rightGenerator_dvd_overlap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightGenerator_dvd_overlap
+
+def standardGeometry_leftGenerator_isUnit_on_overlap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftGenerator_isUnit_on_overlap
+
+def standardGeometry_rightGenerator_isUnit_on_overlap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightGenerator_isUnit_on_overlap
+
+def standardGeometry_leftToOverlapRingHom_comp_algebraMap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftToOverlapRingHom_comp_algebraMap
+
+def standardGeometry_rightToOverlapRingHom_comp_algebraMap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightToOverlapRingHom_comp_algebraMap
+
+def standardGeometry_referenceRaw_isSheaf :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRaw_isSheaf
+
+def standardGeometry_canonical_component_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.canonical_component_isIso
+
+def standardGeometry_left_restriction_is_localization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.left_restriction_is_localization
+
+def standardGeometry_right_restriction_is_localization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.right_restriction_is_localization
+
+def standardGeometry_overlap_left_restriction_is_localization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.overlap_left_restriction_is_localization
+
+def standardGeometry_overlap_right_restriction_is_localization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.overlap_right_restriction_is_localization
+
+def standardGeometry_left_restriction_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.left_restriction_not_isIso
+
+def standardGeometry_right_restriction_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.right_restriction_not_isIso
 
 end AAT.AG.AxiomAudit
 

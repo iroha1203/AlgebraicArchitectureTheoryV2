@@ -107,7 +107,7 @@
 
 | module | direct imports | 責務 |
 | --- | --- | --- |
-| `Formal.AG.Examples.StandardGeometryReferenceModels` | `Formal.AG.Examples.FiniteModel`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient`、`Formal.AG.ReadingFunctoriality.CoefficientGeometry`、`Mathlib.Algebra.MvPolynomial.Eval`、`Mathlib.Algebra.Polynomial.AlgebraMap`、`Mathlib.RingTheory.Localization.Away.Basic`、`Mathlib.RingTheory.ZMod`、`Mathlib.AlgebraicGeometry.Cover.Open`、`Mathlib.AlgebraicGeometry.Restrict`、`Mathlib.AlgebraicGeometry.OpenImmersion`、`Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme` | SD0〜SD7の固定fixture、positive / negative firing |
+| `Formal.AG.Examples.StandardGeometryReferenceModels` | `Formal.AG.Examples.FiniteModel`、`Formal.AG.LawAlgebra.ClosedEquationalGeometry`、`Formal.AG.ReadingFunctoriality.Coefficient`、`Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient`、`Formal.AG.ReadingFunctoriality.CoefficientGeometry`、`Mathlib.Algebra.MvPolynomial.Eval`、`Mathlib.Algebra.Polynomial.AlgebraMap`、`Mathlib.RingTheory.Localization.Away.Basic`、`Mathlib.RingTheory.ZMod`、`Mathlib.AlgebraicGeometry.Cover.Open`、`Mathlib.AlgebraicGeometry.Restrict`、`Mathlib.AlgebraicGeometry.OpenImmersion`、`Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme`、`Mathlib.CategoryTheory.Sites.LeftExact`、`Mathlib.CategoryTheory.Limits.Preserves.Over`、`Mathlib.CategoryTheory.Limits.EssentiallySmall`、`Mathlib.CategoryTheory.Limits.Shapes.FiniteMultiequalizer` | SD0〜SD7の固定fixture、positive / negative firing |
 | `Formal.AG.StatementContractsStandardGeometryReferenceModels` | `Formal.AG.Examples.StandardGeometryReferenceModels` | `example : exact-type := exact-declaration`だけ |
 | `Formal.AG.StatementContracts` | `Formal.AG.StatementContractsStandardGeometryReferenceModels` | executable contract aggregate |
 | `Formal.AG` | `Formal.AG.ReadingFunctoriality`の後に`Formal.AG.Examples.StandardGeometryReferenceModels` | repository AAT aggregate。`Formal.AG.LawAlgebra`から本fixtureをimportしない |
@@ -370,6 +370,9 @@ finite Atom/core
 
 ### R8 — API quality、contracts、audit、aggregate
 
+- R1〜R7の各実装PRで、そのroundが追加したpublic declarationのdocstring、非自明なdefinitionの
+  `Implementation notes`、executable contract aggregate、`Formal.AG` aggregate、AxiomAudit aliasを
+  増分接続する。R8まで未接続のまま先行roundをmergeしない。
 - 新規ファイルと全new public declarationにdocstringを付ける。
 - 自明でないdefinitionに`Implementation notes`を付け、採用した構成と退けた代替を記録する。
 - no-unfold APIとしてring iso、restriction equation、chart equation、ideal equationを提供する。
