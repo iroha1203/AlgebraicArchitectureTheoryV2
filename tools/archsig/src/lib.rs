@@ -11,6 +11,7 @@ mod law_surface;
 mod normalizer;
 mod policy_bundle;
 mod refactor;
+mod dossier;
 mod repair_plan;
 mod saga;
 mod view_model;
@@ -118,6 +119,10 @@ pub use schema::{
     SchemaVersionCatalogV0,
 };
 pub use schema_catalog::static_schema_version_catalog;
+pub use dossier::{
+    ARCHSIG_DIAGNOSIS_DOSSIER_SCHEMA_VERSION, DOSSIER_STATE_PROVENANCE_KINDS, DossierFrameSpec,
+    build_diagnosis_dossier_v1, parse_dossier_frame_spec,
+};
 pub use view_model::{
     ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION, build_measurement_view_model_v1,
 };

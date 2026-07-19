@@ -746,6 +746,34 @@
           "F2 class support carries no orientation; consumers must not derive direction, rotation, or magnitude from it."
         ]
       }
+    },
+    {
+      "artifactId": "archsig-diagnosis-dossier/v0.5.4",
+      "artifactName": "ArchSig diagnosis dossier bundle",
+      "schemaName": "archsig-diagnosis-dossier/v0.5.4",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig Output / Viewer workflow",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:output-report",
+        "archsig-contract:command-guide"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Diagnosis dossier bundles existing run outputs (analyze frames, comparison reports, gate reports) into one JSON after digest and runId consistency checks. Each frame carries a supplier-declared state provenance (observed-source / authored-model / measured-conclusion / hypothetical-state / actual-change) and the ordered frame list is the temporal sequence supply for viewers.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "The dossier performs no measurement and renders no new verdict; admission is fail-closed on digest or runId mismatch.",
+          "Frame order is supplier-declared sequence, not causality; hypothetical-state frames do not assert that any repository change was applied."
+        ]
+      }
     }
   ],
   "compatibilityPolicy": {

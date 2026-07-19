@@ -51,6 +51,7 @@ are not measured zeros.
 | AG measurement | `analyze` | When `law-policy/v0.5.4` selects `measurementProfileRef` and the input is finite-poset-site `archmap/v0.5.4`, `analyze` emits `archsig-measurement-packet/v0.5.4`, conclusion-first summary, insight report, viewer data, and run manifest. `ag.saga-descent` can additionally consume a checked RepairPlan via `--repair-plan`; `ag.refactor-transport` consumes a validated `refactor-morphism/v0.5.4` via `--refactor-morphism`. |
 | Compare | `compare` | Compares two current `analyze` output directories and computes `archmap-diff/v0.5.4` plus `archsig-comparison-report/v0.5.4`. Add `--refinement refinement-comparison/v0.5.4` only when the coarse-to-fine class-zero contract is supplied. |
 | Gate | `gate` | Applies `archsig-gate-policy/v0.5.4` to a measurement packet and optional comparison report. This is the CI decision surface. |
+| Dossier | `dossier` | Bundles existing analyze / compare / gate outputs into one digest-verified `archsig-diagnosis-dossier/v0.5.4` with supplier-declared state provenance per frame; the frame order is the viewer-facing temporal sequence. |
 | Schema | `schema-catalog` | The catalog lists current ArchMap, law-equation-surface, LawPolicy, policy-bundle, RepairPlan, SAGA conclusions, refactor morphism, refinement comparison, measurement, gate, compare, manifest, and viewer artifacts. |
 
 `archsig-analysis-summary.json` is the preferred first reading surface. It

@@ -15,7 +15,8 @@ use archsig::{
     SchemaVersionCatalogV0, ScopeManifestOptions, archmap_authoring_audit_checks_v1,
     build_comparison_artifacts_with_refinement_v1, build_extraction_consistency_v1,
     build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
-    build_insight_report_v1, build_measurement_summary_v1, build_measurement_view_model_v1,
+    build_diagnosis_dossier_v1, build_insight_report_v1, build_measurement_summary_v1,
+    build_measurement_view_model_v1, parse_dossier_frame_spec,
     build_measurement_viewer_data_v1,
     build_policy_bundle, build_repair_plan_validation_report_v1, build_scope_manifest_v1,
     component_fingerprints as build_component_fingerprints, normalize_archmap_v2,
@@ -315,6 +316,29 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+    /// Bundle existing run outputs (analyze x N, compare, gate) into one
+    /// digest-verified archsig-diagnosis-dossier/v0.5.4 JSON. Performs no
+    /// measurement; admission is fail-closed on digest or runId mismatch.
+    Dossier {
+        /// Ordered frame spec <frameId>=<stateProvenance>=<run-dir>. Repeat per frame;
+        /// order defines the dossier sequence. stateProvenance is one of
+        /// observed-source / authored-model / measured-conclusion / hypothetical-state / actual-change.
+        #[arg(long = "frame")]
+        frames: Vec<String>,
+
+        /// Optional archsig-comparison-report/v0.5.4 JSON path. Repeat per report.
+        #[arg(long = "comparison")]
+        comparisons: Vec<PathBuf>,
+
+        /// Optional archsig-gate-report/v0.5.4 JSON path. Repeat per report.
+        #[arg(long = "gate")]
+        gates: Vec<PathBuf>,
+
+        /// Output dossier JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
     SchemaCatalog {
         /// Output schema version catalog JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
@@ -1394,6 +1418,20 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             } else {
                 ExitCode::SUCCESS
             })
+        }
+        Some(Command::Dossier {
+            frames,
+            comparisons,
+            gates,
+            out,
+        }) => {
+            let frame_specs = frames
+                .iter()
+                .map(|raw| parse_dossier_frame_spec(raw))
+                .collect::<Result<Vec<_>, _>>()?;
+            let dossier = build_diagnosis_dossier_v1(&frame_specs, &comparisons, &gates)?;
+            write_json(out, &dossier)?;
+            Ok(ExitCode::SUCCESS)
         }
         Some(Command::SchemaCatalog { out }) => {
             let catalog: SchemaVersionCatalogV0 = static_schema_version_catalog();

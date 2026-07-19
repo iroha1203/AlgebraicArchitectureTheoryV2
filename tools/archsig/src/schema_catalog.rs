@@ -6,7 +6,8 @@ use crate::{
     ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION,
+    ARCHSIG_DIAGNOSIS_DOSSIER_SCHEMA_VERSION, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION,
     ARCHSIG_POLICY_BUNDLE_V1_SCHEMA,
     ARCHSIG_REFINEMENT_CONCLUSION_CODES, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
     ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
@@ -415,6 +416,22 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "F2 class support carries no orientation; consumers must not derive direction, rotation, or magnitude from it.",
                 ],
             ),
+            artifact(
+                "archsig-diagnosis-dossier/v0.5.4",
+                "ArchSig diagnosis dossier bundle",
+                ARCHSIG_DIAGNOSIS_DOSSIER_SCHEMA_VERSION,
+                "primary",
+                "ArchSig Output / Viewer workflow",
+                vec![
+                    "archsig-contract:output-report",
+                    "archsig-contract:command-guide",
+                ],
+                "Diagnosis dossier bundles existing run outputs (analyze frames, comparison reports, gate reports) into one JSON after digest and runId consistency checks. Each frame carries a supplier-declared state provenance (observed-source / authored-model / measured-conclusion / hypothetical-state / actual-change) and the ordered frame list is the temporal sequence supply for viewers.",
+                vec![
+                    "The dossier performs no measurement and renders no new verdict; admission is fail-closed on digest or runId mismatch.",
+                    "Frame order is supplier-declared sequence, not causality; hypothetical-state frames do not assert that any repository change was applied.",
+                ],
+            ),
         ],
         compatibility_policy: SchemaCompatibilityPolicyV0 {
             schema_version: SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION.to_string(),
@@ -580,6 +597,7 @@ mod tests {
                 "archsig-run-manifest/v0.5.4",
                 "archsig-atom-viewer-data/v0.5.4",
                 "archsig-measurement-view-model/v0.5.4",
+                "archsig-diagnosis-dossier/v0.5.4",
             ])
         );
         for legacy in [

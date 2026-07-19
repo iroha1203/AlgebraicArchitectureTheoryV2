@@ -168,6 +168,28 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
 `gate` applies policy to the current measurement packet and optional comparison
 report. Use this command for CI pass/fail decisions.
 
+## Dossier
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- dossier \
+  --frame head=authored-model=.archsig/head \
+  --frame repaired=hypothetical-state=.archsig/repaired \
+  --comparison .archsig/compare/archsig-comparison-report.json \
+  --gate .archsig/gate/archsig-gate-report.json \
+  --out .archsig/archsig-diagnosis-dossier.json
+```
+
+`dossier` bundles existing run outputs (analyze frames, comparison reports,
+gate reports) into one `archsig-diagnosis-dossier/v0.5.4` JSON. It performs no
+measurement: every frame is admitted only after its runId and canonical packet
+digests are found mutually consistent, and comparison / gate reports must bind
+to a supplied frame by packet digest (fail-closed otherwise). Each `--frame`
+carries a supplier-declared state provenance
+(`observed-source` / `authored-model` / `measured-conclusion` /
+`hypothetical-state` / `actual-change`); the `--frame` order is the dossier
+sequence and doubles as the temporal supply for viewers. A hypothetical-state
+frame never asserts that a repository change was applied.
+
 ## Schema Catalog
 
 ```bash

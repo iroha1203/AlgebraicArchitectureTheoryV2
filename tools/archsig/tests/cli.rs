@@ -13115,6 +13115,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archsig-run-manifest/v0.5.4",
             "archsig-atom-viewer-data/v0.5.4",
             "archsig-measurement-view-model/v0.5.4",
+            "archsig-diagnosis-dossier/v0.5.4",
         ]
     );
     for entry in artifacts {
@@ -17892,4 +17893,213 @@ fn cli_view_model_field_names_exclude_display_vocabulary() {
             "display vocabulary {forbidden} leaked into view model field names"
         );
     }
+}
+
+fn run_practical_saga_repaired_analyze(test_name: &str) -> PathBuf {
+    let out_dir = temp_dir(test_name);
+    let root = practical_rust_service_root();
+    let args = vec![
+        "analyze".to_string(),
+        "--archmap".to_string(),
+        root.join("archmap/archmap_repaired.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--law-policy".to_string(),
+        root.join("law_policy/law_policy.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--measurement-profile".to_string(),
+        root.join("law_policy/measurement_profile.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--measurement-profile".to_string(),
+        root.join("law_policy/measurement_profile_drift.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--law-surface".to_string(),
+        root.join("law_policy/law_surface.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--repair-plan".to_string(),
+        root.join("saga/repair_plan_repaired.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--out-dir".to_string(),
+        out_dir.to_str().expect("path is utf-8").to_string(),
+    ];
+    let arg_refs = args.iter().map(String::as_str).collect::<Vec<_>>();
+    run_sig0(&arg_refs);
+    out_dir
+}
+
+#[test]
+fn cli_dossier_bundles_staircase_with_digest_verified_bindings() {
+    let head = run_practical_saga_head_analyze("dossier-staircase-head");
+    let repaired = run_practical_saga_repaired_analyze("dossier-staircase-repaired");
+    let compare_out = temp_dir("dossier-staircase-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        head.to_str().expect("path is utf-8"),
+        "--head-run",
+        repaired.to_str().expect("path is utf-8"),
+        "--out-dir",
+        compare_out.to_str().expect("path is utf-8"),
+    ]);
+    let gate_repaired = temp_dir("dossier-staircase-gates").join("gate-repaired.json");
+    let root = practical_rust_service_root();
+    run_sig0(&[
+        "gate",
+        "--packet",
+        repaired
+            .join("archsig-measurement-packet.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--policy",
+        root.join("law_policy/gate_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--comparison",
+        compare_out
+            .join("archsig-comparison-report.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        gate_repaired.to_str().expect("path is utf-8"),
+    ]);
+    let dossier_path = temp_dir("dossier-staircase-out").join("dossier.json");
+    run_sig0(&[
+        "dossier",
+        "--frame",
+        &format!("head=authored-model={}", head.display()),
+        "--frame",
+        &format!("repaired=hypothetical-state={}", repaired.display()),
+        "--comparison",
+        compare_out
+            .join("archsig-comparison-report.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--gate",
+        gate_repaired.to_str().expect("path is utf-8"),
+        "--out",
+        dossier_path.to_str().expect("path is utf-8"),
+    ]);
+    let dossier = read_json(&dossier_path);
+    assert_eq!(dossier["schema"], "archsig-diagnosis-dossier/v0.5.4");
+    assert_eq!(dossier["sequence"], json!(["head", "repaired"]));
+    assert_eq!(dossier["frames"][0]["stateProvenance"], "authored-model");
+    assert_eq!(dossier["frames"][1]["stateProvenance"], "hypothetical-state");
+    assert_eq!(dossier["frames"][0]["order"], 0);
+    assert_eq!(
+        dossier["frames"][0]["viewModel"]["schema"],
+        "archsig-measurement-view-model/v0.5.4"
+    );
+    assert_eq!(dossier["comparisons"][0]["baseFrameId"], "head");
+    assert_eq!(dossier["comparisons"][0]["headFrameId"], "repaired");
+    assert_eq!(
+        dossier["comparisons"][0]["conclusionCode"],
+        "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE"
+    );
+    assert_eq!(dossier["gateReports"][0]["frameId"], "repaired");
+    assert_eq!(dossier["gateReports"][0]["decision"], "PASS_WITHIN_GATE_POLICY");
+    assert!(
+        dossier["nonClaims"]
+            .as_array()
+            .is_some_and(|claims| !claims.is_empty())
+    );
+}
+
+#[test]
+fn cli_dossier_rejects_unknown_state_provenance() {
+    let head = run_practical_saga_head_analyze("dossier-provenance-head");
+    let dossier_path = temp_dir("dossier-provenance-out").join("dossier.json");
+    let output = run_sig0_output(&[
+        "dossier",
+        "--frame",
+        &format!("head=speculative={}", head.display()),
+        "--out",
+        dossier_path.to_str().expect("path is utf-8"),
+    ]);
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("unknown state provenance"),
+        "stderr must name the provenance vocabulary, got: {stderr}"
+    );
+    assert!(!dossier_path.exists());
+}
+
+#[test]
+fn cli_dossier_fails_closed_on_packet_digest_tamper() {
+    let head = run_practical_saga_head_analyze("dossier-tamper-head");
+    let mut packet = read_json(&head.join("archsig-measurement-packet.json"));
+    packet["nonConclusions"]
+        .as_array_mut()
+        .expect("non conclusions")
+        .push(json!("tampered"));
+    fs::write(
+        head.join("archsig-measurement-packet.json"),
+        serde_json::to_string_pretty(&packet).expect("packet serializes"),
+    )
+    .expect("packet is writable");
+    let dossier_path = temp_dir("dossier-tamper-out").join("dossier.json");
+    let output = run_sig0_output(&[
+        "dossier",
+        "--frame",
+        &format!("head=authored-model={}", head.display()),
+        "--out",
+        dossier_path.to_str().expect("path is utf-8"),
+    ]);
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("digest mismatch"),
+        "stderr must report the digest mismatch, got: {stderr}"
+    );
+    assert!(!dossier_path.exists());
+}
+
+#[test]
+fn cli_dossier_rejects_gate_report_unbound_to_any_frame() {
+    let head = run_practical_saga_head_analyze("dossier-unbound-head");
+    let repaired = run_practical_saga_repaired_analyze("dossier-unbound-repaired");
+    let root = practical_rust_service_root();
+    let gate_repaired = temp_dir("dossier-unbound-gates").join("gate-repaired.json");
+    run_sig0(&[
+        "gate",
+        "--packet",
+        repaired
+            .join("archsig-measurement-packet.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--policy",
+        root.join("law_policy/gate_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        gate_repaired.to_str().expect("path is utf-8"),
+    ]);
+    let dossier_path = temp_dir("dossier-unbound-out").join("dossier.json");
+    let output = run_sig0_output(&[
+        "dossier",
+        "--frame",
+        &format!("head=authored-model={}", head.display()),
+        "--gate",
+        gate_repaired.to_str().expect("path is utf-8"),
+        "--out",
+        dossier_path.to_str().expect("path is utf-8"),
+    ]);
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("does not match any supplied frame"),
+        "stderr must report the unbound gate report, got: {stderr}"
+    );
+    assert!(!dossier_path.exists());
 }
