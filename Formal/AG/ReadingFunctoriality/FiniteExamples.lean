@@ -1716,12 +1716,12 @@ private inductive PositiveExtractionSource where
 
 private def positiveSourceAllows (atom : FiniteModel.carrier.Atom) : Prop :=
   atom = FiniteModel.FiniteAtom.componentA ∨
-    atom = FiniteModel.FiniteAtom.componentB
+    atom = FiniteModel.FiniteAtom.componentB ∨
+      atom = FiniteModel.FiniteAtom.dependsAB
 
 private def positiveTargetAllows (atom : FiniteModel.carrier.Atom) : Prop :=
   atom = FiniteModel.FiniteAtom.componentC ∨
-    atom = FiniteModel.FiniteAtom.dependsAB ∨
-      atom = FiniteModel.FiniteAtom.dependsBC
+    atom = FiniteModel.FiniteAtom.dependsBC
 
 private def positiveExtractionDoctrine :
     ExtractionDoctrine FiniteModel.carrier where
@@ -1822,13 +1822,12 @@ private noncomputable def positiveTargetCoreReading :
   signatureReading := FiniteModel.signature
   operationReading := FiniteModel.operationReading
 
-/-- Source core whose selected family contains the two distinguishable source atoms. -/
+/-- Source core whose three selected atoms force a collision under any exact map to the target. -/
 noncomputable def positiveSourceCore :
     AATCorePackage FiniteModel.carrier :=
   AATCorePackage.generate FiniteModel.axiomSystem positiveSourceCoreReading
 
-/-- Target core whose selected family contains the common image and two atoms collapsed by the
-concrete base operation. -/
+/-- Target core whose second selected atom is moved to the common image by the base operation. -/
 noncomputable def positiveTargetCore :
     AATCorePackage FiniteModel.carrier :=
   AATCorePackage.generate FiniteModel.axiomSystem positiveTargetCoreReading
@@ -1934,11 +1933,11 @@ private def positiveBaseOperation :
     exact False.elim h
 
 private theorem positiveBaseOperation_moves_selected_atom :
-    positiveTargetCore.family.mem FiniteModel.FiniteAtom.dependsAB ∧
-      positiveBaseOperation.atomMap FiniteModel.FiniteAtom.dependsAB ≠
-        FiniteModel.FiniteAtom.dependsAB := by
+    positiveTargetCore.family.mem FiniteModel.FiniteAtom.dependsBC ∧
+      positiveBaseOperation.atomMap FiniteModel.FiniteAtom.dependsBC ≠
+        FiniteModel.FiniteAtom.dependsBC := by
   constructor
-  · exact (positiveTargetCore_family_mem_iff _).mpr (Or.inr (Or.inl rfl))
+  · exact (positiveTargetCore_family_mem_iff _).mpr (Or.inr rfl)
   · simp [positiveBaseOperation, positiveAtomMap]
 
 private theorem positiveCircuitMap_positive
@@ -2149,24 +2148,124 @@ theorem negativeCircuit_not_transportable :
     ((htarget (positiveSingletonObject FiniteModel.FiniteAtom.componentB)).mpr
       (by simpa [positiveCoreChange] using hA))
 
+private def negativeAtomCircuit
+    (atom : FiniteModel.carrier.Atom) : FiniteCircuitDatum FiniteModel.carrier where
+  queries := [(.atomPresent atom, false)]
+
+private theorem negativeAtomCircuit_matches_of_ne
+    {forbidden present : FiniteModel.carrier.Atom}
+    (hne : forbidden ≠ present) :
+    (negativeAtomCircuit forbidden).Matches (positiveSingletonObject present) := by
+  intro query expected hmem
+  simp only [negativeAtomCircuit, List.mem_singleton] at hmem
+  cases hmem
+  constructor
+  · intro hholds
+    change forbidden = present at hholds
+    exact False.elim (hne hholds)
+  · intro h
+    exact Bool.noConfusion h
+
+private theorem negativeAtomCircuit_not_matches_self
+    (atom : FiniteModel.carrier.Atom) :
+    ¬ (negativeAtomCircuit atom).Matches (positiveSingletonObject atom) := by
+  intro hmatches
+  have h := (hmatches (.atomPresent atom) false
+    (by simp [negativeAtomCircuit])).mp
+      (show (CircuitQuery.atomPresent atom).Holds
+        (positiveSingletonObject atom) by
+          change atom = atom
+          rfl)
+  exact Bool.noConfusion h
+
+private theorem signedExact_objectMap_singletons_eq
+    (f : SignedExactCoreReadingHom positiveSourceCore positiveTargetCore)
+    {a b : FiniteModel.carrier.Atom}
+    (hab : f.atomMap a = f.atomMap b) :
+    f.objectMap (positiveSingletonObject a) =
+      f.objectMap (positiveSingletonObject b) := by
+  change f.objectMap
+      (positiveSourceCore.reading.objectReading.object
+        (positiveSingletonConfiguration a)) =
+    f.objectMap
+      (positiveSourceCore.reading.objectReading.object
+        (positiveSingletonConfiguration b))
+  rw [f.object_formation_eq, f.object_formation_eq]
+  apply congrArg FiniteModel.objectOfConfiguration
+  apply AtomConfiguration.ext
+  · ext atom
+    constructor
+    · rintro ⟨source, hsource, rfl⟩
+      change source = a at hsource
+      subst source
+      exact ⟨b, rfl, hab.symm⟩
+    · rintro ⟨source, hsource, rfl⟩
+      change source = b at hsource
+      subst source
+      exact ⟨a, rfl, hab⟩
+  · intro atom₁ atom₂
+    constructor <;> rintro ⟨source₁, source₂, hsource, _, _⟩ <;>
+      exact False.elim hsource
+  · intro atom₁ atom₂
+    constructor <;> rintro ⟨source₁, source₂, hsource, _, _⟩ <;>
+      exact False.elim hsource
+
+private theorem signedExact_atomMap_injective
+    (f : SignedExactCoreReadingHom positiveSourceCore positiveTargetCore) :
+    Function.Injective f.atomMap := by
+  intro a b hab
+  by_contra hne
+  have hsource :
+      (negativeAtomCircuit b).Matches (positiveSingletonObject a) :=
+    negativeAtomCircuit_matches_of_ne (Ne.symm hne)
+  have htarget :=
+    (f.matches_iff (negativeAtomCircuit b) (positiveSingletonObject a)).mp hsource
+  rw [signedExact_objectMap_singletons_eq f hab] at htarget
+  exact negativeAtomCircuit_not_matches_self b
+    ((f.matches_iff (negativeAtomCircuit b) (positiveSingletonObject b)).mpr htarget)
+
 private theorem positiveTargetFamily_not_exactTransport
     (f : SignedExactCoreReadingHom positiveSourceCore positiveTargetCore) : False := by
-  have hC : positiveTargetCore.family.mem FiniteModel.FiniteAtom.componentC :=
-    (positiveTargetCore_family_mem_iff _).mpr (Or.inl rfl)
-  have hAB : positiveTargetCore.family.mem FiniteModel.FiniteAtom.dependsAB :=
-    (positiveTargetCore_family_mem_iff _).mpr (Or.inr (Or.inl rfl))
-  have hBC : positiveTargetCore.family.mem FiniteModel.FiniteAtom.dependsBC :=
-    (positiveTargetCore_family_mem_iff _).mpr (Or.inr (Or.inr rfl))
-  rw [f.extraction_eq] at hC hAB hBC
-  rcases hC with ⟨sourceC, hsourceC, hmapC⟩
-  rcases hAB with ⟨sourceAB, hsourceAB, hmapAB⟩
-  rcases hBC with ⟨sourceBC, hsourceBC, hmapBC⟩
-  have hsourceC' := (positiveSourceCore_family_mem_iff sourceC).mp hsourceC
-  have hsourceAB' := (positiveSourceCore_family_mem_iff sourceAB).mp hsourceAB
-  have hsourceBC' := (positiveSourceCore_family_mem_iff sourceBC).mp hsourceBC
-  rcases hsourceC' with rfl | rfl <;>
-    rcases hsourceAB' with rfl | rfl <;>
-      rcases hsourceBC' with rfl | rfl <;> simp_all
+  have hA_source : positiveSourceCore.family.mem FiniteModel.FiniteAtom.componentA :=
+    (positiveSourceCore_family_mem_iff _).mpr (Or.inl rfl)
+  have hB_source : positiveSourceCore.family.mem FiniteModel.FiniteAtom.componentB :=
+    (positiveSourceCore_family_mem_iff _).mpr (Or.inr (Or.inl rfl))
+  have hAB_source : positiveSourceCore.family.mem FiniteModel.FiniteAtom.dependsAB :=
+    (positiveSourceCore_family_mem_iff _).mpr (Or.inr (Or.inr rfl))
+  have hA_target : positiveTargetCore.family.mem
+      (f.atomMap FiniteModel.FiniteAtom.componentA) := by
+    rw [f.extraction_eq]
+    exact ⟨FiniteModel.FiniteAtom.componentA, hA_source, rfl⟩
+  have hB_target : positiveTargetCore.family.mem
+      (f.atomMap FiniteModel.FiniteAtom.componentB) := by
+    rw [f.extraction_eq]
+    exact ⟨FiniteModel.FiniteAtom.componentB, hB_source, rfl⟩
+  have hAB_target : positiveTargetCore.family.mem
+      (f.atomMap FiniteModel.FiniteAtom.dependsAB) := by
+    rw [f.extraction_eq]
+    exact ⟨FiniteModel.FiniteAtom.dependsAB, hAB_source, rfl⟩
+  have hA := (positiveTargetCore_family_mem_iff _).mp hA_target
+  have hB := (positiveTargetCore_family_mem_iff _).mp hB_target
+  have hAB := (positiveTargetCore_family_mem_iff _).mp hAB_target
+  have hinjective := signedExact_atomMap_injective f
+  rcases hA with hA | hA <;> rcases hB with hB | hB <;>
+    rcases hAB with hAB | hAB
+  · exact FiniteModel.FiniteAtom.noConfusion
+      (hinjective (hA.trans hB.symm))
+  · exact FiniteModel.FiniteAtom.noConfusion
+      (hinjective (hA.trans hB.symm))
+  · exact FiniteModel.FiniteAtom.noConfusion
+      (hinjective (hA.trans hAB.symm))
+  · exact FiniteModel.FiniteAtom.noConfusion
+      (hinjective (hB.trans hAB.symm))
+  · exact FiniteModel.FiniteAtom.noConfusion
+      (hinjective (hB.trans hAB.symm))
+  · exact FiniteModel.FiniteAtom.noConfusion
+      (hinjective (hA.trans hAB.symm))
+  · exact FiniteModel.FiniteAtom.noConfusion
+      (hinjective (hA.trans hB.symm))
+  · exact FiniteModel.FiniteAtom.noConfusion
+      (hinjective (hA.trans hB.symm))
 
 /-- The positive-only reading change cannot be strengthened to signed exactness. -/
 theorem positiveOnly_not_signedExact :
