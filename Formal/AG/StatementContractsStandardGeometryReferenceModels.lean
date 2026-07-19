@@ -1454,6 +1454,200 @@ example :
 example : strongToRigidComparison ≫ lawComparison = weakToRigidComparison :=
   lawComparison_comp_fires
 
+example : FlatCoefficientChange Int (Polynomial Int) :=
+  coefficientChange
+
+example : coefficientChange.hom = Polynomial.C :=
+  coefficientChange_hom
+
+example : ¬ Function.Surjective coefficientChange.hom :=
+  coefficientChange_not_surjective
+
+example : referenceSite.topology.HasSheafCompose
+    (coefficientChange.coefficientExtension :
+      AATCommAlgCat.{0, 0} Int ⥤
+        AATCommAlgCat.{0, 0} (Polynomial Int)) :=
+  coefficientChange_hasSheafCompose
+
+example : StandardArchitectureScheme
+    (referenceRaw.baseChange coefficientChange.hom) :=
+  coefficientChangedScheme
+
+example : coefficientChangedScheme =
+    referenceScheme.baseChange referenceRaw coefficientChange :=
+  coefficientChangedScheme_eq
+
+example : ClosedEquationalLawReading
+    (referenceRaw.baseChange coefficientChange.hom)
+    coefficientChangedScheme :=
+  coefficientChangedWeakReading
+
+example : coefficientChangedWeakReading =
+    ClosedEquationalLawReading.baseChangeOfSemanticCore
+      referenceRaw referenceScheme
+      weakLawEquationCore weakSchemeBridge coefficientChange :=
+  coefficientChangedWeakReading_eq
+
+example : ClosedEquationalLawReading
+    (referenceRaw.baseChange coefficientChange.hom)
+    coefficientChangedScheme :=
+  coefficientChangedStrongReading
+
+example : coefficientChangedStrongReading =
+    ClosedEquationalLawReading.baseChangeOfSemanticCore
+      referenceRaw referenceScheme
+      strongLawEquationCore strongSchemeBridge coefficientChange :=
+  coefficientChangedStrongReading_eq
+
+example : IsClosedEquationalLawReading
+    (referenceRaw.baseChange coefficientChange.hom)
+    coefficientChangedScheme coefficientChangedWeakReading :=
+  coefficientChangedWeakReading_valid
+
+example : IsClosedEquationalLawReading
+    (referenceRaw.baseChange coefficientChange.hom)
+    coefficientChangedScheme coefficientChangedStrongReading :=
+  coefficientChangedStrongReading_valid
+
+example : RequiredClosed
+    (referenceRaw.baseChange coefficientChange.hom)
+    coefficientChangedScheme coefficientChangedWeakReading :=
+  coefficientChangedWeakReading_requiredClosed
+
+example : RequiredClosed
+    (referenceRaw.baseChange coefficientChange.hom)
+    coefficientChangedScheme coefficientChangedStrongReading :=
+  coefficientChangedStrongReading_requiredClosed
+
+example : Scheme.IdealSheafData.comap weakIdealSheaf
+      (referenceScheme.baseChangeMap referenceRaw coefficientChange) =
+    lawGeneratedIdealSheaf
+      (referenceRaw.baseChange coefficientChange.hom)
+      coefficientChangedScheme coefficientChangedWeakReading
+      coefficientChangedWeakReading_valid
+      coefficientChangedWeakReading_requiredClosed :=
+  weakIdeal_baseChange
+
+example : Scheme.IdealSheafData.comap strongIdealSheaf
+      (referenceScheme.baseChangeMap referenceRaw coefficientChange) =
+    lawGeneratedIdealSheaf
+      (referenceRaw.baseChange coefficientChange.hom)
+      coefficientChangedScheme coefficientChangedStrongReading
+      coefficientChangedStrongReading_valid
+      coefficientChangedStrongReading_requiredClosed :=
+  strongIdeal_baseChange
+
+example : IsPullback
+    ((referenceScheme.baseChangedAtlas
+        referenceRaw coefficientChange).chart
+      (cast
+        (referenceScheme.baseChangedAtlas_Index
+          referenceRaw coefficientChange).symm leftIndex)).map
+    (referenceScheme.baseChangedChartMap
+      referenceRaw coefficientChange leftIndex)
+    (referenceScheme.baseChangeMap referenceRaw coefficientChange)
+    (referenceScheme.atlas.chart leftIndex).map :=
+  leftChart_baseChange_isPullback
+
+example : IsPullback
+    ((referenceScheme.baseChangedAtlas
+        referenceRaw coefficientChange).chart
+      (cast
+        (referenceScheme.baseChangedAtlas_Index
+          referenceRaw coefficientChange).symm rightIndex)).map
+    (referenceScheme.baseChangedChartMap
+      referenceRaw coefficientChange rightIndex)
+    (referenceScheme.baseChangeMap referenceRaw coefficientChange)
+    (referenceScheme.atlas.chart rightIndex).map :=
+  rightChart_baseChange_isPullback
+
+example : lawGeneratedIdealSheaf
+      (referenceRaw.baseChange coefficientChange.hom)
+      coefficientChangedScheme coefficientChangedWeakReading
+      coefficientChangedWeakReading_valid
+      coefficientChangedWeakReading_requiredClosed <
+    lawGeneratedIdealSheaf
+      (referenceRaw.baseChange coefficientChange.hom)
+      coefficientChangedScheme coefficientChangedStrongReading
+      coefficientChangedStrongReading_valid
+      coefficientChangedStrongReading_requiredClosed :=
+  coefficientChanged_ideal_strict
+
+example : ClosedEquationalLawInclusion
+    (referenceRaw.baseChange coefficientChange.hom)
+    coefficientChangedScheme
+    coefficientChangedWeakReading coefficientChangedStrongReading :=
+  coefficientChangedWeakToStrong
+
+example : coefficientChangedWeakToStrong.lawMap = weakToStrong.lawMap :=
+  coefficientChangedWeakToStrong_lawMap
+
+example : coefficientChangedWeakToStrong.atomMap = weakToStrong.atomMap :=
+  coefficientChangedWeakToStrong_atomMap
+
+example : IsClosedEquationalLawInclusion
+    (referenceRaw.baseChange coefficientChange.hom)
+    coefficientChangedScheme coefficientChangedWeakToStrong :=
+  coefficientChangedWeakToStrong_valid
+
+example : lawfulClosedSubscheme
+      (referenceRaw.baseChange coefficientChange.hom)
+      coefficientChangedScheme coefficientChangedStrongReading
+      coefficientChangedStrongReading_valid
+      coefficientChangedStrongReading_requiredClosed ⟶
+    lawfulClosedSubscheme
+      (referenceRaw.baseChange coefficientChange.hom)
+      coefficientChangedScheme coefficientChangedWeakReading
+      coefficientChangedWeakReading_valid
+      coefficientChangedWeakReading_requiredClosed :=
+  coefficientChangedLawComparison
+
+example : coefficientChangedLawComparison =
+    lawfulClosedSubschemeMap
+      (referenceRaw.baseChange coefficientChange.hom)
+      coefficientChangedScheme
+      coefficientChangedWeakReading_valid
+      coefficientChangedStrongReading_valid
+      coefficientChangedWeakReading_requiredClosed
+      coefficientChangedStrongReading_requiredClosed
+      coefficientChangedWeakToStrong
+      coefficientChangedWeakToStrong_valid :=
+  coefficientChangedLawComparison_eq
+
+example : AlgebraicGeometry.IsClosedImmersion
+    coefficientChangedLawComparison :=
+  coefficientChangedLawComparison_isClosedImmersion
+
+example : coefficientChangedLawComparison ≫
+      lawfulClosedImmersion
+        (referenceRaw.baseChange coefficientChange.hom)
+        coefficientChangedScheme coefficientChangedWeakReading
+        coefficientChangedWeakReading_valid
+        coefficientChangedWeakReading_requiredClosed =
+    lawfulClosedImmersion
+      (referenceRaw.baseChange coefficientChange.hom)
+      coefficientChangedScheme coefficientChangedStrongReading
+      coefficientChangedStrongReading_valid
+      coefficientChangedStrongReading_requiredClosed :=
+  coefficientChangedLawComparison_immersion
+
+example : ¬ IsIso coefficientChangedLawComparison :=
+  coefficientChangedLawComparison_not_isIso
+
+example : coefficientChangedLawComparison ≫
+      lawfulClosedSubschemeBaseChangeMap
+        referenceRaw referenceScheme
+        weakLawEquationCore weakSchemeBridge coefficientChange =
+    lawfulClosedSubschemeBaseChangeMap
+        referenceRaw referenceScheme
+        strongLawEquationCore strongSchemeBridge coefficientChange ≫
+      lawComparison :=
+  coefficient_law_comparison_square
+
+example : ¬ IsIso
+    (referenceScheme.baseChangeMap referenceRaw coefficientChange) :=
+  coefficientChange_schemeMap_not_isIso
+
 end
 
 end AAT.AG.Examples.StandardGeometryReferenceModels
