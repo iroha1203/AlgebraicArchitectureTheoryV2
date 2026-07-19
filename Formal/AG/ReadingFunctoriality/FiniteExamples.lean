@@ -1935,6 +1935,36 @@ private theorem positiveObjectMap_source_eq_target :
     · intro h
       exact False.elim h
 
+/-- The concrete selected operation used by the positive base-reachability firing. -/
+private def positiveBaseOperation :
+    FiniteModel.operationReading.Op
+      positiveTargetCore.object positiveTargetCore.object where
+  atomMap := positiveAtomMap
+  maps_family := by
+    intro atom h
+    rw [positiveTargetCore.object_configuration_eq,
+      positiveTargetCore.configuration_family_eq] at h ⊢
+    have hatom : atom = FiniteModel.FiniteAtom.componentC :=
+      (positiveTargetCore_family_mem_iff atom).mp h
+    subst atom
+    exact (positiveTargetCore_family_mem_iff _).mpr rfl
+  maps_relation := by
+    intro atom₁ atom₂ h
+    rw [positiveTargetCore.object_configuration_eq] at h ⊢
+    change False at h
+    exact False.elim h
+  maps_identification := by
+    intro atom₁ atom₂ h
+    rw [positiveTargetCore.object_configuration_eq] at h ⊢
+    change False at h
+    exact False.elim h
+
+private theorem positiveBaseOperation_atomMap_ne_id :
+    positiveBaseOperation.atomMap ≠ id := by
+  intro h
+  have hA := congrFun h FiniteModel.FiniteAtom.componentA
+  simp [positiveBaseOperation, positiveAtomMap] at hA
+
 private theorem positiveCircuitMap_positive
     (datum : FiniteCircuitDatum FiniteModel.carrier)
     (hpositive : datum.Positive) :
@@ -1989,7 +2019,8 @@ noncomputable def positiveCoreChange :
   object_formation_eq := by intros; rfl
   base_reachable := by
     rw [positiveObjectMap_source_eq_target]
-    exact OperationReading.Reachable.base
+    exact OperationReading.Reachable.step
+      OperationReading.Reachable.base positiveBaseOperation
   configurationMap A := AtomConfiguration.transportHom positiveAtomMap A.configuration
   configurationMap_atomMap := by intros; rfl
   operationMap := positiveTransportOperation
