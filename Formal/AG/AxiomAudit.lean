@@ -6307,6 +6307,316 @@ def standardGeometry_decoration_overlap :=
 def standardGeometry_actual_triple_cocycle :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.actual_triple_cocycle
 
+
+def standardGeometry_weakLawEquationCore_observable :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore_observable
+
+def standardGeometry_strongLawEquationCore_observable :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLawEquationCore_observable
+
+def standardGeometry_rigidLawEquationCore_observable :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidLawEquationCore_observable
+
+def standardGeometry_weakLawEquationCore_observableCommRing :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore_observableCommRing
+
+def standardGeometry_strongLawEquationCore_observableCommRing :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLawEquationCore_observableCommRing
+
+def standardGeometry_rigidLawEquationCore_observableCommRing :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidLawEquationCore_observableCommRing
+
+def standardGeometry_weakLawEquationCore_restrict :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore_restrict
+
+def standardGeometry_strongLawEquationCore_restrict :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLawEquationCore_restrict
+
+def standardGeometry_rigidLawEquationCore_restrict :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidLawEquationCore_restrict
+
+def standardGeometry_weakViolationWitness_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakViolationWitness_eq
+
+def standardGeometry_strongViolationWitness_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongViolationWitness_eq
+
+def standardGeometry_rigidViolationWitness_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidViolationWitness_eq
+
+def standardGeometry_weakLawEquationCore_supportAtom :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore_supportAtom
+
+def standardGeometry_strongLawEquationCore_supportAtom :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLawEquationCore_supportAtom
+
+def standardGeometry_rigidLawEquationCore_supportAtom :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidLawEquationCore_supportAtom
+
+def standardGeometry_weakLawEquationCore_supportLawIndex :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore_supportLawIndex
+
+def standardGeometry_strongLawEquationCore_supportLawIndex :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLawEquationCore_supportLawIndex
+
+def standardGeometry_rigidLawEquationCore_supportLawIndex :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidLawEquationCore_supportLawIndex
+
+def standardGeometry_weakSchemeBridge_toRawPresentation :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakSchemeBridge_toRawPresentation
+
+def standardGeometry_strongSchemeBridge_toRawPresentation :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongSchemeBridge_toRawPresentation
+
+def standardGeometry_rigidSchemeBridge_toRawPresentation :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidSchemeBridge_toRawPresentation
+
+def standardGeometry_weakSchemeBridge_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakSchemeBridge_valid
+
+def standardGeometry_strongSchemeBridge_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongSchemeBridge_valid
+
+def standardGeometry_rigidSchemeBridge_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidSchemeBridge_valid
+
+def standardGeometry_weakReading_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_eq
+
+def standardGeometry_strongReading_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongReading_eq
+
+def standardGeometry_rigidReading_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidReading_eq
+
+def standardGeometry_weakReading_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_valid
+
+def standardGeometry_strongReading_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongReading_valid
+
+def standardGeometry_rigidReading_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidReading_valid
+
+def standardGeometry_weakReading_requiredClosed :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredClosed
+
+def standardGeometry_strongReading_requiredClosed :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongReading_requiredClosed
+
+def standardGeometry_rigidReading_requiredClosed :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidReading_requiredClosed
+
+def standardGeometry_weakReading_requiredLawIdealExact :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredLawIdealExact
+
+def standardGeometry_strongReading_requiredLawIdealExact :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongReading_requiredLawIdealExact
+
+def standardGeometry_rigidReading_requiredLawIdealExact :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidReading_requiredLawIdealExact
+
+def standardGeometry_weakIdealSheaf_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakIdealSheaf_eq
+
+def standardGeometry_strongIdealSheaf_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongIdealSheaf_eq
+
+def standardGeometry_rigidIdealSheaf_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidIdealSheaf_eq
+
+def standardGeometry_weakLocus_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLocus_eq
+
+def standardGeometry_strongLocus_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLocus_eq
+
+def standardGeometry_rigidLocus_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidLocus_eq
+
+def standardGeometry_weakImmersion_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakImmersion_eq
+
+def standardGeometry_strongImmersion_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongImmersion_eq
+
+def standardGeometry_rigidImmersion_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidImmersion_eq
+
+def standardGeometry_ambientGlobalSectionsIso_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.ambientGlobalSectionsIso_eq
+
+def standardGeometry_weakGlobalEquation_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakGlobalEquation_eq
+
+def standardGeometry_strongGlobalEquation_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongGlobalEquation_eq
+
+def standardGeometry_rigidGlobalEquation_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidGlobalEquation_eq
+
+def standardGeometry_weakAmbientIdeal_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakAmbientIdeal_eq
+
+def standardGeometry_strongAmbientIdeal_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongAmbientIdeal_eq
+
+def standardGeometry_rigidAmbientIdeal_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidAmbientIdeal_eq
+
+def standardGeometry_weakLeftIdeal_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLeftIdeal_eq
+
+def standardGeometry_weakRightIdeal_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakRightIdeal_eq
+
+def standardGeometry_weakOverlapIdeal_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakOverlapIdeal_eq
+
+def standardGeometry_strongLeftIdeal_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLeftIdeal_eq
+
+def standardGeometry_strongRightIdeal_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongRightIdeal_eq
+
+def standardGeometry_strongOverlapIdeal_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongOverlapIdeal_eq
+
+def standardGeometry_leftChartGlobalSectionsIso_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftChartGlobalSectionsIso_eq
+
+def standardGeometry_rightChartGlobalSectionsIso_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightChartGlobalSectionsIso_eq
+
+def standardGeometry_actualOverlapGlobalSectionsIso_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.actualOverlapGlobalSectionsIso_eq
+
+def standardGeometry_ambientTopAffineOpen_obj :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.ambientTopAffineOpen_obj
+
+def standardGeometry_weakIdeal_top_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakIdeal_top_eq
+
+def standardGeometry_strongIdeal_top_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongIdeal_top_eq
+
+def standardGeometry_rigidIdeal_top_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidIdeal_top_eq
+
+def standardGeometry_weakIdeal_left_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakIdeal_left_eq
+
+def standardGeometry_weakIdeal_right_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakIdeal_right_eq
+
+def standardGeometry_weakIdeal_overlap_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakIdeal_overlap_eq
+
+def standardGeometry_strongIdeal_left_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongIdeal_left_eq
+
+def standardGeometry_strongIdeal_right_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongIdeal_right_eq
+
+def standardGeometry_strongIdeal_overlap_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongIdeal_overlap_eq
+
+def standardGeometry_weakIdeal_overlap_agrees :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakIdeal_overlap_agrees
+
+def standardGeometry_strongIdeal_overlap_agrees :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongIdeal_overlap_agrees
+
+def standardGeometry_weakAmbientIdeal_ne_bot :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakAmbientIdeal_ne_bot
+
+def standardGeometry_weakAmbientIdeal_ne_top :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakAmbientIdeal_ne_top
+
+def standardGeometry_strongAmbientIdeal_ne_bot :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongAmbientIdeal_ne_bot
+
+def standardGeometry_strongAmbientIdeal_ne_top :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongAmbientIdeal_ne_top
+
+def standardGeometry_rigidAmbientIdeal_ne_bot :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidAmbientIdeal_ne_bot
+
+def standardGeometry_rigidAmbientIdeal_ne_top :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidAmbientIdeal_ne_top
+
+def standardGeometry_weakIdeal_lt_strongIdeal :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakIdeal_lt_strongIdeal
+
+def standardGeometry_strongIdeal_lt_rigidIdeal :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongIdeal_lt_rigidIdeal
+
+def standardGeometry_weakLocus_nonempty :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLocus_nonempty
+
+def standardGeometry_strongLocus_nonempty :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLocus_nonempty
+
+def standardGeometry_rigidLocus_nonempty :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidLocus_nonempty
+
+def standardGeometry_weakImmersion_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakImmersion_not_isIso
+
+def standardGeometry_strongImmersion_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongImmersion_not_isIso
+
+def standardGeometry_rigidImmersion_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidImmersion_not_isIso
+
+def standardGeometry_weakImmersion_ker :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakImmersion_ker
+
+def standardGeometry_strongImmersion_ker :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongImmersion_ker
+
+def standardGeometry_weakImmersion_zeroLocus :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakImmersion_zeroLocus
+
+def standardGeometry_strongImmersion_zeroLocus :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongImmersion_zeroLocus
+
+def standardGeometry_weakAffineQuotientChart_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weakAffineQuotientChart_isIso
+
+def standardGeometry_strongAffineQuotientChart_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strongAffineQuotientChart_isIso
+
+def standardGeometry_evaluationRingHom_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.evaluationRingHom_eq
+
+def standardGeometry_evaluationPoint_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.evaluationPoint_eq
+
+def standardGeometry_zeroPoint_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.zeroPoint_eq
+
+def standardGeometry_onePoint_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.onePoint_eq
+
+def standardGeometry_twoPoint_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.twoPoint_eq
+
+def standardGeometry_weak_correspondence :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.weak_correspondence
+
+def standardGeometry_strong_correspondence :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.strong_correspondence
+
+def standardGeometry_zeroPoint_fires :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.zeroPoint_fires
+
+def standardGeometry_onePoint_fires :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.onePoint_fires
+
+def standardGeometry_twoPoint_fires :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.twoPoint_fires
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

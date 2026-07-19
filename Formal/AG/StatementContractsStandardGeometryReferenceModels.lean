@@ -1,7 +1,7 @@
 import Formal.AG.Examples.StandardGeometryReferenceModels
 
 /-!
-Executable statement contract for the SD0–SD1 public surface of the standard
+Executable statement contract for the SD0–SD3 public surface of the standard
 geometry reference models.
 
 Each example fixes one approved declaration type and refers directly to its
@@ -620,6 +620,707 @@ example : ∀ i j l : referenceScheme.atlas.Index,
         (referenceScheme.atlas.chart j).map =
       referenceScheme.atlas.actualTripleToRight referenceRaw i j l ≫
         (referenceScheme.atlas.chart l).map := actual_triple_cocycle
+
+
+/-! ## SD2-SD3 executable statement contracts -/
+
+example : SemanticLawEquationWitnessIdealCore referenceSite :=
+  weakLawEquationCore
+
+example : SemanticLawEquationWitnessIdealCore referenceSite :=
+  strongLawEquationCore
+
+example : SemanticLawEquationWitnessIdealCore referenceSite :=
+  rigidLawEquationCore
+
+example : ∀ (W : referenceSite.category),
+weakLawEquationCore.Observable W = referenceRaw.rawAlgebra W :=
+  weakLawEquationCore_observable
+
+example : ∀ (W : referenceSite.category),
+strongLawEquationCore.Observable W = referenceRaw.rawAlgebra W :=
+  strongLawEquationCore_observable
+
+example : ∀ (W : referenceSite.category),
+rigidLawEquationCore.Observable W = referenceRaw.rawAlgebra W :=
+  rigidLawEquationCore_observable
+
+example : ∀ (W : referenceSite.category),
+weakLawEquationCore.observableCommRing W =
+      inferInstanceAs (CommRing (referenceRaw.rawAlgebra W)) :=
+  weakLawEquationCore_observableCommRing
+
+example : ∀ (W : referenceSite.category),
+strongLawEquationCore.observableCommRing W =
+      inferInstanceAs (CommRing (referenceRaw.rawAlgebra W)) :=
+  strongLawEquationCore_observableCommRing
+
+example : ∀ (W : referenceSite.category),
+rigidLawEquationCore.observableCommRing W =
+      inferInstanceAs (CommRing (referenceRaw.rawAlgebra W)) :=
+  rigidLawEquationCore_observableCommRing
+
+example : ∀ {source target : referenceSite.category} (f : source ⟶ target),
+weakLawEquationCore.restrict f =
+      (referenceRaw.restrictionStable f).quotientDesc :=
+  weakLawEquationCore_restrict
+
+example : ∀ {source target : referenceSite.category} (f : source ⟶ target),
+strongLawEquationCore.restrict f =
+      (referenceRaw.restrictionStable f).quotientDesc :=
+  strongLawEquationCore_restrict
+
+example : ∀ {source target : referenceSite.category} (f : source ⟶ target),
+rigidLawEquationCore.restrict f =
+      (referenceRaw.restrictionStable f).quotientDesc :=
+  rigidLawEquationCore_restrict
+
+example : ∀ (W : referenceSite.category)
+    (a : AAT.AG.FiniteModel.carrier.Atom),
+weakLawEquationCore.violationWitness W PUnit.unit a =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        rawCoordinate W * (rawCoordinate W - 1)
+      else 0 :=
+  weakViolationWitness_eq
+
+example : ∀ (W : referenceSite.category)
+    (a : AAT.AG.FiniteModel.carrier.Atom),
+strongLawEquationCore.violationWitness W PUnit.unit a =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        rawCoordinate W * (rawCoordinate W - 1)
+      else if a = AAT.AG.FiniteModel.FiniteAtom.componentB then
+        rawCoordinate W
+      else 0 :=
+  strongViolationWitness_eq
+
+example : ∀ (W : referenceSite.category)
+    (a : AAT.AG.FiniteModel.carrier.Atom),
+rigidLawEquationCore.violationWitness W PUnit.unit a =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        rawCoordinate W * (rawCoordinate W - 1)
+      else if a = AAT.AG.FiniteModel.FiniteAtom.componentB then
+        rawCoordinate W
+      else if a = AAT.AG.FiniteModel.FiniteAtom.componentC then
+        algebraMap Int (referenceRaw.rawAlgebra W) 2
+      else 0 :=
+  rigidViolationWitness_eq
+
+example : weakLawEquationCore.supportAtom =
+      AAT.AG.FiniteModel.FiniteAtom.componentA :=
+  weakLawEquationCore_supportAtom
+
+example : strongLawEquationCore.supportAtom =
+      AAT.AG.FiniteModel.FiniteAtom.componentA :=
+  strongLawEquationCore_supportAtom
+
+example : rigidLawEquationCore.supportAtom =
+      AAT.AG.FiniteModel.FiniteAtom.componentA :=
+  rigidLawEquationCore_supportAtom
+
+example : weakLawEquationCore.supportLawIndex = PUnit.unit :=
+  weakLawEquationCore_supportLawIndex
+
+example : strongLawEquationCore.supportLawIndex = PUnit.unit :=
+  strongLawEquationCore_supportLawIndex
+
+example : rigidLawEquationCore.supportLawIndex = PUnit.unit :=
+  rigidLawEquationCore_supportLawIndex
+
+example : SemanticLawEquationSchemeBridge referenceRaw weakLawEquationCore :=
+  weakSchemeBridge
+
+example : SemanticLawEquationSchemeBridge referenceRaw strongLawEquationCore :=
+  strongSchemeBridge
+
+example : SemanticLawEquationSchemeBridge referenceRaw rigidLawEquationCore :=
+  rigidSchemeBridge
+
+example : ∀ (W : referenceSite.category),
+weakSchemeBridge.toRawPresentation W =
+      RingEquiv.refl (referenceRaw.rawAlgebra W) :=
+  weakSchemeBridge_toRawPresentation
+
+example : ∀ (W : referenceSite.category),
+strongSchemeBridge.toRawPresentation W =
+      RingEquiv.refl (referenceRaw.rawAlgebra W) :=
+  strongSchemeBridge_toRawPresentation
+
+example : ∀ (W : referenceSite.category),
+rigidSchemeBridge.toRawPresentation W =
+      RingEquiv.refl (referenceRaw.rawAlgebra W) :=
+  rigidSchemeBridge_toRawPresentation
+
+example : IsSemanticLawEquationSchemeBridge
+      referenceRaw weakLawEquationCore weakSchemeBridge :=
+  weakSchemeBridge_valid
+
+example : IsSemanticLawEquationSchemeBridge
+      referenceRaw strongLawEquationCore strongSchemeBridge :=
+  strongSchemeBridge_valid
+
+example : IsSemanticLawEquationSchemeBridge
+      referenceRaw rigidLawEquationCore rigidSchemeBridge :=
+  rigidSchemeBridge_valid
+
+example : ClosedEquationalLawReading referenceRaw referenceScheme :=
+  weakReading
+
+example : weakReading =
+      ClosedEquationalLawReading.ofSemanticCore
+        referenceRaw referenceScheme weakLawEquationCore weakSchemeBridge :=
+  weakReading_eq
+
+example : ClosedEquationalLawReading referenceRaw referenceScheme :=
+  strongReading
+
+example : strongReading =
+      ClosedEquationalLawReading.ofSemanticCore
+        referenceRaw referenceScheme strongLawEquationCore strongSchemeBridge :=
+  strongReading_eq
+
+example : ClosedEquationalLawReading referenceRaw referenceScheme :=
+  rigidReading
+
+example : rigidReading =
+      ClosedEquationalLawReading.ofSemanticCore
+        referenceRaw referenceScheme rigidLawEquationCore rigidSchemeBridge :=
+  rigidReading_eq
+
+example : IsClosedEquationalLawReading referenceRaw referenceScheme weakReading :=
+  weakReading_valid
+
+example : IsClosedEquationalLawReading referenceRaw referenceScheme strongReading :=
+  strongReading_valid
+
+example : IsClosedEquationalLawReading referenceRaw referenceScheme rigidReading :=
+  rigidReading_valid
+
+example : RequiredClosed referenceRaw referenceScheme weakReading :=
+  weakReading_requiredClosed
+
+example : RequiredClosed referenceRaw referenceScheme strongReading :=
+  strongReading_requiredClosed
+
+example : RequiredClosed referenceRaw referenceScheme rigidReading :=
+  rigidReading_requiredClosed
+
+example : RequiredLawIdealExact referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed :=
+  weakReading_requiredLawIdealExact
+
+example : RequiredLawIdealExact referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed :=
+  strongReading_requiredLawIdealExact
+
+example : RequiredLawIdealExact referenceRaw referenceScheme
+      rigidReading rigidReading_valid rigidReading_requiredClosed :=
+  rigidReading_requiredLawIdealExact
+
+example : referenceScheme.underlying.IdealSheafData :=
+  weakIdealSheaf
+
+example : weakIdealSheaf =
+      lawGeneratedIdealSheaf referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed :=
+  weakIdealSheaf_eq
+
+example : referenceScheme.underlying.IdealSheafData :=
+  strongIdealSheaf
+
+example : strongIdealSheaf =
+      lawGeneratedIdealSheaf referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed :=
+  strongIdealSheaf_eq
+
+example : referenceScheme.underlying.IdealSheafData :=
+  rigidIdealSheaf
+
+example : rigidIdealSheaf =
+      lawGeneratedIdealSheaf referenceRaw referenceScheme
+        rigidReading rigidReading_valid rigidReading_requiredClosed :=
+  rigidIdealSheaf_eq
+
+example : AlgebraicGeometry.Scheme :=
+  weakLocus
+
+example : weakLocus =
+      lawfulClosedSubscheme referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed :=
+  weakLocus_eq
+
+example : AlgebraicGeometry.Scheme :=
+  strongLocus
+
+example : strongLocus =
+      lawfulClosedSubscheme referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed :=
+  strongLocus_eq
+
+example : AlgebraicGeometry.Scheme :=
+  rigidLocus
+
+example : rigidLocus =
+      lawfulClosedSubscheme referenceRaw referenceScheme
+        rigidReading rigidReading_valid rigidReading_requiredClosed :=
+  rigidLocus_eq
+
+example : weakLocus ⟶ referenceScheme.underlying :=
+  weakImmersion
+
+example : weakImmersion =
+      lawfulClosedImmersion referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed :=
+  weakImmersion_eq
+
+example : strongLocus ⟶ referenceScheme.underlying :=
+  strongImmersion
+
+example : strongImmersion =
+      lawfulClosedImmersion referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed :=
+  strongImmersion_eq
+
+example : rigidLocus ⟶ referenceScheme.underlying :=
+  rigidImmersion
+
+example : rigidImmersion =
+      lawfulClosedImmersion referenceRaw referenceScheme
+        rigidReading rigidReading_valid rigidReading_requiredClosed :=
+  rigidImmersion_eq
+
+example : Γ(referenceScheme.underlying, ⊤) ≅
+      CommRingCat.of AmbientRing :=
+  ambientGlobalSectionsIso
+
+example : ambientGlobalSectionsIso =
+      AlgebraicGeometry.Scheme.ΓSpecIso
+        (CommRingCat.of AmbientRing) :=
+  ambientGlobalSectionsIso_eq
+
+example : ∀ (a : AAT.AG.FiniteModel.carrier.Atom),
+ambientGlobalSectionsIso.hom
+        (semanticCoreGlobalEquation
+          referenceRaw referenceScheme
+          weakLawEquationCore weakSchemeBridge PUnit.unit a) =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        coordinate * (coordinate - 1)
+      else 0 :=
+  weakGlobalEquation_eq
+
+example : ∀ (a : AAT.AG.FiniteModel.carrier.Atom),
+ambientGlobalSectionsIso.hom
+        (semanticCoreGlobalEquation
+          referenceRaw referenceScheme
+          strongLawEquationCore strongSchemeBridge PUnit.unit a) =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        coordinate * (coordinate - 1)
+      else if a = AAT.AG.FiniteModel.FiniteAtom.componentB then
+        coordinate
+      else 0 :=
+  strongGlobalEquation_eq
+
+example : ∀ (a : AAT.AG.FiniteModel.carrier.Atom),
+ambientGlobalSectionsIso.hom
+        (semanticCoreGlobalEquation
+          referenceRaw referenceScheme
+          rigidLawEquationCore rigidSchemeBridge PUnit.unit a) =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        coordinate * (coordinate - 1)
+      else if a = AAT.AG.FiniteModel.FiniteAtom.componentB then
+        coordinate
+      else if a = AAT.AG.FiniteModel.FiniteAtom.componentC then
+        MvPolynomial.C 2
+      else 0 :=
+  rigidGlobalEquation_eq
+
+example : Ideal AmbientRing :=
+  weakAmbientIdeal
+
+example : weakAmbientIdeal =
+      Ideal.span {coordinate * (coordinate - 1)} :=
+  weakAmbientIdeal_eq
+
+example : Ideal AmbientRing :=
+  strongAmbientIdeal
+
+example : strongAmbientIdeal = Ideal.span {coordinate} :=
+  strongAmbientIdeal_eq
+
+example : Ideal AmbientRing :=
+  rigidAmbientIdeal
+
+example : rigidAmbientIdeal =
+      Ideal.span {coordinate, MvPolynomial.C 2} :=
+  rigidAmbientIdeal_eq
+
+example : Ideal (Localization.Away leftGenerator) :=
+  weakLeftIdeal
+
+example : weakLeftIdeal =
+      Ideal.span
+        {algebraMap AmbientRing (Localization.Away leftGenerator)
+          (coordinate * (coordinate - 1))} :=
+  weakLeftIdeal_eq
+
+example : Ideal (Localization.Away rightGenerator) :=
+  weakRightIdeal
+
+example : weakRightIdeal =
+      Ideal.span
+        {algebraMap AmbientRing (Localization.Away rightGenerator)
+          (coordinate * (coordinate - 1))} :=
+  weakRightIdeal_eq
+
+example : Ideal (Localization.Away overlapGenerator) :=
+  weakOverlapIdeal
+
+example : weakOverlapIdeal =
+      Ideal.span
+        {algebraMap AmbientRing (Localization.Away overlapGenerator)
+          (coordinate * (coordinate - 1))} :=
+  weakOverlapIdeal_eq
+
+example : Ideal (Localization.Away leftGenerator) :=
+  strongLeftIdeal
+
+example : strongLeftIdeal =
+      Ideal.span
+        {algebraMap AmbientRing
+          (Localization.Away leftGenerator) coordinate} :=
+  strongLeftIdeal_eq
+
+example : Ideal (Localization.Away rightGenerator) :=
+  strongRightIdeal
+
+example : strongRightIdeal =
+      Ideal.span
+        {algebraMap AmbientRing
+          (Localization.Away rightGenerator) coordinate} :=
+  strongRightIdeal_eq
+
+example : Ideal (Localization.Away overlapGenerator) :=
+  strongOverlapIdeal
+
+example : strongOverlapIdeal =
+      Ideal.span
+        {algebraMap AmbientRing
+          (Localization.Away overlapGenerator) coordinate} :=
+  strongOverlapIdeal_eq
+
+example : Γ(leftChart.domain, ⊤) ≅
+      CommRingCat.of (Localization.Away leftGenerator) :=
+  leftChartGlobalSectionsIso
+
+example : leftChartGlobalSectionsIso =
+      AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing referenceRaw leftContext) ≪≫
+        leftSectionRingIso :=
+  leftChartGlobalSectionsIso_eq
+
+example : Γ(rightChart.domain, ⊤) ≅
+      CommRingCat.of (Localization.Away rightGenerator) :=
+  rightChartGlobalSectionsIso
+
+example : rightChartGlobalSectionsIso =
+      AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing referenceRaw rightContext) ≪≫
+        rightSectionRingIso :=
+  rightChartGlobalSectionsIso_eq
+
+example : Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw leftIndex rightIndex, ⊤) ≅
+      CommRingCat.of (Localization.Away overlapGenerator) :=
+  actualOverlapGlobalSectionsIso
+
+example : actualOverlapGlobalSectionsIso =
+      (asIso actualOverlapIso.inv.appTop) ≪≫
+        AlgebraicGeometry.Scheme.ΓSpecIso
+          (CommRingCat.of (Localization.Away overlapGenerator)) :=
+  actualOverlapGlobalSectionsIso_eq
+
+example : referenceScheme.underlying.affineOpens :=
+  ambientTopAffineOpen
+
+example : ambientTopAffineOpen.1 = ⊤ :=
+  ambientTopAffineOpen_obj
+
+example : Ideal.map ambientGlobalSectionsIso.hom.hom
+        (weakIdealSheaf.ideal ambientTopAffineOpen) =
+      weakAmbientIdeal :=
+  weakIdeal_top_eq
+
+example : Ideal.map ambientGlobalSectionsIso.hom.hom
+        (strongIdealSheaf.ideal ambientTopAffineOpen) =
+      strongAmbientIdeal :=
+  strongIdeal_top_eq
+
+example : Ideal.map ambientGlobalSectionsIso.hom.hom
+        (rigidIdealSheaf.ideal ambientTopAffineOpen) =
+      rigidAmbientIdeal :=
+  rigidIdeal_top_eq
+
+example : Ideal.map leftChartGlobalSectionsIso.hom.hom
+        ((weakIdealSheaf.comap leftChart.map).ideal
+          ⟨⊤, @isAffineOpen_top leftChart.domain
+            leftChart.domain_isAffine⟩) =
+      weakLeftIdeal :=
+  weakIdeal_left_eq
+
+example : Ideal.map rightChartGlobalSectionsIso.hom.hom
+        ((weakIdealSheaf.comap rightChart.map).ideal
+          ⟨⊤, @isAffineOpen_top rightChart.domain
+            rightChart.domain_isAffine⟩) =
+      weakRightIdeal :=
+  weakIdeal_right_eq
+
+example : Ideal.map actualOverlapGlobalSectionsIso.hom.hom
+        ((weakIdealSheaf.comap
+          (referenceScheme.atlas.actualOverlapToUnderlying
+            referenceRaw leftIndex rightIndex)).ideal
+          ⟨⊤, @isAffineOpen_top
+            (referenceScheme.atlas.actualOverlap
+              referenceRaw leftIndex rightIndex)
+            (IsAffine.of_isIso actualOverlapIso.hom)⟩) =
+      weakOverlapIdeal :=
+  weakIdeal_overlap_eq
+
+example : Ideal.map leftChartGlobalSectionsIso.hom.hom
+        ((strongIdealSheaf.comap leftChart.map).ideal
+          ⟨⊤, @isAffineOpen_top leftChart.domain
+            leftChart.domain_isAffine⟩) =
+      strongLeftIdeal :=
+  strongIdeal_left_eq
+
+example : Ideal.map rightChartGlobalSectionsIso.hom.hom
+        ((strongIdealSheaf.comap rightChart.map).ideal
+          ⟨⊤, @isAffineOpen_top rightChart.domain
+            rightChart.domain_isAffine⟩) =
+      strongRightIdeal :=
+  strongIdeal_right_eq
+
+example : Ideal.map actualOverlapGlobalSectionsIso.hom.hom
+        ((strongIdealSheaf.comap
+          (referenceScheme.atlas.actualOverlapToUnderlying
+            referenceRaw leftIndex rightIndex)).ideal
+          ⟨⊤, @isAffineOpen_top
+            (referenceScheme.atlas.actualOverlap
+              referenceRaw leftIndex rightIndex)
+            (IsAffine.of_isIso actualOverlapIso.hom)⟩) =
+      strongOverlapIdeal :=
+  strongIdeal_overlap_eq
+
+example : (weakIdealSheaf.comap leftChart.map).comap
+        (pullback.fst leftChart.map rightChart.map) =
+      (weakIdealSheaf.comap rightChart.map).comap
+        (pullback.snd leftChart.map rightChart.map) :=
+  weakIdeal_overlap_agrees
+
+example : (strongIdealSheaf.comap leftChart.map).comap
+        (pullback.fst leftChart.map rightChart.map) =
+      (strongIdealSheaf.comap rightChart.map).comap
+        (pullback.snd leftChart.map rightChart.map) :=
+  strongIdeal_overlap_agrees
+
+example : weakAmbientIdeal ≠ ⊥ :=
+  weakAmbientIdeal_ne_bot
+
+example : weakAmbientIdeal ≠ ⊤ :=
+  weakAmbientIdeal_ne_top
+
+example : strongAmbientIdeal ≠ ⊥ :=
+  strongAmbientIdeal_ne_bot
+
+example : strongAmbientIdeal ≠ ⊤ :=
+  strongAmbientIdeal_ne_top
+
+example : rigidAmbientIdeal ≠ ⊥ :=
+  rigidAmbientIdeal_ne_bot
+
+example : rigidAmbientIdeal ≠ ⊤ :=
+  rigidAmbientIdeal_ne_top
+
+example : weakIdealSheaf < strongIdealSheaf :=
+  weakIdeal_lt_strongIdeal
+
+example : strongIdealSheaf < rigidIdealSheaf :=
+  strongIdeal_lt_rigidIdeal
+
+example : Nonempty weakLocus :=
+  weakLocus_nonempty
+
+example : Nonempty strongLocus :=
+  strongLocus_nonempty
+
+example : Nonempty rigidLocus :=
+  rigidLocus_nonempty
+
+example : ¬ IsIso weakImmersion :=
+  weakImmersion_not_isIso
+
+example : ¬ IsIso strongImmersion :=
+  strongImmersion_not_isIso
+
+example : ¬ IsIso rigidImmersion :=
+  rigidImmersion_not_isIso
+
+example : weakImmersion.ker = weakIdealSheaf :=
+  weakImmersion_ker
+
+example : strongImmersion.ker = strongIdealSheaf :=
+  strongImmersion_ker
+
+example : Set.range weakImmersion = weakIdealSheaf.support :=
+  weakImmersion_zeroLocus
+
+example : Set.range strongImmersion = strongIdealSheaf.support :=
+  strongImmersion_zeroLocus
+
+example : AlgebraicGeometry.Spec
+        (CommRingCat.of
+          (Γ(referenceScheme.underlying, ambientTopAffineOpen) ⧸
+            weakIdealSheaf.ideal ambientTopAffineOpen)) ⟶
+      weakLocus :=
+  weakAffineQuotientChart
+
+example : AlgebraicGeometry.Spec
+        (CommRingCat.of
+          (Γ(referenceScheme.underlying, ambientTopAffineOpen) ⧸
+            strongIdealSheaf.ideal ambientTopAffineOpen)) ⟶
+      strongLocus :=
+  strongAffineQuotientChart
+
+example : IsIso weakAffineQuotientChart :=
+  weakAffineQuotientChart_isIso
+
+example : IsIso strongAffineQuotientChart :=
+  strongAffineQuotientChart_isIso
+
+example : ∀ (n : Int),
+AmbientRing →+* Int :=
+  evaluationRingHom
+
+example : ∀ (n : Int),
+evaluationRingHom n =
+      MvPolynomial.eval₂Hom (RingHom.id Int) (fun _ => n) :=
+  evaluationRingHom_eq
+
+example : ∀ (n : Int),
+AlgebraicGeometry.Spec (CommRingCat.of Int) ⟶
+      referenceScheme.underlying :=
+  evaluationPoint
+
+example : ∀ (n : Int),
+evaluationPoint n =
+      AlgebraicGeometry.Scheme.Spec.map
+        (CommRingCat.ofHom (evaluationRingHom n)).op :=
+  evaluationPoint_eq
+
+example : AlgebraicGeometry.Spec (CommRingCat.of Int) ⟶
+      referenceScheme.underlying :=
+  zeroPoint
+
+example : zeroPoint = evaluationPoint 0 :=
+  zeroPoint_eq
+
+example : AlgebraicGeometry.Spec (CommRingCat.of Int) ⟶
+      referenceScheme.underlying :=
+  onePoint
+
+example : onePoint = evaluationPoint 1 :=
+  onePoint_eq
+
+example : AlgebraicGeometry.Spec (CommRingCat.of Int) ⟶
+      referenceScheme.underlying :=
+  twoPoint
+
+example : twoPoint = evaluationPoint 2 :=
+  twoPoint_eq
+
+example : ∀ {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ referenceScheme.underlying),
+(SemanticLawfulAlong referenceRaw referenceScheme weakReading s ↔
+      WitnessVanishes referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed s) ∧
+    (WitnessVanishes referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed s ↔
+      IdealLawfulAlong referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed s) ∧
+    (IdealLawfulAlong referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed s ↔
+      Nonempty
+        (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+          weakReading weakReading_valid weakReading_requiredClosed s)) :=
+  weak_correspondence
+
+example : ∀ {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ referenceScheme.underlying),
+(SemanticLawfulAlong referenceRaw referenceScheme strongReading s ↔
+      WitnessVanishes referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed s) ∧
+    (WitnessVanishes referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed s ↔
+      IdealLawfulAlong referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed s) ∧
+    (IdealLawfulAlong referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed s ↔
+      Nonempty
+        (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+          strongReading strongReading_valid strongReading_requiredClosed s)) :=
+  strong_correspondence
+
+example : SemanticLawfulAlong referenceRaw referenceScheme weakReading zeroPoint ∧
+    WitnessVanishes referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed zeroPoint ∧
+    IdealLawfulAlong referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed zeroPoint ∧
+    Nonempty
+      (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed zeroPoint) ∧
+    SemanticLawfulAlong referenceRaw referenceScheme strongReading zeroPoint ∧
+    WitnessVanishes referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed zeroPoint ∧
+    IdealLawfulAlong referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed zeroPoint ∧
+    Nonempty
+      (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed zeroPoint) :=
+  zeroPoint_fires
+
+example : SemanticLawfulAlong referenceRaw referenceScheme weakReading onePoint ∧
+    WitnessVanishes referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed onePoint ∧
+    IdealLawfulAlong referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed onePoint ∧
+    Nonempty
+      (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed onePoint) ∧
+    ¬ SemanticLawfulAlong referenceRaw referenceScheme strongReading onePoint ∧
+    ¬ WitnessVanishes referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed onePoint ∧
+    ¬ IdealLawfulAlong referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed onePoint ∧
+    ¬ Nonempty
+      (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed onePoint) :=
+  onePoint_fires
+
+example : ¬ SemanticLawfulAlong referenceRaw referenceScheme weakReading twoPoint ∧
+    ¬ WitnessVanishes referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed twoPoint ∧
+    ¬ IdealLawfulAlong referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed twoPoint ∧
+    ¬ Nonempty
+      (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+        weakReading weakReading_valid weakReading_requiredClosed twoPoint) ∧
+    ¬ SemanticLawfulAlong referenceRaw referenceScheme strongReading twoPoint ∧
+    ¬ WitnessVanishes referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed twoPoint ∧
+    ¬ IdealLawfulAlong referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed twoPoint ∧
+    ¬ Nonempty
+      (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+        strongReading strongReading_valid strongReading_requiredClosed twoPoint) :=
+  twoPoint_fires
 
 end
 
