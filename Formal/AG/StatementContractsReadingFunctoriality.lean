@@ -1,9 +1,5 @@
 import Formal.AG.ReadingFunctoriality
 import Formal.AG.ReadingFunctoriality.FiniteExamples
-import Formal.AG.ReadingFunctoriality.InfiniteProductCechFiring
-import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
-import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
-import Formal.AG.ReadingFunctoriality.LinearLerayComparison
 
 /-!
 # Reading-functoriality statement contracts
@@ -16,9 +12,159 @@ namespace AAT.AG.StatementContractsReadingFunctoriality
 open AAT.AG
 open CategoryTheory CategoryTheory.Limits
 
-universe u v w w'
+universe u v w w' u₁ v₁ u₂ v₂ w₁ w₂ w₃ t₁ t₂
 
 variable {U : AtomCarrier.{u}}
+
+namespace ExtFunctorialityContracts
+
+example
+    {C₁ C₂ C₃ : Type*} [Category* C₁] [Category* C₂] [Category* C₃]
+    {F : C₁ ⥤ C₂} {G : C₂ ⥤ C₁}
+    {H H' : C₂ ⥤ C₃} {I : C₃ ⥤ C₂}
+    (a₀ : F ⊣ G) (a₁ : H ⊣ I) (a₂ : H' ⊣ I) (X : C₁) :
+    ((a₀.comp a₁).leftAdjointUniq (a₀.comp a₂)).hom.app X =
+      (a₁.leftAdjointUniq a₂).hom.app (F.obj X) :=
+  Adjunction.comp_leftAdjointUniq_hom_app a₀ a₁ a₂ X
+
+variable {C : Type u₁} [Category.{v₁} C] [Abelian C]
+variable {D : Type u₂} [Category.{v₂} D] [Abelian D]
+variable [HasDerivedCategory.{t₁} C] [HasDerivedCategory.{t₂} D]
+variable (F G : C ⥤ D)
+variable [F.Additive] [PreservesFiniteLimits F] [PreservesFiniteColimits F]
+variable [G.Additive] [PreservesFiniteLimits G] [PreservesFiniteColimits G]
+
+noncomputable example (e : F ≅ G) :
+    F.mapDerivedCategory ≅ G.mapDerivedCategory :=
+  exactFunctorDerivedIso F G e
+
+example (e : F ≅ G) (X : C) :
+    (HomologicalComplex.singleMapHomologicalComplex F (ComplexShape.up ℤ) 0).hom.app X ≫
+        (CochainComplex.singleFunctor D 0).map (e.hom.app X) =
+      (NatTrans.mapHomologicalComplex e.hom (ComplexShape.up ℤ)).app
+          ((CochainComplex.singleFunctor C 0).obj X) ≫
+        (HomologicalComplex.singleMapHomologicalComplex G (ComplexShape.up ℤ) 0).hom.app X :=
+  singleMapHomologicalComplex_iso_naturality F G e X
+
+example (e : F ≅ G) (X : C) :
+    (F.mapDerivedCategorySingleFunctor 0).hom.app X ≫
+        (DerivedCategory.singleFunctor D 0).map (e.hom.app X) =
+      (exactFunctorDerivedIso F G e).hom.app
+          ((DerivedCategory.singleFunctor C 0).obj X) ≫
+        (G.mapDerivedCategorySingleFunctor 0).hom.app X :=
+  exactFunctorDerivedIso_single_hom F G e X
+
+example (e : F ≅ G) (X : C) :
+    (DerivedCategory.singleFunctor D 0).map (e.hom.app X) ≫
+        (G.mapDerivedCategorySingleFunctor 0).inv.app X =
+      (F.mapDerivedCategorySingleFunctor 0).inv.app X ≫
+        (exactFunctorDerivedIso F G e).hom.app
+          ((DerivedCategory.singleFunctor C 0).obj X) :=
+  exactFunctorDerivedIso_single_inv F G e X
+
+example
+    {E₁ E₂ : Type*} [Category* E₁] [Category* E₂]
+    [HasShift E₁ ℤ] [HasShift E₂ ℤ]
+    (H K : E₁ ⥤ E₂) [H.CommShift ℤ] [K.CommShift ℤ]
+    (τ : H ⟶ K) [NatTrans.CommShift τ ℤ]
+    {X Y : E₁} {n : ℤ} (a : ShiftedHom X Y n) :
+    τ.app X ≫ a.map K = a.map H ≫ (shiftFunctor E₂ n).map (τ.app Y) :=
+  ShiftedHom.map_natTrans_commShift H K τ a
+
+variable [HasExt.{w₁} C] [HasExt.{w₂} D]
+
+example
+    (e : F ≅ G)
+    [NatTrans.CommShift (exactFunctorDerivedIso F G e).hom ℤ]
+    {X Y : C} {n : Nat} (a : Abelian.Ext.{w₁} X Y n) :
+    (Abelian.Ext.mk₀ (e.hom.app X)).comp (a.mapExactFunctor G) (zero_add n) =
+      (a.mapExactFunctor F).comp (Abelian.Ext.mk₀ (e.hom.app Y)) (add_zero n) :=
+  mapExactFunctor_iso_naturality F G e a
+
+example
+    {E : Type u₁} [Category.{v₁} E] [Abelian E]
+    [HasExt.{w₁} E]
+    {X Y : E} {n : Nat} (a : Abelian.Ext.{w₁} X Y n) :
+    a.mapExactFunctor (Functor.id E) = a :=
+  Abelian.Ext.mapExactFunctor_id a
+
+example
+    {X' X Y : C} {n : Nat} (f : X' ⟶ X)
+    (a : Abelian.Ext.{w₁} X Y n) :
+    ((Abelian.Ext.mk₀ f).comp a (zero_add n)).mapExactFunctor F =
+      (Abelian.Ext.mk₀ (F.map f)).comp (a.mapExactFunctor F)
+        (zero_add n) :=
+  Abelian.Ext.mapExactFunctor_precomp_mk₀ F f a
+
+example
+    {X Y Y' : C} {n : Nat} (a : Abelian.Ext.{w₁} X Y n)
+    (g : Y ⟶ Y') :
+    (a.comp (Abelian.Ext.mk₀ g) (add_zero n)).mapExactFunctor F =
+      (a.mapExactFunctor F).comp (Abelian.Ext.mk₀ (F.map g))
+        (add_zero n) :=
+  Abelian.Ext.mapExactFunctor_postcomp_mk₀ F a g
+
+section ExactFunctorComp
+
+variable {E₁ : Type u₁} [Category.{v₁} E₁] [Abelian E₁]
+variable {E₂ : Type u₂} [Category.{v₂} E₂] [Abelian E₂]
+variable {E₃ : Type*} [Category* E₃] [Abelian E₃]
+variable [HasDerivedCategory E₁] [HasDerivedCategory E₂] [HasDerivedCategory E₃]
+variable (H : E₁ ⥤ E₂) (K : E₂ ⥤ E₃)
+variable [H.Additive] [PreservesFiniteLimits H] [PreservesFiniteColimits H]
+variable [K.Additive] [PreservesFiniteLimits K] [PreservesFiniteColimits K]
+variable [(H ⋙ K).Additive]
+  [PreservesFiniteLimits (H ⋙ K)] [PreservesFiniteColimits (H ⋙ K)]
+
+noncomputable example :
+    DerivedCategory.Q ⋙ (H.mapDerivedCategory ⋙ K.mapDerivedCategory) ≅
+      (H ⋙ K).mapHomologicalComplex (ComplexShape.up ℤ) ⋙
+        DerivedCategory.Q :=
+  exactFunctorCompFactors H K
+
+noncomputable example :
+    (H ⋙ K).mapDerivedCategory ≅
+      H.mapDerivedCategory ⋙ K.mapDerivedCategory :=
+  exactFunctorCompDerivedIso H K
+
+example (X : E₁) :
+    (HomologicalComplex.singleMapHomologicalComplex (H ⋙ K)
+          (ComplexShape.up ℤ) 0).hom.app X =
+      (K.mapHomologicalComplex (ComplexShape.up ℤ)).map
+          ((HomologicalComplex.singleMapHomologicalComplex H
+            (ComplexShape.up ℤ) 0).hom.app X) ≫
+        (HomologicalComplex.singleMapHomologicalComplex K
+          (ComplexShape.up ℤ) 0).hom.app (H.obj X) :=
+  singleMapHomologicalComplex_comp_hom H K X
+
+example (X : E₁) :
+    (exactFunctorCompDerivedIso H K).hom.app
+          ((DerivedCategory.singleFunctor E₁ 0).obj X) ≫
+        K.mapDerivedCategory.map
+          ((H.mapDerivedCategorySingleFunctor 0).hom.app X) ≫
+        (K.mapDerivedCategorySingleFunctor 0).hom.app (H.obj X) =
+      ((H ⋙ K).mapDerivedCategorySingleFunctor 0).hom.app X :=
+  exactFunctorCompDerivedIso_single_hom H K X
+
+example (X : E₁) :
+    ((H ⋙ K).mapDerivedCategorySingleFunctor 0).inv.app X ≫
+        (exactFunctorCompDerivedIso H K).hom.app
+          ((DerivedCategory.singleFunctor E₁ 0).obj X) =
+      (K.mapDerivedCategorySingleFunctor 0).inv.app (H.obj X) ≫
+        K.mapDerivedCategory.map
+          ((H.mapDerivedCategorySingleFunctor 0).inv.app X) :=
+  exactFunctorCompDerivedIso_single_inv H K X
+
+example
+    [HasExt.{w₁} E₁] [HasExt.{w₂} E₂] [HasExt.{w₃} E₃]
+    {X Y : E₁} {n : Nat} (a : Abelian.Ext.{w₁} X Y n) :
+    (a.mapExactFunctor H).mapExactFunctor K =
+      a.mapExactFunctor (H ⋙ K) :=
+  Abelian.Ext.mapExactFunctor_comp H K a
+
+end ExactFunctorComp
+
+end ExtFunctorialityContracts
 
 example : Type (max (u + 1) (v + 1)) := ReadingCore.{u, v} U
 example (p : ReadingCore.{u, v} U) : Type u := ReadingSelection p
@@ -3548,6 +3694,24 @@ noncomputable example
     (Ob.canonicalLinearCech 𝒰).complex.cycles n →
       ((Ob.baseChange f).canonicalLinearCech 𝒰).complex.cycles n :=
   Ob.canonicalCocycleBaseChange f 𝒰 n
+
+example
+    {R R' : Type u} [CommRing R] [CommRing R']
+    (Ob : Cohomology.LinearCoefficientSheaf R S)
+    (f : FlatCoefficientChange R R')
+    [HasSheafify S.topology AddCommGrpCat.{u + 1}]
+    {base : S.category}
+    (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base)
+    (n : Nat)
+    (c : (Ob.canonicalLinearCech 𝒰).complex.cycles n)
+    (σ : (Cohomology.canonicalCoverRelative 𝒰).simplex n) :
+    (((Ob.baseChange f).canonicalLinearCech 𝒰).complex.iCycles n).hom
+        (Ob.canonicalCocycleBaseChange f 𝒰 n c) σ =
+      Ob.baseChangeSectionMap f
+        ((Cohomology.canonicalCoverRelative 𝒰).overlap n σ)
+        ((1 : R') ⊗ₜ[R, f.hom]
+          (((Ob.canonicalLinearCech 𝒰).complex.iCycles n).hom c σ)) :=
+  Ob.canonicalCocycleBaseChange_iCycles_apply f 𝒰 n c σ
 
 example
     {R R' : Type u} [CommRing R] [CommRing R']

@@ -5,6 +5,7 @@ import Formal.AG.Derived.Intersection
 import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
 import Mathlib.Algebra.Category.ModuleCat.Descent
 import Mathlib.Algebra.Category.ModuleCat.Sheaf
+import Mathlib.Algebra.Homology.ShortComplex.PreservesHomology
 import Mathlib.Algebra.Category.Ring.Under.Basic
 import Mathlib.Algebra.Category.Ring.Under.Limits
 import Mathlib.Algebra.Module.TransferInstance
@@ -13,6 +14,7 @@ import Mathlib.CategoryTheory.Sites.PreservesSheafification
 import Mathlib.CategoryTheory.Sites.Whiskering
 import Mathlib.Logic.Function.Basic
 import Mathlib.LinearAlgebra.TensorProduct.Pi
+import Mathlib.LinearAlgebra.TensorProduct.Quotient
 import Mathlib.AlgebraicGeometry.Pullbacks
 import Mathlib.AlgebraicGeometry.IdealSheaf.Functorial
 import Mathlib.RingTheory.RingHom.Flat
@@ -1134,6 +1136,131 @@ noncomputable def moduleScalarExtensionCompIso
     moduleScalarExtension g (moduleScalarExtension f M) ≅
       moduleScalarExtension (f.comp g) M :=
   (ModuleCat.extendScalarsComp f.hom g.hom).symm.app M
+
+open scoped MonoidalCategory
+
+/-- Proof-internal AC34 tensor API: scalar extension distributes over the tensor product of two
+modules by Mathlib's canonical tower equivalence. -/
+private noncomputable def moduleTensorBaseChangeIso
+    {R R' : Type v} [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M N : ModuleCat.{v} R) :
+    (ModuleCat.extendScalars f.hom).obj (M ⊗ N) ≅
+      (ModuleCat.extendScalars f.hom).obj M ⊗
+        (ModuleCat.extendScalars f.hom).obj N := by
+  letI := f.hom.toAlgebra
+  exact
+    (TensorProduct.AlgebraTensorModule.distribBaseChange R R' M N).toModuleIso
+
+/-- Proof-internal AC34 natural tensor API: extension after left tensoring is naturally
+isomorphic to left tensoring of the two scalar-extended modules. -/
+private noncomputable def extendScalarsTensoringLeftIso
+    {R R' : Type v} [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R') (M : ModuleCat.{v} R) :
+    (MonoidalCategory.tensoringLeft (ModuleCat.{v} R)).obj M ⋙
+        ModuleCat.extendScalars f.hom ≅
+      ModuleCat.extendScalars f.hom ⋙
+        (MonoidalCategory.tensoringLeft (ModuleCat.{v} R')).obj
+          ((ModuleCat.extendScalars f.hom).obj M) := by
+  letI := f.hom.toAlgebra
+  exact NatIso.ofComponents
+    (fun N => moduleTensorBaseChangeIso f M N)
+    (fun {N P} g => by
+      ext s
+      induction s using TensorProduct.induction_on with
+      | zero => simp
+      | add x y hx hy => simp only [map_add, hx, hy]
+      | tmul r x =>
+          induction x using TensorProduct.induction_on with
+          | zero => simp
+          | add x y hx hy =>
+              simp only [TensorProduct.tmul_add, map_add, hx, hy]
+          | tmul m n => rfl)
+
+/-- Proof-internal AC34 quotient API: scalar extension of a quotient module is the quotient by
+the mapped ideal. -/
+private noncomputable def quotientModuleScalarExtensionIso
+    {R R' : Type v} [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R') (I : Ideal R) :
+    (ModuleCat.extendScalars f.hom).obj (ModuleCat.of R (R ⧸ I)) ≅
+      ModuleCat.of R' (R' ⧸ I.map f.hom) := by
+  letI := f.hom.toAlgebra
+  exact (I.qoutMapEquivTensorQout R').symm.toModuleIso
+
+/-- Proof-internal AC34 instance: Mathlib's extension-of-scalars functor preserves addition on
+module morphisms. -/
+private theorem extendScalars_additive
+    {R R' : Type v} [CommRing R] [CommRing R']
+    (φ : R →+* R') :
+    (ModuleCat.extendScalars φ).Additive where
+  map_add := by
+    intro X Y a b
+    letI := φ.toAlgebra
+    ext s
+    change
+      ((1 : R') ⊗ₜ[R, φ] (a.hom s + b.hom s)) =
+        (1 : R') ⊗ₜ[R, φ] a.hom s +
+          (1 : R') ⊗ₜ[R, φ] b.hom s
+    exact TensorProduct.tmul_add _ _ _
+
+/-- Proof-internal AC34 generic theorem: flat scalar extension commutes with Mathlib's Tor object
+for arbitrary module inputs and arbitrary degree.
+
+Implementation notes (SD7 / R7 / AC34): this definition computes both Tor objects from a
+projective resolution and composes flat scalar extension's homology comparison with Mathlib's
+natural tensor base-change isomorphism. This form exposes `f.flat` as the source of exactness and
+keeps every comparison internally constructed. A finite or projective specialization is rejected
+because AC34 quantifies over arbitrary ideals and degree; a supplied comparison certificate is
+rejected because it would store the conclusion instead of deriving it from flatness. -/
+private noncomputable def moduleScalarExtensionTorIso
+    {R R' : Type v} [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (M N : ModuleCat.{v} R) (n : Nat) :
+    (ModuleCat.extendScalars f.hom).obj
+        (((CategoryTheory.Tor (ModuleCat.{v} R) n).obj M).obj N) ≅
+      (((CategoryTheory.Tor (ModuleCat.{v} R') n).obj
+          ((ModuleCat.extendScalars f.hom).obj M)).obj
+        ((ModuleCat.extendScalars f.hom).obj N)) := by
+  let E := ModuleCat.extendScalars f.hom
+  let F := (MonoidalCategory.tensoringLeft (ModuleCat.{v} R)).obj M
+  let F' := (MonoidalCategory.tensoringLeft (ModuleCat.{v} R')).obj (E.obj M)
+  let P := projectiveResolution N
+  letI : E.Additive := extendScalars_additive f.hom
+  letI : PreservesFiniteLimits E :=
+    ModuleCat.preservesFiniteLimits_extendScalars_of_flat f.flat
+  letI : PreservesFiniteColimits E := inferInstance
+  letI : E.PreservesHomology := inferInstance
+  letI : E.PreservesProjectiveObjects :=
+    Functor.preservesProjectiveObjects_of_adjunction_of_preservesEpimorphisms
+      (ModuleCat.extendRestrictScalarsAdj f.hom)
+  let Q := E.mapProjectiveResolution P
+  let K := (F.mapHomologicalComplex (ComplexShape.down Nat)).obj P.complex
+  exact
+    E.mapIso (P.isoLeftDerivedObj F n) ≪≫
+      ((K.sc n).mapHomologyIso E).symm ≪≫
+      HomologicalComplex.homologyMapIso
+        ((NatIso.mapHomologicalComplex (extendScalarsTensoringLeftIso f M)
+          (ComplexShape.down Nat)).app P.complex) n ≪≫
+      (Q.isoLeftDerivedObj F' n).symm
+
+/-- The SD7 / R7 / AC34 main declaration: flatness induces the bare affine Tor-object
+base-change isomorphism in every degree. Its proof uses the generic projective-resolution route
+documented on `moduleScalarExtensionTorIso`; it is not a finite specialization. -/
+noncomputable def mathlibTorFlatBaseChangeIso
+    {R R' : Type v}
+    [CommRing R] [CommRing R']
+    (f : FlatCoefficientChange R R')
+    (I J : Ideal R) (n : Nat) :
+    moduleScalarExtension f (mathlibTor R I J n) ≅
+      mathlibTor R' (I.map f.hom) (J.map f.hom) n :=
+  moduleScalarExtensionTorIso f
+      (ModuleCat.of R (R ⧸ I))
+      (ModuleCat.of R (R ⧸ J)) n ≪≫
+    ((CategoryTheory.Tor (ModuleCat.{v} R') n).mapIso
+      (quotientModuleScalarExtensionIso f I)).app _ ≪≫
+    ((CategoryTheory.Tor (ModuleCat.{v} R') n).obj
+      (ModuleCat.of R' (R' ⧸ I.map f.hom))).mapIso
+        (quotientModuleScalarExtensionIso f J)
 
 end Derived.Intersection
 
