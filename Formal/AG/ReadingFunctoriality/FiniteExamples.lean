@@ -203,6 +203,38 @@ theorem coarseToFineCover_not_bijective :
   have hp : (i, false) = (i, true) := h.1 rfl
   exact Bool.false_ne_true (congrArg Prod.snd hp)
 
+/-- Degree-dependent simplex data that cannot come from one R3 refinement map. -/
+noncomputable def brokenFaceMap :
+    ∀ n,
+      (Cohomology.canonicalCoverRelative fineCover).simplex n →
+        (Cohomology.canonicalCoverRelative coarseCover).simplex n
+  | 0 => fun _ _ => .left
+  | _ + 1 => fun _ _ => .right
+
+/-- The R3 broken simplex data is not induced by any selected-cover refinement. -/
+theorem brokenFaceMap_not_refinement :
+    ¬ ∃ r : Site.AATCoverageFamily.Refinement coarseCover fineCover,
+      r.simplexMap = brokenFaceMap := by
+  rintro ⟨r, hr⟩
+  let selected : fineCover.Index :=
+    (FiniteModel.TwoPatchCoverIndex.left, false)
+  let σ₀ : (Cohomology.canonicalCoverRelative fineCover).simplex 0 :=
+    fun _ => selected
+  let σ₁ : (Cohomology.canonicalCoverRelative fineCover).simplex 1 :=
+    fun _ => selected
+  have hleft :
+      r.indexMap selected = FiniteModel.TwoPatchCoverIndex.left := by
+    have h := congrFun (congrFun (congrFun hr 0) σ₀) (0 : Fin 1)
+    simpa [Site.AATCoverageFamily.Refinement.simplexMap,
+      brokenFaceMap, σ₀] using h
+  have hright :
+      r.indexMap selected = FiniteModel.TwoPatchCoverIndex.right := by
+    have h := congrFun (congrFun (congrFun hr 1) σ₁) (0 : Fin 2)
+    simpa [Site.AATCoverageFamily.Refinement.simplexMap,
+      brokenFaceMap, σ₁] using h
+  rw [hleft] at hright
+  exact FiniteModel.TwoPatchCoverIndex.noConfusion hright
+
 private inductive NonLerayContextIndex where
   | left
   | right
