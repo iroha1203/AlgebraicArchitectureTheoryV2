@@ -10,6 +10,8 @@ import Formal.AG.Examples.FiniteModel
 import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Mathlib.Algebra.Category.ModuleCat.Adjunctions
 import Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughProjectives
+import Mathlib.CategoryTheory.Limits.Preserves.Over
+import Mathlib.CategoryTheory.Limits.Shapes.FiniteMultiequalizer
 import Mathlib.CategoryTheory.Sites.EpiMono
 import Mathlib.RingTheory.Flat.TorsionFree
 
@@ -7011,25 +7013,6 @@ private instance coefficientUnderForgetReflectsIsomorphisms
     forget CommRingCat.{0}).ReflectsIsomorphisms
   infer_instance
 
-attribute [local instance] IsFiltered.nonempty in
-private instance underForgetPreservesFilteredColimits
-    {C : Type*} [Category* C] {X : C} :
-    PreservesFilteredColimits (Under.forget X) := by
-  refine ⟨fun J hJ hJ' ↦ ⟨fun {F} ↦ ⟨fun {c} hc ↦ ⟨.ofExistsUnique fun s ↦ ?_⟩⟩⟩⟩
-  obtain i := Nonempty.some (inferInstanceAs (Nonempty J))
-  let s' : Cocone F :=
-    ⟨Under.mk ((F.obj i).hom ≫ s.ι.app i),
-      fun j ↦ Under.homMk (s.ι.app j) (by
-        obtain ⟨k, hik, hjk, -⟩ := IsFilteredOrEmpty.cocone_objs i j
-        simp only [Functor.const_obj_obj, Functor.id_obj, Under.mk_right, Under.mk_hom,
-          ← s.w hjk, ← s.w hik]
-        simp),
-      fun j k e ↦ by ext; simpa using s.w e⟩
-  refine ⟨(hc.desc s').right, fun j ↦ congr($(hc.fac s' j).right), fun f hf ↦ ?_⟩
-  dsimp at hf
-  exact congr($(hc.uniq s' (Under.homMk f (by simp [s', ← hf]))
-    fun j ↦ Under.UnderMorphism.ext (hf j)).right)
-
 private instance coefficientUnderForgetPreservesFilteredColimits
     {k : Type} [CommRing k] :
     PreservesFilteredColimits (forget (CoefficientUnder k)) := by
@@ -7138,62 +7121,6 @@ private noncomputable instance finiteCoverRelation
       (⟨t.2.2⟩ : S.Relation))
   intro r
   exact ⟨⟨r.fst, r.snd, r.r⟩, by cases r; rfl⟩
-
-private def walkingMulticospanEquivSum {J : MulticospanShape} :
-    WalkingMulticospan J ≃ Sum J.L J.R where
-  toFun
-    | .left i => .inl i
-    | .right r => .inr r
-  invFun
-    | .inl i => .left i
-    | .inr r => .right r
-  left_inv x := by cases x <;> rfl
-  right_inv x := by cases x <;> rfl
-
-private noncomputable instance walkingMulticospanFintype
-    {J : MulticospanShape} [Fintype J.L] [Fintype J.R] :
-    Fintype (WalkingMulticospan J) :=
-  Fintype.ofEquiv (Sum J.L J.R) walkingMulticospanEquivSum.symm
-
-private noncomputable instance walkingMulticospanFinCategory
-    {J : MulticospanShape} [Fintype J.L] [Fintype J.R] :
-    FinCategory (WalkingMulticospan J) := by
-  classical
-  refine { fintypeHom := ?_ }
-  intro X Y
-  cases X with
-  | left a =>
-      cases Y with
-      | left b =>
-          exact ⟨if e : a = b then {eqToHom (e ▸ rfl)} else ∅, by
-            rintro ⟨⟩
-            simp⟩
-      | right b =>
-          exact ⟨
-            ⟨(if e : J.fst b = a then {eqToHom (e ▸ rfl) ≫ WalkingMulticospan.Hom.fst b}
-                else 0) +
-              (if e : J.snd b = a then {eqToHom (e ▸ rfl) ≫ WalkingMulticospan.Hom.snd b}
-                else 0), by
-              split_ifs with h₁ h₂
-              · simp only [Multiset.singleton_add, Multiset.nodup_cons,
-                  Multiset.mem_singleton, Multiset.nodup_singleton, and_true]
-                let f : ((WalkingMulticospan.left a : WalkingMulticospan J) ⟶
-                    WalkingMulticospan.right b) → Prop
-                  | .fst _ => True
-                  | .snd _ => False
-                apply ne_of_apply_ne f
-                conv_lhs => tactic => subst h₁; simp only [eqToHom_refl, Category.id_comp, f]
-                conv_rhs => tactic => subst h₂; simp only [eqToHom_refl, Category.id_comp, f]
-                simp
-              all_goals simp⟩,
-            by rintro ⟨⟩ <;> simp⟩
-  | right a =>
-      cases Y with
-      | left b => exact ⟨∅, by rintro ⟨⟩⟩
-      | right b =>
-          exact ⟨if e : a = b then {eqToHom (e ▸ rfl)} else ∅, by
-            rintro ⟨⟩
-            simp⟩
 
 private noncomputable instance coefficientExtensionSmallHasSheafCompose :
     finiteTopologySmall.HasSheafCompose
