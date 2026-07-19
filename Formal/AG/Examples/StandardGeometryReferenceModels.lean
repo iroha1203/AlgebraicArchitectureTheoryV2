@@ -58,62 +58,124 @@ open scoped AlgebraicGeometry Classical
 
 noncomputable section
 
-/-- SD0 fixture declaration `AmbientRing`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 abbrev AmbientRing := MvPolynomial Unit Int
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem ambientRing_eq :
     AmbientRing = MvPolynomial Unit Int :=
   rfl
 
-/-- SD0 fixture declaration `coordinate`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def coordinate : AmbientRing := MvPolynomial.X ()
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem coordinate_eq :
     coordinate = MvPolynomial.X () :=
   rfl
 
-/-- SD0 fixture declaration `leftGenerator`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def leftGenerator : AmbientRing := coordinate
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem leftGenerator_eq :
     leftGenerator = coordinate :=
   rfl
 
-/-- SD0 fixture declaration `rightGenerator`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def rightGenerator : AmbientRing := 1 - coordinate
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rightGenerator_eq :
     rightGenerator = 1 - coordinate :=
   rfl
 
-/-- SD0 fixture declaration `overlapGenerator`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def overlapGenerator : AmbientRing := leftGenerator * rightGenerator
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem overlapGenerator_eq :
     overlapGenerator = leftGenerator * rightGenerator :=
   rfl
 
-/-- SD0 fixture declaration `coverGenerator`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def coverGenerator : Bool → AmbientRing
   | false => leftGenerator
   | true => rightGenerator
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem coverGenerator_false :
     coverGenerator false = leftGenerator :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem coverGenerator_true :
     coverGenerator true = rightGenerator :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 main fixture theorem for the task-specific fixed polynomial data that feeds the Part II and Part III constructions.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem coverGenerator_span_eq_top :
     Ideal.span (Set.range coverGenerator) = ⊤ := by
   rw [Ideal.eq_top_iff_one]
@@ -149,7 +211,11 @@ private theorem referenceReadableMorphismExists
   · exact ⟨AAT.AG.FiniteModel.twoPatchContextMorphism i j,
       AAT.AG.FiniteModel.twoPatchContextMorphism_isRestriction i j⟩
 
-/-- SD0 fixture declaration `referenceContextPreorder`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceContextPreorder :
     Site.ContextPreorderCategory
       AAT.AG.FiniteModel.corePackage.object where
@@ -169,7 +235,11 @@ noncomputable def referenceContextPreorder :
   readableMorphism_isRestriction := fun h =>
     Classical.choose_spec (referenceReadableMorphismExists h)
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceContextPreorder_le_iff
     (W V : Site.ArchCtx AAT.AG.FiniteModel.corePackage.object) :
     referenceContextPreorder.le W V ↔
@@ -314,7 +384,11 @@ private theorem referenceOverlapObject_spec
     simp only [referenceOverlapObject, dif_neg hleft]
     exact ⟨Or.inl rfl, Or.inl rfl, Or.inl rfl, fun hY _ => hY⟩
 
-/-- SD0 fixture declaration `referenceOverlap`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceOverlap :
     Site.ContextOverlapPullback referenceContextPreorder where
   overlap := referenceOverlapObject
@@ -324,7 +398,11 @@ noncomputable def referenceOverlap :
   overlap_lift := fun hl hr hYl hYr =>
     (referenceOverlapObject_spec hl hr).2.2.2 hYl hYr
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceOverlap_selected
     (base left right : AAT.AG.FiniteModel.TwoPatchContextIndex) :
     referenceOverlap.overlap
@@ -336,7 +414,11 @@ theorem referenceOverlap_selected
   exact referenceOverlapObject_selected
     (AAT.AG.FiniteModel.twoPatchContext base) left right
 
-/-- SD0 fixture declaration `referenceCoverageRequirements`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def referenceCoverageRequirements :
     Site.CoverageRequirements
       AAT.AG.FiniteModel.corePackage.object
@@ -344,20 +426,33 @@ def referenceCoverageRequirements :
       AAT.AG.FiniteModel.corePackage.algebra.signatureReading :=
   AAT.AG.FiniteModel.twoPatchCoverageRequirements
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceCoverageRequirements_eq :
     referenceCoverageRequirements =
       AAT.AG.FiniteModel.twoPatchCoverageRequirements :=
   rfl
 
-/-- SD0 fixture declaration `referenceSelectedGeometryReading`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceSelectedGeometryReading :
     Site.SelectedGeometryReading AAT.AG.FiniteModel.corePackage where
   contextPreorder := referenceContextPreorder
   requirements := referenceCoverageRequirements
   overlap := referenceOverlap
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceSelectedGeometryReading_eq :
     referenceSelectedGeometryReading =
       { contextPreorder := referenceContextPreorder
@@ -365,12 +460,21 @@ noncomputable def referenceSelectedGeometryReading :
         overlap := referenceOverlap } :=
   rfl
 
-/-- SD0 fixture declaration `referenceSite`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceSite :
     Site.AATSite AAT.AG.FiniteModel.corePackage.object :=
   referenceSelectedGeometryReading.toAATSite
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceSite_eq :
     referenceSite = referenceSelectedGeometryReading.toAATSite :=
   rfl
@@ -635,43 +739,76 @@ private example (P : referenceSite.categoryᵒᵖ ⥤ AATCommAlgCat Int)
     HasMultiequalizer (S.index P) := by
   infer_instance
 
-/-- SD0 fixture declaration `referenceSite_hasSheafifyInt`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 premise-discharge instance for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable instance referenceSite_hasSheafifyInt :
     HasSheafify referenceSite.topology (AATCommAlgCat Int) := by
   infer_instance
 
-/-- SD0 fixture declaration `referenceSite_hasSheafifyPolynomialInt`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 premise-discharge instance for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable instance referenceSite_hasSheafifyPolynomialInt :
     HasSheafify referenceSite.topology
       (AATCommAlgCat (Polynomial Int)) := by
   infer_instance
 
-/-- SD0 fixture declaration `context`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def context
     (i : AAT.AG.FiniteModel.TwoPatchContextIndex) :
     referenceSite.category :=
   Site.ContextCategoryObject.of referenceContextPreorder
     (AAT.AG.FiniteModel.twoPatchContext i)
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem context_ctx
     (i : AAT.AG.FiniteModel.TwoPatchContextIndex) :
     (context i).ctx = AAT.AG.FiniteModel.twoPatchContext i :=
   rfl
 
-/-- SD0 fixture declaration `overlapContext`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def overlapContext : referenceSite.category :=
   context AAT.AG.FiniteModel.TwoPatchContextIndex.overlap
 
-/-- SD0 fixture declaration `leftContext`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def leftContext : referenceSite.category :=
   context AAT.AG.FiniteModel.TwoPatchContextIndex.left
 
-/-- SD0 fixture declaration `rightContext`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def rightContext : referenceSite.category :=
   context AAT.AG.FiniteModel.TwoPatchContextIndex.right
 
-/-- SD0 fixture declaration `baseContext`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def baseContext : referenceSite.category :=
   context AAT.AG.FiniteModel.TwoPatchContextIndex.base
 
@@ -691,7 +828,11 @@ private theorem context_ne_of_ne
     context i = context j ↔ i = j :=
   context_injective.eq_iff
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem context_hom_iff
     (i j : AAT.AG.FiniteModel.TwoPatchContextIndex) :
     Nonempty (context i ⟶ context j) ↔
@@ -712,27 +853,47 @@ theorem context_hom_iff
   · intro hij
     exact ⟨homOfLE (Or.inr ⟨i, j, rfl, rfl, hij⟩)⟩
 
-/-- SD0 fixture declaration `leftToBase`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def leftToBase : leftContext ⟶ baseContext :=
   homOfLE (Or.inr ⟨_, _, rfl, rfl, by
     simp [AAT.AG.FiniteModel.twoPatchContextIndexLe]⟩)
 
-/-- SD0 fixture declaration `rightToBase`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def rightToBase : rightContext ⟶ baseContext :=
   homOfLE (Or.inr ⟨_, _, rfl, rfl, by
     simp [AAT.AG.FiniteModel.twoPatchContextIndexLe]⟩)
 
-/-- SD0 fixture declaration `overlapToLeft`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def overlapToLeft : overlapContext ⟶ leftContext :=
   homOfLE (Or.inr ⟨_, _, rfl, rfl, by
     simp [AAT.AG.FiniteModel.twoPatchContextIndexLe]⟩)
 
-/-- SD0 fixture declaration `overlapToRight`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def overlapToRight : overlapContext ⟶ rightContext :=
   homOfLE (Or.inr ⟨_, _, rfl, rfl, by
     simp [AAT.AG.FiniteModel.twoPatchContextIndexLe]⟩)
 
-/-- SD0 fixture declaration `referenceCover`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceCover :
     Site.AATCoverageFamily
       referenceSite.requirements referenceSite.overlap baseContext where
@@ -781,19 +942,32 @@ noncomputable def referenceCover :
       exact AAT.AG.FiniteModel.allFamily_mem _ hselected
   }
 
-/-- SD0 fixture declaration `referenceCoverIndexEquiv`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceCoverIndexEquiv :
     referenceCover.Index ≃ AAT.AG.FiniteModel.TwoPatchCoverIndex :=
   Equiv.refl _
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceCover_patch
     (i : AAT.AG.FiniteModel.TwoPatchCoverIndex) :
     referenceCover.patch (referenceCoverIndexEquiv.symm i) =
       AAT.AG.FiniteModel.twoPatchCoverPatch i :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceCover_presieve :
     referenceCover.presieve =
       Presieve.ofArrows
@@ -804,7 +978,11 @@ theorem referenceCover_presieve :
           | AAT.AG.FiniteModel.TwoPatchCoverIndex.right => rightToBase) := by
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 main fixture theorem for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceCover_topologyCover :
     Sieve.generate referenceCover.presieve ∈
       referenceSite.topology baseContext := by
@@ -813,197 +991,364 @@ theorem referenceCover_topologyCover :
       referenceCoverageRequirements referenceOverlap) baseContext
   exact Site.AATGrothendieckTopology.generate_mem referenceCover
 
-/-- SD0 fixture declaration `ReferenceRawCoordinate`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 inductive ReferenceRawCoordinate where
   | coordinate
   | leftInverse
   | rightInverse
   deriving DecidableEq
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceRawCoordinate_cases (c : ReferenceRawCoordinate) :
     c = .coordinate ∨ c = .leftInverse ∨ c = .rightInverse := by
   cases c <;> simp
 
-/-- SD0 fixture declaration `referenceCoordinateFamily`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def referenceCoordinateFamily (W : referenceSite.category) :
     CoordinateFamily W.ctx where
   Coord := ReferenceRawCoordinate
   label _ := CoordinateLabel.semantic
   LocalData _ := PUnit
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceCoordinateFamily_coord
     (W : referenceSite.category) :
     (referenceCoordinateFamily W).Coord = ReferenceRawCoordinate :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceCoordinateFamily_label
     (W : referenceSite.category) (c : ReferenceRawCoordinate) :
     (referenceCoordinateFamily W).label c = CoordinateLabel.semantic :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceCoordinateFamily_localData
     (W : referenceSite.category) (c : ReferenceRawCoordinate) :
     (referenceCoordinateFamily W).LocalData c = PUnit :=
   rfl
 
-/-- SD0 fixture declaration `rawVariable`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def rawVariable (W : referenceSite.category) (c : ReferenceRawCoordinate) :
     FreeTypedCommAlg (referenceCoordinateFamily W) Int :=
   MvPolynomial.X c
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rawVariable_eq
     (W : referenceSite.category) (c : ReferenceRawCoordinate) :
     rawVariable W c = MvPolynomial.X c :=
   rfl
 
-/-- SD0 fixture declaration `rawX`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def rawX (W : referenceSite.category) :
     FreeTypedCommAlg (referenceCoordinateFamily W) Int :=
   rawVariable W .coordinate
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rawX_eq (W : referenceSite.category) :
     rawX W = rawVariable W .coordinate :=
   rfl
 
-/-- SD0 fixture declaration `rawLeftInverse`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def rawLeftInverse (W : referenceSite.category) :
     FreeTypedCommAlg (referenceCoordinateFamily W) Int :=
   rawVariable W .leftInverse
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rawLeftInverse_eq (W : referenceSite.category) :
     rawLeftInverse W = rawVariable W .leftInverse :=
   rfl
 
-/-- SD0 fixture declaration `rawRightInverse`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def rawRightInverse (W : referenceSite.category) :
     FreeTypedCommAlg (referenceCoordinateFamily W) Int :=
   rawVariable W .rightInverse
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rawRightInverse_eq (W : referenceSite.category) :
     rawRightInverse W = rawVariable W .rightInverse :=
   rfl
 
-/-- SD0 fixture declaration `leftInverseRelation`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def leftInverseRelation (W : referenceSite.category) :
     FreeTypedCommAlg (referenceCoordinateFamily W) Int :=
   rawX W * rawLeftInverse W - 1
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem leftInverseRelation_eq (W : referenceSite.category) :
     leftInverseRelation W = rawX W * rawLeftInverse W - 1 :=
   rfl
 
-/-- SD0 fixture declaration `rightInverseRelation`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def rightInverseRelation (W : referenceSite.category) :
     FreeTypedCommAlg (referenceCoordinateFamily W) Int :=
   (1 - rawX W) * rawRightInverse W - 1
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rightInverseRelation_eq (W : referenceSite.category) :
     rightInverseRelation W = (1 - rawX W) * rawRightInverse W - 1 :=
   rfl
 
-/-- SD0 fixture declaration `leftIsInverted`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def leftIsInverted (W : referenceSite.category) : Prop :=
   W = leftContext ∨ W = overlapContext
 
-/-- SD0 fixture declaration `rightIsInverted`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 def rightIsInverted (W : referenceSite.category) : Prop :=
   W = rightContext ∨ W = overlapContext
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem leftIsInverted_iff (W : referenceSite.category) :
     leftIsInverted W ↔ W = leftContext ∨ W = overlapContext :=
   Iff.rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rightIsInverted_iff (W : referenceSite.category) :
     rightIsInverted W ↔ W = rightContext ∨ W = overlapContext :=
   Iff.rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem leftIsInverted_left : leftIsInverted leftContext :=
   Or.inl rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem leftIsInverted_overlap : leftIsInverted overlapContext :=
   Or.inr rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem leftIsInverted_base : ¬ leftIsInverted baseContext := by
   have hbl : baseContext ≠ leftContext := context_ne_of_ne (by decide)
   have hbo : baseContext ≠ overlapContext := context_ne_of_ne (by decide)
   simpa [leftIsInverted] using And.intro hbl hbo
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem leftIsInverted_right : ¬ leftIsInverted rightContext := by
   have hrl : rightContext ≠ leftContext := context_ne_of_ne (by decide)
   have hro : rightContext ≠ overlapContext := context_ne_of_ne (by decide)
   simpa [leftIsInverted] using And.intro hrl hro
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rightIsInverted_right : rightIsInverted rightContext :=
   Or.inl rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rightIsInverted_overlap : rightIsInverted overlapContext :=
   Or.inr rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rightIsInverted_base : ¬ rightIsInverted baseContext := by
   have hbr : baseContext ≠ rightContext := context_ne_of_ne (by decide)
   have hbo : baseContext ≠ overlapContext := context_ne_of_ne (by decide)
   simpa [rightIsInverted] using And.intro hbr hbo
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rightIsInverted_left : ¬ rightIsInverted leftContext := by
   have hlr : leftContext ≠ rightContext := context_ne_of_ne (by decide)
   have hlo : leftContext ≠ overlapContext := context_ne_of_ne (by decide)
   simpa [rightIsInverted] using And.intro hlr hlo
 
-/-- SD0 fixture declaration `referenceRelationPolynomial`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceRelationPolynomial
     (W : referenceSite.category) : Bool →
       FreeTypedCommAlg (referenceCoordinateFamily W) Int
   | false => if leftIsInverted W then leftInverseRelation W else rawLeftInverse W
   | true => if rightIsInverted W then rightInverseRelation W else rawRightInverse W
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceRelationPolynomial_false
     (W : referenceSite.category) :
     referenceRelationPolynomial W false =
       if leftIsInverted W then leftInverseRelation W else rawLeftInverse W :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceRelationPolynomial_true
     (W : referenceSite.category) :
     referenceRelationPolynomial W true =
       if rightIsInverted W then rightInverseRelation W else rawRightInverse W :=
   rfl
 
-/-- SD0 fixture declaration `referenceRelationFamily`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceRelationFamily
     (W : referenceSite.category) :
     StructuralRelationFamily (referenceCoordinateFamily W) Int where
   Relation := Bool
   polynomial := referenceRelationPolynomial W
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceRelationFamily_relation
     (W : referenceSite.category) :
     (referenceRelationFamily W).Relation = Bool :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceRelationFamily_polynomial
     (W : referenceSite.category) (r : Bool) :
     (referenceRelationFamily W).polynomial r =
@@ -1027,7 +1372,11 @@ private theorem relationFamily_JStruct_eq
     · exact ⟨false, rfl⟩
     · exact ⟨true, rfl⟩
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem base_JStruct_eq :
     (referenceRelationFamily baseContext).JStruct =
       Ideal.span {rawLeftInverse baseContext, rawRightInverse baseContext} := by
@@ -1035,7 +1384,11 @@ theorem base_JStruct_eq :
   rw [referenceRelationPolynomial_false, referenceRelationPolynomial_true,
     if_neg leftIsInverted_base, if_neg rightIsInverted_base]
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem left_JStruct_eq :
     (referenceRelationFamily leftContext).JStruct =
       Ideal.span {leftInverseRelation leftContext, rawRightInverse leftContext} := by
@@ -1043,7 +1396,11 @@ theorem left_JStruct_eq :
   rw [referenceRelationPolynomial_false, referenceRelationPolynomial_true,
     if_pos leftIsInverted_left, if_neg rightIsInverted_left]
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem right_JStruct_eq :
     (referenceRelationFamily rightContext).JStruct =
       Ideal.span {rawLeftInverse rightContext, rightInverseRelation rightContext} := by
@@ -1051,7 +1408,11 @@ theorem right_JStruct_eq :
   rw [referenceRelationPolynomial_false, referenceRelationPolynomial_true,
     if_neg leftIsInverted_right, if_pos rightIsInverted_right]
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem overlap_JStruct_eq :
     (referenceRelationFamily overlapContext).JStruct =
       Ideal.span {leftInverseRelation overlapContext,
@@ -1074,7 +1435,11 @@ private theorem contextObject_eq
     W = context i :=
   contextObject_ext h
 
-/-- SD0 fixture declaration `referenceTypedRestriction`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceTypedRestriction
     {source target : referenceSite.category} (f : source ⟶ target) :
     TypedCoordinateRestriction
@@ -1093,7 +1458,12 @@ noncomputable def referenceTypedRestriction
         else if rightIsInverted source then rightInverseRelation source
         else rawRightInverse source
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceTypedRestriction_variableImage
     {source target : referenceSite.category} (f : source ⟶ target)
     (c : ReferenceRawCoordinate) :
@@ -1284,7 +1654,11 @@ private theorem referenceTypedRestriction_polynomialMap_rightInverseRelation
   rw [referenceTypedRestriction_polynomialMap_relation]
   rw [referenceRelationPolynomial_true, if_pos hs]
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceTypedRestriction_maps_JStruct
     {source target : referenceSite.category} (f : source ⟶ target)
     (p : FreeTypedCommAlg (referenceCoordinateFamily target) Int)
@@ -1311,7 +1685,11 @@ theorem referenceTypedRestriction_maps_JStruct
       exact Ideal.subset_span ⟨true, rfl⟩
   exact hmap (Ideal.mem_map_of_mem (referenceTypedRestriction f).polynomialMap hp)
 
-/-- SD0 fixture declaration `referenceRestrictionStable`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceRestrictionStable
     {source target : referenceSite.category} (f : source ⟶ target) :
     RestrictionStableStructuralRelations
@@ -1322,7 +1700,11 @@ noncomputable def referenceRestrictionStable
   restriction := referenceTypedRestriction f
   maps_JStruct := referenceTypedRestriction_maps_JStruct f
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceRestrictionStable_identity (W : referenceSite.category) :
     (referenceRestrictionStable (𝟙 W)).restriction.polynomialMap =
       RingHom.id (FreeTypedCommAlg (referenceCoordinateFamily W) Int) := by
@@ -1349,7 +1731,11 @@ theorem referenceRestrictionStable_identity (W : referenceSite.category) :
       · rw [if_pos h]
       · rw [if_neg h, if_neg h]
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceRestrictionStable_comp
     {X Y Z : referenceSite.category} (f : X ⟶ Y) (g : Y ⟶ Z) :
     (referenceRestrictionStable (f ≫ g)).restriction.polynomialMap =
@@ -1426,7 +1812,11 @@ theorem referenceRestrictionStable_comp
               referenceTypedRestriction_polynomialMap_rawRightInverse (f := f),
               if_neg hY, if_neg hX]
 
-/-- SD0 fixture declaration `referenceRaw`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def referenceRaw :
     RawAmbientRestrictionSystem referenceSite Int where
   coordFamily := referenceCoordinateFamily
@@ -1435,34 +1825,62 @@ noncomputable def referenceRaw :
   identity_polynomialMap := referenceRestrictionStable_identity
   composition_polynomialMap := referenceRestrictionStable_comp
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceRaw_coordFamily (W : referenceSite.category) :
     referenceRaw.coordFamily W = referenceCoordinateFamily W :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceRaw_relationFamily (W : referenceSite.category) :
     referenceRaw.relationFamily W = referenceRelationFamily W :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem referenceRaw_restrictionStable
     {source target : referenceSite.category} (f : source ⟶ target) :
     referenceRaw.restrictionStable f = referenceRestrictionStable f :=
   rfl
 
-/-- SD0 fixture declaration `rawCoordinate`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def rawCoordinate (W : referenceSite.category) :
     referenceRaw.rawAlgebra W :=
   (referenceRelationFamily W).quotientMap (rawX W)
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rawCoordinate_eq (W : referenceSite.category) :
     rawCoordinate W =
       (referenceRelationFamily W).quotientMap (rawX W) :=
   rfl
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem rawCoordinate_restrict
     {source target : referenceSite.category} (f : source ⟶ target) :
     (referenceRaw.restrictionStable f).quotientDesc
@@ -1617,13 +2035,22 @@ private noncomputable def baseRawRingEquiv :
       exact congrArg AlgHom.toRingHom
         ambientToBaseRawAlgHom_comp_baseRawToAmbientAlgHom)
 
-/-- SD0 fixture declaration `baseRawAlgebraIso`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def baseRawAlgebraIso :
     CommRingCat.of (referenceRaw.rawAlgebra baseContext) ≅
       CommRingCat.of AmbientRing :=
   baseRawRingEquiv.toCommRingCatIso
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem baseRawAlgebraIso_coordinate :
     baseRawAlgebraIso.hom (rawCoordinate baseContext) = coordinate := by
   change baseRawToAmbientAlgHom (rawCoordinate baseContext) = coordinate
@@ -1832,13 +2259,22 @@ private noncomputable def leftRawRingEquiv :
     leftRawToLocalization_comp_leftLocalizationToRaw
     leftLocalizationToRaw_comp_leftRawToLocalization
 
-/-- SD0 fixture declaration `leftRawAlgebraIso`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def leftRawAlgebraIso :
     CommRingCat.of (referenceRaw.rawAlgebra leftContext) ≅
       CommRingCat.of (Localization.Away leftGenerator) :=
   leftRawRingEquiv.toCommRingCatIso
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem leftRawAlgebraIso_coordinate :
     leftRawAlgebraIso.hom (rawCoordinate leftContext) =
       algebraMap AmbientRing (Localization.Away leftGenerator) coordinate := by
@@ -2034,13 +2470,22 @@ private noncomputable def rightRawRingEquiv :
     rightRawToLocalization_comp_rightLocalizationToRaw
     rightLocalizationToRaw_comp_rightRawToLocalization
 
-/-- SD0 fixture declaration `rightRawAlgebraIso`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def rightRawAlgebraIso :
     CommRingCat.of (referenceRaw.rawAlgebra rightContext) ≅
       CommRingCat.of (Localization.Away rightGenerator) :=
   rightRawRingEquiv.toCommRingCatIso
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rightRawAlgebraIso_coordinate :
     rightRawAlgebraIso.hom (rawCoordinate rightContext) =
       algebraMap AmbientRing (Localization.Away rightGenerator) coordinate := by
@@ -2328,28 +2773,49 @@ private noncomputable def overlapRawRingEquiv :
     overlapRawToLocalization_comp_overlapLocalizationToRaw
     overlapLocalizationToRaw_comp_overlapRawToLocalization
 
-/-- SD0 fixture declaration `overlapRawAlgebraIso`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def overlapRawAlgebraIso :
     CommRingCat.of (referenceRaw.rawAlgebra overlapContext) ≅
       CommRingCat.of (Localization.Away overlapGenerator) :=
   overlapRawRingEquiv.toCommRingCatIso
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem overlapRawAlgebraIso_coordinate :
     overlapRawAlgebraIso.hom (rawCoordinate overlapContext) =
       algebraMap AmbientRing (Localization.Away overlapGenerator) coordinate := by
   change overlapRawToLocalizationAlgHom (rawCoordinate overlapContext) = _
   exact overlapRawToLocalizationAlgHom_rawCoordinate
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem leftGenerator_dvd_overlap : leftGenerator ∣ overlapGenerator :=
   ⟨rightGenerator, rfl⟩
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem rightGenerator_dvd_overlap : rightGenerator ∣ overlapGenerator :=
   ⟨leftGenerator, mul_comm _ _⟩
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem leftGenerator_isUnit_on_overlap :
     IsUnit
       (algebraMap AmbientRing (Localization.Away overlapGenerator)
@@ -2357,7 +2823,11 @@ theorem leftGenerator_isUnit_on_overlap :
   IsLocalization.Away.isUnit_of_dvd
     overlapGenerator leftGenerator_dvd_overlap
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem rightGenerator_isUnit_on_overlap :
     IsUnit
       (algebraMap AmbientRing (Localization.Away overlapGenerator)
@@ -2365,26 +2835,44 @@ theorem rightGenerator_isUnit_on_overlap :
   IsLocalization.Away.isUnit_of_dvd
     overlapGenerator rightGenerator_dvd_overlap
 
-/-- SD0 fixture declaration `leftToOverlapRingHom`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def leftToOverlapRingHom :
     Localization.Away leftGenerator →+*
       Localization.Away overlapGenerator :=
   IsLocalization.Away.lift leftGenerator leftGenerator_isUnit_on_overlap
 
-/-- SD0 fixture declaration `rightToOverlapRingHom`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def rightToOverlapRingHom :
     Localization.Away rightGenerator →+*
       Localization.Away overlapGenerator :=
   IsLocalization.Away.lift rightGenerator rightGenerator_isUnit_on_overlap
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem leftToOverlapRingHom_comp_algebraMap :
     leftToOverlapRingHom.comp
         (algebraMap AmbientRing (Localization.Away leftGenerator)) =
       algebraMap AmbientRing (Localization.Away overlapGenerator) :=
   IsLocalization.Away.lift_comp _ _
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+As a simp rule, it normalizes the left-hand fixture expression to the right-hand concrete or canonical expression.
+The executable contract fixes the exact declaration type.
+-/
 @[simp] theorem rightToOverlapRingHom_comp_algebraMap :
     rightToOverlapRingHom.comp
         (algebraMap AmbientRing (Localization.Away rightGenerator)) =
@@ -2948,7 +3436,11 @@ private theorem referenceRawType_isSheaf :
     simpa [Sieve.pullback_comp] using
       referenceRaw_isSheafFor_referenceCover_pullback (g ≫ f)
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 main fixture theorem for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem referenceRaw_isSheaf :
     Presheaf.IsSheaf referenceSite.topology referenceRaw.toPresheaf := by
   intro E X R hR
@@ -3059,7 +3551,11 @@ theorem referenceRaw_isSheaf :
       simpa only [CommRingCat.comp_apply] using h
     exact hotherLocal.trans (glued_local e f hf).symm
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 constructor-provenance or no-unfold API lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem canonical_component_isIso (W : referenceSite.category) :
     IsIso (referenceRaw.toRingedSite.canonical.app (op W)) := by
   haveI : IsIso (CategoryTheory.toSheafify referenceSite.topology
@@ -3070,7 +3566,11 @@ theorem canonical_component_isIso (W : referenceSite.category) :
     referenceRaw.toPresheaf).app (op W))
   infer_instance
 
-/-- SD0 fixture declaration `baseSectionRingIso`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def baseSectionRingIso :
     SheafifiedSectionRing referenceRaw baseContext ≅
       CommRingCat.of AmbientRing := by
@@ -3079,7 +3579,11 @@ noncomputable def baseSectionRingIso :
     (referenceRaw.toRingedSite.canonical.app (op baseContext)).right).symm ≪≫
       baseRawAlgebraIso
 
-/-- SD0 fixture declaration `leftSectionRingIso`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def leftSectionRingIso :
     SheafifiedSectionRing referenceRaw leftContext ≅
       CommRingCat.of (Localization.Away leftGenerator) := by
@@ -3088,7 +3592,11 @@ noncomputable def leftSectionRingIso :
     (referenceRaw.toRingedSite.canonical.app (op leftContext)).right).symm ≪≫
       leftRawAlgebraIso
 
-/-- SD0 fixture declaration `rightSectionRingIso`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def rightSectionRingIso :
     SheafifiedSectionRing referenceRaw rightContext ≅
       CommRingCat.of (Localization.Away rightGenerator) := by
@@ -3097,7 +3605,11 @@ noncomputable def rightSectionRingIso :
     (referenceRaw.toRingedSite.canonical.app (op rightContext)).right).symm ≪≫
       rightRawAlgebraIso
 
-/-- SD0 fixture declaration `overlapSectionRingIso`; the executable contract fixes its exact type and provenance API. -/
+/--
+SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 noncomputable def overlapSectionRingIso :
     SheafifiedSectionRing referenceRaw overlapContext ≅
       CommRingCat.of (Localization.Away overlapGenerator) := by
@@ -3106,7 +3618,11 @@ noncomputable def overlapSectionRingIso :
     (referenceRaw.toRingedSite.canonical.app (op overlapContext)).right).symm ≪≫
       overlapRawAlgebraIso
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 main fixture theorem for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem left_restriction_is_localization :
     baseSectionRingIso.inv ≫
         sheafifiedRestriction referenceRaw leftToBase ≫
@@ -3147,7 +3663,11 @@ theorem left_restriction_is_localization :
   intro a
   exact RingHom.congr_fun baseToLeft_transport a
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 main fixture theorem for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem right_restriction_is_localization :
     baseSectionRingIso.inv ≫
         sheafifiedRestriction referenceRaw rightToBase ≫
@@ -3188,7 +3708,11 @@ theorem right_restriction_is_localization :
   intro a
   exact RingHom.congr_fun baseToRight_transport a
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 main fixture theorem for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem overlap_left_restriction_is_localization :
     leftSectionRingIso.inv ≫
         sheafifiedRestriction referenceRaw overlapToLeft ≫
@@ -3228,7 +3752,11 @@ theorem overlap_left_restriction_is_localization :
   intro a
   exact RingHom.congr_fun leftToOverlap_transport a
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 main fixture theorem for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem overlap_right_restriction_is_localization :
     rightSectionRingIso.inv ≫
         sheafifiedRestriction referenceRaw overlapToRight ≫
@@ -3310,7 +3838,11 @@ private theorem right_algebraMap_not_surjective :
     (MvPolynomial.eval₂Hom (RingHom.id Int) (fun _ : Unit => (1 : Int))) hmul
   norm_num [rightGenerator, coordinate] at hev
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 main fixture theorem for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem left_restriction_not_isIso :
     ¬ IsIso (sheafifiedRestriction referenceRaw leftToBase) := by
   intro h
@@ -3326,7 +3858,11 @@ theorem left_restriction_not_isIso :
   exact left_algebraMap_not_surjective
     ((ConcreteCategory.isIso_iff_bijective _).mp hAlg).2
 
-/-- SD0 API theorem for the concrete raw-localization fixture; the executable contract fixes its exact statement. -/
+/--
+SD0 main fixture theorem for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
 theorem right_restriction_not_isIso :
     ¬ IsIso (sheafifiedRestriction referenceRaw rightToBase) := by
   intro h
