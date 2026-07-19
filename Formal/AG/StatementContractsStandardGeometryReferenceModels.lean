@@ -1,7 +1,7 @@
 import Formal.AG.Examples.StandardGeometryReferenceModels
 
 /-!
-Executable statement contract for the SD0–SD3 public surface of the standard
+Executable statement contract for the SD0–SD4 public surface of the standard
 geometry reference models.
 
 Each example fixes one approved declaration type and refers directly to its
@@ -1321,6 +1321,138 @@ example : ¬ SemanticLawfulAlong referenceRaw referenceScheme weakReading twoPoi
       (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
         strongReading strongReading_valid strongReading_requiredClosed twoPoint) :=
   twoPoint_fires
+
+example : AAT.AG.FiniteModel.carrier.Atom →
+    AAT.AG.FiniteModel.carrier.Atom :=
+  weakToStrongAtomMap
+
+example : ∀ (a : AAT.AG.FiniteModel.carrier.Atom),
+    weakToStrongAtomMap a =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        AAT.AG.FiniteModel.FiniteAtom.componentA
+      else
+        AAT.AG.FiniteModel.FiniteAtom.componentC :=
+  weakToStrongAtomMap_eq
+
+example : ClosedEquationalLawInclusion
+    referenceRaw referenceScheme weakReading strongReading :=
+  weakToStrong
+
+example : weakToStrong.lawMap = id :=
+  weakToStrong_lawMap
+
+example : weakToStrong.atomMap PUnit.unit = weakToStrongAtomMap :=
+  weakToStrong_atomMap
+
+example : IsClosedEquationalLawInclusion
+    referenceRaw referenceScheme weakToStrong :=
+  weakToStrong_valid
+
+example : strongLocus ⟶ weakLocus :=
+  lawComparison
+
+example : lawComparison =
+    lawfulClosedSubschemeMap
+      referenceRaw referenceScheme
+      weakReading_valid strongReading_valid
+      weakReading_requiredClosed strongReading_requiredClosed
+      weakToStrong weakToStrong_valid :=
+  lawComparison_eq
+
+example : AlgebraicGeometry.IsClosedImmersion lawComparison :=
+  lawComparison_isClosedImmersion
+
+example : lawComparison ≫ weakImmersion = strongImmersion :=
+  lawComparison_immersion
+
+example : ¬ IsIso lawComparison :=
+  lawComparison_not_isIso
+
+example : AAT.AG.FiniteModel.carrier.Atom →
+    AAT.AG.FiniteModel.carrier.Atom :=
+  strongToRigidAtomMap
+
+example : ∀ (a : AAT.AG.FiniteModel.carrier.Atom),
+    strongToRigidAtomMap a =
+      if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
+        AAT.AG.FiniteModel.FiniteAtom.componentA
+      else if a = AAT.AG.FiniteModel.FiniteAtom.componentB then
+        AAT.AG.FiniteModel.FiniteAtom.componentB
+      else
+        AAT.AG.FiniteModel.FiniteAtom.dependsAB :=
+  strongToRigidAtomMap_eq
+
+example : ClosedEquationalLawInclusion
+    referenceRaw referenceScheme strongReading rigidReading :=
+  strongToRigid
+
+example : strongToRigid.lawMap = id :=
+  strongToRigid_lawMap
+
+example : strongToRigid.atomMap PUnit.unit = strongToRigidAtomMap :=
+  strongToRigid_atomMap
+
+example : IsClosedEquationalLawInclusion
+    referenceRaw referenceScheme strongToRigid :=
+  strongToRigid_valid
+
+example : rigidLocus ⟶ strongLocus :=
+  strongToRigidComparison
+
+example : strongToRigidComparison =
+    lawfulClosedSubschemeMap
+      referenceRaw referenceScheme
+      strongReading_valid rigidReading_valid
+      strongReading_requiredClosed rigidReading_requiredClosed
+      strongToRigid strongToRigid_valid :=
+  strongToRigidComparison_eq
+
+example : AlgebraicGeometry.IsClosedImmersion strongToRigidComparison :=
+  strongToRigidComparison_isClosedImmersion
+
+example : strongToRigidComparison ≫ strongImmersion = rigidImmersion :=
+  strongToRigidComparison_immersion
+
+example : ¬ IsIso strongToRigidComparison :=
+  strongToRigidComparison_not_isIso
+
+example : ClosedEquationalLawInclusion
+    referenceRaw referenceScheme weakReading rigidReading :=
+  weakToRigid
+
+example : weakToRigid =
+    weakToStrong.comp referenceRaw referenceScheme strongToRigid :=
+  weakToRigid_eq
+
+example : IsClosedEquationalLawInclusion
+    referenceRaw referenceScheme weakToRigid :=
+  weakToRigid_valid
+
+example : rigidLocus ⟶ weakLocus :=
+  weakToRigidComparison
+
+example : weakToRigidComparison =
+    lawfulClosedSubschemeMap
+      referenceRaw referenceScheme
+      weakReading_valid rigidReading_valid
+      weakReading_requiredClosed rigidReading_requiredClosed
+      weakToRigid weakToRigid_valid :=
+  weakToRigidComparison_eq
+
+example :
+    lawfulClosedSubschemeMap
+        referenceRaw referenceScheme
+        weakReading_valid weakReading_valid
+        weakReading_requiredClosed weakReading_requiredClosed
+        (ClosedEquationalLawInclusion.refl
+          referenceRaw referenceScheme weakReading)
+        (ClosedEquationalLawInclusion.refl_valid
+          referenceRaw referenceScheme weakReading) =
+      𝟙 weakLocus :=
+  lawComparison_id_fires
+
+example : strongToRigidComparison ≫ lawComparison = weakToRigidComparison :=
+  lawComparison_comp_fires
 
 end
 
