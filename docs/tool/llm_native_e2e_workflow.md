@@ -60,7 +60,7 @@ archsig-run-manifest.json
 - MeasurementProfile selects the finite measurement regime.
 - ArchSig emits bounded measurement artifacts and does not infer missing
   evidence as measured zero.
-- FieldSig reads `archsig-measurement-packet/v0.5.3` as the current handoff.
+- FieldSig reads `archsig-measurement-packet/v0.5.4` as the current handoff.
 - Raw ArchMap JSON is not a FieldSig handoff input.
 - Compare + gate are the current PR / CI decision surfaces.
 

@@ -79,7 +79,7 @@ pub fn validate_archmap_v2_report(
     };
 
     ArchMapValidationReportV2 {
-        schema_version: "archmap-validation-report/v0.5.3".to_string(),
+        schema_version: "archmap-validation-report/v0.5.4".to_string(),
         archmap_ref: input_path.to_string(),
         input_schema: document.schema.clone(),
         checks,
@@ -174,7 +174,7 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
         examples.push(generic_validation_example(
             "aatAtomBindingVocabulary.schema",
             &vocabulary.schema,
-            "ArchMap authoring and law-surface validation use the v0.5.3 binding manifest",
+            "ArchMap authoring and law-surface validation use the v0.5.4 binding manifest",
         ));
     }
     for axis in required_axes {

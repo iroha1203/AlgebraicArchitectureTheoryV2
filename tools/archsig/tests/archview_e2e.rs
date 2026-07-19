@@ -41,7 +41,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
     let manifest = read_json(&root.join("archsig_viewer_gluing_geometry_golden_ux.json"));
     assert_eq!(
         manifest["schema"],
-        "archsig-viewer-gluing-geometry-golden-ux/v0.5.3"
+        "archsig-viewer-gluing-geometry-golden-ux/v0.5.4"
     );
     assert_eq!(manifest["cases"].as_array().map(Vec::len), Some(5));
 
@@ -140,7 +140,7 @@ fn archview_projection_e2e_matches_analyze_geometry_for_golden_cases() {
         let report = read_json(&out_dir.join("archsig-insight-report.json"));
         let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
         let gluing = &report["gluingGeometry"];
-        assert_eq!(gluing["schema"], "archsig-viewer-gluing-geometry/v0.5.3");
+        assert_eq!(gluing["schema"], "archsig-viewer-gluing-geometry/v0.5.4");
         assert_eq!(viewer["aatGeometryOverlays"]["gluingGeometry"], *gluing);
         assert!(viewer["aatGeometryOverlays"]["omittedGeometryCounts"].is_object());
 
@@ -323,7 +323,7 @@ fn archview_saga_projection_e2e_is_packet_grounded() {
     );
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.3");
+    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.4");
     let viewer_packet_digest = viewer["inputDigests"]["measurementPacket"]["sha256"]
         .as_str()
         .expect("viewer packet digest");
@@ -376,7 +376,7 @@ fn archview_saga_projection_e2e_is_packet_grounded() {
         String::from_utf8_lossy(&gate_output.stderr)
     );
     let gate = read_json(&gate_path);
-    assert_eq!(gate["schema"], "archsig-gate-report/v0.5.3");
+    assert_eq!(gate["schema"], "archsig-gate-report/v0.5.4");
     assert_eq!(
         gate["inputDigests"]["measurementPacket"]["sha256"],
         viewer_packet_digest

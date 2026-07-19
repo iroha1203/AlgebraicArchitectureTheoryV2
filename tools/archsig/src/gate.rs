@@ -64,7 +64,7 @@ pub fn validate_gate_policy_v1(policy: &Value) -> Vec<Value> {
         &mut fail_count,
         "gate-policy-schema",
         policy.get("schema").and_then(Value::as_str) == Some(ARCHSIG_GATE_POLICY_V1_SCHEMA),
-        "gate-policy schema must be archsig-gate-policy/v0.5.3",
+        "gate-policy schema must be archsig-gate-policy/v0.5.4",
     );
     let rules = policy.get("rules").and_then(Value::as_array);
     push_check(

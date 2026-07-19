@@ -1,13 +1,13 @@
 ---
 name: law-policy-creater
-description: Create law-policy/v0.5.3 files for current ArchSig measurement runs.
+description: Create law-policy/v0.5.4 files for current ArchSig measurement runs.
 ---
 
 # LawPolicy Creater
 
-Use this skill to create a `law-policy/v0.5.3` file, a separate
-`measurement-profile/v0.5.3` file, and a `law-equation-surface/v0.5.3` /
-`archsig-policy-bundle/v0.5.3` input set for an AG run.
+Use this skill to create a `law-policy/v0.5.4` file, a separate
+`measurement-profile/v0.5.4` file, and a `law-equation-surface/v0.5.4` /
+`archsig-policy-bundle/v0.5.4` input set for an AG run.
 
 ## Workflow
 
@@ -33,5 +33,5 @@ For Stage 3 SAGA laws, author `skeleton`, `defectSources[].holdsCriterion`, and
 requires the law's `witnessVariables` and `forbiddenSupportGenerators`; these
 generate the finite quotient and cannot be replaced by conclusion fields.
 For refactor transport, author and validate a separate
-`refactor-morphism/v0.5.3` artifact. For compare class-zero transport, author a
-`refinement-comparison/v0.5.3` artifact in the coarse-to-fine direction.
+`refactor-morphism/v0.5.4` artifact. For compare class-zero transport, author a
+`refinement-comparison/v0.5.4` artifact in the coarse-to-fine direction.

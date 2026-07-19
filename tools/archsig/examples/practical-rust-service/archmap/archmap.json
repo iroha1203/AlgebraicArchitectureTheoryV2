@@ -1,6 +1,6 @@
 {
-  "schema": "archmap/v0.5.3",
-  "id": "practical-rust-commerce-fulfillment/v0.5.3",
+  "schema": "archmap/v0.5.4",
+  "id": "practical-rust-commerce-fulfillment/v0.5.4",
   "sources": {
     "src:domain": {
       "kind": "rust",

@@ -63,7 +63,7 @@ dependencies = [
 
 [[package]]
 name = "archsig"
-version = "0.5.3"
+version = "0.5.4"
 dependencies = [
  "clap",
  "globset",

@@ -18,7 +18,7 @@ Current source-of-truth boundaries:
 - policy-bundle fixes LawPolicy, law-equation-surface, and MeasurementProfile
   with canonical component fingerprints for one run.
 - MeasurementProfile selects the concrete finite measurement regime.
-- RepairPlan (`archsig-repair-plan/v0.5.3`) is the SAGA Stage 1 input side:
+- RepairPlan (`archsig-repair-plan/v0.5.4`) is the SAGA Stage 1 input side:
   `repair-plan` validates it, and `analyze --repair-plan` consumes it when
   `ag.saga-descent` is selected. Without it the row stays `not_computed` with
   `silence_by_design`.
@@ -46,6 +46,7 @@ Current entry points:
 - [ArchSig skills](../../tools/archsig/skills/): 5本のバンドルSKILL(一次product interface)。
 - [ArchSig gate-policy authoring guide](archsig_gate_policy.md)
 - [ArchSig compare report guide](archsig_compare.md)
+- [ArchSig measurement view model contract](archsig_view_model_contract.md)
 - [ArchMapStore Notes](archmap_store.md)
 - [LLM-Native Golden Corpus](golden_corpus.md)
 - [AG measurement evidence contract](ag_measurement_evidence_contract.md): fixtureのsource sectionと入力責務。

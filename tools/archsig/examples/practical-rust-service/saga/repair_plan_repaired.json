@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.3",
+  "schema": "archsig-repair-plan/v0.5.4",
   "id": "repair-plan:one-cent-repaired",
   "residual": {
     "kind": "supplied"
@@ -334,7 +334,7 @@
       }
     },
     "h1ComparisonData": {
-      "schema": "h1-comparison-data/v0.5.3",
+      "schema": "h1-comparison-data/v0.5.4",
       "kind": "explicit",
       "cochainMapRef": "comparison:cochain-map",
       "sourceComplexFingerprint": "574638b7510e991db10a8cebfbd17202219a126ba7edd510e57f50367ce382e6",

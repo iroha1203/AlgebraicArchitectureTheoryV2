@@ -1,5 +1,5 @@
 {
-  "schema": "refinement-comparison/v0.5.3",
+  "schema": "refinement-comparison/v0.5.4",
   "id": "refinement-comparison:ag-contexts-run-bound",
   "direction": "coarse-to-fine",
   "coarse": {

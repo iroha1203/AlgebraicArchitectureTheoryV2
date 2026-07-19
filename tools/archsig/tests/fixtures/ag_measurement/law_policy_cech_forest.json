@@ -1,5 +1,5 @@
 {
-  "schema": "law-policy/v0.5.3",
+  "schema": "law-policy/v0.5.4",
   "id": "ag-cech-forest-policy",
   "lawSurfaceRef": "law-surface:cech-forest-v052",
   "measurementProfileRef": "profile:ag-default@1",

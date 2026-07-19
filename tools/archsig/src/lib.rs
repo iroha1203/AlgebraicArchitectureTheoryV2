@@ -13,6 +13,7 @@ mod policy_bundle;
 mod refactor;
 mod repair_plan;
 mod saga;
+mod view_model;
 
 pub use refactor::{validate_refactor_morphism_v1, validate_refinement_comparison_v1};
 mod schema;
@@ -117,3 +118,6 @@ pub use schema::{
     SchemaVersionCatalogV0,
 };
 pub use schema_catalog::static_schema_version_catalog;
+pub use view_model::{
+    ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION, build_measurement_view_model_v1,
+};

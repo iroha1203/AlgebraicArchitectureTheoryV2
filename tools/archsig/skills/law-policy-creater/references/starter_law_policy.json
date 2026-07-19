@@ -1,5 +1,5 @@
 {
-  "schema": "law-policy/v0.5.3",
+  "schema": "law-policy/v0.5.4",
   "id": "project-ag-law-policy",
   "lawSurfaceRef": "law-surface:<law-surface-id>",
   "measurementProfileRef": "profile:ag-default@1",

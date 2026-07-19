@@ -8,7 +8,7 @@ charged one cent more than the checkout page displayed.
 This example shows ArchSig doing the one thing local review cannot:
 **measuring that a set of individually correct modules no longer glues into a
 consistent whole** — and it now walks the full SAGA diagnostic staircase from
-v0.5.2/v0.5.3 to do it. The checkout → payment → settlement flow *is* a saga,
+v0.5.2/v0.5.4 to do it. The checkout → payment → settlement flow *is* a saga,
 and the staircase names each step of its failure precisely:
 
 1. **Grounding** — every module satisfies its own displayed money law
@@ -271,7 +271,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
 
 Open `tools/archview/archview.html` and load
 `.tmp/archsig-practical-rust-service/head/archsig-atom-viewer-data.json`.
-Besides the eight contexts and the settlement cycle, the v0.5.3 SAGA view
+Besides the eight contexts and the settlement cycle, the v0.5.4 SAGA view
 renders the diagnostic staircase itself (`sagaDescent.stages`): grounding
 (measured_zero), descent measurement with the residual class and the
 harmonic-debt reading, the comparison transfer contract, and the silence

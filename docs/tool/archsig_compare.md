@@ -1,7 +1,7 @@
 # ArchSig compare report guide
 
 `archsig compare` は 2 つの `archsig analyze` run directory を読み、record 水準の差分を出力する。
-`--refinement <refinement-comparison/v0.5.3>` を供給した場合は、coarse / fine の
+`--refinement <refinement-comparison/v0.5.4>` を供給した場合は、coarse / fine の
 `complexFingerprint` がそれぞれ base / head run の正規化有限複体 fingerprint
 (`inputDigests.siteCoverDigest.sha256`)と一致することを検査してから、class-zero reading を追加する。
 この fingerprint 検査により、site cover が異なる coarse→fine run でも refinement 経路を受理できる。
@@ -41,8 +41,8 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
 
 Outputs:
 
-- `archmap-diff.json` with schema `archmap-diff/v0.5.3`
-- `archsig-comparison-report.json` with schema `archsig-comparison-report/v0.5.3`
+- `archmap-diff.json` with schema `archmap-diff/v0.5.4`
+- `archsig-comparison-report.json` with schema `archsig-comparison-report/v0.5.4`
 
 ## Comparability
 
@@ -68,14 +68,14 @@ Current conclusion codes are:
 - `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`
 - `RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA`
 
-`VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR` belongs to the `refactor-morphism/v0.5.3`
+`VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR` belongs to the `refactor-morphism/v0.5.4`
 analytic reading. Refinement compare uses the dedicated
 `CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT` token only for coarse-zero →
 fine-zero. Both nonzero and zero/nonzero pairs remain `not_computed` with a
 boundary statement; they do not establish class transport.
 
 ArchViewがgate reportを表示する場合も、compare reportからdecisionを再計算しない。
-`archsig-gate-report/v0.5.3`はArchSigの`gate`が生成した第二入力として、対応するmeasurement
+`archsig-gate-report/v0.5.4`はArchSigの`gate`が生成した第二入力として、対応するmeasurement
 packet digestとともに供給する。
 
 ## Non-claims
